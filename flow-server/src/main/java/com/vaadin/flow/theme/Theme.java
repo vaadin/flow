@@ -36,47 +36,27 @@ import com.vaadin.flow.router.RouterLayout;
  * By default {@code com.vaadin.flow.theme.lumo.Lumo} theme is used if it's in
  * the classpath. You may disable theming with {@link NoTheme} annotation.
  * <p>
- * {@link Theme} annotation should be added to your root navigation level,
- * {@link RouterLayout} or to the top level @{@link Route}.
+ * {@link Theme} annotation should be added to the AppShellConfigurator
+ * implementation.
  *
  * <p>
- * Defining different Themes for different views will end throwing an exception.
+ * Only a single theme can be defined and having multiple instances will throw
+ * an exception.
  *
  * <p>
- * Here are examples:
- *
- * <ul>
- * <li>On the navigation root
+ * Here is an example:
  *
  * <pre>
  * <code>
- * &#64;Route(value = "")
+ *
  * &#64;Theme(Lumo.class)
- * public class Main extends Div {
+ * public class MyAppShell implements AppShellConfigurator {
  * }
  * </code>
  * </pre>
- *
- * <li>on the top level router layout
- *
- * <pre>
- * <code>
- * &#64;Theme(MyTheme.class)
- * public class MainLayout extends Div implements RouterLayout {
- * }
- *
- * &#64;Route(value = "editor", layout = MainLayout.class)
- * public class Editor extends Div {
- * }
- * </code>
- * </pre>
- *
- * </ul>
  *
  * @see AbstractTheme
  * @see NoTheme
- * @see RouterLayout
- * @see Route
  *
  * @author Vaadin Ltd
  * @since 1.0
