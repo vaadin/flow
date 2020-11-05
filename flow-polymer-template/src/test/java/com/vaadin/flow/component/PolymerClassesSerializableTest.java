@@ -18,7 +18,8 @@ public class PolymerClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateParser(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.InjectablePolymerElementInitializer",
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateDataAnalyzer",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.IdCollector"),
+                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.IdCollector",
+                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.rpc\\.OSGiPolymerPublishedEventHandlerRegistration"),
                 super.getExcludedPatterns());
     }
 }
