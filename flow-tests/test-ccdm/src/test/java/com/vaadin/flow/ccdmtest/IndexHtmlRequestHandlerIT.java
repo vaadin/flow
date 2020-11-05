@@ -600,7 +600,6 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
     }
 
     @Test
-    @Ignore // until serviceworker installation works in test hub browser
     public void should_installServiceWorker() {
         openTestUrl("/");
         boolean serviceWorkerActive = (boolean) ((JavascriptExecutor) getDriver())

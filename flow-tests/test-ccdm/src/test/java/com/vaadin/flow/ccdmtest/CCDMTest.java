@@ -18,13 +18,15 @@ package com.vaadin.flow.ccdmtest;
 import java.util.List;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.ChromeDeviceTest;
+
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 @Ignore
-public class CCDMTest extends ChromeBrowserTest {
+public class CCDMTest extends ChromeDeviceTest {
 
     protected final void openTestUrl(String url) {
         getDriver().get(getRootURL() + "/foo" + url);
