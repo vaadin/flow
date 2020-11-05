@@ -42,6 +42,7 @@ export function loadRouter(flow) {
   navigationContainer.appendChild(createNavigationLink('Prevent leaving view', 'prevent-leaving'));
   navigationContainer.appendChild(createNavigationLink('View with home button', 'serverview/view-with-home-button'));
   navigationContainer.appendChild(createNavigationLink('View with server view button', 'view-with-server-view-button'));
+  navigationContainer.appendChild(createNavigationLink('Invalidate session view', 'invalidatesessionview'));
   routerContainer.appendChild(navigationContainer);
 
   const outlet = document.createElement('div');

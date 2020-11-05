@@ -608,4 +608,23 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
                         + "navigator.serviceWorker.ready.then( function(reg) { resolve(!!reg.active); });");
         Assert.assertTrue("service worker not installed", serviceWorkerActive);
     }
+
+    @Test
+    public void indexHtmlRequestHandler_csrfToken_should_update_after_invalidateSession() {
+        openVaadinRouter();
+        findAnchor("invalidatesessionview").click();
+
+        String originalCsrfToken = executeScript(
+                "return Vaadin.TypeScript.csrfToken;").toString();
+
+        $("button").attribute("id", "invalidateSession").waitForFirst().click();
+
+        openTestUrl("/");
+        String csrfToken = executeScript("return Vaadin.TypeScript.csrfToken;")
+                .toString();
+
+        Assert.assertNotEquals(
+                "CSRF token should update when session is invalidated",
+                originalCsrfToken, csrfToken);
+    }
 }
