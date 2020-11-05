@@ -15,12 +15,9 @@
  */
 package com.vaadin.flow.component.littemplate.internal;
 
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import java.util.Properties;
+import java.util.stream.Stream;
 
-import java.util.Collections;
-
-import com.vaadin.flow.component.littemplate.LitTemplate;
-import com.vaadin.flow.component.littemplate.LitTemplateParser;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,23 +25,26 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.stubbing.Answer;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.littemplate.LitTemplate;
+import com.vaadin.flow.component.littemplate.LitTemplateParser;
 import com.vaadin.flow.component.littemplate.LitTemplateParser.TemplateData;
 import com.vaadin.flow.component.polymertemplate.Id;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.MockVaadinServletService;
+
+import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
 public class LitTemplateParserImplTest {
 
-    @Mock
-    VaadinContext context;
-    @Mock
-    VaadinService service;
+    private MockVaadinServletService service;
     @Mock
     DeploymentConfiguration configuration;
 
@@ -52,19 +52,30 @@ public class LitTemplateParserImplTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
 
-        Mockito.when(service.getDependencyFilters())
-                .thenReturn(Collections.emptyList());
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-        Mockito.when(service.getClassLoader())
-                .thenAnswer(invocation -> this.getClass().getClassLoader());
-        Mockito.when(service.getContext()).thenReturn(context);
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
-                .thenAnswer((Answer<String>) invocation -> {
-                    Object[] args = invocation.getArguments();
-                    return (String) args[1];
-                });
+                .thenAnswer(invocation -> invocation.getArgumentAt(1,
+                        String.class));
+
+        Properties properties = new Properties();
+        Mockito.when(configuration.getInitParameters()).thenReturn(properties);
+
+        Instantiator instantiator = Mockito.mock(Instantiator.class);
+        Mockito.when(instantiator.getServiceInitListeners())
+                .thenReturn(Stream.empty());
+        Mockito.when(instantiator.getDependencyFilters(Mockito.any()))
+                .thenReturn(Stream.empty());
+        Mockito.when(instantiator.getBootstrapListeners(Mockito.any()))
+                .thenReturn(Stream.empty());
+        service = new MockVaadinServletService(configuration);
+        service.init(instantiator);
+
+        ResourceProvider resourceProvider = service.getContext()
+                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+        Mockito.when(resourceProvider.getApplicationResource(service,
+                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
+                .thenReturn(LitTemplateParserImplTest.class.getResource(
+                        "/" + VAADIN_SERVLET_RESOURCES + "config/stats.json"));
     }
 
     @Test
@@ -130,7 +141,9 @@ public class LitTemplateParserImplTest {
     public void getTypeScriptTemplateContent_localFileTemplateExists_useLocalFileContent() {
         LitTemplateParser instance = LitTemplateParserImpl.getInstance();
         TemplateData templateContent = instance.getTemplateContent(
-                HelloTypeScriptView.class, HelloTypeScriptView.class.getAnnotation(Tag.class).value(), service);
+                HelloTypeScriptView.class,
+                HelloTypeScriptView.class.getAnnotation(Tag.class).value(),
+                service);
 
         Assert.assertEquals("Parent element ID not the expected one.",
                 "hello-world-view",
@@ -302,8 +315,8 @@ public class LitTemplateParserImplTest {
     /**
      * A Designer generated component for the hello-world-view template.
      *
-     * Designer will add and remove fields with @Id mappings but does not overwrite
-     * or otherwise change this file.
+     * Designer will add and remove fields with @Id mappings but does not
+     * overwrite or otherwise change this file.
      */
     @JsModule("./frontend/hello-world-view.ts")
     @Tag("hello-world-view")
