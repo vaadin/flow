@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.vaadin.flow.dom.Element;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -246,7 +247,7 @@ public class HierarchicalCommunicatorTest {
                 new HierarchicalDataCommunicator<String>(
                         Mockito.mock(CompositeDataGenerator.class),
                         arrayUpdaterWithArguments,
-                        json -> {}, Mockito.mock(StateNode.class), () -> null);
+                        json -> {}, stateNode, () -> null);
 
         dataCommunicator.setDataProvider(treeDataProvider, null);
 
@@ -280,5 +281,11 @@ public class HierarchicalCommunicatorTest {
 
     @Tag("test")
     public static class TestComponent extends Component {
+        public TestComponent() {
+        }
+
+        public TestComponent(Element element) {
+            super(element);
+        }
     }
 }

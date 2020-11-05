@@ -101,6 +101,7 @@ public class DataCommunicatorTest {
     private ArrayUpdater arrayUpdater;
 
     private Element element;
+    private TestComponent testComponent;
     private MockUI ui;
 
     private ArrayUpdater.Update update;
@@ -115,6 +116,7 @@ public class DataCommunicatorTest {
         MockitoAnnotations.initMocks(this);
         ui = new MockUI();
         element = new Element("div");
+        testComponent = new TestComponent(element);
         ui.getElement().appendChild(element);
 
         lastClear = null;
@@ -1374,11 +1376,6 @@ public class DataCommunicatorTest {
 
     @Test
     public void filter_setFilterAsDisposable_shouldDiscardFilterAfterFirstFlush() {
-        // Data communicator needs a linked component as in real life,
-        // because in-memory filter handling logic stores this filter in the
-        // component
-        TestComponent testComponent = new TestComponent(element);
-
         SerializableConsumer<DataCommunicator.Filter<SerializablePredicate<Item>>> filterConsumer = dataCommunicator
                 .setDataProvider(DataProvider.ofItems(new Item(1), new Item(2),
                         new Item(3)), item -> item.id > 1, false);
@@ -1424,8 +1421,6 @@ public class DataCommunicatorTest {
 
     @Test
     public void filter_setFilterAsPermanent_firesItemChangeEvent() {
-        TestComponent testComponent = new TestComponent(element);
-
         AtomicBoolean eventTriggered = new AtomicBoolean(false);
 
         testComponent.addItemChangeListener(event -> {
@@ -1447,8 +1442,6 @@ public class DataCommunicatorTest {
 
     @Test
     public void filter_setFilterAsDisposable_doesNotFireItemChangeEvent() {
-        TestComponent testComponent = new TestComponent(element);
-
         testComponent.addItemChangeListener(event -> Assert
                 .fail("Event triggering not expected for disposable filter"));
 
@@ -1462,14 +1455,12 @@ public class DataCommunicatorTest {
 
     @Test
     public void setDataProvider_setNewDataProvider_filteringAndSortingRemoved() {
-        TestComponent component = new TestComponent(element);
-
         dataCommunicator.setDataProvider(
                 DataProvider.ofItems(new Item(0), new Item(1), new Item(2)),
                 null);
 
         ListDataView<Item, ?> listDataView = new AbstractListDataView<Item>(
-                dataCommunicator::getDataProvider, component) {
+                dataCommunicator::getDataProvider, testComponent) {
         };
 
         Assert.assertEquals("Unexpected items count before filter", 3,
@@ -1498,7 +1489,6 @@ public class DataCommunicatorTest {
     @Test
     public void filter_clearFilterAfterFlush_componentFilterPreserved() {
         final Item[] items = { new Item(1), new Item(2), new Item(3) };
-        TestComponent component = new TestComponent(element);
         final SerializablePredicate<Item> disposableFilter = item -> item.id == 3;
         final SerializablePredicate<Item> permanentFilter = item -> item.id == 2;
 
@@ -1506,7 +1496,7 @@ public class DataCommunicatorTest {
                 disposableFilter, false);
 
         AbstractListDataView<Item> listDataView = new AbstractListDataView<Item>(
-                dataCommunicator::getDataProvider, component) {
+                dataCommunicator::getDataProvider, testComponent) {
         };
 
         listDataView.setFilter(permanentFilter);
