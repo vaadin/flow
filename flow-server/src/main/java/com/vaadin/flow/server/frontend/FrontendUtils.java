@@ -443,12 +443,12 @@ public class FrontendUtils {
     }
 
     /**
-     * <<<<<<< HEAD Gets the content of the <code>frontend/index.html</code>
-     * file which is served by webpack-dev-server in dev-mode and read from
-     * classpath in production mode. NOTE: In dev mode, the file content file is
-     * fetched via webpack http request. So that we don't need to have a
-     * separate index.html's content watcher, auto-reloading will work
-     * automatically, like other files managed by webpack in `frontend/` folder.
+     * Gets the content of the <code>frontend/index.html</code> file which is
+     * served by webpack-dev-server in dev-mode and read from classpath in
+     * production mode. NOTE: In dev mode, the file content file is fetched via
+     * webpack http request. So that we don't need to have a separate
+     * index.html's content watcher, auto-reloading will work automatically,
+     * like other files managed by webpack in `frontend/` folder.
      *
      * @param service
      *            the vaadin service
@@ -495,10 +495,8 @@ public class FrontendUtils {
     }
 
     /**
-     * Get the latest has for the stats file in development mode. This is
-     * ======= Get the latest hash for the stats file in development mode. This
-     * is >>>>>>> b8200e9805... Read stats.json content as a bundle resource in
-     * OSGi requested from the webpack-dev-server.
+     * Get the latest hash for the stats file in development mode. This is
+     * requested from the webpack-dev-server.
      * <p>
      * In production mode and disabled dev server mode an empty string is
      * returned.
