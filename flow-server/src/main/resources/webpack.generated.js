@@ -9,6 +9,9 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const {BabelMultiTargetPlugin} = require('webpack-babel-multi-target-plugin');
 
+// Flow plugins
+const StatsPlugin = require('@vaadin/stats-plugin');
+
 const path = require('path');
 const baseDir = path.resolve(__dirname);
 // the folder of app resources (main.js and flow templates)
@@ -170,47 +173,23 @@ module.exports = {
       }
     })] : []),
 
+    new StatsPlugin({
+      devMode: devMode,
+      statsFile: statsFile,
+      setResults: function (statsFile) {
+        stats = statsFile;
+      }
+    }),
+
     // Generates the stats file for flow `@Id` binding.
     function (compiler) {
-      compiler.hooks.afterEmit.tapAsync("FlowIdPlugin", (compilation, done) => {
-        let statsJson = compilation.getStats().toJson();
-        // Get bundles as accepted keys (except any es5 bundle)
-        let acceptedKeys = statsJson.assets.filter(asset => asset.chunks.length > 0 && !asset.chunkNames.toString().includes("es5"))
-          .map(asset => asset.chunks).reduce((acc, val) => acc.concat(val), []);
-
-        // Collect all modules for the given keys
-        const modules = collectModules(statsJson, acceptedKeys);
-
-        // Collect accepted chunks and their modules
-        const chunks = collectChunks(statsJson, acceptedKeys);
-
-        let customStats = {
-          hash: statsJson.hash,
-          assetsByChunkName: statsJson.assetsByChunkName,
-          chunks: chunks,
-          modules: modules
-        };
-
-        if (!devMode) {
-          // eslint-disable-next-line no-console
-          console.log("         Emitted " + statsFile);
-          fs.writeFile(statsFile, JSON.stringify(customStats, null, 1), done);
-        } else {
-          // eslint-disable-next-line no-console
-          console.log("         Serving the 'stats.json' file dynamically.");
-
-          stats = customStats;
+        compiler.hooks.done.tapAsync('FlowIdPlugin', (compilation, done) => {
+          // trigger live reload via server
+          if (client) {
+            client.write('reload\n');
+          }
           done();
-        }
-      });
-
-      compiler.hooks.done.tapAsync('FlowIdPlugin', (compilation, done) => {
-        // trigger live reload via server
-        if (client) {
-          client.write('reload\n');
-        }
-        done();
-      });
+        });
     },
 
     // Copy webcomponents polyfills. They are not bundled because they
@@ -221,78 +200,3 @@ module.exports = {
     }]),
   ]
 };
-
-/**
- * Collect chunk data for accepted chunk ids.
- * @param statsJson full stats.json content
- * @param acceptedKeys chunk ids that are accepted
- * @returns slimmed down chunks
- */
-function collectChunks(statsJson, acceptedChunks) {
-  const chunks = [];
-  // only handle chunks if they exist for stats
-  if (statsJson.chunks) {
-    statsJson.chunks.forEach(function (chunk) {
-      // Acc chunk if chunk id is in accepted chunks
-      if (acceptedChunks.includes(chunk.id)) {
-        const modules = [];
-        // Add all modules for chunk as slimmed down modules
-        chunk.modules.forEach(function (module) {
-          const slimModule = {
-            id: module.id,
-            name: module.name,
-            source: module.source,
-          };
-          modules.push(slimModule);
-        });
-        const slimChunk = {
-          id: chunk.id,
-          names: chunk.names,
-          files: chunk.files,
-          hash: chunk.hash,
-          modules: modules
-        }
-        chunks.push(slimChunk);
-      }
-    });
-  }
-  return chunks;
-}
-
-/**
- * Collect all modules that are for a chunk in  acceptedChunks.
- * @param statsJson full stats.json
- * @param acceptedChunks chunk names that are accepted for modules
- * @returns slimmed down modules
- */
-function collectModules(statsJson, acceptedChunks) {
-  let modules = [];
-  // skip if no modules defined
-  if (statsJson.modules) {
-    statsJson.modules.forEach(function (module) {
-      // Add module if module chunks contain an accepted chunk and the module is generated-flow-imports.js module
-      if (module.chunks.filter(key => acceptedChunks.includes(key)).length > 0
-          && (module.name.includes("generated-flow-imports.js") || module.name.includes("generated-flow-imports-fallback.js"))) {
-        let subModules = [];
-        // Create sub modules only if they are available
-        if (module.modules) {
-          module.modules.filter(module => !module.name.includes("es5")).forEach(function (module) {
-            const subModule = {
-              name: module.name,
-              source: module.source
-            };
-            subModules.push(subModule);
-          });
-        }
-        const slimModule = {
-          id: module.id,
-          name: module.name,
-          source: module.source,
-          modules: subModules
-        };
-        modules.push(slimModule);
-      }
-    });
-  }
-  return modules;
-}
