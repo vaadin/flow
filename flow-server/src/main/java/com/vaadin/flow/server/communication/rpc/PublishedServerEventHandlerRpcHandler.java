@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -32,12 +31,16 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEventHandler;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ClientCallableHandlers;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.Json;
@@ -107,13 +110,12 @@ public class PublishedServerEventHandlerRpcHandler
             PolymerServerEventHandlers eventHandlers = node
                     .getFeature(PolymerServerEventHandlers.class);
             if (clientDelegate.hasHandler(methodName)) {
-                execute = DisabledUpdateMode.ALWAYS.equals(clientDelegate
-                        .getDisabledUpdateMode(methodName));
+                execute = DisabledUpdateMode.ALWAYS.equals(
+                        clientDelegate.getDisabledUpdateMode(methodName));
             }
             if (eventHandlers.hasHandler(methodName)) {
-                execute = execute || DisabledUpdateMode.ALWAYS
-                        .equals(eventHandlers
-                                .getDisabledUpdateMode(methodName));
+                execute = execute || DisabledUpdateMode.ALWAYS.equals(
+                        eventHandlers.getDisabledUpdateMode(methodName));
             }
         }
 
@@ -137,7 +139,7 @@ public class PublishedServerEventHandlerRpcHandler
                     methodName, args, promiseId);
         } else {
             String msg = String.format("Neither class '%s' "
-                            + "nor its super classes declare event handler method '%s'",
+                    + "nor its super classes declare event handler method '%s'",
                     instance.getClass().getName(), methodName);
             throw new IllegalStateException(msg);
         }
@@ -151,7 +153,7 @@ public class PublishedServerEventHandlerRpcHandler
                 .collect(Collectors.toList());
         if (methods.size() > 1) {
             String msg = String.format("Class '%s' contains "
-                            + "several event handler method with the same name '%s'",
+                    + "several event handler method with the same name '%s'",
                     instance.getClass().getName(), methodName);
             throw new IllegalStateException(msg);
         } else if (methods.size() == 1) {
@@ -167,8 +169,8 @@ public class PublishedServerEventHandlerRpcHandler
         // Check for polymer event handler annotation.
         final boolean hasEventHandler = ReflectTools.hasAnnotation(method,
                 "com.vaadin.flow.component.polymertemplate.EventHandler");
-        return hasEventHandler || method
-                .isAnnotationPresent(ClientCallable.class);
+        return hasEventHandler
+                || method.isAnnotationPresent(ClientCallable.class);
     }
 
     private static void invokeMethod(Component instance, Method method,
@@ -180,14 +182,16 @@ public class PublishedServerEventHandlerRpcHandler
                 Serializable returnValue = (Serializable) invokeMethod(instance,
                         method, args);
 
-                instance.getElement().executeJs("this.$server['"
+                instance.getElement()
+                        .executeJs("this.$server['"
                                 + JsonConstants.RPC_PROMISE_CALLBACK_NAME
-                                + "']($0, true, $1)", Integer.valueOf(promiseId),
-                        returnValue);
+                                + "']($0, true, $1)",
+                                Integer.valueOf(promiseId), returnValue);
             } catch (RuntimeException e) {
-                instance.getElement().executeJs("this.$server['"
-                        + JsonConstants.RPC_PROMISE_CALLBACK_NAME
-                        + "']($0, false)", Integer.valueOf(promiseId));
+                instance.getElement()
+                        .executeJs("this.$server['"
+                                + JsonConstants.RPC_PROMISE_CALLBACK_NAME
+                                + "']($0, false)", Integer.valueOf(promiseId));
 
                 throw e;
             }
@@ -218,25 +222,25 @@ public class PublishedServerEventHandlerRpcHandler
             if (clientValuesCount >= methodArgs - 1) {
                 argValues = unwrapVarArgs(argsFromClient, method);
             } else {
-                String msg = String
-                        .format("The number of received values (%d) is not enough "
-                                        + "to call the method '%s' declared in '%s' which "
-                                        + "has vararg parameter and the number of arguments %d",
-                                argsFromClient.length(), method.getName(),
-                                method.getDeclaringClass().getName(),
-                                method.getParameterCount());
+                String msg = String.format(
+                        "The number of received values (%d) is not enough "
+                                + "to call the method '%s' declared in '%s' which "
+                                + "has vararg parameter and the number of arguments %d",
+                        argsFromClient.length(), method.getName(),
+                        method.getDeclaringClass().getName(),
+                        method.getParameterCount());
                 throw new IllegalArgumentException(msg);
             }
         } else {
             if (methodArgs == clientValuesCount) {
                 argValues = argsFromClient;
             } else {
-                String msg = String
-                        .format("The number of received values (%d) is not equal "
-                                        + "to the number of arguments (%d) in the method '%s' "
-                                        + "declared in '%s'", argsFromClient.length(),
-                                method.getParameterCount(), method.getName(),
-                                method.getDeclaringClass().getName());
+                String msg = String.format(
+                        "The number of received values (%d) is not equal "
+                                + "to the number of arguments (%d) in the method '%s' "
+                                + "declared in '%s'",
+                        argsFromClient.length(), method.getParameterCount(),
+                        method.getName(), method.getDeclaringClass().getName());
                 throw new IllegalArgumentException(msg);
             }
         }
@@ -280,50 +284,36 @@ public class PublishedServerEventHandlerRpcHandler
         // the model
         assert argValue != null;
         if (type.isPrimitive() && argValue.getType() == JsonType.NULL) {
-            String msg = String
-                    .format("Null values are not allowed for primitive types but "
-                                    + "a 'null' value was received for parameter %d "
-                                    + "which refers to primitive type '%s' "
-                                    + "in the method '%s' defined in the class '%s'",
-                            index, type.getName(), method.getName(),
-                            method.getDeclaringClass().getName());
+            String msg = String.format(
+                    "Null values are not allowed for primitive types but "
+                            + "a 'null' value was received for parameter %d "
+                            + "which refers to primitive type '%s' "
+                            + "in the method '%s' defined in the class '%s'",
+                    index, type.getName(), method.getName(),
+                    method.getDeclaringClass().getName());
             throw new IllegalArgumentException(msg);
         } else if (type.isArray()) {
             return decodeArray(method, type, index, argValue);
         } else {
             Class<?> convertedType = ReflectTools.convertPrimitiveType(type);
 
-            try {
-                final Class<?> polymerUtil = PublishedServerEventHandlerRpcHandler.class
-                        .getClassLoader().loadClass(
-                                "com.vaadin.flow.component.polymertemplate.rpc.PublishedEventRpcHandlerUtil");
-                if ((Boolean) polymerUtil
-                        .getMethod("isTemplateModelValue", Component.class,
-                                JsonValue.class, Class.class)
-                        .invoke(polymerUtil, instance, argValue,
-                                convertedType)) {
-                    return polymerUtil
-                            .getMethod("getTemplateItem", Component.class,
-                                    JsonObject.class, Type.class)
-                            .invoke(polymerUtil, instance, argValue,
-                                    method.getGenericParameterTypes()[index]);
+            if (instance != null) {
+                Optional<UI> ui = instance.getUI();
+                assert ui
+                        .isPresent() : "Rpc handler may not be called for a component that is not attached";
+                VaadinContext context = ui.get().getSession().getService()
+                        .getContext();
+                DeprecatedPolymerPublishedEventHandler handler = context
+                        .getAttribute(Lookup.class)
+                        .lookup(DeprecatedPolymerPublishedEventHandler.class);
+                if (handler != null) {
+                    if (handler.isTemplateModelValue(instance, argValue,
+                            convertedType)) {
+                        return handler.getTemplateItem(instance,
+                                (JsonObject) argValue,
+                                method.getGenericParameterTypes()[index]);
+                    }
                 }
-            } catch (ClassNotFoundException e) {
-                // NO-OP we just try to check if the polymer library is added
-                LoggerFactory
-                        .getLogger(PublishedServerEventHandlerRpcHandler.class)
-                        .trace("Tried finding polymer dependency classes.", e);
-            } catch (NoSuchMethodException e) {
-                throw new IllegalStateException(
-                        "Utility method was not found even though class is available",
-                        e);
-            } catch (IllegalAccessException e) {
-                throw new IllegalStateException(
-                        "Access exception invoking method that should be public",
-                        e);
-            } catch (InvocationTargetException e) {
-                throw new IllegalStateException(
-                        "Could not invoke utility method", e);
             }
 
             Optional<RpcDecoder> decoder = getDecoder(argValue, convertedType);
@@ -335,11 +325,12 @@ public class PublishedServerEventHandlerRpcHandler
                 }
             }
             String msg = String.format("Class '%s' has the method '%s' "
-                            + "whose parameter %d refers to unsupported type '%s'",
+                    + "whose parameter %d refers to unsupported type '%s'",
                     method.getDeclaringClass().getName(), method.getName(),
                     index, type.getName());
             throw new IllegalArgumentException(msg);
         }
+
     }
 
     private static Optional<RpcDecoder> getDecoder(JsonValue value,
@@ -353,8 +344,8 @@ public class PublishedServerEventHandlerRpcHandler
             JsonValue argValue) {
         if (argValue.getType() != JsonType.ARRAY) {
             String msg = String.format("Class '%s' has the method '%s' "
-                            + "whose parameter %d refers to the array type '%s' "
-                            + "but received value is not an array, its type is '%s'",
+                    + "whose parameter %d refers to the array type '%s' "
+                    + "but received value is not an array, its type is '%s'",
                     method.getDeclaringClass().getName(), method.getName(),
                     index, type.getName(), argValue.getType().name());
             throw new IllegalArgumentException(msg);
