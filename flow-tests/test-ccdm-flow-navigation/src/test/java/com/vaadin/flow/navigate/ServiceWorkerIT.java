@@ -20,9 +20,11 @@ import java.io.IOException;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.mobile.NetworkConnection;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
@@ -30,7 +32,7 @@ import com.vaadin.flow.testutil.ChromeDeviceTest;
 public class ServiceWorkerIT extends ChromeDeviceTest {
 
     @Test
-    public void testOfflineStart() throws IOException {
+    public void offlineRoot_reload_viewReloaded() throws IOException {
         getDriver().get(getRootURL() + "/");
         waitForServiceWorkerReady();
 
@@ -69,7 +71,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     }
 
     @Test
-    public void testOfflineStart_nonRootReload() throws IOException {
+    public void offlineNonRoot_reload_viewReloaded() throws IOException {
         getDriver().get(getRootURL() + "/");
         waitForServiceWorkerReady();
 
@@ -101,7 +103,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     }
 
     @Test
-    public void openTsView_goOffline_navigateToOtherTsView_navigationSuccessful() throws IOException {
+    public void offlineTsView_navigateToOtherTsView_navigationSuccessful() throws IOException {
         getDriver().get(getRootURL() + "/about");
         waitForServiceWorkerReady();
 
@@ -129,4 +131,79 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
         }
     }
 
+    @Test
+    @Ignore
+    // This test fails currently because leaveNavigation currently tries to
+    // connect to the server in offline mode.
+    public void offlineServerView_navigateToTsView_navigationSuccessful() throws IOException {
+        getDriver().get(getRootURL() + "/hello");
+        waitForServiceWorkerReady();
+
+        // Set offline network conditions in ChromeDriver
+        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+
+        try {
+            $("main-view").first().$("a").id("menu-another").click();
+
+            // Wait for component inside shadow root as there is no vaadin
+            // to wait for as with server-side
+            waitUntil(input -> $("another-view").first().$("div").id("another-content")
+                    .isDisplayed());
+
+            MatcherAssert.assertThat(getDriver().getCurrentUrl(),
+                    CoreMatchers.endsWith("/another"));
+            Assert.assertTrue(getInShadowRoot(findElement(By.tagName("another-view")),
+                    By.id("another-content")).isDisplayed());
+        } finally {
+            // Reset network conditions back
+            setConnectionType(NetworkConnection.ConnectionType.ALL);
+        }
+    }
+
+    @Test
+    @Ignore
+    public void offlineTsView_navigateToServerView_offlineStubShown()
+            throws IOException {
+        getDriver().get(getRootURL() + "/another");
+        waitForServiceWorkerReady();
+
+        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        try {
+            $("main-view").first().$("a").id("menu-hello").click();
+
+            waitForElementPresent(By.tagName("vaadin-offline-stub"));
+            WebElement offlineStub = findElement(
+                    By.tagName("vaadin-offline-stub"));
+
+            Assert.assertFalse(
+                    "vaadin-offline-stub shadow root expected to contain an element with class offline",
+                    findInShadowRoot(offlineStub, By.className("offline"))
+                            .isEmpty());
+        } finally {
+            setConnectionType(NetworkConnection.ConnectionType.ALL);
+        }
+    }
+
+    @Test
+    public void offlineServerView_navigateToServerView_offlineStubShown()
+            throws IOException {
+        getDriver().get(getRootURL() + "/hello");
+        waitForServiceWorkerReady();
+
+        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        try {
+            $("main-view").first().$("a").id("menu-hello").click();
+
+            waitForElementPresent(By.tagName("vaadin-offline-stub"));
+            WebElement offlineStub = findElement(
+                    By.tagName("vaadin-offline-stub"));
+
+            Assert.assertFalse(
+                    "vaadin-offline-stub shadow root expected to contain an element with class offline",
+                    findInShadowRoot(offlineStub, By.className("offline"))
+                            .isEmpty());
+        } finally {
+            setConnectionType(NetworkConnection.ConnectionType.ALL);
+        }
+    }
 }
