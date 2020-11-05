@@ -22,9 +22,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLayout;
-
 /**
  * Defines that there is a theme to use and defines the theme handler
  * implementation.
