@@ -148,8 +148,8 @@ export class Flow {
       ctx: NavigationParameters,
       cmd?: PreventCommands): Promise<any> {
 
-    // server -> server or at the offline page
-    if (this.pathname === ctx.pathname || this.response === undefined) {
+    // server -> server, viewing offline stub, or browser is offline
+    if (this.pathname === ctx.pathname || this.response === undefined || !navigator.onLine) {
       return Promise.resolve({});
     }
     // 'server -> client'
