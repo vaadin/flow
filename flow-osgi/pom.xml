@@ -243,7 +243,7 @@ Git-SHA:        ${system-allow-fail;git rev-list -1 --no-abbrev-commit HEAD}
                     <scope>test</scope>
                 </dependency>
 
-                 <dependency>
+                <dependency>
                     <groupId>org.osgi</groupId>
                     <artifactId>org.osgi.util.promise</artifactId>
                     <version>1.1.1</version>
