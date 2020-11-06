@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.osgi;
 
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-
-import java.net.URL;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
@@ -35,14 +31,11 @@ import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
 import org.osgi.util.tracker.ServiceTracker;
 
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinServletConfiguration;
-import com.vaadin.flow.uitest.servlet.Es6UrlViewTestServlet;
 import com.vaadin.flow.uitest.servlet.ProductionModeTimingDataViewTestServlet;
 import com.vaadin.flow.uitest.servlet.ProductionModeViewTestServlet;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet;
 import com.vaadin.flow.uitest.servlet.ViewTestServlet;
-import com.vaadin.flow.uitest.servlet.WebJarsServlet;
 
 @Component(immediate = true)
 public class Activator {
@@ -92,17 +85,6 @@ public class Activator {
         }
     }
 
-    @VaadinServletConfiguration(productionMode = true)
-    private static class FixedEs6UrlViewServlet extends Es6UrlViewTestServlet {
-        @Override
-        public void init(ServletConfig servletConfig) throws ServletException {
-            super.init(servletConfig);
-
-            getService().setClassLoader(getClass().getClassLoader());
-        }
-
-    }
-
     @Activate
     void activate() throws NamespaceException {
         BundleContext context = FrameworkUtil.getBundle(Activator.class)
@@ -123,27 +105,18 @@ public class Activator {
                 service.unregister("/view-es6-url/*");
             }
 
-            @SuppressWarnings({ "rawtypes", "unchecked" })
+            @SuppressWarnings("rawtypes")
             @Override
             public HttpService addingService(
                     ServiceReference<HttpService> reference) {
                 // HTTP service is available, register our servlet...
                 HttpService httpService = this.context.getService(reference);
                 Dictionary dictionary = new Hashtable<>();
-                URL tokenFile = context.getBundle()
-                        .getResource(VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
-                if (tokenFile == null) {
-                    dictionary.put(
-                            Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                            Boolean.TRUE.toString());
-                }
                 try {
                     httpService.registerServlet("/view/*",
                             new FixedViewServlet(), dictionary, null);
                     httpService.registerServlet("/context/*",
                             new FixedViewServlet(), dictionary, null);
-                    httpService.registerServlet("/frontend/*",
-                            new WebJarsServlet(), dictionary, null);
                     httpService.registerServlet("/new-router-session/*",
                             new FixedRouterServlet(), dictionary, null);
                     httpService.registerServlet("/view-production/*",
@@ -152,8 +125,6 @@ public class Activator {
                     httpService.registerServlet("/view-production-timing/*",
                             new FixedProductionModeTimingDataViewServlet(),
                             dictionary, null);
-                    httpService.registerServlet("/view-es6-url/*",
-                            new FixedEs6UrlViewServlet(), dictionary, null);
                 } catch (ServletException | NamespaceException exception) {
                     throw new RuntimeException(exception);
                 }
