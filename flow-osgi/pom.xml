@@ -34,20 +34,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-lumo-theme</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>2.0.1.Final</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
             <version>${osgi.core.version}</version>
@@ -61,198 +47,6 @@
             <scope>compile</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.util.promise</artifactId>
-            <version>1.1.1</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.util.function</artifactId>
-            <version>1.1.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.3.1</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.sun.activation</groupId>
-            <artifactId>javax.activation</artifactId>
-            <version>1.2.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Start iTest -->
-        <dependency>
-            <groupId>org.eclipse.platform</groupId>
-            <artifactId>org.eclipse.osgi</artifactId>
-            <version>3.16.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.scr</artifactId>
-            <version>2.1.24</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.configadmin</artifactId>
-            <version>1.9.18</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.http.jetty</artifactId>
-            <version>4.0.20</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- start serviceloader -->
-        <dependency>
-            <groupId>org.apache.aries.spifly</groupId>
-            <artifactId>org.apache.aries.spifly.static.bundle</artifactId>
-            <version>1.0.12</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.aries.spifly</groupId>
-            <artifactId>org.apache.aries.spifly.static.tool</artifactId>
-            <version>1.0.12</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.aries.spifly</groupId>
-            <artifactId>org.apache.aries.spifly.core-internal</artifactId>
-            <version>1.0.12</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.aries.spifly</groupId>
-            <artifactId>org.apache.aries.spifly.weaver-internal</artifactId>
-            <version>1.0.12</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.aries</groupId>
-            <artifactId>org.apache.aries.util</artifactId>
-            <version>1.1.3</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.aries.spifly</groupId>
-            <artifactId>org.apache.aries.spifly.dynamic.bundle</artifactId>
-            <version>1.0.12</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.log</artifactId>
-            <version>1.2.4</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- end serviceloader -->
-        <dependency>
-            <groupId>org.apache.servicemix.bundles</groupId>
-            <artifactId>org.apache.servicemix.bundles.junit</artifactId>
-            <version>4.12_1</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>3.16.1</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>biz.aQute.bnd</groupId>
-            <artifactId>biz.aQute.tester.junit-platform</artifactId>
-            <version>5.1.2</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-commons</artifactId>
-            <version>${junit-platform.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-engine</artifactId>
-            <version>${junit-platform.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
-            <version>${junit-platform.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.test.common</artifactId>
-            <version>${osgi-test.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.test.junit5</artifactId>
-            <version>${osgi-test.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.test.assertj.framework</artifactId>
-            <version>${osgi-test.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.logback</artifactId>
-            <version>1.0.2</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- End iTest -->
     </dependencies>
 
     <build>
@@ -428,4 +222,221 @@ Git-SHA:        ${system-allow-fail;git rev-list -1 --no-abbrev-commit HEAD}
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>osgi-test</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>vaadin-lumo-theme</artifactId>
+                    <version>${project.version}</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>javax.validation</groupId>
+                    <artifactId>validation-api</artifactId>
+                    <version>2.0.1.Final</version>
+                    <scope>test</scope>
+                </dependency>
+
+                 <dependency>
+                    <groupId>org.osgi</groupId>
+                    <artifactId>org.osgi.util.promise</artifactId>
+                    <version>1.1.1</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.osgi</groupId>
+                    <artifactId>org.osgi.util.function</artifactId>
+                    <version>1.1.0</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>javax.xml.bind</groupId>
+                    <artifactId>jaxb-api</artifactId>
+                    <version>2.3.1</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>com.sun.activation</groupId>
+                    <artifactId>javax.activation</artifactId>
+                    <version>1.2.0</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <!-- Start iTest -->
+                <dependency>
+                    <groupId>org.eclipse.platform</groupId>
+                    <artifactId>org.eclipse.osgi</artifactId>
+                    <version>3.16.0</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>org.apache.felix.scr</artifactId>
+                    <version>2.1.24</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>org.apache.felix.configadmin</artifactId>
+                    <version>1.9.18</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>org.apache.felix.http.jetty</artifactId>
+                    <version>4.0.20</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <!-- start serviceloader -->
+                <dependency>
+                    <groupId>org.apache.aries.spifly</groupId>
+                    <artifactId>org.apache.aries.spifly.static.bundle</artifactId>
+                    <version>1.0.12</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.aries.spifly</groupId>
+                    <artifactId>org.apache.aries.spifly.static.tool</artifactId>
+                    <version>1.0.12</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.aries.spifly</groupId>
+                    <artifactId>org.apache.aries.spifly.core-internal</artifactId>
+                    <version>1.0.12</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.aries.spifly</groupId>
+                    <artifactId>org.apache.aries.spifly.weaver-internal</artifactId>
+                    <version>1.0.12</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.aries</groupId>
+                    <artifactId>org.apache.aries.util</artifactId>
+                    <version>1.1.3</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.aries.spifly</groupId>
+                    <artifactId>org.apache.aries.spifly.dynamic.bundle</artifactId>
+                    <version>1.0.12</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>org.apache.felix.log</artifactId>
+                    <version>1.2.4</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <!-- end serviceloader -->
+                <dependency>
+                    <groupId>org.apache.servicemix.bundles</groupId>
+                    <artifactId>org.apache.servicemix.bundles.junit</artifactId>
+                    <version>4.12_1</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.assertj</groupId>
+                    <artifactId>assertj-core</artifactId>
+                    <version>3.16.1</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>biz.aQute.bnd</groupId>
+                    <artifactId>biz.aQute.tester.junit-platform</artifactId>
+                    <version>5.1.2</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.junit.jupiter</groupId>
+                    <artifactId>junit-jupiter-api</artifactId>
+                    <version>${junit-jupiter.version}</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.junit.platform</groupId>
+                    <artifactId>junit-platform-commons</artifactId>
+                    <version>${junit-platform.version}</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.junit.jupiter</groupId>
+                    <artifactId>junit-jupiter-engine</artifactId>
+                    <version>${junit-jupiter.version}</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.junit.platform</groupId>
+                    <artifactId>junit-platform-engine</artifactId>
+                    <version>${junit-platform.version}</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.junit.platform</groupId>
+                    <artifactId>junit-platform-launcher</artifactId>
+                    <version>${junit-platform.version}</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.osgi</groupId>
+                    <artifactId>org.osgi.test.common</artifactId>
+                    <version>${osgi-test.version}</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.osgi</groupId>
+                    <artifactId>org.osgi.test.junit5</artifactId>
+                    <version>${osgi-test.version}</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.osgi</groupId>
+                    <artifactId>org.osgi.test.assertj.framework</artifactId>
+                    <version>${osgi-test.version}</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>org.apache.felix.logback</artifactId>
+                    <version>1.0.2</version>
+                    <scope>test</scope>
+                </dependency>
+                <!-- End iTest -->
+
+            </dependencies>
+        </profile>
+    </profiles>
 </project>
