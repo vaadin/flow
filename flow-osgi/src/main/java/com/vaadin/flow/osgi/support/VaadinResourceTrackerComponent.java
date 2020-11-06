@@ -83,29 +83,36 @@ public class VaadinResourceTrackerComponent {
 
     }
 
-    private final BundleContext bundleContext;
+    private BundleContext bundleContext = null;
 
     private final Map<OsgiVaadinContributor, List<ServiceRegistration<? extends OsgiVaadinStaticResource>>> contributorToRegistrations = Collections
             .synchronizedMap(new LinkedHashMap<>());
 
-    private final HttpService httpService;
+    private HttpService httpService = null;
 
-    /*
+    /**
      * Constructor will be used by the OSGi - SCR/DS (Service Component Runtime)
      * to activate this Component. When a is HttpService available for the SCR
-     * it will call this Constuctor an register the Service. When HttpService is
-     * unregistered all References will be unbound and this Service unregistered
-     * in the Framework.
+     * it will call this Constructor an register the Service. When HttpService
+     * is unregistered all References will be unbound and this Service
+     * unregistered in the Framework.
      *
-     * @param bundleContext - the BundleContext
+     * @param bundleContext
+     *            the {@link BundleContext}
      *
-     * @param httpService - when a HttpService
+     * @param httpService
+     *            when a {@link HttpService}
      */
     @Activate
     public VaadinResourceTrackerComponent(BundleContext bundleContext,
             @Reference(cardinality = ReferenceCardinality.MANDATORY) HttpService httpService) {
+        this();
         this.httpService = httpService;
         this.bundleContext = bundleContext;
+    }
+
+    private VaadinResourceTrackerComponent() {
+
     }
 
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, service = OsgiVaadinContributor.class, policy = ReferencePolicy.DYNAMIC)
