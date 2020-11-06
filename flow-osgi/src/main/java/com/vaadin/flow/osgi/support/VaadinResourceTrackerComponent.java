@@ -90,6 +90,17 @@ public class VaadinResourceTrackerComponent {
 
     private final HttpService httpService;
 
+    /*
+     * Constructor will be used by the OSGi - SCR/DS (Service Component Runtime)
+     * to activate this Component. When a is HttpService available for the SCR
+     * it will call this Constuctor an register the Service. When HttpService is
+     * unregistered all References will be unbound and this Service unregistered
+     * in the Framework.
+     *
+     * @param bundleContext - the BundleContext
+     *
+     * @param httpService - when a HttpService
+     */
     @Activate
     public VaadinResourceTrackerComponent(BundleContext bundleContext,
             @Reference(cardinality = ReferenceCardinality.MANDATORY) HttpService httpService) {

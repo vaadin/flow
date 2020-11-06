@@ -30,6 +30,7 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.http.HttpService;
 import org.osgi.service.http.runtime.HttpServiceRuntime;
 import org.osgi.service.http.runtime.dto.RequestInfoDTO;
+import org.osgi.service.http.runtime.dto.RuntimeDTO;
 import org.osgi.test.common.annotation.InjectBundleContext;
 import org.osgi.test.common.annotation.InjectService;
 import org.osgi.test.junit5.context.BundleContextExtension;
@@ -44,6 +45,22 @@ public class VaadinResourceTrackerComponentTest {
     HttpService httpService;
     @InjectService(timeout = 1000)
     HttpServiceRuntime httpServiceRuntime;
+
+    @org.junit.jupiter.api.Test
+    void httpServiceRuntime_isClean() throws Exception {
+        RuntimeDTO runtimeDTO = httpServiceRuntime.getRuntimeDTO();
+
+        assertThat(runtimeDTO.failedErrorPageDTOs).isEmpty();
+        assertThat(runtimeDTO.failedFilterDTOs).isEmpty();
+        assertThat(runtimeDTO.failedListenerDTOs).isEmpty();
+        assertThat(runtimeDTO.failedPreprocessorDTOs).isEmpty();
+        assertThat(runtimeDTO.failedResourceDTOs).isEmpty();
+        assertThat(runtimeDTO.failedServletContextDTOs).isEmpty();
+        assertThat(runtimeDTO.failedServletDTOs).isEmpty();
+        assertThat(runtimeDTO.preprocessorDTOs).isEmpty();
+        assertThat(runtimeDTO.servletContextDTOs).isNotEmpty();
+
+    }
 
     static OsgiVaadinStaticResource vaadinStaticResourceOf(String path) {
         return new OsgiVaadinStaticResource() {
@@ -67,9 +84,7 @@ public class VaadinResourceTrackerComponentTest {
         private static final String ALIAS_FOO = "/alias/foo";
 
         @org.junit.jupiter.api.Test
-        void registerService_exists()
-                throws Exception, IllegalArgumentException {
-
+        void registerService_exists() throws Exception {
 
             RequestInfoDTO requestInfoDTO = httpServiceRuntime
                     .calculateRequestInfoDTO(ALIAS_FOO);
