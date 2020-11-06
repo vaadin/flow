@@ -295,8 +295,7 @@ public class LookupInitializer
     private Set<Class<?>> filterSubClasses(Class<?> clazz,
             Set<Class<?>> classes) {
         return classes == null ? Collections.emptySet()
-                : classes.stream()
-                        .filter(InstantiatorFactory.class::isAssignableFrom)
+                : classes.stream().filter(clazz::isAssignableFrom)
                         .filter(cls -> !cls.isInterface() && !cls.isSynthetic()
                                 && !Modifier.isAbstract(cls.getModifiers()))
                         .filter(cls -> !clazz.equals(cls))
