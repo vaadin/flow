@@ -161,7 +161,6 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     }
 
     @Test
-    @Ignore
     public void offlineTsView_navigateToServerView_offlineStubShown()
             throws IOException {
         getDriver().get(getRootURL() + "/another");
