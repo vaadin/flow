@@ -32,6 +32,17 @@ import com.vaadin.flow.testutil.ChromeDeviceTest;
 public class ServiceWorkerIT extends ChromeDeviceTest {
 
     @Test
+    public void onelineRoot_serviceWorkerInstalled_serviceWorkerActive() {
+        getDriver().get(getRootURL() + "/");
+        waitForServiceWorkerReady();
+
+        boolean serviceWorkerActive = (boolean) ((JavascriptExecutor) getDriver())
+                .executeAsyncScript("const resolve = arguments[arguments.length - 1];"
+                        + "navigator.serviceWorker.ready.then( function(reg) { resolve(!!reg.active); });");
+        Assert.assertTrue("service worker not installed", serviceWorkerActive);
+    }
+
+    @Test
     public void offlineRoot_reload_viewReloaded() throws IOException {
         getDriver().get(getRootURL() + "/");
         waitForServiceWorkerReady();
