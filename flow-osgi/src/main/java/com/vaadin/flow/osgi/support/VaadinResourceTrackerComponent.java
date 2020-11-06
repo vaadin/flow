@@ -97,15 +97,6 @@ public class VaadinResourceTrackerComponent {
         this.bundleContext = bundleContext;
     }
 
-    // OSGi - declarative services
-    void unbindContributor(OsgiVaadinContributor contributor) {
-        List<ServiceRegistration<? extends OsgiVaadinStaticResource>> registrations = contributorToRegistrations
-                .remove(contributor);
-        if (registrations != null) {
-            registrations.forEach(ServiceRegistration::unregister);
-        }
-    }
-
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, service = OsgiVaadinContributor.class, policy = ReferencePolicy.DYNAMIC)
     void bindContributor(OsgiVaadinContributor contributor) {
         List<OsgiVaadinStaticResource> contributions = contributor
@@ -115,6 +106,15 @@ public class VaadinResourceTrackerComponent {
                 .map(contribution -> bundleContext.registerService(
                         OsgiVaadinStaticResource.class, contribution, null))
                 .collect(Collectors.toList()));
+    }
+
+    // OSGi - declarative services
+    void unbindContributor(OsgiVaadinContributor contributor) {
+        List<ServiceRegistration<? extends OsgiVaadinStaticResource>> registrations = contributorToRegistrations
+                .remove(contributor);
+        if (registrations != null) {
+            registrations.forEach(ServiceRegistration::unregister);
+        }
     }
 
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, service = OsgiVaadinStaticResource.class, policy = ReferencePolicy.DYNAMIC)
