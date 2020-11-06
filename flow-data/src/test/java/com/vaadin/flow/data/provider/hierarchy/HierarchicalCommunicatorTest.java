@@ -186,7 +186,7 @@ public class HierarchicalCommunicatorTest {
             dataProvider.refreshItem(item);
         }
 
-        int number = refreshAll ? 6 : 5;
+        int number = refreshAll ? 7 : 6;
 
         ArgumentCaptor<SerializableConsumer> attachCaptor = ArgumentCaptor
                 .forClass(SerializableConsumer.class);
@@ -221,11 +221,28 @@ public class HierarchicalCommunicatorTest {
         // any data controllers
         communicator.reset();
 
-        Assert.assertEquals(2, enqueueFunctions.size());
+        Assert.assertEquals(1, enqueueFunctions.size());
         Assert.assertEquals("$connector.ensureHierarchy",
                 enqueueFunctions.get(0));
+    }
+
+    @Test
+    public void reset_expandSomeItems_hierarchicalUpdateContainsExpandItems() {
+        enqueueFunctions.clear();
+
+        communicator.expand(ROOT);
+
+        communicator.reset();
+
+        // One expandItems for calling expand(...)
+        // One expandItems and one ensureHierarchy for calling reset()
+        Assert.assertEquals(3, enqueueFunctions.size());
         Assert.assertEquals("$connector.expandItems",
+                enqueueFunctions.get(0));
+        Assert.assertEquals("$connector.ensureHierarchy",
                 enqueueFunctions.get(1));
+        Assert.assertEquals("$connector.expandItems",
+                enqueueFunctions.get(2));
     }
 
     @Test
@@ -254,7 +271,6 @@ public class HierarchicalCommunicatorTest {
         dataCommunicator.expand("first-1");
 
         dataCommunicator.reset();
-
 
         Assert.assertTrue(enqueueFunctionsWithParams
                 .containsKey("$connector.expandItems"));
