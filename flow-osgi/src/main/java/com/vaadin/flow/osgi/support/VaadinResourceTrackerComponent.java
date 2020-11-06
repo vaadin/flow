@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -54,19 +53,21 @@ public class VaadinResourceTrackerComponent {
     private static final class Delegate implements HttpContext {
         private final String alias;
         private final Bundle bundle;
-        private final AtomicReference<HttpContext> context = new AtomicReference<>();
+        private final HttpContext httpContext;
 
         private final String path;
 
-        Delegate(String alias, String path, Bundle bundle) {
+        Delegate(String alias, String path, Bundle bundle,
+                HttpContext httpContext) {
             this.alias = alias;
             this.path = path;
             this.bundle = bundle;
+            this.httpContext = httpContext;
         }
 
         @Override
         public String getMimeType(String name) {
-            return context.get().getMimeType(name);
+            return httpContext.getMimeType(name);
         }
 
         @Override
@@ -77,13 +78,9 @@ public class VaadinResourceTrackerComponent {
         @Override
         public boolean handleSecurity(HttpServletRequest request,
                 HttpServletResponse response) throws IOException {
-            return context.get().handleSecurity(request, response);
+            return httpContext.handleSecurity(request, response);
         }
 
-        boolean init(HttpService service) {
-            return context.compareAndSet(null,
-                    service.createDefaultHttpContext());
-        }
     }
 
     private final BundleContext bundleContext;
@@ -126,9 +123,8 @@ public class VaadinResourceTrackerComponent {
         Bundle bundle = FrameworkUtil.getBundle(resource.getClass());
 
         Delegate registration = new Delegate(resource.getAlias(),
-                resource.getPath(), bundle);
-
-        registration.init(httpService);
+                resource.getPath(), bundle,
+                httpService.createDefaultHttpContext());
 
         httpService.registerResources(registration.alias, registration.path,
                 registration);
