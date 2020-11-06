@@ -11,9 +11,6 @@
     <artifactId>flow-test-root-context-npm</artifactId>
     <name>Flow root context tests in NPM dev mode</name>
     <packaging>war</packaging>
-    <properties>
-        <maven.deploy.skip>true</maven.deploy.skip>
-    </properties>
 
     <dependencies>
         <dependency>
