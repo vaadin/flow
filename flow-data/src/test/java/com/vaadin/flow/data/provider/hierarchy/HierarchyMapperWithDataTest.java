@@ -422,6 +422,9 @@ public class HierarchyMapperWithDataTest {
         protected Stream<TreeNode> fetchChildrenFromBackEnd(
                 HierarchicalQuery<TreeNode, Void> query) {
             if (query.getParent() == null) {
+                return Arrays.stream(new TreeNode[] {root});
+            }
+            if(query.getParent() == root) {
                 return Arrays.stream(secondLevelNodes);
             }
             return Arrays.stream(thirdLevelNodes)
