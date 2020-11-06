@@ -17,6 +17,7 @@ package com.vaadin.flow.server.startup;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -37,6 +38,8 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEventHandler;
 import com.vaadin.flow.di.InstantiatorFactory;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
@@ -48,10 +51,28 @@ import com.vaadin.flow.server.startup.testdata.TestResourceProvider;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 public class LookupInitializerTest {
 
     private LookupInitializer initializer = new LookupInitializer();
+
+    public static class TestPolymerPublishedEventHandler
+            implements DeprecatedPolymerPublishedEventHandler {
+
+        @Override
+        public boolean isTemplateModelValue(Component instance,
+                JsonValue argValue, Class<?> convertedType) {
+            return false;
+        }
+
+        @Override
+        public Object getTemplateItem(Component template, JsonObject argValue,
+                Type convertedType) {
+            return null;
+        }
+
+    }
 
     @Test
     public void processLookupInitializer_resourceProviderIsProvidedAsScannedClass_lookupReturnsTheProviderInstance()
@@ -68,6 +89,25 @@ public class LookupInitializerTest {
 
         Assert.assertEquals(TestResourceProvider.class,
                 allProviders.iterator().next().getClass());
+    }
+
+    @Test
+    public void processLookupInitializer_rpolymerPubkishedEventHandlerIsProvidedAsScannedClass_lookupReturnsTheProviderInstance()
+            throws ServletException {
+        Lookup lookup = mockLookup(TestPolymerPublishedEventHandler.class);
+
+        DeprecatedPolymerPublishedEventHandler handler = lookup
+                .lookup(DeprecatedPolymerPublishedEventHandler.class);
+        Assert.assertNotNull(handler);
+        Assert.assertEquals(TestPolymerPublishedEventHandler.class,
+                handler.getClass());
+
+        Collection<DeprecatedPolymerPublishedEventHandler> allHandlers = lookup
+                .lookupAll(DeprecatedPolymerPublishedEventHandler.class);
+        Assert.assertEquals(1, allHandlers.size());
+
+        Assert.assertEquals(TestPolymerPublishedEventHandler.class,
+                allHandlers.iterator().next().getClass());
     }
 
     @Test
