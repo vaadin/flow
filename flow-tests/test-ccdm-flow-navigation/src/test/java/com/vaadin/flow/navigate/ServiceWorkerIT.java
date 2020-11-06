@@ -143,9 +143,6 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     }
 
     @Test
-    @Ignore
-    // This test fails currently because leaveNavigation currently tries to
-    // connect to the server in offline mode.
     public void offlineServerView_navigateToTsView_navigationSuccessful() throws IOException {
         getDriver().get(getRootURL() + "/hello");
         waitForServiceWorkerReady();
