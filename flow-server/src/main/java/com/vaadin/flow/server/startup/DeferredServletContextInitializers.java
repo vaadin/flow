@@ -52,6 +52,7 @@ class DeferredServletContextInitializers {
          * {@code context}.
          * 
          * @param context
+         *            a ServletContext for the initializer
          * @throws ServletException
          *             thrown if the initializer throws an exception
          */
@@ -61,7 +62,7 @@ class DeferredServletContextInitializers {
     private final List<Initializer> initializers = new CopyOnWriteArrayList<>();
 
     /**
-     * Adds deferred initializer
+     * Adds deferred initializer.
      * 
      * @param initializer
      *            an initializer
@@ -71,7 +72,7 @@ class DeferredServletContextInitializers {
     }
 
     /**
-     * Runs all collected initializers
+     * Runs all collected initializers.
      * 
      * @param context
      *            a ServletContext for initializers

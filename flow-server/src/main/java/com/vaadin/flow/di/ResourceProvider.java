@@ -54,19 +54,19 @@ public interface ResourceProvider {
 
     /**
      * Gets all the resources identified by {@code path} located in in the
-     * application bundle (jar) which may be found using the
-     * {@code contextClass}.
+     * application bundle (jar) which may be found using the {@code
+     * contextClass}.
      * <p>
      * If the {@code contextClass} doesn't contain any information about
      * application bundle or there is no resource with the given path then this
      * method returns an empty list.
      * 
      * @param contextClass
-     *            a class to find an application bundle
-     * @param path
-     *            the resource path
-     * @return a list of URLs of the resources or an empty list if resources are
-     *         not found
+     *            a class to find an application bundle @param path the resource
+     *            path @return a list of URLs of the resources or an empty list
+     *            if resources are not found
+     * @throws IOException
+     *             if there is an I/O error
      */
     List<URL> getApplicationResources(Class<?> contextClass, String path)
             throws IOException;
@@ -97,6 +97,9 @@ public interface ResourceProvider {
      *            the resource path
      * @return a list of URLs of the resources or an empty list if resources are
      *         not found
+     * 
+     * @throws IOException
+     *             if there is an I/O error
      */
     List<URL> getApplicationResources(Object context, String path)
             throws IOException;
