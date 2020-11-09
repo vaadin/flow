@@ -43,7 +43,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
-        if (theme.getName().isEmpty()) {
+        if (theme == null || theme.getName().isEmpty()) {
             return;
         }
         themeImportFile.getParentFile().mkdirs();

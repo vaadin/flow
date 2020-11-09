@@ -237,7 +237,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                                 + entryPoint + "');"));
 
         Assert.assertTrue(
-                "webpack config should update fileNameOfTheFlowGeneratedMainEntryPoint",
+                "webpack config should update mavenOutputFolderForFlowBundledFiles",
                 webpackContents.contains(
                         "const mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '"
                                 + outputFolder + "');"));

@@ -29,7 +29,7 @@ import com.vaadin.flow.theme.AbstractTheme;
 final class ThemeData implements Serializable {
     String themeClass;
     String variant = "";
-    String themeName;
+    String themeName = "";
     boolean notheme;
 
     ThemeData(String themeClass, String variant, String themeName) {

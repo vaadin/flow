@@ -45,6 +45,7 @@ public class ThemeDefinition implements Serializable {
 
         Objects.requireNonNull(theme);
         Objects.requireNonNull(variant);
+        Objects.requireNonNull(name);
 
         this.theme = theme;
         this.variant = variant;

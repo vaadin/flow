@@ -274,7 +274,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         Set<ThemeData> themes = endPoints.values().stream()
                 // consider only endPoints with theme information
                 .filter(data -> data.getTheme().getThemeClass() != null ||
-                    data.getTheme().getThemeName() != null
+                    (data.getTheme().getThemeName() != null && !data.getTheme().getThemeName().isEmpty())
                         || data.getTheme().isNotheme())
                 .map(EndPointData::getTheme)
                 // Remove duplicates by returning a set

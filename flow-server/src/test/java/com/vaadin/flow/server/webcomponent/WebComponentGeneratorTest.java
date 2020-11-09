@@ -139,14 +139,15 @@ public class WebComponentGeneratorTest {
                         MyComponentExporter.class),
                 "", true, null);
         // make sure that the test works on windows machines:
-        module = module.replace("\r", "");
-        Assert.assertThat(module, startsWith(
-                "\n" + "<script>\n" + "  class Tag extends HTMLElement {\n"));
+        module = module.replace("\r", "").replaceAll("\n", "");
+        Assert.assertThat(module,
+            startsWith(
+                "<script>  class Tag extends HTMLElement {"));
         // this part is from the
         // com.vaadin.flow.webcomponent-script-template
         // .js to verify successful import
         Assert.assertThat(module,
-                containsString("customElements.define('tag', Tag);\n"));
+                containsString("customElements.define('tag', Tag);"));
     }
 
     @Test
@@ -156,18 +157,18 @@ public class WebComponentGeneratorTest {
                         MyComponentExporter.class),
                 "", false, null);
         // make sure that the test works on windows machines:
-        module = module.replace("\r", "");
+        module = module.replace("\r", "").replaceAll("\n", "");
         Assert.assertThat(module,
                 startsWith("class Tag extends HTMLElement {"));
-        Assert.assertThat(module, containsString("style.innerHTML = `\n" //
-                + "      :host {\n" //
-                + "        position: relative;\n" //
-                + "        display: inline-block;\n" //
-                + "      }\n" //
-                + "    `;\n"));
+        Assert.assertThat(module, containsString("style.innerHTML = `" //
+                + "      :host {" //
+                + "        position: relative;" //
+                + "        display: inline-block;" //
+                + "      }" //
+                + "    `;"));
 
         Assert.assertThat(module,
-                containsString("customElements.define('tag', Tag);\n"));
+                containsString("customElements.define('tag', Tag);"));
     }
 
     public static class MyComponent extends Component {
