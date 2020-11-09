@@ -1462,7 +1462,9 @@ public class DataCommunicatorTest {
                 null);
 
         ListDataView<Item, ?> listDataView = new AbstractListDataView<Item>(
-                dataCommunicator::getDataProvider, new TestComponent(element)) {
+                dataCommunicator::getDataProvider, new TestComponent(element),
+                (filter, sorting) -> {
+                }) {
         };
 
         Assert.assertEquals("Unexpected items count before filter", 3,
@@ -1498,7 +1500,9 @@ public class DataCommunicatorTest {
                 disposableFilter, false);
 
         AbstractListDataView<Item> listDataView = new AbstractListDataView<Item>(
-                dataCommunicator::getDataProvider, new TestComponent(element)) {
+                dataCommunicator::getDataProvider, new TestComponent(element),
+                (filter, sorting) -> {
+                }) {
         };
 
         listDataView.setFilter(permanentFilter);

@@ -38,6 +38,7 @@ import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JsonUtils;
@@ -1356,21 +1357,19 @@ public class DataCommunicator<T> implements Serializable {
         return json;
     }
 
-    @SuppressWarnings("unchecked")
     private void clearFilterIfDisposable() {
         if (filter != null && !filter.isPermanent()) {
             Optional<Component> component = Element.get(stateNode).getComponent();
             if (component.isPresent()) {
                 // Look up for the component's in-memory filter
-                Optional<ComponentInMemoryFilter<T>> componentFilter = Optional
-                        .ofNullable(ComponentUtil.getData(component.get(),
-                                ComponentInMemoryFilter.class));
+                Optional<SerializablePredicate<T>> componentFilter = AbstractListDataView
+                        .getComponentFilter(component.get());
 
                 // If the component's in-memory filter is present, then erase
                 // the client-side filter and re-apply the permanent
                 // component's filter
                 filter = componentFilter.map(
-                        filterValue -> new Filter<>(filterValue.getFilter(), true))
+                        filterValue -> new Filter<>(filterValue, true))
                         .orElse(null);
             } else {
                 filter = null;
@@ -1380,9 +1379,8 @@ public class DataCommunicator<T> implements Serializable {
 
     private void removeFilteringAndSorting() {
         Element.get(stateNode).getComponent().ifPresent(component -> {
-            ComponentUtil.setData(component, ComponentInMemoryFilter.class,
-                    null);
-            ComponentUtil.setData(component, ComponentSorting.class, null);
+            AbstractListDataView.setComponentFilter(component, null);
+            AbstractListDataView.setComponentSortComparator(component, null);
         });
     }
 
