@@ -3,6 +3,5 @@ Bundle-Name: Vaadin Flow Lit Templates Support
 Bundle-Version: ${osgi.bundle.version}
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
-Import-Package: *
 Export-Package: com.vaadin.flow.component.littemplate;-noimport:=true
 
