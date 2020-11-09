@@ -11,6 +11,7 @@ const CompressionPlugin = require('compression-webpack-plugin');
 
 // Flow plugins
 const StatsPlugin = require('@vaadin/stats-plugin');
+const ApplicationThemePlugin = require('@vaadin/application-theme-plugin');
 
 const path = require('path');
 
@@ -34,6 +35,25 @@ const buildFolder = `${mavenOutputFolderForFlowBundledFiles}/${build}`;
 const confFolder = `${mavenOutputFolderForFlowBundledFiles}/${config}`;
 // file which is used by flow to read templates for server `@Id` binding
 const statsFile = `${confFolder}/stats.json`;
+// Folders in the project which can contain static assets.
+// FIXME This is missing some entries
+const projectStaticAssetsFolders = [
+  path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
+  path.resolve(__dirname, 'src', 'main', 'resources', 'static'),
+  frontendFolder
+];
+
+const projectStaticAssetsOutputFolder = [to-be-generated-by-flow];
+
+// Folders in the project which can contain application themes
+const themeProjectFolders = projectStaticAssetsFolders.map((folder) =>
+  path.resolve(folder, 'theme')
+);
+
+
+// Target flow-fronted auto generated to be the actual target folder
+const flowFrontendFolder = '[to-be-generated-by-flow]';
+
 // make sure that build folder exists before outputting anything
 const mkdirp = require('mkdirp');
 
@@ -104,6 +124,12 @@ module.exports = {
   },
 
   resolve: {
+    // Search for import 'x/y' inside these folders, used at least for importing an application theme
+    modules: [
+      'node_modules',
+      flowFrontendFolder,
+      ...projectStaticAssetsFolders,
+    ],
     extensions: ['.ts', '.js'],
     alias: {
       Frontend: frontendFolder
@@ -141,7 +167,35 @@ module.exports = {
       },
       {
         test: /\.css$/i,
-        use: ['lit-css-loader', 'extract-loader', 'css-loader']
+        use: [
+          {
+            loader: 'css-loader',
+            options: {
+              url: (url, resourcePath) => {
+                // resourcePath - path to css file
+                // If the import happens from within a node_modules file, we must resolve and inline. Otherwise resources will not be found at runtime as node_modules is not deployed
+                const resolveUrl = resourcePath.includes('/node_modules/');
+                if (resolveUrl) {
+                  console.debug('Inlining ', url);
+                }
+                return resolveUrl;
+              },
+              import: (url, media, resourcePath) => {
+                // resourcePath - path to css file
+                // If the import happens from within a node_modules file, we must resolve and inline. Otherwise resources will not be found at runtime as node_modules is not deployed
+                const resolveUrl = resourcePath.includes('/node_modules/');
+                if (resolveUrl) {
+                  console.debug('Inlining ', url);
+                }
+                return resolveUrl;
+              },
+            },
+          },
+        ],
+      // },
+      // {
+      //   test: /\.css$/i,
+      //   use: ['lit-css-loader', 'extract-loader']
       }
     ]
   },
@@ -152,6 +206,12 @@ module.exports = {
   plugins: [
     // Generate compressed bundles when not devMode
     !devMode && new CompressionPlugin(),
+
+    new ApplicationThemePlugin({
+      themeJarFolder: path.resolve(flowFrontendFolder, 'theme'),
+      themeProjectFolders: themeProjectFolders,
+      projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
+    }),
 
     new StatsPlugin({
       devMode: devMode,
