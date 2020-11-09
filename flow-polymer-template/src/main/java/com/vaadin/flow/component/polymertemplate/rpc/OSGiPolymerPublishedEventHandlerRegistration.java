@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.component.polymertemplate.rpc;
 
-import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -38,9 +38,8 @@ public class OSGiPolymerPublishedEventHandlerRegistration {
     private ServiceRegistration<DeprecatedPolymerPublishedEventHandler> registration;
 
     @Activate
-    void activate(Bundle bundle) {
-        bundle.getBundleContext().registerService(
-                DeprecatedPolymerPublishedEventHandler.class,
+    void activate(BundleContext context) {
+        context.registerService(DeprecatedPolymerPublishedEventHandler.class,
                 new PolymerPublishedEventRpcHandler(), null);
     }
 
