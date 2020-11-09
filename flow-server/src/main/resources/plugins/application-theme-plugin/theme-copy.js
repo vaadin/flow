@@ -30,6 +30,9 @@ const path = require('path');
  * @param {Path} projectStaticAssetsOutputFolder resources output folder
  */
 function copyThemeResources(themeName, themeFolder, projectStaticAssetsOutputFolder) {
+  if (!fs.existsSync(path.resolve(projectStaticAssetsOutputFolder))) {
+    require('mkdirp')(path.resolve(projectStaticAssetsOutputFolder));
+  }
   if (!fs.existsSync(path.resolve(projectStaticAssetsOutputFolder, "theme"))) {
     fs.mkdirSync(path.resolve(projectStaticAssetsOutputFolder, "theme"));
   }

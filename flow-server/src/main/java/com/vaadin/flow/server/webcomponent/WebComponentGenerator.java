@@ -158,7 +158,7 @@ public class WebComponentGenerator {
             String frontendURI, boolean generateUiImport, String themeName) {
         Map<String, String> replacements = new HashMap<>();
 
-        if (themeName != null) {
+        if (themeName != null && !themeName.isEmpty()) {
             replacements.put("ThemeImport","import {applyTheme} from 'theme/theme.js';");
             replacements.put("ApplyTheme","applyTheme(shadow);");
         } else {
