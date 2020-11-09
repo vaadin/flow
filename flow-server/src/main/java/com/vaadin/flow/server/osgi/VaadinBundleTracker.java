@@ -64,17 +64,20 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
 
     private Executor executor = Executors.newSingleThreadExecutor();
 
-    private final AtomicReference<ServiceRegistration<Servlet>> servletRegistration = new AtomicReference<>();
+    private final AtomicReference<ServiceRegistration<Servlet>> servletPushRegistration = new AtomicReference<>();
+    private final AtomicReference<ServiceRegistration<Servlet>> servletClientRegistration = new AtomicReference<>();
 
     /**
      * Dedicated servlet for serving resources in Flow bundles.
      */
-    private static class PushResourceServlet extends HttpServlet {
+    private static class ResourceServlet extends HttpServlet {
 
         private final Bundle bundle;
+        private final String resourceDirPath;
 
-        public PushResourceServlet(Bundle pushBundle) {
-            bundle = pushBundle;
+        public ResourceServlet(Bundle bundle, String resourceDirPath) {
+            this.bundle = bundle;
+            this.resourceDirPath = resourceDirPath;
         }
 
         @Override
@@ -84,8 +87,7 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
             if (pathInfo == null) {
                 resp.setStatus(HttpURLConnection.HTTP_NOT_FOUND);
             }
-            URL resource = bundle.getResource(
-                    "/META-INF/resources/VAADIN/static/push" + pathInfo);
+            URL resource = bundle.getResource(resourceDirPath + pathInfo);
             if (resource == null) {
                 resp.setStatus(HttpURLConnection.HTTP_NOT_FOUND);
             }
@@ -119,6 +121,8 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
                 executor.execute(this::scanActiveBundles);
             } else if (isPushModule(bundle)) {
                 registerPushResources(bundle);
+            } else if (isClientModule(bundle)) {
+                registerClientResources(bundle);
             } else if ((flowServerBundle.getState() & Bundle.ACTIVE) != 0) {
                 // If flow-server bundle is already active then scan bundle for
                 // classes
@@ -128,6 +132,8 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
                 && ((event.getType() & BundleEvent.STOPPED) > 0)) {
             if (isPushModule(bundle)) {
                 unregisterPushResource(bundle);
+            } else if (isClientModule(bundle)) {
+                unregisterClientResource(bundle);
             } else if (isVaadinExtender(bundle)) {
                 // Remove all bundle classes once the bundle becomes stopped
                 OSGiAccess.getInstance()
@@ -141,22 +147,50 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
         Hashtable<String, Object> properties = new Hashtable<>();
         properties.put("osgi.http.whiteboard.servlet.pattern",
                 "/VAADIN/static/push/*");
-        servletRegistration.compareAndSet(null,
+        servletPushRegistration.compareAndSet(null,
                 pushBundle.getBundleContext().registerService(Servlet.class,
-                        new PushResourceServlet(pushBundle), properties));
+                        new ResourceServlet(pushBundle,
+                                "/META-INF/resources/VAADIN/static/push"),
+                        properties));
     }
 
     private void unregisterPushResource(Bundle pushBundle) {
-        ServiceRegistration<Servlet> registration = servletRegistration.get();
+        ServiceRegistration<Servlet> registration = servletPushRegistration
+                .get();
         if (registration != null && registration.getReference().getBundle()
                 .getBundleId() == pushBundle.getBundleId()) {
             registration.unregister();
-            servletRegistration.compareAndSet(registration, null);
+            servletPushRegistration.compareAndSet(registration, null);
+        }
+    }
+
+    private void registerClientResources(Bundle clientBundle) {
+        Hashtable<String, Object> properties = new Hashtable<>();
+        properties.put("osgi.http.whiteboard.servlet.pattern",
+                "/VAADIN/static/client/*");
+        servletClientRegistration.compareAndSet(null,
+                clientBundle.getBundleContext().registerService(Servlet.class,
+                        new ResourceServlet(clientBundle,
+                                "/META-INF/resources/VAADIN/static/client"),
+                        properties));
+    }
+
+    private void unregisterClientResource(Bundle clientBundle) {
+        ServiceRegistration<Servlet> registration = servletClientRegistration
+                .get();
+        if (registration != null && registration.getReference().getBundle()
+                .getBundleId() == clientBundle.getBundleId()) {
+            registration.unregister();
+            servletClientRegistration.compareAndSet(registration, null);
         }
     }
 
     private boolean isPushModule(Bundle bundle) {
         return "com.vaadin.flow.push".equals(bundle.getSymbolicName());
+    }
+
+    private boolean isClientModule(Bundle bundle) {
+        return "com.vaadin.flow.client".equals(bundle.getSymbolicName());
     }
 
     @SuppressWarnings("unchecked")
