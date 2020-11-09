@@ -117,6 +117,12 @@ public class FrontendUtils {
     public static final String SERVICE_WORKER_SRC = "sw.ts";
 
     /**
+     * The JavaScript version of the service worker file, for checking if a user
+     * has a JavaScript version of a custom service worker file already.
+     */
+    public static final String SERVICE_WORKER_SRC_JS = "sw.js";
+
+    /**
      * Default target folder for the java project.
      */
     public static final String TARGET = "target/";

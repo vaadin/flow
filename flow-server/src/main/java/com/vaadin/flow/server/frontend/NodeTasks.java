@@ -542,7 +542,7 @@ public class NodeTasks implements FallibleCommand {
         }
 
         if (!builder.useDeprecatedV14Bootstrapping) {
-            addBootstrapTasks(builder);
+            addBootstrapTasks(builder, frontendDependencies);
 
             if (builder.connectJavaSourceFolder != null
                     && builder.connectJavaSourceFolder.exists()
@@ -580,6 +580,10 @@ public class NodeTasks implements FallibleCommand {
         if (enableWebpackConfigUpdate) {
             PwaConfiguration pwaConfiguration = frontendDependencies
                     .getPwaConfiguration();
+            if (pwaConfiguration.isEnabled()) {
+                File outputDirectory = new File(builder.npmFolder, FrontendUtils.TARGET);
+                commands.add(new TaskGenerateServiceWorker(builder.frontendDirectory, outputDirectory));
+            }
             commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
                     builder.npmFolder, builder.webpackOutputDirectory,
                     builder.resourceOutputDirectory, builder.webpackTemplate,
@@ -600,7 +604,7 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
-    private void addBootstrapTasks(Builder builder) {
+    private void addBootstrapTasks(Builder builder, FrontendDependenciesScanner frontendDependencies) {
         File outputDirectory = new File(builder.npmFolder,
                 FrontendUtils.TARGET);
         TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
@@ -619,6 +623,13 @@ public class NodeTasks implements FallibleCommand {
         TaskGenerateTsDefinitions taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(
                 builder.npmFolder);
         commands.add(taskGenerateTsDefinitions);
+
+        if (frontendDependencies != null) {
+            PwaConfiguration pwaConfiguration = frontendDependencies.getPwaConfiguration();
+            if (pwaConfiguration.isEnabled()) {
+                commands.add(new TaskGenerateServiceWorker(builder.frontendDirectory, outputDirectory));
+            }
+        }
     }
 
     private void addConnectServicesTasks(Builder builder) {
