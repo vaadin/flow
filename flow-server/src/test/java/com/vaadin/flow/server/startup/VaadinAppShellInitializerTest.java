@@ -54,6 +54,8 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
+import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -78,6 +80,7 @@ public class VaadinAppShellInitializerTest {
     @BodySize(height = "my-height", width = "my-width")
     @PageTitle("my-title")
     @Push(value = PushMode.MANUAL, transport = Transport.WEBSOCKET)
+    @Theme(AbstractTheme.class)
     public static class MyAppShellWithMultipleAnnotations
             implements AppShellConfigurator {
     }
@@ -91,6 +94,7 @@ public class VaadinAppShellInitializerTest {
     @BodySize(height = "my-height", width = "my-width")
     @PageTitle("my-title")
     @Push(value = PushMode.MANUAL, transport = Transport.WEBSOCKET)
+    @Theme(AbstractTheme.class)
     public static class OffendingClass {
     }
 
@@ -370,7 +374,7 @@ public class VaadinAppShellInitializerTest {
         exception.expectMessage(containsString(
                 "Found app shell configuration annotations in non"));
         exception.expectMessage(containsString(
-                "- @Meta, @Inline, @Viewport, @BodySize, @Push" + " from"));
+                "- @Meta, @Inline, @Viewport, @BodySize, @Push, @Theme" + " from"));
         classes.add(MyAppShellWithoutAnnotations.class);
         classes.add(OffendingClass.class);
         initializer.process(classes, servletContext);
