@@ -36,7 +36,7 @@ import org.osgi.test.common.annotation.InjectService;
 import org.osgi.test.junit5.context.BundleContextExtension;
 import org.osgi.test.junit5.service.ServiceExtension;
 
-@ExtendWith({ BundleContextExtension.class, ServiceExtension.class, })
+@ExtendWith({ BundleContextExtension.class, ServiceExtension.class })
 public class VaadinResourceTrackerComponentTest {
 
     @InjectBundleContext
