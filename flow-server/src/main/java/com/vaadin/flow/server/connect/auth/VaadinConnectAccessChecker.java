@@ -16,17 +16,19 @@
 
 package com.vaadin.flow.server.connect.auth;
 
-import com.vaadin.flow.server.VaadinService;
-
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.server.VaadinService;
 
 /**
  * Component used for checking role-based ACL in Vaadin Endpoints.
@@ -145,8 +147,26 @@ public class VaadinConnectAccessChecker {
             return false;
         }
 
-        String csrfTokenInSession = (String) session.getAttribute(VaadinService.getCsrfTokenAttributeName());
-        return csrfTokenInSession == null || !csrfTokenInSession.equals(request.getHeader("X-CSRF-Token"));
+        String csrfTokenInSession = (String) session
+                .getAttribute(VaadinService.getCsrfTokenAttributeName());
+        if (csrfTokenInSession == null) {
+            if (getLogger().isInfoEnabled()) {
+                getLogger().info(
+                        "Unable to verify CSRF token for endpoint request, got null token in session");
+            }
+
+            return true;
+        }
+
+        if (!csrfTokenInSession.equals(request.getHeader("X-CSRF-Token"))) {
+            if (getLogger().isInfoEnabled()) {
+                getLogger().info("Invalid CSRF token in endpoint request");
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     private boolean entityForbidden(AnnotatedElement entity,
@@ -186,5 +206,9 @@ public class VaadinConnectAccessChecker {
      */
     public void enableCsrf(boolean xsrfProtectionEnabled) {
         this.xsrfProtectionEnabled = xsrfProtectionEnabled;
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(VaadinConnectAccessChecker.class);
     }
 }
