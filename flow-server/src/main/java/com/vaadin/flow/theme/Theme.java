@@ -90,9 +90,11 @@ public @interface Theme {
     /**
      * The theme translation handler.
      *
+     * Defaults to Lumo, If not specified.
+     *
      * @return theme handler
      */
-    Class<? extends AbstractTheme> value();
+    Class<? extends AbstractTheme> themeClass() default AbstractTheme.class;
 
     /**
      * The theme variant, if any.
@@ -100,4 +102,12 @@ public @interface Theme {
      * @return the theme variant
      */
     String variant() default "";
+
+    /**
+     * The name of the application theme to use
+     *
+     * If this is not specified, no application theme is used.
+     *
+     */
+    String value() default "";
 }

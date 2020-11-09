@@ -29,7 +29,7 @@ import com.vaadin.flow.theme.Theme;
 @JsModule("./src/my-component-themed.js")
 
 // `src/` in component above should be replaced by `theme/my-theme`
-@Theme(MyTheme.class)
+@Theme(themeClass = MyTheme.class)
 @PWA(name = "Project Base for Vaadin", shortName = "Project Base")
 public class MiscelaneousView extends Div {
 

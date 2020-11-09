@@ -73,7 +73,7 @@ public class FullDependenciesScannerTest {
 
     }
 
-    @Theme(FakeLumoTheme.class)
+    @Theme(themeClass = FakeLumoTheme.class)
     public static class ThemedComponent extends Component {
 
     }

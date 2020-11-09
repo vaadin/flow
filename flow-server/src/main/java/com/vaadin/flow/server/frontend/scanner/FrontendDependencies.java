@@ -267,13 +267,14 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 visitClass(endPoint.getLayout(), endPoint, false);
             }
             if (endPoint.getTheme() != null) {
-                visitClass(endPoint.getTheme().getName(), endPoint, true);
+                visitClass(endPoint.getTheme().getThemeClass(), endPoint, true);
             }
         }
 
         Set<ThemeData> themes = endPoints.values().stream()
                 // consider only endPoints with theme information
-                .filter(data -> data.getTheme().getName() != null
+                .filter(data -> data.getTheme().getThemeClass() != null ||
+                    data.getTheme().getThemeName() != null
                         || data.getTheme().isNotheme())
                 .map(EndPointData::getTheme)
                 // Remove duplicates by returning a set
@@ -281,12 +282,13 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         if (themes.size() > 1) {
             String names = endPoints.values().stream()
-                    .filter(data -> data.getTheme().getName() != null
+                    .filter(data -> data.getTheme().getThemeClass() != null ||
+                        data.getTheme().getThemeName() != null
                             || data.getTheme().isNotheme())
                     .map(data -> "found '"
                             + (data.getTheme().isNotheme()
                                     ? NoTheme.class.getName()
-                                    : data.getTheme().getName())
+                                    : data.getTheme().getThemeName())
                             + "' in '" + data.getName() + "'")
                     .collect(Collectors.joining("\n      "));
             throw new IllegalStateException(
@@ -296,6 +298,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         Class<? extends AbstractTheme> theme = null;
         String variant = "";
+        String themeName = "";
         if (themes.isEmpty()) {
             theme = getDefaultTheme();
         } else {
@@ -303,14 +306,19 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             ThemeData themeData = themes.iterator().next();
             if (!themeData.isNotheme()) {
                 variant = themeData.getVariant();
-                theme = getFinder().loadClass(themeData.getName());
+                String themeClass = themeData.getThemeClass();
+                if (themeClass == null) {
+                    themeClass = LUMO;
+                }
+                theme = getFinder().loadClass(themeClass);
+                themeName = themeData.getThemeName();
             }
 
         }
 
         // theme could be null when lumo is not found or when a NoTheme found
         if (theme != null) {
-            themeDefinition = new ThemeDefinition(theme, variant);
+            themeDefinition = new ThemeDefinition(theme, variant, themeName);
             themeInstance = new ThemeWrapper(theme);
         }
     }

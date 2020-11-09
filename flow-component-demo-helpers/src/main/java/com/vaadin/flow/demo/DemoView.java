@@ -47,7 +47,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
  * @since 1.0
  */
 @Tag(Tag.DIV)
-@Theme(Lumo.class)
+@Theme(themeClass = Lumo.class)
 @StyleSheet("frontend/src/css/demo.css")
 @StyleSheet("frontend/src/css/prism.css")
 public abstract class DemoView extends Component
