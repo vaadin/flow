@@ -1,5 +1,5 @@
 /* tslint:disable:max-classes-per-file */
-import {DBSchema, IDBPDatabase, openDB} from 'idb';
+import { DeferrableResult, DeferredCallHandler, OfflineHelper } from './Offline';
 
 const $wnd = window as any;
 $wnd.Vaadin = $wnd.Vaadin || {};
@@ -7,9 +7,6 @@ $wnd.Vaadin.registrations = $wnd.Vaadin.registrations || [];
 $wnd.Vaadin.registrations.push({
   is: 'endpoint'
 });
-
-const REQUEST_QUEUE_DB_NAME = 'request-queue';
-const REQUEST_QUEUE_STORE_NAME = 'requests';
 
 interface ConnectExceptionData {
   message: string;
@@ -163,11 +160,6 @@ export class ValidationErrorData {
 }
 
 /**
- * The callback for deferred calls
- */
-export type OnDeferredCallCallback = (call: EndpointRequest, resultPromise: Promise<any>) => Promise<void>;
-
-/**
  * The `ConnectClient` constructor options.
  */
 export interface ConnectClientOptions {
@@ -182,16 +174,12 @@ export interface ConnectClientOptions {
   middlewares?: Middleware[];
 
   /**
-   * The `onDeferredCall` property value
+   * The `deferredCallHandler` property value.
    */
-  onDeferredCall?: OnDeferredCallCallback
+  deferredCallHandler?: DeferredCallHandler;
 }
 
-/**
- * An object with the call arguments and the related Request instance.
- * See also {@link ConnectClient.call | the call() method in ConnectClient}.
- */
-export interface MiddlewareContext {
+export interface EndpointCallMetaInfo {
   /**
    * The endpoint name.
    */
@@ -206,7 +194,13 @@ export interface MiddlewareContext {
    * Optional object with method call arguments.
    */
   params?: any;
+}
 
+/**
+ * An object with the call arguments and the related Request instance.
+ * See also {@link ConnectClient.call | the call() method in ConnectClient}.
+ */
+export interface MiddlewareContext extends EndpointCallMetaInfo{
   /**
    * The Fetch API Request object reflecting the other properties.
    */
@@ -285,9 +279,11 @@ export class ConnectClient {
   middlewares: Middleware[] = [];
 
   /**
-   * The callback for deferred calls
+   * The handler for handling deferred calls
    */
-  onDeferredCall?: OnDeferredCallCallback;
+  deferredCallHandler?: DeferredCallHandler;
+
+  private offlineHelper = new OfflineHelper();
 
   /**
    * @param options Constructor options.
@@ -301,11 +297,11 @@ export class ConnectClient {
       this.middlewares = options.middlewares;
     }
 
-    this.onDeferredCall = options.onDeferredCall;
+    this.deferredCallHandler = options.deferredCallHandler;
 
-    this.processDeferredCalls = this.processDeferredCalls.bind(this);
+    this.submitDeferredCalls = this.submitDeferredCalls.bind(this);
 
-    self.addEventListener('online', this.processDeferredCalls);
+    self.addEventListener('online', this.submitDeferredCalls);
   }
 
   /**
@@ -338,7 +334,7 @@ export class ConnectClient {
     method: string,
     params?: any,
   ): Promise<DeferrableResult<any>> {
-    if (this.checkOnline()) {
+    if (this.offlineHelper.checkOnline()) {
       try {
         const result = await this.call(endpoint, method, params);
         return { isDeferred: false, result };
@@ -348,29 +344,18 @@ export class ConnectClient {
           throw error;
         } else {
           // Network error
-          return this.cacheEndpointRequest({ endpoint, method, params });
+          return this.offlineHelper.storeDeferredCall({ endpoint, method, params });
         }
       }
     } else {
-      return this.cacheEndpointRequest({ endpoint, method, params });
+      return this.offlineHelper.storeDeferredCall({ endpoint, method, params });
     }
   }
 
-  async processDeferredCalls() {
-    const db = await this.openOrCreateDB();
-
-    /**
-     * Cannot wait for submitting the cached requests in the indexed db transaction,
-     * as the transaction only wait for db operations.
-     * See https://github.com/jakearchibald/idb#transaction-lifetime
-     */
-    const shouldSubmit = await this.shouldSubmitCachedRequests(db);
-
-    if (shouldSubmit) {
-      await this.submitCachedRequests(db);
-    }
-
-    db.close();
+  async submitDeferredCalls() {
+    await this.offlineHelper.processDeferredCalls(
+      (endpoint, method, params) => this.requestCall(true, endpoint, method, params),
+      this.deferredCallHandler);
   }
 
   private async requestCall(
@@ -464,70 +449,6 @@ export class ConnectClient {
     return chain(initialContext);
   }
 
-  private checkOnline(): boolean {
-    return navigator.onLine;
-  }
-
-  private async cacheEndpointRequest(endpointRequest: EndpointRequest): Promise<DeferrableResult<any>>{
-    const db = await this.openOrCreateDB();
-    const id = await db.add(REQUEST_QUEUE_STORE_NAME, endpointRequest);
-    db.close();
-    endpointRequest.id = id;
-    return { isDeferred: true, endpointRequest };
-  }
-
-  private async openOrCreateDB(): Promise<IDBPDatabase<RequestQueueDB>> {
-    return openDB<RequestQueueDB>(REQUEST_QUEUE_DB_NAME, 1, {
-      upgrade(db) {
-        db.createObjectStore(REQUEST_QUEUE_STORE_NAME, {
-          keyPath: 'id',
-          autoIncrement: true
-        });
-      },
-    });
-  }
-
-  private async shouldSubmitCachedRequests(db: IDBPDatabase<RequestQueueDB>) {
-    let shouldSubmit = false;
-    if (db.objectStoreNames.contains(REQUEST_QUEUE_STORE_NAME) && await db.count(REQUEST_QUEUE_STORE_NAME) > 0) {
-      const tx = db.transaction(REQUEST_QUEUE_STORE_NAME, 'readwrite');
-
-      let cursor = await tx.store.openCursor();
-      while (cursor) {
-        const request = cursor.value;
-        if (!request.submitting) {
-          shouldSubmit = true;
-          request.submitting = true;
-          cursor.update(request);
-        }
-        cursor = await cursor.continue();
-      }
-      await tx.done;
-    }
-    return shouldSubmit;
-  }
-
-  private async submitCachedRequests(db: IDBPDatabase<RequestQueueDB>) {
-    const cachedRequests = await db.getAll(REQUEST_QUEUE_STORE_NAME);
-    for (const request of cachedRequests) {
-      if (request.submitting) {
-        try {
-          const resultPromise = this.requestCall(true, request.endpoint, request.method, request.params);
-          if (this.onDeferredCall) {
-            await this.onDeferredCall(request, resultPromise);
-          } else {
-            await resultPromise;
-          }
-          await db.delete(REQUEST_QUEUE_STORE_NAME, request.id!);
-        } catch (error) {
-          request.submitting = false;
-          await db.put(REQUEST_QUEUE_STORE_NAME, request);
-          throw error;
-        }
-      }
-    }
-  }
-
   // Re-use flow loading indicator when fetching endpoints
   private loading(action: boolean) {
     if ($wnd.Vaadin.Flow?.loading) {
@@ -536,23 +457,3 @@ export class ConnectClient {
   }
 }
 
-export interface EndpointRequest {
-  id?: number;
-  endpoint: string;
-  method: string;
-  params?: any;
-  submitting?: boolean
-}
-
-export interface DeferrableResult<T> {
-  isDeferred: boolean;
-  endpointRequest?: EndpointRequest;
-  result?: T;
-}
-
-interface RequestQueueDB extends DBSchema {
-  requests: {
-    value: EndpointRequest;
-    key: number;
-  };
-}
