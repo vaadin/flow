@@ -20,7 +20,7 @@
  */
 const glob = require('glob');
 const path = require('path');
-const camelCase = require('camelCase');
+const camelCase = require('camelcase');
 
 // The contents of a global CSS file with this name in a theme is always added to
 // the document. E.g. @font-face must be in this
