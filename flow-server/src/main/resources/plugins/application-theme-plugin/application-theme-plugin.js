@@ -53,7 +53,6 @@ function handleThemes(themesFolder, projectStaticAssetsOutputFolder) {
     let dirent;
     while ((dirent = dir.readSync())) {
       if (!dirent.isDirectory()) {
-        dirent.closeSync();
         continue;
       }
       const themeName = dirent.name;

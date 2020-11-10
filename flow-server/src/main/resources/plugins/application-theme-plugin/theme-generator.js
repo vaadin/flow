@@ -20,14 +20,12 @@
  */
 const glob = require('glob');
 const path = require('path');
-const camelCase = require('camelcase');
 
 // The contents of a global CSS file with this name in a theme is always added to
 // the document. E.g. @font-face must be in this
 const themeFileAlwaysAddToDocument = 'document.css';
 
 const headerImport = `
-import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin/register-styles'; 
 import 'construct-style-sheets-polyfill';
 `;
 
@@ -81,5 +79,11 @@ function generateThemeFile(themeFolder, themeName) {
 
   return themeFile;
 };
+
+function camelCase(str) {
+  return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function(word, index) {
+    return index === 0 ? word.toLowerCase() : word.toUpperCase();
+  }).replace(/\s+/g, '');
+}
 
 module.exports = generateThemeFile;

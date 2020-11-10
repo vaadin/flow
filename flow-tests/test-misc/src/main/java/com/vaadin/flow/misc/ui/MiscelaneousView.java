@@ -43,7 +43,7 @@ public class MiscelaneousView extends Div {
 
         @Override
         public String getThemeUrl() {
-            return "theme/my-theme";
+            return "legacyTheme/my-theme";
         }
     }
 

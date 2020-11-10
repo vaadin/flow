@@ -22,7 +22,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.Theme;
 
 @Route(value = "com.vaadin.flow.uitest.ui.theme.NpmThemedComponentView")
-@Theme(themeClass = MyTheme.class)
+@Theme(value ="app-theme", themeClass = MyTheme.class)
 @Tag("npm-themed-component")
 @JsModule("./src/npm-themed-component.js")
 /*

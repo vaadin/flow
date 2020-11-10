@@ -19,11 +19,19 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
 public class NpmThemedComponentIT extends ChromeBrowserTest {
+
+    @Test
+    public void applicationTheme_GlobalCss_isUsed() {
+        open();
+        Assert.assertEquals("rgba(255, 165, 0, 1)",
+            findElement(By.tagName("body")).getCssValue("background-color"));
+    }
 
     @Test
     public void importedClientSideComponentIsThemed() {
