@@ -48,28 +48,34 @@ class ApplicationThemePlugin {
 module.exports = ApplicationThemePlugin;
 
 function handleThemes(themesFolder, projectStaticAssetsOutputFolder) {
-  const dir = fs.opendirSync(themesFolder);
-  try {
-    let dirent;
-    while ((dirent = dir.readSync())) {
-      if (!dirent.isDirectory()) {
-        continue;
-      }
-      const themeName = dirent.name;
-      const themeFolder = path.resolve(themesFolder, themeName);
-      logger.debug("Found theme ", themeName, " in folder ", themeFolder);
+  const dir = getFiles(themesFolder);
 
-      copyThemeResources(themeName, themeFolder, projectStaticAssetsOutputFolder);
+  for (let i = 0; i < dir.length; i++) {
+    const folder = dir[i];
 
-      const themeFile = generateThemeFile(
-        themeFolder,
-        themeName
-      );
+    const themeName = folder.name;
+    const themeFolder = path.resolve(themesFolder, themeName);
+    logger.debug("Found theme ", themeName, " in folder ", themeFolder);
 
-      fs.writeFileSync(path.resolve(themeFolder, themeName + '.js'), themeFile);
-      dirent.closeSync();
-    }
-  } finally {
-    dir.closeSync()
+    copyThemeResources(themeName, themeFolder, projectStaticAssetsOutputFolder);
+
+    const themeFile = generateThemeFile(
+      themeFolder,
+      themeName
+    );
+
+    fs.writeFileSync(path.resolve(themeFolder, themeName + '.js'), themeFile);
   }
 };
+
+const {resolve} = require('path');
+const {readdir} = require('fs').promises;
+
+async function getFiles(dir) {
+  const dirents = await readdir(dir, {withFileTypes: true});
+  const files = await Promise.all(dirents.map((dirent) => {
+    const res = resolve(dir, dirent.name);
+    return dirent.isDirectory() ? getFiles(res) : res;
+  }));
+  return Array.prototype.concat(...files);
+}

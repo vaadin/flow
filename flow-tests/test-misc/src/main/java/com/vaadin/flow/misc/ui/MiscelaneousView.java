@@ -28,7 +28,7 @@ import com.vaadin.flow.theme.Theme;
 // Import a test component that sets CSS properties.
 @JsModule("./src/my-component-themed.js")
 
-// `src/` in component above should be replaced by `theme/my-theme`
+// `src/` in component above should be replaced by `legacyTheme/my-theme`
 @Theme(themeClass = MyTheme.class)
 @PWA(name = "Project Base for Vaadin", shortName = "Project Base")
 public class MiscelaneousView extends Div {
