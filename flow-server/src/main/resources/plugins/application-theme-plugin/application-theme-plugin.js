@@ -51,21 +51,28 @@ module.exports = ApplicationThemePlugin;
 
 function handleThemes(themesFolder, projectStaticAssetsOutputFolder) {
   const dir = fs.opendirSync(themesFolder);
-  while ((dirent = dir.readSync())) {
-    if (!dirent.isDirectory()) {
-      continue;
+  try {
+    let dirent;
+    while ((dirent = dir.readSync())) {
+      if (!dirent.isDirectory()) {
+        dirent.closeSync();
+        continue;
+      }
+      const themeName = dirent.name;
+      const themeFolder = path.resolve(themesFolder, themeName);
+      logger.debug("Found theme ", themeName, " in folder ", themeFolder);
+
+      copyThemeResources(themeName, themeFolder, projectStaticAssetsOutputFolder);
+
+      const themeFile = generateThemeFile(
+        themeFolder,
+        themeName
+      );
+
+      fs.writeFileSync(path.resolve(themeFolder, themeName + '.js'), themeFile);
+      dirent.closeSync();
     }
-    const themeName = dirent.name;
-    const themeFolder = path.resolve(themesFolder, themeName);
-    logger.debug("Found theme ", themeName, " in folder ", themeFolder);
-
-    copyThemeResources(themeName, themeFolder, projectStaticAssetsOutputFolder);
-
-    const themeFile = generateThemeFile(
-      themeFolder,
-      themeName
-    );
-
-    fs.writeFileSync(path.resolve(themeFolder, themeName + '.js'), themeFile);
+  } finally {
+    dir.closeSync()
   }
 };
