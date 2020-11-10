@@ -15,10 +15,8 @@
  */
 package com.vaadin.flow.server.osgi;
 
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.util.tracker.BundleTracker;
 
 /**
  * Bundle activator which starts bundle tracker.
@@ -28,17 +26,13 @@ import org.osgi.util.tracker.BundleTracker;
  */
 public class ServletContainerInitializerExtender implements BundleActivator {
 
-    private BundleTracker<Bundle> tracker;
+
 
     @Override
     public void start(BundleContext context) throws Exception {
-        tracker = new VaadinBundleTracker(context);
-        tracker.open();
     }
 
     @Override
     public void stop(BundleContext context) throws Exception {
-        tracker.close();
-        tracker = null;
     }
 }
