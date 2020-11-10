@@ -39,6 +39,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
@@ -234,6 +235,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         for (Class<?> initListener : getFinder().getSubTypesOf(getFinder()
                 .loadClass(VaadinServiceInitListener.class.getName()))) {
             collectEndpoints(initListener);
+        }
+
+        for (Class<?> appShell : getFinder().getSubTypesOf(
+                getFinder().loadClass(AppShellConfigurator.class.getName()))) {
+            collectEndpoints(appShell);
         }
 
         for (Class<?> errorParameters : getFinder().getSubTypesOf(

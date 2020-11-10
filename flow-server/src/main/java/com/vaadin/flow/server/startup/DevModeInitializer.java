@@ -63,6 +63,7 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
@@ -116,7 +117,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
         NpmPackage.Container.class, JsModule.class, JsModule.Container.class,
         CssImport.class, CssImport.Container.class, JavaScript.class,
         JavaScript.Container.class, Theme.class, NoTheme.class,
-        HasErrorParameter.class })
+        AppShellConfigurator.class,HasErrorParameter.class })
 @WebListener
 public class DevModeInitializer
         implements ClassLoaderAwareServletContainerInitializer, Serializable,
