@@ -375,6 +375,34 @@ public class ResponseWriterTest {
     }
 
     @Test
+    public void writeByteRangeStartOmitted() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "bytes=-10"));
+        assertResponse(
+                Arrays.copyOfRange(fileJsContents, 0, 11));
+        assertResponseHeaders(
+                new Pair<>("Accept-Ranges", "bytes"),
+                new Pair<>("Content-Range",
+                        "bytes 0-10/" + fileJsContents.length));
+        Assert.assertEquals(11L, responseContentLength.get());
+        assertStatus(206);
+    }
+
+    @Test
+    public void writeByteRangeEndOmitted() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "bytes=10-"));
+        assertResponse(
+                Arrays.copyOfRange(fileJsContents, 10, fileJsContents.length));
+        assertResponseHeaders(
+                new Pair<>("Accept-Ranges", "bytes"),
+                new Pair<>("Content-Range",
+                        "bytes 10-15/" + fileJsContents.length));
+        Assert.assertEquals(6L, responseContentLength.get());
+        assertStatus(206);
+    }
+
+    @Test
     public void writeByteRangePastFileSize() throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "bytes=10-100000"));
