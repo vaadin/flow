@@ -48,6 +48,7 @@ import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.http.whiteboard.HttpWhiteboardConstants;
 import org.osgi.util.tracker.BundleTracker;
 import org.slf4j.LoggerFactory;
 
@@ -161,7 +162,7 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
 
     private void registerPushResources(Bundle pushBundle) {
         Hashtable<String, Object> properties = new Hashtable<>();
-        properties.put("osgi.http.whiteboard.servlet.pattern",
+        properties.put(HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_PATTERN,
                 "/VAADIN/static/push/*");
         servletPushRegistration.compareAndSet(null,
                 pushBundle.getBundleContext().registerService(Servlet.class,
