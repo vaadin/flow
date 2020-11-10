@@ -48,6 +48,15 @@
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
+                <configuration>
+                    <systemProperties>
+                        <systemProperty>
+                            <name>vaadin.allow.appshell.annotations
+                            </name>
+                            <value>false</value>
+                        </systemProperty>
+                    </systemProperties>
+                </configuration>
             </plugin>
         </plugins>
     </build>

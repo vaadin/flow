@@ -254,7 +254,7 @@ public class FrontendDependenciesTest {
         }
     }
 
-    @Theme(FakeLumo.class)
+    @Theme(themeClass = FakeLumo.class)
     public static class MyAppShell implements AppShellConfigurator {
     }
 }

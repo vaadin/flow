@@ -80,7 +80,7 @@ public class VaadinAppShellInitializerTest {
     @BodySize(height = "my-height", width = "my-width")
     @PageTitle("my-title")
     @Push(value = PushMode.MANUAL, transport = Transport.WEBSOCKET)
-    @Theme(AbstractTheme.class)
+    @Theme(themeClass = AbstractTheme.class)
     public static class MyAppShellWithMultipleAnnotations
             implements AppShellConfigurator {
     }
@@ -94,7 +94,7 @@ public class VaadinAppShellInitializerTest {
     @BodySize(height = "my-height", width = "my-width")
     @PageTitle("my-title")
     @Push(value = PushMode.MANUAL, transport = Transport.WEBSOCKET)
-    @Theme(AbstractTheme.class)
+    @Theme(themeClass = AbstractTheme.class)
     public static class OffendingClass {
     }
 

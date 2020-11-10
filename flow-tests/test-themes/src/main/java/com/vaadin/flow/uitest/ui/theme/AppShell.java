@@ -13,22 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.vaadin.flow.uitest.ui.theme;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.Theme;
 
-@Route(value = "com.vaadin.flow.uitest.ui.theme.NpmThemedComponentView")
-@Tag("npm-themed-component")
-@JsModule("./src/npm-themed-component.js")
-/*
- * Note that this is using component instead of polymer template, because
- * otherwise the themed module would have to import the original /src module, and
- * that would make testing the actual feature here (theme rewrite) more complex.
- */
-public class NpmThemedComponentView extends Component {
-
+// `src/` in component above should be replaced by `legacyTheme/my-theme`
+@Theme(value ="app-theme", themeClass = MyTheme.class)
+@PWA(name = "Project Base for Vaadin", shortName = "Project Base")
+public class AppShell implements AppShellConfigurator {
 }
