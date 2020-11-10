@@ -17,9 +17,11 @@ package com.vaadin.flow.connect;
 
 import java.util.regex.Pattern;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -59,5 +61,30 @@ public class AppViewIT extends ChromeBrowserTest {
                 ExpectedConditions.textMatches(By.id("log"), Pattern.compile(
                         "\\[LOG] AppEndpoint/helloAnonymous took \\d+ ms")),
                 25);
+    }
+
+    @Test
+    public void should_requestAnonymously_after_logout() throws Exception {
+        String originalCsrfToken = executeScript(
+                "return self.Vaadin.TypeScript.csrfToken").toString();
+
+        openTestUrl("/logout");
+        openTestUrl("/");
+
+        String csrfToken = executeScript(
+                "return self.Vaadin.TypeScript.csrfToken").toString();
+        Assert.assertNotEquals("CSRF token should change for the new session",
+                originalCsrfToken, csrfToken);
+
+        mainView = $("main-view").waitForFirst();
+
+        TestBenchElement button = mainView.$(TestBenchElement.class)
+                .id("helloAnonymous");
+        button.click();
+
+        // Wait for the server connect response
+        waitUntil(ExpectedConditions.textToBePresentInElement(
+                mainView.$(TestBenchElement.class).id("content"),
+                "Hello, stranger!"), 25);
     }
 }

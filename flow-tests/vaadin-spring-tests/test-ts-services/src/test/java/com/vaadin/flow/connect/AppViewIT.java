@@ -41,14 +41,12 @@ public class AppViewIT extends ChromeBrowserTest {
     @Before
     public void setup() throws Exception {
         super.setup();
-        openTestUrl("/");
-        testComponent = $("test-component").first();
-        content = testComponent.$(TestBenchElement.class).id("content");
+        load();
     }
 
     @After
     public void tearDown() {
-        openTestUrl("/logout");
+        logout();
     }
 
     /**
@@ -193,6 +191,32 @@ public class AppViewIT extends ChromeBrowserTest {
                 driver.findElement(By.tagName("title")).getAttribute("textContent"));
     }
 
+    @Test
+    public void should_requestAnonymously_after_logout() throws Exception {
+        String originalCsrfToken = executeScript(
+                "return self.Vaadin.TypeScript.csrfToken").toString();
+        logout();
+        load();
+
+        String csrfToken = executeScript(
+                "return self.Vaadin.TypeScript.csrfToken").toString();
+        Assert.assertNotEquals("CSRF token should change for the new session",
+                originalCsrfToken, csrfToken);
+
+        WebElement button = testComponent.$(TestBenchElement.class).id(
+                "helloAnonymous");
+        button.click();
+
+        // Wait for the server connect response
+        verifyContent("Hello, stranger!");
+    }
+
+    private void load() {
+        openTestUrl("/");
+        testComponent = $("test-component").waitForFirst();
+        content = testComponent.$(TestBenchElement.class).id("content");
+    }
+
     private void login(String user) {
         // Use form in the test component
         testComponent.$(TestBenchElement.class).id("username").sendKeys(user);
@@ -200,6 +224,10 @@ public class AppViewIT extends ChromeBrowserTest {
         testComponent.$(TestBenchElement.class).id("login").click();
         testComponent = $("test-component").first();
         content = testComponent.$(TestBenchElement.class).id("content");
+    }
+
+    private void logout() {
+        openTestUrl("/logout");
     }
 
     private void verifyCallingAdminService(String expectedMessage) {
