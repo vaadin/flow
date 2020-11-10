@@ -580,10 +580,6 @@ public class NodeTasks implements FallibleCommand {
         if (enableWebpackConfigUpdate) {
             PwaConfiguration pwaConfiguration = frontendDependencies
                     .getPwaConfiguration();
-            if (pwaConfiguration.isEnabled()) {
-                File outputDirectory = new File(builder.npmFolder, FrontendUtils.TARGET);
-                commands.add(new TaskGenerateServiceWorker(builder.frontendDirectory, outputDirectory));
-            }
             commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
                     builder.npmFolder, builder.webpackOutputDirectory,
                     builder.resourceOutputDirectory, builder.webpackTemplate,
