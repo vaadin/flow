@@ -40,6 +40,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURC
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
+import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
@@ -261,6 +262,51 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         Assert.assertTrue("pwaEnabled expected true",
                 webpackGeneratedContents
                         .contains("const pwaEnabled = true;"));
+    }
+
+    @Test
+    public void should_setServiceWorkerEntryPoint_fromTargetFolder_when_NoCustomServiceWorkerFileFound()
+            throws IOException {
+        webpackUpdater.execute();
+        String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
+                .collect(Collectors.joining("\n"));
+        Assert.assertTrue("service workder entry point should be from target folder",
+                webpackGeneratedContents
+                        .contains("const clientServiceWorkerEntryPoint = path.resolve(__dirname, 'target/sw');"));
+    }
+
+    @Test
+    public void should_setServiceWorkerEntryPoint_fromCurrentFolder_when_CustomServiceWorkerFileFound()
+            throws IOException {
+        frontendFolder.mkdir();
+        File customSWFile = new File(frontendFolder, SERVICE_WORKER_SRC);
+        customSWFile.createNewFile();
+        createWebpackUpdater();
+        webpackUpdater.execute();
+        String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
+                .collect(Collectors.joining("\n"));
+        Assert.assertTrue("service workder entry point should be from current folder",
+                webpackGeneratedContents
+                        .contains("const clientServiceWorkerEntryPoint = './sw';"));
+        customSWFile.delete();
+        frontendFolder.delete();
+    }
+
+    @Test
+    public void should_setServiceWorkerEntryPoint_fromCurrentFolder_when_CustomServiceWorkerJsFileFound()
+            throws IOException {
+        frontendFolder.mkdir();
+        File customSWFile = new File(frontendFolder, SERVICE_WORKER_SRC_JS);
+        customSWFile.createNewFile();
+        createWebpackUpdater();
+        webpackUpdater.execute();
+        String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
+                .collect(Collectors.joining("\n"));
+        Assert.assertTrue("service workder entry point should be from current folder",
+                webpackGeneratedContents
+                        .contains("const clientServiceWorkerEntryPoint = './sw';"));
+        customSWFile.delete();
+        frontendFolder.delete();
     }
 
     protected void createWebpackUpdater() {

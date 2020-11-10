@@ -36,6 +36,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
+import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
@@ -153,16 +154,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
         List<String> lines = modifyWebpackConfig(generatedFile);
 
         FileUtils.writeLines(generatedFile, lines);
-
-        File serviceWorkerFile = new File(webpackConfigPath.toFile(),
-                SERVICE_WORKER_SRC);
-        if (!serviceWorkerFile.exists()) {
-            resource = this.getClass().getClassLoader()
-                    .getResource(serviceWorkerTemplate);
-            FileUtils.copyURLToFile(resource, serviceWorkerFile);
-            log().info("Created service worker file: '{}'", serviceWorkerFile);
-        }
-
     }
 
     private List<String> modifyWebpackConfig(File generatedFile)
@@ -212,7 +203,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
                 new Pair<>("const offlinePathEnabled",
                         Boolean.toString(
                                 pwaConfiguration.isOfflinePathEnabled())),
-                new Pair<>("const offlinePath", getOfflinePath()));
+                new Pair<>("const offlinePath", getOfflinePath()),
+                new Pair<>("const clientServiceWorkerEntryPoint", getClientServiceWorker()));
     }
 
     private String getIndexHtmlPath() {
@@ -236,13 +228,27 @@ public class TaskUpdateWebpack implements FallibleCommand {
             Path path = Paths.get(
                     getEscapedRelativeWebpackPath(webpackConfigPath), TARGET,
                     INDEX_TS);
-            String relativePath = formatPathResolve(
+            return formatPathResolve(
                     getEscapedRelativeWebpackPath(path)
                             .replaceFirst("\\.[tj]s$", ""));
-
-            return relativePath;
         } else {
             return "'./index'";
+        }
+    }
+
+    private String getClientServiceWorker() {
+        boolean exists = new File(frontendDirectory.toFile(), SERVICE_WORKER_SRC)
+                .exists()
+                || new File(frontendDirectory.toFile(), SERVICE_WORKER_SRC_JS).exists();
+        if (!exists) {
+            Path path = Paths.get(
+                    getEscapedRelativeWebpackPath(webpackConfigPath), TARGET,
+                    SERVICE_WORKER_SRC);
+            return formatPathResolve(
+                    getEscapedRelativeWebpackPath(path)
+                            .replaceFirst("\\.[tj]s$", ""));
+        } else {
+            return "'./sw'";
         }
     }
 

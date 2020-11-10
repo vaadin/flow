@@ -4,10 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -19,11 +17,8 @@ import org.junit.rules.TemporaryFolder;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
-import com.vaadin.flow.server.frontend.scanner.samples.pwa.AppShellWithPwa;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
@@ -34,7 +29,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 import static org.junit.Assert.assertTrue;
-
 public class NodeTasksTest {
 
     @Rule
@@ -51,6 +45,29 @@ public class NodeTasksTest {
 
     @Test
     public void should_UseDefaultFolders() throws Exception {
+        Builder builder = new Builder(
+                new DefaultClassFinder(this.getClass().getClassLoader()),
+                new File(userDir)).enablePackagesUpdate(false)
+                        .enableImportsUpdate(true).runNpmInstall(false)
+                        .withEmbeddableWebComponents(false);
+
+        Assert.assertEquals(
+                new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
+                ((File) getFieldValue(builder, "frontendDirectory"))
+                        .getAbsolutePath());
+        Assert.assertEquals(
+                new File(userDir, DEFAULT_GENERATED_DIR).getAbsolutePath(),
+                ((File) getFieldValue(builder, "generatedFolder"))
+                        .getAbsolutePath());
+
+        builder.build().execute();
+        Assert.assertTrue(
+                new File(userDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME)
+                        .exists());
+    }
+
+    @Test
+    public void should_generateServiceWorkerWhenPwa() throws Exception {
         Builder builder = new Builder(
                 new DefaultClassFinder(this.getClass().getClassLoader()),
                 new File(userDir)).enablePackagesUpdate(false)
