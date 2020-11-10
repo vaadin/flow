@@ -33,8 +33,6 @@ class ApplicationThemePlugin {
       if (fs.existsSync(this.options.themeJarFolder)) {
         logger.debug("Found themeFolder to handle ", this.options.themeJarFolder);
         handleThemes(this.options.themeJarFolder, this.options.projectStaticAssetsOutputFolder);
-      } else {
-        logger.warn('Theme JAR folder not found from ', this.options.themeJarFolder);
       }
 
       this.options.themeProjectFolders.forEach((themeProjectFolder) => {
