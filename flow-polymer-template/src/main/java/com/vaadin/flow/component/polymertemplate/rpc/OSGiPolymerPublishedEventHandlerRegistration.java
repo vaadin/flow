@@ -39,7 +39,7 @@ public class OSGiPolymerPublishedEventHandlerRegistration {
 
     @Activate
     void activate(BundleContext context) {
-        context.registerService(DeprecatedPolymerPublishedEventHandler.class,
+    	registration = context.registerService(DeprecatedPolymerPublishedEventHandler.class,
                 new PolymerPublishedEventRpcHandler(), null);
     }
 
