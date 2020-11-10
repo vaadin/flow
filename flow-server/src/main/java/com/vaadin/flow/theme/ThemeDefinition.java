@@ -39,6 +39,8 @@ public class ThemeDefinition implements Serializable {
      *            the theme class, not <code>null</code>
      * @param variant
      *            the variant of the theme, not <code>null</code>
+     * @param name
+     *            name of the theme, not <code>null</code>
      */
     public ThemeDefinition(Class<? extends AbstractTheme> theme,
             String variant, String name) {

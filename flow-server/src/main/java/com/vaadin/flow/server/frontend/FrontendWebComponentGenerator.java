@@ -25,7 +25,6 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
-import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
@@ -69,7 +68,9 @@ public class FrontendWebComponentGenerator implements Serializable {
      * outputDirectory}.
      *
      * @param outputDirectory
-     *            target directory for the web component module files
+     *     target directory for the web component module files
+     * @param theme
+     *     theme definition of theme to use with web component
      * @return generated files
      * @throws java.lang.IllegalStateException
      *             if {@code finder} cannot locate required classes

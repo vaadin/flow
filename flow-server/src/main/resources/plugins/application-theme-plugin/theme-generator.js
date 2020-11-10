@@ -25,9 +25,7 @@ const path = require('path');
 // the document. E.g. @font-face must be in this
 const themeFileAlwaysAddToDocument = 'document.css';
 
-const headerImport = `
-import 'construct-style-sheets-polyfill';
-`;
+const headerImport = ``;
 
 const injectGlobalCssMethod = `
 // target: Document | ShadowRoot

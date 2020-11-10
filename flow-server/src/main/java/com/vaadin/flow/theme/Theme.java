@@ -104,9 +104,9 @@ public @interface Theme {
     String variant() default "";
 
     /**
-     * The name of the application theme to use
+     * The name of the theme to use.
      *
-     * If this is not specified, no application theme is used.
+     * If this is not specified will default to Lumo.
      *
      */
     String value() default "";

@@ -19,13 +19,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.io.FileUtils;
+
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import org.apache.commons.io.FileUtils;
-
 /**
- * Task for generating the theme.js file for importing application theme.
+ * Task for generating the theme-generated.js file for importing application
+ * theme.
  *
  * @since
  */
@@ -36,8 +37,10 @@ public class TaskUpdateThemeImport implements FallibleCommand {
 
     TaskUpdateThemeImport(File npmFolder, ThemeDefinition theme) {
         File nodeModules = new File(npmFolder, FrontendUtils.NODE_MODULES);
-        File flowFrontend = new File(nodeModules, FrontendUtils.FLOW_NPM_PACKAGE_NAME);
-        this.themeImportFile = new File(new File(flowFrontend, "theme"), "theme.js");
+        File flowFrontend = new File(nodeModules,
+            FrontendUtils.FLOW_NPM_PACKAGE_NAME);
+        this.themeImportFile = new File(new File(flowFrontend, "theme"),
+            "theme-generated.js");
         this.theme = theme;
     }
 
@@ -49,12 +52,14 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         themeImportFile.getParentFile().mkdirs();
 
         try {
-            FileUtils.write(
-                themeImportFile, "import {applyTheme as _applyTheme} from 'theme/" + theme.getName() + "/"
-                    + theme.getName() + ".js';\nexport const applyTheme = _applyTheme;\n",
+            FileUtils.write(themeImportFile,
+                "import {applyTheme as _applyTheme} from 'theme/" + theme
+                    .getName() + "/" + theme.getName()
+                    + ".js';\nexport const applyTheme = _applyTheme;\n",
                 StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new ExecutionFailedException("Unable to write theme import file", e);
+            throw new ExecutionFailedException(
+                "Unable to write theme import file", e);
         }
     }
 }
