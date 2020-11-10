@@ -48,12 +48,13 @@ class ApplicationThemePlugin {
 module.exports = ApplicationThemePlugin;
 
 function handleThemes(themesFolder, projectStaticAssetsOutputFolder) {
-  const dir = getFiles(themesFolder);
+  const dir = getFoldersSync(themesFolder);
+  logger.debug("Found", dir.length, " directories");
 
   for (let i = 0; i < dir.length; i++) {
     const folder = dir[i];
 
-    const themeName = folder.name;
+    const themeName = folder;
     const themeFolder = path.resolve(themesFolder, themeName);
     logger.debug("Found theme ", themeName, " in folder ", themeFolder);
 
@@ -68,14 +69,16 @@ function handleThemes(themesFolder, projectStaticAssetsOutputFolder) {
   }
 };
 
-const {resolve} = require('path');
-const {readdir} = require('fs').promises;
-
-async function getFiles(dir) {
-  const dirents = await readdir(dir, {withFileTypes: true});
-  const files = await Promise.all(dirents.map((dirent) => {
-    const res = resolve(dir, dirent.name);
-    return dirent.isDirectory() ? getFiles(res) : res;
-  }));
-  return Array.prototype.concat(...files);
+function getFoldersSync(dir) {
+  const results = [];
+  fs.readdirSync(dir).forEach(file => {
+    if (fs.statSync(path.resolve(dir, file)).isDirectory()) {
+      results.push(file);
+      let subFolders = getFoldersSync(path.resolve(dir, file));
+      if(subFolders.length > 0) {
+        results.push(subFolders);
+      }
+    }
+  });
+  return results;
 }
