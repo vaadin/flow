@@ -22,6 +22,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEventHandler;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.templatemodel.ModelType;
 
@@ -31,8 +32,11 @@ import elemental.json.JsonValue;
 /**
  * Polymer utilitiy class for handling polymer rpc events for @EventHandler.
  *
+ * Registers {@link PolymerPublishedEventRpcHandler} as a service to make it
+ * available in {@link Lookup} in an OSGi container. *
  * @since
  */
+@org.osgi.service.component.annotations.Component(immediate = true)
 public class PolymerPublishedEventRpcHandler
         implements DeprecatedPolymerPublishedEventHandler {
 
