@@ -49,7 +49,7 @@ module.exports = ApplicationThemePlugin;
 
 function handleThemes(themesFolder, projectStaticAssetsOutputFolder) {
   const dir = getFoldersSync(themesFolder);
-  logger.debug("Found", dir.length, " directories");
+  logger.debug("Found", dir.length, "theme directories");
 
   for (let i = 0; i < dir.length; i++) {
     const folder = dir[i];
@@ -74,10 +74,6 @@ function getFoldersSync(dir) {
   fs.readdirSync(dir).forEach(file => {
     if (fs.statSync(path.resolve(dir, file)).isDirectory()) {
       results.push(file);
-      let subFolders = getFoldersSync(path.resolve(dir, file));
-      if(subFolders.length > 0) {
-        results.push(subFolders);
-      }
     }
   });
   return results;
