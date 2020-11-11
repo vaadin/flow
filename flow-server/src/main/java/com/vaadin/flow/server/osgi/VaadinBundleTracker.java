@@ -258,7 +258,14 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
 
         // get all .class resources of this bundle
         Collection<String> classes = wiring.listResources("/", "*.class",
-                BundleWiring.LISTRESOURCES_RECURSE);
+                /*
+                 * Two options: recursive to visit all resources including
+                 * sub-directories, and limit resources only to the current
+                 * wiring (bundle) avoiding possibly returned classes from
+                 * dependencies
+                 */
+                BundleWiring.LISTRESOURCES_RECURSE
+                        | BundleWiring.LISTRESOURCES_LOCAL);
 
         Collection<Class<?>> bundleClasses = new ArrayList<>();
 
@@ -270,7 +277,7 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
                 continue;
             }
             if ("module-info".equals(className)) {
-                // New modular Java info class which we are not intrested in
+                // New modular Java info class which we are not interested in
                 continue;
             }
             try {
