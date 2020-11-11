@@ -34,8 +34,12 @@ import elemental.json.JsonValue;
  *
  * Registers {@link PolymerPublishedEventRpcHandler} as a service to make it
  * available in {@link Lookup} in an OSGi container. *
+ * 
  * @since
  */
+// This is OSGi specific annotation for the class which may be used without
+// OSGi. But RetentionPolicy.CLASS used for the annotation makes it safe to use
+// in runtime because JVM doesn't see it.
 @org.osgi.service.component.annotations.Component(immediate = true)
 public class PolymerPublishedEventRpcHandler
         implements DeprecatedPolymerPublishedEventHandler {
