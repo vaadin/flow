@@ -10,4 +10,3 @@ Import-Package: org.atmosphere*;resolution:=optional;version='${atmosphere.runti
     *
 Export-Package: com.vaadin.flow.client,\
     !com.vaadin.flow.push*, com.vaadin.flow*;-noimport:=true
-Bundle-Activator: com.vaadin.flow.server.osgi.ServletContainerInitializerExtender

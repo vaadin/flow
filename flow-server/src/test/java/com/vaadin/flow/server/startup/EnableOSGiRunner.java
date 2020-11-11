@@ -69,7 +69,7 @@ public class EnableOSGiRunner extends BlockJUnit4ClassRunner {
                 Builder<Exception> builder = new ByteBuddy()
                         .subclass(Exception.class);
                 return builder.name("org.osgi.framework.InvalidSyntaxException")
-                        .make().load(this, ClassLoadingStrategy.Default.WRAPPER)
+                        .make().load(this, ClassLoadingStrategy.Default.CHILD_FIRST.allowExistingTypes())
                         .getLoaded();
             } else if (name.equals("org.osgi.framework.FrameworkUtil")) {
                 Builder<Object> builder = new ByteBuddy()
@@ -81,7 +81,7 @@ public class EnableOSGiRunner extends BlockJUnit4ClassRunner {
                         .withParameter(Class.class)
                         .intercept(MethodDelegation.to(Interceptor.class))
                         .name(name).make()
-                        .load(this, ClassLoadingStrategy.Default.WRAPPER)
+                        .load(this, ClassLoadingStrategy.Default.CHILD_FIRST.allowExistingTypes())
                         .getLoaded();
                 return fwUtil;
             } else if (name.startsWith(vaadinPackagePrefix)) {
@@ -106,7 +106,7 @@ public class EnableOSGiRunner extends BlockJUnit4ClassRunner {
             Builder<?> builder = new ByteBuddy().makeInterface();
 
             Class<?> bundleClass = builder.name("org.osgi.framework.Bundle")
-                    .make().load(this, ClassLoadingStrategy.Default.WRAPPER)
+                    .make().load(this, ClassLoadingStrategy.Default.CHILD_FIRST.allowExistingTypes())
                     .getLoaded();
             return bundleClass;
         }
