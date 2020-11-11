@@ -37,6 +37,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.InternalServerError;
 import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.RouteAliasData;
+import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteNotFoundError;
@@ -118,27 +120,57 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         private void applyChange(RoutesChangedEvent event) {
             final RouteConfiguration routeConfiguration = RouteConfiguration
                     .forRegistry(this);
-            event.getRemovedRoutes()
-                    .forEach(routeBaseData -> routeConfiguration.removeRoute(
-                            routeBaseData.getUrl(),
-                            routeBaseData.getNavigationTarget()));
-            event.getAddedRoutes()
-                    .forEach(routeBaseData -> routeConfiguration.setRoute(
-                            routeBaseData.getUrl(),
-                            routeBaseData.getNavigationTarget(),
-                            routeBaseData.getParentLayouts()));
+            Exception caught = null;
+            for (RouteBaseData<?> data : event.getRemovedRoutes()) {
+                caught = modifyRoute(() -> routeConfiguration
+                        .removeRoute(data.getUrl(), data.getNavigationTarget()),
+                        caught != null);
+            }
+            for (RouteBaseData<?> data : event.getAddedRoutes()) {
+                caught = modifyRoute(() -> routeConfiguration.setRoute(
+                        data.getUrl(), data.getNavigationTarget(),
+                        data.getParentLayouts()), caught != null);
+            }
+            handleCaughtException(caught);
         }
 
         private void setRoutes(List<RouteData> routes) {
-            routes.forEach(routeData -> {
-                setRoute(routeData.getUrl(), routeData.getNavigationTarget(),
-                        routeData.getParentLayouts());
-                routeData.getRouteAliases()
-                        .forEach(routeAliasData -> setRoute(
-                                routeAliasData.getUrl(),
-                                routeAliasData.getNavigationTarget(),
-                                routeAliasData.getParentLayouts()));
-            });
+            Exception caught = null;
+            for (RouteData data : routes) {
+                caught = modifyRoute(() -> setRoute(data.getUrl(),
+                        data.getNavigationTarget(), data.getParentLayouts()),
+                        caught != null);
+                for (RouteAliasData alias : data.getRouteAliases()) {
+                    caught = modifyRoute(() -> setRoute(alias.getUrl(),
+                            alias.getNavigationTarget(),
+                            alias.getParentLayouts()), caught != null);
+                }
+            }
+            handleCaughtException(caught);
+        }
+
+        private void handleCaughtException(Exception exception) {
+            if (exception instanceof RuntimeException) {
+                throw (RuntimeException) exception;
+            } else if (exception != null) {
+                // should not be possible
+                throw new IllegalStateException(exception);
+            }
+        }
+
+        private Exception modifyRoute(Runnable runnable, boolean logException) {
+            try {
+                runnable.run();
+                return null;
+            } catch (Exception exception) {
+                if (logException) {
+                    LoggerFactory.getLogger(OSGiRouteRegistry.class)
+                            .error("Route remove exception thrown", exception);
+                    return null;
+                } else {
+                    return exception;
+                }
+            }
         }
     }
 
