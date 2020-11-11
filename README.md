@@ -1,4 +1,4 @@
-<a target="_blank" href="https://discord.com/channels/732335336448852018/774366825756229632"><img src="https://discord.com/assets/e4923594e694a21542a489471ecffa50.svg" width="100" alt="Join the discussion in Vaadin Flow Discord"></img></a>
+<a target="_blank" href="https://discord.gg/MYFq5RTbBn"><img src="https://discord.com/assets/e4923594e694a21542a489471ecffa50.svg" width="100" alt="Join the discussion in Vaadin Flow Discord"></img></a>
 
 Vaadin Flow
 ======
@@ -8,7 +8,7 @@ Vaadin Flow
 
 To contribute, first refer to [Contribution Guide](/CONTRIBUTING.md) for general instructions and requirements for contributing code to Flow.
 
-Flow EAP discussion in Gitter IM at https://gitter.im/vaadin-flow/Lobby
+Join Vaadin Flow community chat in https://discord.gg/MYFq5RTbBn
 
 Instructions on how to set up a working environment for developing the Flow project follow below.
 
