@@ -1,4 +1,4 @@
-<a href="https://discord.com/channels/732335336448852018/774366825756229632"><img src="https://discord.com/assets/e4923594e694a21542a489471ecffa50.svg" width="100" alt="Join the discussion in Vaadin Flow Discord"></img></a>
+<a target="_blank" href="https://discord.com/channels/732335336448852018/774366825756229632"><img src="https://discord.com/assets/e4923594e694a21542a489471ecffa50.svg" width="100" alt="Join the discussion in Vaadin Flow Discord"></img></a>
 
 Vaadin Flow
 ======
