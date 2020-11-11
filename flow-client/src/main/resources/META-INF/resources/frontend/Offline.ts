@@ -6,12 +6,9 @@ const VAADIN_DEFERRED_CALL_QUEUE_DB_NAME = 'vaadin-deferred-call-queue';
 const VAADIN_DEFERRED_CALL_STORE_NAME = 'deferredCalls';
 
 /**
- * The helper class for the offlie featurs
+ * The helper class for the offline features
  */
 export class OfflineHelper {
-  checkOnline(): boolean {
-    return navigator.onLine;
-  }
 
   async storeDeferredCall(deferredCall: DeferredCall): Promise<DeferrableResult<any>> {
     const db = await this.openOrCreateDB();

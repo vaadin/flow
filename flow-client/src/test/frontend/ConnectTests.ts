@@ -10,6 +10,7 @@ import {
   EndpointResponseError,
   EndpointValidationError,
 } from "../../main/resources/META-INF/resources/frontend/Connect";
+import {ConnectionState, ConnectionStateStore} from "../../main/resources/META-INF/resources/frontend/ConnectionState";
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
@@ -141,11 +142,13 @@ describe('ConnectClient', () => {
       expect(fetchMock.lastOptions()).to.include({method: 'POST'});
     });
 
-    it('should call Flow.loading indicator', async() => {
-      let calls = '';
-      (window as any).Vaadin.Flow = {loading: (action: boolean) => calls += action};
+    it('should call Flow.connectionState.setState', async() => {
+      let calls: ConnectionState[] = [];
+      const connectionStateStore = new ConnectionStateStore();
+      connectionStateStore.addStateChangeListener((_, current: ConnectionState) => calls.push(current));
+      (window as any).Vaadin.Flow = { connectionState: connectionStateStore };
       await client.call('FooEndpoint', 'fooMethod');
-      expect(calls).to.equal('truefalse');
+      expect(calls).to.deep.equal([ConnectionState.LOADING, ConnectionState.CONNECTED]);
     });
 
     it('should hide Flow.loading indicator upon network failure', async() => {

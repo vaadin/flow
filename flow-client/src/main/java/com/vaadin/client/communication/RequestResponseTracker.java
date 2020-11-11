@@ -19,6 +19,8 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
+
+import com.vaadin.client.ConnectionState;
 import com.vaadin.client.Registry;
 import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
 
@@ -123,7 +125,8 @@ public class RequestResponseTracker {
                     || registry.getServerRpcQueue().isFlushPending();
 
             if (terminated || !requestNowOrSoon) {
-                registry.getLoadingIndicator().hide();
+                registry.getConnectionState().setState(
+                        ConnectionState.State.CONNECTED);
             }
         });
 

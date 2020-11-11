@@ -1,4 +1,4 @@
-
+import {ConnectionState, ConnectionStateStore} from './ConnectionState';
 
 export interface FlowConfig {
   imports ?: () => void;
@@ -117,14 +117,14 @@ export class Flow {
       // Store last action pathname so as we can check it in events
       this.pathname = params.pathname;
 
-      if (navigator.onLine) {
+      if ($wnd.Vaadin.Flow.connectionState.isOnline()) {
         // @ts-ignore
         try {
           await this.flowInit();
         } catch(error) {
           if (error instanceof FlowUiInitializationError) {
-            // error initializing Flow: show offline stub
-            this.hideLoading();
+            // error initializing Flow: assume connection lost
+            $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.CONNECTION_LOST);
             await this.showOfflineStub();
           }
         }
@@ -149,16 +149,18 @@ export class Flow {
       cmd?: PreventCommands): Promise<any> {
 
     // server -> server, viewing offline stub, or browser is offline
-    if (this.pathname === ctx.pathname || this.response === undefined || !navigator.onLine) {
+    const connectionState = $wnd.Vaadin.Flow.connectionState;
+    if (this.pathname === ctx.pathname || this.response === undefined
+      || connectionState.isOffline()) {
       return Promise.resolve({});
     }
     // 'server -> client'
     return new Promise(resolve => {
-      this.showLoading();
+      $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.LOADING);
       // The callback to run from server side to cancel navigation
       this.container.serverConnected = (cancel) => {
         resolve(cmd && cancel ? cmd.prevent() : {});
-        this.hideLoading();
+        $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.CONNECTED);
       }
 
       // Call server side to check whether we can leave the view
@@ -171,7 +173,7 @@ export class Flow {
   private async flowNavigate(ctx: NavigationParameters, cmd?: PreventAndRedirectCommands): Promise<HTMLElement> {
     if (this.response) {
       return new Promise(resolve => {
-        this.showLoading()
+        $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.LOADING);
         // The callback to run from server side once the view is ready
         this.container.serverConnected = (cancel, redirectContext?: NavigationParameters) => {
           if (cmd && cancel) {
@@ -182,7 +184,7 @@ export class Flow {
             this.container.style.display = '';
             resolve(this.container);
           }
-          this.hideLoading();
+          $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.CONNECTED);
         };
 
         // Call server side to navigate to the given route
@@ -205,7 +207,7 @@ export class Flow {
     if (!this.response) {
 
       // show flow progress indicator
-      this.showLoading();
+      $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.LOADING);
 
       // Initialize server side UI
       this.response = await this.flowInitUi(serverSideRouting);
@@ -249,7 +251,7 @@ export class Flow {
       }
 
       // hide flow progress indicator
-      this.hideLoading();
+      $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.CONNECTED);
     }
     return this.response;
   }
@@ -327,19 +329,7 @@ export class Flow {
     });
   }
 
-  private showLoading() {
-    // Make Testbench know that server request is in progress
-    this.isActive = true;
-    $wnd.Vaadin.Flow.loading(true);
-  }
-
-  private hideLoading() {
-    // Make Testbench know that server request has finished
-    this.isActive = false;
-    $wnd.Vaadin.Flow.loading(false);
-  }
-
-  // A flow loading indicator
+  // Create shared connection state store and loading indicator
   private addLoadingIndicator() {
     const loading = document.createElement('div');
     loading.classList.add('v-loading-indicator');
@@ -404,19 +394,34 @@ export class Flow {
     // be reused in Connect.ts
     let timeout2nd: any;
     let timeout3rd: any;
-    $wnd.Vaadin.Flow.loading = (action: boolean) => {
+    const connectionState = new ConnectionStateStore(
+      navigator.onLine ? ConnectionState.CONNECTED : ConnectionState.CONNECTION_LOST);
+    connectionState.addStateChangeListener( (_: ConnectionState, current: ConnectionState) => {
       clearTimeout(timeout2nd);
       clearTimeout(timeout3rd);
       loading.classList.remove('second');
       loading.classList.remove('third');
-      if (action) {
+      if (current === ConnectionState.LOADING) {
         loading.removeAttribute('style');
         timeout2nd = setTimeout(() => loading.classList.add('second'), 1500);
         timeout3rd = setTimeout(() => loading.classList.add('third'), 5000);
+
+        // Make Testbench know that server request is in progress
+        this.isActive = true;
       } else {
         loading.setAttribute('style', 'none');
+        // Make Testbench know that server request is no longer active
+        this.isActive = false;
       }
-    };
+    });
+
+    $wnd.addEventListener('online', () => {
+      connectionState.setState(ConnectionState.CONNECTED);
+    });
+    $wnd.addEventListener('offline', () => {
+      connectionState.setState(ConnectionState.CONNECTION_LOST);
+    });
+    $wnd.Vaadin.Flow.connectionState = connectionState;
   }
 
   private async showOfflineStub() {

@@ -106,12 +106,12 @@ public class Registry {
     }
 
     /**
-     * Gets the {@link LoadingIndicator} singleton.
+     * Gets the {@link ConnectionState} singleton.
      *
-     * @return the {@link LoadingIndicator} singleton
+     * @return the {@link ConnectionState} singleton
      */
-    public LoadingIndicator getLoadingIndicator() {
-        return get(LoadingIndicator.class);
+    public ConnectionState getConnectionState() {
+        return get(ConnectionState.class);
     }
 
     /**

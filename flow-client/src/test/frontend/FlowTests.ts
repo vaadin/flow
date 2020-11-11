@@ -3,6 +3,7 @@ const { assert } = intern.getPlugin("chai");
 
 // API to test
 import {Flow, NavigationParameters} from "../../main/resources/META-INF/resources/frontend/Flow";
+import {ConnectionState} from "../../main/resources/META-INF/resources/frontend/ConnectionState";
 // Intern does not serve webpack chunks, adding deps here in order to
 // produce one chunk, because dynamic imports in Flow.ts  will not work.
 import "../../main/resources/META-INF/resources/frontend/FlowBootstrap";
@@ -134,10 +135,10 @@ suite("Flow", () => {
     assert.isNotNull(indicator);
     assert.isNotNull(styles);
 
-    assert.isFunction($wnd.Vaadin.Flow.loading);
+    assert.isFunction($wnd.Vaadin.Flow.connectionState.setState);
     assert.equal('none', indicator.getAttribute('style'));
 
-    $wnd.Vaadin.Flow.loading(true);
+    $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.LOADING);
     assert.isNull(indicator.getAttribute('style'));
     assert.isFalse(indicator.classList.contains('second'));
     assert.isFalse(indicator.classList.contains('third'));
@@ -148,7 +149,7 @@ suite("Flow", () => {
     await new Promise(resolve => setTimeout(resolve, 3500));
     assert.isTrue(indicator.classList.contains('third'));
 
-    $wnd.Vaadin.Flow.loading(false);
+    $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.CONNECTED);
     assert.equal('none', indicator.getAttribute('style'));
     assert.isFalse(indicator.classList.contains('second'));
     assert.isFalse(indicator.classList.contains('third'));
