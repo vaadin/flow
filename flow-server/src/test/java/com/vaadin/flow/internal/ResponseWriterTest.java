@@ -433,6 +433,14 @@ public class ResponseWriterTest {
     }
 
     @Test
+    public void writeByteRangeBothEndsOpen() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "-"));
+        assertResponse(new byte[] {});
+        assertStatus(416);
+    }
+
+    @Test
     public void writeByteRangeMultiPartSequential() throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "bytes=1-4, 5-6, 10-12"));
