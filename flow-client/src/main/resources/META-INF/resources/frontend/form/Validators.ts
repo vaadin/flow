@@ -1,16 +1,15 @@
 /* tslint:disable:max-classes-per-file */
 
-import * as isAfter from 'validator/lib/isAfter';
-import * as isBefore from 'validator/lib/isBefore';
-import * as isBoolean from 'validator/lib/isBoolean';
-import * as isDecimal from 'validator/lib/isDecimal';
-import * as isEmail from 'validator/lib/isEmail';
-// @ts-ignore (vlukashov: have not investigated why, but for the `isFloat` module the d.ts file is not accurate)
-import {default as isFloat} from 'validator/lib/isFloat';
-import * as isLength from 'validator/lib/isLength';
-import * as isNumeric from 'validator/lib/isNumeric';
-import * as matches from 'validator/lib/matches';
-import * as toFloat from 'validator/lib/toFloat';
+import isAfter from 'validator/es/lib/isAfter';
+import isBefore from 'validator/es/lib/isBefore';
+import isBoolean from 'validator/es/lib/isBoolean';
+import isDecimal from 'validator/es/lib/isDecimal';
+import isEmail from 'validator/es/lib/isEmail';
+import isFloat from 'validator/es/lib/isFloat';
+import isLength from 'validator/es/lib/isLength';
+import isNumeric from 'validator/es/lib/isNumeric';
+import matches from 'validator/es/lib/matches';
+import toFloat from 'validator/es/lib/toFloat';
 import { Validator } from './Validation';
 
 interface ValidatorAttributes {
@@ -57,7 +56,7 @@ export class Required<T> extends AbstractValidator<T> {
   }
 }
 
-function _asValidatorAttributes(attrs: ValueNumberAttributes | number | string | PatternAttributes | string | RegExp) {
+function _asValidatorAttributes(attrs: ValueNumberAttributes | number | string | PatternAttributes | RegExp) {
   return typeof attrs === 'object' ? attrs : {};
 }
 
@@ -219,7 +218,7 @@ export class Size extends AbstractValidator<string> {
     if (this.min && this.min > 0 && !new Required().validate(value)) {
       return false;
     }
-    return isLength(value, this.min, this.max);
+    return isLength(value, { min: this.min, max: this.max });
   }
 }
 

@@ -146,8 +146,8 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
    * It's a no-op if the onSubmit callback is undefined.
    */
   async submit(): Promise<T|void>{
-    if(this[_onSubmit]!==undefined){
-      this.submitTo(this[_onSubmit]);
+    if (this[_onSubmit] !== undefined) {
+      return this.submitTo(this[_onSubmit]);
     }
   }
 
