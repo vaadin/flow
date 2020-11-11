@@ -35,8 +35,8 @@ const buildFolder = `${mavenOutputFolderForFlowBundledFiles}/${build}`;
 const confFolder = `${mavenOutputFolderForFlowBundledFiles}/${config}`;
 // file which is used by flow to read templates for server `@Id` binding
 const statsFile = `${confFolder}/stats.json`;
+
 // Folders in the project which can contain static assets.
-// FIXME This is missing some entries
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
   path.resolve(__dirname, 'src', 'main', 'resources', 'static'),
@@ -172,31 +172,16 @@ module.exports = {
             loader: 'css-loader',
             options: {
               url: (url, resourcePath) => {
-                // resourcePath - path to css file
-                // If the import happens from within a node_modules file, we must resolve and inline. Otherwise resources will not be found at runtime as node_modules is not deployed
-                const resolveUrl = resourcePath.includes('/node_modules/');
-                if (resolveUrl) {
-                  console.debug('Inlining ', url);
+                // do not handle theme folder url files
+                if(url.startsWith("theme")) {
+                  return false;
                 }
-                return resolveUrl;
-              },
-              import: (url, media, resourcePath) => {
-                // resourcePath - path to css file
-                // If the import happens from within a node_modules file, we must resolve and inline. Otherwise resources will not be found at runtime as node_modules is not deployed
-                const resolveUrl = resourcePath.includes('/node_modules/');
-                if (resolveUrl) {
-                  console.debug('Inlining ', url);
-                }
-                return resolveUrl;
+                return true;
               },
             },
           },
         ],
-      // },
-      // {
-      //   test: /\.css$/i,
-      //   use: ['lit-css-loader', 'extract-loader']
-      }
+      },
     ]
   },
   performance: {

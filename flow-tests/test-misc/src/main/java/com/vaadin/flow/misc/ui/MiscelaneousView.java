@@ -27,7 +27,7 @@ import com.vaadin.flow.theme.Theme;
 
 // Import a test component that sets CSS properties.
 @JsModule("./src/my-component-themed.js")
-
+// `src/` in component should be replaced by `legacyTheme/my-theme`
 public class MiscelaneousView extends Div {
 
     public static final String TEST_VIEW_ID = "MiscellaneousView";

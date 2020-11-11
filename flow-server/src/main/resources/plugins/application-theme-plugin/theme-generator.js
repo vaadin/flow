@@ -36,6 +36,13 @@ export const injectGlobalCss = (css, target) => {
 };
 `;
 
+/**
+ * Generate the [themeName].js file for themeFolder which collects all required information from the folder.
+ *
+ * @param {string} themeFolder folder of the theme
+ * @param {string} themeName name of the handled theme
+ * @returns {string} theme file content
+ */
 function generateThemeFile(themeFolder, themeName) {
   const globalFiles = glob.sync('*.css', {
     cwd: themeFolder,
@@ -78,6 +85,12 @@ function generateThemeFile(themeFolder, themeName) {
   return themeFile;
 };
 
+/**
+ * Make given string into camelCase.
+ *
+ * @param {string} str string to make into cameCase
+ * @returns {string} camelCased version
+ */
 function camelCase(str) {
   return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function(word, index) {
     return index === 0 ? word.toLowerCase() : word.toUpperCase();

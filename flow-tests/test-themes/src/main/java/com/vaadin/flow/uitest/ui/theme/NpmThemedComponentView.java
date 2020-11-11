@@ -23,6 +23,7 @@ import com.vaadin.flow.theme.Theme;
 
 @Route(value = "com.vaadin.flow.uitest.ui.theme.NpmThemedComponentView")
 @Tag("npm-themed-component")
+// `src/` in component should be replaced by `legacyTheme/my-theme`
 @JsModule("./src/npm-themed-component.js")
 /*
  * Note that this is using component instead of polymer template, because

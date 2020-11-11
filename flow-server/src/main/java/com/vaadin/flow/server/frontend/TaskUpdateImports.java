@@ -132,7 +132,7 @@ public class TaskUpdateImports extends NodeUpdater {
             AbstractTheme theme = getTheme();
             ThemeDefinition themeDef = getThemeDefinition();
 
-            if (themeDef != null && !themeDef.getName().equals("")) {
+            if (themeDef != null && !"".equals(themeDef.getName())) {
                 // If we define a theme name we need to import theme/theme-generated.js
                 lines.add("import {applyTheme} from 'theme/theme-generated.js';");
                 lines.add("applyTheme(document);");

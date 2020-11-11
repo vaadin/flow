@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -49,7 +50,12 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         if (theme == null || theme.getName().isEmpty()) {
             return;
         }
-        themeImportFile.getParentFile().mkdirs();
+        if (!themeImportFile.getParentFile().mkdirs()) {
+            LoggerFactory.getLogger(getClass()).debug(
+                "Didn't create folders as they probably already exist. "
+                    + "If there is a problem check access rights for folder {}",
+                themeImportFile.getParentFile().getAbsolutePath());
+        }
 
         try {
             FileUtils.write(themeImportFile,

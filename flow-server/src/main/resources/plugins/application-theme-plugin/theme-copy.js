@@ -26,8 +26,8 @@ const path = require('path');
  * create theme/themeName folders and copy theme files there.
  *
  * @param {String} themeName name of theme we are handling
- * @param {Path} themeFolder Folder with theme file
- * @param {Path} projectStaticAssetsOutputFolder resources output folder
+ * @param {string} themeFolder Folder with theme file
+ * @param {string} projectStaticAssetsOutputFolder resources output folder
  */
 function copyThemeResources(themeName, themeFolder, projectStaticAssetsOutputFolder) {
   if (!fs.existsSync(path.resolve(projectStaticAssetsOutputFolder))) {
@@ -42,15 +42,15 @@ function copyThemeResources(themeName, themeFolder, projectStaticAssetsOutputFol
   copyThemeFiles(themeFolder, path.resolve(projectStaticAssetsOutputFolder, "theme", themeName));
 }
 
-const notToCopy = ["css", "js", "json"];
+const ignoredFileExtensions = [".css", ".js", ".json"];
 
 /**
- * Recursively copy files found in theme folder excluding any with a extension found in the `notToCopy` array.
+ * Recursively copy files found in theme folder excluding any with a extension found in the `ignoredFileExtensions` array.
  *
- * If a directory is met create directory and copy files from that folder to new target folder.
+ * Any sub folders will be generated and recursed.
  *
- * @param {path} folderToCopy folder to copy files from
- * @param {path} targetFolder folder to copy files to
+ * @param {string} folderToCopy folder to copy files from
+ * @param {string} targetFolder folder to copy files to
  */
 function copyThemeFiles(folderToCopy, targetFolder) {
   fs.readdirSync(folderToCopy).forEach(file => {
@@ -59,7 +59,7 @@ function copyThemeFiles(folderToCopy, targetFolder) {
         fs.mkdirSync(path.resolve(targetFolder, file));
       }
       copyThemeFiles(path.resolve(folderToCopy, file), path.resolve(targetFolder, file));
-    } else if (!notToCopy.includes(path.extname(file))) {
+    } else if (!ignoredFileExtensions.includes(path.extname(file))) {
       fs.copyFileSync(path.resolve(folderToCopy, file), path.resolve(targetFolder, file));
     }
   });

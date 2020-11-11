@@ -49,7 +49,7 @@ public class WebComponentGeneratorTest {
                 .getReplacementsMap("my-component",
                         new WebComponentExporter.WebComponentConfigurationFactory()
                                 .create(exporter).getPropertyDataSet(),
-                        "/foo", generateUi, null);
+                        "/foo", generateUi);
 
         Assert.assertTrue("Missing dashed tag name",
                 replacementsMap.containsKey("TagDash"));
@@ -137,17 +137,16 @@ public class WebComponentGeneratorTest {
         String module = WebComponentGenerator.generateModule(
                 new DefaultWebComponentExporterFactory<MyComponent>(
                         MyComponentExporter.class),
-                "", true, null);
+                "", true);
         // make sure that the test works on windows machines:
-        module = module.replace("\r", "").replaceAll("\n", "");
-        Assert.assertThat(module,
-            startsWith(
-                "<script>  class Tag extends HTMLElement {"));
+        module = module.replace("\r", "");
+        Assert.assertThat(module, startsWith(
+                "\n" + "<script>\n" + "  class Tag extends HTMLElement {\n"));
         // this part is from the
         // com.vaadin.flow.webcomponent-script-template
         // .js to verify successful import
         Assert.assertThat(module,
-                containsString("customElements.define('tag', Tag);"));
+                containsString("customElements.define('tag', Tag);\n"));
     }
 
     @Test
@@ -155,20 +154,20 @@ public class WebComponentGeneratorTest {
         String module = WebComponentGenerator.generateModule(
                 new DefaultWebComponentExporterFactory<MyComponent>(
                         MyComponentExporter.class),
-                "", false, null);
+                "", false);
         // make sure that the test works on windows machines:
-        module = module.replace("\r", "").replaceAll("\n", "");
+        module = module.replace("\r", "");
         Assert.assertThat(module,
                 startsWith("class Tag extends HTMLElement {"));
-        Assert.assertThat(module, containsString("style.innerHTML = `" //
-                + "      :host {" //
-                + "        position: relative;" //
-                + "        display: inline-block;" //
-                + "      }" //
-                + "    `;"));
+        Assert.assertThat(module, containsString("style.innerHTML = `\n" //
+                + "      :host {\n" //
+                + "        position: relative;\n" //
+                + "        display: inline-block;\n" //
+                + "      }\n" //
+                + "    `;\n"));
 
         Assert.assertThat(module,
-                containsString("customElements.define('tag', Tag);"));
+                containsString("customElements.define('tag', Tag);\n"));
     }
 
     public static class MyComponent extends Component {

@@ -21,23 +21,42 @@ const copyThemeResources = require('./theme-copy');
 
 let logger;
 
+/**
+ * The application theme plugin is for generating, collecting and copying of theme files for the application theme.
+ *
+ * The plugin shuld be supplied with the paths for
+ *
+ *  themeJarFolder                  - theme folder inside a jar
+ *  themeProjectFolders             - array of possible locations for theme folders inside the project
+ *  projectStaticAssetsOutputFolder - path to where static assets should be put
+ */
 class ApplicationThemePlugin {
   constructor(options) {
     this.options = options;
+
+    if(!this.options.themeJarFolder) {
+      throw new Error("Missing themeJarFolder path");
+    }
+    if(!this.options.projectStaticAssetsOutputFolder) {
+      throw new Error("Missing projectStaticAssetsOutputFolder path");
+    }
+    if(!this.options.themeProjectFolders) {
+      throw new Error("Missing themeProjectFolders path array");
+    }
   }
 
   apply(compiler) {
-    logger = compiler.getInfrastructureLogger("application-theme-plugin");
+    logger = compiler.getInfrastructureLogger("ApplicationThemePlugin");
 
-    compiler.hooks.afterEnvironment.tap("FlowApplicationThemePlugin", () => {
+    compiler.hooks.afterEnvironment.tap("ApplicationThemePlugin", () => {
       if (fs.existsSync(this.options.themeJarFolder)) {
-        logger.debug("Found themeFolder to handle ", this.options.themeJarFolder);
+        logger.debug("Found themeFolder in jar file ", this.options.themeJarFolder);
         handleThemes(this.options.themeJarFolder, this.options.projectStaticAssetsOutputFolder);
       }
 
       this.options.themeProjectFolders.forEach((themeProjectFolder) => {
         if (fs.existsSync(themeProjectFolder)) {
-          logger.debug("Found themeFolder to handle ", themeProjectFolder);
+          logger.debug("Found themeFolder from ", themeProjectFolder);
           handleThemes(themeProjectFolder, this.options.projectStaticAssetsOutputFolder);
         }
       });
@@ -47,8 +66,14 @@ class ApplicationThemePlugin {
 
 module.exports = ApplicationThemePlugin;
 
+/**
+ * Copies static resources for theme and generates/writes the [theme-name].js for webpack to handle.
+ *
+ * @param {path} themesFolder folder containing application theme folders
+ * @param {path} projectStaticAssetsOutputFolder folder to output files to
+ */
 function handleThemes(themesFolder, projectStaticAssetsOutputFolder) {
-  const dir = getFoldersSync(themesFolder);
+  const dir = getThemeFoldersSync(themesFolder);
   logger.debug("Found", dir.length, "theme directories");
 
   for (let i = 0; i < dir.length; i++) {
@@ -69,12 +94,19 @@ function handleThemes(themesFolder, projectStaticAssetsOutputFolder) {
   }
 };
 
-function getFoldersSync(dir) {
-  const results = [];
-  fs.readdirSync(dir).forEach(file => {
-    if (fs.statSync(path.resolve(dir, file)).isDirectory()) {
-      results.push(file);
+/**
+ * Collect all folders under the given theme project folder.
+ * The found sub folders are the actual theme 'implementations'
+ *
+ * @param {string | Buffer | URL} folder theme project folder to collect folders from
+ * @returns {string[]} array containing found folder names
+ */
+function getThemeFoldersSync(folder) {
+  const themeFolders = [];
+  fs.readdirSync(folder).forEach(file => {
+    if (fs.statSync(path.resolve(folder, file)).isDirectory()) {
+      themeFolders.push(file);
     }
   });
-  return results;
+  return themeFolders;
 }

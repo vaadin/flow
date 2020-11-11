@@ -29,8 +29,12 @@ public class NpmThemedComponentIT extends ChromeBrowserTest {
     @Test
     public void applicationTheme_GlobalCss_isUsed() {
         open();
-        Assert.assertEquals("rgba(255, 165, 0, 1)",
-            findElement(By.tagName("body")).getCssValue("background-color"));
+        // No exception for bg-image should exist
+        checkLogsForErrors();
+
+        Assert.assertEquals(
+            "url(\"" + getRootURL() + "/theme/app-theme/img/bg.jpg\")",
+            findElement(By.tagName("body")).getCssValue("background-image"));
     }
 
     @Test
@@ -44,23 +48,23 @@ public class NpmThemedComponentIT extends ChromeBrowserTest {
         // make sure that component which is created from the server side is
         // themed
         Assert.assertEquals("The server side component is not themed", "themed",
-                id);
+            id);
 
         TestBenchElement nestedClientSideComponent = themedComponent
-                .$("client-side-component").first();
+            .$("client-side-component").first();
         List<TestBenchElement> divsInClientSideComponent = nestedClientSideComponent
-                .$("div").all();
+            .$("div").all();
         // Fist of all: the client side component is correctly resolved so it has
         // something inside its shadow root
         Assert.assertTrue(
-                "The client side component inside themed component is not resolved",
-                divsInClientSideComponent.size() > 0);
+            "The client side component inside themed component is not resolved",
+            divsInClientSideComponent.size() > 0);
 
         TestBenchElement divInClientSideComponent = divsInClientSideComponent
-                .get(0);
+            .get(0);
         // make sure that the nested client side is themed
         Assert.assertEquals("The server side component is not themed", "themed",
-                divInClientSideComponent.getAttribute("id"));
+            divInClientSideComponent.getAttribute("id"));
     }
 
     @Override

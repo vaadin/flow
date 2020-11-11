@@ -20,7 +20,6 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.Theme;
 
-// `src/` in component above should be replaced by `legacyTheme/my-theme`
 @Theme(themeClass = MiscelaneousView.MyTheme.class)
 @PWA(name = "Project Base for Vaadin", shortName = "Project Base")
 public class AppShell implements AppShellConfigurator {
