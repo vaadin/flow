@@ -511,7 +511,7 @@ public class NodeTasks implements FallibleCommand {
             if (builder.generateEmbeddableWebComponents) {
                 FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
                         classFinder);
-                generator.generateWebComponents(builder.generatedFolder, frontendDependencies.getThemeDefinition());
+                generator.generateWebComponents(builder.generatedFolder);
             }
         }
 
