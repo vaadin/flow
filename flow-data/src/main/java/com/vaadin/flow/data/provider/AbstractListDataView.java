@@ -199,7 +199,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public AbstractListDataView<T> setFilter(SerializablePredicate<T> filter) {
         setComponentFilter(component, filter);
-        fireDataChangeEvent(filter,
+        fireFilteringOrSortingChangeEvent(filter,
                 (SerializableComparator<T>) getComponentSortComparator(
                         component).orElse(null));
         return this;
@@ -210,7 +210,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     public AbstractListDataView<T> setSortComparator(
             SerializableComparator<T> sortComparator) {
         setComponentSortComparator(component, sortComparator);
-        fireDataChangeEvent(
+        fireFilteringOrSortingChangeEvent(
                 (SerializablePredicate<T>) getComponentFilter(component)
                         .orElse(null),
                 sortComparator);
@@ -502,7 +502,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
                 sorting.orElse(null), filter.orElse(null));
     }
 
-    private void fireDataChangeEvent(SerializablePredicate<T> filter,
+    private void fireFilteringOrSortingChangeEvent(
+            SerializablePredicate<T> filter,
             SerializableComparator<T> sortComparator) {
         this.dataChangedCallback.accept(filter, sortComparator);
     }

@@ -266,10 +266,11 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * that has been set or added previously. {@code null} will clear all
      * filters.
      * <p>
-     * A filter bound to the component. Any other component using the same
-     * {@link DataProvider} object would not be affected by setting a filter
-     * through data view of another component. A filter set by this method won't
-     * be retained when a new {@link DataProvider} is set to the component.
+     * This filter is bound to the component. Thus, any other component using
+     * the same {@link DataProvider} object would not be affected by setting a
+     * filter through data view of another component. A filter set by this
+     * method won't be retained when a new {@link DataProvider} is set to the
+     * component.
      *
      * @param filter
      *            filter to be set, or <code>null</code> to clear any previously
@@ -285,10 +286,11 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * Adds a filter to be applied to all queries. The filter will be used in
      * addition to any filter that has been set or added previously.
      * <p>
-     * A filter bound to the component. Any other component using the same
-     * {@link DataProvider} object would not be affected by setting a filter
-     * through data view of another component. A filter set by this method won't
-     * be retained when a new {@link DataProvider} is set to the component.
+     * This filter is bound to the component. Thus, any other component using
+     * the same {@link DataProvider} object would not be affected by setting a
+     * filter through data view of another component. A filter set by this
+     * method won't be retained when a new {@link DataProvider} is set to the
+     * component.
      *
      * @param filter
      *            the filter to add, not <code>null</code>
@@ -313,11 +315,11 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * Sets the comparator to use as the default sorting. This overrides the
      * sorting set by any other method that manipulates the default sorting.
      * <p>
-     * A comparator bound to the component. Any other component using the same
-     * {@link DataProvider} object would not be affected by setting a sort
-     * comparator through data view of another component. A sorting set by this
-     * method won't be retained when a new {@link DataProvider} is set to the
-     * component.
+     * This comparator is bound to the component. Thus, any other component
+     * using the same {@link DataProvider} object would not be affected by
+     * setting a sort comparator through data view of another component. A
+     * sorting set by this method won't be retained when a new
+     * {@link DataProvider} is set to the component.
      *
      * @param sortComparator
      *            a comparator to use, or <code>null</code> to clear any
@@ -335,11 +337,11 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * comparator will be used to determine the ordering of items that are
      * considered equal by the previously defined default sorting.
      * <p>
-     * A comparator bound to the component. Any other component using the same
-     * {@link DataProvider} object would not be affected by setting a sort
-     * comparator through data view of another component. A sorting set by this
-     * method won't be retained when a new {@link DataProvider} is set to the
-     * component.
+     * This comparator is bound to the component. Thus, any other component
+     * using the same {@link DataProvider} object would not be affected by
+     * setting a sort comparator through data view of another component. A
+     * sorting set by this method won't be retained when a new
+     * {@link DataProvider} is set to the component.
      *
      * @param sortComparator
      *            a comparator to add, not <code>null</code>
@@ -368,11 +370,11 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * overrides the sorting set by any other method that manipulates the
      * default sorting of this {@link DataProvider}.
      * <p>
-     * A sort order bound to the component. Any other component using the same
-     * {@link DataProvider} object would not be affected by setting a sort
-     * order through data view of another component. A sort order set by this
-     * method won't be retained when a new {@link DataProvider} is set to the
-     * component.
+     * This sort order is bound to the component. Thus, any other component
+     * using the same {@link DataProvider} object would not be affected by
+     * setting a sort order through data view of another component. A sort order
+     * set by this method won't be retained when a new {@link DataProvider} is
+     * set to the component.
      *
      * @param valueProvider
      *            the value provider that defines the property do sort by, not
@@ -396,11 +398,11 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * provided sort order will be used to determine the ordering of items that
      * are considered equal by the previously defined default sorting.
      * <p>
-     * A sort order bound to the component. Any other component using the same
-     * {@link DataProvider} object would not be affected by setting a sort
-     * sort through data view of another component. A sorting set by this
-     * method won't be retained when a new {@link DataProvider} is set to the
-     * component.
+     * This sort order is bound to the component. Thus, any other component
+     * using the same {@link DataProvider} object would not be affected by
+     * setting a sort sort through data view of another component. A sorting set
+     * by this method won't be retained when a new {@link DataProvider} is set
+     * to the component.
      *
      * @param valueProvider
      *            the value provider that defines the property do sort by, not
