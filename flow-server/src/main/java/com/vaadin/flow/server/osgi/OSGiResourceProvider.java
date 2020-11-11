@@ -25,17 +25,19 @@ import java.util.Objects;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
-
+import org.osgi.service.component.annotations.Component;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.VaadinServletService;
 
 /**
  * OSGi capable implementation of {@link ResourceProvider}.
+ * ServiceComponentRuntime activates this Service because of @Component
  * 
  * @author Vaadin Ltd
  * @since
  *
  */
+@Component
 public class OSGiResourceProvider implements ResourceProvider {
 
     @Override

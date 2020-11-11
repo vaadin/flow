@@ -45,6 +45,10 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.wiring.BundleWiring;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.http.whiteboard.HttpWhiteboardConstants;
 import org.osgi.util.tracker.BundleTracker;
 import org.slf4j.LoggerFactory;
 
@@ -54,10 +58,12 @@ import org.slf4j.LoggerFactory;
  * The tracker scans for all classes in active bundles which have
  * <b>Vaadin-OSGi-Extender</b> header and report them to the {@link OSGiAccess}
  * instance.
- *
+ * 
+ * OSGi ServiceComponentRuntime creates the Service immediate while activating the bundle.
  * @author Vaadin Ltd
  * @since 1.2
  */
+@Component(immediate = true)
 public class VaadinBundleTracker extends BundleTracker<Bundle> {
 
     private final Bundle flowServerBundle;
@@ -99,15 +105,26 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
 
     /**
      * Creates a new instance of a bundle tracker.
-     *
+     * OSGi ServiceComponentRuntime injects the BundleContext because of the @Activate
      * @param context
      *            the {@code BundleContext} against which the tracking is done
      */
+    @Activate
     public VaadinBundleTracker(BundleContext context) {
         super(context, Bundle.ACTIVE | Bundle.RESOLVED, null);
         flowServerBundle = context.getBundle();
+        open();
     }
+    
 
+    /**
+     * OSGi ServiceComponentRuntime calls this method while unregister the Service(e.g when stop/uninstall the bundle)
+     */
+    @Deactivate
+    public void deactivate() {
+      close();
+      }
+    
     @Override
     public Bundle addingBundle(Bundle bundle, BundleEvent event) {
         if ((bundle.getState() & Bundle.ACTIVE) != 0) {
@@ -145,7 +162,7 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
 
     private void registerPushResources(Bundle pushBundle) {
         Hashtable<String, Object> properties = new Hashtable<>();
-        properties.put("osgi.http.whiteboard.servlet.pattern",
+        properties.put(HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_PATTERN,
                 "/VAADIN/static/push/*");
         servletPushRegistration.compareAndSet(null,
                 pushBundle.getBundleContext().registerService(Servlet.class,
