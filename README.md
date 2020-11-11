@@ -1,4 +1,4 @@
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/vaadin/flow#?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+<a href="https://discord.com/channels/732335336448852018/774366825756229632"><img src="https://discord.com/assets/e4923594e694a21542a489471ecffa50.svg" width="100" alt="Join the discussion in Vaadin Flow Discord"></img></a>
 
 Vaadin Flow
 ======
