@@ -132,6 +132,44 @@ describe('ConnectClient', () => {
       expect(calls).to.equal('truefalse');
     });
 
+    it('should hide Flow.loading indicator upon network failure', async() => {
+      let calls = '';
+      (window as any).Vaadin.Flow = {loading: (action: boolean) => calls += action};
+      fetchMock.post(
+        base + '/connect/FooEndpoint/reject',
+        Promise.reject(new TypeError('Network failure'))
+      );
+      try {
+        await client.call('FooEndpoint', 'reject');
+      } catch (error) {
+        // expected
+      } finally {
+        expect(calls).to.equal('truefalse');
+      }
+    });
+
+    it('should hide Flow.loading indicator upon server error', async() => {
+      const body = 'Unexpected error';
+      const errorResponse = new Response(
+          body,
+          {
+            status: 500,
+            statusText: 'Internal Server Error'
+          }
+      );
+      fetchMock.post(base + '/connect/FooEndpoint/vaadinConnectResponse', errorResponse);
+
+      let calls = '';
+      (window as any).Vaadin.Flow = {loading: (action: boolean) => calls += action};
+      try {
+        await client.call('FooEndpoint', 'vaadinConnectResponse');
+      } catch (error) {
+        // expected
+      } finally {
+        expect(calls).to.equal('truefalse');
+      }
+    });
+
     it('should use JSON request headers', async() => {
       await client.call('FooEndpoint', 'fooMethod');
 
@@ -143,7 +181,6 @@ describe('ConnectClient', () => {
     });
 
     it('should set header for preventing CSRF', async() => {
-      debugger;
       await client.call('FooEndpoint', 'fooMethod');
 
       const headers = fetchMock.lastOptions().headers;
