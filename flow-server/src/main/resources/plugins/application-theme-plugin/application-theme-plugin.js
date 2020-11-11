@@ -24,7 +24,9 @@ let logger;
 /**
  * The application theme plugin is for generating, collecting and copying of theme files for the application theme.
  *
- * The plugin shuld be supplied with the paths for
+ * TODO: enable giving themes to handle #9383
+ *
+ * The plugin should be supplied with the paths for
  *
  *  themeJarFolder                  - theme folder inside a jar
  *  themeProjectFolders             - array of possible locations for theme folders inside the project

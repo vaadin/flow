@@ -23,11 +23,23 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Defines that there is a theme to use and defines the theme handler
- * implementation.
+ * Defines the theme to use for the application. Should be present only once for
+ * an app, in the `AppShellConfiguration` class.
  * <p>
- * The theme allows to define a way to translate base component url to the
- * themed component url (@see {@link AbstractTheme}), which specifies components
+ * The {@code value} property defines the name of the application theme. When
+ * the theme is present inside the project, it maps to the {@code
+ * frontend/theme/<application-theme-name>}/ folder or alternatively to a folder
+ * inside the static resources of a jar file, like {@code
+ * src/main/resources/META-INF/resources/theme/<application-theme-name>/}.
+ * The application theme is always based on Lumo theme and this is the
+ * recommended way to theme applications starting from Flow 6.0 and Vaadin 19.
+ * <p>
+ * Alternatively , if instead of Lumo theme the Material theme or another "old
+ * style custom theme" is to be used, that can be specified with the {@code
+ * themeClass} property.
+ * This allows defining a way to translate base component url to the
+ * themed component url (@see {@link AbstractTheme}), which specifies
+ * components
  * styles.
  * <p>
  * By default {@code com.vaadin.flow.theme.lumo.Lumo} theme is used if it's in
@@ -41,21 +53,29 @@ import java.lang.annotation.Target;
  * an exception.
  *
  * <p>
- * Here is an example:
+ * Here is some examples:
  *
  * <pre>
  * <code>
  *
- * &#64;Theme(Lumo.class)
+ * &#64;Theme("my-theme")
  * public class MyAppShell implements AppShellConfigurator {
  * }
  * </code>
  * </pre>
  *
- * @see AbstractTheme
- * @see NoTheme
+ * <pre>
+ * <code>
+ *
+ * &#64;Theme(themeClass = Lumo.class)
+ * public class MyAppShell implements AppShellConfigurator {
+ * }
+ * </code>
+ * </pre>
  *
  * @author Vaadin Ltd
+ * @see AbstractTheme
+ * @see NoTheme
  * @since 1.0
  */
 @Target(ElementType.TYPE)
@@ -84,7 +104,6 @@ public @interface Theme {
      * The name of the theme to use.
      *
      * If this is not specified will default to Lumo.
-     *
      */
     String value() default "";
 }

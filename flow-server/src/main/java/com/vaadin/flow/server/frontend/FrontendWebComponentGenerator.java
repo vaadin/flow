@@ -25,7 +25,6 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * Generates embeddable web component files in npm mode, hiding the complexity

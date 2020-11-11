@@ -146,9 +146,11 @@ public class TaskUpdateImports extends NodeUpdater {
                                     String.format(THEME_LINE_TPL, NEW_LINE_TRIM
                                             .matcher(html).replaceAll(""))));
                 }
-                theme.getHtmlAttributes(themeDef.getVariant())
-                        .forEach((key, value) -> addLines(lines,
-                                String.format(THEME_VARIANT_TPL, key, value)));
+                if (themeDef != null) {
+                    theme.getHtmlAttributes(themeDef.getVariant()).forEach(
+                        (key, value) -> addLines(lines,
+                            String.format(THEME_VARIANT_TPL, key, value)));
+                }
                 lines.add("");
             }
             return lines;

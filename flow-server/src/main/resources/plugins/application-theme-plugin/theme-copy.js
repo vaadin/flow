@@ -47,7 +47,7 @@ const ignoredFileExtensions = [".css", ".js", ".json"];
 /**
  * Recursively copy files found in theme folder excluding any with a extension found in the `ignoredFileExtensions` array.
  *
- * Any sub folders will be generated and recursed.
+ * Any folders met will be generated and the contents copied.
  *
  * @param {string} folderToCopy folder to copy files from
  * @param {string} targetFolder folder to copy files to
