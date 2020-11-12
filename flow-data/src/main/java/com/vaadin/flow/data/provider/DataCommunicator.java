@@ -38,7 +38,6 @@ import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JsonUtils;
@@ -151,7 +150,7 @@ public class DataCommunicator<T> implements Serializable {
      * to data provider, or should it be used for just one requested range call
      * to data provider, and then it will be erased and not took into account in
      * the further calls.
-     * 
+     *
      * @param <F>
      *            filter's type
      */
@@ -194,7 +193,7 @@ public class DataCommunicator<T> implements Serializable {
 
         /**
          * Returns a filter object for this component.
-         * 
+         *
          * @return filter object
          */
         public F getFilterObject() {
@@ -419,8 +418,6 @@ public class DataCommunicator<T> implements Serializable {
             DataProvider<T, F> dataProvider, F initialFilter,
             boolean permanentFilter) {
         Objects.requireNonNull(dataProvider, "data provider cannot be null");
-
-        removeFilteringAndSorting();
 
         filter = initialFilter != null
                 ? new Filter<>(initialFilter, permanentFilter)
@@ -1165,7 +1162,7 @@ public class DataCommunicator<T> implements Serializable {
      * previous call of this method</li>
      * <li>Current component's filter is permanent</li>
      * </ul>
-     * 
+     *
      * @param itemCount
      *            item count to send
      */
@@ -1359,29 +1356,8 @@ public class DataCommunicator<T> implements Serializable {
 
     private void clearFilterIfDisposable() {
         if (filter != null && !filter.isPermanent()) {
-            Optional<Component> component = Element.get(stateNode).getComponent();
-            if (component.isPresent()) {
-                // Look up for the component's in-memory filter
-                Optional<SerializablePredicate<T>> componentFilter = AbstractListDataView
-                        .getComponentFilter(component.get());
-
-                // If the component's in-memory filter is present, then erase
-                // the client-side filter and re-apply the permanent
-                // component's filter
-                filter = componentFilter.map(
-                        filterValue -> new Filter<>(filterValue, true))
-                        .orElse(null);
-            } else {
-                filter = null;
-            }
+            filter = null;
         }
-    }
-
-    private void removeFilteringAndSorting() {
-        Element.get(stateNode).getComponent().ifPresent(component -> {
-            AbstractListDataView.setComponentFilter(component, null);
-            AbstractListDataView.setComponentSortComparator(component, null);
-        });
     }
 
     private static class Activation implements Serializable {

@@ -18,7 +18,6 @@ package com.vaadin.flow.data.provider;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -124,26 +123,6 @@ public abstract class AbstractListDataViewListenerTest {
 
         Assert.assertTrue("Item count change never called",
                 invocationChecker.get());
-    }
-
-    @Test
-    public void setItems_setNewItemsToComponent_filteringAndSortingRemoved() {
-        HasListDataView<String, ? extends AbstractListDataView<String>> component = getVerifiedComponent();
-
-        AbstractListDataView<String> listDataView = component.setItems("item1",
-                "item2", "item3");
-
-        SerializablePredicate<String> filter = "item2"::equals;
-
-        listDataView.setFilter(filter);
-
-        Assert.assertEquals("Unexpected filtered item count", 1,
-                listDataView.getItemCount());
-
-        listDataView = component.setItems("item1", "item2", "item3");
-
-        Assert.assertEquals("Non-filtered item count expected", 3,
-                listDataView.getItemCount());
     }
 
     protected abstract HasListDataView<String, ? extends AbstractListDataView<String>> getComponent();
