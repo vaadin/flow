@@ -94,6 +94,7 @@ public class TaskUpdateImports extends NodeUpdater {
 
         @Override
         protected void writeImportLines(List<String> lines) {
+            lines.add("import '@vaadin/flow-frontend/ConnectionState.js';");
             if (fallBackImports != null) { // @formatter:off
                 lines.add("let thisScript;");
                 lines.add("const elements = document.getElementsByTagName('script');");
