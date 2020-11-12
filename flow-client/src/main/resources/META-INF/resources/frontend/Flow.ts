@@ -1,4 +1,4 @@
-import {ConnectionState, ConnectionStateStore} from './ConnectionState';
+import {ConnectionState} from './ConnectionState';
 
 export interface FlowConfig {
   imports ?: () => void;
@@ -72,15 +72,12 @@ export class Flow {
     // TB checks for the existence of window.Vaadin.Flow in order
     // to consider that TB needs to wait for `initFlow()`.
     $wnd.Vaadin = $wnd.Vaadin || {};
-    if (!$wnd.Vaadin.Flow) {
-      $wnd.Vaadin.Flow = {
-        clients: {
-          TypeScript: {
-            isActive: () => this.isActive
-          }
-        }
-      };
-    }
+    $wnd.Vaadin.Flow = $wnd.Vaadin.Flow || {};
+    $wnd.Vaadin.Flow.clients = {
+      TypeScript: {
+        isActive: () => this.isActive
+      }
+    };
 
     // Regular expression used to remove the app-context
     const elm = document.head.querySelector('base');
@@ -394,9 +391,7 @@ export class Flow {
     // be reused in Connect.ts
     let timeout2nd: any;
     let timeout3rd: any;
-    const connectionState = new ConnectionStateStore(
-      navigator.onLine ? ConnectionState.CONNECTED : ConnectionState.CONNECTION_LOST);
-    connectionState.addStateChangeListener( (_: ConnectionState, current: ConnectionState) => {
+    $wnd.Vaadin.Flow.connectionState.addStateChangeListener( (_: ConnectionState, current: ConnectionState) => {
       clearTimeout(timeout2nd);
       clearTimeout(timeout3rd);
       loading.classList.remove('second');
@@ -414,14 +409,6 @@ export class Flow {
         this.isActive = false;
       }
     });
-
-    $wnd.addEventListener('online', () => {
-      connectionState.setState(ConnectionState.CONNECTED);
-    });
-    $wnd.addEventListener('offline', () => {
-      connectionState.setState(ConnectionState.CONNECTION_LOST);
-    });
-    $wnd.Vaadin.Flow.connectionState = connectionState;
   }
 
   private async showOfflineStub() {

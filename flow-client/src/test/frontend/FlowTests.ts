@@ -2,8 +2,14 @@ const { suite, test, beforeEach, afterEach } = intern.getInterface("tdd");
 const { assert } = intern.getPlugin("chai");
 
 // API to test
-import {Flow, NavigationParameters} from "../../main/resources/META-INF/resources/frontend/Flow";
-import {ConnectionState} from "../../main/resources/META-INF/resources/frontend/ConnectionState";
+import {
+  Flow,
+  NavigationParameters
+} from "../../main/resources/META-INF/resources/frontend/Flow";
+import {
+  ConnectionState,
+  ConnectionStateStore
+} from "../../main/resources/META-INF/resources/frontend/ConnectionState";
 // Intern does not serve webpack chunks, adding deps here in order to
 // produce one chunk, because dynamic imports in Flow.ts  will not work.
 import "../../main/resources/META-INF/resources/frontend/FlowBootstrap";
@@ -98,7 +104,11 @@ suite("Flow", () => {
 
   beforeEach(() => {
     delete $wnd.Vaadin;
-    Object.defineProperty(window.navigator, 'onLine', {value: true, configurable: true});
+    $wnd.Vaadin = {
+      Flow: {
+        connectionState: new ConnectionStateStore(ConnectionState.CONNECTED)
+      }
+    };
     mock.setup();
     const indicator = $wnd.document.body.querySelector('.v-loading-indicator');
     if (indicator) {
@@ -114,14 +124,12 @@ suite("Flow", () => {
   });
 
   test("should accept a configuration object", () => {
-    assert.isUndefined($wnd.Vaadin);
     const flow = new Flow({imports: () => {}});
     assert.isDefined(flow.config);
     assert.isDefined(flow.config.imports);
   });
 
   test("should initialize window.Flow object", () => {
-    assert.isUndefined($wnd.Vaadin);
     new Flow({imports: () => {}});
 
     assert.isDefined($wnd.Vaadin);
@@ -156,8 +164,6 @@ suite("Flow", () => {
   });
 
   test("should initialize Flow server navigation when calling flowInit(true)", () => {
-    assert.isUndefined($wnd.Vaadin);
-
     stubServerRemoteFunction('FooBar-12345');
     mockInitResponse('FooBar-12345', changesResponse);
 
@@ -186,10 +192,8 @@ suite("Flow", () => {
   });
 
   test("should initialize UI when calling flowInit(true)", () => {
-    assert.isUndefined($wnd.Vaadin);
-
     const initial = createInitResponse('FooBar-12345');
-    $wnd.Vaadin = {TypeScript: {initial: JSON.parse(initial)}};
+    $wnd.Vaadin.TypeScript = {initial: JSON.parse(initial)};
 
     const flow = new Flow();
     return (flow as any).flowInit(true)
@@ -220,10 +224,8 @@ suite("Flow", () => {
   });
 
   test("should inject appId script when calling flowInit(true) with custom config.imports", () => {
-    assert.isUndefined($wnd.Vaadin);
-
     const initial = createInitResponse('FooBar-12345');
-    $wnd.Vaadin = {TypeScript: {initial: JSON.parse(initial)}};
+    $wnd.Vaadin.TypeScript = {initial: JSON.parse(initial)};
 
     const flow = new Flow({
       imports: () => {}
@@ -548,7 +550,7 @@ suite("Flow", () => {
 
   test("should load pushScript on flowInit(true) with initial response", async() => {
     const initial = createInitResponse('FooBar-12345');
-    $wnd.Vaadin = {TypeScript: {initial: JSON.parse(initial)}};
+    $wnd.Vaadin.TypeScript = {initial: JSON.parse(initial)};
     $wnd.Vaadin.TypeScript.initial.pushScript = stubVaadinPushSrc;
 
     const flow = new Flow();
