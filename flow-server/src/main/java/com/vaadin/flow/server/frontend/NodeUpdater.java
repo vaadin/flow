@@ -259,6 +259,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("compression-webpack-plugin", "4.0.1");
         defaults.put("webpack-merge", "4.2.2");
         defaults.put("raw-loader", "3.1.0");
+        defaults.put("css-loader", "4.2.1");
 
         defaults.put("typescript", "4.0.3");
         defaults.put("ts-loader", "8.0.12");

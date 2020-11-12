@@ -32,7 +32,7 @@ public class LumoThemeDefinition extends ThemeDefinition {
      * Creates a new instance of {@link Lumo} theme definition.
      */
     public LumoThemeDefinition() {
-        super(Lumo.class, "");
+        super(Lumo.class, "", "");
     }
 
 }

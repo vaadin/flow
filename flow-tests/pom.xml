@@ -276,8 +276,9 @@
                 <module>test-scalability</module>
                 <module>test-memory-leaks</module>
                 <module>test-servlet</module>
-                <module>test-themes</module>
-                <module>test-themes/pom-npm.xml</module>
+                <module>test-themes</module> <!-- Only npm theme tests -->
+                <module>test-themes-legacy</module>
+                <module>test-themes-legacy/pom-npm.xml</module>
                 <module>test-lumo-theme</module>
                 <module>test-material-theme</module>
                 <module>servlet-containers</module>
