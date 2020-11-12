@@ -71,12 +71,15 @@ export class ConnectionStateStore {
 }
 
 const $wnd = window as any;
-$wnd.Vaadin = $wnd.Vaadin || {};
-$wnd.Vaadin.Flow = $wnd.Vaadin.Flow || {};
-$wnd.Vaadin.Flow.connectionState = new ConnectionStateStore(navigator.onLine ? ConnectionState.CONNECTED : ConnectionState.CONNECTION_LOST);
-$wnd.addEventListener('online', () => {
-  $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTED;
-});
-$wnd.addEventListener('offline', () => {
-  $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTION_LOST;
-});
+if (!$wnd.Vaadin?.Flow?.connectionState) {
+  $wnd.Vaadin = $wnd.Vaadin || {};
+  $wnd.Vaadin.Flow = $wnd.Vaadin.Flow || {};
+  $wnd.Vaadin.Flow.connectionState = new ConnectionStateStore(
+    navigator.onLine ? ConnectionState.CONNECTED : ConnectionState.CONNECTION_LOST);
+  $wnd.addEventListener('online', () => {
+    $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTED;
+  });
+  $wnd.addEventListener('offline', () => {
+    $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTION_LOST;
+  });
+}
