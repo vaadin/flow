@@ -16,7 +16,9 @@
 
 package com.vaadin.flow.server;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -46,10 +48,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,6 +86,8 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * An abstraction of the underlying technology, e.g. servlets, for handling
@@ -283,12 +283,12 @@ public abstract class VaadinService implements Serializable {
         if (!configuration.isProductionMode()) {
             Logger logger = getLogger();
             logger.debug("The application has the following routes: ");
-            List<RouteData> routeDataList = getRouteRegistry().getRegisteredRoutes();
-            if(!routeDataList.isEmpty()) {
+            List<RouteData> routeDataList = getRouteRegistry()
+                    .getRegisteredRoutes();
+            if (!routeDataList.isEmpty()) {
                 addRouterUsageStatistics();
             }
-            routeDataList.stream()
-                    .map(Object::toString).forEach(logger::debug);
+            routeDataList.stream().map(Object::toString).forEach(logger::debug);
         }
         if (getDeploymentConfiguration().isPnpmEnabled()) {
             UsageStatistics.markAsUsed("flow/pnpm", null);
@@ -298,13 +298,16 @@ public abstract class VaadinService implements Serializable {
     }
 
     private void addRouterUsageStatistics() {
-        if(UsageStatistics.getEntries().anyMatch(
+        if (UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName()))) {
             UsageStatistics.removeEntry(Constants.STATISTIC_ROUTING_CLIENT);
-            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_HYBRID, Version.getFullVersion());
-        } else if(UsageStatistics.getEntries().noneMatch(
-                e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER.equals(e.getName()))) {
-            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_SERVER, Version.getFullVersion());
+            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_HYBRID,
+                    Version.getFullVersion());
+        } else if (UsageStatistics.getEntries()
+                .noneMatch(e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER
+                        .equals(e.getName()))) {
+            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_SERVER,
+                    Version.getFullVersion());
         }
     }
 
@@ -2123,7 +2126,8 @@ public abstract class VaadinService implements Serializable {
             WrappedSession wrappedSession) {
         assert VaadinSession.hasLock(this, wrappedSession);
         writeToHttpSession(wrappedSession, session);
-        wrappedSession.setAttribute(getCsrfTokenAttributeName(), session.getCsrfToken());
+        wrappedSession.setAttribute(getCsrfTokenAttributeName(),
+                session.getCsrfToken());
         session.refreshTransients(wrappedSession, this);
     }
 
@@ -2389,6 +2393,7 @@ public abstract class VaadinService implements Serializable {
      * @return the attribute name string
      */
     public static String getCsrfTokenAttributeName() {
-        return VaadinSession.class.getName() + "." + ApplicationConstants.CSRF_TOKEN;
+        return VaadinSession.class.getName() + "."
+                + ApplicationConstants.CSRF_TOKEN;
     }
 }
