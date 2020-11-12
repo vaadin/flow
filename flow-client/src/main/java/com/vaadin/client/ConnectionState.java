@@ -75,6 +75,6 @@ public class ConnectionState {
      */
     public native void setState(State state)
     /*-{
-        $wnd.Vaadin.Flow.connectionState.setState(state);
+        $wnd.Vaadin.Flow.connectionState.state = state;
     }-*/;
 }

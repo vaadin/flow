@@ -143,10 +143,9 @@ suite("Flow", () => {
     assert.isNotNull(indicator);
     assert.isNotNull(styles);
 
-    assert.isFunction($wnd.Vaadin.Flow.connectionState.setState);
     assert.equal('none', indicator.getAttribute('style'));
 
-    $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.LOADING);
+    $wnd.Vaadin.Flow.connectionState.state = ConnectionState.LOADING;
     assert.isNull(indicator.getAttribute('style'));
     assert.isFalse(indicator.classList.contains('second'));
     assert.isFalse(indicator.classList.contains('third'));
@@ -157,7 +156,7 @@ suite("Flow", () => {
     await new Promise(resolve => setTimeout(resolve, 3500));
     assert.isTrue(indicator.classList.contains('third'));
 
-    $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.CONNECTED);
+    $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTED;
     assert.equal('none', indicator.getAttribute('style'));
     assert.isFalse(indicator.classList.contains('second'));
     assert.isFalse(indicator.classList.contains('third'));
@@ -602,10 +601,7 @@ suite("Flow", () => {
 
   test("should show stub when navigating to server view offline", async () => {
     stubServerRemoteFunction('foobar-123');
-    Object.defineProperty(window.navigator, 'onLine', {
-      value: false,
-      configurable: true
-    });
+    $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTION_LOST;
     const flow = new Flow();
     const route = flow.serverSideRoutes[0];
     const params: NavigationParameters = {

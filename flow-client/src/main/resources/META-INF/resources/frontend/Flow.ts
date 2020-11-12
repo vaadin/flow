@@ -121,7 +121,7 @@ export class Flow {
         } catch(error) {
           if (error instanceof FlowUiInitializationError) {
             // error initializing Flow: assume connection lost
-            $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.CONNECTION_LOST);
+            $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTION_LOST;
             await this.showOfflineStub();
           }
         }
@@ -153,11 +153,11 @@ export class Flow {
     }
     // 'server -> client'
     return new Promise(resolve => {
-      $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.LOADING);
+      $wnd.Vaadin.Flow.connectionState.state = ConnectionState.LOADING;
       // The callback to run from server side to cancel navigation
       this.container.serverConnected = (cancel) => {
         resolve(cmd && cancel ? cmd.prevent() : {});
-        $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.CONNECTED);
+        $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTED;
       }
 
       // Call server side to check whether we can leave the view
@@ -170,7 +170,7 @@ export class Flow {
   private async flowNavigate(ctx: NavigationParameters, cmd?: PreventAndRedirectCommands): Promise<HTMLElement> {
     if (this.response) {
       return new Promise(resolve => {
-        $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.LOADING);
+        $wnd.Vaadin.Flow.connectionState.state = ConnectionState.LOADING;
         // The callback to run from server side once the view is ready
         this.container.serverConnected = (cancel, redirectContext?: NavigationParameters) => {
           if (cmd && cancel) {
@@ -181,7 +181,7 @@ export class Flow {
             this.container.style.display = '';
             resolve(this.container);
           }
-          $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.CONNECTED);
+          $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTED;
         };
 
         // Call server side to navigate to the given route
@@ -204,7 +204,7 @@ export class Flow {
     if (!this.response) {
 
       // show flow progress indicator
-      $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.LOADING);
+      $wnd.Vaadin.Flow.connectionState.state = ConnectionState.LOADING;
 
       // Initialize server side UI
       this.response = await this.flowInitUi(serverSideRouting);
@@ -248,7 +248,7 @@ export class Flow {
       }
 
       // hide flow progress indicator
-      $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.CONNECTED);
+      $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTED;
     }
     return this.response;
   }

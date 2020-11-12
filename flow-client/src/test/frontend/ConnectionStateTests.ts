@@ -21,7 +21,7 @@ describe('ConnectionStateStore', () => {
     (expect(stateChangeListener1).to.not.be as any).called;
     (expect(stateChangeListener2).to.not.be as any).called;
 
-    store.setState(ConnectionState.CONNECTION_LOST);
+    store.state = ConnectionState.CONNECTION_LOST;
     (expect(stateChangeListener1).to.be as any).calledOnce;
     (expect(stateChangeListener2).to.be as any).calledOnce;
   });
@@ -33,18 +33,18 @@ describe('ConnectionStateStore', () => {
 
     store.addStateChangeListener(stateChangeListener);
     store.removeStateChangeListener(stateChangeListener);
-    store.setState(ConnectionState.CONNECTION_LOST);
+    store.state = ConnectionState.CONNECTION_LOST;
     (expect(stateChangeListener).to.not.be as any).called;
   });
 
-  it('state change listeners should be idempotent with respect to setState', () => {
+  it('state change listeners should be idempotent with respect to state update', () => {
     const store = new ConnectionStateStore(ConnectionState.CONNECTED);
     const stateChangeListener = sinon.spy((_: ConnectionState, __: ConnectionState) => {
     });
 
     store.addStateChangeListener(stateChangeListener);
-    store.setState(ConnectionState.CONNECTION_LOST);
-    store.setState(ConnectionState.CONNECTION_LOST);
+    store.state = ConnectionState.CONNECTION_LOST;
+    store.state = ConnectionState.CONNECTION_LOST;
 
     (expect(stateChangeListener).to.be as any).calledOnce;
   });
@@ -56,7 +56,7 @@ describe('ConnectionStateStore', () => {
 
     store.addStateChangeListener(stateChangeListener);
     store.addStateChangeListener(stateChangeListener);
-    store.setState(ConnectionState.CONNECTION_LOST);
+    store.state = ConnectionState.CONNECTION_LOST;
 
     (expect(stateChangeListener).to.be as any).calledOnce;
   });

@@ -30,16 +30,12 @@ type ConnectionStateChangeListener = (previous: ConnectionState, current: Connec
 
 export class ConnectionStateStore {
 
-  private state: ConnectionState;
+  private connectionState: ConnectionState;
 
   private stateChangeListeners: Set<ConnectionStateChangeListener> = new Set();
 
   constructor(initialState: ConnectionState) {
-      this.state = initialState;
-  }
-
-  getState(): ConnectionState {
-    return this.state;
+      this.connectionState = initialState;
   }
 
   addStateChangeListener(listener: ConnectionStateChangeListener): void {
@@ -50,12 +46,16 @@ export class ConnectionStateStore {
     this.stateChangeListeners.delete(listener);
   }
 
-  setState(newState: ConnectionState) {
-    if (newState !== this.state) {
-      const prevState = this.state;
-      this.state = newState;
+  get state(): ConnectionState {
+    return this.connectionState;
+  }
+
+  set state(newState: ConnectionState) {
+    if (newState !== this.connectionState) {
+      const prevState = this.connectionState;
+      this.connectionState = newState;
       for (const listener of this.stateChangeListeners) {
-        listener(prevState, this.state);
+        listener(prevState, this.connectionState);
       }
     }
   }
@@ -75,8 +75,8 @@ $wnd.Vaadin = $wnd.Vaadin || {};
 $wnd.Vaadin.Flow = $wnd.Vaadin.Flow || {};
 $wnd.Vaadin.Flow.connectionState = new ConnectionStateStore(navigator.onLine ? ConnectionState.CONNECTED : ConnectionState.CONNECTION_LOST);
 $wnd.addEventListener('online', () => {
-  $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.CONNECTED);
+  $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTED;
 });
 $wnd.addEventListener('offline', () => {
-  $wnd.Vaadin.Flow.connectionState.setState(ConnectionState.CONNECTION_LOST);
+  $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTION_LOST;
 });

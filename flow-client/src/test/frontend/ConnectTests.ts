@@ -142,9 +142,9 @@ describe('ConnectClient', () => {
       expect(fetchMock.lastOptions()).to.include({method: 'POST'});
     });
 
-    it('should call Flow.connectionState.setState', async() => {
+    it('should update Flow.connectionState.state', async() => {
       let calls: ConnectionState[] = [];
-      const connectionStateStore = new ConnectionStateStore();
+      const connectionStateStore = new ConnectionStateStore(ConnectionState.CONNECTED);
       connectionStateStore.addStateChangeListener((_, current: ConnectionState) => calls.push(current));
       (window as any).Vaadin.Flow = { connectionState: connectionStateStore };
       await client.call('FooEndpoint', 'fooMethod');
