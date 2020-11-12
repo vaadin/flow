@@ -72,12 +72,15 @@ public final class DataViewUtils {
     }
 
     /**
-     * Sets the in-memory filter to a given component instance.
+     * Sets the in-memory filter to a given component instance. The filter
+     * replaces any filter that has been set or added previously. {@code null}
+     * will clear all filters.
      *
      * @param component
      *            component instance the filter is bound to
      * @param filter
-     *            component's in-memory filter
+     *            component's in-memory filter to be set, or <code>null</code>
+     *            to clear any previously set filters
      * @param <T>
      *            items type
      */
@@ -88,12 +91,15 @@ public final class DataViewUtils {
     }
 
     /**
-     * Sets the in-memory sort comparator to a given component instance.
+     * Sets the in-memory sort comparator to a given component instance. The
+     * sort comparator replaces any sort comparator that has been set or added
+     * previously. {@code null} will clear all sort comparators.
      *
      * @param component
      *            component instance the sort comparator is bound to
      * @param sortComparator
-     *            component's in-memory sort comparator
+     *            component's in-memory sort comparator to be set, or
+     *            <code>null</code> to clear any previously set sort comparators
      * @param <T>
      *            items type
      */
