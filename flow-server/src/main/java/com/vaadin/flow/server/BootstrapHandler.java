@@ -16,10 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -86,6 +82,10 @@ import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -827,9 +827,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             final boolean productionMode = context.getSession()
                     .getConfiguration().isProductionMode();
 
-            ResourceProvider resourceProvider = context.getSession()
-                    .getService().getContext().getAttribute(Lookup.class)
-                    .lookup(ResourceProvider.class);
+            ResourceProvider resourceProvider = getResourceProvider(context);
             String clientEngine = getClientEngine(resourceProvider);
             boolean resolveNow = !productionMode || clientEngine == null;
             if (resolveNow
@@ -845,6 +843,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
             return context.getUriResolver()
                     .resolveVaadinUri("context://" + clientEngine);
+        }
+
+        private ResourceProvider getResourceProvider(BootstrapContext context) {
+            ResourceProvider resourceProvider = context.getSession()
+                    .getService().getContext().getAttribute(Lookup.class)
+                    .lookup(ResourceProvider.class);
+            return resourceProvider;
         }
 
         private String getClientEngine(ResourceProvider resourceProvider) {
