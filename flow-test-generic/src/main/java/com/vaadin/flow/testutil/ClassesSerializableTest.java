@@ -191,6 +191,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateIndexTs",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateTsDefinitions",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateServiceWorker",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskInstallWebpackPlugins",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdateThemeImport",
 
                 // Node downloader classes
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.DefaultArchiveExtractor",

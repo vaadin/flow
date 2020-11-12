@@ -19,7 +19,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.theme.Theme;
 
-@Theme(MyTheme.class)
+@Theme(themeClass = MyTheme.class)
 public class ThemedComponentExporter
         extends WebComponentExporter<ThemedComponent> {
     public ThemedComponentExporter() {

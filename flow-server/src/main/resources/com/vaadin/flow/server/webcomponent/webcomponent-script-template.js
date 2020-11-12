@@ -125,7 +125,7 @@ class _TagCamel_ extends HTMLElement {
   disconnectedCallback() {
     this.$server.disconnected();
 
-    console.log("disconnected", this);
+    console.debug("disconnected", this);
   }
 
   serverConnected() {

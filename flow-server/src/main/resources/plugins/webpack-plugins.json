@@ -1,0 +1,6 @@
+{
+  "plugins": [
+    "stats-plugin",
+    "application-theme-plugin"
+  ]
+}

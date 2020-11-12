@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -62,6 +63,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private final boolean useV14Bootstrapping;
     private final Path flowResourcesFolder;
     private final PwaConfiguration pwaConfiguration;
+    private final Path resourceFolder;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -108,6 +110,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
         this.useV14Bootstrapping = useV14Bootstrapping;
         this.flowResourcesFolder = flowResourcesFolder.toPath();
         this.pwaConfiguration = pwaConfiguration;
+        this.resourceFolder = new File(webpackOutputDirectory.getParentFile(), "resources").toPath();
     }
 
     @Override
@@ -158,7 +161,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
 
     private List<String> modifyWebpackConfig(File generatedFile)
             throws IOException {
-        List<String> lines = FileUtils.readLines(generatedFile, "UTF-8");
+    List<String> lines = FileUtils.readLines(generatedFile, StandardCharsets.UTF_8);
         List<Pair<String, String>> replacements = getReplacements();
         String declaration = "%s = %s;";
 
@@ -204,7 +207,13 @@ public class TaskUpdateWebpack implements FallibleCommand {
                         Boolean.toString(
                                 pwaConfiguration.isOfflinePathEnabled())),
                 new Pair<>("const offlinePath", getOfflinePath()),
-                new Pair<>("const clientServiceWorkerEntryPoint", getClientServiceWorker()));
+                new Pair<>("const clientServiceWorkerEntryPoint", getClientServiceWorker()),
+                new Pair<>("const flowFrontendFolder", 
+                        formatPathResolve(getEscapedRelativeWebpackPath(
+                                flowResourcesFolder))),
+                new Pair<>("const projectStaticAssetsOutputFolder", 
+                        formatPathResolve(getEscapedRelativeWebpackPath(
+                                resourceFolder))));
     }
 
     private String getIndexHtmlPath() {

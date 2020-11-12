@@ -22,7 +22,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
-
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -51,6 +50,8 @@ import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
+import com.vaadin.flow.theme.NoTheme;
+import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_NO_APP_CONFIGURATOR;
 import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_NO_SHELL;
@@ -64,7 +65,8 @@ import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_PWA
  */
 @HandlesTypes({ AppShellConfigurator.class, Meta.class, Meta.Container.class,
         PWA.class, Inline.class, Inline.Container.class, Viewport.class,
-        BodySize.class, PageTitle.class, PageConfigurator.class, Push.class })
+        BodySize.class, PageTitle.class, PageConfigurator.class, Push.class,
+        Theme.class, NoTheme.class })
 // @WebListener is needed so that servlet containers know that they have to run
 // it
 @WebListener

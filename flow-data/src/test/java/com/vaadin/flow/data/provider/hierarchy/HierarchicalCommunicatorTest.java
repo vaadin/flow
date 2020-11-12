@@ -15,12 +15,11 @@
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,14 +33,16 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalArrayUpdater.HierarchicalUpdate;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
-import com.vaadin.flow.internal.nodefeature.ElementData;
 
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class HierarchicalCommunicatorTest {
 
@@ -58,6 +59,9 @@ public class HierarchicalCommunicatorTest {
     private StateNode stateNode;
 
     private List<String> enqueueFunctions = new ArrayList<>();
+
+    private Map<String, Serializable[]> enqueueFunctionsWithParams =
+            new HashMap<>();
 
     private class UpdateQueue implements HierarchicalUpdate {
         @Override
@@ -94,10 +98,29 @@ public class HierarchicalCommunicatorTest {
         }
     }
 
+    private class UpdateQueueWithArguments extends UpdateQueue {
+        @Override
+        public void enqueue(String name, Serializable... arguments) {
+            enqueueFunctionsWithParams.put(name, arguments);
+        }
+    }
+
     private final HierarchicalArrayUpdater arrayUpdater = new HierarchicalArrayUpdater() {
         @Override
         public HierarchicalUpdate startUpdate(int sizeChange) {
             return new UpdateQueue();
+        }
+
+        @Override
+        public void initialize() {
+        }
+    };
+
+    private final HierarchicalArrayUpdater arrayUpdaterWithArguments =
+            new HierarchicalArrayUpdater() {
+        @Override
+        public HierarchicalUpdate startUpdate(int sizeChange) {
+            return new UpdateQueueWithArguments();
         }
 
         @Override
@@ -163,7 +186,7 @@ public class HierarchicalCommunicatorTest {
             dataProvider.refreshItem(item);
         }
 
-        int number = refreshAll ? 6 : 5;
+        int number = refreshAll ? 7 : 6;
 
         ArgumentCaptor<SerializableConsumer> attachCaptor = ArgumentCaptor
                 .forClass(SerializableConsumer.class);
@@ -203,9 +226,75 @@ public class HierarchicalCommunicatorTest {
                 enqueueFunctions.get(0));
     }
 
+    @Test
+    public void reset_expandSomeItems_hierarchicalUpdateContainsExpandItems() {
+        enqueueFunctions.clear();
+
+        communicator.expand(ROOT);
+
+        communicator.reset();
+
+        // One expandItems for calling expand(...)
+        // One expandItems and one ensureHierarchy for calling reset()
+        Assert.assertEquals(3, enqueueFunctions.size());
+        Assert.assertEquals("$connector.expandItems",
+                enqueueFunctions.get(0));
+        Assert.assertEquals("$connector.ensureHierarchy",
+                enqueueFunctions.get(1));
+        Assert.assertEquals("$connector.expandItems",
+                enqueueFunctions.get(2));
+    }
+
+    @Test
+    public void reset_expandSomeItems_updateContainsProperJsonObjectsToExpand() {
+        enqueueFunctionsWithParams = new HashMap<>();
+
+        TreeData<String> hierarchyTreeData = new TreeData<>();
+        hierarchyTreeData.addItem(null, "root");
+        hierarchyTreeData.addItem("root", "first-1");
+        hierarchyTreeData.addItem("root", "first-2");
+        hierarchyTreeData.addItem("first-1", "second-1-1");
+        hierarchyTreeData.addItem("first-2", "second-2-1");
+
+        TreeDataProvider<String> treeDataProvider =
+                new TreeDataProvider<>(hierarchyTreeData);
+
+        HierarchicalDataCommunicator<String> dataCommunicator =
+                new HierarchicalDataCommunicator<String>(
+                        Mockito.mock(CompositeDataGenerator.class),
+                        arrayUpdaterWithArguments,
+                        json -> {}, Mockito.mock(StateNode.class), () -> null);
+
+        dataCommunicator.setDataProvider(treeDataProvider, null);
+
+        dataCommunicator.expand("root");
+        dataCommunicator.expand("first-1");
+
+        dataCommunicator.reset();
+
+        Assert.assertTrue(enqueueFunctionsWithParams
+                .containsKey("$connector.expandItems"));
+        JsonArray arguments = (JsonArray) enqueueFunctionsWithParams
+                .get("$connector.expandItems")[0];
+        Assert.assertNotNull(arguments);
+        Assert.assertEquals(2, arguments.length());
+
+        JsonObject first1 = arguments.getObject(0);
+        JsonObject root = arguments.getObject(1);
+
+        Assert.assertNotNull(first1);
+        Assert.assertNotNull(root);
+
+        Assert.assertTrue(first1.hasKey("key"));
+        Assert.assertTrue(root.hasKey("key"));
+
+        Assert.assertEquals(dataCommunicator.getKeyMapper().key("first-1"),
+                first1.getString("key"));
+        Assert.assertEquals(dataCommunicator.getKeyMapper().key("root"),
+                root.getString("key"));
+    }
+
     @Tag("test")
     public static class TestComponent extends Component {
     }
-
-
 }

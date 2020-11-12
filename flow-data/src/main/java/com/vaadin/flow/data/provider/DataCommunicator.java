@@ -150,7 +150,7 @@ public class DataCommunicator<T> implements Serializable {
      * to data provider, or should it be used for just one requested range call
      * to data provider, and then it will be erased and not took into account in
      * the further calls.
-     * 
+     *
      * @param <F>
      *            filter's type
      */
@@ -193,7 +193,7 @@ public class DataCommunicator<T> implements Serializable {
 
         /**
          * Returns a filter object for this component.
-         * 
+         *
          * @return filter object
          */
         public F getFilterObject() {
@@ -872,14 +872,18 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Getter method for determining the item count of the data. Can be
-     * overridden by a subclass that uses a specific type of DataProvider and/or
-     * query.
+     * Getter method for determining the item count of the data.
+     * <p>
+     * This method should be used only with defined size, i.e. when
+     * {@link #isDefinedSize()} returns {@code true}.
+     * <p>
+     * Can be overridden by a subclass that uses a specific type of DataProvider
+     * and/or query.
      *
      * @return the size of data provider with current filter
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    protected int getDataProviderSize() {
+    public int getDataProviderSize() {
         assert definedSize : "This method should never be called when using undefined size";
         if (countCallback != null) {
             return countCallback.count(new Query(getFilter()));
@@ -1158,7 +1162,7 @@ public class DataCommunicator<T> implements Serializable {
      * previous call of this method</li>
      * <li>Current component's filter is permanent</li>
      * </ul>
-     * 
+     *
      * @param itemCount
      *            item count to send
      */

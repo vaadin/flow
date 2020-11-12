@@ -290,7 +290,7 @@ public class WebComponentUI extends UI {
             return;
         }
         AbstractTheme themeInstance = Instantiator.get(this)
-                .getOrCreate(theme.get().value());
+                .getOrCreate(theme.get().themeClass());
         ThemeDefinition definition = new ThemeDefinition(theme.get());
         Map<String, String> attributes = themeInstance
                 .getHtmlAttributes(definition.getVariant());

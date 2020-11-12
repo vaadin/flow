@@ -34,7 +34,7 @@ public class EmptyByteScannerDataTestComponents {
     @JsModule("./common-js-file.js")
     @JavaScript("ExampleConnector.js")
     @CssImport(value = "./foo.css", id = "baz", include = "bar")
-    @Theme(value = HiddenTheme.class)
+    @Theme(themeClass = HiddenTheme.class)
     public static class MainLayout extends Component {
     }
 

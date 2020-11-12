@@ -417,10 +417,11 @@ export class ConnectClient {
     const fetchNext: MiddlewareNext =
       async(context: MiddlewareContext): Promise<Response> => {
         this.loading(true);
-        return fetch(context.request).then(response => {
-          this.loading(false);
-          return response;
-        });
+        try {
+          return fetch(context.request);
+        } finally {
+          this.loading(false); 
+        }
       };
 
     // Assemble the final middlewares array from internal

@@ -31,10 +31,10 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 
@@ -523,15 +523,15 @@ public class NodeTasks implements FallibleCommand {
 
         if (builder.enablePackagesUpdate || builder.enableImportsUpdate
                 || enableWebpackConfigUpdate) {
+            frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
+                    .createScanner(!builder.useByteCodeScanner, classFinder,
+                            builder.generateEmbeddableWebComponents);
+
             if (builder.generateEmbeddableWebComponents) {
                 FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
                         classFinder);
                 generator.generateWebComponents(builder.generatedFolder);
             }
-
-            frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                    .createScanner(!builder.useByteCodeScanner, classFinder,
-                            builder.generateEmbeddableWebComponents);
         }
 
         if (builder.createMissingPackageJson) {
@@ -563,6 +563,9 @@ public class NodeTasks implements FallibleCommand {
                         classFinder, packageUpdater,
                         builder.enablePnpm, builder.requireHomeNodeExec,
                         builder.nodeVersion, builder.nodeDownloadRoot));
+
+                commands.add(new TaskInstallWebpackPlugins(
+                    new File(builder.npmFolder, NODE_MODULES)));
             }
         }
 
@@ -597,6 +600,9 @@ public class NodeTasks implements FallibleCommand {
                             builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.tokenFile,
                             builder.tokenFileData, builder.enablePnpm));
+
+            commands.add(new TaskUpdateThemeImport(builder.npmFolder,
+                frontendDependencies.getThemeDefinition()));
         }
     }
 
