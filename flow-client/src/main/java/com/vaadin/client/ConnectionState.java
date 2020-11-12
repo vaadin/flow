@@ -71,9 +71,13 @@ public class ConnectionState {
     /**
      * Set the connection state to be displayed by the loading indicator.
      * @param state
-     *      one of "connected", "loading", "reconnecting" or "connection-lost"
+     *      the connection state
      */
-    public native void setState(State state)
+    public void setState(State state) {
+        setState(state.toString());
+    }
+
+    private native void setState(String state)
     /*-{
         $wnd.Vaadin.Flow.connectionState.state = state;
     }-*/;

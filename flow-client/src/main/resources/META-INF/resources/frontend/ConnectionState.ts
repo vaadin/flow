@@ -61,8 +61,8 @@ export class ConnectionStateStore {
   }
 
   get online(): boolean {
-    return this.state === ConnectionState.CONNECTED
-      || this.state === ConnectionState.LOADING;
+    return this.connectionState === ConnectionState.CONNECTED
+      || this.connectionState === ConnectionState.LOADING;
   }
 
   get offline(): boolean {
