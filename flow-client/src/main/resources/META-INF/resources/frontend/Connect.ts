@@ -335,7 +335,7 @@ export class ConnectClient {
     method: string,
     params?: any,
   ): Promise<DeferrableResult<any>> {
-    if ($wnd.Vaadin.Flow.connectionState.isOnline()) {
+    if ($wnd.Vaadin.Flow.connectionState.online) {
       try {
         const result = await this.call(endpoint, method, params);
         return { isDeferred: false, result };

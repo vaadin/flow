@@ -117,7 +117,7 @@ export class Flow {
       // Store last action pathname so as we can check it in events
       this.pathname = params.pathname;
 
-      if ($wnd.Vaadin.Flow.connectionState.isOnline()) {
+      if ($wnd.Vaadin.Flow.connectionState.online) {
         // @ts-ignore
         try {
           await this.flowInit();
@@ -151,7 +151,7 @@ export class Flow {
     // server -> server, viewing offline stub, or browser is offline
     const connectionState = $wnd.Vaadin.Flow.connectionState;
     if (this.pathname === ctx.pathname || this.response === undefined
-      || connectionState.isOffline()) {
+      || connectionState.offline) {
       return Promise.resolve({});
     }
     // 'server -> client'

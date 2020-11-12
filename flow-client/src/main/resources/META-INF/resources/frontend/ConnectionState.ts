@@ -32,7 +32,7 @@ export class ConnectionStateStore {
 
   private state: ConnectionState;
 
-  private stateChangeListeners: ConnectionStateChangeListener[] = [];
+  private stateChangeListeners: Set<ConnectionStateChangeListener> = new Set();
 
   constructor(initialState: ConnectionState) {
       this.state = initialState;
@@ -43,30 +43,29 @@ export class ConnectionStateStore {
   }
 
   addStateChangeListener(listener: ConnectionStateChangeListener): void {
-    if (this.stateChangeListeners.indexOf(listener) === -1) {
-      this.stateChangeListeners.push(listener);
-    }
+    this.stateChangeListeners.add(listener);
   }
 
   removeStateChangeListener(listener: ConnectionStateChangeListener): void {
-    const index = this.stateChangeListeners.indexOf(listener);
-    this.stateChangeListeners.splice(index);
+    this.stateChangeListeners.delete(listener);
   }
 
   setState(newState: ConnectionState) {
     if (newState !== this.state) {
       const prevState = this.state;
       this.state = newState;
-      this.stateChangeListeners.forEach(listener => listener(prevState, this.state));
+      for (const listener of this.stateChangeListeners) {
+        listener(prevState, this.state);
+      }
     }
   }
 
-  isOnline(): boolean {
+  get online(): boolean {
     return this.state === ConnectionState.CONNECTED
       || this.state === ConnectionState.LOADING;
   }
 
-  isOffline(): boolean {
-    return !this.isOnline();
+  get offline(): boolean {
+    return !this.online;
   }
 }
