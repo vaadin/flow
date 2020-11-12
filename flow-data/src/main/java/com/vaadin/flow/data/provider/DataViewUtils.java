@@ -104,26 +104,54 @@ public final class DataViewUtils {
     }
 
     /**
-     * Removes the in-memory filter from a given component instance.
+     * Removes the in-memory filter and sort comparator from a given component
+     * instance.
      *
      * @param component
-     *            component instance the filter is removed from
-     * @param <T>
-     *            items type
+     *            component instance the filter and sort comparator are removed
+     *            from
      */
-    public static <T> void removeComponentFilter(Component component) {
+    public static void removeComponentFilterAndSortComparator(
+            Component component) {
         setComponentFilter(component, null);
+        setComponentSortComparator(component, null);
     }
 
     /**
-     * Removes the in-memory sort comparator from a given component instance.
+     * Generates a data query with component's in-memory filter and sort
+     * comparator.
      *
      * @param component
-     *            component instance the sort comparator is removed from
-     * @param <T>
-     *            items type
+     *            component instance the filter and sort comparator are bound to
+     * @return query instance
      */
-    public static <T> void removeComponentSortComparator(Component component) {
-        setComponentSortComparator(component, null);
+    @SuppressWarnings({ "rawtypes" })
+    public static Query getQuery(Component component) {
+        return getQuery(component, true);
+    }
+
+    /**
+     * Generates a data query with component's in-memory filter and sort
+     * comparator, which is optionally included if {@code withSorting} is set to
+     * {@code true}.
+     * 
+     * @param component
+     *            component instance the filter and sort comparator are bound to
+     * @param withSorting
+     *            if {@code true}, the component's sort comparator will be
+     *            included in the query.
+     * @return query instance
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static Query getQuery(Component component, boolean withSorting) {
+        final Optional<SerializablePredicate<Object>> filter = DataViewUtils
+                .getComponentFilter(component);
+
+        final Optional<SerializableComparator<Object>> sorting = withSorting
+                ? DataViewUtils.getComponentSortComparator(component)
+                : Optional.empty();
+
+        return new Query(0, Integer.MAX_VALUE, null, sorting.orElse(null),
+                filter.orElse(null));
     }
 }

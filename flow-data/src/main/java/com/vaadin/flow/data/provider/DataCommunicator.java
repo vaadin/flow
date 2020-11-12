@@ -1378,10 +1378,8 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void removeFilteringAndSorting() {
-        Element.get(stateNode).getComponent().ifPresent(component -> {
-            DataViewUtils.setComponentFilter(component, null);
-            DataViewUtils.setComponentSortComparator(component, null);
-        });
+        Element.get(stateNode).getComponent().ifPresent(
+                DataViewUtils::removeComponentFilterAndSortComparator);
     }
 
     private static class Activation implements Serializable {

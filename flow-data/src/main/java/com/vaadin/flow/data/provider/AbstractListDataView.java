@@ -77,7 +77,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @SuppressWarnings("unchecked")
     @Override
     public int getItemCount() {
-        return getDataProvider().size(getQuery(false));
+        return getDataProvider().size(DataViewUtils.getQuery(component, false));
     }
 
     @Override
@@ -89,7 +89,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @SuppressWarnings("unchecked")
     @Override
     public Stream<T> getItems() {
-        return getDataProvider().fetch(getQuery(true));
+        return getDataProvider().fetch(DataViewUtils.getQuery(component));
     }
 
     @Override
@@ -418,19 +418,6 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
         itemList.addAll(indexToInsertItems, items);
         dataProvider.refreshAll();
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private Query getQuery(boolean withSorting) {
-        final Optional<SerializablePredicate<T>> filter = DataViewUtils
-                .getComponentFilter(component);
-
-        final Optional<SerializableComparator<T>> sorting = withSorting
-                ? DataViewUtils.getComponentSortComparator(component)
-                : Optional.empty();
-
-        return new Query(0, Integer.MAX_VALUE, null,
-                sorting.orElse(null), filter.orElse(null));
     }
 
     private void fireFilteringOrSortingChangeEvent(
