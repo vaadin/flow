@@ -1362,7 +1362,7 @@ public class DataCommunicator<T> implements Serializable {
             Optional<Component> component = Element.get(stateNode).getComponent();
             if (component.isPresent()) {
                 // Look up for the component's in-memory filter
-                Optional<SerializablePredicate<T>> componentFilter = AbstractListDataView
+                Optional<SerializablePredicate<T>> componentFilter = DataViewUtils
                         .getComponentFilter(component.get());
 
                 // If the component's in-memory filter is present, then erase
@@ -1378,10 +1378,8 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void removeFilteringAndSorting() {
-        Element.get(stateNode).getComponent().ifPresent(component -> {
-            AbstractListDataView.setComponentFilter(component, null);
-            AbstractListDataView.setComponentSortComparator(component, null);
-        });
+        Element.get(stateNode).getComponent().ifPresent(
+                DataViewUtils::removeComponentFilterAndSortComparator);
     }
 
     private static class Activation implements Serializable {
