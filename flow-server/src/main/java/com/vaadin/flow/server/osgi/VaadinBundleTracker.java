@@ -59,7 +59,9 @@ import org.slf4j.LoggerFactory;
  * <b>Vaadin-OSGi-Extender</b> header and report them to the {@link OSGiAccess}
  * instance.
  * 
- * OSGi ServiceComponentRuntime creates the Service immediate while activating the bundle.
+ * OSGi ServiceComponentRuntime creates the Service immediate while activating
+ * the bundle.
+ * 
  * @author Vaadin Ltd
  * @since 1.2
  */
@@ -92,10 +94,12 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
             String pathInfo = req.getPathInfo();
             if (pathInfo == null) {
                 resp.setStatus(HttpURLConnection.HTTP_NOT_FOUND);
+                return;
             }
             URL resource = bundle.getResource(resourceDirPath + pathInfo);
             if (resource == null) {
                 resp.setStatus(HttpURLConnection.HTTP_NOT_FOUND);
+                return;
             }
             try (InputStream stream = resource.openStream()) {
                 IOUtils.copy(stream, resp.getOutputStream());
@@ -104,8 +108,9 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
     }
 
     /**
-     * Creates a new instance of a bundle tracker.
-     * OSGi ServiceComponentRuntime injects the BundleContext because of the @Activate
+     * Creates a new instance of a bundle tracker. OSGi ServiceComponentRuntime
+     * injects the BundleContext because of the @Activate
+     * 
      * @param context
      *            the {@code BundleContext} against which the tracking is done
      */
@@ -115,16 +120,16 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
         flowServerBundle = context.getBundle();
         open();
     }
-    
 
     /**
-     * OSGi ServiceComponentRuntime calls this method while unregister the Service(e.g when stop/uninstall the bundle)
+     * OSGi ServiceComponentRuntime calls this method while unregister the
+     * Service(e.g when stop/uninstall the bundle)
      */
     @Deactivate
     public void deactivate() {
-      close();
-      }
-    
+        close();
+    }
+
     @Override
     public Bundle addingBundle(Bundle bundle, BundleEvent event) {
         if ((bundle.getState() & Bundle.ACTIVE) != 0) {

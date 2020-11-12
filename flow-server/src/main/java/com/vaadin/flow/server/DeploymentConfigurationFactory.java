@@ -337,6 +337,30 @@ public final class DeploymentConfigurationFactory implements Serializable {
         return json;
     }
 
+    /**
+     * Gets token file from the classpath using the provided
+     * {@code contextClass} and {@code context}.
+     * <p>
+     * The {@code contextClass} may be a class which is defined in the Web
+     * Application module/bundle and in this case it may be used to get Web
+     * Application resources. Also a {@link VaadinContext} {@code context}
+     * instance may be used to get a context of the Web Application (since the
+     * {@code contextClass} may be a class not from Web Application module). In
+     * WAR case it doesn't matter which class is used to get the resources (Web
+     * Application classes or e.g. "flow-server" classes) since they are loaded
+     * by the same {@link ClassLoader}. But in OSGi "flow-server" module classes
+     * can't be used to get Web Application resources since they are in
+     * different bundles.
+     * 
+     * @param contextClass
+     *            a context class whose module may contain the token file
+     * @param context
+     *            a VaadinContext which may provide information how to get token
+     *            file for the web application
+     * @return the token file content
+     * @throws IOException
+     *             if I/O fails during access to the token file
+     */
     private static String getTokenFileFromClassloader(Class<?> contextClass,
             VaadinContext context) throws IOException {
         String tokenResource = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;

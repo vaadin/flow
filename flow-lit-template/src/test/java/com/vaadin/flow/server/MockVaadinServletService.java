@@ -30,11 +30,6 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Router;
 
-/**
- *
- * @author Vaadin Ltd
- * @since 1.0
- */
 public class MockVaadinServletService extends VaadinServletService {
 
     private Instantiator instantiator;
