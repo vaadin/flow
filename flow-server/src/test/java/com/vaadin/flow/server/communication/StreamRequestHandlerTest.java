@@ -44,7 +44,6 @@ public class StreamRequestHandlerTest {
     @Before
     public void setUp() throws ServletException, ServiceException {
         VaadinService service = new MockVaadinServletService();
-        service.init();
 
         session = new AlwaysLockedVaadinSession(service) {
             @Override

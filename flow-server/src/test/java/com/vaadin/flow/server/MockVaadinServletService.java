@@ -72,6 +72,7 @@ public class MockVaadinServletService extends VaadinServletService {
             DeploymentConfiguration deploymentConfiguration) {
         super(new MockVaadinServlet(deploymentConfiguration),
                 deploymentConfiguration);
+        init();
     }
 
     public void setRouter(Router router) {

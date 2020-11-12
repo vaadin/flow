@@ -389,7 +389,6 @@ public class VaadinServiceTest {
 
     private static VaadinService createService() throws ServiceException {
         VaadinService service = new MockVaadinServletService();
-        service.init();
         return service;
     }
 }

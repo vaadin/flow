@@ -40,7 +40,6 @@ public class StreamResourceRegistryTest {
     @Before
     public void setUp() throws ServletException, ServiceException {
         service = new MockVaadinServletService();
-        service.init();
         session = new VaadinSession(service) {
             @Override
             public boolean hasLock() {

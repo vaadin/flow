@@ -185,7 +185,6 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         Mockito.when(configuration.getInitParameters()).thenReturn(properties);
 
         service = new MockVaadinServletService(configuration);
-        service.init();
 
         VaadinService.setCurrent(service);
 

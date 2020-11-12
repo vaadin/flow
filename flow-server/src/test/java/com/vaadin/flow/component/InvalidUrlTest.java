@@ -74,7 +74,6 @@ public class InvalidUrlTest {
         Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
 
         VaadinService service = new MockVaadinServletService();
-        service.init();
         service.setCurrentInstances(request, response);
 
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
