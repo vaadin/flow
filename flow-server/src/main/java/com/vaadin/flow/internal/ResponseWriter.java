@@ -51,8 +51,8 @@ import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
 public class ResponseWriter implements Serializable {
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
 
-    private static final Pattern RANGE_HEADER_PATTERN = Pattern.compile("^bytes=(([0-9]+-[0-9]+,?\\s*)+)$");
-    private static final Pattern BYTE_RANGE_PATTERN = Pattern.compile("([0-9]+)-([0-9]+)");
+    private static final Pattern RANGE_HEADER_PATTERN = Pattern.compile("^bytes=(([0-9]*-[0-9]*,?\\s*)+)$");
+    private static final Pattern BYTE_RANGE_PATTERN = Pattern.compile("([0-9]*)-([0-9]*)");
 
     private final int bufferSize;
     private final boolean brotliEnabled;
@@ -228,8 +228,16 @@ public class ResponseWriter implements Serializable {
 
         List<Pair<Long, Long>> ranges = new ArrayList<>();
         while (rangeMatcher.find()) {
-            final long start = Long.parseLong(rangeMatcher.group(1));
-            final long end = Long.parseLong(rangeMatcher.group(2));
+            String startGroup = rangeMatcher.group(1);
+            String endGroup = rangeMatcher.group(2);
+            if (startGroup.isEmpty() && endGroup.isEmpty()) {
+                response.setContentLengthLong(0L);
+                response.setStatus(416); // Range Not Satisfiable
+                return;
+            }
+            long start = startGroup.isEmpty() ? 0L : Long.parseLong(startGroup);
+            long end = endGroup.isEmpty() ? Long.MAX_VALUE
+                    : Long.parseLong(endGroup);
             if (end < start
                     || (resourceLength >= 0 && start >= resourceLength)) {
                 // illegal range -> 416
