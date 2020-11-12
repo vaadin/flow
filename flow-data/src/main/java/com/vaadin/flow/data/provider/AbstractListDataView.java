@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableComparator;
@@ -50,10 +49,6 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     private static final String NULL_ITEM_ERROR_MESSAGE = "Item cannot be null";
 
-    private static final String COMPONENT_IN_MEMORY_FILTER_KEY = "component-in-memory-filter-key";
-
-    private static final String COMPONENT_IN_MEMORY_SORTING_KEY = "component-in-memory-sorting-key";
-
     private final SerializableBiConsumer<SerializablePredicate<T>, SerializableComparator<T>> dataChangedCallback;
 
     /**
@@ -77,70 +72,6 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         Objects.requireNonNull(dataChangedCallback,
                 "Data Change Callback cannot be empty");
         this.dataChangedCallback = dataChangedCallback;
-    }
-
-    /**
-     * Gets the in-memory filter of a given component instance.
-     *
-     * @param component
-     *            component instance the filter is bound to
-     * @param <T>
-     *            item type
-     * @return optional component's in-memory filter.
-     */
-    @SuppressWarnings("unchecked")
-    protected static <T> Optional<SerializablePredicate<T>> getComponentFilter(
-            Component component) {
-        return Optional.ofNullable((SerializablePredicate<T>) ComponentUtil
-                .getData(component, COMPONENT_IN_MEMORY_FILTER_KEY));
-    }
-
-    /**
-     * Gets the in-memory sort comparator of a given component instance.
-     *
-     * @param component
-     *            component instance the sort comparator is bound to
-     * @param <T>
-     *            item type
-     * @return optional component's in-memory sort comparator.
-     */
-    @SuppressWarnings("unchecked")
-    protected static <T> Optional<SerializableComparator<T>> getComponentSortComparator(
-            Component component) {
-        return Optional.ofNullable((SerializableComparator<T>) ComponentUtil
-                .getData(component, COMPONENT_IN_MEMORY_SORTING_KEY));
-    }
-
-    /**
-     * Sets the in-memory filter to a given component instance.
-     * 
-     * @param component
-     *            component instance the filter is bound to
-     * @param filter
-     *            component's in-memory filter
-     * @param <T>
-     *            items type
-     */
-    protected static <T> void setComponentFilter(Component component,
-            SerializablePredicate<T> filter) {
-        ComponentUtil.setData(component, COMPONENT_IN_MEMORY_FILTER_KEY,
-                filter);
-    }
-
-    /**
-     * Sets the in-memory sort comparator to a given component instance.
-     *
-     * @param component
-     *            component instance the sort comparator is bound to
-     * @param sortComparator
-     *            component's in-memory sort comparator
-     * @param <T>
-     *            items type
-     */
-    protected static <T> void setComponentSortComparator(Component component,
-            SerializableComparator<T> sortComparator) {
-        ComponentUtil.setData(component, COMPONENT_IN_MEMORY_SORTING_KEY,
-                sortComparator);
     }
 
     @SuppressWarnings("unchecked")
@@ -182,8 +113,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public AbstractListDataView<T> addFilter(SerializablePredicate<T> filter) {
         Objects.requireNonNull(filter, "Filter to add cannot be null");
-        Optional<SerializablePredicate<T>> originalFilter = getComponentFilter(
-                component);
+        Optional<SerializablePredicate<T>> originalFilter = DataViewUtils
+                .getComponentFilter(component);
         SerializablePredicate<T> newFilter = originalFilter.isPresent()
                 ? item -> originalFilter.get().test(item) && filter.test(item)
                 : filter;
@@ -198,10 +129,10 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @SuppressWarnings("unchecked")
     @Override
     public AbstractListDataView<T> setFilter(SerializablePredicate<T> filter) {
-        setComponentFilter(component, filter);
+        DataViewUtils.setComponentFilter(component, filter);
         fireFilteringOrSortingChangeEvent(filter,
-                (SerializableComparator<T>) getComponentSortComparator(
-                        component).orElse(null));
+                (SerializableComparator<T>) DataViewUtils
+                        .getComponentSortComparator(component).orElse(null));
         return this;
     }
 
@@ -209,10 +140,10 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public AbstractListDataView<T> setSortComparator(
             SerializableComparator<T> sortComparator) {
-        setComponentSortComparator(component, sortComparator);
+        DataViewUtils.setComponentSortComparator(component, sortComparator);
         fireFilteringOrSortingChangeEvent(
-                (SerializablePredicate<T>) getComponentFilter(component)
-                        .orElse(null),
+                (SerializablePredicate<T>) DataViewUtils
+                        .getComponentFilter(component).orElse(null),
                 sortComparator);
         return this;
     }
@@ -222,8 +153,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
             SerializableComparator<T> sortComparator) {
         Objects.requireNonNull(sortComparator,
                 "Comparator to add cannot be null");
-        Optional<SerializableComparator<T>> originalComparator = getComponentSortComparator(
-                component);
+        Optional<SerializableComparator<T>> originalComparator = DataViewUtils
+                .getComponentSortComparator(component);
 
         if (originalComparator.isPresent()) {
             return setSortComparator((a, b) -> {
@@ -491,11 +422,11 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private Query getQuery(boolean withSorting) {
-        final Optional<SerializablePredicate<T>> filter = getComponentFilter(
-                component);
+        final Optional<SerializablePredicate<T>> filter = DataViewUtils
+                .getComponentFilter(component);
 
         final Optional<SerializableComparator<T>> sorting = withSorting
-                ? getComponentSortComparator(component)
+                ? DataViewUtils.getComponentSortComparator(component)
                 : Optional.empty();
 
         return new Query(0, Integer.MAX_VALUE, null,
