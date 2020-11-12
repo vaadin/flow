@@ -16,8 +16,6 @@
 package com.vaadin.flow.server;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Properties;
@@ -426,53 +424,6 @@ public class VaadinServlet extends HttpServlet {
         return true;
     }
 
-    /**
-     * Gets the current application URL from request.
-     *
-     * @param request
-     *            the HTTP request.
-     * @throws MalformedURLException
-     *             if the application is denied access to the persistent data
-     *             store represented by the given URL.
-     *
-     *             <<<<<<< HEAD =======
-     * @deprecated As of 1.0. Will be removed in 3.0.
-     *
-     *             >>>>>>> 81a7e2d15a... Fix OSGi Lookup related issues
-     * @return current application URL
-     */
-    @Deprecated
-    static URL getApplicationUrl(HttpServletRequest request)
-            throws MalformedURLException {
-        final URL reqURL = new URL((request.isSecure() ? "https://" : "http://")
-                + request.getServerName()
-                + ((request.isSecure() && request.getServerPort() == 443)
-                        || (!request.isSecure()
-                                && request.getServerPort() == 80) ? ""
-                                        : ":" + request.getServerPort())
-                + request.getRequestURI());
-        String servletPath;
-        if (request
-                .getAttribute("javax.servlet.include.servlet_path") != null) {
-            // this is an include request
-            servletPath = request
-                    .getAttribute("javax.servlet.include.context_path")
-                    .toString()
-                    + request
-                            .getAttribute("javax.servlet.include.servlet_path");
-
-        } else {
-            servletPath = request.getContextPath() + request.getServletPath();
-        }
-
-        if (servletPath.length() == 0
-                || servletPath.charAt(servletPath.length() - 1) != '/') {
-            servletPath = servletPath + "/";
-        }
-        URL u = new URL(reqURL, servletPath);
-        return u;
-    }
-
     /*
      * (non-Javadoc)
      *
@@ -482,45 +433,6 @@ public class VaadinServlet extends HttpServlet {
     public void destroy() {
         super.destroy();
         getService().destroy();
-    }
-
-    /**
-     * Escapes characters to html entities. An exception is made for some "safe
-     * characters" to keep the text somewhat readable.
-     *
-     * @param unsafe
-     *            non-escaped string
-     * @return a safe string to be added inside an html tag
-     *
-     * @deprecated As of 1.0. Will be removed in 3.0. Use
-     *             {@link org.jsoup.nodes.Entities#escape(String)} instead.
-     */
-    @Deprecated
-    public static String safeEscapeForHtml(String unsafe) {
-        if (null == unsafe) {
-            return null;
-        }
-        StringBuilder safe = new StringBuilder();
-        char[] charArray = unsafe.toCharArray();
-        for (char c : charArray) {
-            if (isSafe(c)) {
-                safe.append(c);
-            } else {
-                safe.append("&#");
-                safe.append((int) c);
-                safe.append(";");
-            }
-        }
-
-        return safe.toString();
-    }
-
-    private static boolean isSafe(char c) {
-        return //
-        c > 47 && c < 58 || // alphanum
-                c > 64 && c < 91 || // A-Z
-                c > 96 && c < 123 // a-z
-        ;
     }
 
     @Override

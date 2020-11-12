@@ -24,7 +24,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * Handler published event handler service for polymer templates.
+ * Service for injecting the polymer event handler when the module is available.
  * 
  * @author Vaadin Ltd
  * @since

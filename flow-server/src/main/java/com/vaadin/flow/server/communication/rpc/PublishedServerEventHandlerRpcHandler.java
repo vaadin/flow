@@ -299,20 +299,20 @@ public class PublishedServerEventHandlerRpcHandler
 
             if (instance != null) {
                 Optional<UI> ui = instance.getUI();
-                assert ui
-                        .isPresent() : "Rpc handler may not be called for a component that is not attached";
+                if (!ui.isPresent()) {
+                    throw new IllegalStateException(
+                            "Rpc handler may not be called for a detached component");
+                }
                 VaadinContext context = ui.get().getSession().getService()
                         .getContext();
                 DeprecatedPolymerPublishedEventHandler handler = context
                         .getAttribute(Lookup.class)
                         .lookup(DeprecatedPolymerPublishedEventHandler.class);
-                if (handler != null) {
-                    if (handler.isTemplateModelValue(instance, argValue,
-                            convertedType)) {
-                        return handler.getTemplateItem(instance,
-                                (JsonObject) argValue,
-                                method.getGenericParameterTypes()[index]);
-                    }
+                if (handler != null && handler.isTemplateModelValue(instance,
+                        argValue, convertedType)) {
+                    return handler.getTemplateItem(instance,
+                            (JsonObject) argValue,
+                            method.getGenericParameterTypes()[index]);
                 }
             }
 

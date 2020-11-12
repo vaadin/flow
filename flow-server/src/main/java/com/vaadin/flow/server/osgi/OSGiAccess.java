@@ -203,7 +203,7 @@ public final class OSGiAccess {
      * which is used to be able to access registries in a generic way via some
      * {@code getInstance(ServletContext)} method.
      *
-     * @return
+     * @return an OSGi temporary servlet context
      */
     public ServletContext getOsgiServletContext() {
         return context;
