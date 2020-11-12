@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.theme;
+package com.vaadin.flow.misc.ui;
 
 import java.util.List;
 
@@ -25,17 +25,6 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
 public class NpmThemedComponentIT extends ChromeBrowserTest {
-
-    @Test
-    public void applicationTheme_GlobalCss_isUsed() {
-        open();
-        // No exception for bg-image should exist
-        checkLogsForErrors();
-
-        Assert.assertEquals(
-            "url(\"" + getRootURL() + "/theme/app-theme/img/bg.jpg\")",
-            findElement(By.tagName("body")).getCssValue("background-image"));
-    }
 
     @Test
     public void importedClientSideComponentIsThemed() {
@@ -71,12 +60,7 @@ public class NpmThemedComponentIT extends ChromeBrowserTest {
     protected String getTestPath() {
         String path = super.getTestPath();
         String view = "view/";
-        String result;
-        if (path.startsWith("/")) {
-            result = path.substring(view.length() + 1);
-        }
-        result = path.substring(view.length());
-        return result;
+        return path.substring(view.length());
     }
 
 }

@@ -311,6 +311,12 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             // we have a proper theme or no-theme for the app
             ThemeData themeData = themes.iterator().next();
             if (!themeData.isNotheme()) {
+                if (!themeData.getThemeName().isEmpty()
+                    && themeData.getThemeClass() != null) {
+                    throw new IllegalStateException(
+                        "Theme name and theme class can not both be specified. "
+                            + "Theme name uses Lumo and can not be used in combination with custom theme class.");
+                }
                 variant = themeData.getVariant();
                 String themeClass = themeData.getThemeClass();
                 if (themeClass == null) {
