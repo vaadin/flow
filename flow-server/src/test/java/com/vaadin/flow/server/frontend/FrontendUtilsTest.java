@@ -333,7 +333,6 @@ public class FrontendUtilsTest {
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         configuration.setProductionMode(true);
         VaadinService service = new MockVaadinServletService(configuration);
-        service.init();
 
         VaadinContext context = service.getContext();
 

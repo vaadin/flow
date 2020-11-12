@@ -97,7 +97,6 @@ public class StreamReceiverHandlerTest {
         handler = new StreamReceiverHandler();
 
         mockService = new MockVaadinServletService();
-        mockService.init();
 
         mockRequest();
         mockReceiverAndRegistry();

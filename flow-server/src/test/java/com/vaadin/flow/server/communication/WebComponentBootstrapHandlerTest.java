@@ -129,7 +129,6 @@ public class WebComponentBootstrapHandlerTest {
                 return registry;
             };
         };
-        service.init();
 
         initLookup(service);
 
@@ -164,8 +163,6 @@ public class WebComponentBootstrapHandlerTest {
             throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService();
-
-        service.init();
 
         initLookup(service);
 

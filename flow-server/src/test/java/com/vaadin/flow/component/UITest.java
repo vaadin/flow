@@ -61,7 +61,6 @@ import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
-import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
@@ -182,56 +181,50 @@ public class UITest {
     private static void initUI(UI ui, String initialLocation,
             ArgumentCaptor<Integer> statusCodeCaptor)
             throws InvalidRouteConfigurationException {
-        try {
-            VaadinServletRequest request = Mockito
-                    .mock(VaadinServletRequest.class);
-            VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
 
-            String pathInfo;
-            if (initialLocation.isEmpty()) {
-                pathInfo = null;
-            } else {
-                Assert.assertFalse(initialLocation.startsWith("/"));
-                pathInfo = "/" + initialLocation;
-            }
-            Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
+        String pathInfo;
+        if (initialLocation.isEmpty()) {
+            pathInfo = null;
+        } else {
+            Assert.assertFalse(initialLocation.startsWith("/"));
+            pathInfo = "/" + initialLocation;
+        }
+        Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
 
-            VaadinService service = new MockVaadinServletService();
-            service.init();
-            service.setCurrentInstances(request, response);
+        VaadinService service = new MockVaadinServletService();
+        service.setCurrentInstances(request, response);
 
-            MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
 
-            DeploymentConfiguration config = Mockito
-                    .mock(DeploymentConfiguration.class);
-            Mockito.when(config.isProductionMode()).thenReturn(false);
+        DeploymentConfiguration config = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(config.isProductionMode()).thenReturn(false);
 
-            session.lock();
-            session.setConfiguration(config);
+        session.lock();
+        session.setConfiguration(config);
 
-            ui.getInternals().setSession(session);
+        ui.getInternals().setSession(session);
 
-            RouteConfiguration routeConfiguration = RouteConfiguration
-                    .forRegistry(ui.getInternals().getRouter().getRegistry());
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(ui.getInternals().getRouter().getRegistry());
 
-            routeConfiguration.update(() -> {
-                routeConfiguration.getHandledRegistry().clean();
-                Arrays.asList(RootNavigationTarget.class,
-                        FooBarNavigationTarget.class, Parameterized.class,
-                        FooBarParamNavigationTarget.class)
-                        .forEach(routeConfiguration::setAnnotatedRoute);
-            });
+        routeConfiguration.update(() -> {
+            routeConfiguration.getHandledRegistry().clean();
+            Arrays.asList(RootNavigationTarget.class,
+                    FooBarNavigationTarget.class, Parameterized.class,
+                    FooBarParamNavigationTarget.class)
+                    .forEach(routeConfiguration::setAnnotatedRoute);
+        });
 
-            ui.doInit(request, 0);
-            ui.getInternals().getRouter().initializeUI(ui, request);
+        ui.doInit(request, 0);
+        ui.getInternals().getRouter().initializeUI(ui, request);
 
-            session.unlock();
+        session.unlock();
 
-            if (statusCodeCaptor != null) {
-                Mockito.verify(response).setStatus(statusCodeCaptor.capture());
-            }
-        } catch (ServiceException e) {
-            throw new RuntimeException(e);
+        if (statusCodeCaptor != null) {
+            Mockito.verify(response).setStatus(statusCodeCaptor.capture());
         }
     }
 

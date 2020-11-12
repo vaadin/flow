@@ -88,7 +88,6 @@ public class VaadinSessionTest {
                     return Mockito.mock(Router.class);
                 }
             };
-            service.init();
             return service;
         }
     }
@@ -98,7 +97,6 @@ public class VaadinSessionTest {
         httpSessionLock = new ReentrantLock();
         mockService = new MockVaadinServletService();
         mockServlet = mockService.getServlet();
-        mockService.init();
 
         mockHttpSession = EasyMock.createMock(HttpSession.class);
         mockWrappedSession = new WrappedHttpSession(mockHttpSession) {

@@ -16,6 +16,8 @@
 package com.vaadin.flow.server;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Properties;
@@ -196,7 +198,6 @@ public class VaadinServlet extends HttpServlet {
             throws ServiceException {
         VaadinServletService service = new VaadinServletService(this,
                 deploymentConfiguration);
-        service.init();
         return service;
     }
 
@@ -422,6 +423,48 @@ public class VaadinServlet extends HttpServlet {
             }
         }
         return true;
+    }
+
+    /**
+     * Gets the current application URL from request.
+     *
+     * @param request
+     *            the HTTP request.
+     * @throws MalformedURLException
+     *             if the application is denied access to the persistent data
+     *             store represented by the given URL.
+     *
+     * @return current application URL
+     */
+    static URL getApplicationUrl(HttpServletRequest request)
+            throws MalformedURLException {
+        final URL reqURL = new URL((request.isSecure() ? "https://" : "http://")
+                + request.getServerName()
+                + ((request.isSecure() && request.getServerPort() == 443)
+                        || (!request.isSecure()
+                                && request.getServerPort() == 80) ? ""
+                                        : ":" + request.getServerPort())
+                + request.getRequestURI());
+        String servletPath;
+        if (request
+                .getAttribute("javax.servlet.include.servlet_path") != null) {
+            // this is an include request
+            servletPath = request
+                    .getAttribute("javax.servlet.include.context_path")
+                    .toString()
+                    + request
+                            .getAttribute("javax.servlet.include.servlet_path");
+
+        } else {
+            servletPath = request.getContextPath() + request.getServletPath();
+        }
+
+        if (servletPath.length() == 0
+                || servletPath.charAt(servletPath.length() - 1) != '/') {
+            servletPath = servletPath + "/";
+        }
+        URL u = new URL(reqURL, servletPath);
+        return u;
     }
 
     /*

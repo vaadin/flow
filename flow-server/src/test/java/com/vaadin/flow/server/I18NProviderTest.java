@@ -94,7 +94,6 @@ public class I18NProviderTest {
                 return new DefaultInstantiator(service);
             }
         };
-        service.init();
 
         HttpServletRequest httpServletRequest = Mockito
                 .mock(HttpServletRequest.class);

@@ -431,7 +431,6 @@ public class RouteUtilTest {
         class A extends Component {
         }
         MockVaadinServletService service = new MockVaadinServletService();
-        service.init();
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(service.getContext());
 
@@ -451,7 +450,6 @@ public class RouteUtilTest {
         }
 
         MockVaadinServletService service = new MockVaadinServletService();
-        service.init();
 
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(service.getContext());
@@ -473,7 +471,6 @@ public class RouteUtilTest {
         class A extends Component {
         }
         MockVaadinServletService service = new MockVaadinServletService();
-        service.init();
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(service.getContext());
         registry.setRoute("a", A.class, Collections.emptyList());
@@ -495,7 +492,6 @@ public class RouteUtilTest {
         }
 
         MockVaadinServletService service = new MockVaadinServletService();
-        service.init();
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(service.getContext());
         registry.setRoute("a", A.class, Collections.emptyList());

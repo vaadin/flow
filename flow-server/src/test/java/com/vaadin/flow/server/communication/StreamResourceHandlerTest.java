@@ -47,7 +47,6 @@ public class StreamResourceHandlerTest {
     @Before
     public void setUp() throws ServletException, ServiceException {
         VaadinService service = new MockVaadinServletService();
-        service.init();
 
         session = new AlwaysLockedVaadinSession(service);
         request = Mockito.mock(VaadinServletRequest.class);
