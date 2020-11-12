@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -53,6 +54,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private final Path frontendDirectory;
     private final boolean useV14Bootstrapping;
     private final Path flowResourcesFolder;
+    private final Path resourceFolder;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -88,6 +90,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
         this.webpackConfigPath = webpackConfigFolder.toPath();
         this.useV14Bootstrapping = useV14Bootstrapping;
         this.flowResourcesFolder = flowResourcesFolder.toPath();
+        this.resourceFolder = new File(webpackOutputDirectory.getParentFile(), "resources").toPath();
     }
 
     @Override
@@ -138,7 +141,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
 
     private List<String> modifyWebpackConfig(File generatedFile)
             throws IOException {
-        List<String> lines = FileUtils.readLines(generatedFile, "UTF-8");
+        List<String> lines = FileUtils.readLines(generatedFile, StandardCharsets.UTF_8);
 
         String frontendLine = "const frontendFolder = require('path').resolve(__dirname, '"
                 + getEscapedRelativeWebpackPath(frontendDirectory) + "');";
@@ -153,31 +156,38 @@ public class TaskUpdateWebpack implements FallibleCommand {
                 + getEscapedRelativeWebpackPath(
                         flowResourcesFolder.resolve("VaadinDevmodeGizmo.js"))
                 + "');";
+
+        String frontendFolder =
+            "const flowFrontendFolder = require('path').resolve(__dirname, '" + getEscapedRelativeWebpackPath(
+                flowResourcesFolder) + "');";
+        String assetsResourceFolder =
+            "const projectStaticAssetsOutputFolder = require('path').resolve(__dirname, '"
+                + getEscapedRelativeWebpackPath(resourceFolder) + "');";
+
         for (int i = 0; i < lines.size(); i++) {
             if (lines.get(i).startsWith(
                     "const fileNameOfTheFlowGeneratedMainEntryPoint")) {
                 lines.set(i, mainLine);
-            }
-            if (lines.get(i)
-                    .startsWith("const mavenOutputFolderForFlowBundledFiles")) {
+            } else if (lines.get(i)
+                .startsWith("const mavenOutputFolderForFlowBundledFiles")) {
                 lines.set(i, outputLine);
-            }
-            if (lines.get(i).startsWith("const frontendFolder")) {
+            } else if (lines.get(i).startsWith("const frontendFolder")) {
                 lines.set(i, frontendLine);
-            }
-            if (lines.get(i).startsWith("const useClientSideIndexFileForBootstrapping")) {
+            } else if (lines.get(i)
+                .startsWith("const useClientSideIndexFileForBootstrapping")) {
                 lines.set(i, isClientSideBootstrapModeLine);
-            }
-            if (lines.get(i).startsWith("const clientSideIndexHTML")) {
+            } else if (lines.get(i).startsWith("const clientSideIndexHTML")) {
                 lines.set(i, getIndexHtmlPath());
-            }
-
-            if (lines.get(i).startsWith("const clientSideIndexEntryPoint")) {
+            } else if (lines.get(i)
+                .startsWith("const clientSideIndexEntryPoint")) {
                 lines.set(i, getClientEntryPoint());
-            }
-
-            if (lines.get(i).startsWith("const devmodeGizmoJS")) {
+            } else if (lines.get(i).startsWith("const devmodeGizmoJS")) {
                 lines.set(i, devModeGizmoJSLine);
+            } else if (lines.get(i).startsWith("const flowFrontendFolder")) {
+                lines.set(i, frontendFolder);
+            } else if (lines.get(i)
+                .startsWith("const projectStaticAssetsOutputFolder")) {
+                lines.set(i, assetsResourceFolder);
             }
         }
         return lines;

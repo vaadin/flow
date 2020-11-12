@@ -76,7 +76,7 @@ public class TestComponents {
     }
 
     @Route
-    @Theme(value = Lumo.class, variant = Lumo.DARK)
+    @Theme(themeClass = Lumo.class, variant = Lumo.DARK)
     public static class MainView extends Component {
         ButtonComponent buttonComponent;
         IconComponent iconComponent;

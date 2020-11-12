@@ -13,21 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.webcomponent;
 
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponent;
+package com.vaadin.flow.misc.ui;
+
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.Theme;
 
-@Theme(themeClass = MyTheme.class)
-public class ThemedComponentExporter
-        extends WebComponentExporter<ThemedComponent> {
-    public ThemedComponentExporter() {
-        super("themed-web-component");
-    }
-
-    @Override
-    public void configureInstance(WebComponent<ThemedComponent> webComponent, ThemedComponent component) {
-
-    }
+@Theme(themeClass = MiscelaneousView.MyTheme.class)
+@PWA(name = "Project Base for Vaadin", shortName = "Project Base")
+public class AppShell implements AppShellConfigurator {
 }
