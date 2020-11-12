@@ -305,6 +305,13 @@ public final class DevModeHandler implements RequestHandler {
         // a valid request for webpack-dev-server should start with '/VAADIN/'
         String requestFilename = request.getPathInfo();
 
+        if (HandlerHelper.isPathUnsafe(requestFilename)) {
+            getLogger().info(HandlerHelper.UNSAFE_PATH_ERROR_MESSAGE_PATTERN,
+                    requestFilename);
+            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+            return true;
+        }
+
         HttpURLConnection connection = prepareConnection(requestFilename,
                 request.getMethod());
 
