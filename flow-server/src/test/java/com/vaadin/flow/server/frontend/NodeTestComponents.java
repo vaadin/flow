@@ -109,7 +109,7 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
     }
 
     @JsModule("./common-js-file.js")
-    @Theme(value = LumoTest.class, variant = LumoTest.DARK)
+    @Theme(value =LumoTest.class, variant = LumoTest.DARK)
     @Route
     public static class MainLayout implements RouterLayout {
         @Override

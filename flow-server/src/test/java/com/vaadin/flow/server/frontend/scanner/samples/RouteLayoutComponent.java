@@ -22,7 +22,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.theme.Theme;
 
 @JsModule("foo.js")
-@Theme(CustomTheme.class)
+@Theme(value =CustomTheme.class)
 public class RouteLayoutComponent implements RouterLayout {
     @Override
     public Element getElement() {

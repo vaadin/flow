@@ -27,6 +27,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
@@ -46,6 +47,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private final Path flowImportsFilePath;
     private final Path webpackConfigPath;
     private final Path frontendDirectory;
+    private final Path flowResourcesFolder;
+    private final Path resourceFolder;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -74,6 +77,10 @@ public class TaskUpdateWebpack implements FallibleCommand {
         this.webpackOutputPath = webpackOutputDirectory.toPath();
         this.flowImportsFilePath = generatedFlowImports.toPath();
         this.webpackConfigPath = webpackConfigFolder.toPath();
+        this.flowResourcesFolder = new File(webpackConfigFolder,
+            DEFAULT_GENERATED_DIR).toPath();
+        this.resourceFolder = new File(webpackOutputDirectory.getParentFile(),
+            "resources").toPath();
     }
 
     @Override
@@ -126,18 +133,26 @@ public class TaskUpdateWebpack implements FallibleCommand {
                 + getEscapedRelativeWebpackPath(webpackOutputPath) + "');";
         String mainLine = "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
                 + getEscapedRelativeWebpackPath(flowImportsFilePath) + "');";
-
         String devmodeGizmoJSLine = "const devmodeGizmoJS = '" + FrontendUtils.DEVMODE_GIZMO_MODULE + "'";
+
+        String frontendFolder =
+            "const flowFrontendFolder = require('path').resolve(__dirname, '" + getEscapedRelativeWebpackPath(
+                flowResourcesFolder) + "');";
+        String assetsResourceFolder =
+            "const projectStaticAssetsOutputFolder = require('path').resolve(__dirname, '"
+                + getEscapedRelativeWebpackPath(resourceFolder) + "');";
+
+
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i).trim();
             if (lines.get(i).startsWith(
-                    "const fileNameOfTheFlowGeneratedMainEntryPoint")
-                    && !line.equals(mainLine)) {
+                "const fileNameOfTheFlowGeneratedMainEntryPoint")
+                && !line.equals(mainLine)) {
                 lines.set(i, mainLine);
             }
             if (lines.get(i)
-                    .startsWith("const mavenOutputFolderForFlowBundledFiles")
-                    && !line.equals(outputLine)) {
+                .startsWith("const mavenOutputFolderForFlowBundledFiles")
+                && !line.equals(outputLine)) {
                 lines.set(i, outputLine);
             }
             if (lines.get(i).startsWith("const frontendFolder")) {
@@ -146,6 +161,12 @@ public class TaskUpdateWebpack implements FallibleCommand {
 
             if (lines.get(i).startsWith("const devmodeGizmoJS")) {
                 lines.set(i, devmodeGizmoJSLine);
+            }
+            if (lines.get(i).startsWith("const flowFrontendFolder")) {
+                lines.set(i, frontendFolder);
+            }
+            if (lines.get(i).startsWith("const projectStaticAssetsOutputFolder")) {
+                lines.set(i, assetsResourceFolder);
             }
         }
 

@@ -67,7 +67,7 @@ public class FrontendWebComponentGenerator implements Serializable {
      * outputDirectory}.
      *
      * @param outputDirectory
-     *            target directory for the web component module files
+     *     target directory for the web component module files
      * @return generated files
      * @throws java.lang.IllegalStateException
      *             if {@code finder} cannot locate required classes

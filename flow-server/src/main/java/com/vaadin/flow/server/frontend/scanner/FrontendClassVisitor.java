@@ -44,6 +44,7 @@ final class FrontendClassVisitor extends ClassVisitor {
     private static final String VARIANT = "variant";
     private static final String LAYOUT = "layout";
     static final String VALUE = "value";
+    static final String THEME_FOLDER = "themeFolder";
     static final String VERSION = "version";
     static final String ID = "id";
     static final String INCLUDE = "include";
@@ -159,9 +160,11 @@ final class FrontendClassVisitor extends ClassVisitor {
         themeRouteVisitor = new RepeatedAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
-                if (VALUE.equals(name)) {
-                    endPoint.theme.name = ((Type) value).getClassName();
-                    children.add(endPoint.theme.name);
+                if (THEME_FOLDER.equals(name)) {
+                    endPoint.theme.themeName = (String)value;
+                } else if (VALUE.equals(name)) {
+                    endPoint.theme.themeClass = ((Type) value).getClassName();
+                    children.add(endPoint.theme.themeClass);
                 } else if (VARIANT.equals(name)) {
                     endPoint.theme.variant = value.toString();
                 }
@@ -171,7 +174,9 @@ final class FrontendClassVisitor extends ClassVisitor {
         themeLayoutVisitor = new RepeatedAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
-                if (VALUE.equals(name) && endPoint.theme.name == null) {
+                if (THEME_FOLDER.equals(name)) {
+                    themeRouteVisitor.visit(name, value);
+                } else if (VALUE.equals(name) && endPoint.theme.themeClass == null) {
                     themeRouteVisitor.visit(name, value);
                 } else if (VARIANT.equals(name)
                         && endPoint.theme.variant.isEmpty()) {

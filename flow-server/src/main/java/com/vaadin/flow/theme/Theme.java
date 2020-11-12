@@ -29,8 +29,20 @@ import com.vaadin.flow.router.RouterLayout;
  * Defines that there is a theme to use and defines the theme handler
  * implementation.
  * <p>
- * The theme allows to define a way to translate base component url to the
- * themed component url (@see {@link AbstractTheme}), which specifies components
+ * The {@code themeFolder} property defines the name of the application theme. When
+ * the theme is present inside the project, it maps to the {@code
+ * frontend/theme/<application-theme-name>}/ folder or alternatively to a folder
+ * inside the static resources of a jar file, like {@code
+ * src/main/resources/META-INF/resources/theme/<application-theme-name>/}.
+ * The application theme is always based on Lumo theme and this is the
+ * recommended way to theme applications starting from Flow 2.6 and Vaadin 14.6
+ * <p>
+ * Alternatively , if instead of Lumo theme the Material theme or another "old
+ * style custom theme" is to be used, that can be specified with the {@code
+ * value} property.
+ * This allows defining a way to translate base component url to the
+ * themed component url (@see {@link AbstractTheme}), which specifies
+ * components
  * styles.
  * <p>
  * By default {@code com.vaadin.flow.theme.lumo.Lumo} theme is used if it's in
@@ -90,9 +102,11 @@ public @interface Theme {
     /**
      * The theme translation handler.
      *
+     * Defaults to Lumo, If not specified.
+     *
      * @return theme handler
      */
-    Class<? extends AbstractTheme> value();
+    Class<? extends AbstractTheme> value() default AbstractTheme.class;
 
     /**
      * The theme variant, if any.
@@ -100,4 +114,11 @@ public @interface Theme {
      * @return the theme variant
      */
     String variant() default "";
+
+    /**
+     * The name of the theme to use.
+     *
+     * If this is not specified will default to Lumo.
+     */
+    String themeFolder() default "";
 }

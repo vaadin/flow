@@ -47,7 +47,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 
 /**
@@ -139,6 +138,13 @@ public class TaskUpdateImports extends NodeUpdater {
             Collection<String> lines = new ArrayList<>();
             AbstractTheme theme = getTheme();
             ThemeDefinition themeDef = getThemeDefinition();
+
+            if (themeDef != null && !"".equals(themeDef.getName())) {
+                // If we define a theme name we need to import theme/theme-generated.js
+                lines.add("import {applyTheme} from 'theme/theme-generated.js';");
+                lines.add("applyTheme(document);");
+            }
+
             if (theme != null) {
                 if (!theme.getHeaderInlineContents().isEmpty()) {
                     lines.add(THEME_PREPARE);
@@ -147,9 +153,11 @@ public class TaskUpdateImports extends NodeUpdater {
                                     String.format(THEME_LINE_TPL, NEW_LINE_TRIM
                                             .matcher(html).replaceAll(""))));
                 }
-                theme.getHtmlAttributes(themeDef.getVariant())
-                        .forEach((key, value) -> addLines(lines,
-                                String.format(THEME_VARIANT_TPL, key, value)));
+                if (themeDef != null) {
+                    theme.getHtmlAttributes(themeDef.getVariant()).forEach(
+                        (key, value) -> addLines(lines,
+                            String.format(THEME_VARIANT_TPL, key, value)));
+                }
                 lines.add("");
             }
             return lines;

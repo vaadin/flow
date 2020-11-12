@@ -44,3 +44,6 @@ flow-tests/**/pnpmfile.js
 flow-tests/**/pnpm-lock.yaml
 flow-tests/**/tsconfig.json
 flow-tests/**/types.d.ts
+flow-tests/test-themes/frontend/theme/app-theme/app-theme.js
+package.json
+package-lock.json
