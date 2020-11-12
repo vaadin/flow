@@ -263,7 +263,7 @@ public class HierarchicalCommunicatorTest {
                 new HierarchicalDataCommunicator<String>(
                         Mockito.mock(CompositeDataGenerator.class),
                         arrayUpdaterWithArguments,
-                        json -> {}, stateNode, () -> null);
+                        json -> {}, Mockito.mock(StateNode.class), () -> null);
 
         dataCommunicator.setDataProvider(treeDataProvider, null);
 
