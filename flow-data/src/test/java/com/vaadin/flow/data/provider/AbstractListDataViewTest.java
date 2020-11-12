@@ -1196,7 +1196,7 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void setFilterOrSorting_filterOrSortingUpdated_dataChangeCallbackInvoked() {
+    public void setFilterOrSorting_filterOrSortingUpdated_filterOrSortingChangedCallbackInvoked() {
         Collection<String> items = Arrays.asList("foo", "bar", "baz");
 
         AtomicReference<SerializablePredicate<String>> filtering =
@@ -1229,9 +1229,9 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void dataChangeCallback_emptyCallbackProvided_throws() {
+    public void filterOrSortingChangedCallback_emptyCallbackProvided_throws() {
         exceptionRule.expect(NullPointerException.class);
-        exceptionRule.expectMessage("Data Change Callback cannot be empty");
+        exceptionRule.expectMessage("Filter or Sorting Change Callback cannot be empty");
         new ListDataViewImpl(() -> dataProvider, component, null);
     }
 
@@ -1248,8 +1248,9 @@ public class AbstractListDataViewTest {
         public ListDataViewImpl(
                 SerializableSupplier<? extends DataProvider<String, ?>> dataProviderSupplier,
                 Component component,
-                SerializableBiConsumer<SerializablePredicate<String>, SerializableComparator<String>> dataChangedCallback) {
-            super(dataProviderSupplier, component, dataChangedCallback);
+                SerializableBiConsumer<SerializablePredicate<String>,
+                        SerializableComparator<String>> filterOrSortingChangedCallback) {
+            super(dataProviderSupplier, component, filterOrSortingChangedCallback);
         }
     }
 
@@ -1266,8 +1267,8 @@ public class AbstractListDataViewTest {
         public ItemListDataView(
                 SerializableSupplier<? extends DataProvider<Item, ?>> dataProviderSupplier,
                 Component component,
-                SerializableBiConsumer<SerializablePredicate<Item>, SerializableComparator<Item>> dataChangedCallback) {
-            super(dataProviderSupplier, component, dataChangedCallback);
+                SerializableBiConsumer<SerializablePredicate<Item>, SerializableComparator<Item>> filterOrSortingChangedCallback) {
+            super(dataProviderSupplier, component, filterOrSortingChangedCallback);
         }
     }
 
