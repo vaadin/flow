@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.server;
 
-import java.util.Collections;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+
+import java.util.Collections;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,8 +50,7 @@ public class OSGiVaadinServletTest {
 
         VaadinServlet servlet = new VaadinServlet() {
             @Override
-            protected DeploymentConfiguration createDeploymentConfiguration()
-                    throws ServletException {
+            protected DeploymentConfiguration createDeploymentConfiguration() {
                 return Mockito.mock(DeploymentConfiguration.class);
             }
 
@@ -59,7 +58,11 @@ public class OSGiVaadinServletTest {
             protected VaadinServletService createServletService(
                     DeploymentConfiguration deploymentConfiguration)
                     throws ServiceException {
-                return new MockVaadinServletService(deploymentConfiguration);
+                VaadinServletService service = Mockito
+                        .mock(VaadinServletService.class);
+                Mockito.when(service.getDeploymentConfiguration())
+                        .thenReturn(createDeploymentConfiguration());
+                return service;
             }
         };
 
