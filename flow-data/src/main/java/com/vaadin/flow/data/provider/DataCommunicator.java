@@ -1362,7 +1362,7 @@ public class DataCommunicator<T> implements Serializable {
             Optional<Component> component = Element.get(stateNode).getComponent();
             if (component.isPresent()) {
                 // Look up for the component's in-memory filter
-                Optional<SerializablePredicate<T>> componentFilter = DataViewUtils
+                Optional<SerializablePredicate<?>> componentFilter = DataViewUtils
                         .getComponentFilter(component.get());
 
                 // If the component's in-memory filter is present, then erase
