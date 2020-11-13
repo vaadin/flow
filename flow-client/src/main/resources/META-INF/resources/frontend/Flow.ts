@@ -1,4 +1,5 @@
 import {ConnectionState} from './ConnectionState';
+import {LoadingIndicator} from './LoadingIndicator';
 
 export interface FlowConfig {
   imports ?: () => void;
@@ -328,86 +329,12 @@ export class Flow {
 
   // Create shared connection state store and loading indicator
   private addLoadingIndicator() {
-    const loading = document.createElement('div');
-    loading.classList.add('v-loading-indicator');
-    loading.setAttribute('style', 'none');
-    document.body.appendChild(loading);
+    $wnd.Vaadin.Flow.loadingIndicator = new LoadingIndicator();
+    document.body.appendChild($wnd.Vaadin.Flow.loadingIndicator);
 
-    const style = document.createElement('style');
-    style.setAttribute('type', 'text/css');
-    style.setAttribute('id', 'css-loading-indicator');
-    style.textContent = `
-      @keyframes v-progress-start {
-        0% {width: 0%;}
-        100% {width: 50%;}
-      }
-      @keyframes v-progress-delay {
-        0% {width: 50%;}
-        100% {width: 90%;}
-      }
-      @keyframes v-progress-wait {
-        0% {width: 90%; height: 4px;}
-        3% {width: 91%;height: 7px;}
-        100% {width: 96%;height: 7px;}
-      }
-      @keyframes v-progress-wait-pulse {
-        0% {opacity: 1;}
-        50% {opacity: 0.1;}
-        100% {opacity: 1;}
-      }
-      .v-loading-indicator {
-        position: fixed !important;
-        z-index: 99999;
-        left: 0;
-        right: auto;
-        top: 0;
-        width: 50%;
-        opacity: 1;
-        height: 4px;
-        background-color: var(--lumo-primary-color, var(--material-primary-color, blue));
-        pointer-events: none;
-        transition: none;
-        animation: v-progress-start 1000ms 200ms both;
-      }
-      .v-loading-indicator[style*="none"] {
-        display: block !important;
-        width: 100% !important;
-        opacity: 0;
-        animation: none !important;
-        transition: opacity 500ms 300ms, width 300ms;
-      }
-      .v-loading-indicator.second {
-        width: 90%;
-        animation: v-progress-delay 3.8s forwards;
-      }
-      .v-loading-indicator.third {
-        width: 96%;
-        animation: v-progress-wait 5s forwards, v-progress-wait-pulse 1s 4s infinite backwards;
-      }
-    `;
-    document.head.appendChild(style);
-
-    // Share loading methods in flow namespace so as it can
-    // be reused in Connect.ts
-    let timeout2nd: any;
-    let timeout3rd: any;
     $wnd.Vaadin.Flow.connectionState.addStateChangeListener( (_: ConnectionState, current: ConnectionState) => {
-      clearTimeout(timeout2nd);
-      clearTimeout(timeout3rd);
-      loading.classList.remove('second');
-      loading.classList.remove('third');
-      if (current === ConnectionState.LOADING) {
-        loading.removeAttribute('style');
-        timeout2nd = setTimeout(() => loading.classList.add('second'), 1500);
-        timeout3rd = setTimeout(() => loading.classList.add('third'), 5000);
-
-        // Make Testbench know that server request is in progress
-        this.isActive = true;
-      } else {
-        loading.setAttribute('style', 'none');
-        // Make Testbench know that server request is no longer active
-        this.isActive = false;
-      }
+      // Make Testbench know that server request is in progress
+      this.isActive = current === ConnectionState.LOADING;
     });
   }
 

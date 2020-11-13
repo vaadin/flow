@@ -20,6 +20,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 
+import com.vaadin.client.communication.LoadingIndicatorConfigurator;
 import com.vaadin.client.communication.PollConfigurator;
 import com.vaadin.client.communication.ReconnectDialogConfiguration;
 import com.vaadin.client.flow.RouterLinkHandler;
@@ -61,6 +62,7 @@ public class ApplicationConnection {
         // Bind UI configuration objects
         PollConfigurator.observe(rootNode, registry.getPoller());
         ReconnectDialogConfiguration.bind(registry.getConnectionStateHandler());
+        LoadingIndicatorConfigurator.observe(rootNode);
 
         Element body = Browser.getDocument().getBody();
 
