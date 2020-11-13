@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionBindingEvent;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,10 +38,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionBindingEvent;
-
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Before;
@@ -46,9 +46,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.testcategory.SlowTests;
@@ -73,24 +71,6 @@ public class VaadinSessionTest {
     private VaadinServletRequest vaadinRequest;
     private UI ui;
     private Lock httpSessionLock;
-
-    private static class TestServlet extends VaadinServlet {
-
-        @Override
-        protected VaadinServletService createServletService(
-                DeploymentConfiguration deploymentConfiguration)
-                throws ServiceException {
-            VaadinServletService service = new VaadinServletService(this,
-                    deploymentConfiguration) {
-
-                @Override
-                public Router getRouter() {
-                    return Mockito.mock(Router.class);
-                }
-            };
-            return service;
-        }
-    }
 
     @Before
     public void setup() throws Exception {

@@ -1,14 +1,13 @@
 package com.vaadin.flow.server.communication;
 
-import static com.vaadin.flow.server.communication.StreamRequestHandler.DYN_RES_PREFIX;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,7 +28,7 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
-import net.jcip.annotations.NotThreadSafe;
+import static com.vaadin.flow.server.communication.StreamRequestHandler.DYN_RES_PREFIX;
 
 @NotThreadSafe
 public class StreamRequestHandlerTest {
