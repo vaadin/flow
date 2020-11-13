@@ -16,6 +16,37 @@
 
 package com.vaadin.flow.server;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.UncheckedIOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.server.frontend.FallbackChunk;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
@@ -36,36 +67,6 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BO
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.UncheckedIOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.server.frontend.FallbackChunk;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
 
 /**
  * Creates {@link DeploymentConfiguration} filled with all parameters specified
@@ -374,17 +375,9 @@ public final class DeploymentConfigurationFactory implements Serializable {
         List<URL> contextResources = resourceProvider
                 .getApplicationResources(context, tokenResource);
 
-        List<URL> resources;
-        if (classResources.isEmpty()) {
-            resources = contextResources;
-        } else if (contextResources.isEmpty()) {
-            resources = classResources;
-        } else {
-            resources = new ArrayList<>(
-                    classResources.size() + contextResources.size());
-            resources.addAll(classResources);
-            resources.addAll(contextResources);
-        }
+        List<URL> resources = Stream
+                .concat(classResources.stream(), contextResources.stream())
+                .collect(Collectors.toList());
 
         // Accept resource that doesn't contain
         // 'jar!/META-INF/Vaadin/config/flow-build-info.json'
