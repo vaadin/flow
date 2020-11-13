@@ -37,8 +37,6 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.lumo.Lumo;
 
 /**
  * Base class for all the Views that demo some component.
@@ -47,7 +45,6 @@ import com.vaadin.flow.theme.lumo.Lumo;
  * @since 1.0
  */
 @Tag(Tag.DIV)
-@Theme(Lumo.class)
 @StyleSheet("frontend/src/css/demo.css")
 @StyleSheet("frontend/src/css/prism.css")
 public abstract class DemoView extends Component
