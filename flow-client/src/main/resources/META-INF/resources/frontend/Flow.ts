@@ -1,5 +1,5 @@
 import {ConnectionState} from './ConnectionState';
-import './LoadingIndicator';
+import './ConnectionIndicator';
 
 export interface FlowConfig {
   imports ?: () => void;
@@ -329,7 +329,7 @@ export class Flow {
 
   // Create shared connection state store and loading indicator
   private addLoadingIndicator() {
-    $wnd.Vaadin.loadingIndicator = document.createElement('vaadin-loading-indicator');
+    $wnd.Vaadin.loadingIndicator = document.createElement('vaadin-connection-indicator');
     document.body.appendChild($wnd.Vaadin.loadingIndicator);
   }
 
