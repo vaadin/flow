@@ -127,11 +127,12 @@ export class LoadingIndicator extends LitElement {
     }
   }
 
-  getClassesForState(): string {
+  getClassForState(): string {
     switch (this.loadingBarState) {
       case LoadingBarState.IDLE:
-      case LoadingBarState.FIRST:
         return '';
+      case LoadingBarState.FIRST:
+        return 'first';
       case LoadingBarState.SECOND:
         return 'second';
       case LoadingBarState.THIRD:
@@ -144,7 +145,7 @@ export class LoadingIndicator extends LitElement {
     this.updateTheme();
 
     return html`
-    <div class="v-loading-indicator ${this.getClassesForState()}" style="${this.getStyleForState()}"></div>
+    <div class="v-loading-indicator ${this.getClassForState()}" style="${this.getStyleForState()}"></div>
   `;
   }
 }
