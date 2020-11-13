@@ -44,12 +44,14 @@ public final class DataViewUtils {
      *
      * @param component
      *            component instance the filter is bound to
-     *
+     * @param <T>
+     *            item type
      * @return optional component's in-memory filter.
      */
-    public static Optional<SerializablePredicate<?>> getComponentFilter(
+    @SuppressWarnings("unchecked")
+    public static <T> Optional<SerializablePredicate<T>> getComponentFilter(
             Component component) {
-        return Optional.ofNullable((SerializablePredicate<?>) ComponentUtil
+        return Optional.ofNullable((SerializablePredicate<T>) ComponentUtil
                 .getData(component, COMPONENT_IN_MEMORY_FILTER_KEY));
     }
 
@@ -58,12 +60,14 @@ public final class DataViewUtils {
      *
      * @param component
      *            component instance the sort comparator is bound to
-     *
+     * @param <T>
+     *            item type
      * @return optional component's in-memory sort comparator.
      */
-    public static Optional<SerializableComparator<?>> getComponentSortComparator(
+    @SuppressWarnings("unchecked")
+    public static <T> Optional<SerializableComparator<T>> getComponentSortComparator(
             Component component) {
-        return Optional.ofNullable((SerializableComparator<?>) ComponentUtil
+        return Optional.ofNullable((SerializableComparator<T>) ComponentUtil
                 .getData(component, COMPONENT_IN_MEMORY_SORTING_KEY));
     }
 
@@ -77,9 +81,11 @@ public final class DataViewUtils {
      * @param filter
      *            component's in-memory filter to be set, or <code>null</code>
      *            to clear any previously set filters
+     * @param <T>
+     *            items type
      */
-    public static void setComponentFilter(Component component,
-            SerializablePredicate<?> filter) {
+    public static <T> void setComponentFilter(Component component,
+                                              SerializablePredicate<T> filter) {
         ComponentUtil.setData(component, COMPONENT_IN_MEMORY_FILTER_KEY,
                 filter);
     }
@@ -94,9 +100,11 @@ public final class DataViewUtils {
      * @param sortComparator
      *            component's in-memory sort comparator to be set, or
      *            <code>null</code> to clear any previously set sort comparators
+     * @param <T>
+     *            items type
      */
-    public static void setComponentSortComparator(Component component,
-            SerializableComparator<?> sortComparator) {
+    public static <T> void setComponentSortComparator(Component component,
+                                                      SerializableComparator<T> sortComparator) {
         ComponentUtil.setData(component, COMPONENT_IN_MEMORY_SORTING_KEY,
                 sortComparator);
     }
@@ -132,7 +140,7 @@ public final class DataViewUtils {
      * Generates a data query with component's in-memory filter and sort
      * comparator, which is optionally included if {@code withSorting} is set to
      * {@code true}.
-     * 
+     *
      * @param component
      *            component instance the filter and sort comparator are bound to
      * @param withSorting
@@ -142,10 +150,10 @@ public final class DataViewUtils {
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static Query getQuery(Component component, boolean withSorting) {
-        final Optional<SerializablePredicate<?>> filter = DataViewUtils
+        final Optional<SerializablePredicate<Object>> filter = DataViewUtils
                 .getComponentFilter(component);
 
-        final Optional<SerializableComparator<?>> sorting = withSorting
+        final Optional<SerializableComparator<Object>> sorting = withSorting
                 ? DataViewUtils.getComponentSortComparator(component)
                 : Optional.empty();
 

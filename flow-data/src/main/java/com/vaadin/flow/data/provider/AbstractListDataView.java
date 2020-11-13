@@ -110,15 +110,13 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return getItems().skip(index - 1).findFirst();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public AbstractListDataView<T> addFilter(SerializablePredicate<T> filter) {
         Objects.requireNonNull(filter, "Filter to add cannot be null");
-        Optional<SerializablePredicate<?>> originalFilter = DataViewUtils
+        Optional<SerializablePredicate<T>> originalFilter = DataViewUtils
                 .getComponentFilter(component);
         SerializablePredicate<T> newFilter = originalFilter.isPresent()
-                ? item -> ((SerializablePredicate<T>) originalFilter.get())
-                        .test(item) && filter.test(item)
+                ? item -> originalFilter.get().test(item) && filter.test(item)
                 : filter;
         return setFilter(newFilter);
     }
@@ -150,19 +148,17 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return this;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public AbstractListDataView<T> addSortComparator(
             SerializableComparator<T> sortComparator) {
         Objects.requireNonNull(sortComparator,
                 "Comparator to add cannot be null");
-        Optional<SerializableComparator<?>> originalComparator = DataViewUtils
+        Optional<SerializableComparator<T>> originalComparator = DataViewUtils
                 .getComponentSortComparator(component);
 
         if (originalComparator.isPresent()) {
             return setSortComparator((a, b) -> {
-                int result = ((SerializableComparator<T>) originalComparator
-                        .get()).compare(a, b);
+                int result = originalComparator.get().compare(a, b);
                 if (result == 0) {
                     result = sortComparator.compare(a, b);
                 }
