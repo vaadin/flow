@@ -123,7 +123,6 @@ public class FrontendDependenciesTest {
             themeDefinition.getTheme());
     }
 
-
     @Test
     public void themeDefiningClassAndName_throwsException()
         throws ClassNotFoundException {
@@ -139,6 +138,22 @@ public class FrontendDependenciesTest {
         Assert.assertTrue("Unexpected message: " + exception.getMessage(),
             exception.getMessage().startsWith(
                 "Theme name and theme class can not both be specified."));
+    }
+
+    @Test
+    public void noDefaultThemeAvailable_throwsException()
+        throws ClassNotFoundException {
+        Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
+            .thenReturn(Collections.singleton(MyAppThemeShell.class));
+        Mockito.when(classFinder.loadClass(FrontendDependencies.LUMO))
+            .thenThrow(ClassNotFoundException.class);
+
+        IllegalStateException exception = Assert
+            .assertThrows(IllegalStateException.class,
+                () -> new FrontendDependencies(classFinder, false));
+
+        Assert.assertEquals("Thrown exception didn't contain correct message",
+                "Lumo dependency needs to be available on the classpath when using a theme name.", exception.getMessage());
     }
 
     @Test
@@ -275,6 +290,11 @@ public class FrontendDependenciesTest {
     @Theme(themeClass = FakeLumo.class)
     public static class MyAppShell implements AppShellConfigurator {
     }
+
+    @Theme("my-theme")
+    public static class MyAppThemeShell implements AppShellConfigurator {
+    }
+
 
     @Theme(value = "my-theme", themeClass = FakeLumo.class)
     public static class FaultyThemeAnnotation implements AppShellConfigurator {
