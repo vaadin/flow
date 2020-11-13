@@ -1,0 +1,18 @@
+{
+  "description": "stats-plugin",
+  "keywords": [
+    "plugin"
+  ],
+  "repository": "vaadin/flow",
+  "name": "@vaadin/stats-plugin",
+  "version": "1.0.0",
+  "main": "stats-plugin.js",
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/flow/issues"
+  },
+  "files": [
+    "stats-plugin.js"
+  ]
+}

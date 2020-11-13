@@ -1,0 +1,79 @@
+## Flow Webpack plugins
+
+Flow now uses webpack plugins to make the `webpack.generated.js` cleaner and easier to extend
+without cluttering the file and making it long and complex.
+
+The files get installed with the task `TaskInstallWebpackPlugins` which reads the `webpack-plugins.json`
+in from `src/main/resources/plugins` and installs the plugins named here e.g.
+
+```json
+{
+  "plugins": [
+    "stats-plugin"
+  ]
+}
+```
+
+The plugin itself should also be contained in `src/main/resources/plugins` with the
+folder name being the same as the plugin name.
+
+For stats-plugin this means it should be located in `src/main/resources/plugins/stats-plugin`.
+
+The plugin folder needs to contain the plugin javascript files plus a package.json with at least the fields
+`version`, `main`, `files` filled where:
+  * `version` is the semver version for the plugin. 
+  (Plugin will not be updated if the same version already exists)
+  * `main` depicts the main js file for the plugin.
+  * `files` contains all files the plugin needs.
+   (only these files will be copied)
+
+The full information would be preferred:
+
+```json
+{
+  "description": "stats-plugin",
+  "keywords": [
+    "plugin"
+  ],
+  "repository": "vaadin/flow",
+  "name": "@vaadin/stats-plugin",
+  "version": "1.0.0",
+  "main": "stats-plugin.js",
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/flow/issues"
+  },
+  "files": [
+    "stats-plugin.js"
+  ]
+}
+```
+
+For creating a plugin see [Writing a plugin](https://webpack.js.org/contribute/writing-a-plugin/)
+
+## Using a Flow webpack plugin
+
+The flow plugins get installed to `node_modules/@vaadin` which means that using them we should use the for `@vaadin/${plugin-name}`
+
+As the plugins are meant for internal use the are added to `webpack.generated.js` and
+used from there.
+
+First we need to import the webpack plugin
+
+```js
+const StatsPlugin = require('@vaadin/stats-plugin');
+```
+
+then add the plugin with required options to `plugins` in the generated file
+```js
+  plugins: [
+    new StatsPlugin({
+      devMode: devMode,
+      statsFile: statsFile,
+      setResults: function (statsFile) {
+        stats = statsFile;
+      }
+    }),
+ ]
+```
