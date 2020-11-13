@@ -72,8 +72,6 @@
   * Gattling scalability tests. Compatibility mode only. 
 * test-servlet
   * Automatic servlet registration test
-* test-subcontext
-  * `context://` tests for Compatibility mode
 * test-themes
   * Custom Theme tests for NPM and Compatibility modes
 * test-live-reload
@@ -100,7 +98,6 @@
   * Public resources used in test modules: 
     * test-dev-mode
     * test-root-ui-context
-    * test-subcontext
     * test-scalability
     * test-servlet
     * test-pwa
