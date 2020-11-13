@@ -46,7 +46,7 @@ public class HandlerHelper implements Serializable {
     static final String UNSAFE_PATH_ERROR_MESSAGE_PATTERN = "Blocked attempt to access file: {}";
 
     private static final Pattern PARENT_DIRECTORY_REGEX = Pattern
-            .compile("(/|\\\\)\\.\\.(/|\\\\)", Pattern.CASE_INSENSITIVE);
+            .compile("(/|\\\\)\\.\\.(/|\\\\)?", Pattern.CASE_INSENSITIVE);
 
     /**
      * Framework internal enum for tracking the type of a request.
@@ -199,8 +199,8 @@ public class HandlerHelper implements Serializable {
      *         {@code false} otherwise.
      */
     public static boolean isPathUnsafe(String path) {
-        // Check that the path does not have '/../', '\..\', %5C..%5C, or
-        // %2F..%2F
+        // Check that the path does not have '/../', '\..\', %5C..%5C,
+        // %2F..%2F, nor '/..', '\..', %5C.., %2F..
         try {
             path = URLDecoder.decode(path, StandardCharsets.UTF_8.name());
         } catch (UnsupportedEncodingException e) {
