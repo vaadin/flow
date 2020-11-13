@@ -15,11 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -51,6 +46,11 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+
+import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 
 public class WebComponentBootstrapHandlerTest {
 
