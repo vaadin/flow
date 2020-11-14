@@ -49,7 +49,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     private static final String NULL_ITEM_ERROR_MESSAGE = "Item cannot be null";
 
-    private final SerializableBiConsumer<SerializablePredicate<T>, SerializableComparator<T>> dataChangedCallback;
+    private final SerializableBiConsumer<SerializablePredicate<T>, SerializableComparator<T>> filterOrSortingChangedCallback;
 
     /**
      * Creates a new instance of {@link AbstractListDataView} subclass and
@@ -60,18 +60,18 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
      *            supplier from which the DataProvider can be gotten
      * @param component
      *            the component that the dataView is bound to
-     * @param dataChangedCallback
+     * @param filterOrSortingChangedCallback
      *            callback, which is being invoked when the component filtering
      *            or sorting changes, not <code>null</code>
      */
     public AbstractListDataView(
             SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier,
             Component component,
-            SerializableBiConsumer<SerializablePredicate<T>, SerializableComparator<T>> dataChangedCallback) {
+            SerializableBiConsumer<SerializablePredicate<T>, SerializableComparator<T>> filterOrSortingChangedCallback) {
         super(dataProviderSupplier, component);
-        Objects.requireNonNull(dataChangedCallback,
-                "Data Change Callback cannot be empty");
-        this.dataChangedCallback = dataChangedCallback;
+        Objects.requireNonNull(filterOrSortingChangedCallback,
+                "Filter or Sorting Change Callback cannot be empty");
+        this.filterOrSortingChangedCallback = filterOrSortingChangedCallback;
     }
 
     @SuppressWarnings("unchecked")
@@ -423,6 +423,6 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     private void fireFilteringOrSortingChangeEvent(
             SerializablePredicate<T> filter,
             SerializableComparator<T> sortComparator) {
-        this.dataChangedCallback.accept(filter, sortComparator);
+        filterOrSortingChangedCallback.accept(filter, sortComparator);
     }
 }
