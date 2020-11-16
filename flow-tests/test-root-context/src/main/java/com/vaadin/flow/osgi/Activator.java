@@ -15,21 +15,18 @@
  */
 package com.vaadin.flow.osgi;
 
-import java.util.Dictionary;
-import java.util.Hashtable;
-
+import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
+import java.util.Hashtable;
+
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
-import org.osgi.util.tracker.ServiceTracker;
+import org.osgi.service.http.whiteboard.HttpWhiteboardConstants;
 
 import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.uitest.servlet.ProductionModeTimingDataViewTestServlet;
@@ -39,8 +36,6 @@ import com.vaadin.flow.uitest.servlet.ViewTestServlet;
 
 @Component(immediate = true)
 public class Activator {
-
-    private ServiceTracker<HttpService, HttpService> httpTracker;
 
     @VaadinServletConfiguration(productionMode = false)
     private static class FixedViewServlet extends ViewTestServlet {
@@ -89,55 +84,34 @@ public class Activator {
     void activate() throws NamespaceException {
         BundleContext context = FrameworkUtil.getBundle(Activator.class)
                 .getBundleContext();
-        httpTracker = new ServiceTracker<HttpService, HttpService>(context,
-                HttpService.class.getName(), null) {
-            @Override
-            public void removedService(ServiceReference<HttpService> reference,
-                    HttpService service) {
-                // HTTP service is no longer available, unregister our
-                // servlet...
-                service.unregister("/view/*");
-                service.unregister("/context/*");
-                service.unregister("/frontend/*");
-                service.unregister("/new-router-session/*");
-                service.unregister("/view-production/*");
-                service.unregister("/view-production-timing/*");
-                service.unregister("/view-es6-url/*");
-            }
 
-            @SuppressWarnings("rawtypes")
-            @Override
-            public HttpService addingService(
-                    ServiceReference<HttpService> reference) {
-                // HTTP service is available, register our servlet...
-                HttpService httpService = this.context.getService(reference);
-                Dictionary dictionary = new Hashtable<>();
-                try {
-                    httpService.registerServlet("/view/*",
-                            new FixedViewServlet(), dictionary, null);
-                    httpService.registerServlet("/context/*",
-                            new FixedViewServlet(), dictionary, null);
-                    httpService.registerServlet("/new-router-session/*",
-                            new FixedRouterServlet(), dictionary, null);
-                    httpService.registerServlet("/view-production/*",
-                            new FixedProductionModeViewServlet(), dictionary,
-                            null);
-                    httpService.registerServlet("/view-production-timing/*",
-                            new FixedProductionModeTimingDataViewServlet(),
-                            dictionary, null);
-                } catch (ServletException | NamespaceException exception) {
-                    throw new RuntimeException(exception);
-                }
-                return httpService;
-            }
-        };
-        // start tracking all HTTP services...
-        httpTracker.open();
+        context.registerService(Servlet.class, new FixedViewServlet(),
+                createProperties("/view/*"));
+
+        context.registerService(Servlet.class, new FixedViewServlet(),
+                createProperties("/context/*"));
+
+        context.registerService(Servlet.class, new FixedRouterServlet(),
+                createProperties("/new-router-session/*"));
+
+        context.registerService(Servlet.class,
+                new FixedProductionModeViewServlet(),
+                createProperties("/view-production/*"));
+
+        context.registerService(Servlet.class,
+                new FixedProductionModeTimingDataViewServlet(),
+                createProperties("/view-production-timing/*"));
+
     }
 
-    @Deactivate
-    void deactivate() {
-        // stop tracking all HTTP services...
-        httpTracker.close();
+    private Hashtable<String, Object> createProperties(String mapping) {
+        Hashtable<String, Object> properties = new Hashtable<>();
+        properties.put(
+                HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_ASYNC_SUPPORTED,
+                true);
+        properties.put(HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_PATTERN,
+                mapping);
+        return properties;
     }
+
 }
