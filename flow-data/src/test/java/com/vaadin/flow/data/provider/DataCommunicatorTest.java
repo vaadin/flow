@@ -16,7 +16,6 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -1453,74 +1452,6 @@ public class DataCommunicatorTest {
 
         dataCommunicator.setRequestedRange(0, 50);
         fakeClientCommunication();
-    }
-
-    @Test
-    public void setDataProvider_setNewDataProvider_filteringAndSortingRemoved() {
-        dataCommunicator.setDataProvider(
-                DataProvider.ofItems(new Item(0), new Item(1), new Item(2)),
-                null);
-
-        ListDataView<Item, ?> listDataView = new AbstractListDataView<Item>(
-                dataCommunicator::getDataProvider, new TestComponent(element),
-                (filter, sorting) -> {
-                }) {
-        };
-
-        Assert.assertEquals("Unexpected items count before filter", 3,
-                listDataView.getItems().count());
-        Assert.assertEquals("Unexpected items order before sorting",
-                new Item(0), listDataView.getItems().findFirst().orElse(null));
-
-        listDataView.setFilter(item -> item.id < 2);
-        listDataView.setSortOrder(item -> item.id, SortDirection.DESCENDING);
-
-        Assert.assertEquals("Unexpected items count after filter", 2,
-                listDataView.getItems().count());
-        Assert.assertEquals("Unexpected items order after sorting", new Item(1),
-                listDataView.getItems().findFirst().orElse(null));
-
-        dataCommunicator.setDataProvider(
-                DataProvider.ofItems(new Item(0), new Item(1), new Item(2)),
-                null);
-
-        Assert.assertEquals("Unexpected items count after data provider reset",
-                3, listDataView.getItems().count());
-        Assert.assertEquals("Unexpected items order after data provider reset",
-                new Item(0), listDataView.getItems().findFirst().orElse(null));
-    }
-
-    @Test
-    public void filter_clearFilterAfterFlush_componentFilterPreserved() {
-        final Item[] items = { new Item(1), new Item(2), new Item(3) };
-        final SerializablePredicate<Item> disposableFilter = item -> item.id == 3;
-        final SerializablePredicate<Item> permanentFilter = item -> item.id == 2;
-
-        dataCommunicator.setDataProvider(DataProvider.ofItems(items),
-                disposableFilter, false);
-
-        AbstractListDataView<Item> listDataView = new AbstractListDataView<Item>(
-                dataCommunicator::getDataProvider, new TestComponent(element),
-                (filter, sorting) -> {
-                }) {
-        };
-
-        listDataView.setFilter(permanentFilter);
-
-        dataCommunicator.setRequestedRange(0, 50);
-        fakeClientCommunication();
-
-        Assert.assertNotNull(
-                "Expected permanent filter to be preserved after flush",
-                dataCommunicator.getFilter());
-
-        @SuppressWarnings("unchecked")
-        SerializablePredicate<Item> filter = (SerializablePredicate<Item>) dataCommunicator
-                .getFilter();
-
-        Assert.assertArrayEquals("Unexpected permanent filter",
-                Arrays.stream(items).filter(permanentFilter).toArray(),
-                Arrays.stream(items).filter(filter).toArray());
     }
 
     @Tag("test-component")
