@@ -13,27 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.vaadin.flow.uitest.ui.theme;
 
-import java.util.Collections;
-import java.util.List;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.router.Route;
 
-import com.vaadin.flow.theme.AbstractTheme;
+@Route("com.vaadin.flow.uitest.ui.theme.Theme")
+public class ThemeView extends Div {
 
-public class MyTheme implements AbstractTheme {
-    @Override
-    public String getBaseUrl() {
-        return "src/";
-    }
-
-    @Override
-    public String getThemeUrl() {
-        return "legacyTheme/myTheme/";
-    }
-
-    @Override
-    public List<String> getHeaderInlineContents() {
-        return Collections.singletonList("<custom-style>\n <style>\n   html {\n"
-                + "      font-size: 20px;\n  color:red;  }\n <style>\n </custom-style>");
+    public ThemeView() {
+        add(new Span("This is the theme test view"));
     }
 }
