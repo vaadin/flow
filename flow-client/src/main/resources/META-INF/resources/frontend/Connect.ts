@@ -1,4 +1,5 @@
 /* tslint:disable:max-classes-per-file */
+import { ConnectionState } from './ConnectionState';
 import { DeferrableResult, DeferredCallHandler, OfflineHelper } from './Offline';
 
 const $wnd = window as any;
@@ -419,13 +420,19 @@ export class ConnectClient {
         if ($wnd.Vaadin.connectionState) {
           $wnd.Vaadin.connectionState.loadingStarted();
         }
-        try {
-          return fetch(context.request);
-        } finally {
-          if ($wnd.Vaadin.connectionState) {
-            $wnd.Vaadin.connectionState.loadingSucceeded();
-          }
-        }
+       return fetch(context.request)
+            .then(response => {
+              if ($wnd.Vaadin.connectionState) {
+                $wnd.Vaadin.connectionState.loadingSucceeded();
+              }
+              return response;
+            })
+            .catch(error => {
+              if ($wnd.Vaadin.connectionState) {
+                $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
+              }
+              return Promise.reject(error);
+            });
       };
 
     // Assemble the final middlewares array from internal
