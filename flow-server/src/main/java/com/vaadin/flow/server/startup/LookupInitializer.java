@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.HandlesTypes;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,10 +38,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.HandlesTypes;
-
 import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEventHandler;
@@ -47,8 +47,6 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.osgi.OSGiAccess;
-import com.vaadin.flow.server.osgi.OSGiResourceProvider;
 
 /**
  * Standard servlet initializer for collecting all SPI implementations.
@@ -212,14 +210,9 @@ public class LookupInitializer
     @Override
     public void process(Set<Class<?>> classSet, ServletContext servletContext)
             throws ServletException {
-        OSGiAccess osgiAccess = OSGiAccess.getInstance();
         VaadinServletContext vaadinContext = new VaadinServletContext(
                 servletContext);
-        // OSGi case is out of the scope: the Lookup instance is set in the fake
-        // context when it's created
-        if (osgiAccess.getOsgiServletContext() == null) {
-            initStandardLookup(classSet, servletContext);
-        }
+        initStandardLookup(classSet, servletContext);
 
         DeferredServletContextInitializers initializers;
         synchronized (servletContext) {
@@ -287,8 +280,7 @@ public class LookupInitializer
                         .filter(cls -> !cls.isInterface() && !cls.isSynthetic()
                                 && !Modifier.isAbstract(cls.getModifiers()))
                         .filter(clazz -> !ResourceProvider.class.equals(clazz)
-                                && !ResourceProviderImpl.class.equals(clazz)
-                                && !OSGiResourceProvider.class.equals(clazz))
+                                && !ResourceProviderImpl.class.equals(clazz))
                         .collect(Collectors.toSet());
     }
 

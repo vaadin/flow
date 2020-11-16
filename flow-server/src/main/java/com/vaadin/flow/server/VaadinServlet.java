@@ -16,7 +16,6 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -25,15 +24,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Properties;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
-import com.vaadin.flow.server.osgi.OSGiAccess;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -479,21 +475,4 @@ public class VaadinServlet extends HttpServlet {
         getService().destroy();
     }
 
-    @Override
-    public void init() {
-        ServletContext osgiServletContext = OSGiAccess.getInstance()
-                .getOsgiServletContext();
-        if (osgiServletContext != null) {
-            synchronized (getServletContext()) {
-                ArrayList<String> attributes = Collections
-                        .list(getServletContext().getAttributeNames());
-                if (attributes.isEmpty()) {
-                    ArrayList<String> list = Collections
-                            .list(osgiServletContext.getAttributeNames());
-                    list.forEach(attr -> getServletContext().setAttribute(attr,
-                            osgiServletContext.getAttribute(attr)));
-                }
-            }
-        }
-    }
 }
