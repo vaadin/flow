@@ -33,7 +33,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -43,8 +42,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
@@ -55,14 +52,7 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
-@RunWith(Parameterized.class)
 public class StaticFileServerTest implements Serializable {
-
-    private String pathsWithDirectoryChange;
-
-    public StaticFileServerTest(String pathsWithDirectoryChange) {
-        this.pathsWithDirectoryChange = pathsWithDirectoryChange;
-    }
 
     private static class CapturingServletOutputStream
             extends ServletOutputStream {
@@ -551,21 +541,60 @@ public class StaticFileServerTest implements Serializable {
                 responseCode.get());
     }
 
-    @Parameterized.Parameters
-    public static Collection<String> paths() {
-        return Arrays.asList("/VAADIN/build/../vaadin-bundle-1234.cache.js",
-                "/VAADIN/build/something\\..\\vaadin-bundle-1234.cache.js",
-                "/VAADIN/build/something%5C..%5Cvaadin-bundle-1234.cache.js",
-                "/VAADIN/build/something%5c..%5cvaadin-bundle-1234.cache.js",
-                "/VAADIN/build/..", "/VAADIN/build/something\\..",
+    @Test
+    public void serveStaticResource_uriWithDirectoryChangeWithSlash_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        staticBuildResourceWithDirectoryChange_nothingServed(
+                "/VAADIN/build/../vaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void serveStaticResource_uriWithDirectoryChangeWithBackslash_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        staticBuildResourceWithDirectoryChange_nothingServed(
+                "/VAADIN/build/something\\..\\vaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void serveStaticResource_uriWithDirectoryChangeWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        staticBuildResourceWithDirectoryChange_nothingServed(
+                "/VAADIN/build/something%5C..%5Cvaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void serveStaticResource_uriWithDirectoryChangeWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        staticBuildResourceWithDirectoryChange_nothingServed(
+                "/VAADIN/build/something%5c..%5cvaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithSlash_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        staticBuildResourceWithDirectoryChange_nothingServed(
+                "/VAADIN/build/..");
+    }
+
+    @Test
+    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithBackslash_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        staticBuildResourceWithDirectoryChange_nothingServed(
+                "/VAADIN/build/something\\..");
+    }
+
+    @Test
+    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something%5C..");
     }
 
     @Test
-    public void serveStaticResource_pathContainsDirectoryChange_nothingServedAndForbiddenStatusSet()
+    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsForbiddenStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
-                pathsWithDirectoryChange);
+                "/VAADIN/build/something%5c..");
     }
 
     @Test

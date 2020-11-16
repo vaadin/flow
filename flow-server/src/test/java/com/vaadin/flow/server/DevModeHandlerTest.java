@@ -40,7 +40,6 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -68,8 +67,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.mockito.Mockito;
 
 import com.sun.net.httpserver.HttpServer;
@@ -81,7 +78,6 @@ import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 @SuppressWarnings("restriction")
-@RunWith(Parameterized.class)
 public class DevModeHandlerTest {
 
     private MockDeploymentConfiguration configuration;
@@ -102,11 +98,6 @@ public class DevModeHandlerTest {
     }
 
     private String baseDir;
-    private String pathsWithDirectoryChange;
-
-    public DevModeHandlerTest(String pathsWithDirectoryChange) {
-        this.pathsWithDirectoryChange = pathsWithDirectoryChange;
-    }
 
     @Before
     public void setup() throws Exception {
@@ -585,20 +576,65 @@ public class DevModeHandlerTest {
         Mockito.verify(response).setContentType("text/html;charset=utf-8");
     }
 
-    @Parameterized.Parameters
-    public static Collection<String> pathsWithDirectoryChange() {
-        return Arrays.asList("/VAADIN/build/../vaadin-bundle-1234.cache.js",
-                "/VAADIN/build/something\\..\\vaadin-bundle-1234.cache.js",
-                "/VAADIN/build/something%5C..%5Cvaadin-bundle-1234.cache.js",
-                "/VAADIN/build/something%5c..%5cvaadin-bundle-1234.cache.js",
-                "/VAADIN/build/..", "/VAADIN/build/something\\..",
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeWithSlash_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/../vaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeWithBackslash_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/something\\..\\vaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/something%5C..%5Cvaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/something%5c..%5cvaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeInTheEndWithSlash_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/..");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeInTheEndWithBackslash_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/something\\..");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeInTheEndWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
                 "/VAADIN/build/something%5C..");
     }
 
     @Test
-    public void serveDevModeRequest_requestContainsDirectoryChange_returnsImmediatelyAndSetsForbiddenStatus()
+    public void serveDevModeRequest_uriWithDirectoryChangeInTheEndWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsForbiddenStatus()
             throws IOException {
-        HttpServletRequest request = prepareRequest(pathsWithDirectoryChange);
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/something%5c..");
+    }
+
+    private void verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+            String uri) throws IOException {
+        HttpServletRequest request = prepareRequest(uri);
         HttpServletResponse response = prepareResponse();
         DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
                 CompletableFuture.completedFuture(null));
