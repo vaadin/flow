@@ -38,6 +38,7 @@ import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JsonUtils;
@@ -418,6 +419,8 @@ public class DataCommunicator<T> implements Serializable {
             DataProvider<T, F> dataProvider, F initialFilter,
             boolean permanentFilter) {
         Objects.requireNonNull(dataProvider, "data provider cannot be null");
+
+        removeFilteringAndSorting();
 
         filter = initialFilter != null
                 ? new Filter<>(initialFilter, permanentFilter)
@@ -1356,8 +1359,27 @@ public class DataCommunicator<T> implements Serializable {
 
     private void clearFilterIfDisposable() {
         if (filter != null && !filter.isPermanent()) {
-            filter = null;
+            Optional<Component> component = Element.get(stateNode).getComponent();
+            if (component.isPresent()) {
+                // Look up for the component's in-memory filter
+                Optional<SerializablePredicate<T>> componentFilter = DataViewUtils
+                        .getComponentFilter(component.get());
+
+                // If the component's in-memory filter is present, then erase
+                // the client-side filter and re-apply the permanent
+                // component's filter
+                filter = componentFilter.map(
+                        filterValue -> new Filter<>(filterValue, true))
+                        .orElse(null);
+            } else {
+                filter = null;
+            }
         }
+    }
+
+    private void removeFilteringAndSorting() {
+        Element.get(stateNode).getComponent().ifPresent(
+                DataViewUtils::removeComponentFilterAndSortComparator);
     }
 
     private static class Activation implements Serializable {
