@@ -34,6 +34,8 @@ export class ConnectionStateStore {
 
   private stateChangeListeners: Set<ConnectionStateChangeListener> = new Set();
 
+  private loadingCount: number = 0;
+
   constructor(initialState: ConnectionState) {
       this.connectionState = initialState;
   }
@@ -46,6 +48,20 @@ export class ConnectionStateStore {
     this.stateChangeListeners.delete(listener);
   }
 
+  loadingStarted(): void {
+    this.state = ConnectionState.LOADING;
+    this.loadingCount += 1;
+  }
+
+  loadingSucceeded(): void {
+    if (this.loadingCount > 0) {
+      this.loadingCount -= 1;
+      if (this.loadingCount === 0) {
+        this.state = ConnectionState.CONNECTED;
+      }
+    }
+  }
+
   get state(): ConnectionState {
     return this.connectionState;
   }
@@ -54,6 +70,7 @@ export class ConnectionStateStore {
     if (newState !== this.connectionState) {
       const prevState = this.connectionState;
       this.connectionState = newState;
+      this.loadingCount = 0;
       for (const listener of this.stateChangeListeners) {
         listener(prevState, this.connectionState);
       }

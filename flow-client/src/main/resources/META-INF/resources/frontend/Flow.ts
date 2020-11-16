@@ -154,11 +154,11 @@ export class Flow {
     }
     // 'server -> client'
     return new Promise(resolve => {
-      $wnd.Vaadin.connectionState.state = ConnectionState.LOADING;
+      $wnd.Vaadin.connectionState.loadingStarted();
       // The callback to run from server side to cancel navigation
       this.container.serverConnected = (cancel) => {
         resolve(cmd && cancel ? cmd.prevent() : {});
-        $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
+        $wnd.Vaadin.connectionState.loadingSucceeded();
       }
 
       // Call server side to check whether we can leave the view
@@ -171,7 +171,7 @@ export class Flow {
   private async flowNavigate(ctx: NavigationParameters, cmd?: PreventAndRedirectCommands): Promise<HTMLElement> {
     if (this.response) {
       return new Promise(resolve => {
-        $wnd.Vaadin.connectionState.state = ConnectionState.LOADING;
+        $wnd.Vaadin.connectionState.loadingStarted();
         // The callback to run from server side once the view is ready
         this.container.serverConnected = (cancel, redirectContext?: NavigationParameters) => {
           if (cmd && cancel) {
@@ -182,7 +182,7 @@ export class Flow {
             this.container.style.display = '';
             resolve(this.container);
           }
-          $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
+          $wnd.Vaadin.connectionState.loadingSucceeded();
         };
 
         // Call server side to navigate to the given route
@@ -205,7 +205,7 @@ export class Flow {
     if (!this.response) {
 
       // show flow progress indicator
-      $wnd.Vaadin.connectionState.state = ConnectionState.LOADING;
+      $wnd.Vaadin.connectionState.loadingStarted();
 
       // Initialize server side UI
       this.response = await this.flowInitUi(serverSideRouting);
@@ -249,7 +249,7 @@ export class Flow {
       }
 
       // hide flow progress indicator
-      $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
+      $wnd.Vaadin.connectionState.loadingSucceeded();
     }
     return this.response;
   }

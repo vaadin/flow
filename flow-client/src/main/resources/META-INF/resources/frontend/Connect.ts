@@ -1,5 +1,4 @@
 /* tslint:disable:max-classes-per-file */
-import {ConnectionState} from "./ConnectionState";
 import { DeferrableResult, DeferredCallHandler, OfflineHelper } from './Offline';
 
 const $wnd = window as any;
@@ -417,11 +416,15 @@ export class ConnectClient {
     // this way makes the folding down below more concise.
     const fetchNext: MiddlewareNext =
       async(context: MiddlewareContext): Promise<Response> => {
-        this.setConnectionState(ConnectionState.LOADING);
+        if ($wnd.Vaadin.connectionState) {
+          $wnd.Vaadin.connectionState.loadingStarted();
+        }
         try {
           return fetch(context.request);
         } finally {
-          this.setConnectionState(ConnectionState.CONNECTED);
+          if ($wnd.Vaadin.connectionState) {
+            $wnd.Vaadin.connectionState.loadingSucceeded();
+          }
         }
       };
 
@@ -449,13 +452,6 @@ export class ConnectClient {
 
     // Invoke all the folded async middlewares and return
     return chain(initialContext);
-  }
-
-  // Re-use flow connection state indicator when fetching endpoints
-  private setConnectionState(state: ConnectionState) {
-    if ($wnd.Vaadin.connectionState) {
-      $wnd.Vaadin.connectionState.state = state;
-    }
   }
 }
 
