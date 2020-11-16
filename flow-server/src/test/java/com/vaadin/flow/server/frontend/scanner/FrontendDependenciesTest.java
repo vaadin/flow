@@ -135,9 +135,10 @@ public class FrontendDependenciesTest {
             .assertThrows(IllegalStateException.class,
                 () -> new FrontendDependencies(classFinder, false));
 
-        Assert.assertTrue("Unexpected message: " + exception.getMessage(),
-            exception.getMessage().startsWith(
-                "Theme name and theme class can not both be specified."));
+        Assert.assertEquals("Unexpected message for the thrown exception",
+            "Theme name and theme class can not both be specified. "
+                + "Theme name uses Lumo and can not be used in combination with custom theme class.",
+            exception.getMessage());
     }
 
     @Test
@@ -153,7 +154,21 @@ public class FrontendDependenciesTest {
                 () -> new FrontendDependencies(classFinder, false));
 
         Assert.assertEquals("Thrown exception didn't contain correct message",
-                "Lumo dependency needs to be available on the classpath when using a theme name.", exception.getMessage());
+            "Lumo dependency needs to be available on the classpath when using a theme name.",
+            exception.getMessage());
+    }
+
+    @Test
+    public void appThemeDefined_getsLumoAsTheme() {
+        Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
+            .thenReturn(Collections.singleton(MyAppThemeShell.class));
+
+        FrontendDependencies dependencies = new FrontendDependencies(classFinder, false);;
+
+        Assert.assertEquals("Faulty default theme received",
+            FakeLumo.class, dependencies.getThemeDefinition().getTheme());
+
+
     }
 
     @Test
