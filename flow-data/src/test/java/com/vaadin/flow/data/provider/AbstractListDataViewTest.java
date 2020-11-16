@@ -1231,7 +1231,7 @@ public class AbstractListDataViewTest {
     @Test
     public void filterOrSortingChangedCallback_emptyCallbackProvided_throws() {
         exceptionRule.expect(NullPointerException.class);
-        exceptionRule.expectMessage("Data Change Callback cannot be empty");
+        exceptionRule.expectMessage("Filter or Sorting Change Callback cannot be empty");
         new ListDataViewImpl(() -> dataProvider, component, null);
     }
 
