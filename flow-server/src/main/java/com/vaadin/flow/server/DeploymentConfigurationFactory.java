@@ -364,8 +364,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
      */
     private static String getTokenFileFromClassloader(Class<?> contextClass,
             VaadinContext context) throws IOException {
-        System.out.println("SSSSSSSSSSSSSSSSSSSSSs "
-                + ((VaadinServletContext) context).getContext());
         String tokenResource = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
 
         Lookup lookup = context.getAttribute(Lookup.class);
