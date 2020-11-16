@@ -154,11 +154,11 @@ export class Flow {
     }
     // 'server -> client'
     return new Promise(resolve => {
-      $wnd.Vaadin.connectionState.loadingStarted();
+      this.loadingStarted();
       // The callback to run from server side to cancel navigation
       this.container.serverConnected = (cancel) => {
         resolve(cmd && cancel ? cmd.prevent() : {});
-        $wnd.Vaadin.connectionState.loadingSucceeded();
+        this.loadingSucceeded();
       }
 
       // Call server side to check whether we can leave the view
@@ -171,7 +171,7 @@ export class Flow {
   private async flowNavigate(ctx: NavigationParameters, cmd?: PreventAndRedirectCommands): Promise<HTMLElement> {
     if (this.response) {
       return new Promise(resolve => {
-        $wnd.Vaadin.connectionState.loadingStarted();
+        this.loadingStarted();
         // The callback to run from server side once the view is ready
         this.container.serverConnected = (cancel, redirectContext?: NavigationParameters) => {
           if (cmd && cancel) {
@@ -182,7 +182,7 @@ export class Flow {
             this.container.style.display = '';
             resolve(this.container);
           }
-          $wnd.Vaadin.connectionState.loadingSucceeded();
+          this.loadingSucceeded();
         };
 
         // Call server side to navigate to the given route
@@ -205,7 +205,7 @@ export class Flow {
     if (!this.response) {
 
       // show flow progress indicator
-      $wnd.Vaadin.connectionState.loadingStarted();
+      this.loadingStarted();
 
       // Initialize server side UI
       this.response = await this.flowInitUi(serverSideRouting);
@@ -249,7 +249,7 @@ export class Flow {
       }
 
       // hide flow progress indicator
-      $wnd.Vaadin.connectionState.loadingSucceeded();
+      this.loadingSucceeded();
     }
     return this.response;
   }
@@ -331,11 +331,18 @@ export class Flow {
   private addLoadingIndicator() {
     $wnd.Vaadin.loadingIndicator = document.createElement('vaadin-loading-indicator');
     document.body.appendChild($wnd.Vaadin.loadingIndicator);
+  }
 
-    $wnd.Vaadin.connectionState.addStateChangeListener( (_: ConnectionState, current: ConnectionState) => {
-      // Make Testbench know that server request is in progress
-      this.isActive = current === ConnectionState.LOADING;
-    });
+  private loadingStarted() {
+    // Make Testbench know that server request is in progress
+    this.isActive = true;
+    $wnd.Vaadin.connectionState.loadingStarted();
+  }
+
+  private loadingSucceeded() {
+    // Make Testbench know that server request has finished
+    this.isActive = false;
+    $wnd.Vaadin.connectionState.loadingSucceeded();
   }
 
   private async showOfflineStub() {
