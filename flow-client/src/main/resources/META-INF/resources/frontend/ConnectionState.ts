@@ -71,15 +71,14 @@ export class ConnectionStateStore {
 }
 
 const $wnd = window as any;
-if (!$wnd.Vaadin?.Flow?.connectionState) {
+if (!$wnd.Vaadin?.connectionState) {
   $wnd.Vaadin = $wnd.Vaadin || {};
-  $wnd.Vaadin.Flow = $wnd.Vaadin.Flow || {};
-  $wnd.Vaadin.Flow.connectionState = new ConnectionStateStore(
+  $wnd.Vaadin.connectionState = new ConnectionStateStore(
     navigator.onLine ? ConnectionState.CONNECTED : ConnectionState.CONNECTION_LOST);
   $wnd.addEventListener('online', () => {
-    $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTED;
+    $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
   });
   $wnd.addEventListener('offline', () => {
-    $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTION_LOST;
+    $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
   });
 }

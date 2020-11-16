@@ -115,14 +115,14 @@ export class Flow {
       // Store last action pathname so as we can check it in events
       this.pathname = params.pathname;
 
-      if ($wnd.Vaadin.Flow.connectionState.online) {
+      if ($wnd.Vaadin.connectionState.online) {
         // @ts-ignore
         try {
           await this.flowInit();
         } catch(error) {
           if (error instanceof FlowUiInitializationError) {
             // error initializing Flow: assume connection lost
-            $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTION_LOST;
+            $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
             await this.showOfflineStub();
           }
         }
@@ -147,18 +147,18 @@ export class Flow {
       cmd?: PreventCommands): Promise<any> {
 
     // server -> server, viewing offline stub, or browser is offline
-    const connectionState = $wnd.Vaadin.Flow.connectionState;
+    const connectionState = $wnd.Vaadin.connectionState;
     if (this.pathname === ctx.pathname || this.response === undefined
       || connectionState.offline) {
       return Promise.resolve({});
     }
     // 'server -> client'
     return new Promise(resolve => {
-      $wnd.Vaadin.Flow.connectionState.state = ConnectionState.LOADING;
+      $wnd.Vaadin.connectionState.state = ConnectionState.LOADING;
       // The callback to run from server side to cancel navigation
       this.container.serverConnected = (cancel) => {
         resolve(cmd && cancel ? cmd.prevent() : {});
-        $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTED;
+        $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
       }
 
       // Call server side to check whether we can leave the view
@@ -171,7 +171,7 @@ export class Flow {
   private async flowNavigate(ctx: NavigationParameters, cmd?: PreventAndRedirectCommands): Promise<HTMLElement> {
     if (this.response) {
       return new Promise(resolve => {
-        $wnd.Vaadin.Flow.connectionState.state = ConnectionState.LOADING;
+        $wnd.Vaadin.connectionState.state = ConnectionState.LOADING;
         // The callback to run from server side once the view is ready
         this.container.serverConnected = (cancel, redirectContext?: NavigationParameters) => {
           if (cmd && cancel) {
@@ -182,7 +182,7 @@ export class Flow {
             this.container.style.display = '';
             resolve(this.container);
           }
-          $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTED;
+          $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
         };
 
         // Call server side to navigate to the given route
@@ -205,7 +205,7 @@ export class Flow {
     if (!this.response) {
 
       // show flow progress indicator
-      $wnd.Vaadin.Flow.connectionState.state = ConnectionState.LOADING;
+      $wnd.Vaadin.connectionState.state = ConnectionState.LOADING;
 
       // Initialize server side UI
       this.response = await this.flowInitUi(serverSideRouting);
@@ -249,7 +249,7 @@ export class Flow {
       }
 
       // hide flow progress indicator
-      $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTED;
+      $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
     }
     return this.response;
   }
@@ -329,10 +329,10 @@ export class Flow {
 
   // Create shared connection state store and loading indicator
   private addLoadingIndicator() {
-    $wnd.Vaadin.Flow.loadingIndicator = document.createElement('vaadin-loading-indicator');
-    document.body.appendChild($wnd.Vaadin.Flow.loadingIndicator);
+    $wnd.Vaadin.loadingIndicator = document.createElement('vaadin-loading-indicator');
+    document.body.appendChild($wnd.Vaadin.loadingIndicator);
 
-    $wnd.Vaadin.Flow.connectionState.addStateChangeListener( (_: ConnectionState, current: ConnectionState) => {
+    $wnd.Vaadin.connectionState.addStateChangeListener( (_: ConnectionState, current: ConnectionState) => {
       // Make Testbench know that server request is in progress
       this.isActive = current === ConnectionState.LOADING;
     });

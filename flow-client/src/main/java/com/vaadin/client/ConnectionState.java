@@ -17,7 +17,7 @@
 package com.vaadin.client;
 
 /**
- * GWT interface to window.Vaadin.Flow.connectionState.
+ * GWT interface to window.Vaadin.connectionState.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -79,6 +79,6 @@ public class ConnectionState {
 
     private native void setState(String state)
     /*-{
-        $wnd.Vaadin.Flow.connectionState.state = state;
+        $wnd.Vaadin.connectionState.state = state;
     }-*/;
 }

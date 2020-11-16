@@ -335,7 +335,7 @@ export class ConnectClient {
     method: string,
     params?: any,
   ): Promise<DeferrableResult<any>> {
-    if ($wnd.Vaadin.Flow.connectionState.online) {
+    if ($wnd.Vaadin.connectionState.online) {
       try {
         const result = await this.call(endpoint, method, params);
         return { isDeferred: false, result };
@@ -453,8 +453,8 @@ export class ConnectClient {
 
   // Re-use flow connection state indicator when fetching endpoints
   private setConnectionState(state: ConnectionState) {
-    if ($wnd.Vaadin.Flow?.connectionState) {
-      $wnd.Vaadin.Flow.connectionState.state = state;
+    if ($wnd.Vaadin.connectionState) {
+      $wnd.Vaadin.connectionState.state = state;
     }
   }
 }

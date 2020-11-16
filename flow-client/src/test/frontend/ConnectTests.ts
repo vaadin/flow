@@ -142,11 +142,11 @@ describe('ConnectClient', () => {
       expect(fetchMock.lastOptions()).to.include({method: 'POST'});
     });
 
-    it('should update Flow.connectionState.state', async() => {
+    it('should update Vaadin.connectionState.state', async() => {
       let calls: ConnectionState[] = [];
       const connectionStateStore = new ConnectionStateStore(ConnectionState.CONNECTED);
       connectionStateStore.addStateChangeListener((_, current: ConnectionState) => calls.push(current));
-      (window as any).Vaadin.Flow = { connectionState: connectionStateStore };
+      (window as any).Vaadin.connectionState = connectionStateStore;
       await client.call('FooEndpoint', 'fooMethod');
       expect(calls).to.deep.equal([ConnectionState.LOADING, ConnectionState.CONNECTED]);
     });

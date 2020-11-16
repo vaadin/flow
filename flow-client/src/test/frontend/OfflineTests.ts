@@ -43,7 +43,7 @@ describe("Offline", () => {
     });
 
     it("Should return a DeferrableResult that retains request meta when invoking deferRequest offline", async () => {
-      $wnd.Vaadin.Flow = { connectionState: new ConnectionStateStore(ConnectionState.CONNECTION_LOST) };
+      $wnd.Vaadin.connectionState = new ConnectionStateStore(ConnectionState.CONNECTION_LOST);
       sinon.stub(OfflineHelper.prototype, "storeDeferredCall").callsFake((deferredCall: any) => {
         if (!deferredCall.id) {
           deferredCall.id = 100;
@@ -60,7 +60,7 @@ describe("Offline", () => {
     })
 
     it("Should cache the endpoint call when invoking deferRequest offline", async () => {
-      $wnd.Vaadin.Flow = { connectionState: new ConnectionStateStore(ConnectionState.CONNECTION_LOST) };
+      $wnd.Vaadin.connectionState = new ConnectionStateStore(ConnectionState.CONNECTION_LOST);
 
       const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
@@ -76,7 +76,7 @@ describe("Offline", () => {
     })
 
     it("Should not invoke the client.call method when invoking deferRequest offline", async () => {
-      $wnd.Vaadin.Flow = { connectionState: new ConnectionStateStore(ConnectionState.CONNECTION_LOST) };
+      $wnd.Vaadin.connectionState = new ConnectionStateStore(ConnectionState.CONNECTION_LOST);
       sinon.stub(OfflineHelper.prototype, "storeDeferredCall");
 
       const callMethod = sinon.stub(client, "call");
@@ -87,7 +87,7 @@ describe("Offline", () => {
     })
 
     it("Should invoke the client.call method when invoking deferRequest online", async () => {
-      $wnd.Vaadin.Flow = { connectionState: new ConnectionStateStore(ConnectionState.CONNECTED) };
+      $wnd.Vaadin.connectionState = new ConnectionStateStore(ConnectionState.CONNECTED);
       const callMethod = sinon.stub(client, "call");
 
       await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
@@ -96,7 +96,7 @@ describe("Offline", () => {
     })
 
     it("Should not invoke the client.storeDeferredCall method when invoking deferRequest online", async () => {
-      $wnd.Vaadin.Flow = { connectionState: new ConnectionStateStore(ConnectionState.CONNECTED) };
+      $wnd.Vaadin.connectionState = new ConnectionStateStore(ConnectionState.CONNECTED);
       sinon.stub(client, "call");
       const storeDeferredCallMock = sinon.stub(OfflineHelper.prototype, "storeDeferredCall");
 
@@ -105,8 +105,8 @@ describe("Offline", () => {
       expect(storeDeferredCallMock.called).to.be.false;
     })
 
-    it("should return false when checking the isDefered prooperty of the return value of invoking deferRequest method online", async () => {
-      $wnd.Vaadin.Flow = { connectionState: new ConnectionStateStore(ConnectionState.CONNECTED) };
+    it("should return false when checking the isDeferred property of the return value of invoking deferRequest method online", async () => {
+      $wnd.Vaadin.connectionState = new ConnectionStateStore(ConnectionState.CONNECTED);
       sinon.stub(client, "call");
       sinon.stub(OfflineHelper.prototype, "storeDeferredCall");
 
@@ -116,7 +116,7 @@ describe("Offline", () => {
     })
 
     it("should return undefined when checking the endpointRequest prooperty of the return value of invoking deferRequest method offline", async () => {
-      $wnd.Vaadin.Flow = { connectionState: new ConnectionStateStore(ConnectionState.CONNECTED) };
+      $wnd.Vaadin.connectionState = new ConnectionStateStore(ConnectionState.CONNECTED);
       sinon.stub(client, "call");
       sinon.stub(OfflineHelper.prototype, "storeDeferredCall");
 
@@ -126,7 +126,7 @@ describe("Offline", () => {
     })
 
     it("should defer endpoint call when server is not reachable even though browser is online", async () => {
-      $wnd.Vaadin.Flow = { connectionState: new ConnectionStateStore(ConnectionState.CONNECTED) };
+      $wnd.Vaadin.connectionState = new ConnectionStateStore(ConnectionState.CONNECTED);
       const storeDeferredCall = sinon.stub(OfflineHelper.prototype, "storeDeferredCall");
       fetchMock.post(
         base + '/connect/FooEndpoint/fooMethod',
@@ -139,7 +139,7 @@ describe("Offline", () => {
     })
   
     it("should NOT defer endpoint call when server return error", async () => {
-      $wnd.Vaadin.Flow = { connectionState: new ConnectionStateStore(ConnectionState.CONNECTED) };
+      $wnd.Vaadin.connectionState = new ConnectionStateStore(ConnectionState.CONNECTED);
       sinon.stub(OfflineHelper.prototype, "storeDeferredCall");
       const body = 'Unexpected error';
       const errorResponse = new Response(

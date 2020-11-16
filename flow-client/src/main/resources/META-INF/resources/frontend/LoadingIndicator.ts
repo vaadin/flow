@@ -91,11 +91,11 @@ export class LoadingIndicator extends LitElement {
     this.updateTheme();
 
     const $wnd = window as any;
-    if ($wnd.Vaadin?.Flow?.connectionState) {
+    if ($wnd.Vaadin?.connectionState) {
       let timeout1st: any;
       let timeout2nd: any;
       let timeout3rd: any;
-      $wnd.Vaadin.Flow.connectionState.addStateChangeListener((_: ConnectionState, current: ConnectionState) => {
+      $wnd.Vaadin.connectionState.addStateChangeListener((_: ConnectionState, current: ConnectionState) => {
         clearTimeout(timeout1st);
         clearTimeout(timeout2nd);
         clearTimeout(timeout3rd);

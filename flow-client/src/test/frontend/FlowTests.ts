@@ -106,9 +106,7 @@ suite("Flow", () => {
   beforeEach(() => {
     delete $wnd.Vaadin;
     $wnd.Vaadin = {
-      Flow: {
-        connectionState: new ConnectionStateStore(ConnectionState.CONNECTED)
-      }
+      connectionState: new ConnectionStateStore(ConnectionState.CONNECTED)
     };
     mock.setup();
     const indicator = $wnd.document.body.querySelector('vaadin-loading-indicator');
@@ -139,10 +137,10 @@ suite("Flow", () => {
 
   test("should initialize a flow loading indicator", async () => {
     new Flow({imports: () => {}});
-    $wnd.Vaadin.Flow.loadingIndicator.firstDelay = 100;
-    $wnd.Vaadin.Flow.loadingIndicator.secondDelay = 200;
-    $wnd.Vaadin.Flow.loadingIndicator.thirdDelay = 400;
-    await $wnd.Vaadin.Flow.loadingIndicator.updateComplete;
+    $wnd.Vaadin.loadingIndicator.firstDelay = 100;
+    $wnd.Vaadin.loadingIndicator.secondDelay = 200;
+    $wnd.Vaadin.loadingIndicator.thirdDelay = 400;
+    await $wnd.Vaadin.loadingIndicator.updateComplete;
     const indicator = $wnd.document.querySelector('.v-loading-indicator') as HTMLElement;
     const styles = $wnd.document.querySelector('style#css-loading-indicator') as HTMLElement;
     assert.isNotNull(indicator);
@@ -150,8 +148,8 @@ suite("Flow", () => {
 
     assert.equal(indicator.getAttribute('style'), 'display: none');
 
-    $wnd.Vaadin.Flow.connectionState.state = ConnectionState.LOADING;
-    await $wnd.Vaadin.Flow.loadingIndicator.updateComplete;
+    $wnd.Vaadin.connectionState.state = ConnectionState.LOADING;
+    await $wnd.Vaadin.loadingIndicator.updateComplete;
 
     await new Promise(resolve => setTimeout(resolve, 150));
     assert.equal(indicator.getAttribute('style'), 'display: block');
@@ -170,8 +168,8 @@ suite("Flow", () => {
     assert.isFalse(indicator.classList.contains('second'));
     assert.isTrue(indicator.classList.contains('third'));
 
-    $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTED;
-    await $wnd.Vaadin.Flow.loadingIndicator.updateComplete;
+    $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
+    await $wnd.Vaadin.loadingIndicator.updateComplete;
 
     assert.equal(indicator.getAttribute('style'), 'display: none');
     assert.isFalse(indicator.classList.contains('first'));
@@ -304,8 +302,8 @@ suite("Flow", () => {
 
     const route = flow.serverSideRoutes[0];
 
-    $wnd.Vaadin.Flow.loadingIndicator.firstDelay = 0;
-    await $wnd.Vaadin.Flow.loadingIndicator.updateComplete;
+    $wnd.Vaadin.loadingIndicator.firstDelay = 0;
+    await $wnd.Vaadin.loadingIndicator.updateComplete;
     const indicator = $wnd.document.querySelector('.v-loading-indicator');
 
     let wasActive = false;
@@ -621,7 +619,7 @@ suite("Flow", () => {
 
   test("should show stub when navigating to server view offline", async () => {
     stubServerRemoteFunction('foobar-123');
-    $wnd.Vaadin.Flow.connectionState.state = ConnectionState.CONNECTION_LOST;
+    $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
     const flow = new Flow();
     const route = flow.serverSideRoutes[0];
     const params: NavigationParameters = {
@@ -651,7 +649,7 @@ suite("Flow", () => {
       search: ''
     };
 
-    await $wnd.Vaadin.Flow.loadingIndicator.updateComplete;
+    await $wnd.Vaadin.loadingIndicator.updateComplete;
     const indicator = $wnd.document.querySelector('.v-loading-indicator');
 
     const view = await route.action(params);
