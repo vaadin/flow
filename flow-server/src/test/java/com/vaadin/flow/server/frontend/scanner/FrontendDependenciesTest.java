@@ -44,6 +44,7 @@ import com.vaadin.flow.server.frontend.scanner.samples.RouteComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponentWithLayout;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponentWithMethodReference;
 import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.Theme;
 
 import static org.hamcrest.CoreMatchers.is;
 
@@ -73,16 +74,15 @@ public class FrontendDependenciesTest {
         Mockito.when(classFinder.loadClass(FrontendDependencies.LUMO))
                 .thenReturn((Class) FakeLumo.class);
 
-        Mockito.doAnswer(invocation -> {
-            return FrontendDependenciesTest.class.getClassLoader()
-                    .getResource(invocation.getArgumentAt(0, String.class));
-        }).when(classFinder).getResource(Mockito.anyString());
+        Mockito.doAnswer(
+            invocation -> FrontendDependenciesTest.class.getClassLoader()
+                .getResource(invocation.getArgumentAt(0, String.class)))
+            .when(classFinder).getResource(Mockito.anyString());
 
     }
 
     @Test
-    public void routedComponent_endpointsAreCollected()
-            throws ClassNotFoundException {
+    public void routedComponent_endpointsAreCollected() {
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(RouteComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -97,8 +97,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void hasErrorParameterComponent_endpointIsCollected()
-            throws ClassNotFoundException {
+    public void hasErrorParameterComponent_endpointIsCollected() {
         Mockito.when(classFinder.getSubTypesOf(HasErrorParameter.class))
                 .thenReturn(Collections.singleton(ErrorComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -113,8 +112,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void componentInsideUiInitListener_endpointsAreCollected()
-            throws ClassNotFoundException {
+    public void componentInsideUiInitListener_endpointsAreCollected() {
         Mockito.when(classFinder.getSubTypesOf(UIInitListener.class))
                 .thenReturn(Collections.singleton(MyUIInitListener.class));
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -129,8 +127,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void componentInsideUiInitListenerInsideServiceInitListener_endpointsAreCollected()
-            throws ClassNotFoundException {
+    public void componentInsideUiInitListenerInsideServiceInitListener_endpointsAreCollected() {
         Mockito.when(classFinder.getSubTypesOf(VaadinServiceInitListener.class))
                 .thenReturn(Collections.singleton(MyServiceListener.class));
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -145,7 +142,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void jsScriptOrderIsPreserved() throws ClassNotFoundException {
+    public void jsScriptOrderIsPreserved() {
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(JsOrderComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -201,6 +198,91 @@ public class FrontendDependenciesTest {
         Assert.assertNotNull(dependencies.getThemeDefinition());
     }
 
+    @Test
+    public void themeDefiningNonLumoClassAndName_throwsException()
+        throws ClassNotFoundException {
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+            .thenReturn(Collections.singleton(FaultyThemeAnnotation.class));
+        Mockito.when(classFinder.loadClass(FakeLumo.class.getName()))
+            .thenReturn((Class) FakeLumo.class);
+
+        Mockito.when(classFinder.loadClass(MyTheme.class.getName()))
+            .thenReturn((Class) MyTheme.class);
+
+        IllegalStateException exception = Assert
+            .assertThrows(IllegalStateException.class,
+                () -> new FrontendDependencies(classFinder, false));
+
+        Assert.assertEquals("Unexpected message for the thrown exception",
+            "Theme name and theme class can not both be specified. "
+                + "Theme name uses Lumo and can not be used in combination with"
+                + " custom theme class that doesn't extend Lumo.",
+            exception.getMessage());
+    }
+
+    @Test
+    public void themeDefiningLumoClassAndName_loadsLumo()
+        throws ClassNotFoundException {
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+            .thenReturn(Collections.singleton(OkClassExtension.class));
+        Mockito.when(classFinder.loadClass(FakeLumo.class.getName()))
+            .thenReturn((Class) FakeLumo.class);
+
+        Mockito.when(classFinder.loadClass(MyLumoTheme.class.getName()))
+            .thenReturn((Class) MyLumoTheme.class);
+
+        FrontendDependencies dependencies = new FrontendDependencies(classFinder, false);
+
+        Assert.assertEquals("Faulty default theme received",
+            MyLumoTheme.class, dependencies.getThemeDefinition().getTheme());
+    }
+
+    @Test
+    public void noDefaultThemeAvailable_throwsException()
+        throws ClassNotFoundException {
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+            .thenReturn(Collections.singleton(MyAppTheme.class));
+        Mockito.when(classFinder.loadClass(FrontendDependencies.LUMO))
+            .thenThrow(ClassNotFoundException.class);
+
+        IllegalStateException exception = Assert
+            .assertThrows(IllegalStateException.class,
+                () -> new FrontendDependencies(classFinder, false));
+
+        Assert.assertEquals("Thrown exception didn't contain correct message",
+            "Lumo dependency needs to be available on the classpath when using a theme name.",
+            exception.getMessage());
+    }
+
+    @Test
+    public void appThemeDefined_getsLumoAsTheme() {
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+            .thenReturn(Collections.singleton(MyAppTheme.class));
+
+        FrontendDependencies dependencies = new FrontendDependencies(classFinder, false);
+
+        Assert.assertEquals("Faulty default theme received",
+            FakeLumo.class, dependencies.getThemeDefinition().getTheme());
+
+
+    }
+
+    @Theme(FakeLumo.class)
+    public static class MyApp extends Component {
+    }
+
+    @Theme(themeFolder ="my-theme")
+    public static class MyAppTheme extends Component {
+    }
+
+    @Theme(themeFolder = "my-theme", value = MyTheme.class)
+    public static class FaultyThemeAnnotation extends Component {
+    }
+
+    @Theme(themeFolder = "my-theme", value = MyLumoTheme.class)
+    public static class OkClassExtension extends Component {
+    }
+
     public static class MyComponent extends Component {
     }
 
@@ -217,6 +299,36 @@ public class FrontendDependenciesTest {
 
     public static class FakeLumo implements AbstractTheme {
         public FakeLumo() {
+        }
+
+        @Override
+        public String getBaseUrl() {
+            return null;
+        }
+
+        @Override
+        public String getThemeUrl() {
+            return null;
+        }
+    }
+
+    public static class MyTheme implements AbstractTheme {
+        public MyTheme() {
+        }
+
+        @Override
+        public String getBaseUrl() {
+            return null;
+        }
+
+        @Override
+        public String getThemeUrl() {
+            return null;
+        }
+    }
+
+    public static class MyLumoTheme extends FakeLumo {
+        public MyLumoTheme() {
         }
 
         @Override

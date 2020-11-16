@@ -305,15 +305,26 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             // we have a proper theme or no-theme for the app
             ThemeData themeData = themes.iterator().next();
             if (!themeData.isNotheme()) {
-                variant = themeData.getVariant();
                 String themeClass = themeData.getThemeClass();
-                if (themeClass == null) {
-                    themeClass = LUMO;
+                if (!themeData.getThemeName().isEmpty() && (themeClass != null
+                && !getDefaultTheme().isAssignableFrom(getFinder().loadClass(themeClass)))) {
+                    throw new IllegalStateException(
+                        "Theme name and theme class can not both be specified. "
+                            + "Theme name uses Lumo and can not be used in combination "
+                            + "with custom theme class that doesn't extend Lumo.");
                 }
-                theme = getFinder().loadClass(themeClass);
+                variant = themeData.getVariant();
+                if (themeClass != null) {
+                    theme = getFinder().loadClass(themeClass);
+                } else {
+                    theme = getDefaultTheme();
+                    if (theme == null) {
+                        throw new IllegalStateException(
+                            "Lumo dependency needs to be available on the classpath when using a theme name.");
+                    }
+                }
                 themeName = themeData.getThemeName();
             }
-
         }
 
         // theme could be null when lumo is not found or when a NoTheme found

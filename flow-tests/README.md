@@ -28,8 +28,8 @@
 * test-memory-leaks
   * Verification test that no memory leaks happen during war redeployment.
 * test-misc
-  * Uncategorized tests in both npm and bower modes
-    * Contains custom theme functionality
+  * Uncategorized tests
+    * Contains custom theme tests
 * test-mixed
   * Test maven builds in all 4 run modes
 * test-multi-war
@@ -75,6 +75,8 @@
 * test-subcontext
   * `context://` tests for Compatibility mode
 * test-themes
+  * improved theming support tests
+* test-themes-legacy
   * Custom Theme tests for NPM and Compatibility modes
 
 ### Common test resource modules
