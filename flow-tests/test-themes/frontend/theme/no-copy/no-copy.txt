@@ -1,0 +1,2 @@
+This text file should not get copied
+as only app-theme should be used in module.

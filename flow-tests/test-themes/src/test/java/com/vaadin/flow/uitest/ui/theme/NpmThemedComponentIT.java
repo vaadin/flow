@@ -27,6 +27,18 @@ import com.vaadin.testbench.TestBenchElement;
 public class NpmThemedComponentIT extends ChromeBrowserTest {
 
     @Test
+    public void secondTheme_staticFilesNotCopied() {
+        getDriver().get(getRootURL() + "/theme/app-theme/img/bg.jpg");
+        Assert.assertFalse("app-theme static files should be copied",
+            driver.getPageSource().contains("Could not navigate"));
+
+        getDriver().get(getRootURL() + "/theme/no-copy/no-copy.txt");
+        System.out.println(" === " + driver.getTitle());
+        Assert.assertTrue("no-copy theme should not be handled",
+            driver.getPageSource().contains("Could not navigate to 'theme/no-copy/no-copy.txt'"));
+    }
+
+    @Test
     public void applicationTheme_GlobalCss_isUsed() {
         open();
         // No exception for bg-image should exist
@@ -35,6 +47,10 @@ public class NpmThemedComponentIT extends ChromeBrowserTest {
         Assert.assertEquals(
             "url(\"" + getRootURL() + "/theme/app-theme/img/bg.jpg\")",
             findElement(By.tagName("body")).getCssValue("background-image"));
+
+        getDriver().get(getRootURL() + "/theme/app-theme/img/bg.jpg");
+        Assert.assertFalse("app-theme background file should be served",
+            driver.getPageSource().contains("Could not navigate"));
     }
 
     @Test
