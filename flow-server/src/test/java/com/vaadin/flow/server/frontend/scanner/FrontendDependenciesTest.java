@@ -163,7 +163,7 @@ public class FrontendDependenciesTest {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
             .thenReturn(Collections.singleton(MyAppThemeShell.class));
 
-        FrontendDependencies dependencies = new FrontendDependencies(classFinder, false);;
+        FrontendDependencies dependencies = new FrontendDependencies(classFinder, false);
 
         Assert.assertEquals("Faulty default theme received",
             FakeLumo.class, dependencies.getThemeDefinition().getTheme());
