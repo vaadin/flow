@@ -13,15 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.theme;
+package com.vaadin.flow.misc.ui;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.Theme;
 
-@Route(value = "com.vaadin.flow.uitest.ui.theme.NpmThemedComponentView")
+@Route(value = "com.vaadin.flow.misc.ui.NpmThemedComponentView")
 @Tag("npm-themed-component")
 // `src/` in component should be replaced by `legacyTheme/my-theme`
 @JsModule("./src/npm-themed-component.js")
