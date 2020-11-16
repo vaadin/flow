@@ -106,7 +106,7 @@ public class StaticFileServer implements StaticFileHandler {
         if (HandlerHelper.isPathUnsafe(filenameWithPath)) {
             getLogger().info(HandlerHelper.UNSAFE_PATH_ERROR_MESSAGE_PATTERN,
                     filenameWithPath);
-            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return true;
         }
 

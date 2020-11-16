@@ -190,13 +190,14 @@ public class HandlerHelper implements Serializable {
     }
 
     /**
-     * Checks if the given URL path contains the symbols encoded twice in
-     * hexadecimal format, which can be injected maliciously.
+     * Checks if the given URL path contains the directory change instruction
+     * (dot-dot), taking into account possible double encoding in hexadecimal
+     * format, which can be injected maliciously.
      *
      * @param path
      *            the URL path to be verified.
-     * @return {@code true}, if the given path has a double encoding,
-     *         {@code false} otherwise.
+     * @return {@code true}, if the given path has a directory change
+     *         instruction, {@code false} otherwise.
      */
     public static boolean isPathUnsafe(String path) {
         // Check that the path does not have '/../', '\..\', %5C..%5C,

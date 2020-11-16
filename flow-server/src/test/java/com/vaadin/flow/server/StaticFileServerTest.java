@@ -33,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -42,6 +43,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
@@ -52,7 +55,14 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
+@RunWith(Parameterized.class)
 public class StaticFileServerTest implements Serializable {
+
+    private String pathsWithDirectoryChange;
+
+    public StaticFileServerTest(String pathsWithDirectoryChange) {
+        this.pathsWithDirectoryChange = pathsWithDirectoryChange;
+    }
 
     private static class CapturingServletOutputStream
             extends ServletOutputStream {
@@ -537,34 +547,25 @@ public class StaticFileServerTest implements Serializable {
 
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
         Assert.assertEquals(0, out.getOutput().length);
+        Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN,
+                responseCode.get());
+    }
+
+    @Parameterized.Parameters
+    public static Collection<String> paths() {
+        return Arrays.asList("/VAADIN/build/../vaadin-bundle-1234.cache.js",
+                "/VAADIN/build/something\\..\\vaadin-bundle-1234.cache.js",
+                "/VAADIN/build/something%5C..%5Cvaadin-bundle-1234.cache.js",
+                "/VAADIN/build/something%5c..%5cvaadin-bundle-1234.cache.js",
+                "/VAADIN/build/..", "/VAADIN/build/something\\..",
+                "/VAADIN/build/something%5C..");
     }
 
     @Test
-    public void staticBuildResourceWithDirectoryChangeWithSlash_nothingServed()
+    public void serveStaticResource_pathContainsDirectoryChange_nothingServedAndForbiddenStatusSet()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
-                "/VAADIN/build/../vaadin-bundle-1234.cache.js");
-    }
-
-    @Test
-    public void staticBuildResourceWithDirectoryChangeWithBackslash_nothingServed()
-            throws IOException {
-        staticBuildResourceWithDirectoryChange_nothingServed(
-                "/VAADIN/build/something\\..\\vaadin-bundle-1234.cache.js");
-    }
-
-    @Test
-    public void staticBuildResourceWithDirectoryChangeWithEncodedBackslashUpperCase_nothingServed()
-            throws IOException {
-        staticBuildResourceWithDirectoryChange_nothingServed(
-                "/VAADIN/build/something%5C..%5Cvaadin-bundle-1234.cache.js");
-    }
-
-    @Test
-    public void staticBuildResourceWithDirectoryChangeWithEncodedBackslashLowerCase_nothingServed()
-            throws IOException {
-        staticBuildResourceWithDirectoryChange_nothingServed(
-                "/VAADIN/build/something%5c..%5cvaadin-bundle-1234.cache.js");
+                pathsWithDirectoryChange);
     }
 
     @Test

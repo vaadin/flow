@@ -19,6 +19,7 @@ import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.WEBPACK_TEST_OUT_FILE;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
+import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_NOT_MODIFIED;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -39,6 +40,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -66,6 +68,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.mockito.Mockito;
 
 import com.sun.net.httpserver.HttpServer;
@@ -77,6 +81,7 @@ import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 @SuppressWarnings("restriction")
+@RunWith(Parameterized.class)
 public class DevModeHandlerTest {
 
     private MockDeploymentConfiguration configuration;
@@ -97,6 +102,11 @@ public class DevModeHandlerTest {
     }
 
     private String baseDir;
+    private String pathsWithDirectoryChange;
+
+    public DevModeHandlerTest(String pathsWithDirectoryChange) {
+        this.pathsWithDirectoryChange = pathsWithDirectoryChange;
+    }
 
     @Before
     public void setup() throws Exception {
@@ -573,6 +583,29 @@ public class DevModeHandlerTest {
         Assert.assertTrue("expected a body child",
                 document.body().children().size() > 0);
         Mockito.verify(response).setContentType("text/html;charset=utf-8");
+    }
+
+    @Parameterized.Parameters
+    public static Collection<String> pathsWithDirectoryChange() {
+        return Arrays.asList("/VAADIN/build/../vaadin-bundle-1234.cache.js",
+                "/VAADIN/build/something\\..\\vaadin-bundle-1234.cache.js",
+                "/VAADIN/build/something%5C..%5Cvaadin-bundle-1234.cache.js",
+                "/VAADIN/build/something%5c..%5cvaadin-bundle-1234.cache.js",
+                "/VAADIN/build/..", "/VAADIN/build/something\\..",
+                "/VAADIN/build/something%5C..");
+    }
+
+    @Test
+    public void serveDevModeRequest_requestContainsDirectoryChange_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        HttpServletRequest request = prepareRequest(pathsWithDirectoryChange);
+        HttpServletResponse response = prepareResponse();
+        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
+                CompletableFuture.completedFuture(null));
+        handler.join();
+        assertTrue(handler.serveDevModeRequest(request, response));
+
+        Assert.assertEquals(HTTP_FORBIDDEN, responseStatus);
     }
 
     private VaadinServlet prepareServlet(int port)

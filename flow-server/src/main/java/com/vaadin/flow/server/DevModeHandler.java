@@ -308,7 +308,7 @@ public final class DevModeHandler implements RequestHandler {
         if (HandlerHelper.isPathUnsafe(requestFilename)) {
             getLogger().info(HandlerHelper.UNSAFE_PATH_ERROR_MESSAGE_PATTERN,
                     requestFilename);
-            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return true;
         }
 
