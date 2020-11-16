@@ -79,6 +79,8 @@ public class ConnectionState {
 
     private native void setState(String state)
     /*-{
-        $wnd.Vaadin.connectionState.state = state;
+        if ($wnd.Vaadin.connectionState) {
+            $wnd.Vaadin.connectionState.state = state;
+        }
     }-*/;
 }
