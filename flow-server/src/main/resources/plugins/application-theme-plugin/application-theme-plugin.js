@@ -81,7 +81,7 @@ class ApplicationThemePlugin {
         if (fs.existsSync(this.options.themeResourceFolder)) {
           if (themeFound && fs.existsSync(path.resolve(this.options.themeResourceFolder, themeName))) {
             throw new Error("Theme '" + themeName + "'should not exist inside a jar and in the project at the same time\n" +
-              "If extending the jar theme the 'parent' theme feature should be used");
+              "Extending another theme is possible by adding { \"parent\": \"my-parent-theme\" } entry to the theme.json file inside your theme folder.");
           }
           logger.debug("Searching theme jar resource folder ", this.options.themeResourceFolder, " for theme ", themeName);
           handleThemes(themeName, this.options.themeResourceFolder, this.options.projectStaticAssetsOutputFolder);
