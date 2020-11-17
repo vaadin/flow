@@ -29,7 +29,8 @@ public class NavigateToServerSideViewWithoutTitleIT extends CCDMTest {
         findAnchor("view-with-server-view-button").click();
 
         // "app-shell-title" is defined in AppShell
-        waitUntil(driver -> "app-shell-title".equals(driver.getTitle()));
+        Assert.assertEquals("Shoul use app shell title", "app-shell-title",
+                getDriver().getTitle());
     }
 
     @Test
@@ -44,7 +45,8 @@ public class NavigateToServerSideViewWithoutTitleIT extends CCDMTest {
         findAnchor("view-with-server-view-button").click();
 
         // "app-shell-title" is defined in AppShell
-        waitUntil(driver -> "app-shell-title".equals(driver.getTitle()));
+        Assert.assertEquals("Shoul use app shell title", "app-shell-title",
+                getDriver().getTitle());
     }
 
 
