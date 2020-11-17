@@ -38,7 +38,7 @@ public class DomApiAbstractionUsageTest {
     private static final Set<String> ignoredClasses = Stream
             .of(DomElement.class, DomNode.class, ResourceLoader.class,
                     BrowserInfo.class, DefaultReconnectDialog.class,
-                    SystemErrorHandler.class, LoadingIndicator.class,
+                    SystemErrorHandler.class, ConnectionState.class,
                     RouterLinkHandler.class, Profiler.class,
                     ScrollPositionHandler.class)
             .map(Class::getName).collect(Collectors.toSet());

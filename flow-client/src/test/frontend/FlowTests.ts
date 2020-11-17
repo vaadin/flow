@@ -2,13 +2,21 @@ const { suite, test, beforeEach, afterEach } = intern.getInterface("tdd");
 const { assert } = intern.getPlugin("chai");
 
 // API to test
-import {Flow, NavigationParameters} from "../../main/resources/META-INF/resources/frontend/Flow";
+import {
+  Flow,
+  NavigationParameters
+} from "../../main/resources/META-INF/resources/frontend/Flow";
+import {
+  ConnectionState,
+  ConnectionStateStore
+} from "../../main/resources/META-INF/resources/frontend/ConnectionState";
 // Intern does not serve webpack chunks, adding deps here in order to
 // produce one chunk, because dynamic imports in Flow.ts  will not work.
 import "../../main/resources/META-INF/resources/frontend/FlowBootstrap";
 import "../../main/resources/META-INF/resources/frontend/FlowClient";
 // Mock XMLHttpRequest so as we don't need flow-server running for tests.
 import mock from 'xhr-mock';
+import "../../main/resources/META-INF/resources/frontend/LoadingIndicator";
 
 const $wnd = window as any;
 const flowRoot = window.document.body as any;
@@ -97,9 +105,11 @@ suite("Flow", () => {
 
   beforeEach(() => {
     delete $wnd.Vaadin;
-    Object.defineProperty(window.navigator, 'onLine', {value: true, configurable: true});
+    $wnd.Vaadin = {
+      connectionState: new ConnectionStateStore(ConnectionState.CONNECTED)
+    };
     mock.setup();
-    const indicator = $wnd.document.body.querySelector('.v-loading-indicator');
+    const indicator = $wnd.document.body.querySelector('vaadin-loading-indicator');
     if (indicator) {
       $wnd.document.body.removeChild(indicator);
     }
@@ -113,14 +123,12 @@ suite("Flow", () => {
   });
 
   test("should accept a configuration object", () => {
-    assert.isUndefined($wnd.Vaadin);
     const flow = new Flow({imports: () => {}});
     assert.isDefined(flow.config);
     assert.isDefined(flow.config.imports);
   });
 
   test("should initialize window.Flow object", () => {
-    assert.isUndefined($wnd.Vaadin);
     new Flow({imports: () => {}});
 
     assert.isDefined($wnd.Vaadin);
@@ -129,34 +137,47 @@ suite("Flow", () => {
 
   test("should initialize a flow loading indicator", async () => {
     new Flow({imports: () => {}});
+    $wnd.Vaadin.loadingIndicator.firstDelay = 100;
+    $wnd.Vaadin.loadingIndicator.secondDelay = 200;
+    $wnd.Vaadin.loadingIndicator.thirdDelay = 400;
+    await $wnd.Vaadin.loadingIndicator.updateComplete;
     const indicator = $wnd.document.querySelector('.v-loading-indicator') as HTMLElement;
     const styles = $wnd.document.querySelector('style#css-loading-indicator') as HTMLElement;
     assert.isNotNull(indicator);
     assert.isNotNull(styles);
 
-    assert.isFunction($wnd.Vaadin.Flow.loading);
-    assert.equal('none', indicator.getAttribute('style'));
+    assert.equal(indicator.getAttribute('style'), 'display: none');
 
-    $wnd.Vaadin.Flow.loading(true);
-    assert.isNull(indicator.getAttribute('style'));
+    $wnd.Vaadin.connectionState.state = ConnectionState.LOADING;
+    await $wnd.Vaadin.loadingIndicator.updateComplete;
+
+    await new Promise(resolve => setTimeout(resolve, 150));
+    assert.equal(indicator.getAttribute('style'), 'display: block');
+    assert.isTrue(indicator.classList.contains('first'));
     assert.isFalse(indicator.classList.contains('second'));
     assert.isFalse(indicator.classList.contains('third'));
 
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 150));
+    assert.equal(indicator.getAttribute('style'), 'display: block');
+    assert.isFalse(indicator.classList.contains('first'));
     assert.isTrue(indicator.classList.contains('second'));
+    assert.isFalse(indicator.classList.contains('third'));
 
-    await new Promise(resolve => setTimeout(resolve, 3500));
+    await new Promise(resolve => setTimeout(resolve, 150));
+    assert.isFalse(indicator.classList.contains('first'));
+    assert.isFalse(indicator.classList.contains('second'));
     assert.isTrue(indicator.classList.contains('third'));
 
-    $wnd.Vaadin.Flow.loading(false);
-    assert.equal('none', indicator.getAttribute('style'));
+    $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
+    await $wnd.Vaadin.loadingIndicator.updateComplete;
+
+    assert.equal(indicator.getAttribute('style'), 'display: none');
+    assert.isFalse(indicator.classList.contains('first'));
     assert.isFalse(indicator.classList.contains('second'));
     assert.isFalse(indicator.classList.contains('third'));
   });
 
   test("should initialize Flow server navigation when calling flowInit(true)", () => {
-    assert.isUndefined($wnd.Vaadin);
-
     stubServerRemoteFunction('FooBar-12345');
     mockInitResponse('FooBar-12345', changesResponse);
 
@@ -185,10 +206,8 @@ suite("Flow", () => {
   });
 
   test("should initialize UI when calling flowInit(true)", () => {
-    assert.isUndefined($wnd.Vaadin);
-
     const initial = createInitResponse('FooBar-12345');
-    $wnd.Vaadin = {TypeScript: {initial: JSON.parse(initial)}};
+    $wnd.Vaadin.TypeScript = {initial: JSON.parse(initial)};
 
     const flow = new Flow();
     return (flow as any).flowInit(true)
@@ -219,10 +238,8 @@ suite("Flow", () => {
   });
 
   test("should inject appId script when calling flowInit(true) with custom config.imports", () => {
-    assert.isUndefined($wnd.Vaadin);
-
     const initial = createInitResponse('FooBar-12345');
-    $wnd.Vaadin = {TypeScript: {initial: JSON.parse(initial)}};
+    $wnd.Vaadin.TypeScript = {initial: JSON.parse(initial)};
 
     const flow = new Flow({
       imports: () => {}
@@ -274,7 +291,7 @@ suite("Flow", () => {
       });
   });
 
-  test("should connect client and server on route action", () => {
+  test("should connect client and server on route action", async () => {
     stubServerRemoteFunction('foobar-1111111');
     mockInitResponse('foobar-1111111');
 
@@ -284,6 +301,9 @@ suite("Flow", () => {
     assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
 
     const route = flow.serverSideRoutes[0];
+
+    $wnd.Vaadin.loadingIndicator.firstDelay = 0;
+    await $wnd.Vaadin.loadingIndicator.updateComplete;
     const indicator = $wnd.document.querySelector('.v-loading-indicator');
 
     let wasActive = false;
@@ -306,7 +326,7 @@ suite("Flow", () => {
         // Check that flowClient was initialized
         assert.isDefined($wnd.Vaadin.Flow.clients.foobar.resolveUri);
         assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
-        assert.equal('none', indicator.getAttribute('style'));
+        assert.equal('display: none', indicator.getAttribute('style'));
 
         // Check that pushScript is not initialized
         assert.isUndefined($wnd.vaadinPush);
@@ -318,7 +338,7 @@ suite("Flow", () => {
         // Check that `isActive` flag was active during the action
         assert.isTrue(wasActive);
         // Check that indicator was visible during the action
-        assert.isNull(style);
+        assert.equal(style, 'display: block');
         // Check that `isActive` flag is set to false after the action
         assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
       });
@@ -547,7 +567,7 @@ suite("Flow", () => {
 
   test("should load pushScript on flowInit(true) with initial response", async() => {
     const initial = createInitResponse('FooBar-12345');
-    $wnd.Vaadin = {TypeScript: {initial: JSON.parse(initial)}};
+    $wnd.Vaadin.TypeScript = {initial: JSON.parse(initial)};
     $wnd.Vaadin.TypeScript.initial.pushScript = stubVaadinPushSrc;
 
     const flow = new Flow();
@@ -599,10 +619,7 @@ suite("Flow", () => {
 
   test("should show stub when navigating to server view offline", async () => {
     stubServerRemoteFunction('foobar-123');
-    Object.defineProperty(window.navigator, 'onLine', {
-      value: false,
-      configurable: true
-    });
+    $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
     const flow = new Flow();
     const route = flow.serverSideRoutes[0];
     const params: NavigationParameters = {
@@ -632,11 +649,13 @@ suite("Flow", () => {
       search: ''
     };
 
+    await $wnd.Vaadin.loadingIndicator.updateComplete;
+    const indicator = $wnd.document.querySelector('.v-loading-indicator');
+
     const view = await route.action(params);
     assert.equal(view.tagName, 'VAADIN-OFFLINE-STUB');
 
-    const indicator = $wnd.document.querySelector('.v-loading-indicator');
-    assert.equal('none', indicator.getAttribute('style'));
+    assert.equal(indicator.getAttribute('style'), 'display: none');
 
     // @ts-ignore
     let onBeforeEnterReturns = await view.onBeforeEnter(params, {});

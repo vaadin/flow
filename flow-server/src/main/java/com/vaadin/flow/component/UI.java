@@ -26,6 +26,7 @@ import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteParameters;
@@ -92,6 +93,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @since 1.0
  */
+@JsModule("@vaadin/flow-frontend/LoadingIndicator.js")
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 

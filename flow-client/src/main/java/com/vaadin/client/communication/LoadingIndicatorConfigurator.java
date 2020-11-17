@@ -17,7 +17,6 @@ package com.vaadin.client.communication;
 
 import java.util.function.Consumer;
 
-import com.vaadin.client.LoadingIndicator;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
@@ -43,27 +42,26 @@ public class LoadingIndicatorConfigurator {
      *
      * @param node
      *            the node containing the loading indicator configuration
-     * @param loadingIndicator
-     *            the loading indicator to configure
      */
-    public static void observe(StateNode node,
-            LoadingIndicator loadingIndicator) {
+    public static void observe(StateNode node) {
         NodeMap configMap = node
                 .getMap(NodeFeatures.LOADING_INDICATOR_CONFIGURATION);
 
         bindInteger(configMap, LoadingIndicatorConfigurationMap.FIRST_DELAY_KEY,
-                loadingIndicator::setFirstDelay,
+                LoadingIndicatorConfigurator::setFirstDelay,
                 LoadingIndicatorConfigurationMap.FIRST_DELAY_DEFAULT);
         bindInteger(configMap,
                 LoadingIndicatorConfigurationMap.SECOND_DELAY_KEY,
-                loadingIndicator::setSecondDelay,
+                LoadingIndicatorConfigurator::setSecondDelay,
                 LoadingIndicatorConfigurationMap.SECOND_DELAY_DEFAULT);
         bindInteger(configMap, LoadingIndicatorConfigurationMap.THIRD_DELAY_KEY,
-                loadingIndicator::setThirdDelay,
+                LoadingIndicatorConfigurator::setThirdDelay,
                 LoadingIndicatorConfigurationMap.THIRD_DELAY_DEFAULT);
 
         MapProperty defaultThemeProperty = configMap.getProperty(LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_KEY);
-        defaultThemeProperty.addChangeListener(event -> loadingIndicator.setApplyDefaultTheme(event.getSource().getValueOrDefault(LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_DEFAULT)));
+        defaultThemeProperty.addChangeListener(event -> setApplyDefaultTheme(
+                event.getSource().getValueOrDefault(
+                        LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_DEFAULT)));
     }
 
     /**
@@ -80,10 +78,29 @@ public class LoadingIndicatorConfigurator {
      *            the value to use if the property value is removed
      */
     private static void bindInteger(NodeMap map, String key,
-            Consumer<Integer> setter, int defaultValue) {
+                                    Consumer<Integer> setter, int defaultValue) {
         MapProperty property = map.getProperty(key);
         property.addChangeListener(e -> setter
                 .accept(e.getSource().getValueOrDefault(defaultValue)));
     }
 
+    private static native void setFirstDelay(int delay)
+    /*-{
+        $wnd.Vaadin.loadingIndicator.firstDelay = delay;
+    }-*/;
+
+    private static native void setSecondDelay(int delay)
+    /*-{
+        $wnd.Vaadin.loadingIndicator.secondDelay = delay;
+    }-*/;
+
+    private static native void setThirdDelay(int delay)
+    /*-{
+        $wnd.Vaadin.loadingIndicator.thirdDelay = delay;
+    }-*/;
+
+    private static native void setApplyDefaultTheme(boolean apply)
+    /*-{
+        $wnd.Vaadin.loadingIndicator.applyDefaultTheme = apply;
+    }-*/;
 }

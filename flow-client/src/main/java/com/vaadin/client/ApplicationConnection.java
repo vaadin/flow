@@ -62,8 +62,7 @@ public class ApplicationConnection {
         // Bind UI configuration objects
         PollConfigurator.observe(rootNode, registry.getPoller());
         ReconnectDialogConfiguration.bind(registry.getConnectionStateHandler());
-        LoadingIndicatorConfigurator.observe(rootNode,
-                registry.getLoadingIndicator());
+        LoadingIndicatorConfigurator.observe(rootNode);
 
         Element body = Browser.getDocument().getBody();
 
@@ -119,7 +118,8 @@ public class ApplicationConnection {
             }
         }
 
-        registry.getLoadingIndicator().show();
+        registry.getConnectionState()
+                .setState(ConnectionState.State.LOADING);
     }
 
     /**

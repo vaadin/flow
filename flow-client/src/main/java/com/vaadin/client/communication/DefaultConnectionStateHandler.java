@@ -23,6 +23,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 
 import com.vaadin.client.Console;
+import com.vaadin.client.ConnectionState;
 import com.vaadin.client.Registry;
 import com.vaadin.client.UILifecycle;
 import com.vaadin.client.UILifecycle.UIState;
@@ -313,6 +314,9 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         reconnectDialog.setText(getDialogTextGaveUp(reconnectAttempt));
         reconnectDialog.setReconnecting(false);
 
+        registry.getConnectionState().setState(
+                ConnectionState.State.CONNECTION_LOST);
+
         // Stopping the application stops heartbeats and push
         stopApplication();
     }
@@ -343,10 +347,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     protected void showDialog() {
         reconnectDialog.setReconnecting(true);
         reconnectDialog.show();
-
-        // We never want to show loading indicator and reconnect dialog at the
-        // same time
-        registry.getLoadingIndicator().hide();
+        registry.getConnectionState().setState(
+                ConnectionState.State.RECONNECTING);
     }
 
     /**
@@ -530,6 +532,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         // shown and does not popup later
         stopDialogTimer();
         hideDialog();
+        registry.getConnectionState()
+                .setState(ConnectionState.State.CONNECTED);
 
         Console.log("Re-established connection to server");
     }
@@ -597,5 +601,4 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         debug("pushClosed()");
         Console.log("Push connection closed");
     }
-
 }

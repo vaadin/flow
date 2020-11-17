@@ -10,6 +10,7 @@ import {
   EndpointResponseError,
   EndpointValidationError,
 } from "../../main/resources/META-INF/resources/frontend/Connect";
+import {ConnectionState, ConnectionStateStore} from "../../main/resources/META-INF/resources/frontend/ConnectionState";
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
@@ -22,7 +23,10 @@ describe('ConnectClient', () => {
     return next(ctx);
   }
 
-  beforeEach(() => localStorage.clear());
+  beforeEach(() => {
+    const connectionStateStore = new ConnectionStateStore(ConnectionState.CONNECTED);
+    (window as any).Vaadin.connectionState = connectionStateStore;
+    localStorage.clear();});
 
   after(() => {
     // @ts-ignore
@@ -141,16 +145,16 @@ describe('ConnectClient', () => {
       expect(fetchMock.lastOptions()).to.include({method: 'POST'});
     });
 
-    it('should call Flow.loading indicator', async() => {
-      let calls = '';
-      (window as any).Vaadin.Flow = {loading: (action: boolean) => calls += action};
+    it('should update Vaadin.connectionState.state', async() => {
+      let calls: ConnectionState[] = [];
+      (window as any).Vaadin.connectionState.addStateChangeListener((_, current: ConnectionState) => calls.push(current));
       await client.call('FooEndpoint', 'fooMethod');
-      expect(calls).to.equal('truefalse');
+      expect(calls).to.deep.equal([ConnectionState.LOADING, ConnectionState.CONNECTED]);
     });
 
-    it('should hide Flow.loading indicator upon network failure', async() => {
-      let calls = '';
-      (window as any).Vaadin.Flow = {loading: (action: boolean) => calls += action};
+    it('should transition to CONNECTION_LOST upon network failure', async() => {
+      let calls: ConnectionState[] = [];
+      (window as any).Vaadin.connectionState.addStateChangeListener((_, current: ConnectionState) => calls.push(current));
       fetchMock.post(
         base + '/connect/FooEndpoint/reject',
         Promise.reject(new TypeError('Network failure'))
@@ -160,11 +164,11 @@ describe('ConnectClient', () => {
       } catch (error) {
         // expected
       } finally {
-        expect(calls).to.equal('truefalse');
+        expect(calls).to.deep.equal([ConnectionState.LOADING, ConnectionState.CONNECTION_LOST]);
       }
     });
 
-    it('should hide Flow.loading indicator upon server error', async() => {
+    it('should transition to CONNECTED upon server error', async() => {
       const body = 'Unexpected error';
       const errorResponse = new Response(
           body,
@@ -175,14 +179,14 @@ describe('ConnectClient', () => {
       );
       fetchMock.post(base + '/connect/FooEndpoint/vaadinConnectResponse', errorResponse);
 
-      let calls = '';
-      (window as any).Vaadin.Flow = {loading: (action: boolean) => calls += action};
+      let calls: ConnectionState[] = [];
+      (window as any).Vaadin.connectionState.addStateChangeListener((_, current: ConnectionState) => calls.push(current));
       try {
         await client.call('FooEndpoint', 'vaadinConnectResponse');
       } catch (error) {
         // expected
       } finally {
-        expect(calls).to.equal('truefalse');
+        expect(calls).to.deep.equal([ConnectionState.LOADING, ConnectionState.CONNECTED]);
       }
     });
 

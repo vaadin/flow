@@ -1,4 +1,5 @@
 /* tslint:disable:max-classes-per-file */
+import { ConnectionState } from './ConnectionState';
 import { DeferrableResult, DeferredCallHandler, OfflineHelper } from './Offline';
 
 const $wnd = window as any;
@@ -334,7 +335,7 @@ export class ConnectClient {
     method: string,
     params?: any,
   ): Promise<DeferrableResult<any>> {
-    if (this.offlineHelper.checkOnline()) {
+    if ($wnd.Vaadin.connectionState.online) {
       try {
         const result = await this.call(endpoint, method, params);
         return { isDeferred: false, result };
@@ -416,12 +417,22 @@ export class ConnectClient {
     // this way makes the folding down below more concise.
     const fetchNext: MiddlewareNext =
       async(context: MiddlewareContext): Promise<Response> => {
-        this.loading(true);
-        try {
-          return fetch(context.request);
-        } finally {
-          this.loading(false); 
+        if ($wnd.Vaadin.connectionState) {
+          $wnd.Vaadin.connectionState.loadingStarted();
         }
+       return fetch(context.request)
+            .then(response => {
+              if ($wnd.Vaadin.connectionState) {
+                $wnd.Vaadin.connectionState.loadingSucceeded();
+              }
+              return response;
+            })
+            .catch(error => {
+              if ($wnd.Vaadin.connectionState) {
+                $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
+              }
+              return Promise.reject(error);
+            });
       };
 
     // Assemble the final middlewares array from internal
@@ -448,13 +459,6 @@ export class ConnectClient {
 
     // Invoke all the folded async middlewares and return
     return chain(initialContext);
-  }
-
-  // Re-use flow loading indicator when fetching endpoints
-  private loading(action: boolean) {
-    if ($wnd.Vaadin.Flow?.loading) {
-      $wnd.Vaadin.Flow.loading(action);
-    }
   }
 }
 

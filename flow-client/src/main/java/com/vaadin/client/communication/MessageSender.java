@@ -17,6 +17,7 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.GWT;
 import com.vaadin.client.Console;
+import com.vaadin.client.ConnectionState;
 import com.vaadin.client.Registry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -105,7 +106,8 @@ public class MessageSender {
 
         JsonObject extraJson = Json.createObject();
         if (showLoadingIndicator) {
-            registry.getLoadingIndicator().trigger();
+            registry.getConnectionState().setState(
+                    ConnectionState.State.LOADING);
         }
         send(reqJson, extraJson);
     }
