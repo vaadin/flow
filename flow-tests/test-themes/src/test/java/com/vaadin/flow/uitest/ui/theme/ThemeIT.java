@@ -15,14 +15,14 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
+
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_FIELD_ID;
 
 public class ThemeIT extends ChromeBrowserTest {
 
@@ -35,6 +35,18 @@ public class ThemeIT extends ChromeBrowserTest {
         Assert.assertEquals(
             "url(\"" + getRootURL() + "/theme/app-theme/img/bg.jpg\")",
             findElement(By.tagName("body")).getCssValue("background-image"));
+
+    }
+
+    @Test
+    public void componentTheme_isApplied() {
+        open();
+        final TestBenchElement myField = $(TestBenchElement.class)
+            .id(MY_FIELD_ID);
+        final TestBenchElement input = myField.$(TestBenchElement.class)
+            .id("input");
+        Assert.assertEquals("rgba(255, 0, 0, 1)",
+            input.getCssValue("background-color"));
     }
 
     @Override

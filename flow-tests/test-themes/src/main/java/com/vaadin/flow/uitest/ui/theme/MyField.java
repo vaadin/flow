@@ -13,14 +13,28 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.uitest.ui.theme;
 
-import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.JsModule;
 
-@Theme(value ="app-theme")
-@NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "1.6.1")
-public class AppShell implements AppShellConfigurator {
+/**
+ * My field is a minimal text filed for component theme test with the app theme.
+ */
+@JsModule("./my-field.js")
+@Tag("my-field")
+public class MyField extends Component {
+
+    /**
+     * Set the component id.
+     *
+     * @param id
+     *     value to set
+     * @return this component
+     */
+    public Component withId(String id) {
+        setId(id);
+        return this;
+    }
 }
