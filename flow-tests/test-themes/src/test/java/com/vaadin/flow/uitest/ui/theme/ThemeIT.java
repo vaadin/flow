@@ -15,16 +15,24 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
 
 public class ThemeIT extends ChromeBrowserTest {
+
+    @Test
+    public void secondTheme_staticFilesNotCopied() {
+        getDriver().get(getRootURL() + "/theme/app-theme/img/bg.jpg");
+        Assert.assertFalse("app-theme static files should be copied",
+            driver.getPageSource().contains("Could not navigate"));
+
+        getDriver().get(getRootURL() + "/theme/no-copy/no-copy.txt");
+        Assert.assertTrue("no-copy theme should not be handled",
+            driver.getPageSource().contains("Could not navigate to 'theme/no-copy/no-copy.txt'"));
+    }
 
     @Test
     public void applicationTheme_GlobalCss_isUsed() {
@@ -35,6 +43,10 @@ public class ThemeIT extends ChromeBrowserTest {
         Assert.assertEquals(
             "url(\"" + getRootURL() + "/theme/app-theme/img/bg.jpg\")",
             findElement(By.tagName("body")).getCssValue("background-image"));
+
+        getDriver().get(getRootURL() + "/theme/app-theme/img/bg.jpg");
+        Assert.assertFalse("app-theme background file should be served",
+            driver.getPageSource().contains("Could not navigate"));
     }
 
     @Override
