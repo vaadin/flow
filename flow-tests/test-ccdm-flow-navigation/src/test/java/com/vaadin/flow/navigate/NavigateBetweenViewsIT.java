@@ -61,7 +61,6 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
         getInShadowRoot(findElement(By.tagName("about-view")),
                 By.id("navigate-hello")).click();
 
-        waitUntil(input -> $(NativeButtonElement.class).id(NAVIGATE_ABOUT).isDisplayed());
         Assert.assertThat(getDriver().getCurrentUrl(),
                 CoreMatchers.endsWith("/hello"));
 
