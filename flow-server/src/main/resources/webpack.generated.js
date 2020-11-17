@@ -213,7 +213,7 @@ module.exports = {
     })] : []),
 
     new ApplicationThemePlugin({
-      themeJarFolder: path.resolve(flowFrontendFolder, 'theme'),
+      themeResourceFolder: path.resolve(flowFrontendFolder, 'theme'),
       themeProjectFolders: themeProjectFolders,
       projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
     }),
