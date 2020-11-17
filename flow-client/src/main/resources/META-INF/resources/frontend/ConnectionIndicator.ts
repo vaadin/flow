@@ -16,6 +16,7 @@
 
 import {css, html, LitElement, property} from "lit-element";
 import {classMap} from "lit-html/directives/class-map";
+import {ConnectionState, ConnectionStateStore} from "./ConnectionState";
 
 export class ConnectionIndicator extends LitElement {
 
@@ -66,13 +67,17 @@ export class ConnectionIndicator extends LitElement {
   private timeoutSecond: number = 0;
   private timeoutThird: number = 0;
 
+  private connectionStateStore?: ConnectionStateStore;
   private readonly connectionStateListener: () => void;
 
   constructor() {
     super();
 
     this.connectionStateListener = () => {
-      this.offline = !window.navigator.onLine;
+      const state = this.connectionStateStore?.state;
+      this.offline = state == ConnectionState.CONNECTION_LOST
+      this.reconnecting = state == ConnectionState.RECONNECTING;
+      this.loading = state == ConnectionState.LOADING;
     };
   }
 
@@ -94,7 +99,7 @@ export class ConnectionIndicator extends LitElement {
         second: this.loadingSecond,
         third: this.loadingThird
        })}"
-       style="${this.loadingState ? '' : 'display: none;'}"></div>
+       style="${this.loadingState ? '' : 'display: none'}"></div>
       
       <div class="v-status-message ${classMap({
         active: this.reconnecting,
@@ -110,18 +115,20 @@ export class ConnectionIndicator extends LitElement {
   connectedCallback() {
     super.connectedCallback();
 
-    // TODO: use ConnectionStateStore
-    window.addEventListener('offline', this.connectionStateListener);
-    window.addEventListener('online', this.connectionStateListener);
-    this.connectionStateListener();
+    const $wnd = window as any;
+    if ($wnd.Vaadin?.connectionState) {
+      this.connectionStateStore = $wnd.Vaadin.connectionState as ConnectionStateStore;
+      this.connectionStateStore.addStateChangeListener(this.connectionStateListener);
+      this.connectionStateListener();
+    }
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
 
-    // TODO: use ConnectionStateStore
-    window.removeEventListener('offline', this.connectionStateListener);
-    window.removeEventListener('online', this.connectionStateListener);
+    if (this.connectionStateStore) {
+      this.connectionStateStore.removeStateChangeListener(this.connectionStateListener);
+    }
   }
 
   get loading() {

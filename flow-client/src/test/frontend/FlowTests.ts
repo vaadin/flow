@@ -109,7 +109,7 @@ suite("Flow", () => {
       connectionState: new ConnectionStateStore(ConnectionState.CONNECTED)
     };
     mock.setup();
-    const indicator = $wnd.document.body.querySelector('vaadin-loading-indicator');
+    const indicator = $wnd.document.body.querySelector('vaadin-connection-indicator');
     if (indicator) {
       $wnd.document.body.removeChild(indicator);
     }
@@ -144,7 +144,6 @@ suite("Flow", () => {
     const indicator = $wnd.document.querySelector('.v-loading-indicator') as HTMLElement;
     const styles = $wnd.document.querySelector('style#css-loading-indicator') as HTMLElement;
     assert.isNotNull(indicator);
-    assert.isNotNull(styles);
 
     assert.equal(indicator.getAttribute('style'), 'display: none');
 
