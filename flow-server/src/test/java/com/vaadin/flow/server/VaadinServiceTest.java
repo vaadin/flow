@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.server;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpSessionBindingEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,10 +27,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpSessionBindingEvent;
 
 import org.easymock.EasyMock;
 import org.junit.Assert;
@@ -50,6 +46,10 @@ import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
