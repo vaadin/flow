@@ -30,7 +30,6 @@ public class ThemeIT extends ChromeBrowserTest {
             driver.getPageSource().contains("Could not navigate"));
 
         getDriver().get(getRootURL() + "/theme/no-copy/no-copy.txt");
-        System.out.println(" === " + driver.getTitle());
         Assert.assertTrue("no-copy theme should not be handled",
             driver.getPageSource().contains("Could not navigate to 'theme/no-copy/no-copy.txt'"));
     }
