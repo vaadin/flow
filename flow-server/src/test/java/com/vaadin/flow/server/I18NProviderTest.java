@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.server;
 
-import java.util.Locale;
-import java.util.concurrent.locks.ReentrantLock;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
+import java.util.Locale;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.After;
 import org.junit.Assert;

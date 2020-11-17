@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletException;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Optional;
-
-import javax.servlet.ServletException;
 
 import org.junit.After;
 import org.junit.Assert;

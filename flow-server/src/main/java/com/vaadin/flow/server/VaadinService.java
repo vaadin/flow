@@ -422,6 +422,8 @@ public abstract class VaadinService implements Serializable {
             instantiators = new ArrayList<>(factories.size());
             for (InstantiatorFactory factory : factories) {
                 Instantiator instantiator = factory.createInstantitor(this);
+                // if the existing instantiator is converted to new API then
+                // let's respect its deprecated method
                 if (instantiator != null && instantiator.init(this)) {
                     instantiators.add(instantiator);
                 }

@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.HandlesTypes;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -33,10 +37,6 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.HandlesTypes;
 
 import org.apache.commons.io.IOUtils;
 
@@ -69,6 +69,11 @@ public class LookupInitializer
 
     private static final String SEVERAL_IMPLS = "Found several implementations in the classpath for ";
 
+    /**
+     * This class is private because it's an implementation detail/one of the
+     * possible implementation and is explicitly made non-overridable because it
+     * provides the way to override everything.
+     */
     private static class LookupImpl implements Lookup {
 
         private final Map<Class<?>, Collection<Object>> serviceMap;
@@ -139,6 +144,12 @@ public class LookupInitializer
         }
     }
 
+    /**
+     * This class is private because it's an implementation detail/one of the
+     * possible implementation and should not be available as public because
+     * {@link LookupInitializer} will find it in the classpath and it will be
+     * always used instead custom {@link ResourceProvider} implementation.
+     */
     private static class ResourceProviderImpl implements ResourceProvider {
 
         private Map<String, CachedStreamData> cache = new ConcurrentHashMap<>();

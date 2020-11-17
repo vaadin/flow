@@ -1,19 +1,7 @@
 package com.vaadin.flow.server;
 
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.DeploymentConfigurationFactory.DEV_FOLDER_MISSING_MESSAGE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-import static java.util.Collections.emptyMap;
-import static org.easymock.EasyMock.anyObject;
-import static org.easymock.EasyMock.capture;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.mock;
-import static org.easymock.EasyMock.replay;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,9 +19,6 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 
 import org.apache.commons.io.FileUtils;
 import org.easymock.Capture;
@@ -53,6 +38,21 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.DeploymentConfigurationFactory.DEV_FOLDER_MISSING_MESSAGE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+import static java.util.Collections.emptyMap;
+import static org.easymock.EasyMock.anyObject;
+import static org.easymock.EasyMock.capture;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.mock;
+import static org.easymock.EasyMock.replay;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class DeploymentConfigurationFactoryTest {
 

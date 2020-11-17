@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.server;
 
-import java.util.Properties;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+
+import java.util.Properties;
 
 import org.easymock.EasyMock;
 import org.junit.Assert;
