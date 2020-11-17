@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.Arrays;
 
 import org.junit.After;
@@ -36,6 +34,8 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
+
+import static org.junit.Assert.assertEquals;
 
 public class InvalidUrlTest {
 

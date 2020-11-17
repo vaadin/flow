@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletContext;
+
 import java.util.Enumeration;
 import java.util.function.Supplier;
-
-import javax.servlet.ServletContext;
 
 import com.vaadin.flow.di.Lookup;
 

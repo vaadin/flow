@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletException;
+
 import java.util.Collections;
 import java.util.List;
-
-import javax.servlet.ServletException;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.ResourceProvider;
