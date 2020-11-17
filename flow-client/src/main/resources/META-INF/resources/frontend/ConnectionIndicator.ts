@@ -52,16 +52,10 @@ export class ConnectionIndicator extends LitElement {
     'Connection lost, trying to reconnect...';
 
   @property({type: Boolean})
-  private loadingState: boolean = false;
+  loadingState: boolean = false;
 
-  @property({type: Boolean})
-  private loadingFirst: boolean = false;
-
-  @property({type: Boolean})
-  private loadingSecond: boolean = false;
-
-  @property({type: Boolean})
-  private loadingThird: boolean = false;
+  @property({type: String})
+  loadingBarState: LoadingBarState = LoadingBarState.IDLE;
 
   private timeoutFirst: number = 0;
   private timeoutSecond: number = 0;
@@ -93,14 +87,9 @@ export class ConnectionIndicator extends LitElement {
     return html`
       ${this.applyDefaultTheme ? this.renderDefaultLoadingCss() : ''}
       <div
-       class="v-loading-indicator ${classMap({
-        active: this.loadingState,
-        first: this.loadingFirst,
-        second: this.loadingSecond,
-        third: this.loadingThird
-       })}"
-       style="${this.loadingState ? '' : 'display: none'}"></div>
-      
+       class="v-loading-indicator ${this.loadingBarState}"
+       style="${this.getLoadingBarStyle()}"></div>
+
       <div class="v-status-message ${classMap({
         active: this.reconnecting,
         modal: this.reconnectModal
@@ -153,14 +142,20 @@ export class ConnectionIndicator extends LitElement {
       this.timeoutThird = 0;
     }
 
-    this.loadingFirst = false;
-    this.loadingSecond = false;
-    this.loadingThird = false;
-
+    this.loadingBarState = LoadingBarState.IDLE;
     if (loading) {
-      this.timeoutFirst = window.setTimeout(() => this.loadingFirst = true, this.firstDelay);
-      this.timeoutSecond = window.setTimeout(() => this.loadingSecond = true, this.secondDelay);
-      this.timeoutThird = window.setTimeout(() => this.loadingThird = true, this.thirdDelay);
+      this.timeoutFirst = window.setTimeout(
+        () => this.loadingBarState = LoadingBarState.FIRST,
+        this.firstDelay
+      );
+      this.timeoutSecond = window.setTimeout(
+        () => this.loadingBarState = LoadingBarState.SECOND,
+        this.secondDelay
+      );
+      this.timeoutThird = window.setTimeout(
+        () => this.loadingBarState = LoadingBarState.THIRD,
+        this.thirdDelay
+      );
     }
   }
 
@@ -352,6 +347,24 @@ export class ConnectionIndicator extends LitElement {
       )
       : this.onlineText
   }
+
+  private getLoadingBarStyle(): string {
+    switch (this.loadingBarState) {
+      case LoadingBarState.IDLE:
+        return 'display: none';
+      case LoadingBarState.FIRST:
+      case LoadingBarState.SECOND:
+      case LoadingBarState.THIRD:
+        return 'display: block';
+    }
+  }
+}
+
+export const enum LoadingBarState {
+  IDLE = '',
+  FIRST = 'first',
+  SECOND ='second',
+  THIRD = 'third'
 }
 
 if (customElements.get('vaadin-connection-indicator') === undefined) {
