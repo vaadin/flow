@@ -14,7 +14,8 @@
  * the License.
  */
 
-import {css, html, LitElement, property} from "lit-element";
+import {html, LitElement, property} from "lit-element";
+import {render} from "lit-html";
 import {classMap} from "lit-html/directives/class-map";
 import {ConnectionState, ConnectionStateStore} from "./ConnectionState";
 
@@ -28,9 +29,6 @@ export class ConnectionIndicator extends LitElement {
 
   @property({type: Number })
   thirdDelay: number = 5000;
-
-  @property({type: Boolean})
-  applyDefaultTheme: boolean = true;
 
   @property({type: Boolean, reflect: true})
   offline: boolean = false;
@@ -57,6 +55,8 @@ export class ConnectionIndicator extends LitElement {
   @property({type: String})
   loadingBarState: LoadingBarState = LoadingBarState.IDLE;
 
+  private applyDefaultThemeState: boolean = true;
+
   private timeoutFirst: number = 0;
   private timeoutSecond: number = 0;
   private timeoutThird: number = 0;
@@ -75,17 +75,8 @@ export class ConnectionIndicator extends LitElement {
     };
   }
 
-  static get styles() {
-    return css`
-      :host {
-        display: block;
-      }
-    `;
-  }
-
   render() {
     return html`
-      ${this.applyDefaultTheme ? this.renderDefaultLoadingCss() : ''}
       <div
        class="v-loading-indicator ${this.loadingBarState}"
        style="${this.getLoadingBarStyle()}"></div>
@@ -110,6 +101,8 @@ export class ConnectionIndicator extends LitElement {
       this.connectionStateStore.addStateChangeListener(this.connectionStateListener);
       this.connectionStateListener();
     }
+
+    this.updateTheme();
   }
 
   disconnectedCallback() {
@@ -118,6 +111,8 @@ export class ConnectionIndicator extends LitElement {
     if (this.connectionStateStore) {
       this.connectionStateStore.removeStateChangeListener(this.connectionStateListener);
     }
+
+    this.updateTheme();
   }
 
   get loading() {
@@ -159,8 +154,37 @@ export class ConnectionIndicator extends LitElement {
     }
   }
 
+  @property({type: Boolean})
+  get applyDefaultTheme() {
+    return this.applyDefaultThemeState;
+  }
+
+  set applyDefaultTheme(applyDefaultTheme: boolean) {
+    if (applyDefaultTheme !== this.applyDefaultThemeState) {
+      this.applyDefaultThemeState = applyDefaultTheme;
+      this.updateTheme();
+    }
+  }
+
   protected createRenderRoot() {
     return this;
+  }
+
+  private renderMessage() {
+    return this.offline
+      ? (this.reconnecting
+          ? this.reconnectingText
+          : this.offlineText
+      )
+      : this.onlineText
+  }
+
+  private updateTheme() {
+    render(html`${
+      this.isConnected && this.applyDefaultThemeState
+        ? this.renderDefaultLoadingCss()
+        : ''
+    }`, document.head);
   }
 
   private renderDefaultLoadingCss() {
@@ -337,15 +361,6 @@ export class ConnectionIndicator extends LitElement {
         }
       }
     </style>`;
-  }
-
-  private renderMessage() {
-    return this.offline
-      ? (this.reconnecting
-          ? this.reconnectingText
-          : this.offlineText
-      )
-      : this.onlineText
   }
 
   private getLoadingBarStyle(): string {
