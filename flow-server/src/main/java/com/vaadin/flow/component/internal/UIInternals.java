@@ -549,8 +549,13 @@ public class UIInternals implements Serializable {
      */
     public void addJavaScriptInvocation(
             PendingJavaScriptInvocation invocation) {
-        session.checkHasLock();
-        pendingJsInvocations.add(invocation);
+        if (session != null) {
+            session.checkHasLock();
+            pendingJsInvocations.add(invocation);
+        } else {
+            getLogger().warn("Tried to perform a JavaScript call when session is null, this should never happen.");
+            dumpPendingJavaScriptInvocations();
+        }
     }
 
     /**
