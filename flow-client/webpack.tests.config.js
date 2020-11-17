@@ -8,6 +8,7 @@ module.exports = {
     authentication: "./src/test/frontend/AuthenticationTests.ts",
     offline: "./src/test/frontend/OfflineTests.ts",
     connection_state: "./src/test/frontend/ConnectionStateTests.ts",
+    appshell: "./src/test/frontend/AppShellTests.ts",
     gizmo: "./src/test/frontend/VaadinDevmodeGizmoTests.js",
     form_binder: "./src/test/frontend/form/BinderTests.ts",
     form_field: "./src/test/frontend/form/FieldTests.ts",
