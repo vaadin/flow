@@ -1,5 +1,5 @@
-import {ConnectionState} from './ConnectionState';
 import './ConnectionIndicator';
+import {ConnectionState} from './ConnectionState';
 
 export interface FlowConfig {
   imports ?: () => void;

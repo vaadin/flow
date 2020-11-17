@@ -69,9 +69,9 @@ export class ConnectionIndicator extends LitElement {
 
     this.connectionStateListener = () => {
       const state = this.connectionStateStore?.state;
-      this.offline = state == ConnectionState.CONNECTION_LOST
-      this.reconnecting = state == ConnectionState.RECONNECTING;
-      this.loading = state == ConnectionState.LOADING;
+      this.offline = state === ConnectionState.CONNECTION_LOST
+      this.reconnecting = state === ConnectionState.RECONNECTING;
+      this.loading = state === ConnectionState.LOADING;
     };
   }
 
