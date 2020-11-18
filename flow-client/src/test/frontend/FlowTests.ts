@@ -136,10 +136,10 @@ suite("Flow", () => {
 
   test("should initialize a flow loading indicator", async () => {
     new Flow({imports: () => {}});
-    $wnd.Vaadin.loadingIndicator.firstDelay = 100;
-    $wnd.Vaadin.loadingIndicator.secondDelay = 200;
-    $wnd.Vaadin.loadingIndicator.thirdDelay = 400;
-    await $wnd.Vaadin.loadingIndicator.updateComplete;
+    $wnd.Vaadin.connectionIndicator.firstDelay = 100;
+    $wnd.Vaadin.connectionIndicator.secondDelay = 200;
+    $wnd.Vaadin.connectionIndicator.thirdDelay = 400;
+    await $wnd.Vaadin.connectionIndicator.updateComplete;
     const indicator = $wnd.document.querySelector('.v-loading-indicator') as HTMLElement;
     const styles = $wnd.document.querySelector('style#css-loading-indicator') as HTMLElement;
     assert.isNotNull(indicator);
@@ -148,7 +148,7 @@ suite("Flow", () => {
     assert.equal(indicator.getAttribute('style'), 'display: none');
 
     $wnd.Vaadin.connectionState.state = ConnectionState.LOADING;
-    await $wnd.Vaadin.loadingIndicator.updateComplete;
+    await $wnd.Vaadin.connectionIndicator.updateComplete;
 
     await new Promise(resolve => setTimeout(resolve, 150));
     assert.equal(indicator.getAttribute('style'), 'display: block');
@@ -168,7 +168,7 @@ suite("Flow", () => {
     assert.isTrue(indicator.classList.contains('third'));
 
     $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
-    await $wnd.Vaadin.loadingIndicator.updateComplete;
+    await $wnd.Vaadin.connectionIndicator.updateComplete;
 
     assert.equal(indicator.getAttribute('style'), 'display: none');
     assert.isFalse(indicator.classList.contains('first'));
@@ -301,8 +301,8 @@ suite("Flow", () => {
 
     const route = flow.serverSideRoutes[0];
 
-    $wnd.Vaadin.loadingIndicator.firstDelay = 0;
-    await $wnd.Vaadin.loadingIndicator.updateComplete;
+    $wnd.Vaadin.connectionIndicator.firstDelay = 0;
+    await $wnd.Vaadin.connectionIndicator.updateComplete;
     const indicator = $wnd.document.querySelector('.v-loading-indicator');
 
     let wasActive = false;
@@ -648,7 +648,7 @@ suite("Flow", () => {
       search: ''
     };
 
-    await $wnd.Vaadin.loadingIndicator.updateComplete;
+    await $wnd.Vaadin.connectionIndicator.updateComplete;
     const indicator = $wnd.document.querySelector('.v-loading-indicator');
 
     const view = await route.action(params);
