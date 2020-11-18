@@ -18,13 +18,15 @@ package com.vaadin.flow.uitest.ui.theme;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
 
 /**
- * My field is a minimal text filed for component theme test with the app theme.
+ * Polymer version of vaadin text field for testing component theming.
  */
-@JsModule("./my-field.js")
-@Tag("my-field")
-public class MyField extends Component {
+@JsModule("@vaadin/vaadin-text-field/vaadin-text-field.js")
+@Tag("vaadin-text-field")
+@NpmPackage(value="@vaadin/vaadin-text-field", version = "2.7.1")
+public class MyPolymerField extends Component {
 
     /**
      * Set the component id.
