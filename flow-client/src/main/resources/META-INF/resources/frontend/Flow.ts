@@ -88,7 +88,7 @@ export class Flow {
             .replace(/^https?:\/\/[^\/]+/i, ''));
     this.appShellTitle = document.title;
     // Put a flow progress-bar in the dom
-    this.addLoadingIndicator();
+    this.addConnectionIndicator();
   }
 
   /**
@@ -327,10 +327,10 @@ export class Flow {
     });
   }
 
-  // Create shared connection state store and loading indicator
-  private addLoadingIndicator() {
-    $wnd.Vaadin.loadingIndicator = document.createElement('vaadin-connection-indicator');
-    document.body.appendChild($wnd.Vaadin.loadingIndicator);
+  // Create shared connection state store and connection indicator
+  private addConnectionIndicator() {
+    $wnd.Vaadin.connectionIndicator = document.createElement('vaadin-connection-indicator');
+    document.body.appendChild($wnd.Vaadin.connectionIndicator);
   }
 
   private loadingStarted() {
