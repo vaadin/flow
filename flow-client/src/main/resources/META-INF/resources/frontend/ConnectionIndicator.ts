@@ -45,6 +45,9 @@ export class ConnectionIndicator extends LitElement {
   @property({type: String})
   offlineText: string = 'Connection lost'
 
+  @property({type: Boolean, reflect: true})
+  expanded: boolean = false;
+
   @property({type: String})
   reconnectingText: string =
     'Connection lost, trying to reconnect...';
@@ -57,9 +60,12 @@ export class ConnectionIndicator extends LitElement {
 
   private applyDefaultThemeState: boolean = true;
 
-  private timeoutFirst: number = 0;
-  private timeoutSecond: number = 0;
-  private timeoutThird: number = 0;
+  private firstTimeout: number = 0;
+  private secondTimeout: number = 0;
+  private thirdTimeout: number = 0;
+
+  private expandedTimeout: number = 0;
+  private expandedDelay: number = 2000;
 
   private connectionStateStore?: ConnectionStateStore;
   private readonly connectionStateListener: () => void;
@@ -68,10 +74,21 @@ export class ConnectionIndicator extends LitElement {
     super();
 
     this.connectionStateListener = () => {
-      const state = this.connectionStateStore?.state;
-      this.offline = state === ConnectionState.CONNECTION_LOST
-      this.reconnecting = state === ConnectionState.RECONNECTING;
-      this.loading = state === ConnectionState.LOADING;
+      const wasReconnecting = this.reconnecting;
+      const wasOffline = this.offline;
+
+      this.updateConnectionState();
+
+      // Temporarily expand the indicator on state changes
+      if (this.offline !== wasOffline || this.reconnecting !== wasReconnecting) {
+        this.expanded = true;
+        this.expandedTimeout = this.timeoutFor(
+          this.expandedTimeout,
+          true,
+          () => this.expanded = false,
+          this.expandedDelay
+        );
+      }
     };
   }
 
@@ -99,7 +116,7 @@ export class ConnectionIndicator extends LitElement {
     if ($wnd.Vaadin?.connectionState) {
       this.connectionStateStore = $wnd.Vaadin.connectionState as ConnectionStateStore;
       this.connectionStateStore.addStateChangeListener(this.connectionStateListener);
-      this.connectionStateListener();
+      this.updateConnectionState();
     }
 
     this.updateTheme();
@@ -121,37 +138,28 @@ export class ConnectionIndicator extends LitElement {
 
   set loading(loading: boolean) {
     this.loadingState = loading;
-
-    if (this.timeoutFirst) {
-      window.clearTimeout(this.timeoutFirst);
-      this.timeoutFirst = 0;
-    }
-
-    if (this.timeoutSecond) {
-      window.clearTimeout(this.timeoutSecond);
-      this.timeoutSecond = 0;
-    }
-
-    if (this.timeoutThird) {
-      window.clearTimeout(this.timeoutThird);
-      this.timeoutThird = 0;
-    }
-
     this.loadingBarState = LoadingBarState.IDLE;
-    if (loading) {
-      this.timeoutFirst = window.setTimeout(
-        () => this.loadingBarState = LoadingBarState.FIRST,
-        this.firstDelay
-      );
-      this.timeoutSecond = window.setTimeout(
-        () => this.loadingBarState = LoadingBarState.SECOND,
-        this.secondDelay
-      );
-      this.timeoutThird = window.setTimeout(
-        () => this.loadingBarState = LoadingBarState.THIRD,
-        this.thirdDelay
-      );
-    }
+
+    this.firstTimeout = this.timeoutFor(
+      this.firstTimeout,
+      loading,
+      () => this.loadingBarState = LoadingBarState.FIRST,
+      this.firstDelay
+    );
+
+    this.secondTimeout = this.timeoutFor(
+      this.secondTimeout,
+      loading,
+      () => this.loadingBarState = LoadingBarState.SECOND,
+      this.secondDelay
+    );
+
+    this.thirdTimeout = this.timeoutFor(
+      this.thirdTimeout,
+      loading,
+      () => this.loadingBarState = LoadingBarState.THIRD,
+      this.thirdDelay
+    );
   }
 
   @property({type: Boolean})
@@ -168,6 +176,13 @@ export class ConnectionIndicator extends LitElement {
 
   protected createRenderRoot() {
     return this;
+  }
+
+  private updateConnectionState() {
+    const state = this.connectionStateStore?.state;
+    this.offline = state === ConnectionState.CONNECTION_LOST
+    this.reconnecting = state === ConnectionState.RECONNECTING;
+    this.loading = state === ConnectionState.LOADING;
   }
 
   private renderMessage() {
@@ -256,21 +271,19 @@ export class ConnectionIndicator extends LitElement {
         opacity: 0;
         width: 100%;
         max-height: var(--status-height-collapsed, 8px);
-        transition: all 500ms;
         overflow: hidden;
         background-color: var(--status-bg-color-online, var(--lumo-primary-color, var(--material-primary-color, blue)));
         color: var(--status-text-color-online, var(--lumo-primary-contrast-color, var(--material-primary-contrast-color, #fff)));
         font-size: 0.75rem;
         font-weight: 600;
         line-height: 1;
-        animation: v-show-online-status 2s;
+        transition: all .5s;
+        padding: 0 .5em;
       }
 
       vaadin-connection-indicator[offline] .v-status-message,
       vaadin-connection-indicator[reconnecting] .v-status-message {
         opacity: 1;
-        transition-delay: 0;
-        animation: v-show-offline-status 2s;
         background-color: var(--status-bg-color-offline, var(--lumo-shade, #333));
         color: var(--status-text-color-offline, var(--lumo-primary-contrast-color, var(--material-primary-contrast-color, #fff)));
         background-image: repeating-linear-gradient(
@@ -287,58 +300,13 @@ export class ConnectionIndicator extends LitElement {
       }
 
       vaadin-connection-indicator[offline] .v-status-message:hover,
-      vaadin-connection-indicator[reconnecting] .v-status-message:hover {
+      vaadin-connection-indicator[reconnecting] .v-status-message:hover,
+      vaadin-connection-indicator[expanded] .v-status-message {
         max-height: var(--status-height, 1.75rem);
-        transition-delay: 0;
       }
 
-      @keyframes v-show-online-status {
-        0% {
-          opacity: 1;
-          max-height: var(--status-height-collapsed, 8px);
-        }
-        30% {
-          opacity: 1;
-          max-height: var(--status-height, 1.75rem);
-        }
-        70% {
-          opacity: 1;
-          max-height: var(--status-height, 1.75rem);
-        }
-        100% {
-          opacity: 0;
-          max-height: var(--status-height-collapsed, 8px);
-        }
-      }
-
-      @keyframes v-show-offline-status {
-        0% {
-          max-height: var(--status-height-collapsed, 8px);
-        }
-        30% {
-          max-height: var(--status-height, 1.75rem);
-        }
-        70% {
-          max-height: var(--status-height, 1.75rem);
-        }
-        100% {
-          max-height: var(--status-height-collapsed, 8px);
-        }
-      }
-
-      @keyframes show-reconnecting-status {
-        0% {
-          max-height: var(--status-height-collapsed, 8px);
-        }
-        30% {
-          max-height: var(--status-height, 1.75rem);
-        }
-        70% {
-          max-height: var(--status-height, 1.75rem);
-        }
-        100% {
-          max-height: var(--status-height-collapsed, 8px);
-        }
+      vaadin-connection-indicator[expanded] .v-status-message {
+        opacity: 1;
       }
 
       .v-status-message span {
@@ -359,7 +327,7 @@ export class ConnectionIndicator extends LitElement {
         border-radius: 50%;
         box-sizing: border-box;
         animation: v-spin 0.4s linear infinite;
-        margin-inline-end: .5em;
+        margin: 0 .5em;
       }
 
       @keyframes v-spin {
@@ -379,6 +347,14 @@ export class ConnectionIndicator extends LitElement {
       case LoadingBarState.THIRD:
         return 'display: block';
     }
+  }
+
+  private timeoutFor(timeoutId: number, enabled: boolean, handler: () => void, delay: number): number {
+    if (timeoutId !== 0) {
+      window.clearTimeout(timeoutId);
+    }
+
+    return enabled ? window.setTimeout(handler, delay) : 0;
   }
 }
 
