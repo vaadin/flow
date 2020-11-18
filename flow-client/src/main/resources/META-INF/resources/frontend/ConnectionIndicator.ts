@@ -14,13 +14,13 @@
  * the License.
  */
 
-import {html, LitElement, property} from "lit-element";
-import {render} from "lit-html";
+import {css, html, LitElement, property} from "lit-element";
 import {classMap} from "lit-html/directives/class-map";
 import {ConnectionState, ConnectionStateStore} from "./ConnectionState";
 
-export class ConnectionIndicator extends LitElement {
+const DEFAULT_STYLE_ID = 'css-loading-indicator';
 
+export class ConnectionIndicator extends LitElement {
   @property({type: Number })
   firstDelay: number = 300;
 
@@ -180,15 +180,23 @@ export class ConnectionIndicator extends LitElement {
   }
 
   private updateTheme() {
-    render(html`${
-      this.isConnected && this.applyDefaultThemeState
-        ? this.renderDefaultLoadingCss()
-        : ''
-    }`, document.head);
+    if (this.applyDefaultThemeState) {
+      if (!document.getElementById(DEFAULT_STYLE_ID)) {
+        const style = document.createElement('style');
+        style.id = DEFAULT_STYLE_ID;
+        style.textContent = this.getDefaultStyle().cssText;
+        document.head.appendChild(style);
+      }
+    } else {
+      const style = document.getElementById(DEFAULT_STYLE_ID);
+      if (style) {
+        document.head.removeChild(style);
+      }
+    }
   }
 
-  private renderDefaultLoadingCss() {
-    return html`<style id="css-loading-indicator">
+  private getDefaultStyle() {
+    return css`
       @keyframes v-progress-start {
         0% {width: 0%;}
         100% {width: 50%;}
@@ -252,7 +260,7 @@ export class ConnectionIndicator extends LitElement {
         transition: all 500ms;
         overflow: hidden;
         background-color: var(--status-bg-color-online, var(--lumo-primary-color, var(--material-primary-color, blue)));
-        color: var(--status-text-color-online, #eee);
+        color: var(--status-text-color-online, var(--lumo-primary-contrast-color, var(--material-primary-contrast-color, #fff)));
         font-size: 0.75rem;
         font-weight: 600;
         line-height: 1;
@@ -264,8 +272,8 @@ export class ConnectionIndicator extends LitElement {
         opacity: 1;
         transition-delay: 0;
         animation: v-show-offline-status 2s;
-        background-color: var(--status-bg-color-offline, #333);
-        color: var(--status-text-color-offline, #eee);
+        background-color: var(--status-bg-color-offline, var(--lumo-shade, #333));
+        color: var(--status-text-color-offline, var(--lumo-primary-contrast-color, var(--material-primary-contrast-color, #fff)));
         background-image: repeating-linear-gradient(
           45deg,
           rgba(255, 255, 255, 0),
@@ -345,8 +353,8 @@ export class ConnectionIndicator extends LitElement {
         content: "";
         width: 1em;
         height: 1em;
-        border-top: 2px solid var(--status-spinner-color, #2a7fef);
-        border-left: 2px solid var(--status-spinner-color, #2a7fef);
+        border-top: 2px solid var(--status-spinner-color, var(--lumo-primary-color, var(--material-primary-color, blue)));
+        border-left: 2px solid var(--status-spinner-color, var(--lumo-primary-color, var(--material-primary-color, blue)));
         border-right: 2px solid transparent;
         border-bottom: 2px solid transparent;
         border-radius: 50%;
@@ -360,7 +368,7 @@ export class ConnectionIndicator extends LitElement {
           transform: rotate(360deg);
         }
       }
-    </style>`;
+    `;
   }
 
   private getLoadingBarStyle(): string {
