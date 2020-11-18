@@ -313,12 +313,6 @@
             </modules>
         </profile>
         <profile>
-            <id>snapshot</id>
-            <modules>
-                <module>test-root-context</module>
-            </modules>
-        </profile>
-        <profile>
             <id>run-tests</id>
             <activation>
                 <property>
