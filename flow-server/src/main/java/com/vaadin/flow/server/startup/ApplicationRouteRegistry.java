@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -31,6 +29,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.ServletContext;
 
 import org.slf4j.LoggerFactory;
 
@@ -229,6 +229,25 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
     protected ApplicationRouteRegistry() {
         ServiceLoader.load(NavigationTargetFilter.class)
                 .forEach(routeFilters::add);
+    }
+
+    /**
+     * Gets the route registry for the given servlet context. If the servlet
+     * context has no route registry, a new instance is created and assigned to
+     * the context.
+     *
+     * @param context
+     *            the vaadin context for which to get a route registry, not
+     *            <code>null</code>
+     * @return a registry instance for the given servlet context, not
+     *         <code>null</code>
+     * @deprecated this is deprecated in favor of
+     *             {@code getInstance(VaadinContext)} and will be removed in a
+     *             future release
+     */
+    @Deprecated
+    public static ApplicationRouteRegistry getInstance(ServletContext context) {
+        return getInstance(new VaadinServletContext(context));
     }
 
     /**

@@ -310,6 +310,7 @@
             <id>release</id>
             <modules>
                 <module>test-mixed/pom-pnpm-production.xml</module>
+                <module>test-root-context</module>
             </modules>
         </profile>
         <profile>

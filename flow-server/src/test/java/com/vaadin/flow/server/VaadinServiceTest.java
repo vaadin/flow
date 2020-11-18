@@ -117,7 +117,6 @@ public class VaadinServiceTest {
                 e -> Constants.STATISTIC_ROUTING_SERVER.equals(e.getName())));
     }
 
-    @Test
     public void testFireSessionDestroy()
             throws ServletException, ServiceException {
         VaadinService service = createService();
