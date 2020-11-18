@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.testnpmonlyfeatures.general;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -29,7 +29,7 @@ public class UrlValidationIT extends ChromeBrowserTest {
     @Test
     public void devModeUriValidation_uriWithDirectoryChange_statusForbidden() throws IOException {
         sendRequestAndValidateResponseStatusForbidden(
-                "/VAADIN/build/%252E%252E/");
+                "/VAADIN/build/%252E%252E/vaadin-bundle-1234.cache.js");
     }
 
     @Test
