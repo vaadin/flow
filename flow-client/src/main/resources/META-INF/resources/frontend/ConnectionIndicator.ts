@@ -171,12 +171,11 @@ export class ConnectionIndicator extends LitElement {
   }
 
   private renderMessage() {
-    return this.offline
-      ? (this.reconnecting
-          ? this.reconnectingText
-          : this.offlineText
-      )
-      : this.onlineText
+    return this.reconnecting
+      ? this.reconnectingText
+      : this.offline
+        ? this.offlineText
+        : this.onlineText
   }
 
   private updateTheme() {
