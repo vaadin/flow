@@ -17,8 +17,10 @@
 package com.vaadin.flow.component.polymertemplate.rpc;
 
 import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Optional;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.Jsoup;
 import org.junit.After;
 import org.junit.Assert;
@@ -30,22 +32,24 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.component.polymertemplate.TemplateParser;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.templatemodel.ModelType;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-public class PolymerPublishedEventRpcHandlerTest {
+@NotThreadSafe
+public class PublishedEventRpcHandlerUtilTest {
 
     private VaadinService service;
-
-    private PolymerPublishedEventRpcHandler handler;
 
     @Before
     public void setup() {
@@ -56,8 +60,6 @@ public class PolymerPublishedEventRpcHandlerTest {
 
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(configuration);
-
-        handler = new PolymerPublishedEventRpcHandler();
     }
 
     @After
@@ -91,8 +93,8 @@ public class PolymerPublishedEventRpcHandlerTest {
         json.put("nodeId", 0);
         json.put("message", "bar");
 
-        boolean isModelValue = handler.isTemplateModelValue(instance, json,
-                String.class);
+        boolean isModelValue = PublishedEventRpcHandlerUtil
+                .isTemplateModelValue(instance, json, String.class);
 
         Assert.assertTrue(isModelValue);
     }
@@ -104,8 +106,8 @@ public class PolymerPublishedEventRpcHandlerTest {
         JsonObject json = Json.createObject();
         json.put("message", "bar");
 
-        boolean isModelValue = handler.isTemplateModelValue(instance, json,
-                String.class);
+        boolean isModelValue = PublishedEventRpcHandlerUtil
+                .isTemplateModelValue(instance, json, String.class);
 
         Assert.assertFalse(isModelValue);
     }
@@ -117,8 +119,8 @@ public class PolymerPublishedEventRpcHandlerTest {
         JsonObject json = Json.createObject();
         json.put("message", "bar");
 
-        boolean isModelValue = handler.isTemplateModelValue(instance, json,
-                Boolean.class);
+        boolean isModelValue = PublishedEventRpcHandlerUtil
+                .isTemplateModelValue(instance, json, Boolean.class);
 
         Assert.assertFalse(isModelValue);
     }
@@ -127,8 +129,9 @@ public class PolymerPublishedEventRpcHandlerTest {
     public void templateWithModel_faultyPayloadAsNoJsonObject_returnsFalse() {
         TestModule instance = new TestModule();
 
-        boolean isModelValue = handler.isTemplateModelValue(instance,
-                Json.createArray(), String.class);
+        boolean isModelValue = PublishedEventRpcHandlerUtil
+                .isTemplateModelValue(instance, Json.createArray(),
+                        String.class);
 
         Assert.assertFalse(isModelValue);
     }
@@ -141,8 +144,8 @@ public class PolymerPublishedEventRpcHandlerTest {
         json.put("nodeId", 0);
         json.put("message", "bar");
 
-        boolean isModelValue = handler.isTemplateModelValue(instance, json,
-                String.class);
+        boolean isModelValue = PublishedEventRpcHandlerUtil
+                .isTemplateModelValue(instance, json, String.class);
 
         Assert.assertFalse(isModelValue);
     }
@@ -174,6 +177,7 @@ public class PolymerPublishedEventRpcHandlerTest {
                 .getMethod("setMessage", String.class)
                 .getGenericParameterTypes()[0];
 
-        handler.getTemplateItem(instance, json, messageType);
+        PublishedEventRpcHandlerUtil
+                .getTemplateItem(instance, json, messageType);
     }
 }

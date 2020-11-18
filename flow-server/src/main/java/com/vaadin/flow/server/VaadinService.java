@@ -30,7 +30,6 @@ import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -55,8 +54,6 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.di.InstantiatorFactory;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -283,31 +280,28 @@ public abstract class VaadinService implements Serializable {
         if (!configuration.isProductionMode()) {
             Logger logger = getLogger();
             logger.debug("The application has the following routes: ");
-            List<RouteData> routeDataList = getRouteRegistry()
-                    .getRegisteredRoutes();
-            if (!routeDataList.isEmpty()) {
+            List<RouteData> routeDataList = getRouteRegistry().getRegisteredRoutes();
+            if(!routeDataList.isEmpty()) {
                 addRouterUsageStatistics();
             }
-            routeDataList.stream().map(Object::toString).forEach(logger::debug);
+            routeDataList.stream()
+                    .map(Object::toString).forEach(logger::debug);
         }
         if (getDeploymentConfiguration().isPnpmEnabled()) {
-            UsageStatistics.markAsUsed("flow/pnpm", null);
+            UsageStatistics.markAsUsed("flow/pnpm",null);
         }
 
         initialized = true;
     }
 
     private void addRouterUsageStatistics() {
-        if (UsageStatistics.getEntries().anyMatch(
+        if(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName()))) {
             UsageStatistics.removeEntry(Constants.STATISTIC_ROUTING_CLIENT);
-            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_HYBRID,
-                    Version.getFullVersion());
-        } else if (UsageStatistics.getEntries()
-                .noneMatch(e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER
-                        .equals(e.getName()))) {
-            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_SERVER,
-                    Version.getFullVersion());
+            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_HYBRID, Version.getFullVersion());
+        } else if(UsageStatistics.getEntries().noneMatch(
+                e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER.equals(e.getName()))) {
+            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_SERVER, Version.getFullVersion());
         }
     }
 
@@ -413,31 +407,11 @@ public abstract class VaadinService implements Serializable {
      */
     protected Optional<Instantiator> loadInstantiators()
             throws ServiceException {
-        Lookup lookup = getContext().getAttribute(Lookup.class);
-        List<Instantiator> instantiators = null;
-        if (lookup != null) {
-            // lookup may be null in tests
-            Collection<InstantiatorFactory> factories = lookup
-                    .lookupAll(InstantiatorFactory.class);
-            instantiators = new ArrayList<>(factories.size());
-            for (InstantiatorFactory factory : factories) {
-                Instantiator instantiator = factory.createInstantitor(this);
-                if (instantiator != null && instantiator.init(this)) {
-                    instantiators.add(instantiator);
-                }
-            }
-        }
-
-        if (instantiators == null) {
-            instantiators = new ArrayList<>();
-        }
-
-        // the code to support previous way of loading instantiators
-        StreamSupport
+        List<Instantiator> instantiators = StreamSupport
                 .stream(ServiceLoader.load(Instantiator.class, getClassLoader())
                         .spliterator(), false)
                 .filter(iterator -> iterator.init(this))
-                .forEach(instantiators::add);
+                .collect(Collectors.toList());
         if (instantiators.size() > 1) {
             throw new ServiceException(
                     "Cannot init VaadinService because there are multiple eligible instantiator implementations: "
@@ -2126,8 +2100,7 @@ public abstract class VaadinService implements Serializable {
             WrappedSession wrappedSession) {
         assert VaadinSession.hasLock(this, wrappedSession);
         writeToHttpSession(wrappedSession, session);
-        wrappedSession.setAttribute(getCsrfTokenAttributeName(),
-                session.getCsrfToken());
+        wrappedSession.setAttribute(getCsrfTokenAttributeName(), session.getCsrfToken());
         session.refreshTransients(wrappedSession, this);
     }
 
@@ -2393,7 +2366,6 @@ public abstract class VaadinService implements Serializable {
      * @return the attribute name string
      */
     public static String getCsrfTokenAttributeName() {
-        return VaadinSession.class.getName() + "."
-                + ApplicationConstants.CSRF_TOKEN;
+        return VaadinSession.class.getName() + "." + ApplicationConstants.CSRF_TOKEN;
     }
 }

@@ -19,7 +19,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -34,8 +33,6 @@ import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.LocationChangeEvent;
@@ -241,9 +238,9 @@ class BootstrapUtils {
 
         try (InputStream inlineResourceStream = getInlineResourceStream(request,
                 file);
-                BufferedReader bufferedReader = new BufferedReader(
-                        new InputStreamReader(inlineResourceStream,
-                                requestCharset))) {
+             BufferedReader bufferedReader = new BufferedReader(
+                     new InputStreamReader(inlineResourceStream,
+                             requestCharset))) {
             return bufferedReader.lines()
                     .collect(Collectors.joining(System.lineSeparator()));
         } catch (IOException e) {
@@ -253,25 +250,14 @@ class BootstrapUtils {
     }
 
     private static InputStream getInlineResourceStream(VaadinRequest request,
-            String file) {
-        VaadinService service = request.getService();
-        ResourceProvider resourceProvider = service.getContext()
-                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
-        URL appResource = resourceProvider.getApplicationResource(service,
-                file);
-
-        InputStream stream = null;
-        try {
-            stream = appResource == null ? null : appResource.openStream();
-        } catch (IOException e) {
-            throw new IllegalStateException(String.format(
-                    "Couldn't open application resource '%s' for inline resource",
-                    file), e);
-        }
+                                                       String file) {
+        InputStream stream = request.getService().getClassLoader()
+                .getResourceAsStream(file);
 
         if (stream == null) {
             throw new IllegalStateException(String.format(
-                    "Application resource '%s' for inline resource is not available",
+                    "File '%s' for inline resource is not available through "
+                            + "the servlet context class loader.",
                     file));
         }
         return stream;

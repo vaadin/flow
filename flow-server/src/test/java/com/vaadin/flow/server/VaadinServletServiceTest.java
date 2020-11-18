@@ -1,13 +1,9 @@
 package com.vaadin.flow.server;
 
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
+import javax.servlet.http.HttpServletRequest;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -18,6 +14,10 @@ import org.mockito.Mockito;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.theme.AbstractTheme;
+
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
 
 /**
  * Test class for testing es6 resolution by browser capability. This is valid
@@ -46,7 +46,8 @@ public class VaadinServletServiceTest {
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
 
-        servlet = mocks.getServlet();
+        servlet = new VaadinServlet();
+        servlet.init(new MockServletConfig());
     }
 
     @After
@@ -121,9 +122,8 @@ public class VaadinServletServiceTest {
     public void should_report_flow_bootstrapHandler() {
         mocks.getDeploymentConfiguration().useDeprecatedV14Bootstrapping(true);
 
-        Assert.assertTrue(UsageStatistics.getEntries()
-                .anyMatch(e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER
-                        .equals(e.getName())));
+        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
+                e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER.equals(e.getName())));
     }
 
     private String testLocation(String base, String contextPath,

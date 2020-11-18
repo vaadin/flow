@@ -17,6 +17,7 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.List;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,17 +33,15 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.DisabledUpdateMode;
-import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class PublishedServerEventHandlerRpcHandlerTest {
@@ -79,7 +78,6 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     public static class EnabledHandler extends Component {
 
         private boolean isInvoked;
-
         @ClientCallable(DisabledUpdateMode.ALWAYS)
         private void operation() {
             isInvoked = true;
@@ -167,26 +165,25 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         }
 
         @ClientCallable
-        protected void method4(@EventData("foo") JsonValue value) {
+        protected void method4(@EventData("foo")
+                JsonValue value) {
             jsonValue = value;
         }
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         Assert.assertNull(System.getSecurityManager());
+        service = Mockito.mock(VaadinService.class);
 
-        MockServletServiceSessionSetup setup = new MockServletServiceSessionSetup();
-
-        service = setup.getService();
-
-        MockDeploymentConfiguration configuration = setup
-                .getDeploymentConfiguration();
-        configuration.setProductionMode(false);
-
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
         VaadinService.setCurrent(service);
 
-        session = setup.getSession();
+        session = Mockito.mock(VaadinSession.class);
         Mockito.when(session.hasLock()).thenReturn(true);
     }
 
@@ -232,11 +229,6 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         params.set(1, "MRS");
 
         DecoderParameters component = new DecoderParameters();
-        UI ui = new UI();
-
-        ui.getInternals().setSession(session);
-
-        ui.add(component);
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method", params, -1);
 
@@ -249,11 +241,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         params.set(0, "264.1");
         params.set(1, "MR");
 
-        UI ui = new UI();
-        ui.getInternals().setSession(session);
-
         DecoderParameters component = new DecoderParameters();
-        ui.add(component);
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method", params, -1);
     }
@@ -354,6 +342,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         Assert.assertEquals("Target should be the component's element",
                 component.getElement(), parameters.get(1));
     }
+
 
     @Test
     public void methodWithVarArg_acceptNoValues() {

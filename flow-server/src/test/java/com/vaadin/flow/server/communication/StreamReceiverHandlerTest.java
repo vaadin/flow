@@ -30,12 +30,13 @@ import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.server.ErrorHandler;
-import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.MockServletConfig;
 import com.vaadin.flow.server.StreamReceiver;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.StreamVariable;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
@@ -96,7 +97,9 @@ public class StreamReceiverHandlerTest {
 
         handler = new StreamReceiverHandler();
 
-        mockService = new MockVaadinServletService();
+        VaadinServlet mockServlet = new VaadinServlet();
+        mockServlet.init(new MockServletConfig());
+        mockService = mockServlet.getService();
 
         mockRequest();
         mockReceiverAndRegistry();

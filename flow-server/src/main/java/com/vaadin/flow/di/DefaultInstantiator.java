@@ -63,9 +63,7 @@ public class DefaultInstantiator implements Instantiator {
 
     @Override
     public <T> T getOrCreate(Class<T> type) {
-        Lookup lookup = service.getContext().getAttribute(Lookup.class);
-        T result = lookup == null ? null : lookup.lookup(type);
-        return result == null ? create(type) : result;
+        return create(type);
     }
 
     @Override

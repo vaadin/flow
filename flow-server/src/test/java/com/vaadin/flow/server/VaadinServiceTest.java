@@ -20,27 +20,21 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpSessionBindingEvent;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.internal.UsageStatistics;
+import net.jcip.annotations.NotThreadSafe;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.di.InstantiatorFactory;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
@@ -56,6 +50,7 @@ import static org.junit.Assert.assertEquals;
  * @author Vaadin Ltd
  * @since 1.0
  */
+@NotThreadSafe
 public class VaadinServiceTest {
 
     @Tag("div")
@@ -101,8 +96,7 @@ public class VaadinServiceTest {
             RouteConfiguration.forApplicationScope().setRoute("test",
                     TestView.class);
         };
-        UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_CLIENT,
-                Version.getFullVersion());
+        UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_CLIENT, Version.getFullVersion());
         MockInstantiator instantiator = new MockInstantiator(initListener);
 
         MockVaadinServletService service = new MockVaadinServletService();
@@ -117,8 +111,8 @@ public class VaadinServiceTest {
                 e -> Constants.STATISTIC_ROUTING_SERVER.equals(e.getName())));
     }
 
-    public void testFireSessionDestroy()
-            throws ServletException, ServiceException {
+    @Test
+    public void testFireSessionDestroy() throws ServletException {
         VaadinService service = createService();
 
         TestSessionDestroyListener listener = new TestSessionDestroyListener();
@@ -211,13 +205,7 @@ public class VaadinServiceTest {
     public void serviceContainsStreamRequestHandler()
             throws ServiceException, ServletException {
         ServletConfig servletConfig = new MockServletConfig();
-        VaadinServlet servlet = new VaadinServlet() {
-            @Override
-            protected DeploymentConfiguration createDeploymentConfiguration()
-                    throws ServletException {
-                return new MockDeploymentConfiguration();
-            }
-        };
+        VaadinServlet servlet = new VaadinServlet();
         servlet.init(servletConfig);
         VaadinService service = servlet.getService();
         Assert.assertTrue(service.createRequestHandlers().stream()
@@ -226,8 +214,7 @@ public class VaadinServiceTest {
     }
 
     @Test
-    public void currentInstancesAfterPendingAccessTasks()
-            throws ServiceException {
+    public void currentInstancesAfterPendingAccessTasks() {
         VaadinService service = createService();
 
         MockVaadinSession session = new MockVaadinSession(service);
@@ -337,58 +324,15 @@ public class VaadinServiceTest {
         Assert.assertSame(applicationFilter, filters.get(0));
     }
 
-    @Test
-    public void loadInstantiators_instantiatorIsLoadedUsingFactoryFromLookup()
-            throws ServiceException {
-        VaadinService service = createService();
-
-        Lookup lookup = Mockito.mock(Lookup.class);
-
-        service.getContext().setAttribute(Lookup.class, lookup);
-
-        InstantiatorFactory factory = createInstantiatorFactory(lookup);
-
-        Mockito.when(lookup.lookupAll(InstantiatorFactory.class))
-                .thenReturn(Collections.singletonList(factory));
-
-        Optional<Instantiator> loadedInstantiator = service.loadInstantiators();
-
-        Instantiator instantiator = factory.createInstantitor(null);
-
-        Assert.assertSame(instantiator, loadedInstantiator.get());
-    }
-
-    @Test(expected = ServiceException.class)
-    public void loadInstantiators_twoFactoriesInLookup_throws()
-            throws ServiceException {
-        VaadinService service = createService();
-
-        Lookup lookup = Mockito.mock(Lookup.class);
-
-        service.getContext().setAttribute(Lookup.class, lookup);
-
-        InstantiatorFactory factory1 = createInstantiatorFactory(lookup);
-        InstantiatorFactory factory2 = createInstantiatorFactory(lookup);
-
-        Mockito.when(lookup.lookupAll(InstantiatorFactory.class))
-                .thenReturn(Arrays.asList(factory1, factory2));
-
-        service.loadInstantiators();
-    }
-
-    private InstantiatorFactory createInstantiatorFactory(Lookup lookup) {
-        InstantiatorFactory factory = Mockito.mock(InstantiatorFactory.class);
-
-        Instantiator instantiator = Mockito.mock(Instantiator.class);
-        Mockito.when((factory.createInstantitor(Mockito.any())))
-                .thenReturn(instantiator);
-
-        Mockito.when(instantiator.init(Mockito.any())).thenReturn(true);
-        return factory;
-    }
-
-    private static VaadinService createService() throws ServiceException {
-        VaadinService service = new MockVaadinServletService();
+    private static VaadinService createService() {
+        ServletConfig servletConfig = new MockServletConfig();
+        VaadinServlet servlet = new VaadinServlet();
+        try {
+            servlet.init(servletConfig);
+        } catch (ServletException e) {
+            throw new RuntimeException(e);
+        }
+        VaadinService service = servlet.getService();
         return service;
     }
 }

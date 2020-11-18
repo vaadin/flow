@@ -430,9 +430,8 @@ public class RouteUtilTest {
         @Route("a")
         class A extends Component {
         }
-        MockVaadinServletService service = new MockVaadinServletService();
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
-                .getInstance(service.getContext());
+                .getInstance(new MockVaadinServletService().getContext());
 
         // when
         RouteUtil.updateRouteRegistry(registry, Collections.singleton(A.class),
@@ -448,11 +447,8 @@ public class RouteUtilTest {
         @Route("a")
         class A extends Component {
         }
-
-        MockVaadinServletService service = new MockVaadinServletService();
-
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
-                .getInstance(service.getContext());
+                .getInstance(new MockVaadinServletService().getContext());
         registry.setRoute("a", A.class, Collections.emptyList());
         Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
 
@@ -470,9 +466,8 @@ public class RouteUtilTest {
         @Route("aa")
         class A extends Component {
         }
-        MockVaadinServletService service = new MockVaadinServletService();
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
-                .getInstance(service.getContext());
+                .getInstance(new MockVaadinServletService().getContext());
         registry.setRoute("a", A.class, Collections.emptyList());
         Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
 
@@ -490,10 +485,8 @@ public class RouteUtilTest {
         // given
         class A extends Component {
         }
-
-        MockVaadinServletService service = new MockVaadinServletService();
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
-                .getInstance(service.getContext());
+                .getInstance(new MockVaadinServletService().getContext());
         registry.setRoute("a", A.class, Collections.emptyList());
         Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
 

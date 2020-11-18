@@ -15,15 +15,17 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletException;
 import java.util.Collections;
 import java.util.List;
 
-import javax.servlet.ServletException;
-
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Router;
+import com.vaadin.flow.server.RequestHandler;
+import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 /**
@@ -37,42 +39,24 @@ public class MockVaadinServletService extends VaadinServletService {
 
     private Router router;
 
-    private ResourceProvider resourceProvider;
-
-    private static class MockVaadinServlet extends VaadinServlet {
-
-        private final DeploymentConfiguration configuration;
-
-        private VaadinServletService service;
-
-        private MockVaadinServlet(DeploymentConfiguration configuration) {
-            this.configuration = configuration;
-        }
-
-        @Override
-        protected DeploymentConfiguration createDeploymentConfiguration()
-                throws ServletException {
-            return configuration;
-        }
-
-        @Override
-        protected VaadinServletService createServletService(
-                DeploymentConfiguration deploymentConfiguration)
-                throws ServiceException {
-            return service;
-        }
-
-    }
-
     public MockVaadinServletService() {
         this(new MockDeploymentConfiguration());
     }
 
     public MockVaadinServletService(
             DeploymentConfiguration deploymentConfiguration) {
-        super(new MockVaadinServlet(deploymentConfiguration),
-                deploymentConfiguration);
-        init();
+        this(new VaadinServlet(), deploymentConfiguration);
+    }
+
+    public MockVaadinServletService(VaadinServlet servlet,
+            DeploymentConfiguration deploymentConfiguration) {
+        super(servlet, deploymentConfiguration);
+
+        try {
+            servlet.init(new MockServletConfig());
+        } catch (ServletException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void setRouter(Router router) {
@@ -107,11 +91,8 @@ public class MockVaadinServletService extends VaadinServletService {
     @Override
     public void init() {
         try {
-            MockVaadinServlet servlet = (MockVaadinServlet) getServlet();
-            servlet.service = this;
-            getServlet().init(new MockServletConfig());
             super.init();
-        } catch (ServiceException | ServletException e) {
+        } catch (ServiceException e) {
             throw new RuntimeException(e);
         }
     }

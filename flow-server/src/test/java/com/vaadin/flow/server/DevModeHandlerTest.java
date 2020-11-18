@@ -455,12 +455,6 @@ public class DevModeHandlerTest {
         throwFuture.completeExceptionally(new CustomRuntimeException());
         DevModeHandler handler = DevModeHandler.start(0, configuration,
                 npmFolder, throwFuture);
-        try {
-            handler.join();
-        } catch (CompletionException ignore) {
-            // this is an expected exception thrown on join for the handler
-
-        }
         handler.handleRequest(Mockito.mock(VaadinSession.class),
                 Mockito.mock(VaadinRequest.class),
                 Mockito.mock(VaadinResponse.class));

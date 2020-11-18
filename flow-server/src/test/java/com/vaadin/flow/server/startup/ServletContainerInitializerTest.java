@@ -15,27 +15,20 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContainerInitializer;
+
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.testutil.ClassFinder;
 
 /**
@@ -45,57 +38,6 @@ import com.vaadin.flow.testutil.ClassFinder;
  * {@link ServletContainerInitializer#onStartup(java.util.Set, javax.servlet.ServletContext)}
  */
 public class ServletContainerInitializerTest extends ClassFinder {
-
-    @Test
-    public void servletContextHasNoLookup_deferredServletContextInitializersAttributeIsSet_processIsNotExecuted()
-            throws ServletException {
-        AtomicBoolean processIsExecuted = new AtomicBoolean();
-        ClassLoaderAwareServletContainerInitializer initializer = new ClassLoaderAwareServletContainerInitializer() {
-
-            @Override
-            public void process(Set<Class<?>> set, ServletContext ctx)
-                    throws ServletException {
-                processIsExecuted.set(true);
-            }
-
-        };
-        ServletContext context = Mockito.mock(ServletContext.class);
-        initializer.onStartup(Collections.emptySet(), context);
-
-        Mockito.verify(context).setAttribute(
-                Mockito.eq(DeferredServletContextInitializers.class.getName()),
-                Mockito.any());
-
-        Assert.assertFalse(processIsExecuted.get());
-    }
-
-    @Test
-    public void servletContextHasLookup_deferredServletContextInitializersAttributeIsNotSet_processIsExecuted()
-            throws ServletException {
-        AtomicBoolean processIsExecuted = new AtomicBoolean();
-        ClassLoaderAwareServletContainerInitializer initializer = new ClassLoaderAwareServletContainerInitializer() {
-
-            @Override
-            public void process(Set<Class<?>> set, ServletContext ctx)
-                    throws ServletException {
-                processIsExecuted.set(true);
-            }
-
-        };
-        ServletContext context = Mockito.mock(ServletContext.class);
-        Mockito.when(context.getAttribute(Lookup.class.getName()))
-                .thenReturn(Mockito.mock(Lookup.class));
-
-        Mockito.when(context.getClassLoader())
-                .thenReturn(initializer.getClass().getClassLoader());
-        initializer.onStartup(Collections.emptySet(), context);
-
-        Mockito.verify(context, Mockito.times(0)).setAttribute(
-                Mockito.eq(DeferredServletContextInitializers.class.getName()),
-                Mockito.any());
-
-        Assert.assertTrue(processIsExecuted.get());
-    }
 
     @Test
     public void anyServletContainerInitializerSubclassImplementsFixedServletContainerInitializer()
@@ -148,8 +90,7 @@ public class ServletContainerInitializerTest extends ClassFinder {
     }
 
     private Stream<String> getExcludedPatterns() {
-        return Stream.of("com\\.vaadin\\.flow\\..*osgi\\..*",
-                "com\\.vaadin\\.flow\\.server\\.startup\\.LookupInitializer\\$OsgiLookupImpl");
+        return Stream.of("com\\.vaadin\\.flow\\..*osgi\\..*");
     }
 
     private boolean isBadSubType(Class<?> clazz) {

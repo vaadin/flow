@@ -1,17 +1,13 @@
 package com.vaadin.flow.server.startup;
 
-import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
-import static org.easymock.EasyMock.anyBoolean;
-import static org.easymock.EasyMock.anyObject;
-import static org.easymock.EasyMock.anyString;
-import static org.easymock.EasyMock.capture;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.mock;
-import static org.easymock.EasyMock.newCapture;
-import static org.easymock.EasyMock.replay;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import javax.servlet.Registration;
+import javax.servlet.Servlet;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletRegistration;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -22,15 +18,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.servlet.Registration;
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.easymock.Capture;
@@ -44,14 +31,25 @@ import org.junit.rules.TemporaryFolder;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+
+import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
+import static org.easymock.EasyMock.anyBoolean;
+import static org.easymock.EasyMock.anyObject;
+import static org.easymock.EasyMock.anyString;
+import static org.easymock.EasyMock.capture;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.mock;
+import static org.easymock.EasyMock.newCapture;
+import static org.easymock.EasyMock.replay;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ServletDeployerTest {
     private final ServletDeployer deployer = new ServletDeployer();
@@ -157,29 +155,6 @@ public class ServletDeployerTest {
     }
 
     @Test
-    public void frontendServletIsNotRegisteredWhenProductionModeIsActive()
-            throws Exception {
-        deployer.contextInitialized(getContextEvent(true, true,
-                getServletRegistration("testServlet", TestServlet.class,
-                        singletonList("/test/*"),
-                        singletonMap(
-                                InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
-                                "true"))));
-
-        assertMappingsCount(1, 1);
-        assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
-    }
-
-    @Test
-    public void frontendServletIsNotRegistered_whenMainServletIsRegistered()
-            throws Exception {
-        deployer.contextInitialized(getContextEvent(true, true));
-
-        assertMappingsCount(1, 1);
-        assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
-    }
-
-    @Test
     public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_mainServlet()
             throws Exception {
         dynamicMockCheck = registration -> EasyMock
@@ -251,26 +226,6 @@ public class ServletDeployerTest {
                 .andReturn(Collections.emptySet()).anyTimes();
 
         ServletContext contextMock = mock(ServletContext.class);
-
-        Lookup lookup = mock(Lookup.class);
-        expect(contextMock.getAttribute(Lookup.class.getName()))
-                .andReturn(lookup).anyTimes();
-
-        ResourceProvider resourceProvider = mock(ResourceProvider.class);
-
-        expect(resourceProvider.getApplicationResources(anyObject(),
-                anyObject())).andReturn(Collections.emptyList()).anyTimes();
-
-        expect(resourceProvider.getApplicationResources(anyObject(Object.class),
-                anyObject())).andAnswer(() -> Collections.emptyList())
-                        .anyTimes();
-
-        replay(resourceProvider);
-
-        expect(lookup.lookup(ResourceProvider.class))
-                .andReturn(resourceProvider).anyTimes();
-
-        replay(lookup);
 
         expect(contextMock.getContextPath()).andReturn("").once();
         expect(contextMock.getClassLoader())

@@ -16,12 +16,11 @@
 package com.vaadin.flow.server.osgi;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -40,21 +39,15 @@ import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 
 import org.osgi.framework.Bundle;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.framework.ServiceReference;
 import org.slf4j.LoggerFactory;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
 import com.vaadin.flow.server.startup.DevModeInitializer;
-import com.vaadin.flow.server.startup.LookupInitializer;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.DynamicType.Builder;
@@ -89,48 +82,6 @@ public final class OSGiAccess {
         // The class is a singleton. Avoid instantiation outside of the class.
     }
 
-    private static class OsgiLookupImpl implements Lookup {
-
-        @Override
-        public <T> T lookup(Class<T> serviceClass) {
-            Bundle bundle = FrameworkUtil.getBundle(OSGiAccess.class);
-            ServiceReference<T> reference = bundle.getBundleContext()
-                    .getServiceReference(serviceClass);
-            if (reference == null) {
-                LoggerFactory.getLogger(OsgiLookupImpl.class)
-                        .debug("No service found for '{}' SPI", serviceClass);
-                return null;
-            }
-            return bundle.getBundleContext().getService(reference);
-        }
-
-        @Override
-        public <T> Collection<T> lookupAll(Class<T> serviceClass) {
-            Bundle bundle = FrameworkUtil.getBundle(OSGiAccess.class);
-            try {
-                Collection<ServiceReference<T>> references = bundle
-                        .getBundleContext()
-                        .getServiceReferences(serviceClass, null);
-                List<T> services = new ArrayList<>(references.size());
-                for (ServiceReference<T> reference : references) {
-                    T service = bundle.getBundleContext().getService(reference);
-                    if (service != null) {
-                        services.add(service);
-                    }
-                }
-                return services;
-            } catch (InvalidSyntaxException e) {
-                LoggerFactory.getLogger(OsgiLookupImpl.class)
-                        .error("Unexpected invalid filter expression", e);
-                assert false : "Implementation error: Unexpected invalid filter exception is "
-                        + "thrown even though the service filter is null. Check the exception and update the impl";
-            }
-
-            return Collections.emptyList();
-        }
-
-    }
-
     /**
      * This is internal class and is not intended to be used.
      * <p>
@@ -141,7 +92,7 @@ public final class OSGiAccess {
      */
     public abstract static class OSGiServletContext implements ServletContext {
 
-        private final Map<String, Object> attributes = new ConcurrentHashMap<>();
+        private final Map<String, Object> attributes = new HashMap<>();
 
         @Override
         public void setAttribute(String name, Object object) {
@@ -151,16 +102,6 @@ public final class OSGiAccess {
         @Override
         public Object getAttribute(String name) {
             return attributes.get(name);
-        }
-
-        @Override
-        public void removeAttribute(String name) {
-            attributes.remove(name);
-        }
-
-        @Override
-        public Enumeration<String> getAttributeNames() {
-            return Collections.enumeration(attributes.keySet());
         }
 
         @Override
@@ -203,7 +144,7 @@ public final class OSGiAccess {
      * which is used to be able to access registries in a generic way via some
      * {@code getInstance(ServletContext)} method.
      *
-     * @return an OSGi temporary servlet context
+     * @return
      */
     public ServletContext getOsgiServletContext() {
         return context;
@@ -266,16 +207,12 @@ public final class OSGiAccess {
     }
 
     private void resetContextInitializers() {
-        /*
-         * exclude dev mode initializer (at least for now) because it doesn't
-         * work in its current state anyway (so it's no-op) but its initial
-         * calls breaks assumptions about Servlet registration in OSGi.
-         * 
-         * Lookup is set immediately in the context, so no need to initialize it
-         */
+        // exclude dev mode initializer (at least for now) because it doesn't
+        // work in its current state anyway (so it's no-op) but its initial
+        // calls
+        // breaks assumptions about Servlet registration in OSGi
         initializerClasses.get().stream()
-                .filter(clazz -> !clazz.equals(DevModeInitializer.class)
-                        && !clazz.equals(LookupInitializer.class))
+                .filter(clazz -> !clazz.equals(DevModeInitializer.class))
                 .map(ReflectTools::createInstance).forEach(this::handleTypes);
     }
 
@@ -344,13 +281,8 @@ public final class OSGiAccess {
                         ClassLoadingStrategy.Default.WRAPPER)
                 .getLoaded();
 
-        OSGiServletContext osgiContext = ReflectTools.createProxyInstance(
-                osgiServletContextClass, ServletContext.class);
-
-        new VaadinServletContext(osgiContext).setAttribute(Lookup.class,
-                new OsgiLookupImpl());
-
-        return osgiContext;
+        return ReflectTools.createProxyInstance(osgiServletContextClass,
+                ServletContext.class);
     }
 
     private static final class LazyOSGiDetector {
@@ -358,32 +290,12 @@ public final class OSGiAccess {
 
         private static boolean isInOSGi() {
             try {
-                Class<?> clazz = Class
-                        .forName("org.osgi.framework.FrameworkUtil");
+                Class.forName("org.osgi.framework.FrameworkUtil");
 
-                Method method = clazz.getDeclaredMethod("getBundle",
-                        Class.class);
-
-                // even though the FrameworkUtil class is in the classpath it
-                // may be there not because of OSGi container but plain WAR with
-                // jar which contains the class
-                if (method.invoke(null, OSGiAccess.class) == null) {
-                    return false;
-                }
                 UsageStatistics.markAsUsed("flow/osgi", getOSGiVersion());
 
                 return true;
-            } catch (ClassNotFoundException | NoSuchMethodException
-                    | SecurityException | IllegalAccessException
-                    | IllegalArgumentException
-                    | InvocationTargetException exception) {
-                if (LoggerFactory.getLogger(OSGiAccess.class)
-                        .isTraceEnabled()) {
-                    LoggerFactory.getLogger(OSGiAccess.class)
-                            .trace("Exception in OSGi container check "
-                                    + "(which most likely means that this is not OSGi container)",
-                                    exception);
-                }
+            } catch (ClassNotFoundException exception) {
                 return false;
             }
         }

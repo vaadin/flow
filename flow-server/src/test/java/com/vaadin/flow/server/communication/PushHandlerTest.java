@@ -234,6 +234,8 @@ public class PushHandlerTest {
             }
         };
 
+        service.init();
+
         if (setSession) {
             VaadinSession.setCurrent(session);
         }
@@ -254,6 +256,7 @@ public class PushHandlerTest {
     private VaadinServletService runTest(VaadinServletService service,
             BiConsumer<PushHandler, AtmosphereResource> testExec)
             throws ServiceException {
+        service.init();
         PushHandler handler = new PushHandler(service);
 
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);

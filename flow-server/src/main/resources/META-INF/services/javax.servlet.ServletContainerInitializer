@@ -1,4 +1,3 @@
-com.vaadin.flow.server.startup.LookupInitializer
 com.vaadin.flow.server.startup.ConnectEndpointsValidator
 com.vaadin.flow.server.startup.ServletVerifier
 com.vaadin.flow.server.startup.RouteRegistryInitializer

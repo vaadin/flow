@@ -26,7 +26,6 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -66,8 +65,6 @@ public class UIInternalsTest {
         internals = new UIInternals(ui);
         AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
                 vaadinService);
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        Mockito.when(vaadinService.getContext()).thenReturn(context);
         Mockito.when(vaadinService.getInstantiator())
                 .thenReturn(new DefaultInstantiator(vaadinService));
         internals.setSession(session);

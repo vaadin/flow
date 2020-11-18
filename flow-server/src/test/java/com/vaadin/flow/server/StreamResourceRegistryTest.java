@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletException;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Optional;
 
-import javax.servlet.ServletException;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,15 +31,17 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
 
+@NotThreadSafe
 public class StreamResourceRegistryTest {
 
-    private UI ui;
+    private VaadinServlet servlet = new VaadinServlet();
     private VaadinServletService service;
     private VaadinSession session;
 
     @Before
-    public void setUp() throws ServletException, ServiceException {
-        service = new MockVaadinServletService();
+    public void setUp() throws ServletException {
+        servlet.init(new MockServletConfig());
+        service = servlet.getService();
         session = new VaadinSession(service) {
             @Override
             public boolean hasLock() {
@@ -47,7 +49,7 @@ public class StreamResourceRegistryTest {
             }
         };
 
-        ui = Mockito.mock(UI.class);
+        UI ui = Mockito.mock(UI.class);
         Mockito.when(ui.getUIId()).thenReturn(1);
         UI.setCurrent(ui);
     }

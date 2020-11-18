@@ -69,6 +69,7 @@ public class LocationObserverTest {
 
         private static VaadinSession createMockSession(Router router) {
             MockVaadinServletService service = new MockVaadinServletService();
+            service.init();
             service.setRouter(router);
 
             VaadinSession session = new AlwaysLockedVaadinSession(service);
@@ -96,8 +97,7 @@ public class LocationObserverTest {
         router = new Router(new TestRouteRegistry());
         ui = new RouterTestMockUI(router);
 
-        RouteConfiguration.forRegistry(router.getRegistry())
-                .setAnnotatedRoute(Translations.class);
+        RouteConfiguration.forRegistry(router.getRegistry()).setAnnotatedRoute(Translations.class);
 
         ui.navigate("");
 

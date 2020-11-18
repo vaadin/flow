@@ -16,37 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.UncheckedIOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.server.frontend.FallbackChunk;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
@@ -67,6 +36,34 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BO
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.UncheckedIOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.server.frontend.FallbackChunk;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
 
 /**
  * Creates {@link DeploymentConfiguration} filled with all parameters specified
@@ -165,15 +162,14 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     vaadinConfig.getConfigParameter(name));
         }
 
-        readBuildInfo(systemPropertyBaseClass, initParameters,
-                vaadinConfig.getVaadinContext());
+        readBuildInfo(systemPropertyBaseClass, initParameters);
         return initParameters;
     }
 
     private static void readBuildInfo(Class<?> systemPropertyBaseClass,
-            Properties initParameters, VaadinContext context) {
+            Properties initParameters) {
         String json = getTokenFileContents(systemPropertyBaseClass,
-                initParameters, context);
+                initParameters);
 
         // Read the json and set the appropriate system properties if not
         // already set.
@@ -309,13 +305,12 @@ public final class DeploymentConfigurationFactory implements Serializable {
     }
 
     private static String getTokenFileContents(Class<?> systemPropertyBaseClass,
-            Properties initParameters, VaadinContext context) {
+            Properties initParameters) {
         String json = null;
         try {
             json = getResourceFromFile(initParameters);
             if (json == null) {
-                json = getTokenFileFromClassloader(systemPropertyBaseClass,
-                        context);
+                json = getTokenFileFromClassloader(systemPropertyBaseClass);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -338,61 +333,31 @@ public final class DeploymentConfigurationFactory implements Serializable {
         return json;
     }
 
-    /**
-     * Gets token file from the classpath using the provided
-     * {@code contextClass} and {@code context}.
-     * <p>
-     * The {@code contextClass} may be a class which is defined in the Web
-     * Application module/bundle and in this case it may be used to get Web
-     * Application resources. Also a {@link VaadinContext} {@code context}
-     * instance may be used to get a context of the Web Application (since the
-     * {@code contextClass} may be a class not from Web Application module). In
-     * WAR case it doesn't matter which class is used to get the resources (Web
-     * Application classes or e.g. "flow-server" classes) since they are loaded
-     * by the same {@link ClassLoader}. But in OSGi "flow-server" module classes
-     * can't be used to get Web Application resources since they are in
-     * different bundles.
-     * 
-     * @param contextClass
-     *            a context class whose module may contain the token file
-     * @param context
-     *            a VaadinContext which may provide information how to get token
-     *            file for the web application
-     * @return the token file content
-     * @throws IOException
-     *             if I/O fails during access to the token file
-     */
-    private static String getTokenFileFromClassloader(Class<?> contextClass,
-            VaadinContext context) throws IOException {
+    private static String getTokenFileFromClassloader(
+            Class<?> systemPropertyBaseClass) throws IOException {
+        // token file is in the class-path of the application
         String tokenResource = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
+        URL resource = FrontendUtils.getOSGiUrl(systemPropertyBaseClass,
+                tokenResource);
 
-        Lookup lookup = context.getAttribute(Lookup.class);
-        ResourceProvider resourceProvider = lookup
-                .lookup(ResourceProvider.class);
-
-        List<URL> classResources = resourceProvider
-                .getApplicationResources(contextClass, tokenResource);
-        List<URL> contextResources = resourceProvider
-                .getApplicationResources(context, tokenResource);
-
-        List<URL> resources = Stream
-                .concat(classResources.stream(), contextResources.stream())
-                .collect(Collectors.toList());
-
-        // Accept resource that doesn't contain
-        // 'jar!/META-INF/Vaadin/config/flow-build-info.json'
-        URL resource = resources.stream()
-                .filter(url -> !url.getPath().endsWith("jar!/" + tokenResource))
-                .findFirst().orElse(null);
-        if (resource == null && !resources.isEmpty()) {
-            // For no non jar build info, in production mode check for
-            // webpack.generated.json if it's in a jar then accept
-            // single jar flow-build-info.
-            return getPossibleJarResource(contextClass, context, resources);
+        if (resource == null) {
+            // token file is in the class-path of the application
+            List<URL> resources = Collections.list(DeploymentConfiguration.class
+                    .getClassLoader().getResources(tokenResource));
+            // Accept resource that doesn't contain
+            // 'jar!/META-INF/Vaadin/config/flow-build-info.json'
+            resource = resources.stream().filter(
+                    url -> !url.getPath().endsWith("jar!/" + tokenResource))
+                    .findFirst().orElse(null);
+            if (resource == null && !resources.isEmpty()) {
+                // For no non jar build info, in production mode check for
+                // webpack.generated.json if it's in a jar in a jar then accept
+                // single jar flow-build-info.
+                return getPossibleJarResource(resources);
+            }
         }
         return resource == null ? null
                 : FrontendUtils.streamToString(resource.openStream());
-
     }
 
     /**
@@ -402,29 +367,23 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * <p>
      * Else we will accept any flow-build-info and log a warning that it may not
      * be the correct file, but it's the best we could find.
+     *
+     * @param resources
+     *            flow-build-info url resource files, not null or empty
+     * @return flow-build-info json string
+     * @throws IOException
+     *             exception reading stream
      */
-    private static String getPossibleJarResource(Class<?> contextClass,
-            VaadinContext context, List<URL> resources) throws IOException {
+    private static String getPossibleJarResource(List<URL> resources)
+            throws IOException {
         Objects.requireNonNull(resources);
-
-        Lookup lookup = context.getAttribute(Lookup.class);
-        ResourceProvider resourceProvider = lookup
-                .lookup(ResourceProvider.class);
-
         assert !resources
                 .isEmpty() : "Possible jar resource requires resources to be available.";
-
-        URL webpackGenerated = resourceProvider.getApplicationResource(context,
-                FrontendUtils.WEBPACK_GENERATED);
-        if (webpackGenerated == null) {
-            webpackGenerated = resourceProvider.getApplicationResource(
-                    contextClass, FrontendUtils.WEBPACK_GENERATED);
-        }
-
+        URL webpackGenerated = DeploymentConfiguration.class.getClassLoader()
+                .getResource(FrontendUtils.WEBPACK_GENERATED);
         // If jar!/ exists 2 times for webpack.generated.json then we are
         // running from a jar
-        if (webpackGenerated != null
-                && countInstances(webpackGenerated.getPath(), "jar!/") >= 2) {
+        if (countInstances(webpackGenerated.getPath(), "jar!/") >= 2) {
             for (URL resource : resources) {
                 // As we now know that we are running from a jar we can accept a
                 // build info with a single jar in the path

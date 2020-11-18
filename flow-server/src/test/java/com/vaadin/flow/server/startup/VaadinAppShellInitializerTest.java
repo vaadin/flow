@@ -1,11 +1,9 @@
 package com.vaadin.flow.server.startup;
 
-import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import javax.annotation.concurrent.NotThreadSafe;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletRegistration;
+import javax.servlet.http.HttpServletRequest;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -16,11 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
-
-import javax.annotation.concurrent.NotThreadSafe;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRegistration;
-import javax.servlet.http.HttpServletRequest;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -46,7 +39,6 @@ import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
@@ -64,6 +56,13 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
+
+import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 @NotThreadSafe
 public class VaadinAppShellInitializerTest {
@@ -196,13 +195,8 @@ public class VaadinAppShellInitializerTest {
         logger = mockLog(VaadinAppShellInitializer.class);
         assertNull(getDevModeHandler());
 
+        servletContext = Mockito.mock(ServletContext.class);
         mocks = new MockServletServiceSessionSetup();
-
-        servletContext = mocks.getServletContext();
-
-        attributeMap.put(Lookup.class.getName(),
-                servletContext.getAttribute(Lookup.class.getName()));
-
         service = mocks.getService();
         Mockito.when(servletContext.getAttribute(Mockito.anyString()))
                 .then(invocationOnMock -> attributeMap
