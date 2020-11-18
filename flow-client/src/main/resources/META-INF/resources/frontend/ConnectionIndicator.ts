@@ -33,7 +33,7 @@ export class ConnectionIndicator extends LitElement {
   @property({type: Boolean, reflect: true})
   offline: boolean = false;
 
-  @property({type: Boolean})
+  @property({type: Boolean, reflect: true})
   reconnecting: boolean = false;
 
   @property({type: Boolean})
