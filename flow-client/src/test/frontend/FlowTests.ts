@@ -16,7 +16,6 @@ import "../../main/resources/META-INF/resources/frontend/FlowBootstrap";
 import "../../main/resources/META-INF/resources/frontend/FlowClient";
 // Mock XMLHttpRequest so as we don't need flow-server running for tests.
 import mock from 'xhr-mock';
-import "../../main/resources/META-INF/resources/frontend/LoadingIndicator";
 
 const $wnd = window as any;
 const flowRoot = window.document.body as any;
@@ -144,6 +143,7 @@ suite("Flow", () => {
     const indicator = $wnd.document.querySelector('.v-loading-indicator') as HTMLElement;
     const styles = $wnd.document.querySelector('style#css-loading-indicator') as HTMLElement;
     assert.isNotNull(indicator);
+    assert.isNotNull(styles);
 
     assert.equal(indicator.getAttribute('style'), 'display: none');
 
