@@ -19,8 +19,8 @@ import java.util.Collections;
 import java.util.EventListener;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import com.google.common.collect.Maps;
@@ -34,6 +34,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.InitParameters;
@@ -365,9 +367,9 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Mockito.when(servletContext.getServletRegistrations())
                 .thenReturn(Collections.emptyMap());
         Mockito.when(servletContext.getInitParameterNames())
-                .thenReturn(Collections.enumeration(new HashSet<>(
-                        Arrays.asList(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
-                                FrontendUtils.PROJECT_BASEDIR))));
+                .thenReturn(Collections.enumeration(new HashSet<>(Arrays.asList(
+                        InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
+                        FrontendUtils.PROJECT_BASEDIR))));
         Mockito.when(
                 servletContext.getInitParameter(FrontendUtils.PROJECT_BASEDIR))
                 .thenReturn(initParams.get(FrontendUtils.PROJECT_BASEDIR));
@@ -380,19 +382,27 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
-    public void onStartup_devModeAlreadyStarted_shouldBeTrueWhenStarted() throws Exception {
+    public void onStartup_devModeAlreadyStarted_shouldBeTrueWhenStarted()
+            throws Exception {
         final Map<String, Object> servletContextAttributes = Maps.newHashMap();
         Mockito.doAnswer(answer -> {
             String key = answer.getArgumentAt(0, String.class);
             Object value = answer.getArgumentAt(1, Object.class);
             servletContextAttributes.putIfAbsent(key, value);
             return null;
-        })
-                .when(servletContext)
-                .setAttribute(Mockito.anyString(), Mockito.anyObject());
+        }).when(servletContext).setAttribute(Mockito.anyString(),
+                Mockito.anyObject());
         Mockito.when(servletContext.getAttribute(Mockito.anyString()))
-                .thenAnswer(answer ->
-                        servletContextAttributes.get(answer.getArgumentAt(0, String.class)));
+                .thenAnswer(answer -> servletContextAttributes
+                        .get(answer.getArgumentAt(0, String.class)));
+
+        Lookup lookup = Mockito.mock(Lookup.class);
+        ResourceProvider resourceProvider = Mockito
+                .mock(ResourceProvider.class);
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(resourceProvider);
+        servletContextAttributes.put(Lookup.class.getName(), lookup);
+
         process();
         assertTrue(DevModeInitializer.isDevModeAlreadyStarted(servletContext));
     }

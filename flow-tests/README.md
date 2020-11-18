@@ -28,8 +28,8 @@
 * test-memory-leaks
   * Verification test that no memory leaks happen during war redeployment.
 * test-misc
-  * Uncategorized tests in both npm and bower modes
-    * Contains custom theme functionality
+  * Uncategorized tests
+    * Contains custom theme tests
 * test-mixed
   * Test maven builds in all 4 run modes
 * test-multi-war
@@ -72,10 +72,8 @@
   * Gattling scalability tests. Compatibility mode only. 
 * test-servlet
   * Automatic servlet registration test
-* test-subcontext
-  * `context://` tests for Compatibility mode
 * test-themes
-  * Custom Theme tests for NPM and Compatibility modes
+  * Test application theme features
 * test-live-reload
   * Tests the live reload feature in development mode. Run sequentially in their own
     module as live reload affects all open UIs and would cause interference between 
@@ -100,7 +98,6 @@
   * Public resources used in test modules: 
     * test-dev-mode
     * test-root-ui-context
-    * test-subcontext
     * test-scalability
     * test-servlet
     * test-pwa

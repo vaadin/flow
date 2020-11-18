@@ -64,6 +64,36 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+                <version>${bnd.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>bnd-process</goal>
+                        </goals>
+                        <configuration>
+                            <bnd><![CDATA[-fixupmessages: "Classes found in the wrong directory";is:=warning]]>
+                            </bnd>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.2</version>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                        <index>false</index>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <executions>
@@ -283,6 +313,12 @@
             </modules>
         </profile>
         <profile>
+            <id>snapshot</id>
+            <modules>
+                <module>test-root-context</module>
+            </modules>
+        </profile>
+        <profile>
             <id>run-tests</id>
             <activation>
                 <property>
@@ -295,7 +331,6 @@
                 <module>test-mixed/pom-npm.xml</module>
                 <module>test-dev-mode</module>
                 <module>test-pwa</module>
-                <module>test-subcontext</module>
                 <module>test-root-ui-context</module>
                 <module>test-router-custom-context</module>
                 <module>test-live-reload</module>
