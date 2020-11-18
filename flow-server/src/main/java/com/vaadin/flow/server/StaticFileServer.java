@@ -19,11 +19,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -54,8 +51,6 @@ public class StaticFileServer implements StaticFileHandler {
             + "fixIncorrectWebjarPaths";
     private static final Pattern INCORRECT_WEBJAR_PATH_REGEX = Pattern
             .compile("^/frontend[-\\w/]*/webjars/");
-    private static final Pattern PARENT_DIRECTORY_REGEX = Pattern
-            .compile("(/|\\\\)\\.\\.(/|\\\\)", Pattern.CASE_INSENSITIVE);
 
     private final ResponseWriter responseWriter;
     private final VaadinServletService servletService;
@@ -107,10 +102,10 @@ public class StaticFileServer implements StaticFileHandler {
             HttpServletResponse response) throws IOException {
 
         String filenameWithPath = getRequestFilename(request);
-        if (!isPathSafe(filenameWithPath)) {
-            getLogger().info("Blocked attempt to access file: {}",
+        if (HandlerHelper.isPathUnsafe(filenameWithPath)) {
+            getLogger().info(HandlerHelper.UNSAFE_PATH_ERROR_MESSAGE_PATTERN,
                     filenameWithPath);
-            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return true;
         }
 
@@ -187,18 +182,6 @@ public class StaticFileServer implements StaticFileHandler {
     private String fixIncorrectWebjarPath(String requestFilename) {
         return INCORRECT_WEBJAR_PATH_REGEX.matcher(requestFilename)
                 .replaceAll("/webjars/");
-    }
-
-    private boolean isPathSafe(String path) {
-        // Check that the path does not have '/../', '\..\', %5C..%5C, or
-        // %2F..%2F
-        try {
-            path = URLDecoder.decode(path, StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("An error occurred during decoding URL.",
-                    e);
-        }
-        return !PARENT_DIRECTORY_REGEX.matcher(path).find();
     }
 
     /**
