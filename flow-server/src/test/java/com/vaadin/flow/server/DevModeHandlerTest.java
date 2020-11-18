@@ -19,6 +19,7 @@ import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.WEBPACK_TEST_OUT_FILE;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
+import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_NOT_MODIFIED;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -455,6 +456,12 @@ public class DevModeHandlerTest {
         throwFuture.completeExceptionally(new CustomRuntimeException());
         DevModeHandler handler = DevModeHandler.start(0, configuration,
                 npmFolder, throwFuture);
+        try {
+            handler.join();
+        } catch (CompletionException ignore) {
+            // this is an expected exception thrown on join for the handler
+
+        }
         handler.handleRequest(Mockito.mock(VaadinSession.class),
                 Mockito.mock(VaadinRequest.class),
                 Mockito.mock(VaadinResponse.class));
@@ -573,6 +580,74 @@ public class DevModeHandlerTest {
         Assert.assertTrue("expected a body child",
                 document.body().children().size() > 0);
         Mockito.verify(response).setContentType("text/html;charset=utf-8");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeWithSlash_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/../vaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeWithBackslash_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/something\\..\\vaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/something%5C..%5Cvaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/something%5c..%5cvaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeInTheEndWithSlash_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/..");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeInTheEndWithBackslash_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/something\\..");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeInTheEndWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/something%5C..");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeInTheEndWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/something%5c..");
+    }
+
+    private void verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+            String uri) throws IOException {
+        HttpServletRequest request = prepareRequest(uri);
+        HttpServletResponse response = prepareResponse();
+        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
+                CompletableFuture.completedFuture(null));
+        handler.join();
+        assertTrue(handler.serveDevModeRequest(request, response));
+
+        Assert.assertEquals(HTTP_FORBIDDEN, responseStatus);
     }
 
     private VaadinServlet prepareServlet(int port)
