@@ -15,6 +15,13 @@
  */
 package com.vaadin.flow.server.osgi;
 
+import javax.servlet.Servlet;
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -32,13 +39,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.IOUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -46,8 +46,6 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.http.whiteboard.HttpWhiteboardConstants;
 import org.osgi.util.tracker.BundleTracker;
 import org.slf4j.LoggerFactory;
@@ -65,7 +63,6 @@ import org.slf4j.LoggerFactory;
  * @author Vaadin Ltd
  * @since 1.2
  */
-@Component(immediate = true)
 public class VaadinBundleTracker extends BundleTracker<Bundle> {
 
     private final Bundle flowServerBundle;
@@ -118,16 +115,6 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
     public VaadinBundleTracker(BundleContext context) {
         super(context, Bundle.ACTIVE | Bundle.RESOLVED, null);
         flowServerBundle = context.getBundle();
-        open();
-    }
-
-    /**
-     * OSGi ServiceComponentRuntime calls this method while unregister the
-     * Service(e.g when stop/uninstall the bundle)
-     */
-    @Deactivate
-    public void deactivate() {
-        close();
     }
 
     @Override
