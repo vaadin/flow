@@ -15,32 +15,36 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import java.util.Locale;
-import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.di.DefaultInstantiator;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-@NotThreadSafe
 public class I18NProviderTest {
+
+    private VaadinServletService service;
+
+    private MockDeploymentConfiguration config = new MockDeploymentConfiguration();
 
     @Test
     public void no_property_defined_should_leave_with_default_locale()
             throws ServletException, ServiceException {
-        initServletAndService(new Properties());
+        initServletAndService(config);
 
         Assert.assertEquals("Locale was not the expected default locale",
                 Locale.getDefault(), VaadinSession.getCurrent().getLocale());
@@ -49,11 +53,10 @@ public class I18NProviderTest {
     @Test
     public void property_defined_should_init_registy_with_provider()
             throws ServletException, ServiceException {
-        Properties initParams = new Properties();
-        initParams.setProperty(InitParameters.I18N_PROVIDER,
+        config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
                 TestProvider.class.getName());
 
-        initServletAndService(initParams);
+        initServletAndService(config);
 
         Assert.assertEquals("Found wrong registry", TestProvider.class,
                 VaadinService.getCurrent().getInstantiator().getI18NProvider()
@@ -63,11 +66,10 @@ public class I18NProviderTest {
     @Test
     public void with_defined_provider_locale_should_be_the_available_one()
             throws ServletException, ServiceException {
-        Properties initParams = new Properties();
-        initParams.setProperty(InitParameters.I18N_PROVIDER,
+        config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
                 TestProvider.class.getName());
 
-        initServletAndService(initParams);
+        initServletAndService(config);
 
         I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator()
                 .getI18NProvider();
@@ -84,12 +86,14 @@ public class I18NProviderTest {
         CurrentInstance.clearAll();
     }
 
-    private VaadinServlet initServletAndService(Properties initParams)
+    private void initServletAndService(DeploymentConfiguration config)
             throws ServletException, ServiceException {
-        ServletConfig servletConfig = new MockServletConfig(initParams);
-        VaadinServlet servlet = new VaadinServlet();
-        servlet.init(servletConfig);
-        VaadinService service = servlet.getService();
+        service = new MockVaadinServletService(config) {
+            @Override
+            public Instantiator getInstantiator() {
+                return new DefaultInstantiator(service);
+            }
+        };
 
         HttpServletRequest httpServletRequest = Mockito
                 .mock(HttpServletRequest.class);
@@ -115,7 +119,7 @@ public class I18NProviderTest {
         };
 
         VaadinRequest request = new VaadinServletRequest(httpServletRequest,
-                servlet.getService()) {
+                service) {
             @Override
             public String getParameter(String name) {
                 if (ApplicationConstants.REQUEST_TYPE_PARAMETER.equals(name)) {
@@ -134,12 +138,9 @@ public class I18NProviderTest {
         try {
             service.findVaadinSession(request);
         } catch (SessionExpiredException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
-        service.init();
         VaadinService.setCurrent(service);
-
-        return servlet;
     }
 }

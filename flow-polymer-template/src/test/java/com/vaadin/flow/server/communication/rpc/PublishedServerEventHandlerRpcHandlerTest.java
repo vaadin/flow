@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import java.util.Properties;
+
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,6 +33,8 @@ import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.template.internal.DeprecatedPolymerTemplate;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.JsonConstants;
@@ -38,7 +43,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class PublishedServerEventHandlerRpcHandlerTest {
@@ -170,19 +174,23 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws ServiceException {
         Assert.assertNull(System.getSecurityManager());
         service = Mockito.mock(VaadinService.class);
 
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        Properties properties = new Properties();
+        Mockito.when(configuration.getInitParameters()).thenReturn(properties);
+
+        service = new MockVaadinServletService(configuration);
+
         VaadinService.setCurrent(service);
 
         session = Mockito.mock(VaadinSession.class);
         Mockito.when(session.hasLock()).thenReturn(true);
+        Mockito.when(session.getService()).thenReturn(service);
     }
 
     @After
@@ -247,7 +255,11 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     public void methodWithParameterInvokedWithProperParameter() {
         JsonArray array = Json.createArray();
         array.set(0, 65);
+
         MethodWithParameters component = new MethodWithParameters();
+
+        attachComponent(component);
+
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "intMethod", array, -1);
 
@@ -263,6 +275,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         secondArg.set(1, false);
         array.set(1, secondArg);
         MethodWithParameters component = new MethodWithParameters();
+        attachComponent(component);
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method1", array, -1);
 
@@ -338,6 +351,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         array.set(0, json);
 
         MethodWithParameters component = new MethodWithParameters();
+        attachComponent(component);
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method4", array, -1);
 
@@ -472,9 +486,8 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
     @Test
     public void enabledElement_methodIsInvoked() {
-        UI ui = new UI();
         ComponentWithMethod component = new ComponentWithMethod();
-        ui.add(component);
+        attachComponent(component);
 
         requestInvokeMethod(component);
 
@@ -483,9 +496,8 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
     @Test
     public void disabledElement_eventHandlerIsNotInvoked() {
-        UI ui = new UI();
         ComponentWithMethod component = new ComponentWithMethod();
-        ui.add(component);
+        attachComponent(component);
 
         component.getElement().setEnabled(false);
 
@@ -496,11 +508,9 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
     @Test
     public void implicitelyDisabledElement_eventHandlerIsNotInvoked() {
-        UI ui = new UI();
         ComponentWithMethod component = new ComponentWithMethod();
-        ui.add(component);
 
-        ui.setEnabled(false);
+        attachComponent(component).setEnabled(false);
 
         requestInvokeMethod(component);
 
@@ -509,9 +519,8 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
     @Test
     public void disabledElement_eventHandlerAllowsRPC_methodIsInvoked() {
-        UI ui = new UI();
         EnabledHandler component = new EnabledHandler();
-        ui.add(component);
+        attachComponent(component);
 
         component.getElement().setEnabled(false);
 
@@ -520,6 +529,14 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         requestInvokeMethod(component);
 
         Assert.assertTrue(component.isInvoked);
+    }
+
+    private UI attachComponent(Component component) {
+        UI ui = new UI();
+        ui.getInternals().setSession(session);
+
+        ui.add(component);
+        return ui;
     }
 
     private void requestInvokeMethod(Component component) {

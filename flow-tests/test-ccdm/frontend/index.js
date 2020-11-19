@@ -1,4 +1,4 @@
-import { Flow } from '@vaadin/flow-frontend/Flow';
+import { Flow } from '@vaadin/flow-frontend';
 
 document.getElementById("button1").addEventListener('click', async e => {
     await import('./another-bundle.js');
@@ -43,5 +43,9 @@ document.getElementById('button3').addEventListener('click', async e => {
 document.getElementById("loadVaadinRouter").addEventListener('click', async(e) => {
     const clientRouter = await import('./client-router.js');
     clientRouter.loadRouter(flow);
+});
+
+document.getElementById("updatePageTitle").addEventListener('click', async(e) => {
+    document.title = 'client-side-updated-title';
 });
 

@@ -1,0 +1,20 @@
+{
+  "description": "application-theme-plugin",
+  "keywords": [
+    "plugin"
+  ],
+  "repository": "vaadin/flow",
+  "name": "@vaadin/application-theme-plugin",
+  "version": "0.1.1",
+  "main": "application-theme-plugin.js",
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/flow/issues"
+  },
+  "files": [
+    "application-theme-plugin.js",
+    "theme-generator.js",
+    "theme-copy.js"
+  ]
+}

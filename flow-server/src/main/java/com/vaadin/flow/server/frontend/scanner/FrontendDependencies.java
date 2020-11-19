@@ -39,6 +39,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
@@ -236,6 +237,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             collectEndpoints(initListener);
         }
 
+        for (Class<?> appShell : getFinder().getSubTypesOf(
+                getFinder().loadClass(AppShellConfigurator.class.getName()))) {
+            collectEndpoints(appShell);
+        }
+
         for (Class<?> errorParameters : getFinder().getSubTypesOf(
                 getFinder().loadClass(HasErrorParameter.class.getName()))) {
             collectEndpoints(errorParameters);
@@ -267,13 +273,14 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 visitClass(endPoint.getLayout(), endPoint, false);
             }
             if (endPoint.getTheme() != null) {
-                visitClass(endPoint.getTheme().getName(), endPoint, true);
+                visitClass(endPoint.getTheme().getThemeClass(), endPoint, true);
             }
         }
 
         Set<ThemeData> themes = endPoints.values().stream()
                 // consider only endPoints with theme information
-                .filter(data -> data.getTheme().getName() != null
+                .filter(data -> data.getTheme().getThemeClass() != null ||
+                    (data.getTheme().getThemeName() != null && !data.getTheme().getThemeName().isEmpty())
                         || data.getTheme().isNotheme())
                 .map(EndPointData::getTheme)
                 // Remove duplicates by returning a set
@@ -281,12 +288,13 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         if (themes.size() > 1) {
             String names = endPoints.values().stream()
-                    .filter(data -> data.getTheme().getName() != null
+                    .filter(data -> data.getTheme().getThemeClass() != null ||
+                        data.getTheme().getThemeName() != null
                             || data.getTheme().isNotheme())
                     .map(data -> "found '"
                             + (data.getTheme().isNotheme()
                                     ? NoTheme.class.getName()
-                                    : data.getTheme().getName())
+                                    : data.getTheme().getThemeName())
                             + "' in '" + data.getName() + "'")
                     .collect(Collectors.joining("\n      "));
             throw new IllegalStateException(
@@ -296,21 +304,36 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         Class<? extends AbstractTheme> theme = null;
         String variant = "";
+        String themeName = "";
         if (themes.isEmpty()) {
             theme = getDefaultTheme();
         } else {
             // we have a proper theme or no-theme for the app
             ThemeData themeData = themes.iterator().next();
             if (!themeData.isNotheme()) {
+                String themeClass = themeData.getThemeClass();
+                if (!themeData.getThemeName().isEmpty() && themeClass != null) {
+                    throw new IllegalStateException(
+                        "Theme name and theme class can not both be specified. "
+                            + "Theme name uses Lumo and can not be used in combination with custom theme class.");
+                }
                 variant = themeData.getVariant();
-                theme = getFinder().loadClass(themeData.getName());
+                if (themeClass != null) {
+                    theme = getFinder().loadClass(themeClass);
+                } else {
+                    theme = getDefaultTheme();
+                    if (theme == null) {
+                        throw new IllegalStateException(
+                            "Lumo dependency needs to be available on the classpath when using a theme name.");
+                    }
+                }
+                themeName = themeData.getThemeName();
             }
-
         }
 
         // theme could be null when lumo is not found or when a NoTheme found
         if (theme != null) {
-            themeDefinition = new ThemeDefinition(theme, variant);
+            themeDefinition = new ThemeDefinition(theme, variant, themeName);
             themeInstance = new ThemeWrapper(theme);
         }
     }

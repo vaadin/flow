@@ -9,6 +9,10 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 
+// Flow plugins
+const StatsPlugin = require('@vaadin/stats-plugin');
+const ApplicationThemePlugin = require('@vaadin/application-theme-plugin');
+
 const path = require('path');
 
 // the folder of app resources:
@@ -31,6 +35,25 @@ const buildFolder = `${mavenOutputFolderForFlowBundledFiles}/${build}`;
 const confFolder = `${mavenOutputFolderForFlowBundledFiles}/${config}`;
 // file which is used by flow to read templates for server `@Id` binding
 const statsFile = `${confFolder}/stats.json`;
+
+// Folders in the project which can contain static assets.
+const projectStaticAssetsFolders = [
+  path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
+  path.resolve(__dirname, 'src', 'main', 'resources', 'static'),
+  frontendFolder
+];
+
+const projectStaticAssetsOutputFolder = [to-be-generated-by-flow];
+
+// Folders in the project which can contain application themes
+const themeProjectFolders = projectStaticAssetsFolders.map((folder) =>
+  path.resolve(folder, 'theme')
+);
+
+
+// Target flow-fronted auto generated to be the actual target folder
+const flowFrontendFolder = '[to-be-generated-by-flow]';
+
 // make sure that build folder exists before outputting anything
 const mkdirp = require('mkdirp');
 
@@ -101,6 +124,12 @@ module.exports = {
   },
 
   resolve: {
+    // Search for import 'x/y' inside these folders, used at least for importing an application theme
+    modules: [
+      'node_modules',
+      flowFrontendFolder,
+      ...projectStaticAssetsFolders,
+    ],
     extensions: ['.ts', '.js'],
     alias: {
       Frontend: frontendFolder
@@ -138,8 +167,21 @@ module.exports = {
       },
       {
         test: /\.css$/i,
-        use: ['lit-css-loader', 'extract-loader', 'css-loader']
-      }
+        use: [
+          {
+            loader: 'css-loader',
+            options: {
+              url: (url, resourcePath) => {
+                // do not handle theme folder url files
+                if(url.startsWith("theme")) {
+                  return false;
+                }
+                return true;
+              },
+            },
+          },
+        ],
+      },
     ]
   },
   performance: {
@@ -150,40 +192,19 @@ module.exports = {
     // Generate compressed bundles when not devMode
     !devMode && new CompressionPlugin(),
 
-    // Generates the stats file for flow `@Id` binding.
-    function (compiler) {
-      compiler.hooks.afterEmit.tapAsync("FlowIdPlugin", (compilation, done) => {
-        let statsJson = compilation.getStats().toJson();
-        // Get bundles as accepted keys
-        let acceptedKeys = statsJson.assets.filter(asset => asset.chunks.length > 0)
-          .map(asset => asset.chunks).reduce((acc, val) => acc.concat(val), []);
+    new ApplicationThemePlugin({
+      themeResourceFolder: path.resolve(flowFrontendFolder, 'theme'),
+      themeProjectFolders: themeProjectFolders,
+      projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
+    }),
 
-        // Collect all modules for the given keys
-        const modules = collectModules(statsJson, acceptedKeys);
-
-        // Collect accepted chunks and their modules
-        const chunks = collectChunks(statsJson, acceptedKeys);
-
-        let customStats = {
-          hash: statsJson.hash,
-          assetsByChunkName: statsJson.assetsByChunkName,
-          chunks: chunks,
-          modules: modules
-        };
-
-        if (!devMode) {
-          // eslint-disable-next-line no-console
-          console.log("         Emitted " + statsFile);
-          fs.writeFile(statsFile, JSON.stringify(customStats, null, 1), done);
-        } else {
-          // eslint-disable-next-line no-console
-          console.log("         Serving the 'stats.json' file dynamically.");
-
-          stats = customStats;
-          done();
-        }
-      });
-    },
+    new StatsPlugin({
+      devMode: devMode,
+      statsFile: statsFile,
+      setResults: function (statsFile) {
+        stats = statsFile;
+      }
+    }),
 
     // Includes JS output bundles into "index.html"
     useClientSideIndexFileForBootstrapping && new HtmlWebpackPlugin({
@@ -196,94 +217,3 @@ module.exports = {
     }),
   ].filter(Boolean)
 };
-
-/**
- * Collect chunk data for accepted chunk ids.
- * @param statsJson full stats.json content
- * @param acceptedKeys chunk ids that are accepted
- * @returns slimmed down chunks
- */
-function collectChunks(statsJson, acceptedChunks) {
-  const chunks = [];
-  // only handle chunks if they exist for stats
-  if (statsJson.chunks) {
-    statsJson.chunks.forEach(function (chunk) {
-      // Acc chunk if chunk id is in accepted chunks
-      if (acceptedChunks.includes(chunk.id)) {
-        const modules = [];
-        // Add all modules for chunk as slimmed down modules
-        chunk.modules.forEach(function (module) {
-          const slimModule = {
-            id: module.id,
-            name: module.name,
-            source: module.source
-          };
-          if(module.modules) {
-            slimModule.modules = collectSubModules(module);
-          }
-          modules.push(slimModule);
-        });
-        const slimChunk = {
-          id: chunk.id,
-          names: chunk.names,
-          files: chunk.files,
-          hash: chunk.hash,
-          modules: modules
-        }
-        chunks.push(slimChunk);
-      }
-    });
-  }
-  return chunks;
-}
-
-/**
- * Collect all modules that are for a chunk in  acceptedChunks.
- * @param statsJson full stats.json
- * @param acceptedChunks chunk names that are accepted for modules
- * @returns slimmed down modules
- */
-function collectModules(statsJson, acceptedChunks) {
-  let modules = [];
-  // skip if no modules defined
-  if (statsJson.modules) {
-    statsJson.modules.forEach(function (module) {
-      // Add module if module chunks contain an accepted chunk and the module is generated-flow-imports.js module
-      if (module.chunks.filter(key => acceptedChunks.includes(key)).length > 0
-        && (module.name.includes("generated-flow-imports.js") || module.name.includes("generated-flow-imports-fallback.js"))) {
-        const slimModule = {
-          id: module.id,
-          name: module.name,
-          source: module.source
-        };
-        if(module.modules) {
-          slimModule.modules = collectSubModules(module);
-        }
-        modules.push(slimModule);
-      }
-    });
-  }
-  return modules;
-}
-
-/**
- * Collect any modules under a module (aka. submodules);
- *
- * @param module module to get submodules for
- */
-function collectSubModules(module) {
-  let modules = [];
-  module.modules.forEach(function (submodule) {
-    if (submodule.source) {
-      const slimModule = {
-        name: submodule.name,
-        source: submodule.source,
-      };
-      if(submodule.id) {
-        slimModule.id = submodule.id;
-      }
-      modules.push(slimModule);
-    }
-  });
-  return modules;
-}

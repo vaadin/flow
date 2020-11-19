@@ -16,9 +16,14 @@
 package com.vaadin.flow.component.littemplate;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
@@ -28,6 +33,9 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 
 public class InjectableLitElementInitializerTest {
+
+    @Rule
+    public ExpectedException expectedEx = ExpectedException.none();
 
     private Element element = ElementFactory.createDiv();
 
@@ -107,13 +115,19 @@ public class InjectableLitElementInitializerTest {
     }
 
     @Test
-    public void initializeElement_disabled_elementIsDisabled() {
-        initializer.accept(
-                Collections.singletonMap("disabled", Boolean.TRUE.toString()));
+    public void initializeElement_disabled_exceptionIsThrown() {
 
-        Assert.assertFalse(element.isEnabled());
+        expectedEx.expect(IllegalAttributeException.class);
+        expectedEx.expectMessage(Matchers.containsString("element 'div' with id 'labelId'"));
+
+        Map<String, String> attributes = new HashMap<>();
+        attributes.put("disabled", Boolean.TRUE.toString());
+        attributes.put("id", "labelId");
+
+        initializer.accept(attributes);
     }
 
+    @Test
     public void initializeElement_setText_textIsSet() {
         initializer.accept(Collections.singletonMap(
                 AbstractInjectableElementInitializer.TEXT_DATA, "foo bar"));

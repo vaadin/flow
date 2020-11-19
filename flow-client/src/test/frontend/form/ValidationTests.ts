@@ -118,13 +118,19 @@ suite("form/Validation", () => {
 
   suite('submitTo', () => {
     test("should be able to call submit() if onSubmit is pre configured", async () => {
-      const binder = new Binder(view, OrderModel, {
+      const binder = new Binder(view, TestModel, {
         onSubmit: async () => {}
       });
       const binderSubmitToSpy = sinon.spy(binder, 'submitTo');
       await binder.submit();
       sinon.assert.calledOnce(binderSubmitToSpy);
     });
+
+    test("should return the result of the endpoint call when calling submit()", async () => {
+      const binder = new Binder(view, TestModel, {onSubmit: async (testEntity) => testEntity});
+      const result = await binder.submit();
+      assert.deepEqual(result, binder.value);
+    })
 
     test("should throw on validation failure", async () => {
       try {

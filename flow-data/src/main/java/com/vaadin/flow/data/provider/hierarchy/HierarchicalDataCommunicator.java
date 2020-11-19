@@ -158,6 +158,21 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             HierarchicalUpdate update = arrayUpdater
                     .startUpdate(getHierarchyMapper().getRootSize());
             update.enqueue("$connector.ensureHierarchy");
+
+            Collection<T> expandedItems = getHierarchyMapper().getExpandedItems();
+            if (!expandedItems.isEmpty()) {
+                update.enqueue("$connector.expandItems",
+                        expandedItems
+                                .stream()
+                                .map(getKeyMapper()::key)
+                                .map(key -> {
+                                    JsonObject json = Json.createObject();
+                                    json.put("key", key);
+                                    return json;
+                                }).collect(
+                                JsonUtils.asArray()));
+            }
+
             requestFlush(update);
         }
     }
@@ -227,14 +242,15 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      */
     public <F> SerializableConsumer<F> setDataProvider(
             HierarchicalDataProvider<T, F> dataProvider, F initialFilter) {
-        SerializableConsumer<F> consumer = super.setDataProvider(dataProvider,
-                initialFilter);
-
-        // Remove old mapper
+        // Remove old mapper before super.setDataProvider(...) prevents calling
+        // reset() before clearing the already expanded items:
         if (mapper != null) {
             mapper.destroyAllData();
         }
         mapper = createHierarchyMapper(dataProvider);
+
+        SerializableConsumer<F> consumer = super.setDataProvider(dataProvider,
+                initialFilter);
 
         // Set up mapper for requests
         mapper.setBackEndSorting(getBackEndSorting());

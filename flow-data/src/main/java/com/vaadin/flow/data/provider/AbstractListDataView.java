@@ -24,9 +24,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableComparator;
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.SerializableSupplier;
@@ -49,6 +49,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     private static final String NULL_ITEM_ERROR_MESSAGE = "Item cannot be null";
 
+    private final SerializableBiConsumer<SerializablePredicate<T>, SerializableComparator<T>> filterOrSortingChangedCallback;
+
     /**
      * Creates a new instance of {@link AbstractListDataView} subclass and
      * verifies the passed data provider is compatible with this data view
@@ -58,22 +60,36 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
      *            supplier from which the DataProvider can be gotten
      * @param component
      *            the component that the dataView is bound to
+     * @param filterOrSortingChangedCallback
+     *            callback, which is being invoked when the component filtering
+     *            or sorting changes, not <code>null</code>
      */
     public AbstractListDataView(
             SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier,
-            Component component) {
+            Component component,
+            SerializableBiConsumer<SerializablePredicate<T>, SerializableComparator<T>> filterOrSortingChangedCallback) {
         super(dataProviderSupplier, component);
+        Objects.requireNonNull(filterOrSortingChangedCallback,
+                "Filter or Sorting Change Callback cannot be empty");
+        this.filterOrSortingChangedCallback = filterOrSortingChangedCallback;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public int getItemCount() {
-        return getDataProvider().size(new Query<>());
+        return getDataProvider().size(DataViewUtils.getQuery(component, false));
     }
 
     @Override
     public T getItem(int index) {
         validateItemIndex(index);
         return getItems().skip(index).findFirst().orElse(null);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Stream<T> getItems() {
+        return getDataProvider().fetch(DataViewUtils.getQuery(component));
     }
 
     @Override
@@ -96,33 +112,61 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public AbstractListDataView<T> addFilter(SerializablePredicate<T> filter) {
-        getDataProvider().addFilter(filter);
-        return this;
+        Objects.requireNonNull(filter, "Filter to add cannot be null");
+        Optional<SerializablePredicate<T>> originalFilter = DataViewUtils
+                .getComponentFilter(component);
+        SerializablePredicate<T> newFilter = originalFilter.isPresent()
+                ? item -> originalFilter.get().test(item) && filter.test(item)
+                : filter;
+        return setFilter(newFilter);
     }
 
     @Override
     public AbstractListDataView<T> removeFilters() {
-        getDataProvider().clearFilters();
+        return setFilter(null);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public AbstractListDataView<T> setFilter(SerializablePredicate<T> filter) {
+        DataViewUtils.setComponentFilter(component, filter);
+        fireFilteringOrSortingChangeEvent(filter,
+                (SerializableComparator<T>) DataViewUtils
+                        .getComponentSortComparator(component).orElse(null));
         return this;
     }
 
-    @Override
-    public AbstractListDataView<T> setFilter(SerializablePredicate<T> filter) {
-        return setFilterOrOrder(dataProvider -> dataProvider.setFilter(filter));
-    }
-
+    @SuppressWarnings("unchecked")
     @Override
     public AbstractListDataView<T> setSortComparator(
             SerializableComparator<T> sortComparator) {
-        return setFilterOrOrder(
-                dataProvider -> dataProvider.setSortComparator(sortComparator));
+        DataViewUtils.setComponentSortComparator(component, sortComparator);
+        fireFilteringOrSortingChangeEvent(
+                (SerializablePredicate<T>) DataViewUtils
+                        .getComponentFilter(component).orElse(null),
+                sortComparator);
+        return this;
     }
 
     @Override
     public AbstractListDataView<T> addSortComparator(
             SerializableComparator<T> sortComparator) {
-        return setFilterOrOrder(
-                dataProvider -> dataProvider.addSortComparator(sortComparator));
+        Objects.requireNonNull(sortComparator,
+                "Comparator to add cannot be null");
+        Optional<SerializableComparator<T>> originalComparator = DataViewUtils
+                .getComponentSortComparator(component);
+
+        if (originalComparator.isPresent()) {
+            return setSortComparator((a, b) -> {
+                int result = originalComparator.get().compare(a, b);
+                if (result == 0) {
+                    result = sortComparator.compare(a, b);
+                }
+                return result;
+            });
+        } else {
+            return setSortComparator(sortComparator);
+        }
     }
 
     @Override
@@ -133,15 +177,17 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public <V1 extends Comparable<? super V1>> AbstractListDataView<T> setSortOrder(
             ValueProvider<T, V1> valueProvider, SortDirection sortDirection) {
-        return setFilterOrOrder(dataProvider -> dataProvider
-                .setSortOrder(valueProvider, sortDirection));
+        SerializableComparator<T> sortComparator = InMemoryDataProviderHelpers
+                .propertyComparator(valueProvider, sortDirection);
+        return setSortComparator(sortComparator);
     }
 
     @Override
     public <V1 extends Comparable<? super V1>> AbstractListDataView<T> addSortOrder(
             ValueProvider<T, V1> valueProvider, SortDirection sortDirection) {
-        return setFilterOrOrder(dataProvider -> dataProvider
-                .addSortOrder(valueProvider, sortDirection));
+        SerializableComparator<T> sortComparator = InMemoryDataProviderHelpers
+                .propertyComparator(valueProvider, sortDirection);
+        return addSortComparator(sortComparator);
     }
 
     @Override
@@ -261,13 +307,6 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         }
     }
 
-    private AbstractListDataView<T> setFilterOrOrder(
-            SerializableConsumer<ListDataProvider<T>> filterOrOrderConsumer) {
-        ListDataProvider<T> dataProvider = getDataProvider();
-        filterOrOrderConsumer.accept(dataProvider);
-        return this;
-    }
-
     private int getItemIndex(T item, Stream<T> stream) {
         Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);
         AtomicInteger index = new AtomicInteger(-1);
@@ -379,5 +418,11 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
         itemList.addAll(indexToInsertItems, items);
         dataProvider.refreshAll();
+    }
+
+    private void fireFilteringOrSortingChangeEvent(
+            SerializablePredicate<T> filter,
+            SerializableComparator<T> sortComparator) {
+        filterOrSortingChangedCallback.accept(filter, sortComparator);
     }
 }

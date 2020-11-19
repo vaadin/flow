@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -32,6 +33,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.VaadinRequest;
@@ -1337,8 +1339,127 @@ public class DataCommunicatorTest {
         dataCommunicator.setPageSize(0);
     }
 
+    @Test
+    public void filter_setFilterThroughFilterConsumer_shouldRetainFilterBetweenRequests() {
+        SerializableConsumer<SerializablePredicate<Item>> filterConsumer = dataCommunicator
+                .setDataProvider(DataProvider.ofItems(new Item(1), new Item(2),
+                        new Item(3)), item -> item.id > 1);
+
+        Assert.assertNotNull("Expected initial filter to be set",
+                dataCommunicator.getFilter());
+
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        Assert.assertNotNull(
+                "Filter should be retained after data request",
+                dataCommunicator.getFilter());
+
+        Assert.assertEquals("Unexpected items count", 2,
+                dataCommunicator.getItemCount());
+
+        // Check that the filter change works properly
+        filterConsumer.accept(item -> item.id > 2);
+
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        Assert.assertNotNull(
+                "Filter should be retained after data request",
+                dataCommunicator.getFilter());
+
+        Assert.assertEquals("Unexpected items count", 1,
+                dataCommunicator.getItemCount());
+    }
+
+    @Test
+    public void filter_setNotifyOnFilterChange_firesItemChangeEvent() {
+        TestComponent testComponent = new TestComponent(element);
+
+        AtomicBoolean eventTriggered = new AtomicBoolean(false);
+
+        testComponent.addItemChangeListener(event -> {
+            eventTriggered.set(true);
+            Assert.assertEquals("Unexpected item count", 2,
+                    event.getItemCount());
+        });
+
+        dataCommunicator.setDataProvider(
+                DataProvider.ofItems(new Item(1), new Item(2), new Item(3)),
+                item -> item.id > 1);
+
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        Assert.assertTrue("Expected event to be triggered",
+                eventTriggered.get());
+    }
+
+    @Test
+    public void filter_skipNotifyOnFilterChange_doesNotFireItemChangeEvent() {
+        TestComponent testComponent = new TestComponent(element);
+
+        testComponent.addItemChangeListener(event -> Assert
+                .fail("Event triggering not expected"));
+
+        dataCommunicator.setDataProvider(
+                DataProvider.ofItems(new Item(1), new Item(2), new Item(3)),
+                item -> item.id > 1, false);
+
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+    }
+
+    @Test
+    public void setDataProvider_setNewDataProvider_filteringAndSortingRemoved() {
+        dataCommunicator.setDataProvider(
+                DataProvider.ofItems(new Item(0), new Item(1), new Item(2)),
+                null);
+
+        ListDataView<Item, ?> listDataView = new AbstractListDataView<Item>(
+                dataCommunicator::getDataProvider, new TestComponent(element),
+                (filter, sorting) -> {
+                }) {
+        };
+
+        Assert.assertEquals("Unexpected items count before filter", 3,
+                listDataView.getItems().count());
+        Assert.assertEquals("Unexpected items order before sorting",
+                new Item(0), listDataView.getItems().findFirst().orElse(null));
+
+        listDataView.setFilter(item -> item.id < 2);
+        listDataView.setSortOrder(item -> item.id, SortDirection.DESCENDING);
+
+        Assert.assertEquals("Unexpected items count after filter", 2,
+                listDataView.getItems().count());
+        Assert.assertEquals("Unexpected items order after sorting", new Item(1),
+                listDataView.getItems().findFirst().orElse(null));
+
+        dataCommunicator.setDataProvider(
+                DataProvider.ofItems(new Item(0), new Item(1), new Item(2)),
+                null);
+
+        Assert.assertEquals("Unexpected items count after data provider reset",
+                3, listDataView.getItems().count());
+        Assert.assertEquals("Unexpected items order after data provider reset",
+                new Item(0), listDataView.getItems().findFirst().orElse(null));
+    }
+
     @Tag("test-component")
     private static class TestComponent extends Component {
+
+        public TestComponent() {
+        }
+
+        public TestComponent(Element element) {
+            super(element);
+        }
+
+        void addItemChangeListener(
+                ComponentEventListener<ItemCountChangeEvent<?>> listener) {
+            ComponentUtil.addListener(this, ItemCountChangeEvent.class,
+                    (ComponentEventListener) listener);
+        }
     }
 
     private int getPageSizeIncrease() {

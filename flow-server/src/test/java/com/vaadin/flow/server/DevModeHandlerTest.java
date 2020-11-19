@@ -15,20 +15,12 @@
  */
 package com.vaadin.flow.server;
 
-import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
-import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.WEBPACK_TEST_OUT_FILE;
-import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_NOT_MODIFIED;
-import static java.net.HttpURLConnection.HTTP_OK;
-import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -46,16 +38,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.sun.net.httpserver.HttpServer;
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -66,12 +55,25 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.sun.net.httpserver.HttpServer;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-import net.jcip.annotations.NotThreadSafe;
+import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
+import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.WEBPACK_TEST_OUT_FILE;
+import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
+import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_NOT_MODIFIED;
+import static java.net.HttpURLConnection.HTTP_OK;
+import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 @NotThreadSafe
 @SuppressWarnings("restriction")
@@ -453,6 +455,12 @@ public class DevModeHandlerTest {
         throwFuture.completeExceptionally(new CustomRuntimeException());
         DevModeHandler handler = DevModeHandler.start(0, configuration,
                 npmFolder, throwFuture);
+        try {
+            handler.join();
+        } catch (CompletionException ignore) {
+            // this is an expected exception thrown on join for the handler
+
+        }
         handler.handleRequest(Mockito.mock(VaadinSession.class),
                 Mockito.mock(VaadinRequest.class),
                 Mockito.mock(VaadinResponse.class));
@@ -553,6 +561,92 @@ public class DevModeHandlerTest {
         DevModeHandler handler = DevModeHandler.start(port, configuration,
                 npmFolder, CompletableFuture.completedFuture(null));
         handler.join();
+    }
+
+    @Test
+    public void devModeNotReady_handleRequest_returnsHtml() throws Exception {
+        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
+                CompletableFuture.completedFuture(null));
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(stream);
+        handler.handleRequest(Mockito.mock(VaadinSession.class),
+                Mockito.mock(VaadinRequest.class), response);
+        String devModeNotReadyContents = stream.toString("UTF-8");
+        Document document = Jsoup.parse(devModeNotReadyContents);
+        Assert.assertTrue("expected a head child",
+                document.head().children().size() > 0);
+        Assert.assertTrue("expected a body child",
+                document.body().children().size() > 0);
+        Mockito.verify(response).setContentType("text/html;charset=utf-8");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeWithSlash_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/../vaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeWithBackslash_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/something\\..\\vaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/something%5C..%5Cvaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/something%5c..%5cvaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeInTheEndWithSlash_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/..");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeInTheEndWithBackslash_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/something\\..");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeInTheEndWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/something%5C..");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithDirectoryChangeInTheEndWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsForbiddenStatus()
+            throws IOException {
+        verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+                "/VAADIN/build/something%5c..");
+    }
+
+    private void verifyServeDevModeRequestReturnsTrueAndSetsProperStatusCode(
+            String uri) throws IOException {
+        HttpServletRequest request = prepareRequest(uri);
+        HttpServletResponse response = prepareResponse();
+        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
+                CompletableFuture.completedFuture(null));
+        handler.join();
+        assertTrue(handler.serveDevModeRequest(request, response));
+
+        Assert.assertEquals(HTTP_FORBIDDEN, responseStatus);
     }
 
     private VaadinServlet prepareServlet(int port)

@@ -25,11 +25,11 @@ public class LitClassesSerializableTest extends ClassesSerializableTest {
     protected Stream<String> getExcludedPatterns() {
         return Stream.concat(Stream.of(
                 "com\\.vaadin\\.flow\\.component\\.littemplate\\.BundleLitParser(\\$.*)?",
-                "com\\.vaadin\\.flow\\.component\\.littemplate\\.LitTemplateParserImpl",
+                "com\\.vaadin\\.flow\\.component\\.littemplate\\.internal\\.LitTemplateParserImpl",
                 "com\\.vaadin\\.flow\\.component\\.littemplate\\.LitTemplateParser(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.littemplate\\.LitTemplateInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.littemplate\\.InjectableLitElementInitializer",
-                "com\\.vaadin\\.flow\\.server\\.startup\\.ApplicationRouteRegistry"),
+                "com\\.vaadin\\.flow\\.server\\.startup\\.ApplicationRouteRegistry(\\$.*)?"),
                 super.getExcludedPatterns());
     }
 }

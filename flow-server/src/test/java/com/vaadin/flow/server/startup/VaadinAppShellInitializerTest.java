@@ -39,6 +39,7 @@ import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
@@ -54,6 +55,8 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
+import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -78,6 +81,7 @@ public class VaadinAppShellInitializerTest {
     @BodySize(height = "my-height", width = "my-width")
     @PageTitle("my-title")
     @Push(value = PushMode.MANUAL, transport = Transport.WEBSOCKET)
+    @Theme(themeClass = AbstractTheme.class)
     public static class MyAppShellWithMultipleAnnotations
             implements AppShellConfigurator {
     }
@@ -91,6 +95,7 @@ public class VaadinAppShellInitializerTest {
     @BodySize(height = "my-height", width = "my-width")
     @PageTitle("my-title")
     @Push(value = PushMode.MANUAL, transport = Transport.WEBSOCKET)
+    @Theme(themeClass = AbstractTheme.class)
     public static class OffendingClass {
     }
 
@@ -191,8 +196,13 @@ public class VaadinAppShellInitializerTest {
         logger = mockLog(VaadinAppShellInitializer.class);
         assertNull(getDevModeHandler());
 
-        servletContext = Mockito.mock(ServletContext.class);
         mocks = new MockServletServiceSessionSetup();
+
+        servletContext = mocks.getServletContext();
+
+        attributeMap.put(Lookup.class.getName(),
+                servletContext.getAttribute(Lookup.class.getName()));
+
         service = mocks.getService();
         Mockito.when(servletContext.getAttribute(Mockito.anyString()))
                 .then(invocationOnMock -> attributeMap
@@ -370,7 +380,7 @@ public class VaadinAppShellInitializerTest {
         exception.expectMessage(containsString(
                 "Found app shell configuration annotations in non"));
         exception.expectMessage(containsString(
-                "- @Meta, @Inline, @Viewport, @BodySize, @Push" + " from"));
+                "- @Meta, @Inline, @Viewport, @BodySize, @Push, @Theme" + " from"));
         classes.add(MyAppShellWithoutAnnotations.class);
         classes.add(OffendingClass.class);
         initializer.process(classes, servletContext);
