@@ -36,10 +36,10 @@ public class VaadinConnectControllerConfiguration {
     private final VaadinEndpointProperties vaadinEndpointProperties;
 
     /**
-     * Initializes the connect configuration.
+     * Initializes the endpoint configuration.
      *
      * @param vaadinEndpointProperties
-     *            Vaadin Connect properties
+     *            Vaadin ednpoint properties
      */
     public VaadinConnectControllerConfiguration(
             VaadinEndpointProperties vaadinEndpointProperties) {
@@ -49,7 +49,7 @@ public class VaadinConnectControllerConfiguration {
     /**
      * Registers {@link VaadinConnectController} to use
      * {@link VaadinEndpointProperties#getVaadinEndpointPrefix()} as a prefix
-     * for all Vaadin Connect endpoints.
+     * for all Vaadin endpoints.
      *
      * @return updated configuration for {@link VaadinConnectController}
      */
@@ -118,7 +118,7 @@ public class VaadinConnectControllerConfiguration {
     /**
      * Registers a default {@link VaadinConnectAccessChecker} bean instance.
      *
-     * @return the default Vaadin Connect access checker bean
+     * @return the default Vaadin endpoint access checker bean
      */
     @Bean
     public VaadinConnectAccessChecker accessChecker() {

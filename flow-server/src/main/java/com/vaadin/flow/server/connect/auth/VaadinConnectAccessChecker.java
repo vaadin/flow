@@ -34,7 +34,7 @@ import com.vaadin.flow.server.VaadinService;
  * Component used for checking role-based ACL in Vaadin Endpoints.
  * <p>
  * For each request that is trying to access the method in the corresponding
- * Vaadin Connect Endpoint, the permission check is carried on.
+ * Vaadin Endpoint, the permission check is carried on.
  * <p>
  * It looks for {@link AnonymousAllowed} {@link PermitAll}, {@link DenyAll} and
  * {@link RolesAllowed} annotations in endpoint methods and classes containing
@@ -94,7 +94,7 @@ public class VaadinConnectAccessChecker {
     }
 
     /**
-     * Gets the entity to check for Vaadin Connect security restrictions.
+     * Gets the entity to check for Vaadin endpoint security restrictions.
      *
      * @param method
      *            the method to analyze, not {@code null}

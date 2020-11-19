@@ -94,7 +94,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     protected File openApiJsonFile;
 
     /**
-     * Java source folders for connect scanning.
+     * Java source folders for scanning.
      */
     @Parameter(defaultValue = "${project.basedir}/src/main/java")
     protected File javaSourceFolder;

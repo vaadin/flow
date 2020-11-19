@@ -77,7 +77,7 @@ import com.vaadin.flow.server.connect.exception.EndpointValidationException.Vali
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
 /**
- * The controller that is responsible for processing Vaadin Connect requests.
+ * The controller that is responsible for processing Vaadin endpoint requests.
  * Each class that is annotated with {@link Endpoint} gets its public methods
  * exposed so that those can be triggered by a correct POST request, including
  * the methods inherited from the other classes, excluding {@link Object} class
@@ -128,7 +128,7 @@ public class VaadinConnectController {
      *            the ACL checker to verify the endpoint method access
      *            permissions
      * @param endpointNameChecker
-     *            the endpoint name checker to verify custom Vaadin Connect
+     *            the endpoint name checker to verify custom Vaadin
      *            endpoint names
      * @param explicitNullableTypeChecker
      *            the method parameter and return value type checker to verify
@@ -224,7 +224,7 @@ public class VaadinConnectController {
     }
 
     /**
-     * Captures and processes the Vaadin Connect requests.
+     * Captures and processes the Vaadin endpoint requests.
      * <p>
      * Matches the endpoint name and a method name with the corresponding Java
      * class and a public method in the class. Extracts parameters from a

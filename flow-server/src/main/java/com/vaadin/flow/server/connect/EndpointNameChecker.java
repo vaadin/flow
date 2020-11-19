@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * A checker responsible for validating the Vaadin Connect endpoint names.
+ * A checker responsible for validating the Vaadin endpoint names.
  */
 public class EndpointNameChecker {
     /**
@@ -55,7 +55,7 @@ public class EndpointNameChecker {
             .compile(".*[\\s+].*");
 
     /**
-     * Validates the Vaadin Connect endpoint name given.
+     * Validates the Vaadin endpoint name given.
      *
      * @param endpointName
      *            the name to validate
