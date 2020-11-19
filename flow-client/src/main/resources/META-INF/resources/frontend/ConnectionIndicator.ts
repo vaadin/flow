@@ -365,6 +365,15 @@ export const enum LoadingBarState {
   THIRD = 'third'
 }
 
+export function addConnectionIndicator() {
+  const $wnd = window as any;
+  if (!$wnd.Vaadin?.connectionIndicator) {
+    $wnd.Vaadin = $wnd.Vaadin || {};
+    $wnd.Vaadin.connectionIndicator = document.createElement('vaadin-connection-indicator');
+    document.body.appendChild($wnd.Vaadin.connectionIndicator);
+  }
+}
+
 if (customElements.get('vaadin-connection-indicator') === undefined) {
   customElements.define('vaadin-connection-indicator', ConnectionIndicator);
 }

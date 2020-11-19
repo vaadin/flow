@@ -1,4 +1,4 @@
-import './ConnectionIndicator';
+import {addConnectionIndicator} from "./ConnectionIndicator";
 import {ConnectionState} from './ConnectionState';
 
 export interface FlowConfig {
@@ -87,8 +87,8 @@ export class Flow {
         (document.baseURI || elm && elm.href || '/')
             .replace(/^https?:\/\/[^\/]+/i, ''));
     this.appShellTitle = document.title;
-    // Put a flow progress-bar in the dom
-    this.addConnectionIndicator();
+    // Put a vaadin-connection-indicator in the dom
+    addConnectionIndicator();
   }
 
   /**
@@ -325,12 +325,6 @@ export class Flow {
       };
       httpRequest.send();
     });
-  }
-
-  // Create shared connection state store and connection indicator
-  private addConnectionIndicator() {
-    $wnd.Vaadin.connectionIndicator = document.createElement('vaadin-connection-indicator');
-    document.body.appendChild($wnd.Vaadin.connectionIndicator);
   }
 
   private loadingStarted() {

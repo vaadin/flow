@@ -1,3 +1,7 @@
+/* tslint:disable: max-classes-per-file */
+
+import {addConnectionIndicator} from "./ConnectionIndicator";
+
 export interface ConnectionIndicatorConfiguration {
   onlineText?: string;
   offlineText?: string;
@@ -18,37 +22,15 @@ const $wnd = window as any;
  * @param conf All defined fields are applied to the connection indicator configuration.
  * @returns The updated configuration of the connection indicator.
  */
-export async function setConnectionIndicatorConfiguration(conf: ConnectionIndicatorConfiguration):
-  Promise<ConnectionIndicatorConfiguration> {
-  return new Promise((resolve, reject) => {
-    const updateConfiguration = () => {
-      try {
-        validateDelay(conf.firstDelay);
-        validateDelay(conf.secondDelay);
-        validateDelay(conf.thirdDelay);
-      } catch (error) {
-        reject(error);
-      }
-      if ($wnd.Vaadin?.connectionIndicator) {
-        setValidatedConnectionIndicatorConfiguration(conf);
-        return true;
-      } else {
-        return false;
-      }
-    };
-    let attempts = 0;
-    const interval = setInterval(() => {
-      if (updateConfiguration()) {
-        clearInterval(interval);
-        resolve(getConnectionIndicatorConfiguration());
-      } else {
-        attempts += 1;
-        if (attempts >= 10) {
-          throw new ConfigurationError('window.Vaadin.connectionIndicator not defined');
-        }
-      }
-    }, 100);
-  });
+export function setConnectionIndicatorConfiguration(conf: ConnectionIndicatorConfiguration):
+  ConnectionIndicatorConfiguration {
+  // ensure the connection indicator is in the DOM and accessible via window.Vaadin.connectionIndicator
+  addConnectionIndicator();
+  validateDelay(conf.firstDelay);
+  validateDelay(conf.secondDelay);
+  validateDelay(conf.thirdDelay);
+  setValidatedConnectionIndicatorConfiguration(conf);
+  return getConnectionIndicatorConfiguration();
 }
 
 /**
@@ -72,8 +54,6 @@ function validateDelay(delay?: number) {
 /**
  * Concrete values for each ConnectionIndicatorConfiguration to enable reflection over the field names.
  */
-
-/* tslint:disable: max-classes-per-file */
 class ConnectionIndicatorConfigurationImpl implements ConnectionIndicatorConfiguration {
   onlineText? = '';
   offlineText? = '';
