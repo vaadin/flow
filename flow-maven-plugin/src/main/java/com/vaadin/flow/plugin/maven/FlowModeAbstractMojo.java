@@ -67,22 +67,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     public boolean eagerServerLoad;
 
     /**
-     * Check if the plugin is running in legacy V14 bootstrap mode or not.
-     * Default: false.
-     *
-     * @return true if the `useDeprecatedV14Bootstrapping` is empty or true.
-     */
-    public boolean useDeprecatedV14Bootstrapping() {
-        if (useDeprecatedV14Bootstrapping == null) {
-            return false;
-        }
-        if (useDeprecatedV14Bootstrapping.isEmpty()) {
-            return true;
-        }
-        return Boolean.parseBoolean(useDeprecatedV14Bootstrapping);
-    }
-
-    /**
      * The folder where webpack should output index.js and other generated
      * files.
      */
@@ -154,4 +138,20 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      */
     @Parameter(defaultValue = "${vaadin.useDeprecatedV14Bootstrapping}")
     private String useDeprecatedV14Bootstrapping;
+
+    /**
+     * Check if the plugin is running in legacy V14 bootstrap mode or not.
+     * Default: false.
+     *
+     * @return true if the `useDeprecatedV14Bootstrapping` is empty or true.
+     */
+    public boolean useDeprecatedV14Bootstrapping() {
+        if (useDeprecatedV14Bootstrapping == null) {
+            return false;
+        }
+        if (useDeprecatedV14Bootstrapping.isEmpty()) {
+            return true;
+        }
+        return Boolean.parseBoolean(useDeprecatedV14Bootstrapping);
+    }
 }
