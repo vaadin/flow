@@ -36,6 +36,9 @@ export class ConnectionIndicator extends LitElement {
   @property({type: Boolean, reflect: true})
   reconnecting: boolean = false;
 
+  @property({type: Boolean, reflect: true})
+  expanded: boolean = false;
+
   @property({type: Boolean})
   reconnectModal: boolean = false;
 
@@ -43,20 +46,17 @@ export class ConnectionIndicator extends LitElement {
   onlineText: string = 'Online';
 
   @property({type: String})
-  offlineText: string = 'Connection lost'
-
-  @property({type: Boolean, reflect: true})
-  expanded: boolean = false;
+  offlineText: string = 'Connection lost';
 
   @property({type: String})
   reconnectingText: string =
     'Connection lost, trying to reconnect...';
 
   @property({type: Boolean})
-  loadingState: boolean = false;
+  private loadingState: boolean = false;
 
   @property({type: String})
-  loadingBarState: LoadingBarState = LoadingBarState.IDLE;
+  private loadingBarState: LoadingBarState = LoadingBarState.IDLE;
 
   private applyDefaultThemeState: boolean = true;
 
@@ -180,17 +180,21 @@ export class ConnectionIndicator extends LitElement {
 
   private updateConnectionState() {
     const state = this.connectionStateStore?.state;
-    this.offline = state === ConnectionState.CONNECTION_LOST
+    this.offline = state === ConnectionState.CONNECTION_LOST;
     this.reconnecting = state === ConnectionState.RECONNECTING;
     this.loading = state === ConnectionState.LOADING;
   }
 
   private renderMessage() {
-    return this.reconnecting
-      ? this.reconnectingText
-      : this.offline
-        ? this.offlineText
-        : this.onlineText
+    if (this.reconnecting) {
+      return this.reconnectingText;
+    }
+
+    if (this.offline) {
+      return this.offlineText;
+    }
+
+    return this.onlineText;
   }
 
   private updateTheme() {
