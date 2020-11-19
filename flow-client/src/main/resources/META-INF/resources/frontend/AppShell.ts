@@ -16,8 +16,7 @@ export interface ConnectionIndicatorConfiguration {
 const $wnd = window as any;
 
 /**
- * Configures window.Vaadin.connectionIndicator. If not available globally, schedules a repeating
- * task until it becomes available.
+ * Configures window.Vaadin.connectionIndicator.
  *
  * @param conf All defined fields are applied to the connection indicator configuration.
  * @returns The updated configuration of the connection indicator.
