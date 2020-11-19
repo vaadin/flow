@@ -421,7 +421,6 @@ public class VaadinConnectControllerTest {
 
     @Test
     public void should_bePossibeToGetPrincipalInEndpoint() {
-        VaadinService.setCurrent(service);
         when(principal.getName()).thenReturn("foo");
 
         VaadinConnectController vaadinController = createVaadinController(
