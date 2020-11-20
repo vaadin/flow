@@ -25,7 +25,11 @@ import com.vaadin.flow.theme.Theme;
 @Theme(themeFolder = "app-theme")
 public class ThemeView extends Div {
 
+    public static final String TEST_TEXT_ID = "test-text";
+
     public ThemeView() {
-        add(new Span("This is the theme test view"));
+        final Span textSpan = new Span("This is the theme test view");
+        textSpan.setId(TEST_TEXT_ID);
+        add(textSpan);
     }
 }
