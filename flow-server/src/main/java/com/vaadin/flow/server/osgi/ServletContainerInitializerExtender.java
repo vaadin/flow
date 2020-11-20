@@ -33,12 +33,21 @@ public class ServletContainerInitializerExtender {
 
     private BundleTracker<Bundle> tracker;
 
+    /**
+     * Activates the component.
+     * 
+     * @param context
+     *            the provided bundle context
+     */
     @Activate
     public void activate(BundleContext context) {
         tracker = new VaadinBundleTracker(context);
         tracker.open();
     }
 
+    /**
+     * Deactivate the component.
+     */
     @Deactivate
     public void deactivate() {
         if (tracker != null) {
