@@ -124,7 +124,7 @@ public class VaadinAppShellInitializer
         List<String> offendingAnnotations = new ArrayList<>();
 
         classes.stream()
-                // sort classes by putting VaadinAppShell in first position
+                // sort classes by putting the app shell in first position
                 .sorted((a, b) -> registry.isShell(a) ? -1
                         : registry.isShell(b) ? 1 : 0)
                 .forEach(clz -> {
