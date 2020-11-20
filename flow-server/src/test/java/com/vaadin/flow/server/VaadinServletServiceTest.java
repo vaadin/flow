@@ -46,8 +46,7 @@ public class VaadinServletServiceTest {
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
 
-        servlet = new VaadinServlet();
-        servlet.init(new MockServletConfig());
+        servlet = mocks.getServlet();
     }
 
     @After
@@ -122,8 +121,9 @@ public class VaadinServletServiceTest {
     public void should_report_flow_bootstrapHandler() {
         mocks.getDeploymentConfiguration().useDeprecatedV14Bootstrapping(true);
 
-        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
-                e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER.equals(e.getName())));
+        Assert.assertTrue(UsageStatistics.getEntries()
+                .anyMatch(e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER
+                        .equals(e.getName())));
     }
 
     private String testLocation(String base, String contextPath,

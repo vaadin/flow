@@ -39,6 +39,7 @@ import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
@@ -195,8 +196,13 @@ public class VaadinAppShellInitializerTest {
         logger = mockLog(VaadinAppShellInitializer.class);
         assertNull(getDevModeHandler());
 
-        servletContext = Mockito.mock(ServletContext.class);
         mocks = new MockServletServiceSessionSetup();
+
+        servletContext = mocks.getServletContext();
+
+        attributeMap.put(Lookup.class.getName(),
+                servletContext.getAttribute(Lookup.class.getName()));
+
         service = mocks.getService();
         Mockito.when(servletContext.getAttribute(Mockito.anyString()))
                 .then(invocationOnMock -> attributeMap
