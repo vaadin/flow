@@ -121,7 +121,7 @@ public class AppShellRegistry implements Serializable {
      * null to reset the previous one when reusing the instance.
      *
      * @param shell
-     *            the class extending VaadinAppShell class.
+     *            the class implementing AppShellConfigurator.
      */
     public void setShell(Class<? extends AppShellConfigurator> shell) {
         if (this.appShellClass != null && shell != null) {
