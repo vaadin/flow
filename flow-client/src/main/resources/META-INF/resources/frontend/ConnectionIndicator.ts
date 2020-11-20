@@ -20,40 +20,72 @@ import {ConnectionState, ConnectionStateStore} from "./ConnectionState";
 
 const DEFAULT_STYLE_ID = 'css-loading-indicator';
 
+/**
+ * Component showing loading and connection indicator. When added to DOM,
+ * listends for changes on `window.Vaadin.connectionState` ConnectionStateStore.
+ */
 export class ConnectionIndicator extends LitElement {
+  /**
+   * The delay before showing the loading indicator, in ms.
+   */
   @property({type: Number })
   firstDelay: number = 300;
 
+  /**
+   * The delay before the loading indicator goes into "second" state, in ms.
+   */
   @property({type: Number })
   secondDelay: number = 1500;
 
+  /**
+   * The delay before the loading indicator goes into "third" state, in ms.
+   */
   @property({type: Number })
   thirdDelay: number = 5000;
 
-  @property({type: Boolean, reflect: true})
-  offline: boolean = false;
+  /**
+   * The duration for which the connection state change message is visible,
+   * in ms.
+   */
+  @property({type: Number})
+  expandedDuration: number = 2000;
 
-  @property({type: Boolean, reflect: true})
-  reconnecting: boolean = false;
-
-  @property({type: Boolean, reflect: true})
-  expanded: boolean = false;
-
+  /**
+   * Whether the connection state message should be modal.
+   */
   @property({type: Boolean})
   reconnectModal: boolean = false;
 
+  /**
+   * The message shown when the connection goes to connected state.
+   */
   @property({type: String})
   onlineText: string = 'Online';
 
+  /**
+   * The message shown when the connection goes to lost state.
+   */
   @property({type: String})
   offlineText: string = 'Connection lost';
 
+  /**
+   * The message shown when the connection goes to reconnecting state.
+   */
   @property({type: String})
   reconnectingText: string =
     'Connection lost, trying to reconnect...';
 
-  @property({type: Boolean})
-  private loadingState: boolean = false;
+  @property({type: Boolean, reflect: true})
+  private offline: boolean = false;
+
+  @property({type: Boolean, reflect: true})
+  private reconnecting: boolean = false;
+
+  @property({type: Boolean, reflect: true})
+  private expanded: boolean = false;
+
+  @property({type: Boolean, reflect: true})
+  private loading: boolean = false;
 
   @property({type: String})
   private loadingBarState: LoadingBarState = LoadingBarState.IDLE;
@@ -65,30 +97,23 @@ export class ConnectionIndicator extends LitElement {
   private thirdTimeout: number = 0;
 
   private expandedTimeout: number = 0;
-  private expandedDelay: number = 2000;
 
   private connectionStateStore?: ConnectionStateStore;
   private readonly connectionStateListener: () => void;
+
+  private lastMessageState: ConnectionState = ConnectionState.CONNECTED;
 
   constructor() {
     super();
 
     this.connectionStateListener = () => {
-      const wasReconnecting = this.reconnecting;
-      const wasOffline = this.offline;
-
-      this.updateConnectionState();
-
-      // Temporarily expand the indicator on state changes
-      if (this.offline !== wasOffline || this.reconnecting !== wasReconnecting) {
-        this.expanded = true;
-        this.expandedTimeout = this.timeoutFor(
-          this.expandedTimeout,
-          true,
-          () => this.expanded = false,
-          this.expandedDelay
-        );
-      }
+      this.expanded = this.updateConnectionState();
+      this.expandedTimeout = this.timeoutFor(
+        this.expandedTimeout,
+        this.expanded,
+        () => this.expanded = false,
+        this.expandedDuration
+      );
     };
   }
 
@@ -132,12 +157,8 @@ export class ConnectionIndicator extends LitElement {
     this.updateTheme();
   }
 
-  get loading() {
-    return this.loadingState;
-  }
-
-  set loading(loading: boolean) {
-    this.loadingState = loading;
+  private updateLoading(loading: boolean) {
+    this.loading = loading;
     this.loadingBarState = LoadingBarState.IDLE;
 
     this.firstTimeout = this.timeoutFor(
@@ -178,11 +199,30 @@ export class ConnectionIndicator extends LitElement {
     return this;
   }
 
-  private updateConnectionState() {
+  /**
+   * Update state flags.
+   *
+   * @return true if the connection message changes, and therefore a new
+   * message should be shown
+   */
+  private updateConnectionState(): boolean {
     const state = this.connectionStateStore?.state;
     this.offline = state === ConnectionState.CONNECTION_LOST;
     this.reconnecting = state === ConnectionState.RECONNECTING;
-    this.loading = state === ConnectionState.LOADING;
+    this.updateLoading(state === ConnectionState.LOADING);
+    if (this.loading) {
+      // Entering loading state, do not show message
+      return false;
+    }
+
+    if (state !== this.lastMessageState) {
+      this.lastMessageState = state!;
+      // Message changes, show new message
+      return true;
+    }
+
+    // Message did not change
+    return false;
   }
 
   private renderMessage() {
@@ -198,7 +238,7 @@ export class ConnectionIndicator extends LitElement {
   }
 
   private updateTheme() {
-    if (this.applyDefaultThemeState) {
+    if (this.applyDefaultThemeState && this.isConnected) {
       if (!document.getElementById(DEFAULT_STYLE_ID)) {
         const style = document.createElement('style');
         style.id = DEFAULT_STYLE_ID;
@@ -362,6 +402,9 @@ export class ConnectionIndicator extends LitElement {
   }
 }
 
+/**
+ * The loading indicator states
+ */
 export const enum LoadingBarState {
   IDLE = '',
   FIRST = 'first',

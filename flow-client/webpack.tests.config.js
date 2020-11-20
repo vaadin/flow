@@ -7,6 +7,7 @@ module.exports = {
     connect: "./src/test/frontend/ConnectTests.ts",
     authentication: "./src/test/frontend/AuthenticationTests.ts",
     offline: "./src/test/frontend/OfflineTests.ts",
+    connection_indicator: "./src/test/frontend/ConnectionIndicatorTests.ts",
     connection_state: "./src/test/frontend/ConnectionStateTests.ts",
     gizmo: "./src/test/frontend/VaadinDevmodeGizmoTests.js",
     form_binder: "./src/test/frontend/form/BinderTests.ts",
