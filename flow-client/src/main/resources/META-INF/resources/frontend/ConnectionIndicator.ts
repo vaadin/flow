@@ -157,32 +157,6 @@ export class ConnectionIndicator extends LitElement {
     this.updateTheme();
   }
 
-  private updateLoading(loading: boolean) {
-    this.loading = loading;
-    this.loadingBarState = LoadingBarState.IDLE;
-
-    this.firstTimeout = this.timeoutFor(
-      this.firstTimeout,
-      loading,
-      () => this.loadingBarState = LoadingBarState.FIRST,
-      this.firstDelay
-    );
-
-    this.secondTimeout = this.timeoutFor(
-      this.secondTimeout,
-      loading,
-      () => this.loadingBarState = LoadingBarState.SECOND,
-      this.secondDelay
-    );
-
-    this.thirdTimeout = this.timeoutFor(
-      this.thirdTimeout,
-      loading,
-      () => this.loadingBarState = LoadingBarState.THIRD,
-      this.thirdDelay
-    );
-  }
-
   @property({type: Boolean})
   get applyDefaultTheme() {
     return this.applyDefaultThemeState;
@@ -223,6 +197,32 @@ export class ConnectionIndicator extends LitElement {
 
     // Message did not change
     return false;
+  }
+
+  private updateLoading(loading: boolean) {
+    this.loading = loading;
+    this.loadingBarState = LoadingBarState.IDLE;
+
+    this.firstTimeout = this.timeoutFor(
+      this.firstTimeout,
+      loading,
+      () => this.loadingBarState = LoadingBarState.FIRST,
+      this.firstDelay
+    );
+
+    this.secondTimeout = this.timeoutFor(
+      this.secondTimeout,
+      loading,
+      () => this.loadingBarState = LoadingBarState.SECOND,
+      this.secondDelay
+    );
+
+    this.thirdTimeout = this.timeoutFor(
+      this.thirdTimeout,
+      loading,
+      () => this.loadingBarState = LoadingBarState.THIRD,
+      this.thirdDelay
+    );
   }
 
   private renderMessage() {
