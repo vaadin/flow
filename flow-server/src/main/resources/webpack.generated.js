@@ -173,13 +173,18 @@ module.exports = {
             options: {
               url: (url, resourcePath) => {
                 // do not handle theme folder url files
-                if(url.startsWith("theme")) {
+                if (url.startsWith("VAADIN/static")) {
                   return false;
                 }
                 return true;
               },
             },
           },
+          {
+            // theme-loader will change any url starting with './' to start with 'VAADIN/static' instead
+            // NOTE! this loader should be here so it's run before css-loader as loaders are applied Right-To-Left
+            loader: '@vaadin/theme-loader'
+          }
         ],
       },
     ]

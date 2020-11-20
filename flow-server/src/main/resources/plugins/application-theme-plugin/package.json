@@ -1,11 +1,12 @@
 {
   "description": "application-theme-plugin",
   "keywords": [
-    "plugin"
+    "plugin",
+    "application theme"
   ],
   "repository": "vaadin/flow",
   "name": "@vaadin/application-theme-plugin",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "main": "application-theme-plugin.js",
   "author": "Vaadin Ltd",
   "license": "Apache-2.0",
