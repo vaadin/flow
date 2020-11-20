@@ -92,10 +92,4 @@ if (!$wnd.Vaadin?.connectionState) {
   $wnd.Vaadin = $wnd.Vaadin || {};
   $wnd.Vaadin.connectionState = new ConnectionStateStore(
     navigator.onLine ? ConnectionState.CONNECTED : ConnectionState.CONNECTION_LOST);
-  $wnd.addEventListener('online', () => {
-    $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
-  });
-  $wnd.addEventListener('offline', () => {
-    $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
-  });
 }

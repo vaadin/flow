@@ -126,7 +126,7 @@ public class RequestResponseTracker {
 
             if (terminated || !requestNowOrSoon) {
                 registry.getConnectionState().setState(
-                        ConnectionState.State.CONNECTED);
+                        ConnectionState.CONNECTED);
             }
         });
 

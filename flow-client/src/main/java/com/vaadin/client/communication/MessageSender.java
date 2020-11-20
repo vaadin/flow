@@ -107,7 +107,7 @@ public class MessageSender {
         JsonObject extraJson = Json.createObject();
         if (showLoadingIndicator) {
             registry.getConnectionState().setState(
-                    ConnectionState.State.LOADING);
+                    ConnectionState.LOADING);
         }
         send(reqJson, extraJson);
     }
