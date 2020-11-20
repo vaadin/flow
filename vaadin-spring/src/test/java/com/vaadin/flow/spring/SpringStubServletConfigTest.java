@@ -8,11 +8,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 
@@ -38,6 +41,14 @@ public class SpringStubServletConfigTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
+
+        Lookup lookup = Mockito.mock(Lookup.class);
+        ResourceProvider provider = Mockito.mock(ResourceProvider.class);
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(provider);
+
+        Mockito.when(context.getAttribute(Lookup.class.getName()))
+                .thenReturn(lookup);
 
         when(applicationContext.getBean(Environment.class))
                 .thenReturn(environment);
