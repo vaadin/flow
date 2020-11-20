@@ -172,11 +172,8 @@ module.exports = {
             loader: 'css-loader',
             options: {
               url: (url, resourcePath) => {
-                // do not handle theme folder url files
-                if (url.startsWith("VAADIN/static")) {
-                  return false;
-                }
-                return true;
+                // Only translate files from node_modules
+                return resourcePath.includes('/node_modules/');
               },
             },
           },
