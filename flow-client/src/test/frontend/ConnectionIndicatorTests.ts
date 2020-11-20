@@ -176,6 +176,7 @@ suite('ConnectionIndicator', () => {
         await connectionIndicator.updateComplete;
         assert.isFalse(connectionIndicator.hasAttribute('offline'));
         assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
+        assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
         assert.isTrue(connectionIndicator.hasAttribute('loading'));
         // Loading should not cause expanded message
         assert.isFalse(connectionIndicator.hasAttribute('expanded'));
@@ -185,6 +186,7 @@ suite('ConnectionIndicator', () => {
         assert.isFalse(connectionIndicator.hasAttribute('offline'));
         assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
         assert.isFalse(connectionIndicator.hasAttribute('loading'));
+        assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
         // Message did not change from before loading, should not cause expanded
         assert.isFalse(connectionIndicator.hasAttribute('expanded'));
 
@@ -193,6 +195,7 @@ suite('ConnectionIndicator', () => {
         assert.isFalse(connectionIndicator.hasAttribute('offline'));
         assert.isTrue(connectionIndicator.hasAttribute('reconnecting'));
         assert.isFalse(connectionIndicator.hasAttribute('loading'));
+        assert.equal(String(message.textContent).trim(), connectionIndicator.reconnectingText);
         // Message did change, should cause expanded
         assert.isTrue(connectionIndicator.hasAttribute('expanded'));
         await new Promise(resolve => setTimeout(resolve, 20));
@@ -203,6 +206,7 @@ suite('ConnectionIndicator', () => {
         assert.isTrue(connectionIndicator.hasAttribute('offline'));
         assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
         assert.isFalse(connectionIndicator.hasAttribute('loading'));
+        assert.equal(String(message.textContent).trim(), connectionIndicator.offlineText);
         // Message did change, should cause expanded
         assert.isTrue(connectionIndicator.hasAttribute('expanded'));
         await new Promise(resolve => setTimeout(resolve, 20));
@@ -212,6 +216,7 @@ suite('ConnectionIndicator', () => {
         await connectionIndicator.updateComplete;
         assert.isFalse(connectionIndicator.hasAttribute('offline'));
         assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
+        assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
         assert.isTrue(connectionIndicator.hasAttribute('loading'));
         // Loading should not cause expanded message
         assert.isFalse(connectionIndicator.hasAttribute('expanded'));
@@ -221,6 +226,7 @@ suite('ConnectionIndicator', () => {
         assert.isFalse(connectionIndicator.hasAttribute('offline'));
         assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
         assert.isFalse(connectionIndicator.hasAttribute('loading'));
+        assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
         // Message did change from before loading, should cause expanded
         assert.isTrue(connectionIndicator.hasAttribute('expanded'));
         await new Promise(resolve => setTimeout(resolve, 20));
@@ -240,6 +246,7 @@ suite('ConnectionIndicator', () => {
       assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
       assert.isFalse(connectionIndicator.hasAttribute('loading'));
       assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+      assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
 
       connectionStateStore.state = ConnectionState.RECONNECTING;
       await connectionIndicator.updateComplete;
@@ -247,6 +254,7 @@ suite('ConnectionIndicator', () => {
       assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
       assert.isFalse(connectionIndicator.hasAttribute('loading'));
       assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+      assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
 
       connectionStateStore.state = ConnectionState.CONNECTION_LOST;
       await connectionIndicator.updateComplete;
@@ -254,6 +262,7 @@ suite('ConnectionIndicator', () => {
       assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
       assert.isFalse(connectionIndicator.hasAttribute('loading'));
       assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+      assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
 
       connectionStateStore.state = ConnectionState.CONNECTED;
       await connectionIndicator.updateComplete;
@@ -261,6 +270,7 @@ suite('ConnectionIndicator', () => {
       assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
       assert.isFalse(connectionIndicator.hasAttribute('loading'));
       assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+      assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
     });
 
     test('should show loading using delays', async() => {
