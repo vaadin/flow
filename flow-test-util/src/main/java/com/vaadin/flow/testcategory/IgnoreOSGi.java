@@ -13,16 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
-
-import org.junit.experimental.categories.Category;
-
-import com.vaadin.flow.testcategory.IgnoreOSGi;
+package com.vaadin.flow.testcategory;
 
 /**
- * The tests are in the superclass.
+ * Tests that should not be run inside OSGi container should be annotated with @
+ * {@code Category(IgnoreOSGi.class)} so they can be optionally excluded from
+ * the build.
+ *
+ * @author Vaadin Ltd
+ * @since 1.0
+ *
  */
-@Category(IgnoreOSGi.class)
-public class PushWSUpdateDivIT extends AbstractUpdateDivIT {
+public interface IgnoreOSGi extends TestCategory {
 
 }
