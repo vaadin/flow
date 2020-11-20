@@ -61,7 +61,7 @@
                     <!-- and not the servlet 3.0 spec for JAR when not executing a JAR -->
                     <webApp>
                         <resourceBases>
-                            <resourceBase>${project.build.outputDirectory}/META-INF/resources</resourceBase>
+                            <resourceBase>${project.build.outputDirectory}/META-INF/VAADIN/resources</resourceBase>
                         </resourceBases>
                     </webApp>
                     <systemProperties>
