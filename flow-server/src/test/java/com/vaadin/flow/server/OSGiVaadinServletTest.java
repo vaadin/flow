@@ -62,6 +62,8 @@ public class OSGiVaadinServletTest {
                         .mock(VaadinServletService.class);
                 Mockito.when(service.getDeploymentConfiguration())
                         .thenReturn(createDeploymentConfiguration());
+                Mockito.when(service.getClassLoader())
+                        .thenReturn(Mockito.mock(ClassLoader.class));
                 return service;
             }
         };
