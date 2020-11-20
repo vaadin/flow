@@ -26,11 +26,11 @@ public class ThemeIT extends ChromeBrowserTest {
 
     @Test
     public void secondTheme_staticFilesNotCopied() {
-        getDriver().get(getRootURL() + "/theme/app-theme/img/bg.jpg");
+        getDriver().get(getRootURL() + "/VAADIN/static/img/bg.jpg");
         Assert.assertFalse("app-theme static files should be copied",
             driver.getPageSource().contains("Could not navigate"));
 
-        getDriver().get(getRootURL() + "/theme/no-copy/no-copy.txt");
+        getDriver().get(getRootURL() + "/VAADIN/static/no-copy.txt");
         Assert.assertTrue("no-copy theme should not be handled",
             driver.getPageSource().contains("Could not navigate to 'theme/no-copy/no-copy.txt'"));
     }
@@ -43,12 +43,12 @@ public class ThemeIT extends ChromeBrowserTest {
 
         final WebElement body = findElement(By.tagName("body"));
         Assert.assertEquals(
-            "url(\"" + getRootURL() + "/theme/app-theme/img/bg.jpg\")",
+            "url(\"" + getRootURL() + "/VAADIN/static/img/bg.jpg\")",
             body.getCssValue("background-image"));
 
         Assert.assertEquals("Ostrich", body.getCssValue("font-family"));
 
-        getDriver().get(getRootURL() + "/theme/app-theme/img/bg.jpg");
+        getDriver().get(getRootURL() + "/VAADIN/static/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
             driver.getPageSource().contains("Could not navigate"));
     }
