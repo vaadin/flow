@@ -30,6 +30,7 @@ import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.communication.AtmospherePushConnection.AtmosphereResponse;
 
+import elemental.client.Browser;
 import elemental.json.JsonObject;
 
 /**
@@ -101,6 +102,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
             if (e.getUiLifecycle().isTerminated()) {
                 if (isReconnecting()) {
                     giveUp();
+                    stopApplication();
                 }
                 if (scheduledReconnect != null
                         && scheduledReconnect.isRunning()) {
@@ -112,7 +114,10 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         // Allow dialog to cache needed resources to make them available when we
         // are offline
         reconnectDialog.preload();
-    };
+
+        // Register online / offline handlers
+        registerConnectionStateEventHandlers();
+    }
 
     /**
      * Checks if we are currently trying to reconnect.
@@ -186,6 +191,9 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
             return;
         }
 
+        registry.getConnectionState().setState(
+                ConnectionState.RECONNECTING);
+
         if (!isReconnecting()) {
             // First problem encounter
             reconnectionCause = type;
@@ -220,7 +228,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         Console.log("Reconnect attempt " + reconnectAttempt + " for " + type);
 
         if (reconnectAttempt >= getConfiguration().getReconnectAttempts()) {
-            // Max attempts reached, stop trying
+            // Max attempts reached, stop trying and go back to CONNECTION_LOST
             giveUp();
         } else {
             updateDialog();
@@ -294,8 +302,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     /**
-     * Called when we should give up trying to reconnect and let the user decide
-     * how to continue.
+     * Called when we should give up trying to reconnect and inform the user
+     * that the application is in CONNECTION_LOST state.
      */
     protected final void giveUp() {
         reconnectionCause = null;
@@ -305,20 +313,13 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         }
 
         stopDialogTimer();
-        if (!isDialogVisible()) {
-            // It SHOULD always be visible at this point, unless you have a
-            // really strange configuration (grace time longer than total
-            // reconnect time)
-            showDialog();
-        }
+        hideDialog();
+
         reconnectDialog.setText(getDialogTextGaveUp(reconnectAttempt));
         reconnectDialog.setReconnecting(false);
 
-        registry.getConnectionState().setState(
-                ConnectionState.State.CONNECTION_LOST);
-
-        // Stopping the application stops heartbeats and push
-        stopApplication();
+        registry.getConnectionState().setState(ConnectionState.CONNECTION_LOST);
+        pauseHeartbeats();
     }
 
     /**
@@ -347,8 +348,6 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     protected void showDialog() {
         reconnectDialog.setReconnecting(true);
         reconnectDialog.show();
-        registry.getConnectionState().setState(
-                ConnectionState.State.RECONNECTING);
     }
 
     /**
@@ -533,7 +532,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         stopDialogTimer();
         hideDialog();
         registry.getConnectionState()
-                .setState(ConnectionState.State.CONNECTED);
+                .setState(ConnectionState.CONNECTED);
 
         Console.log("Re-established connection to server");
     }
@@ -600,5 +599,27 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
             JavaScriptObject response) {
         debug("pushClosed()");
         Console.log("Push connection closed");
+    }
+
+    private void pauseHeartbeats() {
+        registry.getHeartbeat().setInterval(0);
+    }
+
+    private void resumeHeartbeats() {
+        registry.getHeartbeat().setInterval(
+                registry.getApplicationConfiguration().getHeartbeatInterval());
+    }
+
+    private void registerConnectionStateEventHandlers() {
+        Browser.getWindow().addEventListener("offline", event ->
+                // Browser goes offline: CONNECTION_LOST and stop heartbeats
+                giveUp());
+
+        Browser.getWindow().addEventListener("online", event -> {
+            // Browser goes back online: RECONNECTING while verifying
+            // server connection using heartbeat
+            resumeHeartbeats();
+            handleRecoverableError(Type.HEARTBEAT, null);
+        });
     }
 }

@@ -13,15 +13,17 @@ export enum ConnectionState {
 
   /**
    * Application has been temporarily disconnected from the server because the
-   * last transaction over the write (XHR / heartbeat / endpoint call) resulted
-   * in a network error. Flow is attempting to reconnect.
+   * last transaction over the wire (XHR / heartbeat / endpoint call) resulted
+   * in a network error, or the browser has received the 'online' event and needs
+   * to verify reconnection with the server. Flow is attempting to reconnect
+   * a configurable number of times before giving up.
    */
   RECONNECTING = 'reconnecting',
 
   /**
-   * Application has been permanently disconnected due to browser going offline,
-   * or the server not being reached after a number of reconnect attempts
-   * (see ReconnectDialogConfiguration.java: RECONNECT_ATTEMPTS_KEY).
+   * Application has been permanently disconnected due to browser receiving the
+   * 'offline' event, or the server not being reached after a number of reconnect
+   * attempts.
    */
   CONNECTION_LOST = 'connection-lost'
 }
@@ -92,10 +94,4 @@ if (!$wnd.Vaadin?.connectionState) {
   $wnd.Vaadin = $wnd.Vaadin || {};
   $wnd.Vaadin.connectionState = new ConnectionStateStore(
     navigator.onLine ? ConnectionState.CONNECTED : ConnectionState.CONNECTION_LOST);
-  $wnd.addEventListener('online', () => {
-    $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
-  });
-  $wnd.addEventListener('offline', () => {
-    $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
-  });
 }

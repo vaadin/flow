@@ -1,5 +1,6 @@
 package com.vaadin.client;
 
+import com.vaadin.client.communication.GwtDefaultConnectionStateHandlerTest;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -53,6 +54,7 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtDependencyLoaderTest.class);
         suite.addTestSuite(GwtMessageHandlerTest.class);
         suite.addTestSuite(GwtMultipleBindingTest.class);
+        suite.addTestSuite(GwtDefaultConnectionStateHandlerTest.class);
         return suite;
     }
 }
