@@ -145,11 +145,8 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Wraps the component's filter object with its lifespan, i.e. the
-     * information whether this filter is set permanently and used for any calls
-     * to data provider, or should it be used for just one requested range call
-     * to data provider, and then it will be erased and not took into account in
-     * the further calls.
+     * Wraps the component's filter object with the meta information whether
+     * this filter changing should trigger the item count change event.
      *
      * @param <F>
      *            filter's type
@@ -159,17 +156,18 @@ public class DataCommunicator<T> implements Serializable {
         // Serializability of filter is up to the application
         private F filterObject;
 
-        private boolean permanent;
+        private boolean notifyOnChange;
 
         /**
-         * Creates the filter object and sets it as a permanent by default.
+         * Creates the filter object and sets it notify item count change
+         * listeners by default.
          *
          * @param filterObject
          *            filter object of a component
          */
         public Filter(F filterObject) {
             this.filterObject = filterObject;
-            this.permanent = true;
+            this.notifyOnChange = true;
         }
 
         /**
@@ -177,18 +175,16 @@ public class DataCommunicator<T> implements Serializable {
          *
          * @param filterObject
          *            filter object of a component
-         * @param permanent
-         *            if {@code true}, then this filter is considered as a
-         *            permanent and will be stored in the data communicator and
-         *            used for any calls to data provider. Otherwise, it will be
-         *            considered as a disposable filter, i.e. with a lifespan of
-         *            just one requested range call to data provider, and then
-         *            it will be erased and not took into account in the further
-         *            calls.
+         * @param notifyOnChange
+         *            if {@code true}, then the data communicator will fire the
+         *            item count change event as soon as filter change modifies
+         *            the item count. If {@code false}, the item count change
+         *            event won't be fired, even if the item count will be
+         *            changed as a result of filtering.
          */
-        public Filter(F filterObject, boolean permanent) {
+        public Filter(F filterObject, boolean notifyOnChange) {
             this.filterObject = filterObject;
-            this.permanent = permanent;
+            this.notifyOnChange = notifyOnChange;
         }
 
         /**
@@ -201,17 +197,17 @@ public class DataCommunicator<T> implements Serializable {
         }
 
         /**
-         * Returns whether this filter is permanent or disposable.
+         * Returns whether to fire the item change event or not upon filter
+         * changing.
          *
-         * @return {@code true}, if this filter is considered as a permanent and
-         *         will be stored in the data communicator and used for any
-         *         calls to data provider. {@code false} if it's considered as a
-         *         disposable filter, i.e. with a lifespan of just one requested
-         *         range call to data provider, and then it will be erased and
-         *         not took into account in the further calls.
+         * @return {@code true}, then the data communicator will fire the item
+         *         count change event as soon as filter change modifies the item
+         *         count. Returns {@code false}, the item count change event
+         *         won't be fired, even if the item count will be changed as a
+         *         result of filtering.
          */
-        public boolean isPermanent() {
-            return permanent;
+        public boolean isNotifyOnChange() {
+            return notifyOnChange;
         }
 
         @Override
@@ -221,13 +217,13 @@ public class DataCommunicator<T> implements Serializable {
             if (o == null || getClass() != o.getClass())
                 return false;
             Filter<?> filter1 = (Filter<?>) o;
-            return permanent == filter1.permanent
+            return notifyOnChange == filter1.notifyOnChange
                     && Objects.equals(filterObject, filter1.filterObject);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(filterObject, permanent);
+            return Objects.hash(filterObject, notifyOnChange);
         }
     }
 
@@ -386,28 +382,20 @@ public class DataCommunicator<T> implements Serializable {
      * that the given data provider is queried for size and previous size
      * estimates are discarded.
      * <p>
-     * This method allows to define the lifespan for the given filter. It can be
-     * set as a permanent, i.e. it will be stored in the data communicator and
-     * used for any calls to data provider until further change through returned
-     * consumer. Otherwise, it will be considered as a disposable filter, i.e.
-     * with a lifespan of just one requested range call to data provider, and
-     * then it will be erased and not took into account in the further calls
-     * until further change through returned consumer.
+     * This method allows to define whether the data communicator notifies about
+     * changing of item count when it changes due to filtering.
      *
      * @param dataProvider
      *            the data provider to set, not <code>null</code>
      * @param initialFilter
      *            the initial filter value to use, or <code>null</code> to not
      *            use any initial filter value
-     * @param permanentFilter
-     *            if {@code true}, then the initial filter is considered as a
-     *            permanent and will be stored in the data communicator and used
-     *            for any calls to data provider until further change through
-     *            returned consumer. Otherwise, it will be considered as a
-     *            disposable filter, i.e. with a lifespan of just one requested
-     *            range call to data provider, and then it will be erased and
-     *            not took into account in the further calls until further
-     *            change through returned consumer.
+     * @param notifiesOnChange
+     *            if {@code true}, then the data communicator will fire the item
+     *            count change event as soon as filter change modifies the item
+     *            count. If {@code false}, the item count change event won't be
+     *            fired, even if the item count will be changed as a result of
+     *            filtering.
      *
      * @param <F>
      *            the filter type
@@ -416,11 +404,13 @@ public class DataCommunicator<T> implements Serializable {
      */
     public <F> SerializableConsumer<Filter<F>> setDataProvider(
             DataProvider<T, F> dataProvider, F initialFilter,
-            boolean permanentFilter) {
+            boolean notifiesOnChange) {
         Objects.requireNonNull(dataProvider, "data provider cannot be null");
 
+        removeFilteringAndSorting();
+
         filter = initialFilter != null
-                ? new Filter<>(initialFilter, permanentFilter)
+                ? new Filter<>(initialFilter, notifiesOnChange)
                 : null;
 
         countCallback = null;
@@ -1149,8 +1139,6 @@ public class DataCommunicator<T> implements Serializable {
         unregisterPassivatedKeys();
 
         fireItemCountEvent(assumedSize);
-
-        clearFilterIfDisposable();
     }
 
     /**
@@ -1160,16 +1148,17 @@ public class DataCommunicator<T> implements Serializable {
      * <ul>
      * <li>the passed item count differs from the item count passed on the
      * previous call of this method</li>
-     * <li>Current component's filter is permanent</li>
+     * <li>Current component's filter set up to fire the event upon filtering
+     * changes</li>
      * </ul>
      *
      * @param itemCount
      *            item count to send
      */
     private void fireItemCountEvent(int itemCount) {
-        final boolean permanentFilter = filter == null || filter.isPermanent();
+        final boolean notify = filter == null || filter.isNotifyOnChange();
 
-        if (lastSent != itemCount && permanentFilter) {
+        if (lastSent != itemCount && notify) {
             final Optional<Component> component = Element.get(stateNode)
                     .getComponent();
             component.ifPresent(value -> ComponentUtil.fireEvent(value,
@@ -1354,10 +1343,9 @@ public class DataCommunicator<T> implements Serializable {
         return json;
     }
 
-    private void clearFilterIfDisposable() {
-        if (filter != null && !filter.isPermanent()) {
-            filter = null;
-        }
+    private void removeFilteringAndSorting() {
+        Element.get(stateNode).getComponent().ifPresent(
+                DataViewUtils::removeComponentFilterAndSortComparator);
     }
 
     private static class Activation implements Serializable {

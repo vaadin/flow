@@ -13,22 +13,26 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.client;
+package com.vaadin.flow.di;
 
-import java.io.InputStream;
+import com.vaadin.flow.server.VaadinService;
 
 /**
- * Default implementation for {@link ClientResources} service which returns the
- * client-side resources via the plain Java
- * {@link Class#getResourceAsStream(String)} method.
- *
+ * A factory for an {@link Instantiator}.
+ * 
  * @author Vaadin Ltd
- * @since 1.2
+ * @since
+ *
  */
-public final class DefaultClientResources implements ClientResources {
+public interface InstantiatorFactory {
 
-    @Override
-    public InputStream getResource(String path) {
-        return ClientResources.class.getResourceAsStream(path);
-    }
+    /**
+     * Create an {@link Instantiator} using the provided {@code service}.
+     * 
+     * @param service
+     *            a {@code VaadinService} to create an {@code Instantiator} for
+     * @return an instantiator for the service or null if this factory is not
+     *         able to create an instantiator for the provided service
+     */
+    Instantiator createInstantitor(VaadinService service);
 }

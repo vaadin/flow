@@ -24,63 +24,61 @@ package com.vaadin.client;
  */
 public class ConnectionState {
 
-    /**
-     * Shared with ConnectionState.ts: ConnectionState
+    /*
+     * Constants shared with ConnectionState.ts
      */
-    public enum State {
-        /**
-         * Application is connected to server: last transaction over the wire (XHR /
-         * heartbeat / endpoint call) was successful.
-         */
-        CONNECTED("connected"),
 
-        /**
-         * Application is connected and Flow is loading application state from the
-         * server, or Fusion is waiting for an endpoint call to return.
-         */
-        LOADING("loading"),
+    /**
+     * Application is connected to server: last transaction over the wire (XHR /
+     * heartbeat / endpoint call) was successful.
+     */
+    public static final String CONNECTED = "connected";
 
-        /**
-         * Application has been temporarily disconnected from the server because the
-         * last transaction over the write (XHR / heartbeat / endpoint call) resulted
-         * in a network error. Flow is attempting to reconnect.
-         */
-        RECONNECTING("reconnecting"),
+    /**
+     * Application is connected and Flow is loading application state from the
+     * server, or Fusion is waiting for an endpoint call to return.
+     */
+    public static final String LOADING = "loading";
 
-        /**
-         * Application has been permanently disconnected due to browser going offline,
-         * or the server not being reached after a number of reconnect attempts
-         * (see ReconnectDialogConfiguration.java: RECONNECT_ATTEMPTS_KEY).
-         */
-        CONNECTION_LOST("connection-lost");
+    /**
+     * Application has been temporarily disconnected from the server because the
+     * last transaction over the wire (XHR / heartbeat / endpoint call) resulted
+     * in a network error, or the browser has received the 'online' event and needs
+     * to verify reconnection with the server. Flow is attempting to reconnect
+     * a configurable number of times before giving up.
+     */
+    public static final String RECONNECTING = "reconnecting";
 
-
-        private final String value;
-
-        State(String value) {
-            this.value = value;
-        }
-
-        @Override
-        public String toString() {
-            return this.value;
-        }
-
-    }
+    /**
+     * Application has been permanently disconnected due to browser receiving the
+     * 'offline' event, or the server not being reached after a number of reconnect
+     * attempts.
+     */
+    public static final String CONNECTION_LOST = "connection-lost";
 
     /**
      * Set the connection state to be displayed by the loading indicator.
-     * @param state
-     *      the connection state
+     *
+     * @param state the connection state
      */
-    public void setState(State state) {
-        setState(state.toString());
-    }
-
-    private native void setState(String state)
+    public native void setState(String state)
     /*-{
         if ($wnd.Vaadin.connectionState) {
             $wnd.Vaadin.connectionState.state = state;
+        }
+    }-*/;
+
+    /**
+     * Get the connection state.
+     *
+     * @return the connection state
+     */
+    public native String getState()
+    /*-{
+        if ($wnd.Vaadin.connectionState) {
+            return $wnd.Vaadin.connectionState.state;
+        } else {
+            return null;
         }
     }-*/;
 }

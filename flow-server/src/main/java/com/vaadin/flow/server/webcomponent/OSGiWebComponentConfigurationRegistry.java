@@ -13,27 +13,28 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.theme;
+package com.vaadin.flow.server.webcomponent;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 
-import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 
-public class MyTheme implements AbstractTheme {
+/**
+ * Data collector component for collecting web components in an OSGi
+ * environment.
+ *
+ * @author Vaadin Ltd.
+ * @since 2.0
+ */
+public class OSGiWebComponentConfigurationRegistry
+        extends WebComponentConfigurationRegistry {
+
     @Override
-    public String getBaseUrl() {
-        return "src/";
-    }
+    public boolean setConfigurations(
+            Set<WebComponentConfiguration<? extends Component>> configurations) {
 
-    @Override
-    public String getThemeUrl() {
-        return "legacyTheme/myTheme/";
-    }
-
-    @Override
-    public List<String> getHeaderInlineContents() {
-        return Collections.singletonList("<custom-style>\n <style>\n   html {\n"
-                + "      font-size: 20px;\n  color:red;  }\n <style>\n </custom-style>");
+        updateRegistry(configurations);
+        return true;
     }
 }

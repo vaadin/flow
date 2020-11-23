@@ -1,4 +1,4 @@
-const {beforeEach, describe, it} = intern.getPlugin('interface.bdd');
+const {afterEach, beforeEach, describe, it} = intern.getPlugin('interface.bdd');
 const {assert} = intern.getPlugin("chai");
 
 import "../../main/resources/META-INF/resources/frontend/ConnectionIndicator";
@@ -11,7 +11,11 @@ const $wnd = window as any;
 describe('AppShell', () => {
 
   beforeEach(async () => {
-    recreateConnectionIndicator();
+    await recreateConnectionIndicator();
+  });
+
+  afterEach(async () => {
+    await clearConnectionIndicator();
   });
 
   describe('setConnectionIndicatorConfiguration', () => {
@@ -71,18 +75,24 @@ describe('AppShell', () => {
       assert.isDefined(error);
     });
   });
-
 });
 
 async function recreateConnectionIndicator() {
-  const indicator = $wnd.document.body.querySelector('vaadin-connection-indicator');
-  if (indicator) {
-    $wnd.document.body.removeChild(indicator);
-  }
-  delete $wnd.Vaadin;
+  await clearConnectionIndicator();
   $wnd.Vaadin = {
     connectionIndicator: document.createElement('vaadin-connection-indicator')
   };
   document.body.appendChild($wnd.Vaadin.connectionIndicator);
   await $wnd.Vaadin.connectionIndicator.updateComplete;
+}
+
+async function clearConnectionIndicator() {
+  const indicator = $wnd.document.body.querySelector('vaadin-connection-indicator');
+  if (indicator) {
+    $wnd.document.body.removeChild(indicator);
+  }
+  if ($wnd.Vaadin) {
+    delete $wnd.Vaadin.connectionIndicator;
+    delete $wnd.Vaadin.connectionState;
+  }
 }

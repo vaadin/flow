@@ -42,6 +42,8 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
@@ -132,14 +134,16 @@ public class FrontendUtils {
      * in jar resources that will to be copied to the npm folder so as they are
      * accessible to webpack.
      */
-    public static final String FLOW_NPM_PACKAGE_NAME = NodeUpdater.DEP_NAME_FLOW_JARS + "/";
+    public static final String FLOW_NPM_PACKAGE_NAME = NodeUpdater.DEP_NAME_FLOW_JARS
+            + "/";
 
     /**
      * The NPM package name that will be used for the javascript files present
      * in jar resources that will to be copied to the npm folder so as they are
      * accessible to webpack.
      */
-    public static final String FORM_NPM_PACKAGE_NAME = NodeUpdater.DEP_NAME_FORM_JARS + "/";
+    public static final String FORM_NPM_PACKAGE_NAME = NodeUpdater.DEP_NAME_FORM_JARS
+            + "/";
 
     /**
      * Default folder for copying front-end resources present in the classpath
@@ -151,13 +155,13 @@ public class FrontendUtils {
     /**
      * Default folder for copying front-end resources present in the classpath
      * jars.
-     * @deprecated This is deprecated due to a typo.
-     *             Use DEFAULT_FLOW_RESOURCES_FOLDER instead.
+     * 
+     * @deprecated This is deprecated due to a typo. Use
+     *             DEFAULT_FLOW_RESOURCES_FOLDER instead.
      * @see #DEFAULT_FLOW_RESOURCES_FOLDER
      */
     @Deprecated
-    public static final String DEAULT_FLOW_RESOURCES_FOLDER =
-            DEFAULT_FLOW_RESOURCES_FOLDER;
+    public static final String DEAULT_FLOW_RESOURCES_FOLDER = DEFAULT_FLOW_RESOURCES_FOLDER;
 
     /**
      * Default folder name for flow generated stuff relative to the
@@ -503,7 +507,7 @@ public class FrontendUtils {
     }
 
     /**
-     * Get the latest has for the stats file in development mode. This is
+     * Get the latest hash for the stats file in development mode. This is
      * requested from the webpack-dev-server.
      * <p>
      * In production mode and disabled dev server mode an empty string is
@@ -535,12 +539,17 @@ public class FrontendUtils {
     }
 
     private static InputStream getStatsFromWebpack() throws IOException {
+        return getResourceFromWebpack("/stats.json", "downloading stats.json");
+    }
+
+    private static InputStream getResourceFromWebpack(String resource,
+            String exceptionMessage) throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        HttpURLConnection statsConnection = handler
-                .prepareConnection("/stats.json", "GET");
+        HttpURLConnection statsConnection = handler.prepareConnection(resource,
+                "GET");
         if (statsConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new WebpackConnectionException(
-                    String.format(NO_CONNECTION, "downloading stats.json"));
+                    String.format(NO_CONNECTION, exceptionMessage));
         }
         return statsConnection.getInputStream();
     }
@@ -609,8 +618,17 @@ public class FrontendUtils {
                         VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
                 // Remove absolute
                 .replaceFirst("^/", "");
-        InputStream stream = service.getClassLoader()
-                .getResourceAsStream(stats);
+        ResourceProvider resourceProvider = service.getContext()
+                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+        URL statsUrl = resourceProvider.getApplicationResource(service, stats);
+        InputStream stream = null;
+        try {
+            stream = statsUrl == null ? null : statsUrl.openStream();
+        } catch (IOException exception) {
+            getLogger().warn("Couldn't read content of stats file {}", stats,
+                    exception);
+            stream = null;
+        }
         if (stream == null) {
             getLogger().error(
                     "Cannot get the 'stats.json' from the classpath '{}'",
@@ -641,15 +659,8 @@ public class FrontendUtils {
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         if (!config.isProductionMode() && config.enableDevServer()) {
-            DevModeHandler handler = DevModeHandler.getDevModeHandler();
-            HttpURLConnection assetsConnection = handler
-                    .prepareConnection("/assetsByChunkName", "GET");
-            if (assetsConnection
-                    .getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new WebpackConnectionException(String.format(
-                        NO_CONNECTION, "getting assets by chunk name."));
-            }
-            return streamToString(assetsConnection.getInputStream());
+            return streamToString(getResourceFromWebpack("/assetsByChunkName",
+                    "getting assets by chunk name."));
         }
         InputStream resourceAsStream;
         if (config.isStatsExternal()) {

@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.misc.ui;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.page.AppShellConfigurator;
@@ -42,6 +45,12 @@ public class MiscelaneousView extends Div {
         @Override
         public String getThemeUrl() {
             return "legacyTheme/my-theme";
+        }
+
+        @Override
+        public List<String> getHeaderInlineContents() {
+            return Collections.singletonList("<custom-style>\n <style>\n   html {\n"
+                + "      font-size: 20px;\n  color:red;  }\n <style>\n </custom-style>");
         }
     }
 
