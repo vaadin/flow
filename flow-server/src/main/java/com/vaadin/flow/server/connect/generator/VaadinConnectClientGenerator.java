@@ -33,7 +33,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator.TS;
 /**
- * Generates the Vaadin Connect Client file, based on the application
+ * Generates the Vaadin connect-client file, based on the application
  * properties, if provided.
  */
 public class VaadinConnectClientGenerator {

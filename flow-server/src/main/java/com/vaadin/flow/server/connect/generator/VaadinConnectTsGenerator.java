@@ -73,7 +73,7 @@ import com.vaadin.flow.server.connect.EndpointNameChecker;
 import static com.vaadin.flow.server.connect.generator.OpenApiObjectGenerator.CONSTRAINT_ANNOTATIONS;
 
 /**
- * Vaadin connect JavaScript generator implementation for swagger-codegen. Some
+ * Vaadin fusion JavaScript generator implementation for swagger-codegen. Some
  * parts of the implementation are copied from
  * {@link io.swagger.codegen.languages.JavascriptClientCodegen}
  */
@@ -122,7 +122,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     }
 
     /**
-     * Create vaadin connect ts codegen instance.
+     * Create vaadin ts codegen instance.
      */
     public VaadinConnectTsGenerator() {
         super();
@@ -332,7 +332,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     private static IllegalStateException getUnexpectedOpenAPIException(
             String inputFile, String errorMessage) {
         return new IllegalStateException(
-                "Unexpected error while generating vaadin-connect JavaScript endpoint wrappers."
+                "Unexpected error while generating Vaadin TypeScript endpoint wrappers."
                         + " The input file " + inputFile
                         + " might be corrupted, please try running the generating tasks again. "
                         + errorMessage);
@@ -351,7 +351,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
                     authorizationValues, options);
         } catch (Exception e) {
             throw new IllegalStateException(
-                    "Unexpected error while generating vaadin-connect TypeScript endpoint wrappers. "
+                    "Unexpected error while generating Vaadin TypeScript endpoint wrappers. "
                             + String.format("Can't read file '%s'",
                                     configurator.getInputSpecURL()),
                     e);
@@ -394,7 +394,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
      * @return A string value for the help message
      */
     public String getHelp() {
-        return "Generates a Vaadin Connect endpoint wrappers.";
+        return "Generates a Vaadin endpoint wrappers.";
     }
 
     /**
@@ -1014,8 +1014,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     private RuntimeException getGeneratorException(String message) {
         return new RuntimeException(message
-                + " For more information, please checkout the Vaadin Connect Generator "
-                + "documentation page at https://github.com/vaadin/vaadin-connect/blob/master/doc/typescript-generator.asciidoc.");
+                + " For more information, please checkout the Vaadin TypeScript Generator "
+                + "documentation page at https://vaadin.com/docs/flow/typescript/typescript-endpoints-generator.html.");
     }
 
     @Override

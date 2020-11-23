@@ -23,7 +23,7 @@ import java.lang.reflect.Type;
 import javax.annotation.Nullable;
 
 /**
- * A checker for TypeScript null compatibility in Vaadin Connect endpoint methods
+ * A checker for TypeScript null compatibility in Vaadin endpoint methods
  * parameter and return types.
  */
 public class ExplicitNullableTypeChecker {

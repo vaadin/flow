@@ -178,7 +178,7 @@
             <scope>provided</scope>
         </dependency>
 
-        <!--  Connect Dependencies -->
+        <!--  Fusion Dependencies -->
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
@@ -229,7 +229,7 @@
             <version>${javax.annotation.api.version}</version>
         </dependency>
 
-        <!-- vaadin-connect generator-->
+        <!-- vaadin-fusion generator-->
         <dependency>
             <groupId>com.github.javaparser</groupId>
             <artifactId>javaparser-symbol-solver-core</artifactId>
@@ -268,7 +268,7 @@
             </exclusions>
         </dependency>
 
-        <!-- Connect Testing dependencies -->
+        <!-- Fusion Testing dependencies -->
 
         <!-- TODO: re-enable tests mocking final classes in the connect
           package by using the org.mockito.plugins.MockMaker plugin with

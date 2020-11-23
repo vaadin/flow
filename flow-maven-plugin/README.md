@@ -64,7 +64,7 @@ The following actions are performed when creating a package:
  Default value is: ${project.basedir}/src/main/resources/application.properties
 * **openApiJsonFile** `File` - Default generated path of the OpenAPI json.
  Default value is: ${project.build.directory}/generated-resources/openapi.json
-* **javaSourceFolder** `File` - .Java source folders for connect scanning.
+* **javaSourceFolder** `File` - .Java source folders for scanning.
  Default value is: ${project.basedir}/src/main/java
 * **generatedTsFolder** `File` - The folder where flow will put TS API files for client projects.
  Default value is: "${project.basedir}/" + FRONTEND + "/generated"

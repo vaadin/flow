@@ -26,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Abstract class for connect related generators.
+ * Abstract class for Vaadin Fusion related generators.
  */
 abstract class AbstractTaskConnectGenerator implements FallibleCommand {
     private final File applicationProperties;
