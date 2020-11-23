@@ -3,13 +3,50 @@
 import {addConnectionIndicator} from "./ConnectionIndicator";
 
 export interface ConnectionIndicatorConfiguration {
+  /**
+   * The message shown when the connection goes to connected state.
+   */
   onlineText?: string;
+
+  /**
+   * The message shown when the connection goes to lost state.
+   */
   offlineText?: string;
+
+  /**
+   * The delay before showing the loading indicator, in ms.
+   */
   firstDelay?: number;
+
+  /**
+   * The delay before the loading indicator goes into "second" state, in ms.
+   */
   secondDelay?: number;
+
+  /**
+   * The delay before the loading indicator goes into "third" state, in ms.
+   */
   thirdDelay?: number;
+
+  /**
+   * The duration for which the connection state change message is visible,
+   * in ms.
+   */
+  expandedDuration?: number;
+
+  /**
+   * Whether to apply the default indicator theme. Set to false if providing custom theme.
+   */
   applyDefaultTheme?: boolean;
+
+  /**
+   * Whether the connection state message should be modal.
+   */
   reconnectModal?: boolean;
+
+  /**
+   * The message shown when the connection goes to reconnecting state.
+   */
   reconnectingText?: string;
 }
 
@@ -52,8 +89,9 @@ function validateDelay(delay?: number) {
 
 /**
  * Concrete values for each ConnectionIndicatorConfiguration to enable reflection over the field names.
+ * Note: the below values are not the defaults (defaults are defined in ConnectionIndicator.ts).
  */
-class ConnectionIndicatorConfigurationImpl implements ConnectionIndicatorConfiguration {
+class ConcreteConnectionIndicatorConfiguration implements ConnectionIndicatorConfiguration {
   onlineText? = '';
   offlineText? = '';
   firstDelay? = 0;
@@ -65,7 +103,7 @@ class ConnectionIndicatorConfigurationImpl implements ConnectionIndicatorConfigu
 }
 
 function setValidatedConnectionIndicatorConfiguration(conf: ConnectionIndicatorConfiguration) {
-  for (const property of Object.getOwnPropertyNames(new ConnectionIndicatorConfigurationImpl())) {
+  for (const property of Object.getOwnPropertyNames(new ConcreteConnectionIndicatorConfiguration())) {
     const value = (conf as any)[property];
     if (value !== undefined) {
       $wnd.Vaadin.connectionIndicator[property] = value;
@@ -75,7 +113,7 @@ function setValidatedConnectionIndicatorConfiguration(conf: ConnectionIndicatorC
 
 function getConnectionIndicatorConfiguration(): ConnectionIndicatorConfiguration {
   const conf = {};
-  for (const property of Object.getOwnPropertyNames(new ConnectionIndicatorConfigurationImpl())) {
+  for (const property of Object.getOwnPropertyNames(new ConcreteConnectionIndicatorConfiguration())) {
     (conf as any)[property] = $wnd.Vaadin.connectionIndicator[property];
   }
   return conf;
