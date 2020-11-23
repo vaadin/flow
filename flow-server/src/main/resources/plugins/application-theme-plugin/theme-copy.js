@@ -23,7 +23,8 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * copy theme files  to static assets folder.
+ * Copy theme files to static assets folder. All files in the theme folder will be copied excluding
+ * css, js and json files that will be handled by webpack and not be shared as static files.
  *
  * @param {string} themeFolder Folder with theme file
  * @param {string} projectStaticAssetsOutputFolder resources output folder

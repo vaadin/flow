@@ -1,23 +1,34 @@
+const loaderUtils = require("loader-utils");
 const fs = require('fs');
 const path = require('path');
 
-const urlMatcher = /(url\()(\'|\")?(\.\/)(.*\2\))/g;
+// Collect groups [url(] [ |'|"]optional './', file part and end of url
+const urlMatcher = /(url\()(\'|\")?(\.\/)(\S*)(\2\))/g;
 
 module.exports = function (source, map) {
+  const options = loaderUtils.getOptions(this);
   const handledResourceFolder = path.dirname(this._module.resource);
   const logger = this.getLogger("theme-loader");
 
-  // Collect groups [url(] [ |'|"]optional './' and end of url
-  source = source.replace(urlMatcher, function (match, url, quoteMark, replace, endString) {
-    // for some reason this matcher can not be reused as a constant
-    let fileUrl = /url\((\'|\")?(.*)\1\)/g.exec(match)[2];
-    if (fs.existsSync(path.resolve(handledResourceFolder, fileUrl))) {
+  let themeFolder = handledResourceFolder;
+  while(themeFolder && path.basename(path.resolve(themeFolder, "..")) !== "theme") {
+    themeFolder = path.resolve(themeFolder, "..");
+  }
+  logger.log("Using '", themeFolder, "' for the application theme base folder.");
+
+  source = source.replace(urlMatcher, function (match, url, quoteMark, replace, fileUrl, endString) {
+    let absolutePath = path.resolve(handledResourceFolder, fileUrl);
+    if (fs.existsSync(absolutePath) && absolutePath.startsWith(themeFolder)) {
       logger.debug("Updating url for file '",fileUrl,"' to use 'VAADIN/static'");
+      const pathResolved = absolutePath.substring(themeFolder.length).replace(/\\/g,'/');
+
       // keep the url the same except replace the ./ to VAADIN/static
       if (quoteMark) {
-        return url + quoteMark + 'VAADIN/static/' + endString;
+        return url + quoteMark + 'VAADIN/static' + pathResolved + endString;
       }
-      return url + 'VAADIN/static/' + endString;
+      return url + 'VAADIN/static' +pathResolved + endString;
+    } else if(options.devMode) {
+      logger.info("No rewrite for '", match, "' as the file was not found.");
     }
     return match;
   });

@@ -1,3 +1,5 @@
+@import 'sub-css/sub.css';
+
 @font-face {
     font-family: "Ostrich";
     src: url("./font/ostrich-sans-regular.ttf") format("TrueType");
