@@ -86,21 +86,21 @@ public class LoadingIndicatorConfigurator {
 
     private static native void setFirstDelay(int delay)
     /*-{
-        $wnd.Vaadin.loadingIndicator.firstDelay = delay;
+        $wnd.Vaadin.connectionIndicator.firstDelay = delay;
     }-*/;
 
     private static native void setSecondDelay(int delay)
     /*-{
-        $wnd.Vaadin.loadingIndicator.secondDelay = delay;
+        $wnd.Vaadin.connectionIndicator.secondDelay = delay;
     }-*/;
 
     private static native void setThirdDelay(int delay)
     /*-{
-        $wnd.Vaadin.loadingIndicator.thirdDelay = delay;
+        $wnd.Vaadin.connectionIndicator.thirdDelay = delay;
     }-*/;
 
     private static native void setApplyDefaultTheme(boolean apply)
     /*-{
-        $wnd.Vaadin.loadingIndicator.applyDefaultTheme = apply;
+        $wnd.Vaadin.connectionIndicator.applyDefaultTheme = apply;
     }-*/;
 }
