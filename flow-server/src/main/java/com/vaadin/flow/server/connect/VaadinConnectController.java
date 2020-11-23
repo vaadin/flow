@@ -67,6 +67,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
@@ -277,9 +279,7 @@ public class VaadinConnectController {
             // Put a VaadinRequest in the instances object so as the request is
             // available in the end-point method
             VaadinServletService service = (VaadinServletService)VaadinService.getCurrent();
-            if (service != null) {
-                service.setCurrentInstances(new VaadinServletRequest(request, service), null);
-            }
+            CurrentInstance.set(VaadinRequest.class, new VaadinServletRequest(request, service));
 
             return invokeVaadinEndpointMethod(endpointName, methodName,
                     methodToInvoke, body, vaadinEndpointData, request);
@@ -299,6 +299,8 @@ public class VaadinConnectController {
                                 + "Double check the provided mapper's configuration.",
                         errorMessage), unexpected);
             }
+        } finally {
+                CurrentInstance.set(VaadinRequest.class, null);
         }
     }
 
