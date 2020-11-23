@@ -13,23 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.testcategory;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.openqa.selenium.By;
+/**
+ * Tests that should not be run inside OSGi container should be annotated with @
+ * {@code Category(IgnoreOSGi.class)} so they can be optionally excluded from
+ * the build.
+ *
+ * @author Vaadin Ltd
+ * @since 1.0
+ *
+ */
+public interface IgnoreOSGi extends TestCategory {
 
-import com.vaadin.flow.testcategory.IgnoreOSGi;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-@Category(IgnoreOSGi.class)
-public class PlainScriptViaJavaScriptIT extends ChromeBrowserTest {
-
-    @Test
-    public void contextSchemaWorksinJavaScript() {
-        open();
-
-        Assert.assertTrue(isElementPresent(By.id("added-from-src-script")));
-    }
 }

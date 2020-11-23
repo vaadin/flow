@@ -20,10 +20,14 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 
-@Route("com.vaadin.flow.uitest.ui.theme.Theme")
+@Route("com.vaadin.flow.uitest.ui.theme.ThemeView")
 public class ThemeView extends Div {
 
+    public static final String TEST_TEXT_ID = "test-text";
+
     public ThemeView() {
-        add(new Span("This is the theme test view"));
+        final Span textSpan = new Span("This is the theme test view");
+        textSpan.setId(TEST_TEXT_ID);
+        add(textSpan);
     }
 }
