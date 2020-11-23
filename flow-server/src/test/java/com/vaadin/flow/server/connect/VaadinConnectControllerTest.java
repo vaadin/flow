@@ -27,6 +27,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.type.SimpleType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -40,7 +42,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
@@ -431,6 +435,19 @@ public class VaadinConnectControllerTest {
                 createRequestParameters("{}"), requestMock);
 
         assertEquals("\"foo\"", response.getBody());
+    }
+
+    @Test
+    public void should_clearVaadinRequestInsntace_after_EndpointCall() {
+        VaadinConnectController vaadinController = createVaadinController(
+                TEST_ENDPOINT, new VaadinConnectAccessChecker());
+
+        vaadinController.serveEndpoint(
+                TEST_ENDPOINT_NAME, "getUserName",
+                createRequestParameters("{}"), requestMock);
+        
+        Assert.assertNull(CurrentInstance.get(VaadinRequest.class));
+        Assert.assertNull(VaadinRequest.getCurrent());
     }
 
     @Test

@@ -299,6 +299,8 @@ public class VaadinConnectController {
                                 + "Double check the provided mapper's configuration.",
                         errorMessage), unexpected);
             }
+        } finally {
+                CurrentInstance.set(VaadinRequest.class, null);
         }
     }
 
