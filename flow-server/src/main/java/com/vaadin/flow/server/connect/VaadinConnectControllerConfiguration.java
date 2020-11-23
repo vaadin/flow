@@ -72,7 +72,7 @@ public class VaadinConnectControllerConfiguration {
 
                         if (VaadinConnectController.class
                                 .equals(method.getDeclaringClass())) {
-                            mapping = prependConnectPrefixUrl(mapping);
+                            mapping = prependEndpointPrefixUrl(mapping);
                         }
 
                         super.registerHandlerMethod(handler, method, mapping);
@@ -83,15 +83,15 @@ public class VaadinConnectControllerConfiguration {
     }
 
     /**
-     * Prepends the Connect prefix URL from the Vaadin Connect properties to
+     * Prepends the endpoint prefix URL from the Vaadin properties to
      * the {@code pattern} of a {@link RequestMappingInfo} object, and returns
      * the updated mapping as a new object (not modifying the given
      * {@param mapping} parameter).
      *
-     * @return a new mapping with the Connect prefix URL prepended to the
+     * @return a new mapping with the endpoint prefix URL prepended to the
      *         mapping pattern
      */
-    private RequestMappingInfo prependConnectPrefixUrl(
+    private RequestMappingInfo prependEndpointPrefixUrl(
             RequestMappingInfo mapping) {
         PatternsRequestCondition connectEndpointPattern =
                 new PatternsRequestCondition(
