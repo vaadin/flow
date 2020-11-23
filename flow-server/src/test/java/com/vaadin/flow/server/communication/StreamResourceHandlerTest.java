@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -28,12 +27,12 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.InputStreamFactory;
-import com.vaadin.flow.server.MockServletConfig;
+import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceWriter;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
@@ -46,11 +45,8 @@ public class StreamResourceHandlerTest {
     private VaadinServletResponse response;
 
     @Before
-    public void setUp() throws ServletException {
-        ServletConfig servletConfig = new MockServletConfig();
-        VaadinServlet servlet = new VaadinServlet();
-        servlet.init(servletConfig);
-        VaadinService service = servlet.getService();
+    public void setUp() throws ServletException, ServiceException {
+        VaadinService service = new MockVaadinServletService();
 
         session = new AlwaysLockedVaadinSession(service);
         request = Mockito.mock(VaadinServletRequest.class);

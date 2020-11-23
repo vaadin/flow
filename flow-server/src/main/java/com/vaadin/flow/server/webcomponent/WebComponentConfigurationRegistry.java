@@ -39,6 +39,7 @@ import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.TextNodeMap;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.osgi.OSGiAccess;
 import com.vaadin.flow.theme.Theme;
 
 /**
@@ -322,7 +323,17 @@ public class WebComponentConfigurationRegistry implements Serializable {
     }
 
     private static WebComponentConfigurationRegistry createRegistry() {
-        return new WebComponentConfigurationRegistry();
+        if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
+            return new WebComponentConfigurationRegistry();
+        }
+        Object attribute = OSGiAccess.getInstance().getOsgiServletContext()
+                .getAttribute(
+                        WebComponentConfigurationRegistry.class.getName());
+        if (attribute instanceof OSGiWebComponentConfigurationRegistry) {
+            return (WebComponentConfigurationRegistry) attribute;
+        }
+
+        return new OSGiWebComponentConfigurationRegistry();
     }
 
     private void lock() {

@@ -27,7 +27,9 @@ public class ThemeView extends Div {
     public static final String MY_LIT_ID = "button";
 
     public ThemeView() {
-        add(new Span("This is the theme test view"));
+        final Span textSpan = new Span("This is the theme test view");
+        textSpan.setId(TEST_TEXT_ID);
+        add(textSpan);
         add(new Div());
         add(new MyPolymerField().withId(MY_POLYMER_ID));
         add(new Div());

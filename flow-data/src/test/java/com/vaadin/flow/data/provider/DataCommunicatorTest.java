@@ -1340,7 +1340,7 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void filter_setFilterAsPermanent_shouldRetainFilter() {
+    public void filter_setFilterThroughFilterConsumer_shouldRetainFilterBetweenRequests() {
         SerializableConsumer<SerializablePredicate<Item>> filterConsumer = dataCommunicator
                 .setDataProvider(DataProvider.ofItems(new Item(1), new Item(2),
                         new Item(3)), item -> item.id > 1);
@@ -1352,7 +1352,7 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         Assert.assertNotNull(
-                "Permanent filter should be retained after data request",
+                "Filter should be retained after data request",
                 dataCommunicator.getFilter());
 
         Assert.assertEquals("Unexpected items count", 2,
@@ -1365,7 +1365,7 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         Assert.assertNotNull(
-                "Permanent filter should be retained after data request",
+                "Filter should be retained after data request",
                 dataCommunicator.getFilter());
 
         Assert.assertEquals("Unexpected items count", 1,
@@ -1373,52 +1373,7 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void filter_setFilterAsDisposable_shouldDiscardFilterAfterFirstFlush() {
-        SerializableConsumer<DataCommunicator.Filter<SerializablePredicate<Item>>> filterConsumer = dataCommunicator
-                .setDataProvider(DataProvider.ofItems(new Item(1), new Item(2),
-                        new Item(3)), item -> item.id > 1, false);
-
-        Assert.assertNotNull("Expected initial filter to be set",
-                dataCommunicator.getFilter());
-
-        dataCommunicator.setRequestedRange(0, 50);
-        fakeClientCommunication();
-
-        Assert.assertNull(
-                "Disposable filter should be discarded after data request",
-                dataCommunicator.getFilter());
-
-        Assert.assertEquals("Unexpected items count", 2,
-                dataCommunicator.getItemCount());
-
-        // Check that the filter change works properly
-        filterConsumer.accept(
-                new DataCommunicator.Filter<>(item -> item.id > 2, false));
-
-        dataCommunicator.setRequestedRange(0, 50);
-        fakeClientCommunication();
-
-        Assert.assertNull(
-                "Disposable filter should be discarded after data request",
-                dataCommunicator.getFilter());
-
-        Assert.assertEquals("Unexpected items count", 1,
-                dataCommunicator.getItemCount());
-
-        // Change to permanent and check that it's not discarded
-        filterConsumer.accept(
-                new DataCommunicator.Filter<>(item -> item.id > 2, true));
-
-        dataCommunicator.setRequestedRange(0, 50);
-        fakeClientCommunication();
-
-        Assert.assertNotNull(
-                "Permanent filter should be retained after data request",
-                dataCommunicator.getFilter());
-    }
-
-    @Test
-    public void filter_setFilterAsPermanent_firesItemChangeEvent() {
+    public void filter_setNotifyOnFilterChange_firesItemChangeEvent() {
         TestComponent testComponent = new TestComponent(element);
 
         AtomicBoolean eventTriggered = new AtomicBoolean(false);
@@ -1436,16 +1391,16 @@ public class DataCommunicatorTest {
         dataCommunicator.setRequestedRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertTrue("Expected event to be triggered for permanent filter",
+        Assert.assertTrue("Expected event to be triggered",
                 eventTriggered.get());
     }
 
     @Test
-    public void filter_setFilterAsDisposable_doesNotFireItemChangeEvent() {
+    public void filter_skipNotifyOnFilterChange_doesNotFireItemChangeEvent() {
         TestComponent testComponent = new TestComponent(element);
 
         testComponent.addItemChangeListener(event -> Assert
-                .fail("Event triggering not expected for disposable filter"));
+                .fail("Event triggering not expected"));
 
         dataCommunicator.setDataProvider(
                 DataProvider.ofItems(new Item(1), new Item(2), new Item(3)),
@@ -1488,39 +1443,6 @@ public class DataCommunicatorTest {
                 3, listDataView.getItems().count());
         Assert.assertEquals("Unexpected items order after data provider reset",
                 new Item(0), listDataView.getItems().findFirst().orElse(null));
-    }
-
-    @Test
-    public void filter_clearFilterAfterFlush_componentFilterPreserved() {
-        final Item[] items = { new Item(1), new Item(2), new Item(3) };
-        final SerializablePredicate<Item> disposableFilter = item -> item.id == 3;
-        final SerializablePredicate<Item> permanentFilter = item -> item.id == 2;
-
-        dataCommunicator.setDataProvider(DataProvider.ofItems(items),
-                disposableFilter, false);
-
-        AbstractListDataView<Item> listDataView = new AbstractListDataView<Item>(
-                dataCommunicator::getDataProvider, new TestComponent(element),
-                (filter, sorting) -> {
-                }) {
-        };
-
-        listDataView.setFilter(permanentFilter);
-
-        dataCommunicator.setRequestedRange(0, 50);
-        fakeClientCommunication();
-
-        Assert.assertNotNull(
-                "Expected permanent filter to be preserved after flush",
-                dataCommunicator.getFilter());
-
-        @SuppressWarnings("unchecked")
-        SerializablePredicate<Item> filter = (SerializablePredicate<Item>) dataCommunicator
-                .getFilter();
-
-        Assert.assertArrayEquals("Unexpected permanent filter",
-                Arrays.stream(items).filter(permanentFilter).toArray(),
-                Arrays.stream(items).filter(filter).toArray());
     }
 
     @Tag("test-component")

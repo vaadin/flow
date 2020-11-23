@@ -2,7 +2,8 @@ package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
 
-import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -22,7 +23,9 @@ import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -37,6 +40,8 @@ import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
@@ -327,12 +332,14 @@ public class BootstrapHandlerTest {
     private MockServletServiceSessionSetup mocks;
     private BootstrapHandler.BootstrapPageBuilder pageBuilder = new BootstrapHandler.BootstrapPageBuilder();
 
+    @Rule
+    public final TemporaryFolder tmpDir = new TemporaryFolder();
+
     @Before
     public void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
         TestRouteRegistry routeRegistry = new TestRouteRegistry();
 
-        BootstrapHandler.clientEngineFile = () -> "foobar";
         testUI = new TestUI();
 
         deploymentConfiguration = mocks.getDeploymentConfiguration();
@@ -1379,12 +1386,9 @@ public class BootstrapHandlerTest {
 
     @Test // #7158
     public void getBootstrapPage_assetChunksIsAnARRAY_bootstrapParsesOk()
-            throws ServiceException {
+            throws ServiceException, IOException {
 
         initUI(testUI);
-
-        ClassLoader classLoader = Mockito.mock(ClassLoader.class);
-        service.setClassLoader(classLoader);
 
         String statsJson = "{\n" + " \"errors\": [],\n" + " \"warnings\": [],\n"
                 + " \"assetsByChunkName\": {\n" + "  \"bundle\": [\n"
@@ -1392,8 +1396,17 @@ public class BootstrapHandlerTest {
                 + "    \"build/vaadin-bundle-e77008557c8d410bf0dc.cache.js.map\"\n"
                 + "  ],\n" + " }" + "}";
 
-        Mockito.when(classLoader.getResourceAsStream(Mockito.anyString()))
-                .thenReturn(new ByteArrayInputStream(statsJson.getBytes()));
+        File tmpFile = tmpDir.newFile();
+        try (FileOutputStream stream = new FileOutputStream(tmpFile)) {
+            IOUtils.write(statsJson, stream, StandardCharsets.UTF_8);
+        }
+
+        Lookup lookup = testUI.getSession().getService().getContext()
+                .getAttribute(Lookup.class);
+        ResourceProvider provider = lookup.lookup(ResourceProvider.class);
+        Mockito.when(provider.getApplicationResource(
+                Mockito.any(VaadinService.class), Mockito.anyString()))
+                .thenReturn(tmpFile.toURI().toURL());
 
         BootstrapContext bootstrapContext = new BootstrapContext(request, null,
                 session, testUI, this::contextRootRelativePath);

@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui.theme;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -46,9 +47,12 @@ public class ThemeIT extends ChromeBrowserTest {
         // No exception for bg-image should exist
         checkLogsForErrors();
 
+        final WebElement body = findElement(By.tagName("body"));
         Assert.assertEquals(
             "url(\"" + getRootURL() + "/theme/app-theme/img/bg.jpg\")",
-            findElement(By.tagName("body")).getCssValue("background-image"));
+            body.getCssValue("background-image"));
+
+        Assert.assertEquals("Ostrich", body.getCssValue("font-family"));
 
         getDriver().get(getRootURL() + "/theme/app-theme/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
