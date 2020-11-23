@@ -13,23 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.osgi;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.openqa.selenium.By;
+/**
+ * This interface is a marker of OSGi.
+ *
+ */
+public interface OSGiMarker {
 
-import com.vaadin.flow.testcategory.IgnoreOSGi;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-@Category(IgnoreOSGi.class)
-public class PlainScriptViaJavaScriptIT extends ChromeBrowserTest {
-
-    @Test
-    public void contextSchemaWorksinJavaScript() {
-        open();
-
-        Assert.assertTrue(isElementPresent(By.id("added-from-src-script")));
-    }
 }
