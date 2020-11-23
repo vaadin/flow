@@ -186,6 +186,13 @@ public class AppViewIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void should_checkUserFromVaadinRequest() {
+        login("user");
+        testComponent.$(TestBenchElement.class).id("checkUserFromVaadinRequest").click();
+        verifyCheckUserFromVaadinRequest("user");
+    }
+
+    @Test
     public void should_updateTitleInDOMWithInjectedService(){
         Assert.assertEquals("titleRetrievedFromAService",
                 driver.findElement(By.tagName("title")).getAttribute("textContent"));
@@ -247,6 +254,11 @@ public class AppViewIT extends ChromeBrowserTest {
 
     private void verifyCheckUser(String expectedMessage) {
         testComponent.$(TestBenchElement.class).id("checkUser").click();
+        verifyContent(expectedMessage);
+    }
+
+    private void verifyCheckUserFromVaadinRequest(String expectedMessage) {
+        testComponent.$(TestBenchElement.class).id("checkUserFromVaadinRequest").click();
         verifyContent(expectedMessage);
     }
 

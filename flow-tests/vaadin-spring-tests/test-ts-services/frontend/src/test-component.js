@@ -11,6 +11,7 @@ class TestComponent extends PolymerElement {
         <button id="echoWithOptional" on-click="echoWithOptional">endpoint echoWithOptional</button><br/>
         <button id="helloAdmin" on-click="helloAdmin">endpoint helloAdmin</button><br/>
         <button id="checkUser" on-click="checkUser">endpoint checkUser</button><br/>
+        <button id="checkUserFromVaadinRequest" on-click="checkUserFromVaadinRequest">endpoint checkUser from VaadinRequest</button><br/>
         <button id="logout" on-click="logout">logout</button><br/>
         <form method="post" action="login">
           <input id="username" name="username"></input>
@@ -60,6 +61,13 @@ class TestComponent extends PolymerElement {
   checkUser(e) {
     appEndpoint
       .checkUser()
+      .then(response => this.$.content.textContent = response)
+      .catch(error => this.$.content.textContent = 'Error:' + error);
+  }
+
+  checkUserFromVaadinRequest(e) {
+    appEndpoint
+      .checkUserFromVaadinRequest()
       .then(response => this.$.content.textContent = response)
       .catch(error => this.$.content.textContent = 'Error:' + error);
   }

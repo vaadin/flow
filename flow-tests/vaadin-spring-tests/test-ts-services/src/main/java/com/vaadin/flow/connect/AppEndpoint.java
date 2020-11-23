@@ -61,4 +61,8 @@ public class AppEndpoint {
         return auth == null ? null : auth.getName();
     }
 
+    public String checkUserFromVaadinRequest() {
+        return "Hello, "+VaadinRequest.getCurrent().getUserPrincipal().getName()+"!";
+    }
+
 }
