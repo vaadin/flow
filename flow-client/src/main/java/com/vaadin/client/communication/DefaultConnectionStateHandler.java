@@ -611,10 +611,9 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     private void registerConnectionStateEventHandlers() {
-        Browser.getWindow().addEventListener("offline", event -> {
-            // Browser goes offline: CONNECTION_LOST and stop heartbeats
-            giveUp();
-        });
+        Browser.getWindow().addEventListener("offline", event ->
+                // Browser goes offline: CONNECTION_LOST and stop heartbeats
+                giveUp());
 
         Browser.getWindow().addEventListener("online", event -> {
             // Browser goes back online: RECONNECTING while verifying
