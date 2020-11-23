@@ -67,7 +67,7 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
 
         if (!node.isEnabled() && channel
                 .getDisabledUpdateMode() != DisabledUpdateMode.ALWAYS) {
-            getLogger().warn("Ignoring update for disabled return channel: {}",
+            getLogger().debug("Ignoring update for disabled return channel: {}",
                     invocationJson);
             return Optional.empty();
         }
