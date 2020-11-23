@@ -1,5 +1,5 @@
 #sub-component {
-    background: url('./../icons/archive.png') left top;
+    background: url('../icons/archive.png') left top;
     width: 10px;
     height: 10px;
     display: block;
