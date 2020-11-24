@@ -50,19 +50,10 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     private static final boolean DEBUG = false;
     private final Registry registry;
-    private ReconnectDialog reconnectDialog = new DefaultReconnectDialog();
     private int reconnectAttempt = 0;
     private Type reconnectionCause = null;
 
     private Timer scheduledReconnect;
-    private Timer dialogShowTimer = new Timer() {
-
-        @Override
-        public void run() {
-            showDialog();
-        }
-
-    };
 
     protected enum Type {
         HEARTBEAT(0), PUSH(1), XHR(2);
@@ -110,10 +101,6 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
                 }
             }
         });
-
-        // Allow dialog to cache needed resources to make them available when we
-        // are offline
-        reconnectDialog.preload();
 
         // Register online / offline handlers
         registerConnectionStateEventHandlers();
@@ -198,16 +185,6 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
             // First problem encounter
             reconnectionCause = type;
             Console.warn("Reconnecting because of " + type + " failure");
-            // Precaution only as there should never be a dialog at this point
-            // and no timer running
-            stopDialogTimer();
-            if (isDialogVisible()) {
-                hideDialog();
-            }
-
-            // Show dialog after grace period, still continue to try to
-            // reconnect even before it is shown
-            dialogShowTimer.schedule(getConfiguration().getDialogGracePeriod());
         } else {
             // We are currently trying to reconnect
             // Priority is HEARTBEAT -> PUSH -> XHR
@@ -231,7 +208,6 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
             // Max attempts reached, stop trying and go back to CONNECTION_LOST
             giveUp();
         } else {
-            updateDialog();
             scheduleReconnect(payload);
         }
     }
@@ -294,14 +270,6 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     /**
-     * Called whenever a reconnect attempt fails to allow updating of dialog
-     * contents.
-     */
-    protected void updateDialog() {
-        reconnectDialog.setText(getDialogText(reconnectAttempt));
-    }
-
-    /**
      * Called when we should give up trying to reconnect and inform the user
      * that the application is in CONNECTION_LOST state.
      */
@@ -312,50 +280,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
             endRequest();
         }
 
-        stopDialogTimer();
-        hideDialog();
-
-        reconnectDialog.setText(getDialogTextGaveUp(reconnectAttempt));
-        reconnectDialog.setReconnecting(false);
-
         registry.getConnectionState().setState(ConnectionState.CONNECTION_LOST);
         pauseHeartbeats();
-    }
-
-    /**
-     * Ensures the reconnect dialog does not popup some time from now.
-     */
-    private void stopDialogTimer() {
-        if (dialogShowTimer.isRunning()) {
-            dialogShowTimer.cancel();
-        }
-    }
-
-    /**
-     * Checks if the reconnect dialog is visible to the user.
-     *
-     * @return true if the user can see the dialog, false otherwise
-     */
-    protected boolean isDialogVisible() {
-        return reconnectDialog.isVisible();
-    }
-
-    /**
-     * Called when the reconnect dialog should be shown. This is typically when
-     * N seconds has passed since a problem with the connection has been
-     * detected.
-     */
-    protected void showDialog() {
-        reconnectDialog.setReconnecting(true);
-        reconnectDialog.show();
-    }
-
-    /**
-     * Called when the reconnect dialog should be hidden.
-     */
-    protected void hideDialog() {
-        reconnectDialog.setReconnecting(false);
-        reconnectDialog.hide();
     }
 
     /**
@@ -386,7 +312,6 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     @Override
     public void configurationUpdated() {
         // All other properties are fetched directly from the state when needed
-        reconnectDialog.setModal(getConfiguration().isDialogModal());
     }
 
     private ReconnectDialogConfiguration getConfiguration() {
@@ -527,10 +452,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
         reconnectionCause = null;
         reconnectAttempt = 0;
-        // IF reconnect happens during grace period, make sure the dialog is not
-        // shown and does not popup later
-        stopDialogTimer();
-        hideDialog();
+
         registry.getConnectionState()
                 .setState(ConnectionState.CONNECTED);
 
