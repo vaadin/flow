@@ -337,10 +337,14 @@ export class Flow {
       if (!this.isFlowClientLoaded()) {
         // else, send an HTTP HEAD request to verify the server being online
         // we don't care about HTTP errors, only network failure
+        $wnd.Vaadin.connectionState.state = ConnectionState.RECONNECTING;
         const http = new XMLHttpRequest();
         http.open('HEAD', location.pathname || '/');
         http.onload = () => {
           $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
+        };
+        http.onerror = () => {
+          $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
         };
         http.send();
       }

@@ -680,7 +680,7 @@ suite("Flow", () => {
     assert.deepEqual({}, onBeforeLeaveReturns);
   });
 
-  test("should transition to CONNECTION when receiving 'offline' and then 'online' event when no Flow client loaded", async () => {
+  test("when no Flow client loaded, should transition to CONNECTION when receiving 'offline' and then 'online' event and connection is reestablished", async () => {
     mock.use('HEAD', /^.*/, (req, res) => {
       return res.status(200);
     });
@@ -689,11 +689,23 @@ suite("Flow", () => {
     $wnd.dispatchEvent(new Event('offline')); // caught by Flow.ts
     assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTION_LOST);
     $wnd.dispatchEvent(new Event('online')); // caught by Flow.ts
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.RECONNECTING);
     await new Promise(resolve => setTimeout(resolve, 100));
     assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTED);
   });
 
-  test("should transition to RECONNECTING on receiving 'offline' and then 'online' event when Flow client loaded", async () => {
+  test("when no Flow client loaded, should transition to CONNECTION_LOST when receiving 'offline' and then 'online' event and connection is not reestablished", async () => {
+    new Flow();
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTED);
+    $wnd.dispatchEvent(new Event('offline')); // caught by Flow.ts
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTION_LOST);
+    $wnd.dispatchEvent(new Event('online')); // caught by Flow.ts
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.RECONNECTING);
+    await new Promise(resolve => setTimeout(resolve, 100));
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTION_LOST);
+  });
+
+  test("when Flow client loaded, should transition to RECONNECTING on receiving 'offline' and then 'online' event", async () => {
     stubServerRemoteFunction('FooBar-12345');
     mockInitResponse('FooBar-12345', undefined, stubVaadinPushSrc);
     const flow = new Flow();
