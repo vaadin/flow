@@ -17,6 +17,9 @@ package com.vaadin.flow.uitest.ui.servlets;
 
 import javax.servlet.annotation.WebServlet;
 
+import java.io.PrintWriter;
+import java.util.function.Consumer;
+
 import com.vaadin.flow.server.VaadinServlet;
 
 /**
@@ -24,7 +27,7 @@ import com.vaadin.flow.server.VaadinServlet;
  *
  * @since 2.0
  */
-@WebServlet("/*")
+@WebServlet("/path/*")
 public class WorkaroundServlet extends VaadinServlet {
 
 }
