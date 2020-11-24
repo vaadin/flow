@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.uitest.ui.theme;
 
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
@@ -23,8 +24,11 @@ import com.vaadin.flow.theme.Theme;
 
 @Route("com.vaadin.flow.uitest.ui.theme.ThemeView")
 @Theme(themeFolder = "app-theme")
+@NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "1.6.1")
 public class ThemeView extends Div {
 
+    public static final String MY_POLYMER_ID = "field";
+    public static final String MY_LIT_ID = "button";
     public static final String TEST_TEXT_ID = "test-text";
 
     public ThemeView() {
@@ -33,5 +37,9 @@ public class ThemeView extends Div {
         Span subCss = new Span();
         subCss.setId("sub-component");
         add(textSpan, subCss);
+        add(new Div());
+        add(new MyPolymerField().withId(MY_POLYMER_ID));
+        add(new Div());
+        add(new MyLitField().withId(MY_LIT_ID));
     }
 }
