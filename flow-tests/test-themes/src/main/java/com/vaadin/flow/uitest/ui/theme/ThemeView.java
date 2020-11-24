@@ -23,6 +23,8 @@ import com.vaadin.flow.router.Route;
 @Route("com.vaadin.flow.uitest.ui.theme.ThemeView")
 public class ThemeView extends Div {
 
+    public static final String MY_POLYMER_ID = "field";
+    public static final String MY_LIT_ID = "button";
     public static final String TEST_TEXT_ID = "test-text";
 
     public ThemeView() {
@@ -31,5 +33,9 @@ public class ThemeView extends Div {
         Span subCss = new Span();
         subCss.setId("sub-component");
         add(textSpan, subCss);
+        add(new Div());
+        add(new MyPolymerField().withId(MY_POLYMER_ID));
+        add(new Div());
+        add(new MyLitField().withId(MY_LIT_ID));
     }
 }

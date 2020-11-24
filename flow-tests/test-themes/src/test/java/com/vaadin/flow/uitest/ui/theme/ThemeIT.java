@@ -22,6 +22,10 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
+
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_LIT_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_POLYMER_ID;
 
 public class ThemeIT extends ChromeBrowserTest {
 
@@ -53,6 +57,26 @@ public class ThemeIT extends ChromeBrowserTest {
         getDriver().get(getRootURL() + "/VAADIN/static/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
             driver.getPageSource().contains("Could not navigate"));
+    }
+
+    @Test
+    public void componentThemeIsApplied_forPolymerAndLit() {
+        open();
+        TestBenchElement myField = $(TestBenchElement.class).id(MY_POLYMER_ID);
+        TestBenchElement input = myField.$(TestBenchElement.class)
+            .id("vaadin-text-field-input-0");
+        Assert.assertEquals("Polymer text field should have red background",
+            "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
+
+        myField = $(TestBenchElement.class).id(MY_LIT_ID);
+        final SpanElement radio = myField.$(SpanElement.class).all().stream()
+            .filter(element -> "radio".equals(element.getAttribute("part")))
+            .findFirst().orElseGet(null);
+
+        Assert.assertNotNull("Element with part='radio' was not found", radio);
+
+        Assert.assertEquals("Lit radiobutton should have red background",
+            "rgba(255, 0, 0, 1)", radio.getCssValue("background-color"));
     }
 
     @Test
