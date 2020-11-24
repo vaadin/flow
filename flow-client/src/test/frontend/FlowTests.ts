@@ -680,7 +680,7 @@ suite("Flow", () => {
     assert.deepEqual({}, onBeforeLeaveReturns);
   });
 
-  test("when no Flow client loaded, should transition to CONNECTION when receiving 'offline' and then 'online' event and connection is reestablished", async () => {
+  test("when no Flow client loaded, should transition to CONNECTED when receiving 'offline' and then 'online' events and connection is reestablished", async () => {
     mock.use('HEAD', /^.*/, (req, res) => {
       return res.status(200);
     });
@@ -694,7 +694,7 @@ suite("Flow", () => {
     assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTED);
   });
 
-  test("when no Flow client loaded, should transition to CONNECTION_LOST when receiving 'offline' and then 'online' event and connection is not reestablished", async () => {
+  test("when no Flow client loaded, should transition to CONNECTION_LOST when receiving 'offline' and then 'online' events and connection is not reestablished", async () => {
     new Flow();
     assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTED);
     $wnd.dispatchEvent(new Event('offline')); // caught by Flow.ts
@@ -705,7 +705,7 @@ suite("Flow", () => {
     assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTION_LOST);
   });
 
-  test("when Flow client loaded, should transition to RECONNECTING on receiving 'offline' and then 'online' event", async () => {
+  test("when Flow client loaded, should transition to RECONNECTING on receiving 'offline' and then 'online' events", async () => {
     stubServerRemoteFunction('FooBar-12345');
     mockInitResponse('FooBar-12345', undefined, stubVaadinPushSrc);
     const flow = new Flow();
