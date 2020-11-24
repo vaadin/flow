@@ -486,6 +486,40 @@ public class ResponseWriterTest {
         assertStatus(206);
     }
 
+    @Test
+    public void writeByteRangeMultiPartTooManyRequested() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "bytes=0-0, 0-0, 1-1, 2-2, 3-3, 4-4, 5-5, 6-6, 7-7, 8-8, 9-9, 10-10, 11-11, 12-12, 13-13, 14-14, 15-15, 16-16"));
+        // "File.js contents"
+        // ^0123456789ABCDEF^
+        assertMultipartResponse(PATH_JS, Arrays.asList(
+                new Pair<>(new String[]{"Content-Range: bytes 0-0/16"}, "F".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 0-0/16"}, "F".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 1-1/16"}, "i".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 2-2/16"}, "l".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 3-3/16"}, "e".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 4-4/16"}, ".".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 5-5/16"}, "j".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 6-6/16"}, "s".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 7-7/16"}, " ".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 8-8/16"}, "c".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 9-9/16"}, "o".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 10-10/16"}, "n".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 11-11/16"}, "t".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 12-12/16"}, "e".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 13-13/16"}, "n".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 14-14/16"}, "t".getBytes())));
+        assertStatus(206);
+    }
+
+    @Test
+    public void writeByteRangeMultiPartTooManyOverlappingRequested() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "bytes=2-4, 0-4, 3-14"));
+        assertResponse(new byte[] {});
+        assertStatus(416);
+    }
+
     private void assertResponse(byte[] expectedResponse) throws IOException {
         assertResponse(PATH_JS, expectedResponse);
     }

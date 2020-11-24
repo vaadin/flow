@@ -51,8 +51,20 @@ import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
 public class ResponseWriter implements Serializable {
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
 
-    private static final Pattern RANGE_HEADER_PATTERN = Pattern.compile("^bytes=(([0-9]*-[0-9]*,?\\s*)+)$");
-    private static final Pattern BYTE_RANGE_PATTERN = Pattern.compile("([0-9]*)-([0-9]*)");
+    private static final Pattern RANGE_HEADER_PATTERN = Pattern.compile(
+            "^bytes=(([0-9]*-[0-9]*\\s*,\\s*)*[0-9]*-[0-9]*\\s*)$");
+    private static final Pattern BYTE_RANGE_PATTERN = Pattern.compile(
+            "([0-9]*)-([0-9]*)");
+
+    /**
+     * Maximum number of ranges accepted in a single Range header. Remaining ranges will be ignored.
+     */
+    private static final int MAX_RANGE_COUNT = 16;
+
+    /**
+     * Maximum number of overlapping ranges allowed. The request will be denied if above this threshold.
+     */
+    private static final int MAX_OVERLAPPING_RANGE_COUNT = 2;
 
     private final int bufferSize;
     private final boolean brotliEnabled;
@@ -196,8 +208,9 @@ public class ResponseWriter implements Serializable {
         long resourceLength = connection.getContentLengthLong();
         Matcher rangeMatcher = BYTE_RANGE_PATTERN.matcher(byteRanges);
 
+        int overlappingRangeCount = 0;
         List<Pair<Long, Long>> ranges = new ArrayList<>();
-        while (rangeMatcher.find()) {
+        while (rangeMatcher.find() && ranges.size() < MAX_RANGE_COUNT) {
             String startGroup = rangeMatcher.group(1);
             String endGroup = rangeMatcher.group(2);
             if (startGroup.isEmpty() && endGroup.isEmpty()) {
@@ -208,8 +221,14 @@ public class ResponseWriter implements Serializable {
             long start = startGroup.isEmpty() ? 0L : Long.parseLong(startGroup);
             long end = endGroup.isEmpty() ? Long.MAX_VALUE
                     : Long.parseLong(endGroup);
+            for (Pair<Long, Long> accepted : ranges) {
+                if (accepted.getFirst() <= end && start <= accepted.getSecond()) {
+                    overlappingRangeCount++;
+                }
+            }
             if (end < start
-                    || (resourceLength >= 0 && start >= resourceLength)) {
+                    || (resourceLength >= 0 && start >= resourceLength)
+                    || overlappingRangeCount > MAX_OVERLAPPING_RANGE_COUNT) {
                 // illegal range -> 416
                 response.setContentLengthLong(0L);
                 response.setStatus(416);
