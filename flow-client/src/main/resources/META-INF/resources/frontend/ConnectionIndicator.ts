@@ -124,9 +124,9 @@ export class ConnectionIndicator extends LitElement {
        style="${this.getLoadingBarStyle()}"></div>
 
       <div class="v-status-message ${classMap({
-      active: this.reconnecting,
-      modal: this.reconnectModal
-    })}">
+        active: this.reconnecting,
+        modal: this.reconnectModal
+      })}">
         <span class="text">
           ${this.renderMessage()}
         </span>
