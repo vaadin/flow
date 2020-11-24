@@ -16,30 +16,24 @@
 
 /**
  * This file handles copying of theme files to
- * [staticResourcesFolder]/theme/[theme-name]
+ * [staticResourcesFolder]
  */
 
 const fs = require('fs');
 const path = require('path');
 
 /**
- * create theme/themeName folders and copy theme files there.
+ * Copy theme files to static assets folder. All files in the theme folder will be copied excluding
+ * css, js and json files that will be handled by webpack and not be shared as static files.
  *
- * @param {String} themeName name of theme we are handling
  * @param {string} themeFolder Folder with theme file
  * @param {string} projectStaticAssetsOutputFolder resources output folder
  */
-function copyThemeResources(themeName, themeFolder, projectStaticAssetsOutputFolder) {
+function copyThemeResources(themeFolder, projectStaticAssetsOutputFolder) {
   if (!fs.existsSync(path.resolve(projectStaticAssetsOutputFolder))) {
     require('mkdirp')(path.resolve(projectStaticAssetsOutputFolder));
   }
-  if (!fs.existsSync(path.resolve(projectStaticAssetsOutputFolder, "theme"))) {
-    fs.mkdirSync(path.resolve(projectStaticAssetsOutputFolder, "theme"));
-  }
-  if (!fs.existsSync(path.resolve(projectStaticAssetsOutputFolder, "theme", themeName))) {
-    fs.mkdirSync(path.resolve(projectStaticAssetsOutputFolder, "theme", themeName));
-  }
-  copyThemeFiles(themeFolder, path.resolve(projectStaticAssetsOutputFolder, "theme", themeName));
+  copyThemeFiles(themeFolder, projectStaticAssetsOutputFolder);
 }
 
 const ignoredFileExtensions = [".css", ".js", ".json"];

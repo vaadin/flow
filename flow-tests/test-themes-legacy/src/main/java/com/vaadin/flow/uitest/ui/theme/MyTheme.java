@@ -28,7 +28,7 @@ public class MyTheme implements AbstractTheme {
 
     @Override
     public String getThemeUrl() {
-        return "legacyTheme/myTheme/";
+        return "theme/myTheme/";
     }
 
     @Override

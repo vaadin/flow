@@ -20,19 +20,21 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class ThemeIT extends ChromeBrowserTest {
 
     @Test
     public void secondTheme_staticFilesNotCopied() {
-        getDriver().get(getRootURL() + "/theme/app-theme/img/bg.jpg");
+        getDriver().get(getRootURL() + "/VAADIN/static/img/bg.jpg");
         Assert.assertFalse("app-theme static files should be copied",
-            driver.getPageSource().contains("Could not navigate"));
+            driver.getPageSource().contains("HTTP ERROR 404"));
 
-        getDriver().get(getRootURL() + "/theme/no-copy/no-copy.txt");
+        getDriver().get(getRootURL() + "/VAADIN/static/no-copy.txt");
+        System.out.println(driver.getPageSource());
         Assert.assertTrue("no-copy theme should not be handled",
-            driver.getPageSource().contains("Could not navigate to 'theme/no-copy/no-copy.txt'"));
+            driver.getPageSource().contains("HTTP ERROR 404"));
     }
 
     @Test
@@ -43,14 +45,25 @@ public class ThemeIT extends ChromeBrowserTest {
 
         final WebElement body = findElement(By.tagName("body"));
         Assert.assertEquals(
-            "url(\"" + getRootURL() + "/theme/app-theme/img/bg.jpg\")",
+            "url(\"" + getRootURL() + "/VAADIN/static/img/bg.jpg\")",
             body.getCssValue("background-image"));
 
         Assert.assertEquals("Ostrich", body.getCssValue("font-family"));
 
-        getDriver().get(getRootURL() + "/theme/app-theme/img/bg.jpg");
+        getDriver().get(getRootURL() + "/VAADIN/static/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
             driver.getPageSource().contains("Could not navigate"));
+    }
+
+    @Test
+    public void subCssWithRelativePath_urlPathIsNotRelative() {
+        open();
+        checkLogsForErrors();
+
+        Assert.assertEquals("Imported css file URLs should have been handled.",
+            "url(\"" + getRootURL() + "/VAADIN/static/icons/archive.png\")",
+            $(SpanElement.class).id("sub-component")
+                .getCssValue("background-image"));
     }
 
     @Override

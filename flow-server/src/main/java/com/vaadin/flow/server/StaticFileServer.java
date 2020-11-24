@@ -110,7 +110,7 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         URL resourceUrl = null;
-        if (isAllowedVAADINBuildUrl(filenameWithPath)) {
+        if (isAllowedVAADINBuildOrStaticUrl(filenameWithPath)) {
             resourceUrl = servletService.getClassLoader()
                     .getResource("META-INF" + filenameWithPath);
         }
@@ -194,7 +194,7 @@ public class StaticFileServer implements StaticFileHandler {
      *            requested filename containing path
      * @return true if we are ok to try serving the file
      */
-    private boolean isAllowedVAADINBuildUrl(String filenameWithPath) {
+    private boolean isAllowedVAADINBuildOrStaticUrl(String filenameWithPath) {
         if (deploymentConfiguration.isCompatibilityMode()) {
             getLogger().trace(
                     "Serving from the classpath in legacy "
@@ -205,7 +205,8 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         // Check that we target VAADIN/build
-        return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH);
+        return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
+            || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH);
     }
 
     /**

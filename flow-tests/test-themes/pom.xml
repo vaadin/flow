@@ -59,13 +59,6 @@
                 <!-- This should be removed when flow-tests do not break app shell annotation-->
                 <!-- flow-tests should not allow faulty annotations -->
                 <configuration>
-                    <!-- This is needed as Jetty by default only serves 'src/main/webapp' -->
-                    <!-- and not the servlet 3.0 spec for JAR when not executing a JAR -->
-                    <webApp>
-                        <resourceBases>
-                            <resourceBase>${project.build.outputDirectory}/META-INF/resources</resourceBase>
-                        </resourceBases>
-                    </webApp>
                     <systemProperties>
                         <systemProperty>
                             <name>vaadin.allow.appshell.annotations</name>
