@@ -63,7 +63,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
         DeploymentConfiguration config = session.getConfiguration();
-        IndexHtmlResponse indexHtmlResponse = null;
+        IndexHtmlResponse indexHtmlResponse;
 
         Document indexDocument = config.isProductionMode()
                 ? getCachedIndexHtmlDocument(request.getService())
