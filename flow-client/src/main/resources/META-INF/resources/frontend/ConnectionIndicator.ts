@@ -22,7 +22,7 @@ const DEFAULT_STYLE_ID = 'css-loading-indicator';
 
 /**
  * Component showing loading and connection indicator. When added to DOM,
- * listends for changes on `window.Vaadin.connectionState` ConnectionStateStore.
+ * listens for changes on `window.Vaadin.connectionState` ConnectionStateStore.
  */
 export class ConnectionIndicator extends LitElement {
   /**
@@ -417,6 +417,16 @@ if (customElements.get('vaadin-connection-indicator') === undefined) {
 }
 
 
+/**
+ * Gets the global connection indicator object. Its appearance and behavior
+ * can be configured via properties:
+ *
+ * getConnectionIndicator().firstDelay = 0;
+ * getConnectionIndicator().onlineText = 'The application is online';
+ *
+ * To avoid altering the appearance while the indicator is active, apply the
+ * configuration in your application 'frontend/index.ts' file.
+ */
 export function getConnectionIndicator(): ConnectionIndicator {
   const $wnd = window as any;
   if (!$wnd.Vaadin?.connectionIndicator) {
