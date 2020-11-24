@@ -26,7 +26,7 @@ import static com.vaadin.flow.server.connect.generator.VaadinConnectClientGenera
 import static com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator.CUSTOM_CONNECT_CLIENT_NAME;
 
 /**
- * Generate the Vaadin Connect TS files for endpoints, and the Client API file.
+ * Generate the Vaadin TS files for endpoints, and the Client API file.
  */
 public class TaskGenerateConnect extends AbstractTaskConnectGenerator {
 
@@ -51,9 +51,9 @@ public class TaskGenerateConnect extends AbstractTaskConnectGenerator {
                         File outputFolder, File frontendDirectory) {
         super(applicationProperties);
         Objects.requireNonNull(openApi,
-                "Connect OpenAPI file should not be null.");
+                "Vaadin OpenAPI file should not be null.");
         Objects.requireNonNull(outputFolder,
-                "Connect output folder should not be null.");
+                "Vaadin output folder should not be null.");
         this.openApi = openApi;
         this.outputFolder = outputFolder;
         this.connectClientFile = new File(outputFolder, CONNECT_CLIENT_NAME);

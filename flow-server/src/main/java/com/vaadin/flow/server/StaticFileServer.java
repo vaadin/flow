@@ -17,7 +17,6 @@ package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -111,7 +110,7 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         URL resourceUrl = null;
-        if (isAllowedVAADINBuildUrl(filenameWithPath)) {
+        if (isAllowedVAADINBuildOrStaticUrl(filenameWithPath)) {
             resourceUrl = servletService.getClassLoader()
                     .getResource("META-INF" + filenameWithPath);
         }
@@ -195,9 +194,10 @@ public class StaticFileServer implements StaticFileHandler {
      *            requested filename containing path
      * @return true if we are ok to try serving the file
      */
-    private boolean isAllowedVAADINBuildUrl(String filenameWithPath) {
+    private boolean isAllowedVAADINBuildOrStaticUrl(String filenameWithPath) {
         // Check that we target VAADIN/build
-        return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH);
+        return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
+            || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH);
     }
 
     /**

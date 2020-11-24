@@ -97,8 +97,6 @@
             <version>${osgi.compendium.version}</version>
             <scope>provided</scope>
         </dependency>
-
-        <!--  Connect Dependencies -->
     </dependencies>
     <build>
         <plugins>

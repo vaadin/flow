@@ -43,8 +43,8 @@ public class OpenApiSpecGenerator {
     public static final String SERVER_DESCRIPTION = "vaadin.connect.server.description";
     public static final String PREFIX = "vaadin.endpoint.prefix";
     public static final String DEFAULT_SERVER = "http://localhost:8080";
-    public static final String DEFAULT_SERVER_DESCRIPTION = "Vaadin Connect backend";
-    public static final String DEFAULT_APPLICATION_TITLE = "Vaadin Connect Application";
+    public static final String DEFAULT_SERVER_DESCRIPTION = "Vaadin backend";
+    public static final String DEFAULT_APPLICATION_TITLE = "Vaadin application";
     public static final String DEFAULT_APPLICATION_API_VERSION = "0.0.1";
     public static final String DEFAULT_PREFIX = "/connect";
 
@@ -84,7 +84,7 @@ public class OpenApiSpecGenerator {
                 FileUtils.writeStringToFile(specOutputFile.toFile(),
                         Json.pretty(openAPI), StandardCharsets.UTF_8);
             } else {
-                log.info("There are no connect endpoints to generate.");
+                log.info("There are no endpoints to generate.");
                 FileUtils.deleteQuietly(specOutputFile.toFile());
             }
         } catch (IOException e) {

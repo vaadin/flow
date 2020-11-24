@@ -60,13 +60,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     public boolean productionMode;
 
     /**
-     * Whether or not we are running in legacy V14 bootstrap mode. True if
-     * defined or if it's set to true.
-     */
-    @Parameter(defaultValue = "${vaadin.useDeprecatedV14Bootstrapping}")
-    private String useDeprecatedV14Bootstrapping;
-
-    /**
      * Whether or not insert the initial Uidl object in the bootstrap index.html
      */
     @Parameter(defaultValue = "${vaadin."
@@ -94,7 +87,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     protected File openApiJsonFile;
 
     /**
-     * Java source folders for connect scanning.
+     * Java source folders for scanning.
      */
     @Parameter(defaultValue = "${project.basedir}/src/main/java")
     protected File javaSourceFolder;
@@ -121,22 +114,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     protected boolean requireHomeNodeExec;
 
     /**
-     * Check if the plugin is running in legacy V14 bootstrap mode or not.
-     * Default: false.
-     *
-     * @return true if the `useDeprecatedV14Bootstrapping` is empty or true.
-     */
-    public boolean useDeprecatedV14Bootstrapping() {
-        if (useDeprecatedV14Bootstrapping == null) {
-            return false;
-        }
-        if (useDeprecatedV14Bootstrapping.isEmpty()) {
-            return true;
-        }
-        return Boolean.parseBoolean(useDeprecatedV14Bootstrapping);
-    }
-
-    /**
      * The node.js version to be used when node.js is installed automatically by
      * Vaadin, for example `"v12.18.3"`. Defaults to null which uses the
      * Vaadin-default node version - see {@link FrontendTools} for details.
@@ -154,4 +131,27 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      */
     @Parameter(property = "node.download.root", defaultValue = NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
     protected String nodeDownloadRoot;
+
+    /**
+     * Whether or not we are running in legacy V14 bootstrap mode. True if
+     * defined or if it's set to true.
+     */
+    @Parameter(defaultValue = "${vaadin.useDeprecatedV14Bootstrapping}")
+    private String useDeprecatedV14Bootstrapping;
+
+    /**
+     * Check if the plugin is running in legacy V14 bootstrap mode or not.
+     * Default: false.
+     *
+     * @return true if the `useDeprecatedV14Bootstrapping` is empty or true.
+     */
+    public boolean useDeprecatedV14Bootstrapping() {
+        if (useDeprecatedV14Bootstrapping == null) {
+            return false;
+        }
+        if (useDeprecatedV14Bootstrapping.isEmpty()) {
+            return true;
+        }
+        return Boolean.parseBoolean(useDeprecatedV14Bootstrapping);
+    }
 }

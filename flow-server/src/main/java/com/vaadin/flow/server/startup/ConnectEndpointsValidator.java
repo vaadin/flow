@@ -61,9 +61,9 @@ public class ConnectEndpointsValidator
                 finder.loadClass(classToCheck);
             } catch (ClassNotFoundException e) {
                 throw new ServletException(
-                        "ERROR: Vaadin Connect Endpoints only work for Spring "
+                        "ERROR: Vaadin endpoints only work for Spring "
                                 + "enabled projects.\n"
-                                + "This is not a spring application but there are connect endpoints in these classes: "
+                                + "This is not a spring application but there are Vaadin endpoints in these classes: "
                                 + endpoints.stream().map(Class::getName)
                                         .collect(
                                                 Collectors.joining("\n    - ")),
