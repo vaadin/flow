@@ -110,7 +110,7 @@ function handleThemes(themeName, themesFolder, projectStaticAssetsOutputFolder) 
   if (fs.existsSync(themeFolder)) {
     logger.debug("Found theme ", themeName, " in folder ", themeFolder);
 
-    copyThemeResources(themeName, themeFolder, projectStaticAssetsOutputFolder);
+    copyThemeResources(themeFolder, projectStaticAssetsOutputFolder);
 
     const themeFile = generateThemeFile(themeFolder, themeName);
 
