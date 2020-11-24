@@ -51,10 +51,6 @@
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <configuration>
-                    <!-- Use war output directory instead of default src/main/webapp to get the webpack bundles  -->
-                    <webAppSourceDirectory>${project.build.directory}/${project.build.finalName}</webAppSourceDirectory>
-                </configuration>
             </plugin>
         </plugins>
     </build>

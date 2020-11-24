@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 
 /**
  * Updates the webpack config file according with current project settings.
@@ -80,7 +81,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
         this.flowResourcesFolder = new File(webpackConfigFolder,
             DEFAULT_GENERATED_DIR).toPath();
         this.resourceFolder = new File(webpackOutputDirectory.getParentFile(),
-            "resources").toPath();
+            VAADIN_STATIC_FILES_PATH).toPath();
     }
 
     @Override

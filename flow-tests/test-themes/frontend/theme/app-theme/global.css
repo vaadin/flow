@@ -1,9 +1,11 @@
+@import 'sub-css/sub.css';
+
 @font-face {
     font-family: "Ostrich";
-    src: url("theme/app-theme/font/ostrich-sans-regular.ttf") format("TrueType");
+    src: url("./font/ostrich-sans-regular.ttf") format("TrueType");
 }
 
 body {
-    background-image: url('theme/app-theme/img/bg.jpg');
+    background-image: url("./img/bg.jpg");
     font-family: "Ostrich";
 }

@@ -21,7 +21,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.Theme;
 
-@Route("com.vaadin.flow.uitest.ui.theme.Theme")
+@Route("com.vaadin.flow.uitest.ui.theme.ThemeView")
 @Theme(themeFolder = "app-theme")
 public class ThemeView extends Div {
 
@@ -30,6 +30,8 @@ public class ThemeView extends Div {
     public ThemeView() {
         final Span textSpan = new Span("This is the theme test view");
         textSpan.setId(TEST_TEXT_ID);
-        add(textSpan);
+        Span subCss = new Span();
+        subCss.setId("sub-component");
+        add(textSpan, subCss);
     }
 }

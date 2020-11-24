@@ -27,17 +27,6 @@ import com.vaadin.testbench.TestBenchElement;
 public class NpmThemedComponentIT extends ChromeBrowserTest {
 
     @Test
-    public void applicationTheme_GlobalCss_isUsed() {
-        open();
-        // No exception for bg-image should exist
-        checkLogsForErrors();
-
-        Assert.assertEquals(
-            "url(\"" + getRootURL() + "/theme/app-theme/img/bg.jpg\")",
-            findElement(By.tagName("body")).getCssValue("background-image"));
-    }
-
-    @Test
     public void importedClientSideComponentIsThemed() {
         open();
 
