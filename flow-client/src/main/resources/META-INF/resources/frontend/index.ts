@@ -3,4 +3,3 @@ export * from './Connect';
 export * from './Authentication';
 export * from './Offline';
 export * from './ConnectionIndicator';
-export * from './AppShell';

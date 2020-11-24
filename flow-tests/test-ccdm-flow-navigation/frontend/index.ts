@@ -1,6 +1,6 @@
 import {Flow} from '@vaadin/flow-frontend/Flow';
 import {Router} from '@vaadin/router';
-import {setConnectionIndicatorConfiguration} from '@vaadin/flow-frontend/AppShell';
+import {getConnectionIndicator} from '@vaadin/flow-frontend/ConnectionIndicator';
 
 const {serverSideRoutes} = new Flow({
     imports: () => import('../target/frontend/generated-flow-imports'),
@@ -43,8 +43,6 @@ export const router = new Router(document.querySelector('#outlet'));
 router.setRoutes(routes);
 
 // customize the connection indicator
-setConnectionIndicatorConfiguration({
-    onlineText: 'Custom online',
-    offlineText: 'Custom offline',
-    reconnectingText: 'Custom reconnecting'
-});
+getConnectionIndicator().onlineText = 'Custom online';
+getConnectionIndicator().offlineText = 'Custom offline';
+getConnectionIndicator().reconnectingText = 'Custom reconnecting';

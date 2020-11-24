@@ -417,11 +417,12 @@ if (customElements.get('vaadin-connection-indicator') === undefined) {
 }
 
 
-export function addConnectionIndicator() {
+export function getConnectionIndicator(): ConnectionIndicator {
   const $wnd = window as any;
   if (!$wnd.Vaadin?.connectionIndicator) {
     $wnd.Vaadin = $wnd.Vaadin || {};
     $wnd.Vaadin.connectionIndicator = document.createElement('vaadin-connection-indicator');
     document.body.appendChild($wnd.Vaadin.connectionIndicator);
   }
+  return $wnd.Vaadin.connectionIndicator as ConnectionIndicator;
 }
