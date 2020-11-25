@@ -37,6 +37,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
@@ -45,6 +46,7 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
@@ -61,6 +63,7 @@ import static com.vaadin.flow.server.DevModeHandlerTest.createStubWebpackTcpList
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.verify;
 
 public class IndexHtmlRequestHandlerTest {
     private MockServletServiceSessionSetup mocks;
@@ -344,21 +347,34 @@ public class IndexHtmlRequestHandlerTest {
             throws IOException {
         deploymentConfiguration.setEagerServerLoad(true);
 
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                createVaadinRequest("/"), response);
+        VaadinRequest request = createVaadinRequest("/");
 
-        Assert.assertNotNull(
-                indexHtmlRequestHandler.getIndexHtmlResponse().getUI());
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+           
+                request, response);
+
+        ArgumentCaptor<IndexHtmlResponse> captor = 
+                ArgumentCaptor.forClass(IndexHtmlResponse.class);
+        
+        verify(request.getService()).modifyIndexHtmlResponse(captor.capture());
+        
+        Assert.assertNotNull(captor.getValue().getUI());
     }
 
     @Test
     public void should_getter_UI_return_empty_when_not_includeInitialBootstrapUidl()
             throws IOException {
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                createVaadinRequest("/"), response);
+        VaadinRequest request = createVaadinRequest("/");
 
-        Assert.assertEquals(Optional.empty(),
-                indexHtmlRequestHandler.getIndexHtmlResponse().getUI());
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                request, response);
+
+        ArgumentCaptor<IndexHtmlResponse> captor = 
+                ArgumentCaptor.forClass(IndexHtmlResponse.class);
+        
+        verify(request.getService()).modifyIndexHtmlResponse(captor.capture());
+        
+        Assert.assertEquals(Optional.empty(), captor.getValue().getUI());
     }
 
     @Test
@@ -632,7 +648,7 @@ public class IndexHtmlRequestHandlerTest {
 
     private VaadinServletRequest createVaadinRequest(String pathInfo) {
         HttpServletRequest request = createRequest(pathInfo);
-        return new VaadinServletRequest(request, service);
+        return new VaadinServletRequest(request, Mockito.spy(service));
     }
 
     private HttpServletRequest createRequest(String pathInfo) {
