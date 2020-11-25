@@ -59,12 +59,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
-    private transient IndexHtmlResponse indexHtmlResponse;
-
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
         DeploymentConfiguration config = session.getConfiguration();
+        IndexHtmlResponse indexHtmlResponse;
 
         Document indexDocument = config.isProductionMode()
                 ? getCachedIndexHtmlDocument(request.getService())
@@ -271,7 +270,4 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         return LoggerFactory.getLogger(IndexHtmlRequestHandler.class);
     }
 
-    protected IndexHtmlResponse getIndexHtmlResponse() {
-        return this.indexHtmlResponse;
-    }
 }
