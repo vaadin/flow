@@ -16,6 +16,7 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -27,6 +28,7 @@ import java.net.URL;
 import java.util.Properties;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
@@ -64,23 +66,35 @@ public class VaadinServlet extends HttpServlet {
     @Override
     public void init(ServletConfig servletConfig) throws ServletException {
         CurrentInstance.clearAll();
-        super.init(servletConfig);
 
-        try {
-            servletService = createServletService();
-        } catch (ServiceException e) {
-            throw new ServletException("Could not initialize VaadinServlet", e);
+        if (getServletConfig() == null) {
+            super.init(servletConfig);
         }
 
-        // Sets current service as it is needed in static file server even
-        // though there are no request and response.
-        servletService.setCurrentInstances(null, null);
+        ServletContext servletContext = getServletConfig().getServletContext();
+        if (new VaadinServletContext(servletContext)
+                .getAttribute(Lookup.class) == null) {
+            return;
+        }
 
-        staticFileHandler = createStaticFileHandler(servletService);
+        if (servletService == null) {
+            try {
+                servletService = createServletService();
+            } catch (ServiceException e) {
+                throw new ServletException("Could not initialize VaadinServlet",
+                        e);
+            }
 
-        servletInitialized();
+            // Sets current service as it is needed in static file server even
+            // though there are no request and response.
+            servletService.setCurrentInstances(null, null);
+
+            staticFileHandler = createStaticFileHandler(servletService);
+
+            servletInitialized();
+        }
+
         CurrentInstance.clearAll();
-
     }
 
     /**
