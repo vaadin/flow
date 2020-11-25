@@ -516,8 +516,12 @@ public class ResponseWriterTest {
     public void writeByteRangeMultiPartTooManyOverlappingRequested() throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "bytes=2-4, 0-4, 3-14"));
-        assertResponse(new byte[] {});
-        assertStatus(416);
+        // "File.js contents"
+        // ^0123456789ABCDEF^
+        assertMultipartResponse(PATH_JS, Arrays.asList(
+                new Pair<>(new String[]{"Content-Range: bytes 2-4/16"}, "le.".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 0-4/16"}, "File.".getBytes())));
+        assertStatus(206);
     }
 
     private void assertResponse(byte[] expectedResponse) throws IOException {
@@ -575,6 +579,17 @@ public class ResponseWriterTest {
             mps.readBodyData(outputStream);
             byte[] bytes = outputStream.toByteArray();
             Assert.assertArrayEquals(expectedBytes, bytes);
+        }
+
+        // check that there are no excess parts
+        try {
+            mps.readHeaders();
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            mps.readBodyData(outputStream);
+            Assert.assertTrue("excess bytes in multipart response",
+                    outputStream.toByteArray().length == 0);
+        } catch (IOException ioe) {
+            // all is well, stream ended
         }
     }
 
