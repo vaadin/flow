@@ -21,7 +21,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.connect.Endpoint;
+// import com.vaadin.flow.server.connect.Endpoint;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -234,7 +234,7 @@ public class PrepareFrontendMojoTest {
                 "copy-webpack-plugin", "html-webpack-plugin");
     }
 
-    @Endpoint
+    // @Endpoint
     public class MyEndpoint {
         public void foo(String bar) {
         }
