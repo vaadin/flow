@@ -46,7 +46,7 @@ public class TaskGenerateConnectTest {
         assertFalse(ts2.exists());
         assertFalse(client.exists());
 
-        taskGenerateConnectTs = new TaskGenerateConnect(properties,
+        taskGenerateConnectTs = new TaskGenerateConnectImpl(properties,
                 openApiJson, outputDirectory, frontendDirectory);
 
         taskGenerateConnectTs.execute();
@@ -77,7 +77,7 @@ public class TaskGenerateConnectTest {
         assertFalse(client.exists());
         assertTrue(customConnectClient.exists());
 
-        taskGenerateConnectTs = new TaskGenerateConnect(properties,
+        taskGenerateConnectTs = new TaskGenerateConnectImpl(properties,
                 openApiJson, outputDirectory, frontendDirectory);
 
         taskGenerateConnectTs.execute();

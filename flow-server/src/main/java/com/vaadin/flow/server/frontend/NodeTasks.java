@@ -24,7 +24,10 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -605,20 +608,30 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private void addConnectServicesTasks(Builder builder) {
-        TaskGenerateOpenApi taskGenerateOpenApi = new TaskGenerateOpenApi(
+        /*Lookup lookup = VaadinService.getCurrent().getContext().getAttribute(Lookup.class);
+        TaskGenerateOpenApi taskGenerateOpenApi = lookup.lookup(TaskGenerateOpenApi.class);
+        if(taskGenerateOpenApi!=null){
+            commands.add(taskGenerateOpenApi);
+        }*/
+        /*new TaskGenerateOpenApi(
                 builder.connectApplicationProperties,
                 builder.connectJavaSourceFolder,
                 builder.classFinder.getClassLoader(),
-                builder.connectGeneratedOpenApiFile);
-        commands.add(taskGenerateOpenApi);
+                builder.connectGeneratedOpenApiFile);*/
+        
 
         if (builder.connectClientTsApiFolder != null) {
-            TaskGenerateConnect taskGenerateConnectTs = new TaskGenerateConnect(
+            /*
+            TaskGenerateConnect taskGenerateConnectTs = lookup.lookup(TaskGenerateConnect.class);
+            new TaskGenerateConnect(
                     builder.connectApplicationProperties,
                     builder.connectGeneratedOpenApiFile,
                     builder.connectClientTsApiFolder,
                     builder.frontendDirectory);
-            commands.add(taskGenerateConnectTs);
+            if(taskGenerateConnectTs!=null){
+                commands.add(taskGenerateConnectTs);
+            }
+            */
         }
     }
 

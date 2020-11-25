@@ -8,7 +8,7 @@
         <artifactId>flow-project</artifactId>
         <version>6.0-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-server</artifactId>
+    <artifactId>fusion-server</artifactId>
     <name>Flow Server</name>
     <packaging>jar</packaging>
 
@@ -29,7 +29,7 @@
 
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-push</artifactId>
+            <artifactId>flow-server</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -164,6 +164,51 @@
             <scope>test</scope>
         </dependency>
 
+
+        <!--  Fusion Dependencies -->
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>${validation.api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${spring.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <version>${spring.autoconfigure.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
         <!-- Needed for security annotations -->
         <dependency>
             <groupId>javax.annotation</groupId>
