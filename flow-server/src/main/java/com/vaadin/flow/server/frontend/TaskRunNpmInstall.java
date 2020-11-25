@@ -230,7 +230,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         String genDevDependenciesPath = getDevDependenciesFilePath();
         if (genDevDependenciesPath == null) {
-            packageUpdater.log().error(
+            // #9345 - locking dev dependencies doesn't work for now
+            packageUpdater.log().debug(
                     "Couldn't find dev dependencies file path from proeprties file. "
                             + "Dev dependencies won't be locked");
             return versionsJson;
@@ -255,7 +256,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
             throws IOException {
         URL resource = classFinder.getResource(path);
         if (resource == null) {
-            packageUpdater.log().warn("Couldn't find  dev dependencies file. "
+            // #9345 - locking dev dependencies doesn't work for now
+            packageUpdater.log().debug("Couldn't find  dev dependencies file. "
                     + "Dev dependencies won't be locked");
             return null;
         }
