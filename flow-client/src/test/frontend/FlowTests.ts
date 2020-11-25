@@ -1,15 +1,9 @@
-const { suite, test, beforeEach, afterEach } = intern.getInterface("tdd");
+const { suite, test, after, before, beforeEach, afterEach } = intern.getInterface("tdd");
 const { assert } = intern.getPlugin("chai");
 
 // API to test
-import {
-  Flow,
-  NavigationParameters
-} from "../../main/resources/META-INF/resources/frontend/Flow";
-import {
-  ConnectionState,
-  ConnectionStateStore
-} from "../../main/resources/META-INF/resources/frontend/ConnectionState";
+import {Flow, NavigationParameters} from "../../main/resources/META-INF/resources/frontend/Flow";
+import {ConnectionState, ConnectionStateStore} from "../../main/resources/META-INF/resources/frontend/ConnectionState";
 // Intern does not serve webpack chunks, adding deps here in order to
 // produce one chunk, because dynamic imports in Flow.ts  will not work.
 import "../../main/resources/META-INF/resources/frontend/FlowBootstrap";
@@ -102,6 +96,17 @@ function createInitResponse(appId: string, changes = '[]', pushScript?: string):
 
 suite("Flow", () => {
 
+  before( () => {
+    // keep track of all event listeners added by Flow client to window for removal between tests
+    $wnd.originalAddEventListener = $wnd.addEventListener;
+  });
+
+  after( () => {
+    $wnd.addEventListener = $wnd.originalAddEventListener;
+  });
+
+  let listeners = [];
+
   beforeEach(() => {
     delete $wnd.Vaadin;
     $wnd.Vaadin = {
@@ -112,6 +117,12 @@ suite("Flow", () => {
     if (indicator) {
       $wnd.document.body.removeChild(indicator);
     }
+
+    $wnd.addEventListener = function(type, listener)
+    {
+      listeners.push({type: type, listener: listener});
+      $wnd.originalAddEventListener(type, listener);
+    };
   });
 
   afterEach(() => {
@@ -119,6 +130,10 @@ suite("Flow", () => {
     delete $wnd.Vaadin;
     delete flowRoot.$;
     delete flowRoot.$server;
+    listeners.forEach( recorded => {
+      $wnd.removeEventListener(recorded.type, recorded.listener);
+    });
+    listeners = [];
   });
 
   test("should accept a configuration object", () => {
@@ -664,6 +679,44 @@ suite("Flow", () => {
     let onBeforeLeaveReturns = await view.onBeforeLeave(params, {});
     assert.deepEqual({}, onBeforeLeaveReturns);
   });
+
+  test("when no Flow client loaded, should transition to CONNECTED when receiving 'offline' and then 'online' events and connection is reestablished", async () => {
+    mock.use('HEAD', /^.*/, (req, res) => {
+      return res.status(200);
+    });
+    new Flow();
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTED);
+    $wnd.dispatchEvent(new Event('offline')); // caught by Flow.ts
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTION_LOST);
+    $wnd.dispatchEvent(new Event('online')); // caught by Flow.ts
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.RECONNECTING);
+    await new Promise(resolve => setTimeout(resolve, 100));
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTED);
+  });
+
+  test("when no Flow client loaded, should transition to CONNECTION_LOST when receiving 'offline' and then 'online' events and connection is not reestablished", async () => {
+    new Flow();
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTED);
+    $wnd.dispatchEvent(new Event('offline')); // caught by Flow.ts
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTION_LOST);
+    $wnd.dispatchEvent(new Event('online')); // caught by Flow.ts
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.RECONNECTING);
+    await new Promise(resolve => setTimeout(resolve, 100));
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTION_LOST);
+  });
+
+  test("when Flow client loaded, should transition to RECONNECTING on receiving 'offline' and then 'online' events", async () => {
+    stubServerRemoteFunction('FooBar-12345');
+    mockInitResponse('FooBar-12345', undefined, stubVaadinPushSrc);
+    const flow = new Flow();
+    await (flow as any).flowInit(true);
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTED);
+    $wnd.dispatchEvent(new Event('offline')); // caught by DefaultConnectionStateHandler
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTION_LOST);
+    $wnd.dispatchEvent(new Event('online')); // caught by DefaultConnectionStateHandler
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.RECONNECTING);
+  });
+
 });
 
 function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRegex?: RegExp,

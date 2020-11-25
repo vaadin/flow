@@ -1,4 +1,4 @@
-import './ConnectionIndicator';
+import {getConnectionIndicator} from "./ConnectionIndicator";
 import {ConnectionState} from './ConnectionState';
 
 export interface FlowConfig {
@@ -87,7 +87,7 @@ export class Flow {
         (document.baseURI || elm && elm.href || '/')
             .replace(/^https?:\/\/[^\/]+/i, ''));
     this.appShellTitle = document.title;
-    // Put a flow progress-bar in the dom
+    // Put a vaadin-connection-indicator in the dom
     this.addConnectionIndicator();
   }
 
@@ -148,7 +148,7 @@ export class Flow {
 
     // server -> server, viewing offline stub, or browser is offline
     const connectionState = $wnd.Vaadin.connectionState;
-    if (this.pathname === ctx.pathname || this.response === undefined
+    if (this.pathname === ctx.pathname || !this.isFlowClientLoaded()
       || connectionState.offline) {
       return Promise.resolve({});
     }
@@ -202,7 +202,7 @@ export class Flow {
   // import flow client modules and initialize UI in server side.
   private async flowInit(serverSideRouting = false): Promise<AppInitResponse> {
     // Do not start flow twice
-    if (!this.response) {
+    if (!this.isFlowClientLoaded()) {
 
       // show flow progress indicator
       this.loadingStarted();
@@ -251,7 +251,7 @@ export class Flow {
       // hide flow progress indicator
       this.loadingSucceeded();
     }
-    return this.response;
+    return this.response!;
   }
 
   private async loadScript(url: string): Promise<void> {
@@ -329,8 +329,31 @@ export class Flow {
 
   // Create shared connection state store and connection indicator
   private addConnectionIndicator() {
-    $wnd.Vaadin.connectionIndicator = document.createElement('vaadin-connection-indicator');
-    document.body.appendChild($wnd.Vaadin.connectionIndicator);
+    getConnectionIndicator();
+
+    // Listen to browser online/offline events and update the loading indicator accordingly.
+    // Note: if flow-client is loaded, it instead handles the state transitions.
+    $wnd.addEventListener('online', () => {
+      if (!this.isFlowClientLoaded()) {
+        // else, send an HTTP HEAD request to verify the server being online
+        // we don't care about HTTP errors, only network failure
+        $wnd.Vaadin.connectionState.state = ConnectionState.RECONNECTING;
+        const http = new XMLHttpRequest();
+        http.open('HEAD', location.pathname || '/');
+        http.onload = () => {
+          $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
+        };
+        http.onerror = () => {
+          $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
+        };
+        http.send();
+      }
+    });
+    $wnd.addEventListener('offline', () => {
+      if (!this.isFlowClientLoaded()) {
+        $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
+      }
+    });
   }
 
   private loadingStarted() {
@@ -350,6 +373,10 @@ export class Flow {
     this.container = document.createElement('vaadin-offline-stub');
     this.response = undefined;
     document.body.appendChild(this.container);
+  }
+
+  private isFlowClientLoaded(): boolean {
+    return this.response !== undefined;
   }
 }
 

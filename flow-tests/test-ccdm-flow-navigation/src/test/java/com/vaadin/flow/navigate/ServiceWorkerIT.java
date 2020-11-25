@@ -32,7 +32,7 @@ import com.vaadin.flow.testutil.ChromeDeviceTest;
 public class ServiceWorkerIT extends ChromeDeviceTest {
 
     @Test
-    public void onelineRoot_serviceWorkerInstalled_serviceWorkerActive() {
+    public void onlineRoot_serviceWorkerInstalled_serviceWorkerActive() {
         getDriver().get(getRootURL() + "/");
         waitForServiceWorkerReady();
 
