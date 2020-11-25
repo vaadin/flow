@@ -20,12 +20,14 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.ImageElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_LIT_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_POLYMER_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.SNOWFLAKE_ID;
 
 public class ThemeIT extends ChromeBrowserTest {
 
@@ -36,7 +38,6 @@ public class ThemeIT extends ChromeBrowserTest {
             driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
 
         getDriver().get(getRootURL() + "/VAADIN/static/no-copy.txt");
-        System.out.println(driver.getPageSource());
         Assert.assertTrue("no-copy theme should not be handled",
             driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
     }
@@ -88,6 +89,22 @@ public class ThemeIT extends ChromeBrowserTest {
             "url(\"" + getRootURL() + "/VAADIN/static/icons/archive.png\")",
             $(SpanElement.class).id("sub-component")
                 .getCssValue("background-image"));
+    }
+
+    @Test
+    public void staticModuleAsset_servedFromStatic() {
+        open();
+        checkLogsForErrors();
+
+        Assert.assertEquals(
+            "Node assets should have been copied to 'VAADIN/static'",
+            getRootURL() + "/VAADIN/static/fortawesome/icons/snowflake.svg",
+            $(ImageElement.class).id(SNOWFLAKE_ID).getAttribute("src"));
+
+        open(getRootURL() + "/" + $(ImageElement.class).id(SNOWFLAKE_ID)
+            .getAttribute("src"));
+        Assert.assertFalse("Node static icon should be available",
+            driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
     }
 
     @Override
