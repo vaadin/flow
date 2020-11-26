@@ -79,10 +79,10 @@ public class VaadinServlet extends HttpServlet {
              * 
              * Normally "init" method is called only once by the servlet
              * container. But in a specific OSGi case {@code
-             * ServletCointextListener} may be called after the servlet
+             * ServletContextListener} may be called after the servlet
              * initialized. To be able to initialize the VaadinServlet properly
              * its "init" method is called from the {@code
-             * ServletCointextListener} with the same ServletConfig instance.
+             * ServletContextListener} with the same ServletConfig instance.
              */
             if (getServletConfig() == null) {
                 super.init(servletConfig);
