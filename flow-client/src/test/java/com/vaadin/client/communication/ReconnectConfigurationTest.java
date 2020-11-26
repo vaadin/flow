@@ -15,8 +15,6 @@
  */
 package com.vaadin.client.communication;
 
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_DEFAULT;
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_DEFAULT;
 import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_KEY;
 import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_KEY;
 import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT;
@@ -76,8 +74,9 @@ public class ReconnectConfigurationTest
 
     @Test
     public void defaults() {
-        Assert.assertEquals(DIALOG_TEXT_DEFAULT, configuration.getDialogText());
-        Assert.assertEquals(DIALOG_TEXT_GAVE_UP_DEFAULT,
+        // Defaults for dialog properties moved to ConnectionIndicator.ts
+        Assert.assertEquals(null, configuration.getDialogText());
+        Assert.assertEquals(null,
                 configuration.getDialogTextGaveUp());
         Assert.assertEquals(RECONNECT_ATTEMPTS_DEFAULT,
                 configuration.getReconnectAttempts());
