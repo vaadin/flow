@@ -106,7 +106,7 @@ public class ThemeIT extends ChromeBrowserTest {
                 + "/path/VAADIN/static/fortawesome/icons/snowflake.svg",
             $(ImageElement.class).id(SNOWFLAKE_ID).getAttribute("src"));
 
-        open(getRootURL() + "/" + $(ImageElement.class).id(SNOWFLAKE_ID)
+        open(getRootURL() + "/path/" + $(ImageElement.class).id(SNOWFLAKE_ID)
             .getAttribute("src"));
         Assert.assertFalse("Node static icon should be available",
             driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
