@@ -68,6 +68,22 @@ public class VaadinServlet extends HttpServlet {
         CurrentInstance.clearAll();
 
         try {
+            /*
+             * There are plenty of reasons why the check should be done. The
+             * main reason is: init method is public which means that everyone
+             * may call this method at any time (including an app developer).
+             * But it's not supposed to be called any times any time.
+             * 
+             * This code protects weak API from being called several times so
+             * that config is reset after the very first initialization.
+             * 
+             * Normally "init" method is called only once by the servlet
+             * container. But in a specific OSGi case {@code
+             * ServletCointextListener} may be called after the servlet
+             * initialized. To be able to initialize the VaadinServlet properly
+             * its "init" method is called from the {@code
+             * ServletCointextListener} with the same ServletConfig instance.
+             */
             if (getServletConfig() == null) {
                 super.init(servletConfig);
             }
