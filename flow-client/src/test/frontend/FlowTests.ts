@@ -1,5 +1,8 @@
+import {SinonStatic} from "sinon";
+
 const { suite, test, after, before, beforeEach, afterEach } = intern.getInterface("tdd");
 const { assert } = intern.getPlugin("chai");
+const { sinon } = intern.getPlugin("sinon") as { sinon: SinonStatic };
 
 // API to test
 import {Flow, NavigationParameters} from "../../main/resources/META-INF/resources/frontend/Flow";
@@ -15,6 +18,8 @@ const $wnd = window as any;
 const flowRoot = window.document.body as any;
 
 const stubVaadinPushSrc = '/src/test/frontend/stubVaadinPush.js';
+
+const OFFLINE_STUB_NAME = 'vaadin-offline-stub';
 
 // A `changes` array that adds a div with 'Foo' text to body
 const changesResponse = `[
@@ -641,15 +646,15 @@ suite("Flow", () => {
       search: ''
     };
     const view = await route.action(params);
-    assert.equal(view.tagName, 'VAADIN-OFFLINE-STUB');
+    assert.equal(view.localName, OFFLINE_STUB_NAME);
 
     // @ts-ignore
-    let onBeforeEnterReturns = await view.onBeforeEnter(params, {});
-    assert.equal(view, onBeforeEnterReturns);
+    let onBeforeEnterReturns = view.onBeforeEnter(params, {});
+    assert.equal(onBeforeEnterReturns, undefined);
 
     // @ts-ignore
-    let onBeforeLeaveReturns = await view.onBeforeLeave(params, {});
-    assert.deepEqual({}, onBeforeLeaveReturns);
+    let onBeforeLeaveReturns = view.onBeforeLeave(params, {});
+    assert.equal(onBeforeLeaveReturns, undefined);
   });
 
   test("should show stub when navigating to server view and Flow initialization fails due to network error", async () => {
@@ -667,17 +672,36 @@ suite("Flow", () => {
     const indicator = $wnd.document.querySelector('.v-loading-indicator');
 
     const view = await route.action(params);
-    assert.equal(view.tagName, 'VAADIN-OFFLINE-STUB');
+    assert.isNotNull(view);
+    assert.equal(view.localName, OFFLINE_STUB_NAME);
 
     assert.equal(indicator.getAttribute('style'), 'display: none');
 
     // @ts-ignore
-    let onBeforeEnterReturns = await view.onBeforeEnter(params, {});
-    assert.equal(view, onBeforeEnterReturns);
+    let onBeforeEnterReturns = view.onBeforeEnter(params, {});
+    assert.equal(onBeforeEnterReturns, undefined);
 
     // @ts-ignore
-    let onBeforeLeaveReturns = await view.onBeforeLeave(params, {});
-    assert.deepEqual({}, onBeforeLeaveReturns);
+    let onBeforeLeaveReturns = view.onBeforeLeave(params, {});
+    assert.deepEqual(onBeforeLeaveReturns, undefined);
+  });
+
+  test("should retry navigation when back online", async() => {
+    stubServerRemoteFunction('foobar-123');
+    $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
+    const flow = new Flow();
+    const route = flow.serverSideRoutes[0];
+    const params: NavigationParameters = {
+      pathname: 'Foo/Bar.baz',
+      search: ''
+    };
+    const clientSideRouter = {render: sinon.spy()};
+    const view = await route.action(params);
+    await view.onBeforeEnter(params, {}, clientSideRouter);
+
+    $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
+    sinon.assert.calledOnce(clientSideRouter.render);
+    sinon.assert.calledWithExactly(clientSideRouter.render.getCall(0), params, false);
   });
 
   test("when no Flow client loaded, should transition to CONNECTED when receiving 'offline' and then 'online' events and connection is reestablished", async () => {
