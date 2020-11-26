@@ -15,13 +15,19 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import com.vaadin.flow.di.Lookup;
 
 @NotThreadSafe
 public class VaadinServletTest {
@@ -62,6 +68,97 @@ public class VaadinServletTest {
                 .getLastPathParameter("http://myhost.com/a;hello/;b=1,c=2"));
         Assert.assertEquals("", VaadinServlet
                 .getLastPathParameter("http://myhost.com/a;hello/;b=1,c=2/"));
+    }
+
+    @Test
+    public void init_superInitCalledOnce() throws ServletException {
+        AtomicBoolean called = new AtomicBoolean();
+        VaadinServlet servlet = new VaadinServlet() {
+
+            @Override
+            public void init() throws ServletException {
+                Assert.assertFalse(called.get());
+                called.set(true);
+            }
+        };
+
+        ServletConfig config = mockConfig();
+        servlet.init(config);
+
+        Assert.assertTrue(called.get());
+
+        servlet.init(config);
+
+        Assert.assertSame(config, servlet.getServletConfig());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void init_passDifferentConfigInstance_throws()
+            throws ServletException {
+        VaadinServlet servlet = new VaadinServlet();
+
+        ServletConfig config = mockConfig();
+        servlet.init(config);
+
+        servlet.init(mockConfig());
+    }
+
+    @Test
+    public void init_noLookup_servletIsNotInitialized()
+            throws ServletException {
+        AtomicBoolean called = new AtomicBoolean();
+        VaadinServlet servlet = new VaadinServlet() {
+
+            @Override
+            protected void servletInitialized() throws ServletException {
+                called.set(true);
+            }
+        };
+
+        ServletConfig config = mockConfig();
+        servlet.init(config);
+
+        Assert.assertFalse(called.get());
+    }
+
+    @Test
+    public void init_contextHasLookup_servletIsInitialized()
+            throws ServletException {
+        AtomicBoolean called = new AtomicBoolean();
+        VaadinServlet servlet = new VaadinServlet() {
+
+            @Override
+            protected VaadinServletService createServletService()
+                    throws ServletException, ServiceException {
+                return Mockito.mock(VaadinServletService.class);
+            }
+
+            @Override
+            protected StaticFileHandler createStaticFileHandler(
+                    VaadinServletService servletService) {
+                return Mockito.mock(StaticFileHandler.class);
+            }
+
+            @Override
+            protected void servletInitialized() throws ServletException {
+                called.set(true);
+            }
+        };
+
+        ServletConfig config = mockConfig();
+        ServletContext servletContext = config.getServletContext();
+        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
+                .thenReturn(Mockito.mock(Lookup.class));
+        servlet.init(config);
+
+        Assert.assertTrue(called.get());
+    }
+
+    private ServletConfig mockConfig() {
+        ServletConfig config = Mockito.mock(ServletConfig.class);
+        ServletContext context = Mockito.mock(ServletContext.class);
+        Mockito.when(config.getServletContext()).thenReturn(context);
+        return config;
     }
 
     private HttpServletRequest createRequest(
