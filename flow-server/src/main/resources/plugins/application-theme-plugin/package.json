@@ -6,7 +6,7 @@
   ],
   "repository": "vaadin/flow",
   "name": "@vaadin/application-theme-plugin",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "main": "application-theme-plugin.js",
   "author": "Vaadin Ltd",
   "license": "Apache-2.0",
