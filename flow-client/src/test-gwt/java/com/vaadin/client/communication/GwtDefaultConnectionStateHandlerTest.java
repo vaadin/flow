@@ -34,11 +34,10 @@ public class GwtDefaultConnectionStateHandlerTest extends ClientEngineTestBase {
                     getRootNode().getMap(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION)
                             .getProperty(ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY).setValue((double)10000000);
                 }});
-                set(ReconnectDialogConfiguration.class, new ReconnectDialogConfiguration(this));
+                set(ReconnectConfiguration.class, new ReconnectConfiguration(this));
                 set(Heartbeat.class, new Heartbeat(this));
                 set(RequestResponseTracker.class,
                         new RequestResponseTracker(this));
-                set(ConnectionState.class, new ConnectionState());
                 set(ConnectionStateHandler.class,
                         handler = new DefaultConnectionStateHandler(this));
             }
@@ -56,51 +55,51 @@ public class GwtDefaultConnectionStateHandlerTest extends ClientEngineTestBase {
 
     public void test_onlineEventFollowedByOffline_connectionLost() {
         Browser.getWindow().dispatchEvent(createEvent("offline"));
-        assertEquals(ConnectionState.CONNECTION_LOST,
-                registry.getConnectionState().getState());
+        assertEquals(ConnectionIndicator.CONNECTION_LOST,
+                ConnectionIndicator.getState());
 
         Browser.getWindow().dispatchEvent(createEvent("online"));
-        assertEquals(ConnectionState.RECONNECTING,
-                registry.getConnectionState().getState());
+        assertEquals(ConnectionIndicator.RECONNECTING,
+                ConnectionIndicator.getState());
 
         Browser.getWindow().dispatchEvent(createEvent("offline"));
-        assertEquals(ConnectionState.CONNECTION_LOST,
-                registry.getConnectionState().getState());
+        assertEquals(ConnectionIndicator.CONNECTION_LOST,
+                ConnectionIndicator.getState());
     }
 
     public void test_onlineEventHeartbeatSucceeds_connected() {
         Browser.getWindow().dispatchEvent(createEvent("offline"));
-        assertEquals(ConnectionState.CONNECTION_LOST,
-                registry.getConnectionState().getState());
+        assertEquals(ConnectionIndicator.CONNECTION_LOST,
+                ConnectionIndicator.getState());
 
         Browser.getWindow().dispatchEvent(createEvent("online"));
-        assertEquals(ConnectionState.RECONNECTING,
-                registry.getConnectionState().getState());
+        assertEquals(ConnectionIndicator.RECONNECTING,
+                ConnectionIndicator.getState());
 
         handler.heartbeatOk();
-        assertEquals(ConnectionState.CONNECTED,
-                registry.getConnectionState().getState());
+        assertEquals(ConnectionIndicator.CONNECTED,
+                ConnectionIndicator.getState());
     }
 
     public void test_onlineEventButHeartbeatFails_continuesReconnectingAndFinallyGivesUp() {
         Browser.getWindow().dispatchEvent(createEvent("offline"));
-        assertEquals(ConnectionState.CONNECTION_LOST,
-                registry.getConnectionState().getState());
+        assertEquals(ConnectionIndicator.CONNECTION_LOST,
+                ConnectionIndicator.getState());
 
         Browser.getWindow().dispatchEvent(createEvent("online"));
-        assertEquals(ConnectionState.RECONNECTING,
-                registry.getConnectionState().getState());
+        assertEquals(ConnectionIndicator.RECONNECTING,
+                ConnectionIndicator.getState());
 
         // second attempt (first attempt immediately after transitioning to
         // ConnectionState.RECONNECTING): should keep reconnecting
         handler.heartbeatException(XMLHttpRequest.create(), new Exception("some exception"));
-        assertEquals(ConnectionState.RECONNECTING,
-                registry.getConnectionState().getState());
+        assertEquals(ConnectionIndicator.RECONNECTING,
+                ConnectionIndicator.getState());
 
         // third attempt: should transition to CONNECTION_LOST
         handler.heartbeatException(XMLHttpRequest.create(), new Exception("some exception"));
-        assertEquals(ConnectionState.CONNECTION_LOST,
-                registry.getConnectionState().getState());
+        assertEquals(ConnectionIndicator.CONNECTION_LOST,
+                ConnectionIndicator.getState());
     }
 
     private static native Event createEvent(String type)

@@ -1540,9 +1540,6 @@ public class BootstrapHandlerTest {
 
         Assert.assertEquals(PushMode.MANUAL,
                 testUI.getPushConfiguration().getPushMode());
-
-        Assert.assertTrue(
-                testUI.getReconnectDialogConfiguration().isDialogModal());
     }
 
 }

@@ -22,7 +22,7 @@ import com.google.gwt.core.client.Scheduler;
 
 import com.vaadin.client.communication.LoadingIndicatorConfigurator;
 import com.vaadin.client.communication.PollConfigurator;
-import com.vaadin.client.communication.ReconnectDialogConfiguration;
+import com.vaadin.client.communication.ReconnectConfiguration;
 import com.vaadin.client.flow.RouterLinkHandler;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.binding.Binder;
@@ -61,7 +61,7 @@ public class ApplicationConnection {
 
         // Bind UI configuration objects
         PollConfigurator.observe(rootNode, registry.getPoller());
-        ReconnectDialogConfiguration.bind(registry.getConnectionStateHandler());
+        ReconnectConfiguration.bind(registry.getConnectionStateHandler());
         LoadingIndicatorConfigurator.observe(rootNode);
 
         Element body = Browser.getDocument().getBody();
@@ -118,8 +118,7 @@ public class ApplicationConnection {
             }
         }
 
-        registry.getConnectionState()
-                .setState(ConnectionState.LOADING);
+        ConnectionIndicator.setState(ConnectionIndicator.LOADING);
     }
 
     /**

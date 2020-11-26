@@ -23,8 +23,8 @@ import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 
 /**
- * Tracks the reconnect dialog configuration stored in the root node and
- * provides it with an easier to use API.
+ * Tracks the reconnect configuration stored in the root node and provides it
+ * with an easier to use API.
  * <p>
  * Also triggers {@link ConnectionStateHandler#configurationUpdated()} whenever
  * part of the configuration changes.
@@ -32,7 +32,7 @@ import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class ReconnectDialogConfiguration {
+public class ReconnectConfiguration {
 
     private final Registry registry;
 
@@ -42,7 +42,7 @@ public class ReconnectDialogConfiguration {
      * @param registry
      *            the registry
      */
-    public ReconnectDialogConfiguration(Registry registry) {
+    public ReconnectConfiguration(Registry registry) {
         this.registry = registry;
     }
 
@@ -50,7 +50,7 @@ public class ReconnectDialogConfiguration {
      * Binds this ReconnectDialogConfiguration to the given
      * {@link ConnectionStateHandler} so that
      * {@link ConnectionStateHandler#configurationUpdated()} is run whenever a
-     * relevant part of {@link ReconnectDialogConfiguration} changes.
+     * relevant part of {@link ReconnectConfiguration} changes.
      *
      * @param connectionStateHandler
      *            the connection state handler to bind to
@@ -67,26 +67,16 @@ public class ReconnectDialogConfiguration {
     }
 
     /**
-     * Checks whether the reconnect dialog should be modal, i.e. prevent
-     * application usage while being shown.
-     *
-     * @return true if the dialog is modal, false otherwise
-     */
-    public boolean isDialogModal() {
-        return getProperty(ReconnectDialogConfigurationMap.DIALOG_MODAL_KEY)
-                .getValueOrDefault(
-                        ReconnectDialogConfigurationMap.DIALOG_MODAL_DEFAULT);
-    }
-
-    /**
      * Gets the text to show in the reconnect dialog.
      *
      * @return the text to show in the reconnect dialog.
+     *
+     * @deprecated The API for configuring the connection indicator has changed.
      */
+    @Deprecated
     public String getDialogText() {
         return getProperty(ReconnectDialogConfigurationMap.DIALOG_TEXT_KEY)
-                .getValueOrDefault(
-                        ReconnectDialogConfigurationMap.DIALOG_TEXT_DEFAULT);
+                .getValueOrDefault(null);
     }
 
     /**
@@ -95,12 +85,14 @@ public class ReconnectDialogConfiguration {
      *
      * @return the text to show in the reconnect dialog when no longer trying to
      *         reconnect
+     *
+     * @deprecated The API for configuring the connection indicator has changed.
      */
+    @Deprecated
     public String getDialogTextGaveUp() {
         return getProperty(
                 ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_KEY)
-                        .getValueOrDefault(
-                                ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_DEFAULT);
+                .getValueOrDefault(null);
     }
 
     /**
@@ -127,18 +119,4 @@ public class ReconnectDialogConfiguration {
                         .getValueOrDefault(
                                 ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT);
     }
-
-    /**
-     * Gets the time in milliseconds to wait after noticing a loss of connection
-     * but before showing the reconnect dialog.
-     *
-     * @return the time in milliseconds to wait before showing the dialog
-     */
-    public int getDialogGracePeriod() {
-        return getProperty(
-                ReconnectDialogConfigurationMap.DIALOG_GRACE_PERIOD_KEY)
-                        .getValueOrDefault(
-                                ReconnectDialogConfigurationMap.DIALOG_GRACE_PERIOD_DEFAULT);
-    }
-
 }

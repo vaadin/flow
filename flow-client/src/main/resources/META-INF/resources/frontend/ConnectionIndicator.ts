@@ -51,12 +51,6 @@ export class ConnectionIndicator extends LitElement {
   expandedDuration: number = 2000;
 
   /**
-   * Whether the connection state message should be modal.
-   */
-  @property({type: Boolean})
-  reconnectModal: boolean = false;
-
-  /**
    * The message shown when the connection goes to connected state.
    */
   @property({type: String})
@@ -124,8 +118,7 @@ export class ConnectionIndicator extends LitElement {
        style="${this.getLoadingBarStyle()}"></div>
 
       <div class="v-status-message ${classMap({
-        active: this.reconnecting,
-        modal: this.reconnectModal
+        active: this.reconnecting
       })}">
         <span class="text">
           ${this.renderMessage()}

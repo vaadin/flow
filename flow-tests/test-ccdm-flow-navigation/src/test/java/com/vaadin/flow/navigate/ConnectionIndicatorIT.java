@@ -23,13 +23,11 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.mobile.NetworkConnection;
 
-import static com.vaadin.flow.navigate.HelloWorldView.NAVIGATE_ABOUT;
-
 public class ConnectionIndicatorIT extends ChromeDeviceTest {
 
     @Test
     public void online_goingOffline_customisedMessageShown() throws Exception {
-        getDriver().get(getRootURL() + "/");
+        getDriver().get(getRootURL() + "/connection-indicator");
         waitForServiceWorkerReady();
         setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
         try {
@@ -42,7 +40,7 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
 
     @Test
     public void offline_goingOnline_customisedMessageShown() throws Exception {
-        getDriver().get(getRootURL() + "/");
+        getDriver().get(getRootURL() + "/connection-indicator");
         waitForServiceWorkerReady();
         setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
         try {
@@ -57,15 +55,35 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
 
     @Test
     public void offline_serverConnectionAttempted_customisedMessageShown() throws Exception {
-        getDriver().get(getRootURL() + "/hello");
+        getDriver().get(getRootURL() + "/connection-indicator");
         waitForServiceWorkerReady();
         setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
         try {
             expectConnectionState("connection-lost");
-            findElement(By.id(NAVIGATE_ABOUT)).click();
+            findElement(By.id(ConnectionIndicatorView.CONNECT_SERVER)).click();
             testBench().disableWaitForVaadin(); // offline - do run the WAIT_FOR_VAADIN script
             expectConnectionState("reconnecting");
             Assert.assertEquals("Custom reconnecting", getConnectionIndicatorStatusText());
+        } finally {
+            setConnectionType(NetworkConnection.ConnectionType.ALL);
+        }
+    }
+
+    @Test
+    public void offline_serverConnectionAttempted_javaCustomisedMessagesShown() throws Exception {
+        getDriver().get(getRootURL() + "/connection-indicator");
+        waitForServiceWorkerReady();
+        findElement(By.id(ConnectionIndicatorView.SET_CUSTOM_MESSAGES)).click();
+        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        try {
+            expectConnectionState("connection-lost");
+            Assert.assertEquals(ConnectionIndicatorView.CUSTOM_OFFLINE_MESSAGE,
+                getConnectionIndicatorStatusText());
+            findElement(By.id(ConnectionIndicatorView.CONNECT_SERVER)).click();
+            testBench().disableWaitForVaadin(); // offline - do run the WAIT_FOR_VAADIN script
+            expectConnectionState("reconnecting");
+            Assert.assertEquals(ConnectionIndicatorView.CUSTOM_RECONNECTING_MESSAGE,
+                getConnectionIndicatorStatusText());
         } finally {
             setConnectionType(NetworkConnection.ConnectionType.ALL);
         }
