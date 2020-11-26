@@ -17,13 +17,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EventListener;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import com.google.common.collect.Maps;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -386,7 +386,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void onStartup_devModeAlreadyStarted_shouldBeTrueWhenStarted()
             throws Exception {
-        final Map<String, Object> servletContextAttributes = Maps.newHashMap();
+        final Map<String, Object> servletContextAttributes = new HashMap<>();
         Mockito.doAnswer(answer -> {
             String key = answer.getArgumentAt(0, String.class);
             Object value = answer.getArgumentAt(1, Object.class);
