@@ -344,6 +344,32 @@ public class WebBrowser implements Serializable {
     }
 
     /**
+     * For internal use only. Updates all properties in the class according to
+     * the given information.
+     *
+     * @param request
+     *            the Vaadin request to read the information from
+     *
+     * @deprecated Use {@link #WebBrowser(VaadinRequest)} constructor instead
+     *             and create a new instance of WebBrowser to apply the changes
+     *             from given {@link VaadinRequest}.
+     */
+    @Deprecated
+    public void updateRequestDetails(VaadinRequest request) {
+        locale = request.getLocale();
+        address = request.getRemoteAddr();
+        secureConnection = request.isSecure();
+        // Headers are case insensitive according to the specification but are
+        // case sensitive in Weblogic portal...
+        String agent = request.getHeader("User-Agent");
+
+        if (agent != null) {
+            browserApplication = agent;
+            browserDetails = new BrowserDetails(agent);
+        }
+    }
+
+    /**
      * Checks if the browser is so old that it simply won't work with a Vaadin
      * application. Can be used to redirect to an alternative page, show
      * alternative content or similar.
