@@ -27,7 +27,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.CurrentInstance;
 
 @NotThreadSafe
 public class VaadinServletTest {
@@ -152,6 +154,72 @@ public class VaadinServletTest {
         servlet.init(config);
 
         Assert.assertTrue(called.get());
+    }
+
+    @Test
+    public void init_initServlet_CurrentInstanceClearAllIsCalled()
+            throws ServletException {
+        try {
+            VaadinServlet servlet = new VaadinServlet() {
+
+                @Override
+                public void init() throws ServletException {
+                    VaadinSession.setCurrent(Mockito.mock(VaadinSession.class));
+                }
+
+                @Override
+                protected VaadinServletService createServletService()
+                        throws ServletException, ServiceException {
+                    VaadinService.setCurrent(Mockito.mock(VaadinService.class));
+                    return Mockito.mock(VaadinServletService.class);
+                }
+
+                @Override
+                protected StaticFileHandler createStaticFileHandler(
+                        VaadinServletService servletService) {
+                    return Mockito.mock(StaticFileHandler.class);
+                }
+
+                @Override
+                protected void servletInitialized() throws ServletException {
+                    UI.setCurrent(new UI());
+                }
+            };
+
+            ServletConfig config = mockConfig();
+            ServletContext servletContext = config.getServletContext();
+            Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
+                    .thenReturn(Mockito.mock(Lookup.class));
+            servlet.init(config);
+
+            Assert.assertNull(VaadinService.getCurrent());
+            Assert.assertNull(UI.getCurrent());
+            Assert.assertNull(VaadinSession.getCurrent());
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    @Test
+    public void init_initOnlyConfig_CurrentInstanceClearAllIsCalled()
+            throws ServletException {
+        try {
+            VaadinServlet servlet = new VaadinServlet() {
+
+                @Override
+                public void init() throws ServletException {
+                    VaadinService.setCurrent(Mockito.mock(VaadinService.class));
+                }
+
+            };
+
+            ServletConfig config = mockConfig();
+            servlet.init(config);
+
+            Assert.assertNull(VaadinService.getCurrent());
+        } finally {
+            CurrentInstance.clearAll();
+        }
     }
 
     private ServletConfig mockConfig() {
