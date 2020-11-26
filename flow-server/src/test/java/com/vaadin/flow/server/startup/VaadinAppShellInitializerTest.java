@@ -148,8 +148,6 @@ public class VaadinAppShellInitializerTest {
                     .ifPresent(indicator -> indicator.setSecondDelay(700000));
             settings.getPushConfiguration()
                     .ifPresent(push -> push.setPushMode(PushMode.AUTOMATIC));
-            settings.getReconnectDialogConfiguration()
-                    .ifPresent(dialog -> dialog.setDialogModal(true));
         }
     }
 
