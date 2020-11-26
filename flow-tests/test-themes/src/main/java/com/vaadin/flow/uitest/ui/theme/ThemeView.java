@@ -45,7 +45,8 @@ public class ThemeView extends Div {
         Span octopuss = new Span();
         octopuss.setId(OCTOPUSS_ID);
 
-        Image snowFlake = new Image("VAADIN/static/fortawesome/icons/snowflake.svg", "snowflake");
+        Image snowFlake = new Image(
+            "VAADIN/static/fortawesome/icons/snowflake.svg", "snowflake");
         snowFlake.setHeight("1em");
         snowFlake.setId(SNOWFLAKE_ID);
 
