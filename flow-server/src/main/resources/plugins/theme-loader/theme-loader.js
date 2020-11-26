@@ -19,8 +19,8 @@ module.exports = function (source, map) {
   const logger = this.getLogger("theme-loader");
 
   let themeFolder = handledResourceFolder;
-  // Recurse up until we have no parent folder or we find the theme folder
-  while (fs.existsSync(path.resolve(themeFolder, ".."))
+  // Recurse up until we find the theme folder or don't have 'theme' on the path.
+  while (themeFolder.indexOf("theme") > 1
       && path.basename(path.resolve(themeFolder, "..")) !== "theme") {
     themeFolder = path.resolve(themeFolder, "..");
   }
