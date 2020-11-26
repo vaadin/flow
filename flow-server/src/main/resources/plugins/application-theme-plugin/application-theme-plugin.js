@@ -17,7 +17,7 @@
 const fs = require('fs');
 const path = require('path');
 const generateThemeFile = require('./theme-generator');
-const copyThemeResources = require('./theme-copy');
+const { copyThemeResources, copyStaticAssets } = require('./theme-copy');
 
 let logger;
 
@@ -110,7 +110,10 @@ function handleThemes(themeName, themesFolder, projectStaticAssetsOutputFolder) 
   if (fs.existsSync(themeFolder)) {
     logger.debug("Found theme ", themeName, " in folder ", themeFolder);
 
+    const themeProperties = getThemeProperties(themeFolder);
+
     copyThemeResources(themeFolder, projectStaticAssetsOutputFolder);
+    copyStaticAssets(themeProperties, projectStaticAssetsOutputFolder, logger);
 
     const themeFile = generateThemeFile(themeFolder, themeName);
 
@@ -118,4 +121,12 @@ function handleThemes(themeName, themesFolder, projectStaticAssetsOutputFolder) 
     return true;
   }
   return false;
+};
+
+function getThemeProperties(themeFolder) {
+  const themePropertyFile = path.resolve(themeFolder, 'theme.json');
+  if (!fs.existsSync(themePropertyFile)) {
+    return {};
+  }
+  return JSON.parse(fs.readFileSync(themePropertyFile));
 };
