@@ -67,17 +67,19 @@ public class VaadinServlet extends HttpServlet {
     public void init(ServletConfig servletConfig) throws ServletException {
         CurrentInstance.clearAll();
 
-        if (getServletConfig() == null) {
-            super.init(servletConfig);
-        }
+        try {
+            if (getServletConfig() == null) {
+                super.init(servletConfig);
+            }
 
-        ServletContext servletContext = getServletConfig().getServletContext();
-        if (new VaadinServletContext(servletContext)
-                .getAttribute(Lookup.class) == null) {
-            return;
-        }
+            ServletContext servletContext = getServletConfig()
+                    .getServletContext();
+            if (servletService != null
+                    || new VaadinServletContext(servletContext)
+                            .getAttribute(Lookup.class) == null) {
+                return;
+            }
 
-        if (servletService == null) {
             try {
                 servletService = createServletService();
             } catch (ServiceException e) {
@@ -92,9 +94,9 @@ public class VaadinServlet extends HttpServlet {
             staticFileHandler = createStaticFileHandler(servletService);
 
             servletInitialized();
+        } finally {
+            CurrentInstance.clearAll();
         }
-
-        CurrentInstance.clearAll();
     }
 
     /**
