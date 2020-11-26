@@ -7,7 +7,6 @@ import junit.framework.TestSuite;
 import com.google.gwt.junit.tools.GWTTestSuite;
 
 import com.vaadin.client.communication.GwtAtmoshperePushConnectionTest;
-import com.vaadin.client.communication.GwtDefaultReconnectDialogTest;
 import com.vaadin.client.flow.GwtBasicElementBinderTest;
 import com.vaadin.client.flow.GwtEventHandlerTest;
 import com.vaadin.client.flow.GwtMultipleBindingTest;
@@ -44,7 +43,6 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtTreeChangeProcessorTest.class);
         suite.addTestSuite(GwtNativeFunctionTest.class);
         suite.addTestSuite(GwtRouterLinkHandlerTest.class);
-        suite.addTestSuite(GwtDefaultReconnectDialogTest.class);
         suite.addTestSuite(GwtStateNodeTest.class);
         suite.addTestSuite(GwtStateTreeTest.class);
         suite.addTestSuite(GwtDomApiTest.class);
