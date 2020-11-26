@@ -17,6 +17,8 @@ package com.vaadin.flow.internal.nodefeature;
 
 import com.vaadin.flow.component.ReconnectDialogConfiguration;
 import com.vaadin.flow.internal.StateNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Map for storing the reconnect dialog configuration for a UI.
@@ -35,10 +37,6 @@ public class ReconnectDialogConfigurationMap extends NodeMap
     public static final int RECONNECT_ATTEMPTS_DEFAULT = 10000;
     public static final String RECONNECT_INTERVAL_KEY = "reconnectInterval";
     public static final int RECONNECT_INTERVAL_DEFAULT = 5000;
-    public static final String DIALOG_GRACE_PERIOD_KEY = "dialogGracePeriod";
-    public static final int DIALOG_GRACE_PERIOD_DEFAULT = 400;
-    public static final String DIALOG_MODAL_KEY = "dialogModal";
-    public static final boolean DIALOG_MODAL_DEFAULT = false;
 
     /**
      * Creates a new map for the given node.
@@ -94,23 +92,35 @@ public class ReconnectDialogConfigurationMap extends NodeMap
 
     @Override
     public int getDialogGracePeriod() {
-        return getOrDefault(DIALOG_GRACE_PERIOD_KEY,
-                DIALOG_GRACE_PERIOD_DEFAULT);
+        getLogger()
+                .warn("dialogGracePeriod: this property has been deprecated, "
+                        + "and will be permanently removed in Vaadin 20");
+        return 0;
     }
 
     @Override
     public void setDialogGracePeriod(int dialogGracePeriod) {
-        put(DIALOG_GRACE_PERIOD_KEY, dialogGracePeriod);
+        getLogger()
+                .warn("dialogGracePeriod: this property has been deprecated, "
+                        + "and will be permanently removed in Vaadin 20");
     }
 
     @Override
     public boolean isDialogModal() {
-        return getOrDefault(DIALOG_MODAL_KEY, DIALOG_MODAL_DEFAULT);
+        getLogger()
+                .warn("dialogModal: this property has been deprecated, and will"
+                        + "be permanently removed in Vaadin 20");
+        return false;
     }
 
     @Override
     public void setDialogModal(boolean dialogModal) {
-        put(DIALOG_MODAL_KEY, dialogModal);
+        getLogger()
+                .warn("dialogModal: this property has been deprecated, and will"
+                        + "be permanently removed in Vaadin 20");
     }
 
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(ElementPropertyMap.class);
+    }
 }

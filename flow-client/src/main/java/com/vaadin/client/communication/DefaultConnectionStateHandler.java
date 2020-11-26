@@ -312,14 +312,18 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     @Override
     public void configurationUpdated() {
         // All other properties are fetched directly from the state when needed
-        ConnectionIndicator.setProperty("reconnectModal",
-                getConfiguration().isDialogModal());
-        ConnectionIndicator.setProperty("reconnectingText",
-                getConfiguration().getDialogText());
+        if (getConfiguration().getDialogText() != null) {
+            ConnectionIndicator.setProperty("reconnectingText",
+                    getConfiguration().getDialogText());
+        }
+        if (getConfiguration().getDialogTextGaveUp() != null) {
+        ConnectionIndicator.setProperty("offlineText",
+                getConfiguration().getDialogTextGaveUp());
+        }
     }
 
-    private ReconnectDialogConfiguration getConfiguration() {
-        return registry.getReconnectDialogConfiguration();
+    private ReconnectConfiguration getConfiguration() {
+        return registry.getReconnectConfiguration();
     }
 
     @Override

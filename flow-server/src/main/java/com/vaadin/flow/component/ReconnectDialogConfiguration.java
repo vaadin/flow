@@ -109,11 +109,13 @@ public interface ReconnectDialogConfiguration extends Serializable {
      * Gets the timeout (in milliseconds) between noticing a loss of connection
      * and showing the dialog.
      * <p>
-     * The default is
-     * {@value ReconnectDialogConfigurationMap#DIALOG_GRACE_PERIOD_DEFAULT}
      *
      * @return the time to wait before showing a dialog
+     *
+     * @deprecated this method is a no-op. The connection indicator has
+     * changed, and there is no longer a grace period.
      */
+    @Deprecated
     int getDialogGracePeriod();
 
     /**
@@ -122,7 +124,11 @@ public interface ReconnectDialogConfiguration extends Serializable {
      *
      * @param dialogGracePeriod
      *            the time to wait before showing a dialog
+     *
+     * @deprecated this method is a no-op. The connection indicator no longer
+     *             has a grace period.
      */
+    @Deprecated
     void setDialogGracePeriod(int dialogGracePeriod);
 
     /**
@@ -135,17 +141,23 @@ public interface ReconnectDialogConfiguration extends Serializable {
      *
      * @param dialogModal
      *            true to make the dialog modal, false otherwise
+     *
+     * @deprecated this method is a no-op. The connection indicator is now never
+     *             modal. This method will be removed in Vaadin 20.
      */
+    @Deprecated
     void setDialogModal(boolean dialogModal);
 
     /**
      * Checks the modality of the dialog.
      * <p>
-     * The default is
-     * {@value ReconnectDialogConfigurationMap#DIALOG_MODAL_DEFAULT}
      *
      * @see #setDialogModal(boolean)
      * @return true if the dialog is modal, false otherwise
+     *
+     * @deprecated this method is a no-op. The connection indicator is now never
+     *             modal.
      */
+    @Deprecated
     boolean isDialogModal();
 }

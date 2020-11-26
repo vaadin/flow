@@ -34,7 +34,7 @@ public class GwtDefaultConnectionStateHandlerTest extends ClientEngineTestBase {
                     getRootNode().getMap(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION)
                             .getProperty(ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY).setValue((double)10000000);
                 }});
-                set(ReconnectDialogConfiguration.class, new ReconnectDialogConfiguration(this));
+                set(ReconnectConfiguration.class, new ReconnectConfiguration(this));
                 set(Heartbeat.class, new Heartbeat(this));
                 set(RequestResponseTracker.class,
                         new RequestResponseTracker(this));
