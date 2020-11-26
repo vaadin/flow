@@ -1,4 +1,6 @@
 /* tslint:disable: no-unused-expression */
+import object from "intern/lib/interfaces/object";
+
 const {describe, it, beforeEach, afterEach, after} = intern.getPlugin('interface.bdd');
 const {expect} = intern.getPlugin('chai');
 const {fetchMock} = intern.getPlugin('fetchMock');
@@ -29,8 +31,13 @@ describe('ConnectClient', () => {
     localStorage.clear();});
 
   after(() => {
-    // @ts-ignore
-    delete window.Vaadin;
+    const $wnd = window as any;
+    const indicator = $wnd.document.body.querySelector('vaadin-connection-indicator');
+    if (indicator) {
+      indicator.remove();
+    }
+    delete $wnd.Vaadin?.connectionIndicator;
+    delete $wnd.Vaadin;
   });
 
   it('should be exported', () => {
@@ -40,7 +47,11 @@ describe('ConnectClient', () => {
   it('should instantiate without arguments', () => {
     const client = new ConnectClient();
     expect(client).to.be.instanceOf(ConnectClient);
+  });
 
+  it('should add a global loading indicator', () => {
+    new ConnectClient();
+    expect((window as any).Vaadin.connectionIndicator).is.not.undefined;
   });
 
   describe('constructor options', () => {
