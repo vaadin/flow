@@ -87,9 +87,20 @@ public class VaadinServletTest {
 
         Assert.assertTrue(called.get());
 
-        servlet.init(mockConfig());
+        servlet.init(config);
 
         Assert.assertSame(config, servlet.getServletConfig());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void init_passDifferentConfigInstance_throws()
+            throws ServletException {
+        VaadinServlet servlet = new VaadinServlet();
+
+        ServletConfig config = mockConfig();
+        servlet.init(config);
+
+        servlet.init(mockConfig());
     }
 
     @Test

@@ -72,6 +72,12 @@ public class VaadinServlet extends HttpServlet {
                 super.init(servletConfig);
             }
 
+            if (getServletConfig() != servletConfig) {
+                throw new IllegalArgumentException(
+                        "Servlet config instance may not differ from the "
+                                + "instance which has been used for the initial method call");
+            }
+
             ServletContext servletContext = getServletConfig()
                     .getServletContext();
             if (servletService != null
