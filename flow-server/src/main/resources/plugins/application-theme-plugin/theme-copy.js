@@ -74,6 +74,16 @@ function copyThemeFiles(folderToCopy, targetFolder) {
  *   }
  * }
  *
+ * This would mean that an asset would be built as:
+ * "@fortawesome/fontawesome-free": {
+ *   "svgs/regular/**": "fortawesome/icons"
+ * }
+ * Where '@fortawesome/fontawesome-free' is the npm package, 'svgs/regular/**' is what should be copied
+ * and 'fortawesome/icons' is the target directory under projectStaticAssetsOutputFolder where things
+ * will get copied to.
+ *
+ * Note! there can be multiple copy-rules with target folders for one npm package asset.
+ *
  * @param {json} themeProperties
  * @param {string} projectStaticAssetsOutputFolder
  * @param {logger} theme plugin logger
