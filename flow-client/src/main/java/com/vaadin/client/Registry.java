@@ -106,15 +106,6 @@ public class Registry {
     }
 
     /**
-     * Gets the {@link ConnectionState} singleton.
-     *
-     * @return the {@link ConnectionState} singleton
-     */
-    public ConnectionState getConnectionState() {
-        return get(ConnectionState.class);
-    }
-
-    /**
      * Gets the {@link ApplicationConnection} singleton.
      *
      * @return the {@link ApplicationConnection} singleton

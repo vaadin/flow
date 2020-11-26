@@ -23,7 +23,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 
 import com.vaadin.client.Console;
-import com.vaadin.client.ConnectionState;
+import com.vaadin.client.ConnectionIndicator;
 import com.vaadin.client.Registry;
 import com.vaadin.client.UILifecycle;
 import com.vaadin.client.UILifecycle.UIState;
@@ -178,8 +178,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
             return;
         }
 
-        registry.getConnectionState().setState(
-                ConnectionState.RECONNECTING);
+        ConnectionIndicator.setState(
+                ConnectionIndicator.RECONNECTING);
 
         if (!isReconnecting()) {
             // First problem encounter
@@ -280,7 +280,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
             endRequest();
         }
 
-        registry.getConnectionState().setState(ConnectionState.CONNECTION_LOST);
+        ConnectionIndicator.setState(ConnectionIndicator.CONNECTION_LOST);
         pauseHeartbeats();
     }
 
@@ -312,6 +312,10 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     @Override
     public void configurationUpdated() {
         // All other properties are fetched directly from the state when needed
+        ConnectionIndicator.setProperty("reconnectModal",
+                getConfiguration().isDialogModal());
+        ConnectionIndicator.setProperty("reconnectingText",
+                getConfiguration().getDialogText());
     }
 
     private ReconnectDialogConfiguration getConfiguration() {
@@ -452,9 +456,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
         reconnectionCause = null;
         reconnectAttempt = 0;
-
-        registry.getConnectionState()
-                .setState(ConnectionState.CONNECTED);
+        ConnectionIndicator.setState(ConnectionIndicator.CONNECTED);
 
         Console.log("Re-established connection to server");
     }

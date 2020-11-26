@@ -96,7 +96,6 @@ public class DefaultRegistry extends Registry {
         set(SystemErrorHandler.class, new SystemErrorHandler(this));
         set(UILifecycle.class, new UILifecycle());
         set(StateTree.class, new StateTree(this));
-        set(ConnectionState.class, new ConnectionState());
         set(RequestResponseTracker.class, new RequestResponseTracker(this));
         set(MessageHandler.class, new MessageHandler(this));
         set(MessageSender.class, new MessageSender(this));

@@ -118,8 +118,7 @@ public class ApplicationConnection {
             }
         }
 
-        registry.getConnectionState()
-                .setState(ConnectionState.LOADING);
+        ConnectionIndicator.setState(ConnectionIndicator.LOADING);
     }
 
     /**

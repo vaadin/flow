@@ -17,6 +17,7 @@ package com.vaadin.client.communication;
 
 import java.util.function.Consumer;
 
+import com.vaadin.client.ConnectionIndicator;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
@@ -84,23 +85,19 @@ public class LoadingIndicatorConfigurator {
                 .accept(e.getSource().getValueOrDefault(defaultValue)));
     }
 
-    private static native void setFirstDelay(int delay)
-    /*-{
-        $wnd.Vaadin.connectionIndicator.firstDelay = delay;
-    }-*/;
+    private static void setFirstDelay(int delay) {
+        ConnectionIndicator.setProperty("firstDelay", delay);
+    }
 
-    private static native void setSecondDelay(int delay)
-    /*-{
-        $wnd.Vaadin.connectionIndicator.secondDelay = delay;
-    }-*/;
+    private static void setSecondDelay(int delay) {
+        ConnectionIndicator.setProperty("secondDelay", delay);
+    }
 
-    private static native void setThirdDelay(int delay)
-    /*-{
-        $wnd.Vaadin.connectionIndicator.thirdDelay = delay;
-    }-*/;
+    private static void setThirdDelay(int delay) {
+        ConnectionIndicator.setProperty("thirdDelay", delay);
+    }
 
-    private static native void setApplyDefaultTheme(boolean apply)
-    /*-{
-        $wnd.Vaadin.connectionIndicator.applyDefaultTheme = apply;
-    }-*/;
+    private static void setApplyDefaultTheme(boolean apply) {
+        ConnectionIndicator.setProperty("applyDefaultTheme", apply);
+    }
 }

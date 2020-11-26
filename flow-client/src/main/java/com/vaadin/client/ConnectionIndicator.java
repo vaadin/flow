@@ -17,12 +17,12 @@
 package com.vaadin.client;
 
 /**
- * GWT interface to window.Vaadin.connectionState.
+ * GWT interface to ConnectionIndicator.ts
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class ConnectionState {
+public class ConnectionIndicator {
 
     /*
      * Constants shared with ConnectionState.ts
@@ -43,25 +43,29 @@ public class ConnectionState {
     /**
      * Application has been temporarily disconnected from the server because the
      * last transaction over the wire (XHR / heartbeat / endpoint call) resulted
-     * in a network error, or the browser has received the 'online' event and needs
-     * to verify reconnection with the server. Flow is attempting to reconnect
-     * a configurable number of times before giving up.
+     * in a network error, or the browser has received the 'online' event and
+     * needs to verify reconnection with the server. Flow is attempting to
+     * reconnect a configurable number of times before giving up.
      */
     public static final String RECONNECTING = "reconnecting";
 
     /**
-     * Application has been permanently disconnected due to browser receiving the
-     * 'offline' event, or the server not being reached after a number of reconnect
-     * attempts.
+     * Application has been permanently disconnected due to browser receiving
+     * the 'offline' event, or the server not being reached after a number of
+     * reconnect attempts.
      */
     public static final String CONNECTION_LOST = "connection-lost";
+
+    private ConnectionIndicator() {
+        // No instance should ever be created
+    }
 
     /**
      * Set the connection state to be displayed by the loading indicator.
      *
      * @param state the connection state
      */
-    public native void setState(String state)
+    public static native void setState(String state)
     /*-{
         if ($wnd.Vaadin.connectionState) {
             $wnd.Vaadin.connectionState.state = state;
@@ -73,12 +77,25 @@ public class ConnectionState {
      *
      * @return the connection state
      */
-    public native String getState()
+    public static native String getState()
     /*-{
         if ($wnd.Vaadin.connectionState) {
             return $wnd.Vaadin.connectionState.state;
         } else {
             return null;
+        }
+    }-*/;
+
+    /**
+     * Set a property of the connection indicator component.
+     *
+     * @param property the property to set
+     * @param value    the value to set
+     */
+    public static native void setProperty(String property, Object value)
+    /*-{
+        if ($wnd.Vaadin.connectionIndicator) {
+            $wnd.Vaadin.connectionIndicator[property] = value;
         }
     }-*/;
 }
