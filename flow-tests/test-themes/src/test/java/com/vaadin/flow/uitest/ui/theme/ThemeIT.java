@@ -24,19 +24,21 @@ import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.BUTTERFLY_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_LIT_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_POLYMER_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.OCTOPUSS_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUB_COMPONENT_ID;
 
 public class ThemeIT extends ChromeBrowserTest {
 
     @Test
     public void secondTheme_staticFilesNotCopied() {
-        getDriver().get(getRootURL() + "/VAADIN/static/img/bg.jpg");
+        getDriver().get(getRootURL() + "/path/VAADIN/static/img/bg.jpg");
         Assert.assertFalse("app-theme static files should be copied",
             driver.getPageSource().contains("HTTP ERROR 404"));
 
-        getDriver().get(getRootURL() + "/VAADIN/static/no-copy.txt");
-        System.out.println(driver.getPageSource());
+        getDriver().get(getRootURL() + "/path/VAADIN/static/no-copy.txt");
         Assert.assertTrue("no-copy theme should not be handled",
             driver.getPageSource().contains("HTTP ERROR 404"));
     }
@@ -49,12 +51,12 @@ public class ThemeIT extends ChromeBrowserTest {
 
         final WebElement body = findElement(By.tagName("body"));
         Assert.assertEquals(
-            "url(\"" + getRootURL() + "/VAADIN/static/img/bg.jpg\")",
+            "url(\"" + getRootURL() + "/path/VAADIN/static/img/bg.jpg\")",
             body.getCssValue("background-image"));
 
         Assert.assertEquals("Ostrich", body.getCssValue("font-family"));
 
-        getDriver().get(getRootURL() + "/VAADIN/static/img/bg.jpg");
+        getDriver().get(getRootURL() + "/path/VAADIN/static/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
             driver.getPageSource().contains("Could not navigate"));
     }
@@ -85,16 +87,42 @@ public class ThemeIT extends ChromeBrowserTest {
         checkLogsForErrors();
 
         Assert.assertEquals("Imported css file URLs should have been handled.",
-            "url(\"" + getRootURL() + "/VAADIN/static/icons/archive.png\")",
-            $(SpanElement.class).id("sub-component")
+            "url(\"" + getRootURL() + "/path/VAADIN/static/icons/archive.png\")",
+            $(SpanElement.class).id(SUB_COMPONENT_ID)
                 .getCssValue("background-image"));
+    }
+
+    @Test
+    public void nonThemeDependency_urlIsNotRewritten() {
+        open();
+        checkLogsForErrors();
+
+        Assert.assertEquals("Relative non theme url should not be touched",
+            "url(\"" + getRootURL() + "/path/test/path/monarch-butterfly.jpg\")",
+            $(SpanElement.class).id(BUTTERFLY_ID)
+                .getCssValue("background-image"));
+
+        Assert.assertEquals("Absolute non theme url should not be touched",
+            "url(\"" + getRootURL() + "/octopuss.jpg\")",
+            $(SpanElement.class).id(OCTOPUSS_ID)
+                .getCssValue("background-image"));
+
+
+        getDriver().get(getRootURL() + "/path/test/path/monarch-butterfly.jpg");
+        Assert.assertFalse("webapp resource should be served",
+            driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
+
+
+        getDriver().get(getRootURL() + "/octopuss.jpg");
+        Assert.assertFalse("root resource should be served",
+            driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
     }
 
     @Override
     protected String getTestPath() {
         String path = super.getTestPath();
         String view = "view/";
-        return path.substring(view.length());
+        return  path.replace(view, "path/");
     }
 
 }
