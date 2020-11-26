@@ -20,7 +20,7 @@ module.exports = function (source, map) {
 
   let themeFolder = handledResourceFolder;
   // Recurse up until we have no parent folder or we find the theme folder
-  while (fs.existsSync(path.basename(path.resolve(themeFolder, "..")))
+  while (fs.existsSync(path.resolve(themeFolder, ".."))
       && path.basename(path.resolve(themeFolder, "..")) !== "theme") {
     themeFolder = path.resolve(themeFolder, "..");
   }
