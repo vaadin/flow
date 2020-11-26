@@ -19,9 +19,17 @@ module.exports = function (source, map) {
   const logger = this.getLogger("theme-loader");
 
   let themeFolder = handledResourceFolder;
-  while (themeFolder && path.basename(path.resolve(themeFolder, "..")) !== "theme") {
+  // Recurse up until we find the theme folder or don't have 'theme' on the path.
+  while (themeFolder.indexOf("theme") > 1
+      && path.basename(path.resolve(themeFolder, "..")) !== "theme") {
     themeFolder = path.resolve(themeFolder, "..");
   }
+  // If we have found no theme folder return without doing anything.
+  if(path.basename(path.resolve(themeFolder, "..")) !== "theme") {
+    this.callback(null, source, map);
+    return;
+  }
+
   logger.log("Using '", themeFolder, "' for the application theme base folder.");
 
   source = source.replace(urlMatcher, function (match, url, quoteMark, replace, fileUrl, endString) {
