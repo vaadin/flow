@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -115,6 +116,7 @@ public class NodeTasksTest {
     }
 
     @Test
+    @Ignore
     public void should_Generate_Connect_Files() throws Exception {
         File src = new File(getClass().getClassLoader().getResource("java").getFile());
         File dir = new File(userDir);
