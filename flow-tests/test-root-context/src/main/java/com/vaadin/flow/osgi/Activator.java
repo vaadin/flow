@@ -37,6 +37,10 @@ import com.vaadin.flow.uitest.servlet.ViewTestServlet;
 @Component(immediate = true)
 public class Activator {
 
+    public static class OsgiResourceRgistration {
+
+    }
+
     @VaadinServletConfiguration(productionMode = false)
     private static class FixedViewServlet extends ViewTestServlet {
         @Override
@@ -102,6 +106,13 @@ public class Activator {
                 new FixedProductionModeTimingDataViewServlet(),
                 createProperties("/view-production-timing/*"));
 
+        Hashtable<String, Object> properties = new Hashtable<>();
+        properties.put(HttpWhiteboardConstants.HTTP_WHITEBOARD_RESOURCE_PATTERN,
+                "/plain-script.js");
+        properties.put(HttpWhiteboardConstants.HTTP_WHITEBOARD_RESOURCE_PREFIX,
+                "/osgi-web-resources/plain-script.js");
+        context.registerService(OsgiResourceRgistration.class,
+                new OsgiResourceRgistration(), properties);
     }
 
     private Hashtable<String, Object> createProperties(String mapping) {
