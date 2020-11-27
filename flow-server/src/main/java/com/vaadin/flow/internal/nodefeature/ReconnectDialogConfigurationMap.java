@@ -17,8 +17,6 @@ package com.vaadin.flow.internal.nodefeature;
 
 import com.vaadin.flow.component.ReconnectDialogConfiguration;
 import com.vaadin.flow.internal.StateNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Map for storing the reconnect dialog configuration for a UI.
@@ -88,9 +86,5 @@ public class ReconnectDialogConfigurationMap extends NodeMap
     @Override
     public void setReconnectInterval(int reconnectInterval) {
         put(RECONNECT_INTERVAL_KEY, reconnectInterval);
-    }
-
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(ElementPropertyMap.class);
     }
 }
