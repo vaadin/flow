@@ -612,24 +612,19 @@ public class NodeTasks implements FallibleCommand {
         Lookup lookup = builder.lookup;
         TaskGenerateOpenApi taskGenerateOpenApi = lookup.lookup(TaskGenerateOpenApi.class);
         if(taskGenerateOpenApi!=null){
-            /*new TaskGenerateOpenApi(
-                builder.connectApplicationProperties,
-                builder.connectJavaSourceFolder,
-                builder.classFinder.getClassLoader(),
-                builder.connectGeneratedOpenApiFile);*/
+            taskGenerateOpenApi.withClassLoader(builder.classFinder.getClassLoader())
+                .withJavaSourceFolder(builder.connectJavaSourceFolder)
+                .withApplicationProperties(builder.connectApplicationProperties)
+                .withOutputFolder(builder.connectGeneratedOpenApiFile);
             commands.add(taskGenerateOpenApi);
         }
-        
 
         if (builder.connectClientTsApiFolder != null) {
-            
             TaskGenerateConnect taskGenerateConnectTs = lookup.lookup(TaskGenerateConnect.class);
-            /*new TaskGenerateConnect(
-                    builder.connectApplicationProperties,
-                    builder.connectGeneratedOpenApiFile,
-                    builder.connectClientTsApiFolder,
-                    builder.frontendDirectory);
-                    */
+            taskGenerateConnectTs.withOpenApi(builder.connectGeneratedOpenApiFile)
+                .withFrontendDirectory(builder.frontendDirectory)
+                .withApplicationProperties(builder.connectApplicationProperties)
+                .withOutputFolder(builder.connectClientTsApiFolder);
             if(taskGenerateConnectTs!=null){
                 commands.add(taskGenerateConnectTs);
             }
