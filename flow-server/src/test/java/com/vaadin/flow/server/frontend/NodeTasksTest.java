@@ -17,7 +17,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.connect.Endpoint;
+// import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
@@ -33,7 +33,7 @@ import static org.junit.Assert.assertTrue;
 
 public class NodeTasksTest {
 
-    @Endpoint
+    // @Endpoint
     public static class ConnectEndpointsForTesting {
     }
 
