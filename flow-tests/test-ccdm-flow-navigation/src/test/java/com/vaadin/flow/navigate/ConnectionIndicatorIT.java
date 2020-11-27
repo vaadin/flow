@@ -16,7 +16,9 @@
 package com.vaadin.flow.navigate;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
+import com.vaadin.testbench.commands.TestBenchCommandExecutor;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -25,10 +27,16 @@ import org.openqa.selenium.mobile.NetworkConnection;
 
 public class ConnectionIndicatorIT extends ChromeDeviceTest {
 
-    @Test
-    public void online_goingOffline_customisedMessageShown() throws Exception {
+    @Before
+    @Override
+    public void setup() throws Exception {
+        super.setup();
         getDriver().get(getRootURL() + "/connection-indicator");
         waitForServiceWorkerReady();
+    }
+
+    @Test
+    public void online_goingOffline_customisedMessageShown() throws Exception {
         setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
         try {
             expectConnectionState("connection-lost");
@@ -40,8 +48,6 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
 
     @Test
     public void offline_goingOnline_customisedMessageShown() throws Exception {
-        getDriver().get(getRootURL() + "/connection-indicator");
-        waitForServiceWorkerReady();
         setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
         try {
             expectConnectionState("connection-lost");
@@ -55,8 +61,6 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
 
     @Test
     public void offline_serverConnectionAttempted_customisedMessageShown() throws Exception {
-        getDriver().get(getRootURL() + "/connection-indicator");
-        waitForServiceWorkerReady();
         setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
         try {
             expectConnectionState("connection-lost");
@@ -71,9 +75,8 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
 
     @Test
     public void offline_serverConnectionAttempted_javaCustomisedMessagesShown() throws Exception {
-        getDriver().get(getRootURL() + "/connection-indicator");
-        waitForServiceWorkerReady();
         findElement(By.id(ConnectionIndicatorView.SET_CUSTOM_MESSAGES)).click();
+        ((TestBenchCommandExecutor)testBench()).waitForVaadin();
         setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
         try {
             expectConnectionState("connection-lost");
@@ -86,6 +89,7 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
                 getConnectionIndicatorStatusText());
         } finally {
             setConnectionType(NetworkConnection.ConnectionType.ALL);
+            testBench().enableWaitForVaadin();
         }
     }
 
