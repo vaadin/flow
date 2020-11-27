@@ -27,7 +27,8 @@ const themeComponentsFolder = 'components';
 // the document. E.g. @font-face must be in this
 const themeFileAlwaysAddToDocument = 'document.css';
 
-const headerImport = ``;
+const headerImport = `import 'construct-style-sheets-polyfill';
+`;
 
 const injectGlobalCssMethod = `
 // target: Document | ShadowRoot
