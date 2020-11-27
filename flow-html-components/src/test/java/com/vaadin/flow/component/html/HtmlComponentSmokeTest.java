@@ -61,6 +61,7 @@ public class HtmlComponentSmokeTest {
         testValues.put(int.class, 42);
         testValues.put(IFrame.ImportanceType.class, IFrame.ImportanceType.HIGH);
         testValues.put(IFrame.SandboxType[].class, new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS, IFrame.SandboxType.ALLOW_MODALS });
+        testValues.put(AnchorTarget.class, AnchorTarget.TOP);
     }
 
     // For classes registered here testStringConstructor will be ignored. This test checks whether the content of the
@@ -169,12 +170,20 @@ public class HtmlComponentSmokeTest {
     }
 
     private static boolean isSpecialSetter(Method method) {
-        // Shorthand for Lablel.setFor(String)
+        // Shorthand for Label.setFor(String)
         if (method.getDeclaringClass() == Label.class
                 && method.getName().equals("setFor")
                 && method.getParameterTypes()[0] == Component.class) {
             return true;
         }
+
+        // Anchor.setTarget(AnchorTarget) - https://github.com/vaadin/flow/issues/8346
+        if (method.getDeclaringClass() == Anchor.class
+                && method.getName().equals("setTarget")
+                && method.getParameterTypes()[0] == AnchorTarget.class) {
+            return true;
+        }
+
         // setFoo(AbstractStreamResource) for resource URLs
         if (method.getParameterCount() == 1 && AbstractStreamResource.class
                 .isAssignableFrom(method.getParameters()[0].getType())) {
