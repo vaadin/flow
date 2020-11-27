@@ -47,7 +47,6 @@ suite('ConnectionIndicator', () => {
       assert.equal(connectionIndicator.secondDelay, 1500);
       assert.equal(connectionIndicator.thirdDelay, 5000);
       assert.equal(connectionIndicator.expandedDuration, 2000);
-      assert.isFalse(connectionIndicator.reconnectModal);
 
       // Strings
       assert.match(connectionIndicator.onlineText, /online/i);

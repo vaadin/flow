@@ -16,21 +16,27 @@
 package com.vaadin.flow.navigate;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
+import com.vaadin.testbench.commands.TestBenchCommandExecutor;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.mobile.NetworkConnection;
 
-import static com.vaadin.flow.navigate.HelloWorldView.NAVIGATE_ABOUT;
-
 public class ConnectionIndicatorIT extends ChromeDeviceTest {
+
+    @Before
+    @Override
+    public void setup() throws Exception {
+        super.setup();
+        getDriver().get(getRootURL() + "/connection-indicator");
+        waitForServiceWorkerReady();
+    }
 
     @Test
     public void online_goingOffline_customisedMessageShown() throws Exception {
-        getDriver().get(getRootURL() + "/");
-        waitForServiceWorkerReady();
         setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
         try {
             expectConnectionState("connection-lost");
@@ -42,8 +48,6 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
 
     @Test
     public void offline_goingOnline_customisedMessageShown() throws Exception {
-        getDriver().get(getRootURL() + "/");
-        waitForServiceWorkerReady();
         setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
         try {
             expectConnectionState("connection-lost");
@@ -57,17 +61,35 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
 
     @Test
     public void offline_serverConnectionAttempted_customisedMessageShown() throws Exception {
-        getDriver().get(getRootURL() + "/hello");
-        waitForServiceWorkerReady();
         setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
         try {
             expectConnectionState("connection-lost");
-            findElement(By.id(NAVIGATE_ABOUT)).click();
+            findElement(By.id(ConnectionIndicatorView.CONNECT_SERVER)).click();
             testBench().disableWaitForVaadin(); // offline - do run the WAIT_FOR_VAADIN script
             expectConnectionState("reconnecting");
             Assert.assertEquals("Custom reconnecting", getConnectionIndicatorStatusText());
         } finally {
             setConnectionType(NetworkConnection.ConnectionType.ALL);
+        }
+    }
+
+    @Test
+    public void offline_serverConnectionAttempted_javaCustomisedMessagesShown() throws Exception {
+        findElement(By.id(ConnectionIndicatorView.SET_CUSTOM_MESSAGES)).click();
+        ((TestBenchCommandExecutor)testBench()).waitForVaadin();
+        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        try {
+            expectConnectionState("connection-lost");
+            Assert.assertEquals(ConnectionIndicatorView.CUSTOM_OFFLINE_MESSAGE,
+                getConnectionIndicatorStatusText());
+            findElement(By.id(ConnectionIndicatorView.CONNECT_SERVER)).click();
+            testBench().disableWaitForVaadin(); // offline - do run the WAIT_FOR_VAADIN script
+            expectConnectionState("reconnecting");
+            Assert.assertEquals(ConnectionIndicatorView.CUSTOM_RECONNECTING_MESSAGE,
+                getConnectionIndicatorStatusText());
+        } finally {
+            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            testBench().enableWaitForVaadin();
         }
     }
 

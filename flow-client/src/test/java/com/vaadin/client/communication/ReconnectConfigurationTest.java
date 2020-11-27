@@ -15,12 +15,6 @@
  */
 package com.vaadin.client.communication;
 
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.DIALOG_GRACE_PERIOD_DEFAULT;
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.DIALOG_GRACE_PERIOD_KEY;
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.DIALOG_MODAL_DEFAULT;
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.DIALOG_MODAL_KEY;
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_DEFAULT;
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_DEFAULT;
 import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_KEY;
 import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_KEY;
 import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT;
@@ -43,11 +37,11 @@ import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 
-public class ReconnectDialogConfigurationTest
+public class ReconnectConfigurationTest
         extends AbstractConfigurationTest {
 
     private StateTree stateTree;
-    private ReconnectDialogConfiguration configuration;
+    private ReconnectConfiguration configuration;
     private AtomicInteger configurationUpdatedCalled = new AtomicInteger(0);
 
     {
@@ -57,7 +51,7 @@ public class ReconnectDialogConfigurationTest
                 stateTree = new StateTree(this);
                 set(StateTree.class, stateTree);
                 // Binds to the root node
-                configuration = new ReconnectDialogConfiguration(this);
+                configuration = new ReconnectConfiguration(this);
                 ConnectionStateHandler connectionStateHandler = Mockito
                         .mock(ConnectionStateHandler.class);
                 Mockito.doAnswer(new Answer<Void>() {
@@ -66,14 +60,13 @@ public class ReconnectDialogConfigurationTest
                             throws Throwable {
                         // Read some values to be able to test that the
                         // reactive computation works properly
-                        configuration.isDialogModal();
                         configuration.getDialogText();
                         configurationUpdatedCalled.incrementAndGet();
                         return null;
                     }
                 }).when(connectionStateHandler).configurationUpdated();
 
-                ReconnectDialogConfiguration.bind(connectionStateHandler);
+                ReconnectConfiguration.bind(connectionStateHandler);
                 set(ConnectionStateHandler.class, connectionStateHandler);
             }
         };
@@ -81,17 +74,14 @@ public class ReconnectDialogConfigurationTest
 
     @Test
     public void defaults() {
-        Assert.assertEquals(DIALOG_TEXT_DEFAULT, configuration.getDialogText());
-        Assert.assertEquals(DIALOG_TEXT_GAVE_UP_DEFAULT,
+        // Defaults for dialog properties moved to ConnectionIndicator.ts
+        Assert.assertEquals(null, configuration.getDialogText());
+        Assert.assertEquals(null,
                 configuration.getDialogTextGaveUp());
         Assert.assertEquals(RECONNECT_ATTEMPTS_DEFAULT,
                 configuration.getReconnectAttempts());
         Assert.assertEquals(RECONNECT_INTERVAL_DEFAULT,
                 configuration.getReconnectInterval());
-        Assert.assertEquals(DIALOG_GRACE_PERIOD_DEFAULT,
-                configuration.getDialogGracePeriod());
-        Assert.assertEquals(DIALOG_MODAL_DEFAULT,
-                configuration.isDialogModal());
     }
 
     @Override
@@ -112,11 +102,6 @@ public class ReconnectDialogConfigurationTest
     }
 
     @Test
-    public void setGetDialogGracePeriod() {
-        testInt(DIALOG_GRACE_PERIOD_KEY, configuration::getDialogGracePeriod);
-    }
-
-    @Test
     public void setGetReconnectAttempts() {
         testInt(RECONNECT_ATTEMPTS_KEY, configuration::getReconnectAttempts);
     }
@@ -127,14 +112,9 @@ public class ReconnectDialogConfigurationTest
     }
 
     @Test
-    public void setGetDialogModal() {
-        testBoolean(DIALOG_MODAL_KEY, configuration::isDialogModal);
-    }
-
-    @Test
     public void reactsToChanges() {
         configurationUpdatedCalled.set(0);
-        getProperty(DIALOG_MODAL_KEY).setValue(true);
+        getProperty(DIALOG_TEXT_GAVE_UP_KEY).setValue("bar");
         Reactive.flush();
         Assert.assertEquals(1, configurationUpdatedCalled.get());
         getProperty(DIALOG_TEXT_KEY).setValue("foo");
@@ -147,8 +127,6 @@ public class ReconnectDialogConfigurationTest
         configurationUpdatedCalled.set(0);
         getProperty(RECONNECT_INTERVAL_KEY).setValue(13);
         getProperty(RECONNECT_ATTEMPTS_KEY).setValue(13);
-        getProperty(DIALOG_GRACE_PERIOD_KEY).setValue(13);
-        getProperty(DIALOG_MODAL_KEY).setValue(true);
         getProperty(DIALOG_TEXT_KEY).setValue("abc");
         getProperty(DIALOG_TEXT_GAVE_UP_KEY).setValue("def");
         Assert.assertEquals(0, configurationUpdatedCalled.get());
