@@ -64,6 +64,7 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
@@ -281,8 +282,9 @@ public class DevModeInitializer
         File flowResourcesFolder = new File(baseDir,
                 DEFAULT_FLOW_RESOURCES_FOLDER);
 
+        Lookup lookup = new VaadinServletContext(context).getAttribute(Lookup.class);
         Builder builder = new NodeTasks.Builder(new DevModeClassFinder(classes),
-                new File(baseDir), new File(generatedDir),
+                new File(baseDir), lookup, new File(generatedDir),
                 new File(frontendFolder));
 
         log().info("Starting dev-mode updaters in {} folder.",

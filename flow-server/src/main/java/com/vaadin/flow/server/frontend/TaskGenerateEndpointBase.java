@@ -18,23 +18,24 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 
 /**
- * Generate OpenAPI json file for Vaadin Endpoints.
+ * Base interface for endpoint generation related tasks.
  */
-public interface TaskGenerateOpenApi extends TaskGenerateEndpointBase {
-
+public interface TaskGenerateEndpointBase extends FallibleCommand {
+  
   /**
-   * set the java source folder.
-   * @param javaSourceFolder
-   *            the java source folder
+   * set application properties file.
+   * @param applicationProperties
+   *            the application properties file
    * @return the current task
    */
-  TaskGenerateOpenApi withJavaSourceFolder(File javaSourceFolder);
+  TaskGenerateEndpointBase withApplicationProperties(File applicationProperties);
 
   /**
-   * set the class loader.
-   * @param classLoader
-   *            the class loader
+   * set the output folder.
+   * @param outputFolder
+   *            the output folder
    * @return the current task
    */
-  TaskGenerateOpenApi withClassLoader(ClassLoader classLoader);
+  TaskGenerateEndpointBase withOutputFolder(File outputFolder);
+
 }

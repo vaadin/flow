@@ -10,13 +10,14 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
-// import com.vaadin.flow.server.connect.Endpoint;
+import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
@@ -32,7 +33,7 @@ import static org.junit.Assert.assertTrue;
 
 public class NodeTasksTest {
 
-    // @Endpoint
+    @Endpoint
     public static class ConnectEndpointsForTesting {
     }
 
@@ -52,7 +53,7 @@ public class NodeTasksTest {
     public void should_UseDefaultFolders()throws Exception {
         Builder builder = new Builder(
                 new DefaultClassFinder(this.getClass().getClassLoader()),
-                new File(userDir))
+                new File(userDir), Mockito.mock(Lookup.class))
             .enablePackagesUpdate(false)
             .enableImportsUpdate(true)
             .runNpmInstall(false)
@@ -75,7 +76,7 @@ public class NodeTasksTest {
 
         Builder builder = new Builder(
                 new DefaultClassFinder(this.getClass().getClassLoader()),
-                new File(userDir))
+                new File(userDir), Mockito.mock(Lookup.class))
             .enablePackagesUpdate(false)
             .enableImportsUpdate(true)
             .runNpmInstall(false)
@@ -95,7 +96,7 @@ public class NodeTasksTest {
             throws ExecutionFailedException, IOException {
         Builder builder = new Builder(
                 new DefaultClassFinder(this.getClass().getClassLoader()),
-                new File(userDir))
+                new File(userDir), Mockito.mock(Lookup.class))
                         .enablePackagesUpdate(false)
                         .withWebpack(new File(userDir, TARGET + "classes"),
                                 WEBPACK_CONFIG, WEBPACK_GENERATED)
@@ -114,7 +115,6 @@ public class NodeTasksTest {
     }
 
     @Test
-    @Ignore
     public void should_Generate_Connect_Files() throws Exception {
         File src = new File(getClass().getClassLoader().getResource("java").getFile());
         File dir = new File(userDir);
@@ -122,7 +122,7 @@ public class NodeTasksTest {
 
         Builder builder = new Builder(
                 new DefaultClassFinder(
-                    Collections.singleton(ConnectEndpointsForTesting.class)), dir)
+                    Collections.singleton(ConnectEndpointsForTesting.class)), dir, Mockito.mock(Lookup.class))
                         .enablePackagesUpdate(false)
                         .enableImportsUpdate(false)
                         .withEmbeddableWebComponents(false)

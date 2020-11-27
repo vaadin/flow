@@ -41,12 +41,15 @@ import org.apache.maven.project.MavenProject;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.utils.LookupImpl;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
@@ -161,9 +164,12 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         } catch (URISyntaxException e) {
             throw new MojoExecutionException("Failed to parse " + nodeDownloadRoot, e);
         }
+        
+        ClassFinder classFinder = getClassFinder(project);
+        Lookup lookup= new LookupImpl(classFinder);
         // @formatter:off
-        new NodeTasks.Builder(getClassFinder(project),
-                npmFolder, generatedFolder, frontendDirectory)
+        new NodeTasks.Builder(classFinder,
+                npmFolder, lookup, generatedFolder, frontendDirectory)
                         .runNpmInstall(runNpmInstall)
                         .useV14Bootstrap(useDeprecatedV14Bootstrapping())
                         .enablePackagesUpdate(true)

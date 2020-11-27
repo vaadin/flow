@@ -45,7 +45,6 @@ import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -410,7 +409,6 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
-    @Ignore
     public void mavenGoal_generateOpenApiJson_when_itIsInClientSideMode()
             throws Exception {
         Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
@@ -429,7 +427,6 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
-    @Ignore
     public void mavenGoal_generateTsFiles_when_enabled() throws Exception {
         File connectClientApi = new File(generatedTsFolder,
                 "connect-client.default.ts");

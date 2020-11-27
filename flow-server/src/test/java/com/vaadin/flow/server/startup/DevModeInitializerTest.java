@@ -26,7 +26,6 @@ import java.util.function.Function;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -300,7 +299,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
-    @Ignore
     public void should_generateOpenApi_when_EndpointPresents()
             throws Exception {
 
@@ -336,7 +334,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
-    @Ignore
     public void should_generateTs_files() throws Exception {
 
         // Configure a folder that has .java classes with valid endpoints

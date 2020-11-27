@@ -27,7 +27,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
@@ -79,7 +81,7 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
                 FrontendResourcesAreCopiedAfterCleaningTest.class
                         .getClassLoader());
         NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
-                npmFolder);
+                npmFolder, Mockito.mock(Lookup.class));
         File resourcesFolder = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
@@ -94,7 +96,7 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
                 FrontendResourcesAreCopiedAfterCleaningTest.class
                         .getClassLoader());
         NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
-                npmFolder);
+                npmFolder, Mockito.mock(Lookup.class));
         File resourcesFolder = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)

@@ -26,8 +26,6 @@ import java.util.Set;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -128,6 +126,8 @@ public class NodeTasks implements FallibleCommand {
          */
         private URI nodeDownloadRoot = URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
 
+        private Lookup lookup;
+
         /**
          * Create a builder instance given an specific npm folder.
          *
@@ -136,8 +136,8 @@ public class NodeTasks implements FallibleCommand {
          * @param npmFolder
          *            folder with the `package.json` file
          */
-        public Builder(ClassFinder classFinder, File npmFolder) {
-            this(classFinder, npmFolder, new File(npmFolder, System
+        public Builder(ClassFinder classFinder, File npmFolder, Lookup lookup) {
+            this(classFinder, npmFolder, lookup, new File(npmFolder, System
                     .getProperty(PARAM_GENERATED_DIR, DEFAULT_GENERATED_DIR)));
         }
 
@@ -152,8 +152,8 @@ public class NodeTasks implements FallibleCommand {
          *            folder where flow generated files will be placed.
          */
         public Builder(ClassFinder classFinder, File npmFolder,
-                File generatedPath) {
-            this(classFinder, npmFolder, generatedPath,
+                Lookup lookup, File generatedPath) {
+            this(classFinder, npmFolder, lookup, generatedPath,
                     new File(npmFolder, System.getProperty(PARAM_FRONTEND_DIR,
                             DEFAULT_FRONTEND_DIR)));
         }
@@ -171,9 +171,10 @@ public class NodeTasks implements FallibleCommand {
          *            a directory with project's frontend files
          */
         public Builder(ClassFinder classFinder, File npmFolder,
-                File generatedPath, File frontendDirectory) {
+                Lookup lookup, File generatedPath, File frontendDirectory) {
             this.classFinder = classFinder;
             this.npmFolder = npmFolder;
+            this.lookup = lookup;
             this.generatedFolder = generatedPath.isAbsolute() ? generatedPath
                     : new File(npmFolder, generatedPath.getPath());
             this.frontendDirectory = frontendDirectory.isAbsolute()
@@ -608,30 +609,30 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private void addConnectServicesTasks(Builder builder) {
-        /*Lookup lookup = VaadinService.getCurrent().getContext().getAttribute(Lookup.class);
+        Lookup lookup = builder.lookup;
         TaskGenerateOpenApi taskGenerateOpenApi = lookup.lookup(TaskGenerateOpenApi.class);
         if(taskGenerateOpenApi!=null){
-            commands.add(taskGenerateOpenApi);
-        }*/
-        /*new TaskGenerateOpenApi(
+            /*new TaskGenerateOpenApi(
                 builder.connectApplicationProperties,
                 builder.connectJavaSourceFolder,
                 builder.classFinder.getClassLoader(),
                 builder.connectGeneratedOpenApiFile);*/
+            commands.add(taskGenerateOpenApi);
+        }
         
 
         if (builder.connectClientTsApiFolder != null) {
-            /*
+            
             TaskGenerateConnect taskGenerateConnectTs = lookup.lookup(TaskGenerateConnect.class);
-            new TaskGenerateConnect(
+            /*new TaskGenerateConnect(
                     builder.connectApplicationProperties,
                     builder.connectGeneratedOpenApiFile,
                     builder.connectClientTsApiFolder,
                     builder.frontendDirectory);
+                    */
             if(taskGenerateConnectTs!=null){
                 commands.add(taskGenerateConnectTs);
             }
-            */
         }
     }
 
