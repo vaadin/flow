@@ -1,4 +1,5 @@
 /* tslint:disable:max-classes-per-file */
+import { getConnectionIndicator } from './ConnectionIndicator';
 import { ConnectionState } from './ConnectionState';
 import { DeferrableResult, DeferredCallHandler, OfflineHelper } from './Offline';
 
@@ -303,6 +304,9 @@ export class ConnectClient {
     this.submitDeferredCalls = this.submitDeferredCalls.bind(this);
 
     self.addEventListener('online', this.submitDeferredCalls);
+
+    // ensure connection indicator is visible from this entry point
+    getConnectionIndicator();
   }
 
   /**
