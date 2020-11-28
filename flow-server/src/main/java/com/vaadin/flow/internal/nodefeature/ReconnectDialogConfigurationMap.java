@@ -17,8 +17,6 @@ package com.vaadin.flow.internal.nodefeature;
 
 import com.vaadin.flow.component.ReconnectDialogConfiguration;
 import com.vaadin.flow.internal.StateNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Map for storing the reconnect dialog configuration for a UI.
@@ -88,39 +86,5 @@ public class ReconnectDialogConfigurationMap extends NodeMap
     @Override
     public void setReconnectInterval(int reconnectInterval) {
         put(RECONNECT_INTERVAL_KEY, reconnectInterval);
-    }
-
-    @Override
-    public int getDialogGracePeriod() {
-        getLogger()
-                .warn("dialogGracePeriod: this property has been deprecated, "
-                        + "and will be permanently removed in Vaadin 20");
-        return 0;
-    }
-
-    @Override
-    public void setDialogGracePeriod(int dialogGracePeriod) {
-        getLogger()
-                .warn("dialogGracePeriod: this property has been deprecated, "
-                        + "and will be permanently removed in Vaadin 20");
-    }
-
-    @Override
-    public boolean isDialogModal() {
-        getLogger()
-                .warn("dialogModal: this property has been deprecated, and will"
-                        + "be permanently removed in Vaadin 20");
-        return false;
-    }
-
-    @Override
-    public void setDialogModal(boolean dialogModal) {
-        getLogger()
-                .warn("dialogModal: this property has been deprecated, and will"
-                        + "be permanently removed in Vaadin 20");
-    }
-
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(ElementPropertyMap.class);
     }
 }
