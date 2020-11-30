@@ -149,6 +149,13 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-maven-plugin</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Bean Validation implementation -->
         <dependency>
             <groupId>org.hibernate.validator</groupId>

@@ -410,7 +410,6 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
-    @Ignore
     public void mavenGoal_generateOpenApiJson_when_itIsInClientSideMode()
             throws Exception {
         Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));

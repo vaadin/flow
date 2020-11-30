@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-public class NodeEndpointTasksTest {
+public class NodeTasksEndpointTest {
 
     @Endpoint
     public static class ConnectEndpointsForTesting {

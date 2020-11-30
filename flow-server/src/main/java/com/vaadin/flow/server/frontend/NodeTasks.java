@@ -621,11 +621,11 @@ public class NodeTasks implements FallibleCommand {
 
         if (builder.connectClientTsApiFolder != null) {
             TaskGenerateConnect taskGenerateConnectTs = lookup.lookup(TaskGenerateConnect.class);
-            taskGenerateConnectTs.withOpenApi(builder.connectGeneratedOpenApiFile)
-                .withFrontendDirectory(builder.frontendDirectory)
-                .withApplicationProperties(builder.connectApplicationProperties)
-                .withOutputFolder(builder.connectClientTsApiFolder);
             if(taskGenerateConnectTs!=null){
+                taskGenerateConnectTs.withOpenApi(builder.connectGeneratedOpenApiFile)
+                    .withFrontendDirectory(builder.frontendDirectory)
+                    .withApplicationProperties(builder.connectApplicationProperties)
+                    .withOutputFolder(builder.connectClientTsApiFolder);
                 commands.add(taskGenerateConnectTs);
             }
         }

@@ -52,7 +52,7 @@ public class TaskGenerateOpenApiImpl extends AbstractTaskConnectGenerator implem
     public TaskGenerateOpenApi withClassLoader(ClassLoader classLoader) {
         Objects.requireNonNull(classLoader,
                 "ClassLoader should not be null.");
-        this.javaSourceFolder = javaSourceFolder;
+        this.classLoader = classLoader;
         return this;
     }
 }

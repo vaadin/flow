@@ -166,7 +166,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         }
         
         ClassFinder classFinder = getClassFinder(project);
-        Lookup lookup= new LookupImpl(classFinder);
+        Lookup lookup= createLookup(classFinder);
         // @formatter:off
         new NodeTasks.Builder(classFinder,
                 npmFolder, lookup, generatedFolder, frontendDirectory)
@@ -191,6 +191,10 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .withNodeDownloadRoot(nodeDownloadRootURI)
                         .build()
                         .execute();
+    }
+
+    Lookup createLookup(ClassFinder classFinder){
+        return new LookupImpl(classFinder);
     }
 
     private void runWebpack() throws MojoExecutionException {
