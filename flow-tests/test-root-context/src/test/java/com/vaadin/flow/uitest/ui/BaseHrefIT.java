@@ -20,13 +20,10 @@ import java.net.URISyntaxException;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-@Category(IgnoreOSGi.class)
 public class BaseHrefIT extends ChromeBrowserTest {
 
     @Test
