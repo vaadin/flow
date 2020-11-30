@@ -29,6 +29,8 @@ import org.openqa.selenium.mobile.NetworkConnection;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
+import static com.vaadin.flow.navigate.HelloWorldView.NAVIGATE_ABOUT;
+
 public class ServiceWorkerIT extends ChromeDeviceTest {
 
     @Test
@@ -209,6 +211,25 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
                     "vaadin-offline-stub shadow root expected to contain an element with class offline",
                     findInShadowRoot(offlineStub, By.className("offline"))
                             .isEmpty());
+        } finally {
+            setConnectionType(NetworkConnection.ConnectionType.ALL);
+        }
+    }
+
+    @Test
+    public void offlineStub_backOnline_stubRemoved_serverViewShown()
+            throws IOException {
+        getDriver().get(getRootURL() + "/");
+        waitForServiceWorkerReady();
+        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        try {
+            $("main-view").first().$("a").id("menu-hello").click();
+            waitForElementPresent(By.tagName("vaadin-offline-stub"));
+
+            setConnectionType(NetworkConnection.ConnectionType.ALL);
+
+            waitForElementNotPresent(By.tagName("vaadin-offline-stub"));
+            Assert.assertNotNull(findElement(By.id(NAVIGATE_ABOUT)));
         } finally {
             setConnectionType(NetworkConnection.ConnectionType.ALL);
         }

@@ -1,5 +1,9 @@
 import {getConnectionIndicator} from "./ConnectionIndicator";
-import {ConnectionState} from './ConnectionState';
+import {
+  ConnectionState,
+  ConnectionStateChangeListener,
+  ConnectionStateStore
+} from './ConnectionState';
 
 export interface FlowConfig {
   imports ?: () => void;
@@ -17,9 +21,13 @@ interface AppInitResponse {
   pushScript?: string;
 }
 
+interface Router {
+  render: (ctx: NavigationParameters, shouldUpdateHistory: boolean) => Promise<void>;
+}
+
 interface HTMLRouterContainer extends HTMLElement {
-  onBeforeEnter ?: (ctx: NavigationParameters, cmd: PreventAndRedirectCommands) => Promise<any>;
-  onBeforeLeave ?: (ctx: NavigationParameters, cmd: PreventCommands) => Promise<any>;
+  onBeforeEnter ?: (ctx: NavigationParameters, cmd: PreventAndRedirectCommands, router: Router) => void | Promise<any>;
+  onBeforeLeave ?: (ctx: NavigationParameters, cmd: PreventCommands, router: Router) => void | Promise<any>;
   serverConnected ?: (cancel: boolean, url?: NavigationParameters) => void;
 }
 
@@ -48,7 +56,13 @@ export interface PreventAndRedirectCommands extends PreventCommands {
 
 // flow uses body for keeping references
 const flowRoot: FlowRoot = window.document.body as any;
-const $wnd = window as any;
+const $wnd = (window as any) as {
+  Vaadin: {
+    Flow: any,
+    TypeScript: any,
+    connectionState: ConnectionStateStore
+  }
+} & EventTarget;
 
 /**
  * Client API for flow UI operations.
@@ -123,12 +137,12 @@ export class Flow {
           if (error instanceof FlowUiInitializationError) {
             // error initializing Flow: assume connection lost
             $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
-            await this.showOfflineStub();
+            return this.offlineStubAction();
           }
         }
       } else {
         // insert an offline stub
-        await this.showOfflineStub();
+        return this.offlineStubAction();
       }
 
       // When an action happens, navigation will be resolved `onBeforeEnter`
@@ -234,7 +248,6 @@ export class Flow {
       const clientMod = await import('./FlowClient');
       await this.flowInitClient(clientMod);
 
-      // When client-side router, create a container for server views
       if (!serverSideRouting) {
         // we use a custom tag for the flow app container
         const tag = `flow-container-${appId.toLowerCase()}`;
@@ -368,11 +381,32 @@ export class Flow {
     $wnd.Vaadin.connectionState.loadingSucceeded();
   }
 
-  private async showOfflineStub() {
+  private async offlineStubAction() {
     await import('./OfflineStub');
-    this.container = document.createElement('vaadin-offline-stub');
+    const offlineStub = document.createElement('vaadin-offline-stub') as HTMLRouterContainer;
     this.response = undefined;
-    document.body.appendChild(this.container);
+
+    let onlineListener: ConnectionStateChangeListener | undefined;
+    const removeOfflineStubAndOnlineListener = () => {
+      if (onlineListener !== undefined) {
+        $wnd.Vaadin.connectionState.removeStateChangeListener(onlineListener);
+        onlineListener = undefined;
+      }
+    };
+
+    offlineStub.onBeforeEnter = (ctx, _cmds, router) => {
+      onlineListener = () => {
+        if ($wnd.Vaadin.connectionState.online) {
+          removeOfflineStubAndOnlineListener();
+          router.render(ctx, false);
+        }
+      };
+      $wnd.Vaadin.connectionState.addStateChangeListener(onlineListener);
+    };
+    offlineStub.onBeforeLeave = (_ctx, _cmds, _router) => {
+      removeOfflineStubAndOnlineListener();
+    };
+    return offlineStub;
   }
 
   private isFlowClientLoaded(): boolean {

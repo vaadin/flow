@@ -28,7 +28,7 @@ export enum ConnectionState {
   CONNECTION_LOST = 'connection-lost'
 }
 
-type ConnectionStateChangeListener = (previous: ConnectionState, current: ConnectionState) => void;
+export type ConnectionStateChangeListener = (previous: ConnectionState, current: ConnectionState) => void;
 
 export class ConnectionStateStore {
 
