@@ -31,7 +31,9 @@ public class ViewTestServlet extends VaadinServlet {
     @Override
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
-        viewLocator = new ViewClassLocator(getService().getClassLoader());
+        if (getService() != null) {
+            viewLocator = new ViewClassLocator(getService().getClassLoader());
+        }
     }
 
     static ViewClassLocator getViewLocator() {

@@ -19,13 +19,18 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
+import java.util.Dictionary;
 import java.util.Hashtable;
 
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceFactory;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.http.NamespaceException;
+import org.osgi.service.http.context.ServletContextHelper;
 import org.osgi.service.http.whiteboard.HttpWhiteboardConstants;
 
 import com.vaadin.flow.server.VaadinServletConfiguration;
@@ -41,13 +46,41 @@ public class Activator {
 
     }
 
+    private static final class CustomContextHelper
+            extends ServletContextHelper {
+
+        private CustomContextHelper(Bundle bundle) {
+            super(bundle);
+        }
+    }
+
+    private static class CustomContextHelperFactory
+            implements ServiceFactory<ServletContextHelper> {
+
+        @Override
+        public ServletContextHelper getService(Bundle bundle,
+                ServiceRegistration<ServletContextHelper> registration) {
+            return new CustomContextHelper(bundle);
+        }
+
+        @Override
+        public void ungetService(Bundle bundle,
+                ServiceRegistration<ServletContextHelper> registration,
+                ServletContextHelper service) {
+            // no op
+        }
+
+    }
+
     @VaadinServletConfiguration(productionMode = false)
     private static class FixedViewServlet extends ViewTestServlet {
         @Override
         public void init(ServletConfig servletConfig) throws ServletException {
             super.init(servletConfig);
 
-            getService().setClassLoader(getClass().getClassLoader());
+            if (getService() != null) {
+                getService().setClassLoader(getClass().getClassLoader());
+            }
         }
     }
 
@@ -57,7 +90,9 @@ public class Activator {
         public void init(ServletConfig servletConfig) throws ServletException {
             super.init(servletConfig);
 
-            getService().setClassLoader(getClass().getClassLoader());
+            if (getService() != null) {
+                getService().setClassLoader(getClass().getClassLoader());
+            }
         }
     }
 
@@ -69,7 +104,9 @@ public class Activator {
         public void init(ServletConfig servletConfig) throws ServletException {
             super.init(servletConfig);
 
-            getService().setClassLoader(getClass().getClassLoader());
+            if (getService() != null) {
+                getService().setClassLoader(getClass().getClassLoader());
+            }
         }
     }
 
@@ -80,7 +117,9 @@ public class Activator {
         public void init(ServletConfig servletConfig) throws ServletException {
             super.init(servletConfig);
 
-            getService().setClassLoader(getClass().getClassLoader());
+            if (getService() != null) {
+                getService().setClassLoader(getClass().getClassLoader());
+            }
         }
     }
 
@@ -106,6 +145,13 @@ public class Activator {
                 new FixedProductionModeTimingDataViewServlet(),
                 createProperties("/view-production-timing/*"));
 
+        registerPlainJsResource(context);
+
+        String contextName = registerCustomContext(context);
+        registerCustomContextServlet(context, contextName);
+    }
+
+    private void registerPlainJsResource(BundleContext context) {
         Hashtable<String, Object> properties = new Hashtable<>();
         properties.put(HttpWhiteboardConstants.HTTP_WHITEBOARD_RESOURCE_PATTERN,
                 "/plain-script.js");
@@ -113,6 +159,28 @@ public class Activator {
                 "/osgi-web-resources/plain-script.js");
         context.registerService(OsgiResourceRgistration.class,
                 new OsgiResourceRgistration(), properties);
+    }
+
+    private String registerCustomContext(BundleContext context) {
+        Dictionary<String, String> contextProps = new Hashtable<String, String>();
+        String contextName = "test-context";
+        contextProps.put(HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_NAME,
+                contextName);
+        contextProps.put(HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_PATH,
+                "/custom-test-context");
+        context.registerService(ServletContextHelper.class,
+                new CustomContextHelperFactory(), contextProps);
+        return contextName;
+    }
+
+    private void registerCustomContextServlet(BundleContext context,
+            String contextName) {
+        Hashtable<String, Object> properties = createProperties("/view/*");
+        properties.put(HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_SELECT,
+                "(" + HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_NAME + "="
+                        + contextName + ")");
+        context.registerService(Servlet.class, new FixedViewServlet(),
+                properties);
     }
 
     private Hashtable<String, Object> createProperties(String mapping) {
