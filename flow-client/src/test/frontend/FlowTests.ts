@@ -117,17 +117,17 @@ suite("Flow", () => {
     $wnd.Vaadin = {
       connectionState: new ConnectionStateStore(ConnectionState.CONNECTED)
     };
-    mock.setup();
     const indicator = $wnd.document.body.querySelector('vaadin-connection-indicator');
     if (indicator) {
-      $wnd.document.body.removeChild(indicator);
+      indicator.remove();
     }
 
-    $wnd.addEventListener = function(type, listener)
-    {
+    $wnd.addEventListener = (type, listener) => {
       listeners.push({type: type, listener: listener});
       $wnd.originalAddEventListener(type, listener);
     };
+
+    mock.setup();
   });
 
   afterEach(() => {

@@ -318,8 +318,6 @@ public class BootstrapHandlerTest {
                     .setSecondDelay(SECOND_DELAY);
 
             settings.getPushConfiguration().setPushMode(PushMode.MANUAL);
-
-            settings.getReconnectDialogConfiguration().setDialogModal(true);
         }
     }
 
