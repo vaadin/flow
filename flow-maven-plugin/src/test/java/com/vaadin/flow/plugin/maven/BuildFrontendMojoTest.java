@@ -45,7 +45,6 @@ import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -410,14 +409,6 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
-    public void mavenGoal_generateOpenApiJson_when_itIsInClientSideMode()
-            throws Exception {
-        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
-        mojo.execute();
-        Assert.assertTrue(FileUtils.fileExists(openApiJsonFile));
-    }
-
-    @Test
     public void mavenGoal_notGenerateOpenApiJson_when_usingDeprecatedV14Bootstrapping()
             throws Exception {
         ReflectionUtils.setVariableValueInObject(mojo,
@@ -425,20 +416,6 @@ public class BuildFrontendMojoTest {
         Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
         mojo.execute();
         Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
-    }
-
-    @Test
-    @Ignore
-    public void mavenGoal_generateTsFiles_when_enabled() throws Exception {
-        File connectClientApi = new File(generatedTsFolder,
-                "connect-client.default.ts");
-        File endpointClientApi = new File(generatedTsFolder, "MyEndpoint.ts");
-
-        Assert.assertFalse(connectClientApi.exists());
-        Assert.assertFalse(endpointClientApi.exists());
-        mojo.execute();
-        Assert.assertTrue(connectClientApi.exists());
-        Assert.assertTrue(endpointClientApi.exists());
     }
 
     static void assertContainsPackage(JsonObject dependencies,
