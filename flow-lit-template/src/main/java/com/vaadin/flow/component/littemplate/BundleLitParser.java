@@ -74,14 +74,14 @@ public final class BundleLitParser {
      * <p>
      * <code>render\(\)[\s]*\{</code> finds the template getter method
      * <p>
-     * <code>[\s]*return[\s]*html`</code> finds the return statement
+     * <code>[\s]*return[\s]*html[\s]*(\`)</code> finds the return statement
      * <p>
      * </p>
-     * <code>(([^`]|\\\\.)*)</code> captures all text until we encounter the end
-     * character with <code>;}</code> e.g. <code>';}</code>
+     * <code>([\s\S]*)</code> captures all text until we encounter the end
+     * character with <code>\1;}</code> e.g. <code>';}</code>
      */
     private static final Pattern LIT_TEMPLATE_PATTERN = Pattern.compile(
-            "render\\(\\)[\\s]*\\{[\\s]*return[\\s]*html`(([^`]|\\\\.)*)`;[\\s]*\\}");
+            "render\\(\\)[\\s]*\\{[\\s]*return[\\s]*html[\\s]*(\\`)([\\s\\S]*?)\\1;[\\s]*\\}");
 
     private static final Pattern HASH_PATTERN = Pattern
             .compile("\"hash\"\\s*:\\s*\"([^\"]+)\"\\s*,");
@@ -144,11 +144,10 @@ public final class BundleLitParser {
         String content = StringUtil.removeComments(source);
         Matcher templateMatcher = LIT_TEMPLATE_PATTERN.matcher(content);
 
-        // GroupCount should be 2 as the first group contains `|'|" depending
-        // on what was in template return html' and the second is the
-        // template contents.
+        // GroupCount should be 2 as the first group contains ` and the second
+        // is the template contents.
         if (templateMatcher.find() && templateMatcher.groupCount() == 2) {
-            String group = templateMatcher.group(1);
+            String group = templateMatcher.group(2);
             LOGGER.trace("Found regular Lit template content was {}", group);
 
             templateDocument = Jsoup.parse(group);
