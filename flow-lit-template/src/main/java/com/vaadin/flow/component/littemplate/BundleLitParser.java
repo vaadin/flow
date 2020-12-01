@@ -81,7 +81,7 @@ public final class BundleLitParser {
      * character with <code>\1;}</code> e.g. <code>';}</code>
      */
     private static final Pattern LIT_TEMPLATE_PATTERN = Pattern.compile(
-            "render\\(\\)[\\s]*\\{[\\s]*return[\\s]*html[\\s]*(\\`)([\\s\\S]*)\\1;[\\s]*\\}");
+            "render\\(\\)[\\s]*\\{[\\s]*return[\\s]*html[\\s]*(\\`)([\\s\\S]*?)\\1;[\\s]*\\}");
 
     private static final Pattern HASH_PATTERN = Pattern
             .compile("\"hash\"\\s*:\\s*\"([^\"]+)\"\\s*,");
