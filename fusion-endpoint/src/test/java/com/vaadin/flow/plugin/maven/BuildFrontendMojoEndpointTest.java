@@ -16,7 +16,6 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static java.io.File.pathSeparator;
@@ -47,7 +46,6 @@ import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -59,8 +57,6 @@ public class BuildFrontendMojoEndpointTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private File generatedFolder;
-    private File flowResourcesFolder;
-    private File projectFrontendResourcesDirectory;
     private File defaultJavaSource;
     private String openApiJsonFile;
     private File generatedTsFolder;
@@ -75,38 +71,19 @@ public class BuildFrontendMojoEndpointTest {
 
         File npmFolder = temporaryFolder.getRoot();
         generatedFolder = new File(npmFolder, DEFAULT_GENERATED_DIR);
-        flowResourcesFolder = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
         File frontendDirectory = new File(npmFolder, DEFAULT_FRONTEND_DIR);
 
-        projectFrontendResourcesDirectory = new File(npmFolder,
-                "flow_resources");
-
-        defaultJavaSource = new File(".", "src/test/java");
+        defaultJavaSource = new File(".", "src/test/java/com/vaadin/flow/plugin/maven");
         openApiJsonFile = new File(npmFolder,
                 "target/generated-resources/openapi.json").getAbsolutePath();
         generatedTsFolder = new File(npmFolder, "frontend/generated");
-
-        Assert.assertTrue("Failed to create a test project resources",
-                projectFrontendResourcesDirectory.mkdirs());
-        Assert.assertTrue("Failed to create a test project file",
-                new File(projectFrontendResourcesDirectory,
-                        TEST_PROJECT_RESOURCE_JS).createNewFile());
-
-        ReflectionUtils.setVariableValueInObject(mojo,
-                "frontendResourcesDirectory",
-                projectFrontendResourcesDirectory);
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder",
                 generatedFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
                 frontendDirectory);
-        ReflectionUtils.setVariableValueInObject(mojo,
-                "generateEmbeddableWebComponents", false);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", npmFolder);
-        ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
-        ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
-        ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle", true);
 
         ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
                 new File(npmFolder, "target/generated-resources/openapi.json"));
@@ -122,7 +99,6 @@ public class BuildFrontendMojoEndpointTest {
         ReflectionUtils.setVariableValueInObject(mojo, "nodeDownloadRoot",
                 NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
 
-        flowResourcesFolder.mkdirs();
         generatedFolder.mkdirs();
 
         setProject(mojo, npmFolder);
