@@ -154,6 +154,12 @@
             <artifactId>flow-maven-plugin</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.annotation</groupId>
+                    <artifactId>jsr250-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Bean Validation implementation -->
