@@ -180,13 +180,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Needed for security annotations -->
-        <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-            <version>${javax.annotation.api.version}</version>
-        </dependency>
-
     </dependencies>
     <build>
         <resources>
