@@ -173,7 +173,8 @@ module.exports = {
             options: {
               url: (url, resourcePath) => {
                 // Only translate files from node_modules
-                return resourcePath.includes('/node_modules/');
+                return resourcePath.includes('/node_modules/')
+                    || resourcePath.includes('/frontend/theme/');
               },
               // use theme-loader to also handle any imports in css files
               importLoaders: 1
