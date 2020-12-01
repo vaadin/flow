@@ -129,7 +129,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
             ClassFinder classFinder = getClassFinder(project);
             Lookup lookup= new LookupImpl(classFinder);
             NodeTasks.Builder builder = new NodeTasks.Builder(
-                    classFinder, npmFolder, lookup, generatedFolder,
+                    lookup, classFinder, npmFolder, generatedFolder,
                     frontendDirectory)
                             .withWebpack(webpackOutputDirectory,
                                     webpackTemplate, webpackGeneratedTemplate)
