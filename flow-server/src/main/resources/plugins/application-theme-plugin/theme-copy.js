@@ -51,7 +51,7 @@ function copyThemeFiles(folderToCopy, targetFolder) {
   fs.readdirSync(folderToCopy).forEach(file => {
     if (fs.statSync(path.resolve(folderToCopy, file)).isDirectory()) {
       if (!fs.existsSync(path.resolve(targetFolder, file))) {
-        fs.mkdirSync(path.resolve(targetFolder, file));
+        fs.mkdirSync(path.resolve(targetFolder, file), {recursive: true});
       }
       copyThemeFiles(path.resolve(folderToCopy, file), path.resolve(targetFolder, file));
     } else if (!ignoredFileExtensions.includes(path.extname(file))) {

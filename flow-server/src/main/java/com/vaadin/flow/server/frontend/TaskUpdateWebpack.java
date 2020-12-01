@@ -111,8 +111,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
         this.useV14Bootstrapping = useV14Bootstrapping;
         this.flowResourcesFolder = flowResourcesFolder.toPath();
         this.pwaConfiguration = pwaConfiguration;
-        this.resourceFolder = new File(webpackOutputDirectory.getParentFile(),
-            VAADIN_STATIC_FILES_PATH).toPath();
+        this.resourceFolder = new File(webpackOutputDirectory,
+                VAADIN_STATIC_FILES_PATH).toPath();
     }
 
     @Override
