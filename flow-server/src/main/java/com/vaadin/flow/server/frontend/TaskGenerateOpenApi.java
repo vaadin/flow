@@ -20,21 +20,21 @@ import java.io.File;
 /**
  * Generate OpenAPI json file for Vaadin Endpoints.
  */
-public interface TaskGenerateOpenApi extends TaskGenerateEndpointBase {
+public interface TaskGenerateOpenApi extends FallibleCommand {
 
-  /**
-   * set the java source folder.
-   * @param javaSourceFolder
-   *            the java source folder
-   * @return the current task
-   */
-  TaskGenerateOpenApi withJavaSourceFolder(File javaSourceFolder);
-
-  /**
-   * set the class loader.
-   * @param classLoader
-   *            the class loader
-   * @return the current task
-   */
-  TaskGenerateOpenApi withClassLoader(ClassLoader classLoader);
+    /**
+     * Initialize a task for generating OpenAPI spec.
+     *
+     * @param properties
+     *            the application propperties
+     * @param javaSourceFolder
+     *            source paths of the project containing {@link Endpoint}
+     * @param classLoader
+     *            The class loader which should be used to resolved types in the
+     *            source paths.
+     * @param output
+     *            the output path of the generated json file.
+     */
+    void init(File properties, File javaSourceFolder,
+            ClassLoader classLoader, File output);
 }

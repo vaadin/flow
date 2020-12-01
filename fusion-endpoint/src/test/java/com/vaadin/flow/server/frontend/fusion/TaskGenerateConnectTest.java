@@ -12,8 +12,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class TaskGenerateConnectTest {
@@ -49,10 +49,7 @@ public class TaskGenerateConnectTest {
         assertFalse(client.exists());
 
         taskGenerateConnectTs = new TaskGenerateConnectImpl();
-        taskGenerateConnectTs.withOpenApi(openApiJson)
-                .withFrontendDirectory(frontendDirectory)
-                .withOutputFolder(outputDirectory)
-                .withApplicationProperties(properties);
+        taskGenerateConnectTs.init(properties, openApiJson, outputDirectory, frontendDirectory);
         taskGenerateConnectTs.execute();
 
         assertTrue(ts1.exists());
@@ -82,10 +79,7 @@ public class TaskGenerateConnectTest {
         assertTrue(customConnectClient.exists());
 
         taskGenerateConnectTs = new TaskGenerateConnectImpl();
-        taskGenerateConnectTs.withOpenApi(openApiJson)
-                .withFrontendDirectory(frontendDirectory)
-                .withOutputFolder(outputDirectory)
-                .withApplicationProperties(properties);
+        taskGenerateConnectTs.init(properties, openApiJson, outputDirectory, frontendDirectory);
         taskGenerateConnectTs.execute();
 
         assertTrue(ts1.exists());
@@ -95,6 +89,6 @@ public class TaskGenerateConnectTest {
         String outputEndpoinTs1 = FileUtils.readFileToString(ts1, "UTF-8");
         String outputEndpoinTs2 = FileUtils.readFileToString(ts2, "UTF-8");
         assertThat(outputEndpoinTs1, containsString("import client from '../connect-client'"));
-        assertThat(outputEndpoinTs1, containsString("import client from '../connect-client'"));
+        assertThat(outputEndpoinTs2, containsString("import client from '../connect-client'"));
     }
 }

@@ -30,6 +30,32 @@ public class TaskGenerateOpenApiImpl extends AbstractTaskConnectGenerator implem
 
     private File javaSourceFolder;
     private transient ClassLoader classLoader;
+    private File output;
+
+    /**
+     * Create a task for generating OpenAPI spec.
+     *
+     * @param javaSourceFolder
+     *            source paths of the project containing {@link Endpoint}
+     * @param classLoader
+     *            The class loader which should be used to resolved types in the
+     *            source paths.
+     * @param output
+     *            the output path of the generated json file.
+     */
+    public void init(File properties, File javaSourceFolder,
+            ClassLoader classLoader, File output) {
+        super.init(properties);
+        Objects.requireNonNull(javaSourceFolder,
+                "Source paths should not be null.");
+        Objects.requireNonNull(output,
+                "OpenAPI output file should not be null.");
+        Objects.requireNonNull(classLoader,
+                "ClassLoader should not be null.");
+        this.javaSourceFolder = javaSourceFolder;
+        this.classLoader = classLoader;
+        this.output = output;
+    }
 
     @Override
     public void execute() throws ExecutionFailedException {
@@ -37,22 +63,6 @@ public class TaskGenerateOpenApiImpl extends AbstractTaskConnectGenerator implem
                 readApplicationProperties());
         openApiSpecGenerator.generateOpenApiSpec(
                 Collections.singletonList(javaSourceFolder.toPath()),
-                classLoader, outputFolder.toPath());
-    }
-
-    @Override
-    public TaskGenerateOpenApi withJavaSourceFolder(File javaSourceFolder) {
-        Objects.requireNonNull(javaSourceFolder,
-                "Source paths should not be null.");
-        this.javaSourceFolder = javaSourceFolder;
-        return this;
-    }
-
-    @Override
-    public TaskGenerateOpenApi withClassLoader(ClassLoader classLoader) {
-        Objects.requireNonNull(classLoader,
-                "ClassLoader should not be null.");
-        this.classLoader = classLoader;
-        return this;
+                classLoader, output.toPath());
     }
 }

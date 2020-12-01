@@ -20,21 +20,21 @@ import java.io.File;
 /**
  * Generate the Vaadin TS files for endpoints, and the Client API file.
  */
-public interface TaskGenerateConnect extends TaskGenerateEndpointBase {
+public interface TaskGenerateConnect extends FallibleCommand{
 
-  /**
-   * set the openApi json file.
-   * @param openApi
-   *            the openApi json file
-   * @return the current task
-   */
-  TaskGenerateConnect withOpenApi(File openApi);
+    /**
+     * Initialize a task for generating TS files based.
+     *
+     * @param applicationProperties
+     *            application properties file.
+     * @param openApi
+     *            openApi json file.
+     * @param outputFolder
+     *            the output folder.
+     * @param frontendDirectory
+     *            the frontend folder.
+     */
+    void init(File applicationProperties, File openApi,
+                        File outputFolder, File frontendDirectory);
 
-  /**
-   * set the frontend directory.
-   * @param frontendDirectory
-   *            the frontend directory
-   * @return the current task
-   */
-  TaskGenerateConnect withFrontendDirectory(File frontendDirectory);
 }

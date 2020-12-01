@@ -31,9 +31,23 @@ import static com.vaadin.flow.server.connect.generator.VaadinConnectClientGenera
  */
 public class TaskGenerateConnectImpl extends AbstractTaskConnectGenerator implements TaskGenerateConnect {
 
+    private File outputFolder;
     private File openApi;
     private File connectClientFile;
     private File frontendDirectory;
+
+    public void init(File applicationProperties, File openApi,
+                        File outputFolder, File frontendDirectory) {
+        super.init(applicationProperties);
+        Objects.requireNonNull(openApi,
+                "Vaadin OpenAPI file should not be null.");
+        Objects.requireNonNull(outputFolder,
+                "Vaadin output folder should not be null.");
+        this.openApi = openApi;
+        this.outputFolder = outputFolder;
+        this.connectClientFile = new File(outputFolder, CONNECT_CLIENT_NAME);
+        this.frontendDirectory = frontendDirectory;
+    }
 
     @Override
     public void execute() throws ExecutionFailedException {
@@ -43,27 +57,5 @@ public class TaskGenerateConnectImpl extends AbstractTaskConnectGenerator implem
             new VaadinConnectClientGenerator(readApplicationProperties())
                     .generateVaadinConnectClientFile(connectClientFile.toPath());
         }
-    }
-
-    
-    @Override
-    public TaskGenerateConnect withOpenApi(File openApi) {
-        Objects.requireNonNull(openApi,
-                "Vaadin OpenAPI file should not be null.");
-        this.openApi = openApi;
-        return this;
-    }
-
-    @Override
-    public TaskGenerateConnect withFrontendDirectory(File frontendDirectory) {
-        this.frontendDirectory = frontendDirectory;
-        return this;
-    }
-
-    @Override
-    public TaskGenerateConnect withOutputFolder(File outputFolder) {
-        super.withOutputFolder(outputFolder);
-        this.connectClientFile = new File(outputFolder, CONNECT_CLIENT_NAME);
-        return this;
     }
 }

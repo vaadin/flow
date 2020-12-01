@@ -53,7 +53,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-@Ignore
 public class BuildFrontendMojoEndpointTest {
   public static final String TEST_PROJECT_RESOURCE_JS = "test_project_resource.js";
     @Rule

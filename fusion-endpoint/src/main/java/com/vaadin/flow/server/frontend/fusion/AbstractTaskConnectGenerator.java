@@ -21,34 +21,20 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Properties;
-import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.frontend.TaskGenerateEndpointBase;
-
 /**
  * Abstract class for Vaadin Fusion related generators.
  */
-abstract class AbstractTaskConnectGenerator implements TaskGenerateEndpointBase {
+abstract class AbstractTaskConnectGenerator {
     private File applicationProperties;
-    protected File outputFolder;
 
-    @Override
-    public TaskGenerateEndpointBase withApplicationProperties(File applicationProperties) {
+    protected void init(File applicationProperties) {
         this.applicationProperties = applicationProperties;
-        return this;
     }
 
-    @Override
-    public TaskGenerateEndpointBase withOutputFolder(File outputFolder) {
-        Objects.requireNonNull(outputFolder,
-                "Vaadin output folder should not be null.");
-        this.outputFolder = outputFolder;
-        return this;
-    }
-    
     protected Properties readApplicationProperties() {
         Properties config = new Properties();
 
