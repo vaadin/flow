@@ -15,14 +15,15 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
-import com.vaadin.flow.component.html.testbench.ImageElement;
-import com.vaadin.flow.component.html.testbench.SpanElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+
+import com.vaadin.flow.component.html.testbench.ImageElement;
+import com.vaadin.flow.component.html.testbench.SpanElement;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.BUTTERFLY_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.FONTAWESOME_ID;
