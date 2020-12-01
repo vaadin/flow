@@ -44,6 +44,7 @@ export const injectGlobalCss = (css, target) => {
  *
  * @param {string} themeFolder folder of the theme
  * @param {string} themeName name of the handled theme
+ * @param {JSON Object} themeProperties content of theme.json
  * @returns {string} theme file content
  */
 function generateThemeFile(themeFolder, themeName, themeProperties) {
