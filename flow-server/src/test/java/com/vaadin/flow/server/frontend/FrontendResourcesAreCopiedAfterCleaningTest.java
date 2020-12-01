@@ -80,8 +80,8 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
                 FrontendResourcesAreCopiedAfterCleaningTest.class
                         .getClassLoader());
-        NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
-                npmFolder, Mockito.mock(Lookup.class));
+        NodeTasks.Builder builder = new NodeTasks.Builder(Mockito.mock(Lookup.class),
+                classFinder, npmFolder);
         File resourcesFolder = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
@@ -95,8 +95,8 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
                 FrontendResourcesAreCopiedAfterCleaningTest.class
                         .getClassLoader());
-        NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
-                npmFolder, Mockito.mock(Lookup.class));
+        NodeTasks.Builder builder = new NodeTasks.Builder(Mockito.mock(Lookup.class),
+                classFinder, npmFolder);
         File resourcesFolder = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)

@@ -49,8 +49,9 @@ public class NodeTasksEndpointTest {
         Mockito.doReturn(new TaskGenerateConnectImpl()).when(mockLookup).lookup(TaskGenerateConnect.class);
         Mockito.doReturn(new TaskGenerateOpenApiImpl()).when(mockLookup).lookup(TaskGenerateOpenApi.class);
         Builder builder = new Builder(
+                mockLookup,
                 new DefaultClassFinder(
-                    Collections.singleton(ConnectEndpointsForTesting.class)), dir, mockLookup)
+                    Collections.singleton(ConnectEndpointsForTesting.class)), dir)
                         .enablePackagesUpdate(false)
                         .enableImportsUpdate(false)
                         .withEmbeddableWebComponents(false)

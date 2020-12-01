@@ -80,6 +80,8 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
+import com.vaadin.flow.server.frontend.TaskGenerateConnect;
+import com.vaadin.flow.server.frontend.TaskGenerateOpenApi;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
@@ -283,8 +285,8 @@ public class DevModeInitializer
                 DEFAULT_FLOW_RESOURCES_FOLDER);
 
         Lookup lookup = new VaadinServletContext(context).getAttribute(Lookup.class);
-        Builder builder = new NodeTasks.Builder(new DevModeClassFinder(classes),
-                new File(baseDir), lookup, new File(generatedDir),
+        Builder builder = new NodeTasks.Builder(lookup, new DevModeClassFinder(classes),
+                new File(baseDir), new File(generatedDir),
                 new File(frontendFolder));
 
         log().info("Starting dev-mode updaters in {} folder.",
@@ -313,7 +315,7 @@ public class DevModeInitializer
 
         builder.useV14Bootstrap(config.useV14Bootstrap());
 
-        if (!config.useV14Bootstrap()) {
+        if (!config.useV14Bootstrap() && isEndpointServiceAvailable(lookup)) {
             String connectJavaSourceFolder = config.getStringProperty(
                     CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
                     Paths.get(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER)
@@ -396,13 +398,20 @@ public class DevModeInitializer
         DevModeHandler.start(config, builder.npmFolder, runNodeTasks);
     }
 
+    private static boolean isEndpointServiceAvailable(Lookup lookup) {
+            if (lookup == null) {
+                    return false;
+            }
+            return lookup.lookup(TaskGenerateConnect.class) != null 
+                        && lookup.lookup(TaskGenerateOpenApi.class) != null;
+    }
+
     /**
      * Shows whether {@link DevModeHandler} has been already started or not.
      *
-     * @param servletContext
-     *            The servlet context, not <code>null</code>
-     * @return <code>true</code> if {@link DevModeHandler} has already been
-     *         started, <code>false</code> - otherwise
+     * @param servletContext The servlet context, not <code>null</code>
+     * @return <code>true</code> if {@link DevModeHandler} has already been started,
+     *         <code>false</code> - otherwise
      */
     public static boolean isDevModeAlreadyStarted(
             ServletContext servletContext) {

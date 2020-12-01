@@ -131,19 +131,23 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Create a builder instance given an specific npm folder.
          *
+         * @param lookup
+         *            a {@link Lookup} to discover services used by Flow (SPI)
          * @param classFinder
          *            a class finder
          * @param npmFolder
          *            folder with the `package.json` file
          */
-        public Builder(ClassFinder classFinder, File npmFolder, Lookup lookup) {
-            this(classFinder, npmFolder, lookup, new File(npmFolder, System
+        public Builder(Lookup lookup, ClassFinder classFinder, File npmFolder) {
+            this(lookup, classFinder, npmFolder, new File(npmFolder, System
                     .getProperty(PARAM_GENERATED_DIR, DEFAULT_GENERATED_DIR)));
         }
 
         /**
          * Create a builder instance with custom npmFolder and generatedPath
          *
+         * @param lookup
+         *            a {@link Lookup} to discover services used by Flow (SPI)
          * @param classFinder
          *            a class finder
          * @param npmFolder
@@ -151,9 +155,9 @@ public class NodeTasks implements FallibleCommand {
          * @param generatedPath
          *            folder where flow generated files will be placed.
          */
-        public Builder(ClassFinder classFinder, File npmFolder,
-                Lookup lookup, File generatedPath) {
-            this(classFinder, npmFolder, lookup, generatedPath,
+        public Builder(Lookup lookup, ClassFinder classFinder, File npmFolder,
+                File generatedPath) {
+            this(lookup, classFinder, npmFolder, generatedPath,
                     new File(npmFolder, System.getProperty(PARAM_FRONTEND_DIR,
                             DEFAULT_FRONTEND_DIR)));
         }
@@ -161,6 +165,8 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Create a builder instance with all parameters.
          *
+         * @param lookup
+         *            a {@link Lookup} to discover services used by Flow (SPI)
          * @param classFinder
          *            a class finder
          * @param npmFolder
@@ -170,8 +176,8 @@ public class NodeTasks implements FallibleCommand {
          * @param frontendDirectory
          *            a directory with project's frontend files
          */
-        public Builder(ClassFinder classFinder, File npmFolder,
-                Lookup lookup, File generatedPath, File frontendDirectory) {
+        public Builder(Lookup lookup, ClassFinder classFinder, File npmFolder,
+                File generatedPath, File frontendDirectory) {
             this.classFinder = classFinder;
             this.npmFolder = npmFolder;
             this.lookup = lookup;

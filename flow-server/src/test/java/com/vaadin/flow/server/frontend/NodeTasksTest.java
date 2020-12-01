@@ -43,9 +43,9 @@ public class NodeTasksTest {
 
     @Test
     public void should_UseDefaultFolders()throws Exception {
-        Builder builder = new Builder(
+        Builder builder = new Builder(Mockito.mock(Lookup.class),
                 new DefaultClassFinder(this.getClass().getClassLoader()),
-                new File(userDir), Mockito.mock(Lookup.class))
+                new File(userDir))
             .enablePackagesUpdate(false)
             .enableImportsUpdate(true)
             .runNpmInstall(false)
@@ -66,9 +66,9 @@ public class NodeTasksTest {
         System.setProperty(PARAM_FRONTEND_DIR, "my_custom_sources_folder");
         System.setProperty(PARAM_GENERATED_DIR, "my/custom/generated/folder");
 
-        Builder builder = new Builder(
+        Builder builder = new Builder(Mockito.mock(Lookup.class),
                 new DefaultClassFinder(this.getClass().getClassLoader()),
-                new File(userDir), Mockito.mock(Lookup.class))
+                new File(userDir))
             .enablePackagesUpdate(false)
             .enableImportsUpdate(true)
             .runNpmInstall(false)
@@ -86,9 +86,9 @@ public class NodeTasksTest {
     @Test
     public void should_SetIsClientBootstrapMode_When_EnableClientSideBootstrapMode()
             throws ExecutionFailedException, IOException {
-        Builder builder = new Builder(
+        Builder builder = new Builder(Mockito.mock(Lookup.class),
                 new DefaultClassFinder(this.getClass().getClassLoader()),
-                new File(userDir), Mockito.mock(Lookup.class))
+                new File(userDir))
                         .enablePackagesUpdate(false)
                         .withWebpack(new File(userDir, TARGET + "classes"),
                                 WEBPACK_CONFIG, WEBPACK_GENERATED)

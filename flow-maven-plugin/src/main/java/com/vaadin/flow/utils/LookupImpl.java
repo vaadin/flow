@@ -15,13 +15,16 @@
  */
 package com.vaadin.flow.utils;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-
-import org.slf4j.LoggerFactory;
 
 public class LookupImpl implements Lookup {
 
@@ -38,16 +41,33 @@ public class LookupImpl implements Lookup {
 
   @Override
   public <T> Collection<T> lookupAll(Class<T> serviceClass) {
-    Collection<T> result = Collections.emptyList();
-    classFinder.getSubTypesOf(serviceClass).forEach(clz -> {
-      try {
-        result.add(clz.newInstance());
-      } catch (Exception e) {
-        LoggerFactory.getLogger(LookupImpl.class.getName())
-                    .warn("Failed to create an insance of type {}", clz);
-      }
-    });
-    return result;
+    return classFinder.getSubTypesOf(serviceClass).stream()
+      .filter(this::isInstantiable).map(ReflectTools::createInstance)
+      .collect(Collectors.toList());
+  }
+
+  private boolean isInstantiable(Class<?> clazz) {
+    if (clazz.isInterface()) {
+      return false;
+    }
+    if (clazz.isSynthetic()) {
+      return false;
+    }
+    if (Modifier.isAbstract(clazz.getModifiers())) {
+      return false;
+    }
+    if (!Modifier.isPublic(clazz.getModifiers())) {
+      return false;
+    }
+    Optional<Constructor<?>> constructor = Stream.of(clazz.getConstructors())
+        .filter(ctor -> ctor.getParameterCount() == 0).findFirst();
+    if (!constructor.isPresent() || !Modifier.isPublic(constructor.get().getModifiers())) {
+      return false;
+    }
+    if (clazz.getEnclosingClass() != null && !Modifier.isStatic(clazz.getModifiers())) {
+      return false;
+    }
+    return true;
   }
   
 }
