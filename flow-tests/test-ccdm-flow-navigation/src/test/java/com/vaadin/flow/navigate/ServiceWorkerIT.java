@@ -20,7 +20,6 @@ import java.io.IOException;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -36,6 +35,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     @Test
     public void onlineRoot_serviceWorkerInstalled_serviceWorkerActive() {
         getDriver().get(getRootURL() + "/");
+        waitForDevServer();
         waitForServiceWorkerReady();
 
         boolean serviceWorkerActive = (boolean) ((JavascriptExecutor) getDriver())
@@ -47,6 +47,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     @Test
     public void offlineRoot_reload_viewReloaded() throws IOException {
         getDriver().get(getRootURL() + "/");
+        waitForDevServer();
         waitForServiceWorkerReady();
 
         // Confirm that app shell is loaded
@@ -86,6 +87,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     @Test
     public void offlineNonRoot_reload_viewReloaded() throws IOException {
         getDriver().get(getRootURL() + "/");
+        waitForDevServer();
         waitForServiceWorkerReady();
 
         // Set offline network conditions in ChromeDriver
@@ -118,6 +120,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     @Test
     public void offlineTsView_navigateToOtherTsView_navigationSuccessful() throws IOException {
         getDriver().get(getRootURL() + "/about");
+        waitForDevServer();
         waitForServiceWorkerReady();
 
         MatcherAssert.assertThat(getDriver().getCurrentUrl(),
@@ -147,6 +150,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     @Test
     public void offlineServerView_navigateToTsView_navigationSuccessful() throws IOException {
         getDriver().get(getRootURL() + "/hello");
+        waitForDevServer();
         waitForServiceWorkerReady();
 
         // Set offline network conditions in ChromeDriver
@@ -174,6 +178,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     public void offlineTsView_navigateToServerView_offlineStubShown()
             throws IOException {
         getDriver().get(getRootURL() + "/another");
+        waitForDevServer();
         waitForServiceWorkerReady();
 
         setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
@@ -197,6 +202,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     public void offlineServerView_navigateToServerView_offlineStubShown()
             throws IOException {
         getDriver().get(getRootURL() + "/hello");
+        waitForDevServer();
         waitForServiceWorkerReady();
 
         setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
@@ -220,6 +226,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     public void offlineStub_backOnline_stubRemoved_serverViewShown()
             throws IOException {
         getDriver().get(getRootURL() + "/");
+        waitForDevServer();
         waitForServiceWorkerReady();
         setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
         try {

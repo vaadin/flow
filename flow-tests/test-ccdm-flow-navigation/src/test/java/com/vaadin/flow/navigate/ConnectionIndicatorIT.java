@@ -32,6 +32,7 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
     public void setup() throws Exception {
         super.setup();
         getDriver().get(getRootURL() + "/connection-indicator");
+        waitForDevServer();
         waitForServiceWorkerReady();
     }
 
