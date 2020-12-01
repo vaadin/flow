@@ -170,6 +170,12 @@ module.exports = {
         use: [
           {
             loader: 'css-loader',
+            import: (url, media, resourcePath) => {
+              // resourcePath - path to css file
+              // If the import happens from within a node_modules file, we must resolve and inline.
+              // Otherwise resources will not be found at runtime as node_modules is not deployed
+              return resourcePath.includes('/node_modules/');
+            },
             options: {
               url: (url, resourcePath) => {
                 // Only translate files from node_modules
