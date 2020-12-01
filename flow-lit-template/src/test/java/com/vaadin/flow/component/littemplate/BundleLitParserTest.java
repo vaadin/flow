@@ -18,6 +18,8 @@ package com.vaadin.flow.component.littemplate;
 
 import java.io.IOException;
 
+import org.jsoup.nodes.Element;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class BundleLitParserTest {
@@ -25,6 +27,11 @@ public class BundleLitParserTest {
 
         @Test
         public void parseTemplate() throws IOException {
-            BundleLitParser.parseLitTemplateElement("in.ts", content);
+            final Element element = BundleLitParser
+                .parseLitTemplateElement("in.ts", content);
+
+            Assert.assertEquals("The html should contain 12 elements making it 13 with the expected addition of a template element", 13,
+                element.getAllElements().size());
+            Assert.assertEquals("", "vaadin-split-layout", element.getElementsByTag("template").get(0).child(0).tagName());
         }
 }
