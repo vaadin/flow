@@ -70,7 +70,7 @@ public class ThemeIT extends ChromeBrowserTest {
         checkLogsForErrors();
 
         Assert.assertEquals("Imported FontAwesome css file should be applied.",
-                "Font Awesome 5 Brands", $(SpanElement.class).id(FONTAWESOME_ID)
+                "\"Font Awesome 5 Brands\"", $(SpanElement.class).id(FONTAWESOME_ID)
                         .getCssValue("font-family"));
     }
 
