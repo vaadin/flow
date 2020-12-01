@@ -24,7 +24,7 @@ import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.connect.generator.OpenApiSpecGenerator;
 
 /**
- * Generate OpenAPI json file for Connect Endpoints.
+ * Generate OpenAPI json file for Vaadin Endpoints.
  */
 public class TaskGenerateOpenApi extends AbstractTaskConnectGenerator {
 

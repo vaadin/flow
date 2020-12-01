@@ -15,9 +15,14 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import org.junit.experimental.categories.Category;
+
+import com.vaadin.flow.testcategory.IgnoreOSGi;
+
 /**
  * The tests are in the superclass.
  */
+@Category(IgnoreOSGi.class)
 public class PushWSUpdateDivIT extends AbstractUpdateDivIT {
 
 }

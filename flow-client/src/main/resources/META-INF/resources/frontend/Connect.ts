@@ -82,7 +82,7 @@ export class EndpointResponseError extends Error {
 }
 
 /**
- * An exception that gets thrown when the Vaadin Connect backend responds
+ * An exception that gets thrown when the Vaadin backend responds
  * with not ok status.
  */
 export class EndpointError extends Error {
@@ -110,7 +110,7 @@ export class EndpointError extends Error {
 }
 
 /**
- * An exception that gets thrown if Vaadin Connect backend responds
+ * An exception that gets thrown if Vaadin endpoint responds
  * with non-ok status and provides additional info
  * on the validation errors occurred.
  */
@@ -250,7 +250,7 @@ export type Middleware = MiddlewareClass | MiddlewareFunction;
 /**
  * Vaadin Connect client class is a low-level network calling utility. It stores
  * a prefix and facilitates remote calls to endpoint class methods
- * on the Vaadin Connect backend.
+ * on the Vaadin backend.
  *
  * Example usage:
  *
@@ -271,7 +271,7 @@ export type Middleware = MiddlewareClass | MiddlewareFunction;
  */
 export class ConnectClient {
   /**
-   * The Vaadin Connect backend prefix
+   * The Vaadin endpoint prefix
    */
   prefix: string = '/connect';
 

@@ -20,7 +20,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
- * Class that contains all Vaadin Connect customizable properties.
+ * Class that contains all Vaadin endpoint customizable properties.
  */
 @Component
 @ConfigurationProperties("vaadin.endpoint")
@@ -30,11 +30,11 @@ public class VaadinEndpointProperties {
     private String vaadinEndpointPrefix;
 
     /**
-     * Customize the prefix for all Vaadin Connect endpoints. See default value
+     * Customize the prefix for all Vaadin endpoints. See default value
      * in the {@link VaadinEndpointProperties#vaadinEndpointPrefix} field
      * annotation.
      *
-     * @return prefix that should be used to access any Vaadin Connect endpoint
+     * @return prefix that should be used to access any Vaadin endpoint
      */
     public String getVaadinEndpointPrefix() {
         return vaadinEndpointPrefix;

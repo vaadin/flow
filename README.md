@@ -12,7 +12,7 @@ Join Vaadin Flow community chat in https://discord.gg/MYFq5RTbBn
 
 Instructions on how to set up a working environment for developing the Flow project follow below.
 
-The `master` branch is the latest version (5.0) that will at some point be released in the [Vaadin platform 18.0](https://github.com/vaadin/platform). See other branches for other framework versions:
+The `master` branch is the latest version (6.0) that will at some point be released in the [Vaadin platform 19.0](https://github.com/vaadin/platform). See other branches for other framework versions:
 
 | Branch | [Platform Version](https://github.com/vaadin/platform/releases) | [Flow Version](https://github.com/vaadin/flow/releases) |
 |--------|-----------------------------------------------------------------|---------------------------------------------------------|
@@ -27,7 +27,7 @@ The `master` branch is the latest version (5.0) that will at some point be relea
 |  3.0   |  15.0.x                                                         |  3.0.x                                                  |
 |  3.1   |  16.0.x                                                         |  3.1.x                                                  |
 |  4.0   |  17.0.x                                                         |  4.x                                                    |
-
+|  5.0   |  18.0.x                                                         |  5.x                                                    |
 
 Setting up Eclipse to Develop Flow
 =========

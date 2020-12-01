@@ -65,10 +65,6 @@ public class ScrollIT extends AbstractScrollIT {
     public void anchorUrlsWorkProperly() {
         open();
 
-        if (hasClientIssue("8236")) {
-            return;
-        }
-
         final int xScrollAmount = 0;
         final int yScrollAmount = 400;
 

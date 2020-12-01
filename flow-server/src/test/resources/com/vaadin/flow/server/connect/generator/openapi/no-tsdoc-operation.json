@@ -6,7 +6,7 @@
   },
   "servers" : [ {
     "url" : "https://myhost.com/myprefix",
-    "description" : "Vaadin connect backend server"
+    "description" : "Vaadin backend server"
   } ],
   "tags" : [ {
     "name" : "GeneratorTestClass",

@@ -17,13 +17,45 @@
 package com.vaadin.flow.uitest.ui.theme;
 
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 
-@Route("com.vaadin.flow.uitest.ui.theme.Theme")
+@Route("com.vaadin.flow.uitest.ui.theme.ThemeView")
 public class ThemeView extends Div {
 
+    public static final String MY_POLYMER_ID = "field";
+    public static final String MY_LIT_ID = "button";
+    public static final String TEST_TEXT_ID = "test-text";
+    public static final String SNOWFLAKE_ID = "fortawesome";
+    public static final String BUTTERFLY_ID = "butterfly";
+    public static final String OCTOPUSS_ID = "octopuss";
+    public static final String SUB_COMPONENT_ID = "sub-component";
+
     public ThemeView() {
-        add(new Span("This is the theme test view"));
+        final Span textSpan = new Span("This is the theme test view");
+        textSpan.setId(TEST_TEXT_ID);
+
+        Span subCss = new Span();
+        subCss.setId(SUB_COMPONENT_ID);
+
+        Span butterfly = new Span();
+        butterfly.setId(BUTTERFLY_ID);
+
+        Span octopuss = new Span();
+        octopuss.setId(OCTOPUSS_ID);
+
+        Image snowFlake = new Image(
+            "VAADIN/static/fortawesome/icons/snowflake.svg", "snowflake");
+        snowFlake.setHeight("1em");
+        snowFlake.setId(SNOWFLAKE_ID);
+
+        add(textSpan, snowFlake, subCss, butterfly, octopuss);
+
+        add(new Div());
+        add(new MyPolymerField().withId(MY_POLYMER_ID));
+
+        add(new Div());
+        add(new MyLitField().withId(MY_LIT_ID));
     }
 }

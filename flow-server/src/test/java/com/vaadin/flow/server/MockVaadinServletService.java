@@ -109,7 +109,9 @@ public class MockVaadinServletService extends VaadinServletService {
         try {
             MockVaadinServlet servlet = (MockVaadinServlet) getServlet();
             servlet.service = this;
-            getServlet().init(new MockServletConfig());
+            if (getServlet().getServletConfig() == null) {
+                getServlet().init(new MockServletConfig());
+            }
             super.init();
         } catch (ServiceException | ServletException e) {
             throw new RuntimeException(e);

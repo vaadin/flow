@@ -41,6 +41,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_J
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 
 /**
  * Updates the webpack config file according with current project settings.
@@ -110,7 +111,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
         this.useV14Bootstrapping = useV14Bootstrapping;
         this.flowResourcesFolder = flowResourcesFolder.toPath();
         this.pwaConfiguration = pwaConfiguration;
-        this.resourceFolder = new File(webpackOutputDirectory.getParentFile(), "resources").toPath();
+        this.resourceFolder = new File(webpackOutputDirectory.getParentFile(),
+            VAADIN_STATIC_FILES_PATH).toPath();
     }
 
     @Override
@@ -208,10 +210,10 @@ public class TaskUpdateWebpack implements FallibleCommand {
                                 pwaConfiguration.isOfflinePathEnabled())),
                 new Pair<>("const offlinePath", getOfflinePath()),
                 new Pair<>("const clientServiceWorkerEntryPoint", getClientServiceWorker()),
-                new Pair<>("const flowFrontendFolder", 
+                new Pair<>("const flowFrontendFolder",
                         formatPathResolve(getEscapedRelativeWebpackPath(
                                 flowResourcesFolder))),
-                new Pair<>("const projectStaticAssetsOutputFolder", 
+                new Pair<>("const projectStaticAssetsOutputFolder",
                         formatPathResolve(getEscapedRelativeWebpackPath(
                                 resourceFolder))));
     }
