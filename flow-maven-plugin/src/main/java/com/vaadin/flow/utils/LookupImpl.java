@@ -22,32 +22,39 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
+/**
+ * An implementation of Lookup, which could be used
+ * to find service(s) of a give type.
+ */
 public class LookupImpl implements Lookup {
 
-    private ClassFinder classFinder;
+  private ClassFinder classFinder;
 
-    public LookupImpl(ClassFinder classFinder) {
-        this.classFinder = classFinder;
-    }
+  public LookupImpl(ClassFinder classFinder) {
+      this.classFinder = classFinder;
+  }
 
-    @Override
-    public <T> T lookup(Class<T> serviceClass) {
-        return lookupAll(serviceClass).stream().findFirst().orElse(null);
-    }
+  @Override
+  public <T> T lookup(Class<T> serviceClass) {
+      return lookupAll(serviceClass).stream().findFirst().orElse(null);
+  }
 
-    @Override
-    public <T> List<T> lookupAll(Class<T> serviceClass) {
-        Class<?> serviceClassLoadedByClassFinder;
-        try {
-            serviceClassLoadedByClassFinder = classFinder.loadClass(serviceClass.getName());
-        } catch (ClassNotFoundException exception) {
-            throw new IllegalStateException("Could not load " + serviceClass.getName() + " class", exception);
-        }
-        return classFinder.getSubTypesOf(serviceClassLoadedByClassFinder).stream()
+  @Override
+  public <T> List<T> lookupAll(Class<T> serviceClass) {
+      return classFinder.getSubTypesOf(serviceClass).stream()
+                .map(this::loadCassFromClassFindler)
                 .filter(ReflectTools::isInstantiableService)
                 .map(ReflectTools::createInstance)
                 .map(instance -> (T) instance)
                 .collect(Collectors.toList());
+    }
+
+    private Class<?> loadCassFromClassFindler(Class<?> clz){
+        try {
+            return classFinder.loadClass(clz.getName());
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException("Could not load " + clz.getName() + " class", e);
+        }
     }
 
 }

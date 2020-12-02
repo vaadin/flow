@@ -37,6 +37,7 @@ public interface EndpointGeneratorTaskFactory {
      *            the output folder.
      * @param frontendDirectory
      *            the frontend folder.
+     * @return an endpoint tasks for generating TypeScript files for endpoints.
      */
     TaskGenerateConnect createTaskGenerateConnect(File applicationProperties, File openApi, File outputFolder, File frontendDirectory);
     
@@ -50,6 +51,7 @@ public interface EndpointGeneratorTaskFactory {
      *            source paths.
      * @param output
      *            the output path of the generated json file.
+     * @return an endpoint task that generates open api json file.
      */
     TaskGenerateOpenApi createTaskGenerateOpenApi(File properties, File javaSourceFolder, ClassLoader classLoader, File output);
 }
