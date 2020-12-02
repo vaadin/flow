@@ -28,20 +28,23 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
  */
 public class LookupImpl implements Lookup {
 
-  private ClassFinder classFinder;
+    private ClassFinder classFinder;
 
-  public LookupImpl(ClassFinder classFinder) {
-      this.classFinder = classFinder;
-  }
+    /**
+     * Creates an implementation of Lookup.
+     */
+    public LookupImpl(ClassFinder classFinder) {
+        this.classFinder = classFinder;
+    }
 
-  @Override
-  public <T> T lookup(Class<T> serviceClass) {
-      return lookupAll(serviceClass).stream().findFirst().orElse(null);
-  }
+    @Override
+    public <T> T lookup(Class<T> serviceClass) {
+        return lookupAll(serviceClass).stream().findFirst().orElse(null);
+    }
 
-  @Override
-  public <T> List<T> lookupAll(Class<T> serviceClass) {
-      return classFinder.getSubTypesOf(serviceClass).stream()
+    @Override
+    public <T> List<T> lookupAll(Class<T> serviceClass) {
+        return classFinder.getSubTypesOf(serviceClass).stream()
                 .map(this::loadCassFromClassFindler)
                 .filter(ReflectTools::isInstantiableService)
                 .map(ReflectTools::createInstance)
