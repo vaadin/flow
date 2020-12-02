@@ -49,7 +49,6 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.utils.LookupImpl;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
@@ -59,10 +58,6 @@ import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
@@ -191,10 +186,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .withNodeDownloadRoot(nodeDownloadRootURI)
                         .build()
                         .execute();
-    }
-
-    Lookup createLookup(ClassFinder classFinder){
-        return new LookupImpl(classFinder);
     }
 
     private void runWebpack() throws MojoExecutionException {

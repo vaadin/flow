@@ -44,7 +44,6 @@ import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.utils.LookupImpl;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -127,7 +126,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
             File flowResourcesFolder = new File(npmFolder,
                     DEFAULT_FLOW_RESOURCES_FOLDER);
             ClassFinder classFinder = getClassFinder(project);
-            Lookup lookup= new LookupImpl(classFinder);
+            Lookup lookup= createLookup(classFinder);
             NodeTasks.Builder builder = new NodeTasks.Builder(
                     lookup, classFinder, npmFolder, generatedFolder,
                     frontendDirectory)

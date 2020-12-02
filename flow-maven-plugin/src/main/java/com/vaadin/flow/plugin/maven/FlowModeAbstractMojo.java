@@ -19,9 +19,13 @@ import java.io.File;
 
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.utils.LookupImpl;
+
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -153,5 +157,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
             return true;
         }
         return Boolean.parseBoolean(useDeprecatedV14Bootstrapping);
+    }
+
+    protected Lookup createLookup(ClassFinder classFinder){
+        return new LookupImpl(classFinder);
     }
 }
