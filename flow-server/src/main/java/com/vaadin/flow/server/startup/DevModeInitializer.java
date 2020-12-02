@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -94,11 +95,11 @@ import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_APPLICATION_PROPERTIES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_GENERATED_TS_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
@@ -117,7 +118,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
         NpmPackage.Container.class, JsModule.class, JsModule.Container.class,
         CssImport.class, CssImport.Container.class, JavaScript.class,
         JavaScript.Container.class, Theme.class, NoTheme.class,
-        AppShellConfigurator.class,HasErrorParameter.class })
+        AppShellConfigurator.class, HasErrorParameter.class })
 @WebListener
 public class DevModeInitializer
         implements ClassLoaderAwareServletContainerInitializer, Serializable,
@@ -268,7 +269,8 @@ public class DevModeInitializer
             return;
         }
 
-        String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR, null);
+        String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
+                null);
         if (baseDir == null) {
             baseDir = getBaseDirectoryFallback();
         }
@@ -373,25 +375,23 @@ public class DevModeInitializer
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec).build();
 
-        CompletableFuture<Void> runNodeTasks = CompletableFuture
-                .runAsync(() -> {
-                    try {
-                        tasks.execute();
+        // Check whether executor is provided by the caller (framework)
+        Object service = config.getInitParameters().get(Executor.class);
 
-                        FallbackChunk chunk = FrontendUtils
-                                .readFallbackChunk(tokenFileData);
-                        if (chunk != null) {
-                            vaadinContext.setAttribute(chunk);
-                        }
-                    } catch (ExecutionFailedException exception) {
-                        log().debug(
-                                "Could not initialize dev mode handler. One of the node tasks failed",
-                                exception);
-                        throw new CompletionException(exception);
-                    }
-                });
+        Runnable runnable = () -> runNodeTasks(vaadinContext, tokenFileData,
+                tasks);
 
-        DevModeHandler.start(config, builder.npmFolder, runNodeTasks);
+        CompletableFuture<Void> nodeTasksFuture;
+        if (service instanceof Executor) {
+            // if there is an executor use it to run the task
+            nodeTasksFuture = CompletableFuture.runAsync(runnable,
+                    (Executor) service);
+        } else {
+            nodeTasksFuture = CompletableFuture.runAsync(runnable);
+
+        }
+
+        DevModeHandler.start(config, builder.npmFolder, nodeTasksFuture);
     }
 
     /**
@@ -444,12 +444,12 @@ public class DevModeInitializer
                             + "Directory '%s' does not look like a Maven or "
                             + "Gradle project. Ensure that you have run the "
                             + "prepare-frontend Maven goal, which generates "
-                            +"'flow-build-info.json', prior to deploying your "
+                            + "'flow-build-info.json', prior to deploying your "
                             + "application",
                     path.toString()));
         }
     }
-    
+
     /*
      * This method returns all folders of jar files having files in the
      * META-INF/resources/frontend folder. We don't use URLClassLoader because
@@ -463,6 +463,24 @@ public class DevModeInitializer
         frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
                 Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT));
         return frontendFiles;
+    }
+
+    private static void runNodeTasks(VaadinContext vaadinContext,
+            JsonObject tokenFileData, NodeTasks tasks) {
+        try {
+            tasks.execute();
+
+            FallbackChunk chunk = FrontendUtils
+                    .readFallbackChunk(tokenFileData);
+            if (chunk != null) {
+                vaadinContext.setAttribute(chunk);
+            }
+        } catch (ExecutionFailedException exception) {
+            log().debug(
+                    "Could not initialize dev mode handler. One of the node tasks failed",
+                    exception);
+            throw new CompletionException(exception);
+        }
     }
 
     private static Set<File> getFrontendLocationsFromClassloader(
