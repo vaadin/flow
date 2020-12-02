@@ -826,13 +826,13 @@ public class ReflectTools implements Serializable {
     }
 
     /**
-     * Check if a class can be instantiated or not
+     * Check if a class can be instantiated as a service or not
      * 
      * @param clazz
      *            the class to check
      * @return true if the class can be instantiated, otherwise false
      */
-    public static boolean isInstantiable(Class<?> clazz) {
+    public static boolean isInstantiableService(Class<?> clazz) {
         if (clazz.isInterface()) {
           return false;
         }

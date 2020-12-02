@@ -17,6 +17,7 @@ package com.vaadin.flow.internal;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -243,6 +244,10 @@ public class ReflectToolsTest {
 
     }
 
+    public static class NormalService {
+
+    }
+
     public static class TestNoNonArgConstructorClass {
         public TestNoNonArgConstructorClass(String foo) {
 
@@ -429,35 +434,40 @@ public class ReflectToolsTest {
     }
 
     @Test
-    public void intefaceShouldNotBeInstantiable() {
-        assertFalse(ReflectTools.isInstantiable(TestInterface.class));
+    public void intefaceShouldNotBeInstantiableService() {
+        assertFalse(ReflectTools.isInstantiableService(TestInterface.class));
     }
 
     @Test
-    public void abstractClassShouldNotBeInstantiable() {
-        assertFalse(ReflectTools.isInstantiable(TestAbstractClass.class));
+    public void abstractClassShouldNotBeInstantiableService() {
+        assertFalse(ReflectTools.isInstantiableService(TestAbstractClass.class));
     }
 
     @Test
-    public void nonPublicClassShouldNotBeInstantiable() {
-        assertFalse(ReflectTools.isInstantiable(TestProtectedClass.class));
-        assertFalse(ReflectTools.isInstantiable(TestPackageProtectedClass.class));
-        assertFalse(ReflectTools.isInstantiable(TestPrivateClass.class));
+    public void nonPublicClassShouldNotBeInstantiableService() {
+        assertFalse(ReflectTools.isInstantiableService(TestProtectedClass.class));
+        assertFalse(ReflectTools.isInstantiableService(TestPackageProtectedClass.class));
+        assertFalse(ReflectTools.isInstantiableService(TestPrivateClass.class));
     }
 
     @Test
-    public void ClassWithoutNonArgConstructorShouldNotBeInstantiable() {
-        assertFalse(ReflectTools.isInstantiable(TestNoNonArgConstructorClass.class));
+    public void ClassWithoutNonArgConstructorShouldNotBeInstantiableService() {
+        assertFalse(ReflectTools.isInstantiableService(TestNoNonArgConstructorClass.class));
     }
 
     @Test
-    public void nonStaticInnerClassShouldNotBeInstantiable() {
-        assertFalse(ReflectTools.isInstantiable(NonStaticInnerClass.class));
+    public void nonStaticInnerClassShouldNotBeInstantiableService() {
+        assertFalse(ReflectTools.isInstantiableService(NonStaticInnerClass.class));
     }
 
     @Test
-    public void privateInnerClassShouldNotBeInstantiable() {
-        assertFalse(ReflectTools.isInstantiable(PrivateInnerClass.class));
+    public void privateInnerClassShouldNotBeInstantiableService() {
+        assertFalse(ReflectTools.isInstantiableService(PrivateInnerClass.class));
+    }
+
+    @Test
+    public void normalSericieShouldBeInstantiableService() {
+        assertTrue(ReflectTools.isInstantiableService(NormalService.class));
     }
 
     private Class<?> createProxyClass(Class<?> originalClass) {

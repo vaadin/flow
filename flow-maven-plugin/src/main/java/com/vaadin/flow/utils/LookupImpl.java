@@ -42,7 +42,7 @@ public class LookupImpl implements Lookup {
   @Override
   public <T> Collection<T> lookupAll(Class<T> serviceClass) {
     return classFinder.getSubTypesOf(serviceClass).stream()
-      .filter(ReflectTools::isInstantiable)
+      .filter(ReflectTools::isInstantiableService)
       .map(ReflectTools::createInstance)
       .collect(Collectors.toList());
   }
