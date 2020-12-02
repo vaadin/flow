@@ -15,12 +15,8 @@
  */
 package com.vaadin.flow.utils;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.Optional;
+import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.ReflectTools;
@@ -28,23 +24,30 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 public class LookupImpl implements Lookup {
 
-  private ClassFinder classFinder;
+    private ClassFinder classFinder;
 
-  public LookupImpl(ClassFinder classFinder) {
-    this.classFinder = classFinder;
-  }
+    public LookupImpl(ClassFinder classFinder) {
+      this.classFinder = classFinder;
+    }
 
-  @Override
-  public <T> T lookup(Class<T> serviceClass) {
-    return lookupAll(serviceClass).stream().findFirst().orElse(null);
-  }
+    @Override
+    public <T> T lookup(Class<T> serviceClass) {
+        return lookupAll(serviceClass).stream().findFirst().orElse(null);
+    }
 
-  @Override
-  public <T> Collection<T> lookupAll(Class<T> serviceClass) {
-    return classFinder.getSubTypesOf(serviceClass).stream()
-      .filter(ReflectTools::isInstantiableService)
-      .map(ReflectTools::createInstance)
-      .collect(Collectors.toList());
-  }
-  
+    @Override
+    public <T> List<T> lookupAll(Class<T> serviceClass) {
+        Class<?> serviceClassLoadedByClassFinder;
+        try {
+            serviceClassLoadedByClassFinder = classFinder.loadClass(serviceClass.getName());
+        } catch (ClassNotFoundException exception) {
+            throw new IllegalStateException("Could not load " + serviceClass.getName() + " class", exception);
+        }
+        return classFinder.getSubTypesOf(serviceClassLoadedByClassFinder).stream()
+                .filter(ReflectTools::isInstantiableService)
+                .map(ReflectTools::createInstance)
+                .map(instance -> (T) instance)
+                .collect(Collectors.toList());
+    }
+
 }
