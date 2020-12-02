@@ -35,6 +35,22 @@ import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUB_COMPONENT_ID;
 public class ThemeIT extends ChromeBrowserTest {
 
     @Test
+    public void typeScriptCssImport_stylesAreApplied() {
+        getDriver().get(getRootURL() + "/path/hello");
+
+        checkLogsForErrors();
+
+        final TestBenchElement helloWorld = $(TestBenchElement.class).first()
+            .findElement(By.tagName("hello-world-view"));
+
+        Assert.assertEquals("hello-world-view", helloWorld.getTagName());
+
+        Assert.assertEquals(
+            "CSS was not applied as background color was not as expected.",
+            "rgba(255, 165, 0, 1)", helloWorld.getCssValue("background-color"));
+    }
+
+    @Test
     public void secondTheme_staticFilesNotCopied() {
         getDriver().get(getRootURL() + "/path/VAADIN/static/img/bg.jpg");
         Assert.assertFalse("app-theme static files should be copied",
