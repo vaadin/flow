@@ -169,6 +169,12 @@ module.exports = {
         test: /\.css$/i,
         use: [
           {
+            loader: "lit-css-loader"
+          },
+          {
+            loader: "extract-loader"
+          },
+          {
             loader: 'css-loader',
             options: {
               url: (url, resourcePath) => {
