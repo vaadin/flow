@@ -28,7 +28,7 @@ public interface TaskGenerateOpenApi extends FallibleCommand {
      * @param properties
      *            the application propperties
      * @param javaSourceFolder
-     *            source paths of the project containing {@link Endpoint}
+     *            source paths of the project containing Vaadin Endpoint
      * @param classLoader
      *            The class loader which should be used to resolved types in the
      *            source paths.
