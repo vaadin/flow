@@ -27,7 +27,7 @@ public class LookupImpl implements Lookup {
     private ClassFinder classFinder;
 
     public LookupImpl(ClassFinder classFinder) {
-      this.classFinder = classFinder;
+        this.classFinder = classFinder;
     }
 
     @Override
