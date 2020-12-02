@@ -42,32 +42,9 @@ public class LookupImpl implements Lookup {
   @Override
   public <T> Collection<T> lookupAll(Class<T> serviceClass) {
     return classFinder.getSubTypesOf(serviceClass).stream()
-      .filter(this::isInstantiable).map(ReflectTools::createInstance)
+      .filter(ReflectTools::isInstantiable)
+      .map(ReflectTools::createInstance)
       .collect(Collectors.toList());
-  }
-
-  private boolean isInstantiable(Class<?> clazz) {
-    if (clazz.isInterface()) {
-      return false;
-    }
-    if (clazz.isSynthetic()) {
-      return false;
-    }
-    if (Modifier.isAbstract(clazz.getModifiers())) {
-      return false;
-    }
-    if (!Modifier.isPublic(clazz.getModifiers())) {
-      return false;
-    }
-    Optional<Constructor<?>> constructor = Stream.of(clazz.getConstructors())
-        .filter(ctor -> ctor.getParameterCount() == 0).findFirst();
-    if (!constructor.isPresent() || !Modifier.isPublic(constructor.get().getModifiers())) {
-      return false;
-    }
-    if (clazz.getEnclosingClass() != null && !Modifier.isStatic(clazz.getModifiers())) {
-      return false;
-    }
-    return true;
   }
   
 }

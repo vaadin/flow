@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 
 import java.io.Serializable;
@@ -226,6 +227,28 @@ public class ReflectToolsTest {
     public static class ChildInterface extends ParentInterface {
     }
 
+    public static abstract class TestAbstractClass {
+
+    }
+
+    protected static class TestProtectedClass {
+
+    }
+
+    protected static class TestPackageProtectedClass {
+
+    }
+
+    private static class TestPrivateClass {
+
+    }
+
+    public static class TestNoNonArgConstructorClass {
+        public TestNoNonArgConstructorClass(String foo) {
+
+        }
+    }
+
     @Test
     public void getGenericInterfaceClass() {
         Class<?> genericInterfaceType = ReflectTools.getGenericInterfaceType(
@@ -403,6 +426,38 @@ public class ReflectToolsTest {
         Optional<Annotation> annotation = ReflectTools.getAnnotation(
                 ClassWithoutAnnotation.class, TestAnnotation.class.getName());
         Assert.assertFalse(annotation.isPresent());
+    }
+
+    @Test
+    public void intefaceShouldNotBeInstantiable() {
+        assertFalse(ReflectTools.isInstantiable(TestInterface.class));
+    }
+
+    @Test
+    public void abstractClassShouldNotBeInstantiable() {
+        assertFalse(ReflectTools.isInstantiable(TestAbstractClass.class));
+    }
+
+    @Test
+    public void nonPublicClassShouldNotBeInstantiable() {
+        assertFalse(ReflectTools.isInstantiable(TestProtectedClass.class));
+        assertFalse(ReflectTools.isInstantiable(TestPackageProtectedClass.class));
+        assertFalse(ReflectTools.isInstantiable(TestPrivateClass.class));
+    }
+
+    @Test
+    public void ClassWithoutNonArgConstructorShouldNotBeInstantiable() {
+        assertFalse(ReflectTools.isInstantiable(TestNoNonArgConstructorClass.class));
+    }
+
+    @Test
+    public void nonStaticInnerClassShouldNotBeInstantiable() {
+        assertFalse(ReflectTools.isInstantiable(NonStaticInnerClass.class));
+    }
+
+    @Test
+    public void privateInnerClassShouldNotBeInstantiable() {
+        assertFalse(ReflectTools.isInstantiable(PrivateInnerClass.class));
     }
 
     private Class<?> createProxyClass(Class<?> originalClass) {
