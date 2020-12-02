@@ -15,18 +15,9 @@
  */
 package com.vaadin.flow.server;
 
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
-import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
-import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
-import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
-import static com.vaadin.flow.server.frontend.FrontendUtils.console;
-import static java.lang.String.format;
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_OK;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,13 +35,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
-
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -63,6 +52,19 @@ import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
+import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
+import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
+import static com.vaadin.flow.server.frontend.FrontendUtils.console;
+import static java.lang.String.format;
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * Handles getting resources from <code>webpack-dev-server</code>.
@@ -142,12 +144,23 @@ public final class DevModeHandler implements RequestHandler {
         reuseDevServer = config.reuseDevServer();
         devServerPortFile = getDevServerPortFile(npmFolder);
 
-        devServerStartFuture = waitFor.whenCompleteAsync((value, exception) -> {
+        // Check whether executor is provided by the caller (framework)
+        Object service = config.getInitParameters().get(Executor.class);
+
+        BiConsumer<Void, ? super Throwable> action = (value, exception) -> {
             // this will throw an exception if an exception has been thrown by
             // the waitFor task
             waitFor.getNow(null);
             runOnFutureComplete(config);
-        });
+        };
+
+        if (service instanceof Executor) {
+            // if there is an executor use it to run the task
+            devServerStartFuture = waitFor.whenCompleteAsync(action,
+                    (Executor) service);
+        } else {
+            devServerStartFuture = waitFor.whenCompleteAsync(action);
+        }
 
     }
 
@@ -665,8 +678,10 @@ public final class DevModeHandler implements RequestHandler {
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info(LOG_END, ms);
             return true;
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             getLogger().error("Failed to start the webpack process", e);
+        } catch (InterruptedException e) {
+            getLogger().debug("Webpack process start has been interrupted", e);
         }
         return false;
     }
