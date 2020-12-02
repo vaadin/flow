@@ -27,7 +27,6 @@ import javax.servlet.ServletRegistration;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.TaskGenerateConnect;
@@ -48,7 +47,7 @@ import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class DevModeInitializerEndpointTest {
-    private static final AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
+    private final AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
     
     String baseDir;
     ServletContext servletContext;
@@ -69,7 +68,6 @@ public class DevModeInitializerEndpointTest {
 
         temporaryFolder.create();
         baseDir = temporaryFolder.getRoot().getPath();
-        Boolean enablePnpm = Boolean.TRUE;
 
         servletContext = Mockito.mock(ServletContext.class);
         ServletRegistration vaadinServletRegistration = Mockito
@@ -91,8 +89,6 @@ public class DevModeInitializerEndpointTest {
 
         initParams = new HashMap<>();
         initParams.put(FrontendUtils.PROJECT_BASEDIR, baseDir);
-        initParams.put(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
-                enablePnpm.toString());
 
         Mockito.when(vaadinServletRegistration.getInitParameters())
                 .thenReturn(initParams);
@@ -151,6 +147,7 @@ public class DevModeInitializerEndpointTest {
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
         waitForDevModeServer();
+        Thread.sleep(200);
         Assert.assertTrue("Should generate OpenAPI spec if Endpoint is used.",
                 generatedOpenApiJson.exists());
     }
@@ -186,18 +183,17 @@ public class DevModeInitializerEndpointTest {
      *
      * @return devModeHandler or {@code null} if not started
      */
-    public static DevModeHandler getDevModeHandler() {
+    private DevModeHandler getDevModeHandler() {
       return atomicHandler.get();
     }
 
-    protected void waitForDevModeServer() throws NoSuchMethodException,
+    private void waitForDevModeServer() throws NoSuchMethodException,
             IllegalAccessException, InvocationTargetException, InterruptedException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
         Assert.assertNotNull(handler);
         Method join = DevModeHandler.class.getDeclaredMethod("join");
         join.setAccessible(true);
         join.invoke(handler);
-        Thread.sleep(500);
     }
 
 }

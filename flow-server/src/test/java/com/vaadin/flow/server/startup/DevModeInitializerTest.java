@@ -26,7 +26,6 @@ import java.util.function.Function;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -44,14 +43,11 @@ import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_GENERATED_TS_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -300,30 +296,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
-    @Ignore
-    public void should_generateOpenApi_when_EndpointPresents()
-            throws Exception {
-
-        // Configure a folder that has .java classes with valid endpoints
-        // Not using `src/test/java` because there are invalid endpoint names
-        // in some tests
-        File src = new File(
-                getClass().getClassLoader().getResource("java").getFile());
-        System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
-                src.getAbsolutePath());
-
-        File generatedOpenApiJson = Paths
-                .get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE).toFile();
-
-        Assert.assertFalse(generatedOpenApiJson.exists());
-        DevModeInitializer devModeInitializer = new DevModeInitializer();
-        devModeInitializer.onStartup(classes, servletContext);
-        waitForDevModeServer();
-        Assert.assertTrue("Should generate OpenAPI spec if Endpoint is used.",
-                generatedOpenApiJson.exists());
-    }
-
-    @Test
     public void should_notGenerateOpenApi_when_EndpointIsNotUsed()
             throws Exception {
         File generatedOpenApiJson = Paths
@@ -333,33 +305,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Assert.assertFalse(
                 "Should not generate OpenAPI spec if Endpoint is not used.",
                 generatedOpenApiJson.exists());
-    }
-
-    @Test
-    @Ignore
-    public void should_generateTs_files() throws Exception {
-
-        // Configure a folder that has .java classes with valid endpoints
-        // Not using `src/test/java` because there are invalid endpoint names
-        // in some tests
-        File src = new File(
-                getClass().getClassLoader().getResource("java").getFile());
-        System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
-                src.getAbsolutePath());
-
-        DevModeInitializer devModeInitializer = new DevModeInitializer();
-
-        File ts1 = new File(baseDir,
-                DEFAULT_CONNECT_GENERATED_TS_DIR + "MyEndpoint.ts");
-        File ts2 = new File(baseDir, DEFAULT_CONNECT_GENERATED_TS_DIR
-                + "connect-client.default");
-
-        assertFalse(ts1.exists());
-        assertFalse(ts2.exists());
-        devModeInitializer.onStartup(classes, servletContext);
-        waitForDevModeServer();
-        assertTrue(ts1.exists());
-        assertTrue(ts2.exists());
     }
 
     @Test
