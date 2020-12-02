@@ -572,7 +572,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test
     public void withConverter_writeBackValue() {
-        TextField rentField = new TextField();
+        TestTextField rentField = new TestTextField();
         rentField.setValue("");
         binder.forField(rentField).withConverter(new EuroConverter(""))
                 .withNullRepresentation(BigDecimal.valueOf(0d))
