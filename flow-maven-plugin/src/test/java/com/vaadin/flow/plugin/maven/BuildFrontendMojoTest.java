@@ -408,16 +408,6 @@ public class BuildFrontendMojoTest {
         Assert.assertFalse(tokenFile.exists());
     }
 
-    @Test
-    public void mavenGoal_notGenerateOpenApiJson_when_usingDeprecatedV14Bootstrapping()
-            throws Exception {
-        ReflectionUtils.setVariableValueInObject(mojo,
-                "useDeprecatedV14Bootstrapping", "true");
-        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
-        mojo.execute();
-        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
-    }
-
     static void assertContainsPackage(JsonObject dependencies,
             String... packages) {
         Arrays.asList(packages).forEach(dep -> Assert

@@ -141,6 +141,16 @@ public class BuildFrontendMojoEndpointTest {
         Assert.assertTrue(endpointClientApi.exists());
     }
 
+    @Test
+    public void mavenGoal_notGenerateOpenApiJson_when_usingDeprecatedV14Bootstrapping()
+            throws Exception {
+        ReflectionUtils.setVariableValueInObject(mojo,
+                "useDeprecatedV14Bootstrapping", "true");
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+        mojo.execute();
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+    }
+
     static List<String> getClassPath() {
         // Add folder with test classes
         List<String> classPaths = new ArrayList<>(
