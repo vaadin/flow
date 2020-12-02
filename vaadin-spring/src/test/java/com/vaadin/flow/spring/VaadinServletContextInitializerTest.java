@@ -3,24 +3,15 @@ package com.vaadin.flow.spring;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+
 import java.util.Collections;
 import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import com.google.common.collect.Maps;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.ErrorParameter;
-import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.router.NotFoundException;
-import com.vaadin.flow.router.RouteNotFoundError;
-import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
-import com.vaadin.flow.server.startup.DevModeInitializer;
-import com.vaadin.flow.server.startup.ServletDeployer;
-import com.vaadin.flow.spring.router.SpringRouteNotFoundError;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,6 +28,20 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
+import org.springframework.core.task.TaskExecutor;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.ErrorParameter;
+import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+import com.vaadin.flow.server.startup.DevModeInitializer;
+import com.vaadin.flow.server.startup.ServletDeployer;
+import com.vaadin.flow.spring.router.SpringRouteNotFoundError;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ DevModeInitializer.class,
@@ -58,9 +63,23 @@ public class VaadinServletContextInitializerTest {
     @Mock
     private DeploymentConfiguration deploymentConfiguration;
 
+    private Properties properties;
+
+    @Mock
+    private TaskExecutor executor;
+
     @Before
     public void init() {
         MockitoAnnotations.openMocks(this);
+
+        properties = new Properties();
+
+        Mockito.when(deploymentConfiguration.getInitParameters())
+                .thenReturn(properties);
+
+        Mockito.when(applicationContext.getBean(TaskExecutor.class))
+                .thenReturn(executor);
+
         PowerMockito.mockStatic(
                 VaadinServletContextInitializer.SpringStubServletConfig.class);
         PowerMockito.mockStatic(ServletDeployer.class);
@@ -92,6 +111,9 @@ public class VaadinServletContextInitializerTest {
                     Mockito.any(), Mockito.any(), Mockito.any()));
             theMock.verifyNoMoreInteractions();
         }
+
+        Mockito.verify(applicationContext).getBean(TaskExecutor.class);
+        Assert.assertSame(executor, properties.get(Executor.class));
     }
 
     @Test
@@ -222,8 +244,9 @@ public class VaadinServletContextInitializerTest {
         Mockito.when(applicationContext.getBeanNamesForType(
                 VaadinScanPackagesRegistrar.VaadinScanPackages.class))
                 .thenReturn(new String[] {});
-        PowerMockito.when(AutoConfigurationPackages.class, "has",
-                applicationContext)
+        PowerMockito
+                .when(AutoConfigurationPackages.class, "has",
+                        applicationContext)
                 // https://github.com/powermock/powermock/issues/992
                 .thenAnswer((Answer<Boolean>) invocation -> false);
 
@@ -239,9 +262,7 @@ public class VaadinServletContextInitializerTest {
 
     private DevModeInitializer getStubbedDevModeInitializer() throws Exception {
         PowerMockito.when(ServletDeployer.StubServletConfig.class,
-                "createDeploymentConfiguration",
-                Mockito.any(),
-                Mockito.any())
+                "createDeploymentConfiguration", Mockito.any(), Mockito.any())
                 // https://github.com/powermock/powermock/issues/992
                 .thenAnswer(
                         (Answer<DeploymentConfiguration>) invocation -> deploymentConfiguration);
@@ -257,10 +278,9 @@ public class VaadinServletContextInitializerTest {
         VaadinServletContextInitializer vaadinServletContextInitializerMock = PowerMockito
                 .spy(new VaadinServletContextInitializer(applicationContext));
 
-        PowerMockito.when(VaadinServletContextInitializer.SpringStubServletConfig.class,
-                "createDeploymentConfiguration",
-                Mockito.any(),
-                Mockito.any(),
+        PowerMockito.when(
+                VaadinServletContextInitializer.SpringStubServletConfig.class,
+                "createDeploymentConfiguration", Mockito.any(), Mockito.any(),
                 // https://github.com/powermock/powermock/issues/992
                 Mockito.any()).thenAnswer(
                         (Answer<DeploymentConfiguration>) invocation -> deploymentConfiguration);
@@ -282,7 +302,8 @@ public class VaadinServletContextInitializerTest {
         }).when(servletContext)
                 .addListener(Mockito.any(ServletContextListener.class));
 
-        ServletDeployer.logAppStartupToConsole(Mockito.any(), Mockito.anyBoolean());
+        ServletDeployer.logAppStartupToConsole(Mockito.any(),
+                Mockito.anyBoolean());
 
         return vaadinServletContextInitializerMock;
     }

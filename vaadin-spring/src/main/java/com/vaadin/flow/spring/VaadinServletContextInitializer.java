@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -56,6 +57,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
@@ -417,6 +419,8 @@ public class VaadinServletContextInitializer
                     || isDevModeAlreadyStarted(event.getServletContext())) {
                 return;
             }
+            config.getInitParameters().put(Executor.class,
+                    appContext.getBean(TaskExecutor.class));
 
             Set<String> basePackages;
             if (isScanOnlySet()) {
