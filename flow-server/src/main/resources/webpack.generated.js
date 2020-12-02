@@ -172,7 +172,12 @@ module.exports = {
             loader: 'css-loader',
             options: {
               url: (url, resourcePath) => {
-                // Only translate files from node_modules
+                // Skip translating external URLs
+                const extUrlPattern = /(http|https):\/\//;
+                if (extUrlPattern.test(url)) {
+                  return false;
+                }
+                // Only translate files from node_modules or frontend/theme
                 return resourcePath.includes('/node_modules/')
                     || resourcePath.includes('/frontend/theme/');
               },
@@ -196,7 +201,7 @@ module.exports = {
         use: [{
           loader: 'file-loader',
           options: {
-            outputPath: '../resources/VAADIN/static/',
+            outputPath: 'static/',
             name: '[name].[ext]'
           }
         }],
