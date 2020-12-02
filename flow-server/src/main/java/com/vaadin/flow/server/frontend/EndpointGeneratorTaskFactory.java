@@ -44,7 +44,7 @@ public interface EndpointGeneratorTaskFactory {
      * Create a task for generating OpenAPI spec.
      *
      * @param javaSourceFolder
-     *            source paths of the project containing {@link com.vaadin.flow.server.connect.Endpoint}
+     *            source paths of the project containing Vaadin Endpoint
      * @param classLoader
      *            The class loader which should be used to resolved types in the
      *            source paths.
