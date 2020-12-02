@@ -15,21 +15,23 @@
  */
 package com.vaadin.flow.osgi;
 
-import java.util.Dictionary;
-import java.util.Hashtable;
-
+import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
+import java.util.Dictionary;
+import java.util.Hashtable;
+
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceFactory;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
-import org.osgi.util.tracker.ServiceTracker;
+import org.osgi.service.http.context.ServletContextHelper;
+import org.osgi.service.http.whiteboard.HttpWhiteboardConstants;
 
 import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.uitest.servlet.ProductionModeTimingDataViewTestServlet;
@@ -40,7 +42,35 @@ import com.vaadin.flow.uitest.servlet.ViewTestServlet;
 @Component(immediate = true)
 public class Activator {
 
-    private ServiceTracker<HttpService, HttpService> httpTracker;
+    public static class OsgiResourceRgistration {
+
+    }
+
+    private static final class CustomContextHelper
+            extends ServletContextHelper {
+
+        private CustomContextHelper(Bundle bundle) {
+            super(bundle);
+        }
+    }
+
+    private static class CustomContextHelperFactory
+            implements ServiceFactory<ServletContextHelper> {
+
+        @Override
+        public ServletContextHelper getService(Bundle bundle,
+                ServiceRegistration<ServletContextHelper> registration) {
+            return new CustomContextHelper(bundle);
+        }
+
+        @Override
+        public void ungetService(Bundle bundle,
+                ServiceRegistration<ServletContextHelper> registration,
+                ServletContextHelper service) {
+            // no op
+        }
+
+    }
 
     @VaadinServletConfiguration(productionMode = false)
     private static class FixedViewServlet extends ViewTestServlet {
@@ -48,7 +78,9 @@ public class Activator {
         public void init(ServletConfig servletConfig) throws ServletException {
             super.init(servletConfig);
 
-            getService().setClassLoader(getClass().getClassLoader());
+            if (getService() != null) {
+                getService().setClassLoader(getClass().getClassLoader());
+            }
         }
     }
 
@@ -58,7 +90,9 @@ public class Activator {
         public void init(ServletConfig servletConfig) throws ServletException {
             super.init(servletConfig);
 
-            getService().setClassLoader(getClass().getClassLoader());
+            if (getService() != null) {
+                getService().setClassLoader(getClass().getClassLoader());
+            }
         }
     }
 
@@ -70,7 +104,9 @@ public class Activator {
         public void init(ServletConfig servletConfig) throws ServletException {
             super.init(servletConfig);
 
-            getService().setClassLoader(getClass().getClassLoader());
+            if (getService() != null) {
+                getService().setClassLoader(getClass().getClassLoader());
+            }
         }
     }
 
@@ -81,7 +117,9 @@ public class Activator {
         public void init(ServletConfig servletConfig) throws ServletException {
             super.init(servletConfig);
 
-            getService().setClassLoader(getClass().getClassLoader());
+            if (getService() != null) {
+                getService().setClassLoader(getClass().getClassLoader());
+            }
         }
     }
 
@@ -89,55 +127,70 @@ public class Activator {
     void activate() throws NamespaceException {
         BundleContext context = FrameworkUtil.getBundle(Activator.class)
                 .getBundleContext();
-        httpTracker = new ServiceTracker<HttpService, HttpService>(context,
-                HttpService.class.getName(), null) {
-            @Override
-            public void removedService(ServiceReference<HttpService> reference,
-                    HttpService service) {
-                // HTTP service is no longer available, unregister our
-                // servlet...
-                service.unregister("/view/*");
-                service.unregister("/context/*");
-                service.unregister("/frontend/*");
-                service.unregister("/new-router-session/*");
-                service.unregister("/view-production/*");
-                service.unregister("/view-production-timing/*");
-                service.unregister("/view-es6-url/*");
-            }
 
-            @SuppressWarnings("rawtypes")
-            @Override
-            public HttpService addingService(
-                    ServiceReference<HttpService> reference) {
-                // HTTP service is available, register our servlet...
-                HttpService httpService = this.context.getService(reference);
-                Dictionary dictionary = new Hashtable<>();
-                try {
-                    httpService.registerServlet("/view/*",
-                            new FixedViewServlet(), dictionary, null);
-                    httpService.registerServlet("/context/*",
-                            new FixedViewServlet(), dictionary, null);
-                    httpService.registerServlet("/new-router-session/*",
-                            new FixedRouterServlet(), dictionary, null);
-                    httpService.registerServlet("/view-production/*",
-                            new FixedProductionModeViewServlet(), dictionary,
-                            null);
-                    httpService.registerServlet("/view-production-timing/*",
-                            new FixedProductionModeTimingDataViewServlet(),
-                            dictionary, null);
-                } catch (ServletException | NamespaceException exception) {
-                    throw new RuntimeException(exception);
-                }
-                return httpService;
-            }
-        };
-        // start tracking all HTTP services...
-        httpTracker.open();
+        context.registerService(Servlet.class, new FixedViewServlet(),
+                createProperties("/view/*"));
+
+        context.registerService(Servlet.class, new FixedViewServlet(),
+                createProperties("/context/*"));
+
+        context.registerService(Servlet.class, new FixedRouterServlet(),
+                createProperties("/new-router-session/*"));
+
+        context.registerService(Servlet.class,
+                new FixedProductionModeViewServlet(),
+                createProperties("/view-production/*"));
+
+        context.registerService(Servlet.class,
+                new FixedProductionModeTimingDataViewServlet(),
+                createProperties("/view-production-timing/*"));
+
+        registerPlainJsResource(context);
+
+        String contextName = registerCustomContext(context);
+        registerCustomContextServlet(context, contextName);
     }
 
-    @Deactivate
-    void deactivate() {
-        // stop tracking all HTTP services...
-        httpTracker.close();
+    private void registerPlainJsResource(BundleContext context) {
+        Hashtable<String, Object> properties = new Hashtable<>();
+        properties.put(HttpWhiteboardConstants.HTTP_WHITEBOARD_RESOURCE_PATTERN,
+                "/plain-script.js");
+        properties.put(HttpWhiteboardConstants.HTTP_WHITEBOARD_RESOURCE_PREFIX,
+                "/osgi-web-resources/plain-script.js");
+        context.registerService(OsgiResourceRgistration.class,
+                new OsgiResourceRgistration(), properties);
     }
+
+    private String registerCustomContext(BundleContext context) {
+        Dictionary<String, String> contextProps = new Hashtable<String, String>();
+        String contextName = "test-context";
+        contextProps.put(HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_NAME,
+                contextName);
+        contextProps.put(HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_PATH,
+                "/custom-test-context");
+        context.registerService(ServletContextHelper.class,
+                new CustomContextHelperFactory(), contextProps);
+        return contextName;
+    }
+
+    private void registerCustomContextServlet(BundleContext context,
+            String contextName) {
+        Hashtable<String, Object> properties = createProperties("/view/*");
+        properties.put(HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_SELECT,
+                "(" + HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_NAME + "="
+                        + contextName + ")");
+        context.registerService(Servlet.class, new FixedViewServlet(),
+                properties);
+    }
+
+    private Hashtable<String, Object> createProperties(String mapping) {
+        Hashtable<String, Object> properties = new Hashtable<>();
+        properties.put(
+                HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_ASYNC_SUPPORTED,
+                true);
+        properties.put(HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_PATTERN,
+                mapping);
+        return properties;
+    }
+
 }

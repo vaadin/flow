@@ -203,7 +203,7 @@ public class FrontendUtils {
     public static final String DEFAULT_CONNECT_JAVA_SOURCE_FOLDER = "src/main/java";
 
     /**
-     * Default application properties file path in Connect project.
+     * Default application properties file path in Vaadin project.
      */
     public static final String DEFAULT_CONNECT_APPLICATION_PROPERTIES = "src/main/resources/application.properties";
 

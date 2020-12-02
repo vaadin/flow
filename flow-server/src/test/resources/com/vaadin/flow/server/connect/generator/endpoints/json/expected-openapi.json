@@ -1,12 +1,12 @@
 {
   "openapi" : "3.0.1",
   "info" : {
-    "title" : "Vaadin Connect Application",
+    "title" : "Vaadin application",
     "version" : "0.0.1"
   },
   "servers" : [ {
     "url" : "http://localhost:8080/connect",
-    "description" : "Vaadin Connect backend"
+    "description" : "Vaadin backend"
   } ],
   "tags" : [ {
     "name" : "GeneratorAnonymousAllowedTestClass",

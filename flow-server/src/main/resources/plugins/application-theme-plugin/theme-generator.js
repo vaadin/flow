@@ -21,11 +21,14 @@
 const glob = require('glob');
 const path = require('path');
 
+// Special folder inside a theme for component themes that go inside the component shadow root
+const themeComponentsFolder = 'components';
 // The contents of a global CSS file with this name in a theme is always added to
 // the document. E.g. @font-face must be in this
 const themeFileAlwaysAddToDocument = 'document.css';
 
-const headerImport = ``;
+const headerImport = `import 'construct-style-sheets-polyfill';
+`;
 
 const injectGlobalCssMethod = `
 // target: Document | ShadowRoot
@@ -48,13 +51,22 @@ function generateThemeFile(themeFolder, themeName) {
     cwd: themeFolder,
     nodir: true,
   });
+  const componentsFiles = glob.sync('*.css', {
+    cwd: path.resolve(themeFolder, themeComponentsFolder),
+    nodir: true,
+  });
 
   let themeFile = headerImport;
+
+  if(componentsFiles.length > 0){
+    themeFile += 'import { css, unsafeCSS, registerStyles } from \'@vaadin/vaadin-themable-mixin/register-styles\';';
+  }
 
   themeFile += injectGlobalCssMethod;
 
   const imports = [];
   const globalCssCode = [];
+  const componentCssCode = [];
 
   globalFiles.forEach((global) => {
     const filename = path.basename(global);
@@ -66,16 +78,40 @@ function generateThemeFile(themeFolder, themeName) {
     globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n`);
   });
 
+  componentsFiles.forEach((componentCss) => {
+    const filename = path.basename(componentCss);
+    const tag = filename.replace('.css', '');
+    const variable = camelCase(filename);
+    imports.push(
+      `import ${variable} from './${themeComponentsFolder}/${filename}';\n`
+    );
+// Don't format as the generated file formatting will get wonky!
+    const componentString = `registerStyles(
+      '${tag}',
+      css\`
+        \${unsafeCSS(${variable}.toString())}
+      \`
+    );
+`;
+    componentCssCode.push(componentString);
+  });
+
   const themeIdentifier = '_vaadinds_' + themeName + '_';
   const globalCssFlag = themeIdentifier + 'globalCss';
+  const componentCssFlag = themeIdentifier + 'componentCss';
 
   themeFile += imports.join('');
 
 // Don't format as the generated file formatting will get wonky!
+// If targets check that we only register the style parts once, checks exist for global css and component css
   const themeFileApply = `export const applyTheme = (target) => {
   if (!target['${globalCssFlag}']) {
     ${globalCssCode.join('')}
     target['${globalCssFlag}'] = true;
+  }
+  if (!document['${componentCssFlag}']) {
+    ${componentCssCode.join('')}
+    document['${componentCssFlag}'] = true;
   }
 }
 `;
@@ -94,7 +130,7 @@ function generateThemeFile(themeFolder, themeName) {
 function camelCase(str) {
   return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function(word, index) {
     return index === 0 ? word.toLowerCase() : word.toUpperCase();
-  }).replace(/\s+/g, '').replace(/\./g, '');
+  }).replace(/\s+/g, '').replace(/\.|\-/g, '');
 }
 
 module.exports = generateThemeFile;

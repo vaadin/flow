@@ -212,6 +212,8 @@ public class VaadinServiceTest {
     public void serviceContainsStreamRequestHandler()
             throws ServiceException, ServletException {
         ServletConfig servletConfig = new MockServletConfig();
+        servletConfig.getServletContext().setAttribute(Lookup.class.getName(),
+                Mockito.mock(Lookup.class));
         VaadinServlet servlet = new VaadinServlet() {
             @Override
             protected DeploymentConfiguration createDeploymentConfiguration()

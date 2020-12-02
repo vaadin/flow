@@ -23,14 +23,14 @@ import java.util.Optional;
 import com.vaadin.flow.server.connect.VaadinConnectController;
 
 /**
- * An exception that is intended to be thrown by any Vaadin Connect endpoint
+ * An exception that is intended to be thrown by any Vaadin endpoint
  * method to propagate exception details to the client side. When an exception
  * is thrown by an endpoint method, a particular response is constructed based
  * on the data of the exception and sent to the client side. When a client
  * library receives the response, it raises the corresponding exception using
  * the response data.
  *
- * By default, if any Vaadin Connect endpoint method throws an exception when
+ * By default, if any Vaadin endpoint method throws an exception when
  * being invoked by the client request, the exception details are concealed due
  * to security reasons. When there's a need to pass some information about the
  * failure on the client side, this exception or any of its subclasses can be
@@ -53,7 +53,7 @@ public class EndpointException extends RuntimeException {
 
     /**
      * Creates an exception which information is propagated to the client since,
-     * if thrown from a Vaadin Connect method.
+     * if thrown from a Vaadin endpoint method.
      *
      * @param message
      *            the message to put in the client side exception message when
@@ -66,7 +66,7 @@ public class EndpointException extends RuntimeException {
 
     /**
      * Creates an exception which information is propagated to the client since,
-     * if thrown from a Vaadin Connect method.
+     * if thrown from a Vaadin endpoint method.
      *
      * Will reuse the original exception's message when thrown.
      *
@@ -81,7 +81,7 @@ public class EndpointException extends RuntimeException {
 
     /**
      * Creates an exception which information is propagated to the client since,
-     * if thrown from a Vaadin Connect method.
+     * if thrown from a Vaadin endpoint method.
      *
      * @param message
      *            the message to put in the client side exception message when
@@ -97,7 +97,7 @@ public class EndpointException extends RuntimeException {
 
     /**
      * Creates an exception which information is propagated to the client since,
-     * if thrown from a Vaadin Connect method.
+     * if thrown from a Vaadin endpoint method.
      *
      * @param message
      *            the message to put in the client side exception message when
@@ -113,7 +113,7 @@ public class EndpointException extends RuntimeException {
 
     /**
      * Creates an exception which information is propagated to the client since,
-     * if thrown from a Vaadin Connect method.
+     * if thrown from a Vaadin endpoint method.
      *
      * @param message
      *            the message to put in the client side exception message when

@@ -25,7 +25,7 @@ import javax.annotation.Nullable;
 import com.vaadin.flow.internal.ReflectTools;
 
 /**
- * A checker for TypeScript null compatibility in Vaadin Connect endpoint methods
+ * A checker for TypeScript null compatibility in Vaadin endpoint methods
  * parameter and return types.
  */
 public class ExplicitNullableTypeChecker {

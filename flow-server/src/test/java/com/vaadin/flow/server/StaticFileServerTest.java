@@ -482,6 +482,37 @@ public class StaticFileServerTest implements Serializable {
         assertBundleBuildResource(pathInfo);
     }
 
+    @Test
+    public void contextAndServletPath_serveStaticFileResource()
+            throws IOException {
+        String pathInfo = "/VAADIN/static/img/bg.jpg";
+        setupRequestURI("/context", "/servlet", pathInfo);
+        assertBundleBuildResource(pathInfo);
+    }
+
+    @Test
+    public void ServletPath_serveStaticFileResource()
+            throws IOException {
+        String pathInfo = "/VAADIN/static/img/bg.jpg";
+        setupRequestURI("", "/servlet", pathInfo);
+        assertBundleBuildResource(pathInfo);
+    }
+
+    @Test
+    public void contextPath_serveStaticFileResource()
+            throws IOException {
+        String pathInfo = "/VAADIN/static/img/bg.jpg";
+        setupRequestURI("/context", "", pathInfo);
+        assertBundleBuildResource(pathInfo);
+    }
+
+    @Test
+    public void serveStaticFileResource() throws IOException {
+        String pathInfo = "/VAADIN/static/img/bg.jpg";
+        setupRequestURI("", "", pathInfo);
+        assertBundleBuildResource(pathInfo);
+    }
+
     public void assertBundleBuildResource(String pathInfo) throws IOException {
         byte[] fileData = "function() {eval('foo');};"
                 .getBytes(StandardCharsets.UTF_8);
