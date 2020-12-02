@@ -10,8 +10,7 @@ import java.util.Collections;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.connect.Endpoint;
-import com.vaadin.flow.server.frontend.TaskGenerateConnect;
-import com.vaadin.flow.server.frontend.TaskGenerateOpenApi;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
@@ -46,8 +45,7 @@ public class NodeTasksEndpointTest {
         File json = new File(dir, "api-file.json");
 
         Lookup mockLookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(new TaskGenerateConnectImpl()).when(mockLookup).lookup(TaskGenerateConnect.class);
-        Mockito.doReturn(new TaskGenerateOpenApiImpl()).when(mockLookup).lookup(TaskGenerateOpenApi.class);
+        Mockito.doReturn(new EndpointGeneratorTaskFactoryImpl()).when(mockLookup).lookup(EndpointGeneratorTaskFactory.class);
         Builder builder = new Builder(
                 mockLookup,
                 new DefaultClassFinder(

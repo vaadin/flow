@@ -15,26 +15,9 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.File;
-
 /**
  * Generate the Vaadin TS files for endpoints, and the Client API file.
  */
-public interface TaskGenerateConnect extends FallibleCommand{
-
-    /**
-     * Initialize a task for generating TS files based.
-     *
-     * @param applicationProperties
-     *            application properties file.
-     * @param openApi
-     *            openApi json file.
-     * @param outputFolder
-     *            the output folder.
-     * @param frontendDirectory
-     *            the frontend folder.
-     */
-    void init(File applicationProperties, File openApi,
-                        File outputFolder, File frontendDirectory);
+public interface TaskGenerateConnect extends FallibleCommand {
 
 }

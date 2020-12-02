@@ -36,7 +36,7 @@ public class TaskGenerateConnectImpl extends AbstractTaskConnectGenerator implem
     private File connectClientFile;
     private File frontendDirectory;
 
-    public void init(File applicationProperties, File openApi,
+    TaskGenerateConnectImpl(File applicationProperties, File openApi,
                         File outputFolder, File frontendDirectory) {
         super.init(applicationProperties);
         Objects.requireNonNull(openApi,

@@ -77,11 +77,10 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
-import com.vaadin.flow.server.frontend.TaskGenerateConnect;
-import com.vaadin.flow.server.frontend.TaskGenerateOpenApi;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
@@ -399,11 +398,10 @@ public class DevModeInitializer
     }
 
     private static boolean isEndpointServiceAvailable(Lookup lookup) {
-            if (lookup == null) {
-                    return false;
-            }
-            return lookup.lookup(TaskGenerateConnect.class) != null 
-                        && lookup.lookup(TaskGenerateOpenApi.class) != null;
+        if (lookup == null) {
+            return false;
+        }
+        return lookup.lookup(EndpointGeneratorTaskFactory.class) != null;
     }
 
     /**

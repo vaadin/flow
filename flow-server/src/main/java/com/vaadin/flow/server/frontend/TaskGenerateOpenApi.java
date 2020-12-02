@@ -15,26 +15,10 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.File;
 
 /**
  * Generate OpenAPI json file for Vaadin Endpoints.
  */
 public interface TaskGenerateOpenApi extends FallibleCommand {
 
-    /**
-     * Initialize a task for generating OpenAPI spec.
-     *
-     * @param properties
-     *            the application propperties
-     * @param javaSourceFolder
-     *            source paths of the project containing Vaadin Endpoint
-     * @param classLoader
-     *            The class loader which should be used to resolved types in the
-     *            source paths.
-     * @param output
-     *            the output path of the generated json file.
-     */
-    void init(File properties, File javaSourceFolder,
-            ClassLoader classLoader, File output);
 }

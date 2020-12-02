@@ -616,22 +616,18 @@ public class NodeTasks implements FallibleCommand {
 
     private void addConnectServicesTasks(Builder builder) {
         Lookup lookup = builder.lookup;
-        TaskGenerateOpenApi taskGenerateOpenApi = lookup.lookup(TaskGenerateOpenApi.class);
-        if(taskGenerateOpenApi!=null){
-            taskGenerateOpenApi.init(builder.connectApplicationProperties,
-                builder.connectJavaSourceFolder,
-                builder.classFinder.getClassLoader(),
-                builder.connectGeneratedOpenApiFile);
-            commands.add(taskGenerateOpenApi);
-        }
+        EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup.lookup(EndpointGeneratorTaskFactory.class);
 
-        if (builder.connectClientTsApiFolder != null) {
-            TaskGenerateConnect taskGenerateConnectTs = lookup.lookup(TaskGenerateConnect.class);
-            if(taskGenerateConnectTs!=null){
-                taskGenerateConnectTs.init(builder.connectApplicationProperties,
-                    builder.connectGeneratedOpenApiFile,
-                    builder.connectClientTsApiFolder,
-                    builder.frontendDirectory);
+        if (endpointGeneratorTaskFactory != null) {
+            TaskGenerateOpenApi taskGenerateOpenApi = endpointGeneratorTaskFactory.createTaskGenerateOpenApi(
+                    builder.connectApplicationProperties, builder.connectJavaSourceFolder,
+                    builder.classFinder.getClassLoader(), builder.connectGeneratedOpenApiFile);
+            commands.add(taskGenerateOpenApi);
+
+            if (builder.connectClientTsApiFolder != null) {
+                TaskGenerateConnect taskGenerateConnectTs = endpointGeneratorTaskFactory.createTaskGenerateConnect(
+                        builder.connectApplicationProperties, builder.connectGeneratedOpenApiFile,
+                        builder.connectClientTsApiFolder, builder.frontendDirectory);
                 commands.add(taskGenerateConnectTs);
             }
         }

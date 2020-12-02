@@ -61,8 +61,7 @@ public class TaskGenerateOpenApiTest {
     @Test
     public void should_UseDefaultProperties_when_applicationPropertiesIsEmpty()
             throws Exception {
-        taskGenerateOpenApi = new TaskGenerateOpenApiImpl();
-        taskGenerateOpenApi.init(applicationPropertiesFile, javaSource, 
+        taskGenerateOpenApi = new TaskGenerateOpenApiImpl(applicationPropertiesFile, javaSource, 
                         this.getClass().getClassLoader(),generatedOpenAPI);
         
         taskGenerateOpenApi.execute();
@@ -118,8 +117,7 @@ public class TaskGenerateOpenApiTest {
                 applicationPropertiesBuilder.toString(),
                 StandardCharsets.UTF_8);
         
-        taskGenerateOpenApi = new TaskGenerateOpenApiImpl();
-        taskGenerateOpenApi.init(applicationPropertiesFile, javaSource, 
+        taskGenerateOpenApi = new TaskGenerateOpenApiImpl(applicationPropertiesFile, javaSource, 
                         this.getClass().getClassLoader(),generatedOpenAPI);
         taskGenerateOpenApi.execute();
 
@@ -148,8 +146,7 @@ public class TaskGenerateOpenApiTest {
     @Test
     public void should_UseCustomEndpointName_InsteadOf_UsingClassName()
             throws Exception {
-        taskGenerateOpenApi = new TaskGenerateOpenApiImpl();
-        taskGenerateOpenApi.init(applicationPropertiesFile, javaSource, 
+        taskGenerateOpenApi = new TaskGenerateOpenApiImpl(applicationPropertiesFile, javaSource, 
                         this.getClass().getClassLoader(),generatedOpenAPI);
         taskGenerateOpenApi.execute();
 
@@ -164,8 +161,7 @@ public class TaskGenerateOpenApiTest {
     @Test
     public void should_UseCustomEndpointNameWithoutValueEqual_InsteadOf_UsingClassName()
             throws Exception {
-        taskGenerateOpenApi = new TaskGenerateOpenApiImpl();
-        taskGenerateOpenApi.init(applicationPropertiesFile, javaSource, 
+        taskGenerateOpenApi = new TaskGenerateOpenApiImpl(applicationPropertiesFile, javaSource, 
                         this.getClass().getClassLoader(),generatedOpenAPI);
         taskGenerateOpenApi.execute();
 

@@ -28,11 +28,9 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.TaskGenerateConnect;
-import com.vaadin.flow.server.frontend.TaskGenerateOpenApi;
-import com.vaadin.flow.server.frontend.fusion.TaskGenerateConnectImpl;
-import com.vaadin.flow.server.frontend.fusion.TaskGenerateOpenApiImpl;
+import com.vaadin.flow.server.frontend.fusion.EndpointGeneratorTaskFactoryImpl;
 import com.vaadin.flow.server.startup.DevModeInitializer;
 
 import org.apache.commons.io.FileUtils;
@@ -76,8 +74,7 @@ public class DevModeInitializerEndpointTest {
         Lookup lookup = Mockito.mock(Lookup.class);
         Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
-        Mockito.doReturn(new TaskGenerateConnectImpl()).when(lookup).lookup(TaskGenerateConnect.class);
-        Mockito.doReturn(new TaskGenerateOpenApiImpl()).when(lookup).lookup(TaskGenerateOpenApi.class);
+        Mockito.doReturn(new EndpointGeneratorTaskFactoryImpl()).when(lookup).lookup(EndpointGeneratorTaskFactory.class);
 
         ResourceProvider resourceProvider = Mockito
                 .mock(ResourceProvider.class);

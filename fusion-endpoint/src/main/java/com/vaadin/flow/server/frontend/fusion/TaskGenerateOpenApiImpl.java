@@ -43,7 +43,7 @@ public class TaskGenerateOpenApiImpl extends AbstractTaskConnectGenerator implem
      * @param output
      *            the output path of the generated json file.
      */
-    public void init(File properties, File javaSourceFolder,
+    TaskGenerateOpenApiImpl(File properties, File javaSourceFolder,
             ClassLoader classLoader, File output) {
         super.init(properties);
         Objects.requireNonNull(javaSourceFolder,

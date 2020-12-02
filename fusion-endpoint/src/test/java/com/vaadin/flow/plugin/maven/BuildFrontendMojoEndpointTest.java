@@ -31,11 +31,9 @@ import java.util.List;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.connect.Endpoint;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.TaskGenerateConnect;
-import com.vaadin.flow.server.frontend.TaskGenerateOpenApi;
-import com.vaadin.flow.server.frontend.fusion.TaskGenerateConnectImpl;
-import com.vaadin.flow.server.frontend.fusion.TaskGenerateOpenApiImpl;
+import com.vaadin.flow.server.frontend.fusion.EndpointGeneratorTaskFactoryImpl;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
@@ -104,8 +102,7 @@ public class BuildFrontendMojoEndpointTest {
         setProject(mojo, npmFolder);
 
         Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(new TaskGenerateConnectImpl()).when(lookup).lookup(TaskGenerateConnect.class);
-        Mockito.doReturn(new TaskGenerateOpenApiImpl()).when(lookup).lookup(TaskGenerateOpenApi.class);
+        Mockito.doReturn(new EndpointGeneratorTaskFactoryImpl()).when(lookup).lookup(EndpointGeneratorTaskFactory.class);
         Mockito.doReturn(lookup).when(mojo).createLookup(Mockito.any(ClassFinder.class));
     }
 
