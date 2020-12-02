@@ -44,6 +44,8 @@ public interface EndpointGeneratorTaskFactory {
     /**
      * Create a task for generating OpenAPI spec.
      *
+     * @param properties
+     *            application properties file.
      * @param javaSourceFolder
      *            source paths of the project containing Vaadin Endpoint
      * @param classLoader
