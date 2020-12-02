@@ -179,7 +179,14 @@ module.exports = {
             options: {
               url: (url, resourcePath) => {
                 // Only translate files from node_modules
-                return resourcePath.includes('/node_modules/');
+                const resolve = resourcePath.match(/(\\|\/)node_modules\1/);
+                const themResource = resourcePath.match(/(\\|\/)theme\1[\s\S]*?\1/) && url.match(/theme\/[\s\S]*?\//);
+                if(resolve) {
+                  console.debug("Inlining node_module resource: ", url);
+                } else if(themResource) {
+                  console.debug("Handling theme resource: ", url);
+                }
+                return resolve || themResource;
               },
               // use theme-loader to also handle any imports in css files
               importLoaders: 1
@@ -194,6 +201,17 @@ module.exports = {
             }
           }
         ],
+      },
+      {
+        // File-loader only copies files used as imports in .js files or handled by css-loader
+        test: /\.(png|gif|jpg|jpeg|svg|eot|woff|woff2|ttf)$/,
+        use: [{
+          loader: 'file-loader',
+          options: {
+            outputPath: 'static/',
+            name: '[name].[ext]'
+          }
+        }],
       },
     ]
   },
