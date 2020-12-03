@@ -33,8 +33,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.fusion.EndpointGeneratorTaskFactoryImpl;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -50,8 +54,10 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.connect.Endpoint;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -92,7 +98,7 @@ public class BuildFrontendMojoTest {
 
     private File tokenFile;
 
-    private final BuildFrontendMojo mojo = new BuildFrontendMojo();
+    private final BuildFrontendMojo mojo = Mockito.spy(new BuildFrontendMojo());
 
     @Before
     public void setup() throws Exception {
@@ -167,6 +173,10 @@ public class BuildFrontendMojoTest {
         createExpectedImports(frontendDirectory, nodeModulesPath);
         FileUtils.fileWrite(packageJson, "UTF-8",
                 TestUtils.getInitalPackageJson().toJson());
+
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.doReturn(new EndpointGeneratorTaskFactoryImpl()).when(lookup).lookup(EndpointGeneratorTaskFactory.class);
+        Mockito.doReturn(lookup).when(mojo).createLookup(Mockito.any(ClassFinder.class));
     }
 
     @After
@@ -408,6 +418,37 @@ public class BuildFrontendMojoTest {
         Assert.assertFalse(tokenFile.exists());
     }
 
+    @Test
+    public void mavenGoal_generateOpenApiJson_when_itIsInClientSideMode()
+            throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+        mojo.execute();
+        Assert.assertTrue(FileUtils.fileExists(openApiJsonFile));
+    }
+
+    @Test
+    public void mavenGoal_generateTsFiles_when_enabled() throws Exception {
+        File connectClientApi = new File(generatedTsFolder,
+                "connect-client.default.ts");
+        File endpointClientApi = new File(generatedTsFolder, "MyEndpoint.ts");
+
+        Assert.assertFalse(connectClientApi.exists());
+        Assert.assertFalse(endpointClientApi.exists());
+        mojo.execute();
+        Assert.assertTrue(connectClientApi.exists());
+        Assert.assertTrue(endpointClientApi.exists());
+    }
+
+    @Test
+    public void mavenGoal_notGenerateOpenApiJson_when_usingDeprecatedV14Bootstrapping()
+            throws Exception {
+        ReflectionUtils.setVariableValueInObject(mojo,
+                "useDeprecatedV14Bootstrapping", "true");
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+        mojo.execute();
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+    }
+
     static void assertContainsPackage(JsonObject dependencies,
             String... packages) {
         Arrays.asList(packages).forEach(dep -> Assert
@@ -557,6 +598,16 @@ public class BuildFrontendMojoTest {
                 return files;
             }
             return Collections.emptyList();
+        }
+    }
+
+    @Endpoint
+    public class MyEndpoint {
+        public void foo(String bar) {
+        }
+
+        public String bar(String baz) {
+            return baz;
         }
     }
 }
