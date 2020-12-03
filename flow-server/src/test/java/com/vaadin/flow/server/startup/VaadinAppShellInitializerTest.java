@@ -4,7 +4,6 @@ import javax.annotation.concurrent.NotThreadSafe;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
 import javax.servlet.http.HttpServletRequest;
-
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,7 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.impl.SimpleLoggerFactory;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.PushConfiguration;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
@@ -39,6 +40,7 @@ import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.AppShellRegistry;
@@ -97,6 +99,22 @@ public class VaadinAppShellInitializerTest {
     @Push(value = PushMode.MANUAL, transport = Transport.WEBSOCKET)
     @Theme(themeClass = AbstractTheme.class)
     public static class OffendingClass {
+    }
+
+    public static class WebHolder extends Component {
+    }
+
+    @Theme(themeClass = AbstractTheme.class)
+    public static class NonOffendingExporter
+        extends WebComponentExporter<WebHolder> {
+        public NonOffendingExporter() {
+            super("web-component");
+        }
+
+        @Override
+        public void configureInstance(WebComponent<WebHolder> webComponent,
+            WebHolder component) {
+        }
     }
 
     public static class MyAppShellWithConfigurator
@@ -383,6 +401,12 @@ public class VaadinAppShellInitializerTest {
                 "- @Meta, @Inline, @Viewport, @BodySize, @Push, @Theme" + " from"));
         classes.add(MyAppShellWithoutAnnotations.class);
         classes.add(OffendingClass.class);
+        initializer.process(classes, servletContext);
+    }
+
+    @Test
+    public void offendingEmbeddedThemeClass_shouldNotThrow() throws Exception {
+        classes.add(NonOffendingExporter.class);
         initializer.process(classes, servletContext);
     }
 
