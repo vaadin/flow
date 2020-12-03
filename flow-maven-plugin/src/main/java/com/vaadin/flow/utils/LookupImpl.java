@@ -15,16 +15,17 @@
  */
 package com.vaadin.flow.utils;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
- * An implementation of Lookup, which could be used
- * to find service(s) of a give type.
+ * An implementation of Lookup, which could be used to find service(s) of a give
+ * type.
  */
 public class LookupImpl implements Lookup {
 
@@ -44,19 +45,31 @@ public class LookupImpl implements Lookup {
 
     @Override
     public <T> List<T> lookupAll(Class<T> serviceClass) {
-        return classFinder.getSubTypesOf(serviceClass).stream()
-                .map(this::loadCassFromClassFindler)
-                .filter(ReflectTools::isInstantiableService)
-                .map(ReflectTools::createInstance)
-                .map(instance -> (T) instance)
-                .collect(Collectors.toList());
+        Set<?> subTypes = classFinder
+                .getSubTypesOf(loadCassFromClassFindler(serviceClass));
+        List<T> result = new ArrayList<>(subTypes.size());
+        try {
+            for (Object clazz : subTypes) {
+                if (!ReflectTools.isInstantiableService((Class<?>) clazz)) {
+                    continue;
+                }
+                Class<?> serviceType = serviceClass.getClassLoader()
+                        .loadClass(((Class<?>) clazz).getName());
+                result.add(serviceClass
+                        .cast(ReflectTools.createInstance(serviceType)));
+            }
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException("Could not find service class", e);
+        }
+        return result;
     }
 
-    private Class<?> loadCassFromClassFindler(Class<?> clz){
+    private Class<?> loadCassFromClassFindler(Class<?> clz) {
         try {
             return classFinder.loadClass(clz.getName());
         } catch (ClassNotFoundException e) {
-            throw new IllegalStateException("Could not load " + clz.getName() + " class", e);
+            throw new IllegalStateException(
+                    "Could not load " + clz.getName() + " class", e);
         }
     }
 
