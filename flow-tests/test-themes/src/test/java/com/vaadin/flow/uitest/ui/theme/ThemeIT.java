@@ -52,7 +52,7 @@ public class ThemeIT extends ChromeBrowserTest {
 
     @Test
     public void secondTheme_staticFilesNotCopied() {
-        getDriver().get(getRootURL() + "/path/VAADIN/static/bg.jpg");
+        getDriver().get(getRootURL() + "/path/VAADIN/static/img/bg.jpg");
         Assert.assertFalse("app-theme static files should be copied",
             driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
 
@@ -69,12 +69,12 @@ public class ThemeIT extends ChromeBrowserTest {
 
         final WebElement body = findElement(By.tagName("body"));
         Assert.assertEquals(
-            "url(\"" + getRootURL() + "/path/VAADIN/static/bg.jpg\")",
+            "url(\"" + getRootURL() + "/path/VAADIN/static/img/bg.jpg\")",
             body.getCssValue("background-image"));
 
         Assert.assertEquals("Ostrich", body.getCssValue("font-family"));
 
-        getDriver().get(getRootURL() + "/path/VAADIN/static/bg.jpg");
+        getDriver().get(getRootURL() + "/path/VAADIN/static/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
             driver.getPageSource().contains("Could not navigate"));
     }
@@ -105,7 +105,8 @@ public class ThemeIT extends ChromeBrowserTest {
         checkLogsForErrors();
 
         Assert.assertEquals("Imported css file URLs should have been handled.",
-            "url(\"" + getRootURL() + "/path/VAADIN/static/archive.png\")",
+            "url(\"" + getRootURL()
+                + "/path/VAADIN/static/icons/archive.png\")",
             $(SpanElement.class).id(SUB_COMPONENT_ID)
                 .getCssValue("background-image"));
     }
