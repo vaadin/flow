@@ -15,8 +15,7 @@
  */
 
 /**
- * This file handles copying of theme files to
- * [staticResourcesFolder]
+ * This contains functions and features used to copy theme files.
  */
 
 const fs = require('fs');

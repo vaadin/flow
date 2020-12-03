@@ -181,11 +181,6 @@ module.exports = {
                 // Only translate files from node_modules
                 const resolve = resourcePath.match(/(\\|\/)node_modules\1/);
                 const themResource = resourcePath.match(/(\\|\/)theme\1[\s\S]*?\1/) && url.match(/theme\/[\s\S]*?\//);
-                if(resolve) {
-                  console.debug("Inlining node_module resource: ", url);
-                } else if(themResource) {
-                  console.debug("Handling theme resource: ", url);
-                }
                 return resolve || themResource;
               },
               // use theme-loader to also handle any imports in css files
