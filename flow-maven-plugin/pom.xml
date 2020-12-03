@@ -21,7 +21,7 @@
             <artifactId>flow-server</artifactId>
             <version>${project.version}</version>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>fusion-endpoint</artifactId>
             <version>${project.version}</version>
