@@ -33,6 +33,9 @@ public class LookupImpl implements Lookup {
 
     /**
      * Creates an implementation of Lookup.
+     * 
+     * @param classFinder
+     *            for searching service implementations.
      */
     public LookupImpl(ClassFinder classFinder) {
         this.classFinder = classFinder;
