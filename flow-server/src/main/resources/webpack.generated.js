@@ -210,7 +210,7 @@ module.exports = {
             name(resourcePath, resourceQuery) {
               const urlResource = resourcePath.substring(frontendFolder.length);
               if(urlResource.match(themePartRegex)){
-                return /[\s\S]*(\\|\/)theme\1[\s\S]*?\1(.*)/.exec(resourcePath)[2];
+                return /^(\\|\/)theme\1[\s\S]*?\1(.*)/.exec(urlResource)[2];
               }
               return '[path][name].[ext]';
             }
