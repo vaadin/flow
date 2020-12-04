@@ -45,7 +45,7 @@ public class TaskGenerateOpenApiImpl extends AbstractTaskConnectGenerator implem
      */
     TaskGenerateOpenApiImpl(File properties, File javaSourceFolder,
             ClassLoader classLoader, File output) {
-        super.init(properties);
+        super(properties);
         Objects.requireNonNull(javaSourceFolder,
                 "Source paths should not be null.");
         Objects.requireNonNull(output,

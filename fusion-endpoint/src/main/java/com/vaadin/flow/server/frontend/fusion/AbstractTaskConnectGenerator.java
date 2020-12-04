@@ -22,16 +22,18 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Properties;
 
+import com.vaadin.flow.server.frontend.FallibleCommand;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Abstract class for Vaadin Fusion related generators.
  */
-abstract class AbstractTaskConnectGenerator {
-    private File applicationProperties;
+abstract class AbstractTaskConnectGenerator implements FallibleCommand{
+    private final File applicationProperties;
 
-    protected void init(File applicationProperties) {
+    AbstractTaskConnectGenerator(File applicationProperties) {
         this.applicationProperties = applicationProperties;
     }
 

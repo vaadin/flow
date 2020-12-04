@@ -38,7 +38,7 @@ public class TaskGenerateConnectImpl extends AbstractTaskConnectGenerator implem
 
     TaskGenerateConnectImpl(File applicationProperties, File openApi,
                         File outputFolder, File frontendDirectory) {
-        super.init(applicationProperties);
+        super(applicationProperties);
         Objects.requireNonNull(openApi,
                 "Vaadin OpenAPI file should not be null.");
         Objects.requireNonNull(outputFolder,
