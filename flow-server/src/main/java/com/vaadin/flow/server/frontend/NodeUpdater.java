@@ -263,6 +263,10 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("typescript", "4.0.3");
         defaults.put("ts-loader", "8.0.12");
+        defaults.put("file-loader", "6.1.0");
+        defaults.put("extract-loader", "5.1.0");
+        defaults.put("lit-css-loader", "0.0.4");
+        
         // Constructable style sheets is only implemented for chrome,
         // polyfill needed for FireFox et.al. at the moment
         defaults.put("construct-style-sheets-polyfill", "2.4.2");
