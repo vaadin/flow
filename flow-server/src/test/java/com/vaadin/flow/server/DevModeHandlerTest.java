@@ -496,8 +496,9 @@ public class DevModeHandlerTest {
     public void start_twoTimes_onlyOneHandlerInstanceIsCreated() {
         MockDeploymentConfiguration configuration = Mockito
                 .spy(MockDeploymentConfiguration.class);
-        DevModeHandler handler = DevModeHandler.start(0, createDevModeLookup(),
-                npmFolder, CompletableFuture.completedFuture(null));
+        DevModeHandler handler = DevModeHandler.start(0,
+                createDevModeLookup(configuration), npmFolder,
+                CompletableFuture.completedFuture(null));
         handler.join();
 
         // This is how new server handler instantiation checked:
@@ -720,7 +721,11 @@ public class DevModeHandlerTest {
     }
 
     private Lookup createDevModeLookup() {
-        return Lookup.of(configuration, DeploymentConfiguration.class);
+        return createDevModeLookup(configuration);
+    }
+
+    private Lookup createDevModeLookup(DeploymentConfiguration config) {
+        return Lookup.of(config, DeploymentConfiguration.class);
     }
 
     public static HttpServer createStubWebpackTcpListener(int port, int status,
