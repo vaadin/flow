@@ -169,7 +169,7 @@ public final class DevModeHandler implements RequestHandler {
      * Start the dev mode handler if none has been started yet.
      *
      * @param lookup
-     *            lookup to get required data
+     *            the provided lookup to get required data
      * @param npmFolder
      *            folder with npm configuration files
      * @param waitFor
@@ -188,8 +188,8 @@ public final class DevModeHandler implements RequestHandler {
      *
      * @param runningPort
      *            port on which Webpack is listening.
-     * @param configuration
-     *            deployment configuration
+     * @param lookup
+     *            the provided lookup to get required data
      * @param npmFolder
      *            folder with npm configuration files
      * @param waitFor
