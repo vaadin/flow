@@ -15,22 +15,24 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -258,6 +260,68 @@ public class LookupInitializerTest {
         Mockito.verify(deferredInitializers).runInitializers(context);
         Mockito.verify(context).removeAttribute(
                 DeferredServletContextInitializers.class.getName());
+    }
+
+    @Test
+    public void createLookup_createLookupIsInvoked_lookupIsInstantiatedCreateLookup()
+            throws ServletException {
+        Lookup lookup = Mockito.mock(Lookup.class);
+        initializer = new LookupInitializer() {
+            @Override
+            protected Lookup createLookup(
+                    Map<Class<?>, Collection<Object>> services) {
+                Assert.assertTrue(services.containsKey(ResourceProvider.class));
+                Assert.assertTrue(
+                        services.containsKey(InstantiatorFactory.class));
+                Assert.assertTrue(services.containsKey(
+                        DeprecatedPolymerPublishedEventHandler.class));
+                Collection<Object> serviceObjects = services
+                        .get(ResourceProvider.class);
+                Assert.assertEquals(1, serviceObjects.size());
+                Assert.assertTrue(TestResourceProvider.class
+                        .isInstance(serviceObjects.iterator().next()));
+                return lookup;
+            }
+
+            @Override
+            protected Collection<Class<?>> getServiceTypes() {
+                return new LookupInitializer().getServiceTypes();
+            }
+        };
+
+        Lookup resultLookup = mockLookup(TestResourceProvider.class);
+        Assert.assertSame(lookup, resultLookup);
+    }
+
+    @Test
+    public void getServiceTypes_getServiceTypesIsInvoked_lookupContainsOnlyReturnedServiceTypes()
+            throws ServletException {
+        initializer = new LookupInitializer() {
+            @Override
+            protected Lookup createLookup(
+                    Map<Class<?>, Collection<Object>> services) {
+                Assert.assertFalse(
+                        services.containsKey(ResourceProvider.class));
+                Assert.assertFalse(
+                        services.containsKey(InstantiatorFactory.class));
+                Assert.assertFalse(services.containsKey(
+                        DeprecatedPolymerPublishedEventHandler.class));
+                Collection<Object> serviceObjects = services.get(List.class);
+                Assert.assertEquals(1, serviceObjects.size());
+                Assert.assertTrue(ArrayList.class
+                        .isInstance(serviceObjects.iterator().next()));
+                return super.createLookup(services);
+            }
+
+            @Override
+            protected Collection<Class<?>> getServiceTypes() {
+                return Collections.singleton(List.class);
+            }
+        };
+
+        Lookup resultLookup = mockLookup(ArrayList.class);
+        List<?> list = resultLookup.lookup(List.class);
+        Assert.assertTrue(list instanceof ArrayList<?>);
     }
 
     private Lookup mockLookup(ServletContext context, Class<?>... classes)
