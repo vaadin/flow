@@ -13,18 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.servlets;
 
-import javax.servlet.annotation.WebServlet;
+package com.vaadin.flow.uitest.ui.theme;
 
-import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.router.Route;
 
-/**
- * This is a temporary workaround until #5740 is fixed.
- *
- * @since 2.0
- */
-@WebServlet("/app/*")
-public class WorkaroundServlet extends VaadinServlet {
-
+@Tag("css-view")
+@CssImport("./external.css")
+@Route("com.vaadin.flow.uitest.ui.theme.CssImportView")
+public class CssImportView extends Component {
 }

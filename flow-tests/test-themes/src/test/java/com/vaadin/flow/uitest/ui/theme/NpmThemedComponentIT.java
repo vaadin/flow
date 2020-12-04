@@ -59,11 +59,7 @@ public class NpmThemedComponentIT extends ChromeBrowserTest {
     protected String getTestPath() {
         String path = super.getTestPath();
         String view = "view/";
-        String result;
-        if (path.startsWith("/")) {
-            result = path.substring(view.length() + 1);
-        }
-        result = path.substring(view.length());
+        String result = path.replace(view, "app/");
         return result;
     }
 
