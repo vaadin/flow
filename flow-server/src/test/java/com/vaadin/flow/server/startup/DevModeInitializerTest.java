@@ -42,6 +42,7 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -51,6 +52,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.times;
 
 @NotThreadSafe
 public class DevModeInitializerTest extends DevModeInitializerTestBase {
@@ -296,15 +298,56 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
+    public void should_generateOpenApi_when_EndpointPresents()
+            throws Exception {
+
+        // Configure a folder to check the endpoints, doesn't matter
+        // which folder, since the actual task won't be run, just
+        // to verify the mocked task is executed.
+        File src = new File(
+                getClass().getClassLoader().getResource("com").getFile());
+        System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                src.getAbsolutePath());
+
+        File generatedOpenApiJson = Paths
+                .get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE).toFile();
+
+        Assert.assertFalse(generatedOpenApiJson.exists());
+        DevModeInitializer devModeInitializer = new DevModeInitializer();
+        devModeInitializer.onStartup(classes, servletContext);
+        waitForDevModeServer();
+        
+        Mockito.verify(taskGenerateConnect, times(1)).execute();
+    }
+
+    @Test
     public void should_notGenerateOpenApi_when_EndpointIsNotUsed()
             throws Exception {
         File generatedOpenApiJson = Paths
                 .get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE).toFile();
         Assert.assertFalse(generatedOpenApiJson.exists());
         devModeInitializer.onStartup(classes, servletContext);
-        Assert.assertFalse(
-                "Should not generate OpenAPI spec if Endpoint is not used.",
-                generatedOpenApiJson.exists());
+        
+        Mockito.verify(taskGenerateConnect, times(0)).execute();
+    }
+
+    @Test
+    public void should_generateTs_files() throws Exception {
+
+        // Configure a folder to check the endpoints, doesn't matter
+        // which folder, since the actual task won't be run, just
+        // to verify the mocked task is executed.
+        File src = new File(
+                getClass().getClassLoader().getResource("com").getFile());
+        System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                src.getAbsolutePath());
+
+        DevModeInitializer devModeInitializer = new DevModeInitializer();
+
+        devModeInitializer.onStartup(classes, servletContext);
+        waitForDevModeServer();
+
+        Mockito.verify(taskGenerateConnect, times(1)).execute();
     }
 
     @Test

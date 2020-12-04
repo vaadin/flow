@@ -150,6 +150,18 @@ public class DevModeInitializerEndpointTest {
     }
 
     @Test
+    public void should_notGenerateOpenApi_when_EndpointIsNotUsed()
+            throws Exception {
+        File generatedOpenApiJson = Paths
+                .get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE).toFile();
+        Assert.assertFalse(generatedOpenApiJson.exists());
+        devModeInitializer.onStartup(classes, servletContext);
+        Assert.assertFalse(
+                "Should not generate OpenAPI spec if Endpoint is not used.",
+                generatedOpenApiJson.exists());
+    }
+
+    @Test
     public void should_generateTs_files() throws Exception {
 
         // Configure a folder that has .java classes with valid endpoints
