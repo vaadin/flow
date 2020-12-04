@@ -138,16 +138,20 @@ module.exports = {
       },
       {
         test: /\.css$/i,
-        use: [ {
-          loader: 'lit-css-loader'
-        },  {
-          loader: 'extract-loader'
-        }, {
-          loader: 'css-loader',
-          options: {
-            url: false
+        use: [
+          {
+            loader: 'lit-css-loader'
+          },
+          {
+            loader: 'extract-loader'
+          },
+          {
+            loader: 'css-loader',
+            options: {
+              url: false
+            }
           }
-        }]
+        ]
       }
     ]
   },
