@@ -28,9 +28,9 @@ import com.vaadin.flow.server.connect.generator.OpenApiSpecGenerator;
  */
 public class TaskGenerateOpenApiImpl extends AbstractTaskConnectGenerator implements TaskGenerateOpenApi {
 
-    private File javaSourceFolder;
-    private transient ClassLoader classLoader;
-    private File output;
+    private final File javaSourceFolder;
+    private final ClassLoader classLoader;
+    private final File output;
 
     /**
      * Create a task for generating OpenAPI spec.

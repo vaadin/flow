@@ -31,10 +31,10 @@ import static com.vaadin.flow.server.connect.generator.VaadinConnectClientGenera
  */
 public class TaskGenerateConnectImpl extends AbstractTaskConnectGenerator implements TaskGenerateConnect {
 
-    private File outputFolder;
-    private File openApi;
-    private File connectClientFile;
-    private File frontendDirectory;
+    private final File outputFolder;
+    private final File openApi;
+    private final File connectClientFile;
+    private final File frontendDirectory;
 
     TaskGenerateConnectImpl(File applicationProperties, File openApi,
                         File outputFolder, File frontendDirectory) {
