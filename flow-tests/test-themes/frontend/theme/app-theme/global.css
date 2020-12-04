@@ -12,7 +12,7 @@ body {
 
 #butterfly {
     /* This shouldn't be translated */
-    background-image: url("./test/path/monarch-butterfly.jpg");
+    background-image: url("/path/test/path/monarch-butterfly.jpg");
     width: 300px;
     height: 274px;
     display: block;
