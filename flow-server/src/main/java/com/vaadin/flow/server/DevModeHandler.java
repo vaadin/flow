@@ -46,6 +46,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.Pair;
@@ -136,16 +137,18 @@ public final class DevModeHandler implements RequestHandler {
 
     private final File npmFolder;
 
-    private DevModeHandler(DeploymentConfiguration config, int runningPort,
-            File npmFolder, CompletableFuture<Void> waitFor) {
+    private DevModeHandler(Lookup lookup, int runningPort, File npmFolder,
+            CompletableFuture<Void> waitFor) {
 
         this.npmFolder = npmFolder;
         port = runningPort;
+        DeploymentConfiguration config = lookup
+                .lookup(DeploymentConfiguration.class);
         reuseDevServer = config.reuseDevServer();
         devServerPortFile = getDevServerPortFile(npmFolder);
 
         // Check whether executor is provided by the caller (framework)
-        Object service = config.getInitParameters().get(Executor.class);
+        Executor service = lookup.lookup(Executor.class);
 
         BiConsumer<Void, ? super Throwable> action = (value, exception) -> {
             // this will throw an exception if an exception has been thrown by
@@ -154,21 +157,19 @@ public final class DevModeHandler implements RequestHandler {
             runOnFutureComplete(config);
         };
 
-        if (service instanceof Executor) {
-            // if there is an executor use it to run the task
-            devServerStartFuture = waitFor.whenCompleteAsync(action,
-                    (Executor) service);
-        } else {
+        if (service == null) {
             devServerStartFuture = waitFor.whenCompleteAsync(action);
+        } else {
+            // if there is an executor use it to run the task
+            devServerStartFuture = waitFor.whenCompleteAsync(action, service);
         }
-
     }
 
     /**
      * Start the dev mode handler if none has been started yet.
      *
-     * @param configuration
-     *            deployment configuration
+     * @param lookup
+     *            lookup to get required data
      * @param npmFolder
      *            folder with npm configuration files
      * @param waitFor
@@ -177,9 +178,9 @@ public final class DevModeHandler implements RequestHandler {
      *
      * @return the instance in case everything is alright, null otherwise
      */
-    public static DevModeHandler start(DeploymentConfiguration configuration,
-            File npmFolder, CompletableFuture<Void> waitFor) {
-        return start(0, configuration, npmFolder, waitFor);
+    public static DevModeHandler start(Lookup lookup, File npmFolder,
+            CompletableFuture<Void> waitFor) {
+        return start(0, lookup, npmFolder, waitFor);
     }
 
     /**
@@ -197,16 +198,17 @@ public final class DevModeHandler implements RequestHandler {
      *
      * @return the instance in case everything is alright, null otherwise
      */
-    public static DevModeHandler start(int runningPort,
-            DeploymentConfiguration configuration, File npmFolder,
-            CompletableFuture<Void> waitFor) {
+    public static DevModeHandler start(int runningPort, Lookup lookup,
+            File npmFolder, CompletableFuture<Void> waitFor) {
+        DeploymentConfiguration configuration = lookup
+                .lookup(DeploymentConfiguration.class);
         if (configuration.isProductionMode()
                 || !configuration.enableDevServer()) {
             return null;
         }
         if (atomicHandler.get() == null) {
-            atomicHandler.compareAndSet(null, createInstance(runningPort,
-                    configuration, npmFolder, waitFor));
+            atomicHandler.compareAndSet(null,
+                    createInstance(runningPort, lookup, npmFolder, waitFor));
         }
         return getDevModeHandler();
     }
@@ -269,11 +271,9 @@ public final class DevModeHandler implements RequestHandler {
         }
     }
 
-    private static DevModeHandler createInstance(int runningPort,
-            DeploymentConfiguration configuration, File npmFolder,
-            CompletableFuture<Void> waitFor) {
-        return new DevModeHandler(configuration, runningPort, npmFolder,
-                waitFor);
+    private static DevModeHandler createInstance(int runningPort, Lookup lookup,
+            File npmFolder, CompletableFuture<Void> waitFor) {
+        return new DevModeHandler(lookup, runningPort, npmFolder, waitFor);
     }
 
     /**
