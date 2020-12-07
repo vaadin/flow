@@ -45,11 +45,12 @@ const glob = require('glob');
  *
  * Note! there can be multiple copy-rules with target folders for one npm package asset.
  *
- * @param {json} themeProperties
- * @param {string} projectStaticAssetsOutputFolder
+ * @param {string} themeName name of the theme we are copying assets for
+ * @param {json} themeProperties theme properties json with data on assets
+ * @param {string} projectStaticAssetsOutputFolder project output folder where we copy assets to under theme/[themeName]
  * @param {logger} theme plugin logger
  */
-function copyStaticAssets(themeProperties, projectStaticAssetsOutputFolder, logger) {
+function copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputFolder, logger) {
 
   const assets = themeProperties['assets'];
   if (!assets) {
@@ -66,7 +67,7 @@ function copyStaticAssets(themeProperties, projectStaticAssetsOutputFolder, logg
     Object.keys(copyRules).forEach((copyRule) => {
       const nodeSources = path.resolve('node_modules/', module, copyRule);
       const files = glob.sync(nodeSources, { nodir: true });
-      const targetFolder = path.resolve(projectStaticAssetsOutputFolder, copyRules[copyRule]);
+      const targetFolder = path.resolve(projectStaticAssetsOutputFolder, "theme", themeName, copyRules[copyRule]);
 
       fs.mkdirSync(targetFolder, {
         recursive: true
