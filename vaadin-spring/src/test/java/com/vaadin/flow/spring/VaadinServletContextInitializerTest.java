@@ -6,7 +6,6 @@ import javax.servlet.ServletContextListener;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -17,6 +16,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -31,6 +31,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.task.TaskExecutor;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -63,19 +64,12 @@ public class VaadinServletContextInitializerTest {
     @Mock
     private DeploymentConfiguration deploymentConfiguration;
 
-    private Properties properties;
-
     @Mock
     private TaskExecutor executor;
 
     @Before
     public void init() {
         MockitoAnnotations.openMocks(this);
-
-        properties = new Properties();
-
-        Mockito.when(deploymentConfiguration.getInitParameters())
-                .thenReturn(properties);
 
         Mockito.when(applicationContext.getBean(TaskExecutor.class))
                 .thenReturn(executor);
@@ -95,6 +89,8 @@ public class VaadinServletContextInitializerTest {
 
         VaadinServletContextInitializer vaadinServletContextInitializer = getStubbedVaadinServletContextInitializer();
 
+        ArgumentCaptor<Lookup> capture = ArgumentCaptor.forClass(Lookup.class);
+
         // Simulate Spring context start only
         vaadinServletContextInitializer.onStartup(servletContext);
 
@@ -113,7 +109,10 @@ public class VaadinServletContextInitializerTest {
         }
 
         Mockito.verify(applicationContext).getBean(TaskExecutor.class);
-        Assert.assertSame(executor, properties.get(Executor.class));
+        Mockito.verify(servletContext).setAttribute(
+                Mockito.eq(Lookup.class.getName()), capture.capture());
+        Lookup lookup = capture.getValue();
+        Assert.assertSame(executor, lookup.lookup(Executor.class));
     }
 
     @Test

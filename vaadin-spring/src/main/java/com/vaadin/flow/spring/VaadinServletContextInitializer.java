@@ -238,16 +238,29 @@ public class VaadinServletContextInitializer
                 return;
             }
 
+            Set<Class<?>> classes = findByAnnotationOrSuperType(
+                    getDefaultPackages(), appContext, Collections.emptyList(),
+                    getServiceTypes()).collect(Collectors.toSet());
+            process(classes, event.getServletContext());
+        }
+
+        @Override
+        protected Collection<Class<?>> getServiceTypes() {
             // intentionally make annotation unmodifiable empty list because
             // LookupInitializer doesn't have annotations at the moment
             List<Class<? extends Annotation>> annotations = Collections
                     .emptyList();
             List<Class<?>> types = new ArrayList<>();
             collectHandleTypes(LookupInitializer.class, annotations, types);
-            Set<Class<?>> classes = findByAnnotationOrSuperType(
-                    getDefaultPackages(), appContext, Collections.emptyList(),
-                    types).collect(Collectors.toSet());
-            process(classes, event.getServletContext());
+            return types;
+        }
+
+        @Override
+        protected Lookup createLookup(
+                Map<Class<?>, Collection<Object>> services) {
+            services.put(Executor.class, Collections
+                    .singleton(appContext.getBean(TaskExecutor.class)));
+            return super.createLookup(services);
         }
 
     }
@@ -419,8 +432,6 @@ public class VaadinServletContextInitializer
                     || isDevModeAlreadyStarted(event.getServletContext())) {
                 return;
             }
-            config.getInitParameters().put(Executor.class,
-                    appContext.getBean(TaskExecutor.class));
 
             Set<String> basePackages;
             if (isScanOnlySet()) {
