@@ -18,6 +18,7 @@ package com.vaadin.flow.server.communication;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.net.URI;
@@ -358,8 +359,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 if ("src".equals(attribute.getKey())) {
                     path = modifyPath(basePath, path);
                 }
-                writer.append("'").append(URLEncoder.encode(path,
-                        StandardCharsets.UTF_8.toString())).append("'");
+                writer.append("'").append(path).append("'");
             }
             writer.append(");");
         }
@@ -381,16 +381,28 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * @param path
      *            original resource path
      * @return new resource path, relative to basePath
+     * @throws UnsupportedEncodingException
      */
-    protected String modifyPath(String basePath, String path) {
+    protected String modifyPath(String basePath, String path)
+            throws UnsupportedEncodingException {
         int vaadinIndex = path.indexOf(Constants.VAADIN_MAPPING);
+        String suffix = path;
         if (vaadinIndex > 0) {
-            String subPath = path.substring(vaadinIndex);
-            return URI.create(basePath + subPath).toString();
-        } else {
-            return URI.create(basePath + path).toString();
-
+            suffix = suffix.substring(vaadinIndex);
         }
+        int queryIndex = suffix.indexOf('?');
+        if (queryIndex > 0) {
+            suffix = encode(suffix.substring(0, queryIndex)) + '?'
+                    + encode(suffix.substring(queryIndex + 1));
+        }
+        return URI.create(basePath + suffix).toString();
+    }
+
+    private String encode(String str) throws UnsupportedEncodingException {
+        if (str == null) {
+            return null;
+        }
+        return URLEncoder.encode(str, StandardCharsets.UTF_8.name());
     }
 
     private static String inlineHTML(String html) {

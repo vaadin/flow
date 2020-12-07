@@ -113,17 +113,15 @@ public class WebComponentBootstrapHandlerTest {
 
         Element script = head.ownerDocument().createElement("script");
         head.appendChild(script);
-        script.attr("src", "foo%27bar%22");
+        script.attr("src", "foo'bar %27?baz%22");
 
         VaadinResponse response = getMockResponse(stream);
         handler.writeBootstrapPage("", response, head, "");
 
         String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
 
-        System.out.println(resultingScript);
-
         MatcherAssert.assertThat(resultingScript,
-                CoreMatchers.containsString("foo%2527bar%2522"));
+                CoreMatchers.containsString("foo%27bar+%2527?baz%2522"));
     }
 
     @Test
