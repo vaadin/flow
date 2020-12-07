@@ -199,9 +199,7 @@ public class PwaTestIT extends ChromeDeviceTest {
         open();
 
         // test only in production mode
-        boolean devMode = (boolean) getCommandExecutor().executeScript(
-                "return window.Vaadin && !!window.Vaadin.developmentMode;");
-        Assume.assumeFalse(devMode);
+        Assume.assumeTrue(isProductionMode());
 
         byte[] uncompressed = readBytesFromUrl(getRootURL() + "/sw.js");
         byte[] compressed = readBytesFromUrl(getRootURL() + "/sw.js.gz");
@@ -271,5 +269,10 @@ public class PwaTestIT extends ChromeDeviceTest {
         }
         buffer.flush();
         return buffer.toByteArray();
+    }
+
+    private boolean isProductionMode() throws IOException {
+        JsonObject stats = readJsonFromUrl(getRootURL() + "/VAADIN/stats.json?v-r=init");
+        return stats.getObject("appConfig").getBoolean("productionMode");
     }
 }
