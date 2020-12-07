@@ -28,6 +28,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -35,14 +37,12 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.mobile.NetworkConnection;
 
-import com.google.gwt.thirdparty.json.JSONException;
-import com.google.gwt.thirdparty.json.JSONObject;
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
 public class PwaTestIT extends ChromeDeviceTest {
 
     @Test
-    public void testPwaResources() throws IOException, JSONException {
+    public void testPwaResources() throws IOException {
         open();
         WebElement head = findElement(By.tagName("head"));
 
@@ -83,7 +83,7 @@ public class PwaTestIT extends ChromeDeviceTest {
         String href = elements.get(0).getAttribute("href");
         Assert.assertTrue(href + " didn't respond with resource", exists(href));
         // Verify user values in manifest.webmanifest
-        JSONObject manifest = readJsonFromUrl(href);
+        JsonObject manifest = readJsonFromUrl(href);
         Assert.assertEquals(ParentLayout.PWA_NAME, manifest.getString("name"));
         Assert.assertEquals(ParentLayout.PWA_SHORT_NAME,
                 manifest.getString("short_name"));
@@ -245,8 +245,8 @@ public class PwaTestIT extends ChromeDeviceTest {
         }
     }
 
-    private static JSONObject readJsonFromUrl(String url)
-            throws IOException, JSONException {
-        return new JSONObject(readStringFromUrl(url));
+    private static JsonObject readJsonFromUrl(String url)
+            throws IOException {
+        return Json.parse(readStringFromUrl(url));
     }
 }
