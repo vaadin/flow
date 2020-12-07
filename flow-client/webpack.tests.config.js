@@ -15,7 +15,8 @@ module.exports = {
     form_index: "./src/test/frontend/form/IndexTests.ts",
     form_validation: "./src/test/frontend/form/ValidationTests.ts",
     form_validators: "./src/test/frontend/form/ValidatorsTests.ts",
-    form_model: "./src/test/frontend/form/ModelTests.ts"
+    form_model: "./src/test/frontend/form/ModelTests.ts",
+    deferrable_endpoint: "./src/test/frontend/DeferrableEndpointTest.ts"
   },
   output: {
     filename: "[name].spec.js",
