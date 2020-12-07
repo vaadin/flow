@@ -132,6 +132,11 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     }
 
     @Override
+    public void refreshAll() {
+        dataProviderSupplier.get().refreshAll();
+    }
+
+    @Override
     public void setIdentifierProvider(
             IdentifierProvider<T> identifierProvider) {
         Objects.requireNonNull(identifierProvider,
