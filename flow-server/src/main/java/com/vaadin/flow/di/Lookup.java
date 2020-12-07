@@ -28,21 +28,31 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 
 /**
- * Provides a way to discover services used by Flow (SPI). Dependency injection
- * frameworks can provide an implementation that manages instances according to
- * the conventions of that framework.
+ * Provides a way to discover services used by Flow (SPI).
  * <p>
- * This is similar to the {@link Instantiator} class but a {@link Lookup}
- * instance is available even before a {@link VaadinService} instance is created
- * (and as a consequence there is no yet an {@link Instantiator} instance).
+ * A lookup instance may be created based on a service, see
+ * {@link #of(Object, Class...)}. Several lookup instances may be combined via
+ * {@link #compose(Lookup, Lookup)} method which allows to make a lookup
+ * instance based on a number of services. The resulting lookup instance may be
+ * used in internal Flow code to transfer data in the unified way which allows
+ * to change the available data types during the code evolution without changing
+ * the internal API (like arguments in methods and constructors).
  * <p>
- * The {@link Lookup} instance and the {@link VaadinContext} has one to one
- * mapping and is available even before a {@link DeploymentConfiguration} ( and
- * {@link VaadinServlet}) is created. So this is kind of a singleton for a Web
- * Application. As a consequence it provides and may return only web app
- * singleton services.
+ * There is the "global" application {@link Lookup} instance and the
+ * {@link VaadinContext}. It has one to one mapping and is available even before
+ * a {@link DeploymentConfiguration} (and {@link VaadinServlet}) is created. So
+ * this is kind of a singleton for a Web Application. As a consequence it
+ * provides and may return only web app singleton services. Dependency injection
+ * frameworks can provide an implementation for the application {@code Lookup}
+ * which manages instances according to the conventions of that framework.
  * <p>
- * This is the code which one may use to get the {@link Lookup} instance:
+ * The application {@code Lookup} is similar to the {@link Instantiator} class
+ * but a {@link Lookup} instance is available even before a
+ * {@link VaadinService} instance is created (and as a consequence there is no
+ * yet an {@link Instantiator} instance).
+ * <p>
+ * This is the code which one may use to get the application {@link Lookup}
+ * instance:
  * 
  * <pre>
  * <code>
