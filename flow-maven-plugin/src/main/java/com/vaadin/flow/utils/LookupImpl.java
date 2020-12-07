@@ -43,6 +43,9 @@ public class LookupImpl implements Lookup {
 
     @Override
     public <T> T lookup(Class<T> serviceClass) {
+        if (ClassFinder.class.equals(serviceClass)) {
+            return (T) this.classFinder;
+        }
         return lookupAll(serviceClass).stream().findFirst().orElse(null);
     }
 
