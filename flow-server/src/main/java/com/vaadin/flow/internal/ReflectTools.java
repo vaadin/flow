@@ -826,7 +826,8 @@ public class ReflectTools implements Serializable {
     }
 
     /**
-     * Check if a class can be instantiated as a service or not.
+     * Check if a class can be instantiated via its default 
+     * constructor via reflection.
      * 
      * @param clazz
      *            the class to check

@@ -32,9 +32,9 @@ public interface EndpointGeneratorTaskFactory {
      * @param applicationProperties
      *            application properties file.
      * @param openApi
-     *            openApi json file.
+     *            openApi json file. not {@code null}
      * @param outputFolder
-     *            the output folder.
+     *            the output folder. not {@code null}
      * @param frontendDirectory
      *            the frontend folder.
      * @return an endpoint tasks for generating TypeScript files for endpoints.
@@ -47,12 +47,12 @@ public interface EndpointGeneratorTaskFactory {
      * @param properties
      *            application properties file.
      * @param javaSourceFolder
-     *            source paths of the project containing Vaadin Endpoint
+     *            source paths of the project containing Vaadin Endpoint. not {@code null}
      * @param classLoader
      *            The class loader which should be used to resolved types in the
-     *            source paths.
+     *            source paths. not {@code null}
      * @param output
-     *            the output path of the generated json file.
+     *            the output path of the generated json file. not {@code null}
      * @return an endpoint task that generates open api json file.
      */
     TaskGenerateOpenApi createTaskGenerateOpenApi(File properties, File javaSourceFolder, ClassLoader classLoader, File output);
