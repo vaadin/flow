@@ -208,7 +208,7 @@ public class PwaTestIT extends ChromeDeviceTest {
         byte[] compressed = readBytesFromUrl(getRootURL() + "/sw.js.gz");
         byte[] decompressed = IOUtils.readAllBytes(
                 new GZIPInputStream(new ByteArrayInputStream(compressed)));
-        Assert.assertArrayEquals(decompressed, uncompressed);
+        Assert.assertArrayEquals(uncompressed, decompressed);
     }
 
     @Override
