@@ -65,6 +65,7 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
@@ -375,23 +376,26 @@ public class DevModeInitializer
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec).build();
 
+        Lookup lookup = vaadinContext.getAttribute(Lookup.class);
+
         // Check whether executor is provided by the caller (framework)
-        Object service = config.getInitParameters().get(Executor.class);
+        Executor service = lookup.lookup(Executor.class);
 
         Runnable runnable = () -> runNodeTasks(vaadinContext, tokenFileData,
                 tasks);
 
         CompletableFuture<Void> nodeTasksFuture;
-        if (service instanceof Executor) {
-            // if there is an executor use it to run the task
-            nodeTasksFuture = CompletableFuture.runAsync(runnable,
-                    (Executor) service);
-        } else {
+        if (service == null) {
             nodeTasksFuture = CompletableFuture.runAsync(runnable);
-
+        } else {
+            // if there is an executor use it to run the task
+            nodeTasksFuture = CompletableFuture.runAsync(runnable, service);
         }
 
-        DevModeHandler.start(config, builder.npmFolder, nodeTasksFuture);
+        DevModeHandler.start(
+                Lookup.compose(lookup,
+                        Lookup.of(config, DeploymentConfiguration.class)),
+                builder.npmFolder, nodeTasksFuture);
     }
 
     /**
