@@ -15,6 +15,9 @@ const ApplicationThemePlugin = require('@vaadin/application-theme-plugin');
 
 const path = require('path');
 
+// this matches /theme/my-theme/ and is used to check css url handling and file path build.
+const themePartRegex = /(\\|\/)theme\1[\s\S]*?\1/;
+
 // the folder of app resources:
 //  - flow templates for classic Flow
 //  - client code with index.html and index.[ts/js] for CCDM
@@ -179,7 +182,9 @@ module.exports = {
             options: {
               url: (url, resourcePath) => {
                 // Only translate files from node_modules
-                return resourcePath.includes('/node_modules/');
+                const resolve = resourcePath.match(/(\\|\/)node_modules\1/);
+                const themeResource = resourcePath.match(themePartRegex) && url.match(/^theme\/[\s\S]*?\//);
+                return resolve || themeResource;
               },
               // use theme-loader to also handle any imports in css files
               importLoaders: 1
@@ -194,6 +199,23 @@ module.exports = {
             }
           }
         ],
+      },
+      {
+        // File-loader only copies files used as imports in .js files or handled by css-loader
+        test: /\.(png|gif|jpg|jpeg|svg|eot|woff|woff2|ttf)$/,
+        use: [{
+          loader: 'file-loader',
+          options: {
+            outputPath: 'static/',
+            name(resourcePath, resourceQuery) {
+              const urlResource = resourcePath.substring(frontendFolder.length);
+              if(urlResource.match(themePartRegex)){
+                return /^(\\|\/)theme\1[\s\S]*?\1(.*)/.exec(urlResource)[2].replace(/\\/, "/");
+              }
+              return '[path][name].[ext]';
+            }
+          }
+        }],
       },
     ]
   },

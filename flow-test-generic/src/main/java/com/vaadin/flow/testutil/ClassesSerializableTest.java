@@ -16,9 +16,6 @@
 
 package com.vaadin.flow.testutil;
 
-import static java.lang.reflect.Modifier.isStatic;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -37,6 +34,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Test;
+
+import static java.lang.reflect.Modifier.isStatic;
+import static org.junit.Assert.fail;
 
 /**
  * A superclass for serialization testing. The test scans all the classpath and
@@ -71,7 +71,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
 
                 "com\\.vaadin\\.flow\\.data\\.provider\\.InMemoryDataProviderHelpers",
                 "com\\.vaadin\\.flow\\.di\\.InstantiatorFactory",
-                "com\\.vaadin\\.flow\\.di\\.Lookup",
+                "com\\.vaadin\\.flow\\.di\\.Lookup(\\$.*)?",
                 "com\\.vaadin\\.flow\\.di\\.ResourceProvider",
                 "com\\.vaadin\\.flow\\.dom\\.ElementConstants",
                 "com\\.vaadin\\.flow\\.component\\.board\\.internal\\.FunctionCaller",
