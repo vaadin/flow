@@ -1,0 +1,9 @@
+/* This file is for testing CSS loading by `@CssImport` */
+
+html {
+    --lumo-font-size-m: 10px;
+}
+
+p.css-import {
+    color: rgba(255, 0, 0, 1);
+}
