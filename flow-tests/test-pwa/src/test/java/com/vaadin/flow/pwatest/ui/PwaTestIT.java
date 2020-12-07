@@ -15,10 +15,7 @@
  */
 package com.vaadin.flow.pwatest.ui;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
@@ -27,10 +24,12 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -38,6 +37,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.mobile.NetworkConnection;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
+import sun.misc.IOUtils;
 
 public class PwaTestIT extends ChromeDeviceTest {
 
@@ -195,6 +195,22 @@ public class PwaTestIT extends ChromeDeviceTest {
         }
     }
 
+    @Test
+    public void compareUncompressedAndCompressedServiceWorkerJS() throws IOException {
+        open();
+
+        // test only in production mode
+        boolean devMode = (boolean) getCommandExecutor().executeScript(
+                "return window.Vaadin && !!window.Vaadin.developmentMode;");
+        Assume.assumeFalse(devMode);
+
+        byte[] uncompressed = readBytesFromUrl(getRootURL() + "/sw.js");
+        byte[] compressed = readBytesFromUrl(getRootURL() + "/sw.js.gz");
+        byte[] decompressed = IOUtils.readAllBytes(
+                new GZIPInputStream(new ByteArrayInputStream(compressed)));
+        Assert.assertArrayEquals(decompressed, uncompressed);
+    }
+
     @Override
     protected String getTestPath() {
         return "";
@@ -248,5 +264,11 @@ public class PwaTestIT extends ChromeDeviceTest {
     private static JsonObject readJsonFromUrl(String url)
             throws IOException {
         return Json.parse(readStringFromUrl(url));
+    }
+
+    private static byte[] readBytesFromUrl(String url) throws IOException {
+        try (InputStream is = new URL(url).openStream()) {
+            return IOUtils.readAllBytes(is);
+        }
     }
 }
