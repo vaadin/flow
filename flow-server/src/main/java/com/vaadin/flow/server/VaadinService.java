@@ -280,11 +280,11 @@ public abstract class VaadinService implements Serializable {
 
             requestHandlers = Collections.unmodifiableCollection(handlers);
 
-            dependencyFilters = Stream
-                    .concat(instantiator.getDependencyFilters(
+            dependencyFilters = Collections.unmodifiableCollection(
+                    Stream.concat(instantiator.getDependencyFilters(
                             event.getAddedDependencyFilters()),
                             new BundleFilterFactory().createFilters(this))
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toList()));
             bootstrapListeners = instantiator
                     .getBootstrapListeners(event.getAddedBootstrapListeners())
                     .collect(Collectors.toList());
