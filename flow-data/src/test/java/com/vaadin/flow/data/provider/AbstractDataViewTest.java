@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
@@ -86,6 +87,19 @@ public class AbstractDataViewTest {
                 .fireEvent(component, new ItemCountChangeEvent<>(component, 10, false));
 
         Assert.assertEquals(10, fired.get());
+    }
+
+    @Test
+    public void refreshAll_listenersNotified() {
+        AtomicReference<DataChangeEvent<Item>> refreshAllEvent =
+                new AtomicReference<>();
+        dataProvider.addDataProviderListener(event -> {
+            Assert.assertNull(refreshAllEvent.get());
+            refreshAllEvent.set(event);
+        });
+        dataView.refreshAll();
+        Assert.assertNotNull(refreshAllEvent.get());
+        Assert.assertEquals(dataProvider, refreshAllEvent.get().getSource());
     }
 
     /**
