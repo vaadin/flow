@@ -5,3 +5,4 @@ $wnd.Vaadin.registrations.push({
     is: '@vaadin/@Deferrable',
     version: /* updated-by-script */ '6.0-SNAPSHOT'
 });
+export {};
