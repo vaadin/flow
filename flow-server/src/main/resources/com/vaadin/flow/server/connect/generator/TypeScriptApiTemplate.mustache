@@ -39,6 +39,8 @@ So `// @ts-ignore` is used for now to mute this error. The consequences are:
 import client from '{{vaadinConnectDefaultClientPath}}';
 {{#vendorExtensions.x-vaadin-connect-deferrable}}
 // @ts-ignore
+import '@vaadin/flow-frontend/DeferrableEndpoint';
+// @ts-ignore
 import { DeferrableResult } from '@vaadin/flow-frontend/Connect';
 {{/vendorExtensions.x-vaadin-connect-deferrable}}
 {{#each imports}}
