@@ -18,7 +18,7 @@ package com.vaadin.flow.pwatest.ui;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -37,7 +37,6 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.mobile.NetworkConnection;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
-import sun.misc.IOUtils;
 
 public class PwaTestIT extends ChromeDeviceTest {
 
@@ -206,7 +205,7 @@ public class PwaTestIT extends ChromeDeviceTest {
 
         byte[] uncompressed = readBytesFromUrl(getRootURL() + "/sw.js");
         byte[] compressed = readBytesFromUrl(getRootURL() + "/sw.js.gz");
-        byte[] decompressed = IOUtils.readAllBytes(
+        byte[] decompressed = readAllBytes(
                 new GZIPInputStream(new ByteArrayInputStream(compressed)));
         Assert.assertArrayEquals(uncompressed, decompressed);
     }
@@ -249,16 +248,7 @@ public class PwaTestIT extends ChromeDeviceTest {
     }
 
     private static String readStringFromUrl(String url) throws IOException {
-        try (InputStream is = new URL(url).openStream()) {
-            BufferedReader rd = new BufferedReader(
-                    new InputStreamReader(is, Charset.forName("UTF-8")));
-            StringBuilder sb = new StringBuilder();
-            int cp;
-            while ((cp = rd.read()) != -1) {
-                sb.append((char) cp);
-            }
-            return sb.toString();
-        }
+        return new String(readAllBytes(new URL(url).openStream()), StandardCharsets.UTF_8);
     }
 
     private static JsonObject readJsonFromUrl(String url)
@@ -268,7 +258,18 @@ public class PwaTestIT extends ChromeDeviceTest {
 
     private static byte[] readBytesFromUrl(String url) throws IOException {
         try (InputStream is = new URL(url).openStream()) {
-            return IOUtils.readAllBytes(is);
+            return readAllBytes(is);
         }
+    }
+
+    private static byte[] readAllBytes(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        int count;
+        byte[] data = new byte[1024];
+        while ((count = inputStream.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, count);
+        }
+        buffer.flush();
+        return buffer.toByteArray();
     }
 }
