@@ -327,6 +327,9 @@ The distribution package is built and installed into the local Maven repository 
 1. mvn install
 
 ## Running SuperDevMode
+
+**NOTE The following instructions are outdated and need further tweaking to get SDM running.**
+
 Some flow internals use GWT in the client code. superDevMode allows to reload GWT changes on the fly, but it requires some setup first.
 
 To start superDevMode do the following:
