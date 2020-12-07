@@ -22,6 +22,8 @@ import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -356,7 +358,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 if ("src".equals(attribute.getKey())) {
                     path = modifyPath(basePath, path);
                 }
-                writer.append("'").append(path).append("'");
+                writer.append("'").append(URLEncoder.encode(path,
+                        StandardCharsets.UTF_8.toString())).append("'");
             }
             writer.append(");");
         }
