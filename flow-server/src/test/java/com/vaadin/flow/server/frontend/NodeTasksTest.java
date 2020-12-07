@@ -16,6 +16,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -43,8 +44,10 @@ public class NodeTasksTest {
 
     @Test
     public void should_UseDefaultFolders()throws Exception {
-        Builder builder = new Builder(Mockito.mock(Lookup.class),
-                new DefaultClassFinder(this.getClass().getClassLoader()),
+        Lookup mockedLookup = Mockito.mock(Lookup.class);
+        Mockito.doReturn(new DefaultClassFinder(this.getClass().getClassLoader()))
+                .when(mockedLookup).lookup(ClassFinder.class);
+        Builder builder = new Builder(mockedLookup,
                 new File(userDir))
             .enablePackagesUpdate(false)
             .enableImportsUpdate(true)
@@ -66,8 +69,10 @@ public class NodeTasksTest {
         System.setProperty(PARAM_FRONTEND_DIR, "my_custom_sources_folder");
         System.setProperty(PARAM_GENERATED_DIR, "my/custom/generated/folder");
 
-        Builder builder = new Builder(Mockito.mock(Lookup.class),
-                new DefaultClassFinder(this.getClass().getClassLoader()),
+        Lookup mockedLookup = Mockito.mock(Lookup.class);
+        Mockito.doReturn(new DefaultClassFinder(this.getClass().getClassLoader()))
+                .when(mockedLookup).lookup(ClassFinder.class);
+        Builder builder = new Builder(mockedLookup,
                 new File(userDir))
             .enablePackagesUpdate(false)
             .enableImportsUpdate(true)
@@ -86,8 +91,10 @@ public class NodeTasksTest {
     @Test
     public void should_SetIsClientBootstrapMode_When_EnableClientSideBootstrapMode()
             throws ExecutionFailedException, IOException {
-        Builder builder = new Builder(Mockito.mock(Lookup.class),
-                new DefaultClassFinder(this.getClass().getClassLoader()),
+        Lookup mockedLookup = Mockito.mock(Lookup.class);
+        Mockito.doReturn(new DefaultClassFinder(this.getClass().getClassLoader()))
+                .when(mockedLookup).lookup(ClassFinder.class);
+        Builder builder = new Builder(mockedLookup,
                 new File(userDir))
                         .enablePackagesUpdate(false)
                         .withWebpack(new File(userDir, TARGET + "classes"),

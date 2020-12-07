@@ -163,7 +163,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         ClassFinder classFinder = getClassFinder(project);
         Lookup lookup= createLookup(classFinder);
         // @formatter:off
-        new NodeTasks.Builder(lookup, classFinder,
+        new NodeTasks.Builder(lookup,
                 npmFolder, generatedFolder, frontendDirectory)
                         .runNpmInstall(runNpmInstall)
                         .useV14Bootstrap(useDeprecatedV14Bootstrapping())

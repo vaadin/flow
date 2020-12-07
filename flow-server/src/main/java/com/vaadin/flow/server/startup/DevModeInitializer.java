@@ -83,6 +83,7 @@ import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 import com.vaadin.flow.theme.NoTheme;
@@ -285,8 +286,11 @@ public class DevModeInitializer
         File flowResourcesFolder = new File(baseDir,
                 DEFAULT_FLOW_RESOURCES_FOLDER);
 
-        Lookup lookup = new VaadinServletContext(context).getAttribute(Lookup.class);
-        Builder builder = new NodeTasks.Builder(lookup, new DevModeClassFinder(classes),
+        VaadinContext vaadinContext = new VaadinServletContext(context);
+        Lookup lookupFromServletConetext = new VaadinServletContext(context).getAttribute(Lookup.class);
+        Lookup lookupForClassFinder = Lookup.of(new DevModeClassFinder(classes), ClassFinder.class);
+        Lookup lookup = Lookup.compose(lookupForClassFinder, lookupFromServletConetext);
+        Builder builder = new NodeTasks.Builder(lookup,
                 new File(baseDir), new File(generatedDir),
                 new File(frontendFolder));
 
@@ -365,7 +369,6 @@ public class DevModeInitializer
         boolean useHomeNodeExec = config.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
 
-        VaadinContext vaadinContext = new VaadinServletContext(context);
         JsonObject tokenFileData = Json.createObject();
         NodeTasks tasks = builder.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
@@ -377,8 +380,6 @@ public class DevModeInitializer
                 .populateTokenFileData(tokenFileData)
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec).build();
-
-        Lookup lookup = vaadinContext.getAttribute(Lookup.class);
 
         // Check whether executor is provided by the caller (framework)
         Executor service = lookup.lookup(Executor.class);

@@ -176,7 +176,10 @@ public class BuildFrontendMojoTest {
 
         Lookup lookup = Mockito.mock(Lookup.class);
         Mockito.doReturn(new EndpointGeneratorTaskFactoryImpl()).when(lookup).lookup(EndpointGeneratorTaskFactory.class);
-        Mockito.doReturn(lookup).when(mojo).createLookup(Mockito.any(ClassFinder.class));
+        Mockito.doAnswer(invocation -> {
+            Mockito.doReturn((ClassFinder)invocation.getArguments()[0]).when(lookup).lookup(ClassFinder.class);
+            return lookup;    
+        }).when(mojo).createLookup(Mockito.any(ClassFinder.class));
     }
 
     @After

@@ -133,13 +133,11 @@ public class NodeTasks implements FallibleCommand {
          *
          * @param lookup
          *            a {@link Lookup} to discover services used by Flow (SPI)
-         * @param classFinder
-         *            a class finder
          * @param npmFolder
          *            folder with the `package.json` file
          */
-        public Builder(Lookup lookup, ClassFinder classFinder, File npmFolder) {
-            this(lookup, classFinder, npmFolder, new File(npmFolder, System
+        public Builder(Lookup lookup, File npmFolder) {
+            this(lookup, npmFolder, new File(npmFolder, System
                     .getProperty(PARAM_GENERATED_DIR, DEFAULT_GENERATED_DIR)));
         }
 
@@ -148,16 +146,14 @@ public class NodeTasks implements FallibleCommand {
          *
          * @param lookup
          *            a {@link Lookup} to discover services used by Flow (SPI)
-         * @param classFinder
-         *            a class finder
          * @param npmFolder
          *            folder with the `package.json` file
          * @param generatedPath
          *            folder where flow generated files will be placed.
          */
-        public Builder(Lookup lookup, ClassFinder classFinder, File npmFolder,
+        public Builder(Lookup lookup, File npmFolder,
                 File generatedPath) {
-            this(lookup, classFinder, npmFolder, generatedPath,
+            this(lookup, npmFolder, generatedPath,
                     new File(npmFolder, System.getProperty(PARAM_FRONTEND_DIR,
                             DEFAULT_FRONTEND_DIR)));
         }
@@ -167,8 +163,6 @@ public class NodeTasks implements FallibleCommand {
          *
          * @param lookup
          *            a {@link Lookup} to discover services used by Flow (SPI)
-         * @param classFinder
-         *            a class finder
          * @param npmFolder
          *            folder with the `package.json` file
          * @param generatedPath
@@ -176,11 +170,11 @@ public class NodeTasks implements FallibleCommand {
          * @param frontendDirectory
          *            a directory with project's frontend files
          */
-        public Builder(Lookup lookup, ClassFinder classFinder, File npmFolder,
+        public Builder(Lookup lookup, File npmFolder,
                 File generatedPath, File frontendDirectory) {
-            this.classFinder = classFinder;
-            this.npmFolder = npmFolder;
             this.lookup = lookup;
+            this.classFinder = lookup.lookup(ClassFinder.class);
+            this.npmFolder = npmFolder;
             this.generatedFolder = generatedPath.isAbsolute() ? generatedPath
                     : new File(npmFolder, generatedPath.getPath());
             this.frontendDirectory = frontendDirectory.isAbsolute()

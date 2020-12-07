@@ -160,6 +160,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     }
 
     protected Lookup createLookup(ClassFinder classFinder){
-        return new LookupImpl(classFinder);
+        return Lookup.compose(Lookup.of(classFinder, ClassFinder.class), new LookupImpl(classFinder)) ;
     }
 }

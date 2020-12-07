@@ -12,6 +12,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
 import org.junit.Before;
@@ -46,10 +47,9 @@ public class NodeTasksEndpointTest {
 
         Lookup mockLookup = Mockito.mock(Lookup.class);
         Mockito.doReturn(new EndpointGeneratorTaskFactoryImpl()).when(mockLookup).lookup(EndpointGeneratorTaskFactory.class);
-        Builder builder = new Builder(
-                mockLookup,
-                new DefaultClassFinder(
-                    Collections.singleton(ConnectEndpointsForTesting.class)), dir)
+        Mockito.doReturn(new DefaultClassFinder(
+            Collections.singleton(ConnectEndpointsForTesting.class))).when(mockLookup).lookup(ClassFinder.class);
+        Builder builder = new Builder(mockLookup, dir)
                         .enablePackagesUpdate(false)
                         .enableImportsUpdate(false)
                         .withEmbeddableWebComponents(false)
