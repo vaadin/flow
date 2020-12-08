@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.Assert;
@@ -97,6 +98,44 @@ public class WebComponentBootstrapHandlerTest {
     }
 
     @Test
+    public void writeBootstrapPage_scriptSrcHasNoDoubleQuotes_attributeIsTransferred()
+            throws IOException {
+        WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+        Element head = new Document("").normalise().head();
+
+        Element script = head.ownerDocument().createElement("script");
+        head.appendChild(script);
+        script.attr("src", "foo'bar%20%27?baz%22");
+
+        VaadinResponse response = getMockResponse(stream);
+        handler.writeBootstrapPage("", response, head, "");
+
+        String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
+        MatcherAssert.assertThat(resultingScript,
+                CoreMatchers.containsString("foo'bar%20%27?baz%22"));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void writeBootstrapPage_scriptSrcHasDoubleQuotes_throws()
+            throws IOException {
+        WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+        Element head = new Document("").normalise().head();
+
+        Element script = head.ownerDocument().createElement("script");
+        head.appendChild(script);
+        script.attr("src", "foo\"");
+
+        VaadinResponse response = getMockResponse(stream);
+        handler.writeBootstrapPage("", response, head, "");
+    }
+
+    @Test
     public void writeBootstrapPage_noPWA()
             throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
@@ -154,7 +193,75 @@ public class WebComponentBootstrapHandlerTest {
                 CoreMatchers.not(CoreMatchers.containsString("baz")));
     }
 
-    private VaadinResponse getMockResponse(ByteArrayOutputStream stream) throws IOException {
+    @Test
+    public void writeBootstrapPage_devmodeGizmoIsDisabled()
+            throws IOException, ServiceException {
+        TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
+        VaadinServletService service = new MockVaadinServletService();
+
+        initLookup(service);
+
+        VaadinSession session = new MockVaadinSession(service);
+        session.lock();
+        session.setConfiguration(service.getDeploymentConfiguration());
+        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
+                .getDeploymentConfiguration();
+        config.setEnableDevServer(false);
+
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+        Mockito.when(request.getService()).thenReturn(service);
+        Mockito.when(request.getServletPath()).thenReturn("/");
+        VaadinResponse response = getMockResponse(null);
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(stream);
+
+        handler.synchronizedHandleRequest(session, request, response);
+
+        String result = stream.toString(StandardCharsets.UTF_8.name());
+        Assert.assertTrue(
+                result.contains("\\\"devmodeGizmoEnabled\\\": false"));
+    }
+
+    @Test
+    public void writeBootstrapPage_spepe() throws Exception {
+        WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+        Element head = new Document("").normalise().head();
+
+        VaadinResponse response = getMockResponse(stream);
+        handler.writeBootstrapPage("", response, head, "");
+
+        String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
+    }
+
+    private void initLookup(VaadinServletService service) throws IOException {
+        VaadinContext context = service.getContext();
+        Lookup lookup = Mockito.mock(Lookup.class);
+        context.setAttribute(Lookup.class, lookup);
+
+        ResourceProvider provider = Mockito.mock(ResourceProvider.class);
+
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(provider);
+
+        Mockito.when(provider.getApplicationResource(service,
+                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
+                .thenReturn(WebComponentBootstrapHandlerTest.class
+                        .getClassLoader().getResource(VAADIN_SERVLET_RESOURCES
+                                + STATISTICS_JSON_DEFAULT));
+
+        Mockito.when(provider.getClientResourceAsStream(
+                "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
+                        + "/compile.properties"))
+                .thenAnswer(invocation -> new ByteArrayInputStream(
+                        "jsFile=foo".getBytes(StandardCharsets.UTF_8)));
+    }
+
+    private VaadinResponse getMockResponse(ByteArrayOutputStream stream)
+            throws IOException {
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
         VaadinService service = Mockito.mock(VaadinService.class);
         VaadinContext context = Mockito.mock(VaadinContext.class);
