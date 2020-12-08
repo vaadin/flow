@@ -100,7 +100,6 @@ public class DevModeInitializerTestBase {
         initParams.put(FrontendUtils.PROJECT_BASEDIR, baseDir);
         initParams.put(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
                 enablePnpm.toString());
-        initParams.put(InitParameters.GENERATE_WEB_COMPONENTS, Boolean.FALSE.toString());
 
         Mockito.when(vaadinServletRegistration.getInitParameters())
                 .thenReturn(initParams);

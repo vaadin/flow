@@ -158,10 +158,4 @@ public class InitParameters implements Serializable {
      * component UI imports them as dependencies.
      */
     public static final String COMPILED_WEB_COMPONENTS_PATH = "compiled.web.components.path";
-
-    /**
-     * Configuration for determining if embeddable web components should
-     * be generated. By default they are generated.
-     */
-    public static final String GENERATE_WEB_COMPONENTS = "generateEmbeddableWebComponents";
 }

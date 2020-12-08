@@ -369,8 +369,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Mockito.when(servletContext.getInitParameterNames())
                 .thenReturn(Collections.enumeration(new HashSet<>(Arrays.asList(
                         InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
-                        FrontendUtils.PROJECT_BASEDIR,
-                        InitParameters.GENERATE_WEB_COMPONENTS))));
+                        FrontendUtils.PROJECT_BASEDIR))));
         Mockito.when(
                 servletContext.getInitParameter(FrontendUtils.PROJECT_BASEDIR))
                 .thenReturn(initParams.get(FrontendUtils.PROJECT_BASEDIR));
@@ -378,10 +377,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                 .getInitParameter(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM))
                 .thenReturn(initParams
                         .get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
-        Mockito.when(servletContext
-                .getInitParameter(InitParameters.GENERATE_WEB_COMPONENTS))
-                .thenReturn(initParams
-                        .get(InitParameters.GENERATE_WEB_COMPONENTS));
         devModeInitializer.onStartup(classes, servletContext);
         assertNotNull(DevModeHandler.getDevModeHandler());
     }
