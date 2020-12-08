@@ -22,7 +22,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -89,12 +88,12 @@ import com.vaadin.flow.theme.Theme;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.InitParameters.GENERATE_WEB_COMPONENTS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_APPLICATION_PROPERTIES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_GENERATED_TS_DIR;
@@ -363,6 +362,9 @@ public class DevModeInitializer
         boolean useHomeNodeExec = config.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
 
+        boolean generateEmbeddableWebComponents = config
+                .getBooleanProperty(GENERATE_WEB_COMPONENTS, true);
+
         VaadinContext vaadinContext = new VaadinServletContext(context);
         JsonObject tokenFileData = Json.createObject();
         NodeTasks tasks = builder.enablePackagesUpdate(true)
@@ -373,8 +375,9 @@ public class DevModeInitializer
                         Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                 .enableImportsUpdate(true).runNpmInstall(true)
                 .populateTokenFileData(tokenFileData)
-                .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
-                .withHomeNodeExecRequired(useHomeNodeExec).build();
+                .withEmbeddableWebComponents(generateEmbeddableWebComponents)
+                .enablePnpm(enablePnpm).withHomeNodeExecRequired(useHomeNodeExec)
+                .build();
 
         Lookup lookup = vaadinContext.getAttribute(Lookup.class);
 
