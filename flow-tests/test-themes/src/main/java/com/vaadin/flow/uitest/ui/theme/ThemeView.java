@@ -47,7 +47,7 @@ public class ThemeView extends Div {
         octopuss.setId(OCTOPUSS_ID);
 
         Span faText = new Span("This test is FontAwesome.");
-        faText.setClassName("fab");
+        faText.setClassName("fas fa-coffee");
         faText.setId(FONTAWESOME_ID);
 
         Image snowFlake = new Image(
