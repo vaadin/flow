@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.Assert;
@@ -100,6 +101,44 @@ public class WebComponentBootstrapHandlerTest {
                 .containsString("body {height:100vh;width:100vw;margin:0;}")));
         Assert.assertThat(resultingScript,
                 CoreMatchers.not(CoreMatchers.containsString("http-equiv")));
+    }
+
+    @Test
+    public void writeBootstrapPage_scriptSrcHasNoDoubleQuotes_attributeIsTransferred()
+            throws IOException {
+        WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+        Element head = new Document("").normalise().head();
+
+        Element script = head.ownerDocument().createElement("script");
+        head.appendChild(script);
+        script.attr("src", "foo'bar%20%27?baz%22");
+
+        VaadinResponse response = getMockResponse(stream);
+        handler.writeBootstrapPage("", response, head, "");
+
+        String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
+        MatcherAssert.assertThat(resultingScript,
+                CoreMatchers.containsString("foo'bar%20%27?baz%22"));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void writeBootstrapPage_scriptSrcHasDoubleQuotes_throws()
+            throws IOException {
+        WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+        Element head = new Document("").normalise().head();
+
+        Element script = head.ownerDocument().createElement("script");
+        head.appendChild(script);
+        script.attr("src", "foo\"");
+
+        VaadinResponse response = getMockResponse(stream);
+        handler.writeBootstrapPage("", response, head, "");
     }
 
     @Test
@@ -200,8 +239,6 @@ public class WebComponentBootstrapHandlerTest {
         handler.writeBootstrapPage("", response, head, "");
 
         String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
-
-        System.err.println(resultingScript);
     }
 
     private void initLookup(VaadinServletService service) throws IOException {
