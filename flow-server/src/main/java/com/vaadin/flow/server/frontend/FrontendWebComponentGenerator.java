@@ -19,12 +19,10 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
-import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
 import com.vaadin.flow.theme.Theme;
@@ -81,10 +79,6 @@ public class FrontendWebComponentGenerator implements Serializable {
      */
     public Set<File> generateWebComponents(File outputDirectory,
             ThemeDefinition theme) {
-        Objects.requireNonNull(theme,
-            "Theme should be defined for generated webcomponents."
-                + " Disable generation with the parameter '"
-                + InitParameters.GENERATE_WEB_COMPONENTS + "=false'");
         try {
             final Class<?> writerClass = finder
                     .loadClass(WebComponentModulesWriter.class.getName());
@@ -93,10 +87,10 @@ public class FrontendWebComponentGenerator implements Serializable {
                     .forEach(exporterRelatedClasses::add);
             finder.getSubTypesOf(WebComponentExporterFactory.class.getName())
                     .forEach(exporterRelatedClasses::add);
+            final String themeName = theme == null ? "" : theme.getName();
             return WebComponentModulesWriter.DirectoryWriter
-                    .generateWebComponentsToDirectory(writerClass,
-                            exporterRelatedClasses, outputDirectory, false,
-                            theme.getName());
+                .generateWebComponentsToDirectory(writerClass,
+                    exporterRelatedClasses, outputDirectory, false, themeName);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(
                     "Unable to locate a required class using custom class "
