@@ -78,10 +78,12 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 import com.vaadin.flow.theme.NoTheme;
@@ -284,7 +286,11 @@ public class DevModeInitializer
         File flowResourcesFolder = new File(baseDir,
                 DEFAULT_FLOW_RESOURCES_FOLDER);
 
-        Builder builder = new NodeTasks.Builder(new DevModeClassFinder(classes),
+        VaadinContext vaadinContext = new VaadinServletContext(context);
+        Lookup lookupFromServletConetext = new VaadinServletContext(context).getAttribute(Lookup.class);
+        Lookup lookupForClassFinder = Lookup.of(new DevModeClassFinder(classes), ClassFinder.class);
+        Lookup lookup = Lookup.compose(lookupForClassFinder, lookupFromServletConetext);
+        Builder builder = new NodeTasks.Builder(lookup,
                 new File(baseDir), new File(generatedDir),
                 new File(frontendFolder));
 
@@ -314,7 +320,7 @@ public class DevModeInitializer
 
         builder.useV14Bootstrap(config.useV14Bootstrap());
 
-        if (!config.useV14Bootstrap()) {
+        if (!config.useV14Bootstrap() && isEndpointServiceAvailable(lookup)) {
             String connectJavaSourceFolder = config.getStringProperty(
                     CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
                     Paths.get(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER)
@@ -363,7 +369,6 @@ public class DevModeInitializer
         boolean useHomeNodeExec = config.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
 
-        VaadinContext vaadinContext = new VaadinServletContext(context);
         JsonObject tokenFileData = Json.createObject();
         NodeTasks tasks = builder.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
@@ -375,8 +380,6 @@ public class DevModeInitializer
                 .populateTokenFileData(tokenFileData)
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec).build();
-
-        Lookup lookup = vaadinContext.getAttribute(Lookup.class);
 
         // Check whether executor is provided by the caller (framework)
         Executor service = lookup.lookup(Executor.class);
@@ -398,13 +401,19 @@ public class DevModeInitializer
                 builder.npmFolder, nodeTasksFuture);
     }
 
+    private static boolean isEndpointServiceAvailable(Lookup lookup) {
+        if (lookup == null) {
+            return false;
+        }
+        return lookup.lookup(EndpointGeneratorTaskFactory.class) != null;
+    }
+
     /**
      * Shows whether {@link DevModeHandler} has been already started or not.
      *
-     * @param servletContext
-     *            The servlet context, not <code>null</code>
-     * @return <code>true</code> if {@link DevModeHandler} has already been
-     *         started, <code>false</code> - otherwise
+     * @param servletContext The servlet context, not <code>null</code>
+     * @return <code>true</code> if {@link DevModeHandler} has already been started,
+     *         <code>false</code> - otherwise
      */
     public static boolean isDevModeAlreadyStarted(
             ServletContext servletContext) {

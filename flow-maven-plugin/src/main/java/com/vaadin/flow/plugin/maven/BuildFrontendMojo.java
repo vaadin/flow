@@ -41,11 +41,13 @@ import org.apache.maven.project.MavenProject;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.theme.Theme;
 
 import elemental.json.JsonObject;
@@ -56,10 +58,6 @@ import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
@@ -161,8 +159,11 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         } catch (URISyntaxException e) {
             throw new MojoExecutionException("Failed to parse " + nodeDownloadRoot, e);
         }
+        
+        ClassFinder classFinder = getClassFinder(project);
+        Lookup lookup= createLookup(classFinder);
         // @formatter:off
-        new NodeTasks.Builder(getClassFinder(project),
+        new NodeTasks.Builder(lookup,
                 npmFolder, generatedFolder, frontendDirectory)
                         .runNpmInstall(runNpmInstall)
                         .useV14Bootstrap(useDeprecatedV14Bootstrapping())

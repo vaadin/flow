@@ -825,6 +825,38 @@ public class ReflectTools implements Serializable {
         return Optional.empty();
     }
 
+    /**
+     * Check if a class can be instantiated via its default 
+     * constructor via reflection.
+     * 
+     * @param clazz
+     *            the class to check
+     * @return true if the class can be instantiated, otherwise false
+     */
+    public static boolean isInstantiableService(Class<?> clazz) {
+        if (clazz.isInterface()) {
+          return false;
+        }
+        if (clazz.isSynthetic()) {
+          return false;
+        }
+        if (Modifier.isAbstract(clazz.getModifiers())) {
+          return false;
+        }
+        if (!Modifier.isPublic(clazz.getModifiers())) {
+          return false;
+        }
+        Optional<Constructor<?>> constructor = Stream.of(clazz.getConstructors())
+            .filter(ctor -> ctor.getParameterCount() == 0).findFirst();
+        if (!constructor.isPresent() || !Modifier.isPublic(constructor.get().getModifiers())) {
+          return false;
+        }
+        if (clazz.getEnclosingClass() != null && !Modifier.isStatic(clazz.getModifiers())) {
+          return false;
+        }
+        return true;
+      }
+
     private static List<Field> getConstants(Class<?> staticFields) {
         List<Field> staticFinalFields = new ArrayList<>();
         Field[] declaredFields = staticFields.getDeclaredFields();

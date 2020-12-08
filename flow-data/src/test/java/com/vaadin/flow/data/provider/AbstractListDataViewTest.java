@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.google.common.primitives.Chars;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableComparator;
@@ -168,12 +167,12 @@ public class AbstractListDataViewTest {
         dataProvider = DataProvider.ofItems("b3", "a2", "a1");
         dataView = new ListDataViewImpl(() -> dataProvider, component);
         dataView.addSortComparator(
-                (s1, s2) -> Chars.compare(s1.charAt(0), s2.charAt(0)));
+                (s1, s2) -> Character.valueOf(s1.charAt(0)).compareTo(Character.valueOf(s2.charAt(0))));
         Assert.assertEquals("Unexpected data set order (comparator 1)",
                 "a2,a1,b3",
                 dataView.getItems().collect(Collectors.joining(",")));
         dataView.addSortComparator(
-                (s1, s2) -> Chars.compare(s1.charAt(1), s2.charAt(1)));
+                (s1, s2) -> Character.valueOf(s1.charAt(1)).compareTo(Character.valueOf(s2.charAt(1))));
         Assert.assertEquals("Unexpected data set order (comparator 2)",
                 "a1,a2,b3",
                 dataView.getItems().collect(Collectors.joining(",")));
