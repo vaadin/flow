@@ -49,6 +49,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 
 /**
  * Standard servlet initializer for collecting all SPI implementations.
@@ -58,7 +59,8 @@ import com.vaadin.flow.server.VaadinServletContext;
  *
  */
 @HandlesTypes({ ResourceProvider.class, InstantiatorFactory.class,
-        DeprecatedPolymerPublishedEventHandler.class })
+        DeprecatedPolymerPublishedEventHandler.class,
+        EndpointGeneratorTaskFactory.class })
 public class LookupInitializer
         implements ClassLoaderAwareServletContainerInitializer {
 
