@@ -258,8 +258,8 @@ public class ServletDeployerTest {
 
         ResourceProvider resourceProvider = mock(ResourceProvider.class);
 
-        expect(resourceProvider.getApplicationResources(anyObject(),
-                anyObject())).andReturn(Collections.emptyList()).anyTimes();
+        expect(resourceProvider.getApplicationResources(anyObject()))
+                .andReturn(Collections.emptyList()).anyTimes();
 
         replay(resourceProvider);
 

@@ -35,28 +35,25 @@ public interface ResourceProvider {
 
     /**
      * Gets the resource identified by {@code path} located in the application
-     * bundle (jar) which may be found using the {@code contextClass}.
+     * bundle (jar) which may be found using this resource provider instance.
      * <p>
-     * If the {@code contextClass} doesn't contain any information about
-     * application bundle or there is no resource with the given path then this
-     * method returns {@code null}.
+     * If the provider doesn't contain any information about application bundle
+     * or there is no resource with the given path then this method returns
+     * {@code null}.
      * 
-     * @param contextClass
-     *            a class to find an application bundle
      * @param path
      *            the resource path
      * @return an URL of the resource, may be {@code null}
      */
-    URL getApplicationResource(Class<?> contextClass, String path);
+    URL getApplicationResource(String path);
 
     /**
      * Gets all the resources identified by {@code path} located in in the
-     * application bundle (jar) which may be found using the {@code
-     * contextClass}.
+     * application bundle (jar) which may be found using this resource provider.
      * <p>
-     * If the {@code contextClass} doesn't contain any information about
-     * application bundle or there is no resource with the given path then this
-     * method returns an empty list.
+     * If the provider doesn't contain any information about application bundle
+     * or there is no resource with the given path then this method returns an
+     * empty list.
      * 
      * @param contextClass
      *            a class to find an application bundle @param path the resource
@@ -65,8 +62,7 @@ public interface ResourceProvider {
      * @throws IOException
      *             if there is an I/O error
      */
-    List<URL> getApplicationResources(Class<?> contextClass, String path)
-            throws IOException;
+    List<URL> getApplicationResources(String path) throws IOException;
 
     /**
      * Gets "flow-client" bundle resource identified by the {@code path}.

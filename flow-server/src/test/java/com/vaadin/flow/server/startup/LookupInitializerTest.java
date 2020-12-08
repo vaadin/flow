@@ -164,24 +164,21 @@ public class LookupInitializerTest {
         ResourceProvider resourceProvider = lookup
                 .lookup(ResourceProvider.class);
 
-        // ======== resourceProvider.getApplicationResource(s)(Class, String)
-        URL applicationResource = resourceProvider.getApplicationResource(
-                LookupInitializerTest.class,
-                "resource-provider/some-resource.json");
+        // ======== resourceProvider.getApplicationResource(s)(String)
+        URL applicationResource = resourceProvider
+                .getApplicationResource("resource-provider/some-resource.json");
 
         Assert.assertNotNull(applicationResource);
 
         List<URL> resources = resourceProvider.getApplicationResources(
-                LookupInitializerTest.class,
                 "resource-provider/some-resource.json");
 
         Assert.assertEquals(1, resources.size());
 
         Assert.assertNotNull(resources.get(0));
 
-        URL nonExistent = resourceProvider.getApplicationResource(
-                LookupInitializerTest.class,
-                "resource-provider/non-existent.txt");
+        URL nonExistent = resourceProvider
+                .getApplicationResource("resource-provider/non-existent.txt");
 
         Assert.assertNull(nonExistent);
 

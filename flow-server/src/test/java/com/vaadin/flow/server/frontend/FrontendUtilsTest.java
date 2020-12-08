@@ -286,8 +286,7 @@ public class FrontendUtilsTest {
 
         VaadinServlet servlet = service.getServlet();
 
-        Mockito.verify(provider).getApplicationResource(servlet.getClass(),
-                "foo");
+        Mockito.verify(provider).getApplicationResource("foo");
     }
 
     @Test
@@ -301,8 +300,7 @@ public class FrontendUtilsTest {
 
         VaadinServlet servlet = service.getServlet();
 
-        Mockito.verify(provider).getApplicationResource(servlet.getClass(),
-                "foo");
+        Mockito.verify(provider).getApplicationResource("foo");
     }
 
     private ResourceProvider mockResourceProvider(VaadinService service) {
@@ -360,7 +358,7 @@ public class FrontendUtilsTest {
                 IOUtils.write(content, outputStream, StandardCharsets.UTF_8);
             }
             VaadinServlet servlet = service.getServlet();
-            Mockito.when(provider.getApplicationResource(servlet.getClass(),
+            Mockito.when(provider.getApplicationResource(
                     VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                     .thenReturn(tmpFile.toURI().toURL());
         }

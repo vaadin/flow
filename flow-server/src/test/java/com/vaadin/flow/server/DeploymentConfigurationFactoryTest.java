@@ -485,9 +485,8 @@ public class DeploymentConfigurationFactoryTest {
         DeploymentConfigurationFactory.createInitParameters(
                 DeploymentConfigurationFactoryTest.class, config);
 
-        Mockito.verify(resourceProvider).getApplicationResources(
-                DeploymentConfigurationFactoryTest.class,
-                VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
+        Mockito.verify(resourceProvider)
+                .getApplicationResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
     }
 
     @Test
@@ -513,21 +512,18 @@ public class DeploymentConfigurationFactoryTest {
         };
         URL url = new URL("file", "", -1, "foo.jar!/" + path, handler);
 
-        Mockito.when(resourceProvider.getApplicationResources(
-                DeploymentConfigurationFactoryTest.class, path))
+        Mockito.when(resourceProvider.getApplicationResources(path))
                 .thenReturn(Collections.singletonList(url));
 
-        Mockito.when(resourceProvider.getApplicationResource(
-                DeploymentConfigurationFactoryTest.class,
-                FrontendUtils.WEBPACK_GENERATED))
+        Mockito.when(resourceProvider
+                .getApplicationResource(FrontendUtils.WEBPACK_GENERATED))
                 .thenReturn(tmpFile.toURI().toURL());
 
         DeploymentConfigurationFactory.createInitParameters(
                 DeploymentConfigurationFactoryTest.class, config);
 
-        Mockito.verify(resourceProvider).getApplicationResource(
-                DeploymentConfigurationFactoryTest.class,
-                FrontendUtils.WEBPACK_GENERATED);
+        Mockito.verify(resourceProvider)
+                .getApplicationResource(FrontendUtils.WEBPACK_GENERATED);
 
     }
 
@@ -627,8 +623,8 @@ public class DeploymentConfigurationFactoryTest {
             }
         };
 
-        expect(provider.getApplicationResources(VaadinServlet.class,
-                VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
+        expect(provider
+                .getApplicationResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
                         .andAnswer(() -> Collections.emptyList()).anyTimes();
 
         replay(provider);

@@ -312,8 +312,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
         try {
             json = getResourceFromFile(initParameters);
             if (json == null) {
-                json = getTokenFileFromClassloader(systemPropertyBaseClass,
-                        context);
+                json = getTokenFileFromClassloader(context);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -337,8 +336,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
     }
 
     /**
-     * Gets token file from the classpath using the provided
-     * {@code contextClass} and {@code context}.
+     * Gets token file from the classpath using the provided {@code context}.
      * <p>
      * The {@code contextClass} may be a class which is defined in the Web
      * Application module/bundle and in this case it may be used to get Web
@@ -351,8 +349,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * can't be used to get Web Application resources since they are in
      * different bundles.
      * 
-     * @param contextClass
-     *            a context class whose module may contain the token file
      * @param context
      *            a VaadinContext which may provide information how to get token
      *            file for the web application
@@ -360,8 +356,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @throws IOException
      *             if I/O fails during access to the token file
      */
-    private static String getTokenFileFromClassloader(Class<?> contextClass,
-            VaadinContext context) throws IOException {
+    private static String getTokenFileFromClassloader(VaadinContext context)
+            throws IOException {
         String tokenResource = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
 
         Lookup lookup = context.getAttribute(Lookup.class);
@@ -369,7 +365,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 .lookup(ResourceProvider.class);
 
         List<URL> resources = resourceProvider
-                .getApplicationResources(contextClass, tokenResource);
+                .getApplicationResources(tokenResource);
 
         // Accept resource that doesn't contain
         // 'jar!/META-INF/Vaadin/config/flow-build-info.json'
@@ -380,7 +376,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
             // For no non jar build info, in production mode check for
             // webpack.generated.json if it's in a jar then accept
             // single jar flow-build-info.
-            return getPossibleJarResource(contextClass, context, resources);
+            return getPossibleJarResource(context, resources);
         }
         return resource == null ? null
                 : FrontendUtils.streamToString(resource.openStream());
@@ -395,8 +391,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * Else we will accept any flow-build-info and log a warning that it may not
      * be the correct file, but it's the best we could find.
      */
-    private static String getPossibleJarResource(Class<?> contextClass,
-            VaadinContext context, List<URL> resources) throws IOException {
+    private static String getPossibleJarResource(VaadinContext context,
+            List<URL> resources) throws IOException {
         Objects.requireNonNull(resources);
 
         Lookup lookup = context.getAttribute(Lookup.class);
@@ -406,8 +402,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
         assert !resources
                 .isEmpty() : "Possible jar resource requires resources to be available.";
 
-        URL webpackGenerated = resourceProvider.getApplicationResource(
-                contextClass, FrontendUtils.WEBPACK_GENERATED);
+        URL webpackGenerated = resourceProvider
+                .getApplicationResource(FrontendUtils.WEBPACK_GENERATED);
 
         // If jar!/ exists 2 times for webpack.generated.json then we are
         // running from a jar

@@ -254,8 +254,8 @@ public class WebComponentBootstrapHandlerTest {
         Class<? extends VaadinServlet> servletClass = service.getServlet()
                 .getClass();
 
-        Mockito.when(provider.getApplicationResource(servletClass,
-                Constants.VAADIN_SERVLET_RESOURCES
+        Mockito.when(provider
+                .getApplicationResource(Constants.VAADIN_SERVLET_RESOURCES
                         + Constants.STATISTICS_JSON_DEFAULT))
                 .thenReturn(
                         WebComponentBootstrapHandlerTest.class.getClassLoader()

@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -154,21 +153,21 @@ public class LookupInitializer
         private Map<String, CachedStreamData> cache = new ConcurrentHashMap<>();
 
         @Override
-        public URL getApplicationResource(Class<?> clazz, String path) {
-            return Objects.requireNonNull(clazz).getClassLoader()
+        public URL getApplicationResource(String path) {
+            return ResourceProviderImpl.class.getClassLoader()
                     .getResource(path);
         }
 
         @Override
-        public List<URL> getApplicationResources(Class<?> clazz, String path)
+        public List<URL> getApplicationResources(String path)
                 throws IOException {
-            return Collections.list(Objects.requireNonNull(clazz)
-                    .getClassLoader().getResources(path));
+            return Collections.list(ResourceProviderImpl.class.getClassLoader()
+                    .getResources(path));
         }
 
         @Override
         public URL getClientResource(String path) {
-            return getApplicationResource(ResourceProviderImpl.class, path);
+            return getApplicationResource(path);
         }
 
         @Override

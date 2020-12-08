@@ -1394,8 +1394,8 @@ public class BootstrapHandlerTest {
         Lookup lookup = testUI.getSession().getService().getContext()
                 .getAttribute(Lookup.class);
         ResourceProvider provider = lookup.lookup(ResourceProvider.class);
-        Mockito.when(provider.getApplicationResource(Mockito.any(),
-                Mockito.anyString())).thenReturn(tmpFile.toURI().toURL());
+        Mockito.when(provider.getApplicationResource(Mockito.anyString()))
+                .thenReturn(tmpFile.toURI().toURL());
 
         BootstrapContext bootstrapContext = new BootstrapContext(request, null,
                 session, testUI, this::contextRootRelativePath);

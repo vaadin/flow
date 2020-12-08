@@ -310,8 +310,9 @@ public class MockServletServiceSessionSetup {
                 .thenAnswer(invocation -> new ByteArrayInputStream(
                         "jsFile=foo".getBytes(StandardCharsets.UTF_8)));
 
-        Mockito.when(resourceProvider.getApplicationResource(Mockito.any(),
-                Mockito.anyString())).thenAnswer(invocation -> {
+        Mockito.when(
+                resourceProvider.getApplicationResource(Mockito.anyString()))
+                .thenAnswer(invocation -> {
                     return MockServletServiceSessionSetup.class.getResource(
                             "/" + invocation.getArgumentAt(1, String.class));
                 });
