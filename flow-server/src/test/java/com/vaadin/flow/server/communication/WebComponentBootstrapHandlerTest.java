@@ -120,8 +120,8 @@ public class WebComponentBootstrapHandlerTest {
         handler.writeBootstrapPage("", response, head, "");
 
         String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
-        MatcherAssert.assertThat(resultingScript, CoreMatchers
-                .not(CoreMatchers.containsString("foo'bar %27?baz%22")));
+        MatcherAssert.assertThat(resultingScript,
+                CoreMatchers.containsString("foo'bar%20%27?baz%22"));
     }
 
     @Test(expected = IllegalStateException.class)
