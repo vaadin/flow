@@ -1,9 +1,5 @@
 import {getConnectionIndicator} from "./ConnectionIndicator";
-import {
-  ConnectionState,
-  ConnectionStateChangeListener,
-  ConnectionStateStore
-} from './ConnectionState';
+import {ConnectionState, ConnectionStateChangeListener, ConnectionStateStore} from './ConnectionState';
 
 export interface FlowConfig {
   imports ?: () => void;
@@ -75,8 +71,6 @@ export class Flow {
   // @ts-ignore
   container : HTMLRouterContainer;
 
-  // flag used to inform Testbench whether a server route is in progress
-  private isActive = false;
   private baseRegex = /^\//;
   private appShellTitle: string;
 
@@ -90,7 +84,9 @@ export class Flow {
     $wnd.Vaadin.Flow = $wnd.Vaadin.Flow || {};
     $wnd.Vaadin.Flow.clients = {
       TypeScript: {
-        isActive: () => this.isActive
+        // flag used to inform TB whether a server route is in progress
+        isActive: () =>
+          $wnd.Vaadin.connectionState.state === ConnectionState.LOADING
       }
     };
 
@@ -168,11 +164,11 @@ export class Flow {
     }
     // 'server -> client'
     return new Promise(resolve => {
-      this.loadingStarted();
+      $wnd.Vaadin.connectionState.loadingStarted();
       // The callback to run from server side to cancel navigation
       this.container.serverConnected = (cancel) => {
         resolve(cmd && cancel ? cmd.prevent() : {});
-        this.loadingSucceeded();
+        $wnd.Vaadin.connectionState.loadingSucceeded();
       }
 
       // Call server side to check whether we can leave the view
@@ -185,7 +181,7 @@ export class Flow {
   private async flowNavigate(ctx: NavigationParameters, cmd?: PreventAndRedirectCommands): Promise<HTMLElement> {
     if (this.response) {
       return new Promise(resolve => {
-        this.loadingStarted();
+        $wnd.Vaadin.connectionState.loadingStarted();
         // The callback to run from server side once the view is ready
         this.container.serverConnected = (cancel, redirectContext?: NavigationParameters) => {
           if (cmd && cancel) {
@@ -196,7 +192,7 @@ export class Flow {
             this.container.style.display = '';
             resolve(this.container);
           }
-          this.loadingSucceeded();
+          $wnd.Vaadin.connectionState.loadingSucceeded();
         };
 
         // Call server side to navigate to the given route
@@ -219,7 +215,7 @@ export class Flow {
     if (!this.isFlowClientLoaded()) {
 
       // show flow progress indicator
-      this.loadingStarted();
+      $wnd.Vaadin.connectionState.loadingStarted();
 
       // Initialize server side UI
       this.response = await this.flowInitUi(serverSideRouting);
@@ -262,7 +258,7 @@ export class Flow {
       }
 
       // hide flow progress indicator
-      this.loadingSucceeded();
+      $wnd.Vaadin.connectionState.loadingSucceeded();
     }
     return this.response!;
   }
@@ -367,18 +363,6 @@ export class Flow {
         $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
       }
     });
-  }
-
-  private loadingStarted() {
-    // Make Testbench know that server request is in progress
-    this.isActive = true;
-    $wnd.Vaadin.connectionState.loadingStarted();
-  }
-
-  private loadingSucceeded() {
-    // Make Testbench know that server request has finished
-    this.isActive = false;
-    $wnd.Vaadin.connectionState.loadingSucceeded();
   }
 
   private async offlineStubAction() {

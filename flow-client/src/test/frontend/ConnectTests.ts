@@ -28,7 +28,8 @@ describe('ConnectClient', () => {
   beforeEach(() => {
     const connectionStateStore = new ConnectionStateStore(ConnectionState.CONNECTED);
     (window as any).Vaadin.connectionState = connectionStateStore;
-    localStorage.clear();});
+    localStorage.clear();
+  });
 
   after(() => {
     const $wnd = window as any;
@@ -224,7 +225,10 @@ describe('ConnectClient', () => {
       // @ts-ignore
       const OriginalVaadin = window.Vaadin;
       // @ts-ignore
-      window.Vaadin = {TypeScript: {csrfToken: 'foo'}};
+      window.Vaadin = {
+        TypeScript: {csrfToken: 'foo'},
+        connectionState: (window as any).Vaadin.connectionState
+      };
 
       await client.call('FooEndpoint', 'fooMethod');
 

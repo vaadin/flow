@@ -420,23 +420,17 @@ export class ConnectClient {
     // chain item for our convenience. Always having an ending of the chain
     // this way makes the folding down below more concise.
     const fetchNext: MiddlewareNext =
-      async(context: MiddlewareContext): Promise<Response> => {
-        if ($wnd.Vaadin.connectionState) {
-          $wnd.Vaadin.connectionState.loadingStarted();
-        }
-       return fetch(context.request)
-            .then(response => {
-              if ($wnd.Vaadin.connectionState) {
-                $wnd.Vaadin.connectionState.loadingSucceeded();
-              }
-              return response;
-            })
-            .catch(error => {
-              if ($wnd.Vaadin.connectionState) {
-                $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
-              }
-              return Promise.reject(error);
-            });
+      async (context: MiddlewareContext): Promise<Response> => {
+        $wnd.Vaadin.connectionState.loadingStarted();
+        return fetch(context.request)
+          .then(response => {
+            $wnd.Vaadin.connectionState.loadingSucceeded();
+            return response;
+          })
+          .catch(error => {
+            $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
+            return Promise.reject(error);
+          });
       };
 
     // Assemble the final middlewares array from internal
