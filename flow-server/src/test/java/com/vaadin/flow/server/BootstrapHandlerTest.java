@@ -389,15 +389,6 @@ public class BootstrapHandlerTest {
         context = new BootstrapContext(request, null, session, ui,
                 this::contextRootRelativePath);
         ui.getInternals().setContextRoot(contextRootRelativePath(request));
-
-        Lookup lookup = testUI.getSession().getService().getContext()
-                .getAttribute(Lookup.class);
-        ResourceProvider provider = lookup.lookup(ResourceProvider.class);
-        Mockito.when(provider.getApplicationResource(Mockito.any(),
-                Mockito.anyString()))
-                .thenReturn(BootstrapContextTest.class.getClassLoader()
-                        .getResource(Constants.VAADIN_SERVLET_RESOURCES
-                                + Constants.STATISTICS_JSON_DEFAULT));
     }
 
     private void initUI(UI ui, VaadinRequest request,
