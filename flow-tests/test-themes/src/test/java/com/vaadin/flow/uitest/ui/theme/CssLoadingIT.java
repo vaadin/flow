@@ -17,6 +17,8 @@ package com.vaadin.flow.uitest.ui.theme;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.ParagraphElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -29,9 +31,10 @@ public class CssLoadingIT extends ChromeBrowserTest {
 
     private static final String BLUE_RGBA = "rgba(0, 0, 255, 1)";
     private static final String GREEN_RGBA = "rgba(0, 255, 0, 1)";
+    private static final String STYLESHEET_LUMO_FONT_SIZE_M = " 30px";
 
     @Test
-    public void cssLoadingOrder_StyleSheetIsHigherThanCssImport() {
+    public void StyleSheet_overrides_CssImport() {
         open();
         // @StyleSheet [blue] > page.addStyleSheet() [green] < @CssImport [red]
         Assert.assertEquals(
@@ -41,9 +44,8 @@ public class CssLoadingIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void cssLoadingOrder_addStyleSheetIsHigherThanStyleSheet() {
+    public void addStyleSheet_overrides_StyleSheet() {
         open();
-        // @StyleSheet [blue] > page.addStyleSheet() [green] < @CssImport [red]
         Assert.assertEquals(
                 "Styles from addStyleSheet() should have a higher priority than from @StyleSheet.",
                 BLUE_RGBA,
@@ -52,13 +54,22 @@ public class CssLoadingIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void cssLoadingOrder_addStyleSheetIsHigherThanCssImport() {
+    public void addStyleSheet_overrides_CssImport() {
         open();
-        // @StyleSheet [blue] > page.addStyleSheet() [green] < @CssImport [red]
         Assert.assertEquals(
                 "Styles from addStyleSheet() should have a higher priority than from @CssImport.",
                 GREEN_RGBA,
                 $(ParagraphElement.class).id(CSS_IMPORT__PAGE_ADD_STYLESHEET)
                         .getCssValue("color"));
+    }
+
+    @Test
+    public void lumoStyleIsOverridden() {
+        open();
+        WebElement htmlElement = findElement(By.tagName("html"));
+
+        Assert.assertEquals(STYLESHEET_LUMO_FONT_SIZE_M, executeScript(
+                "return getComputedStyle(arguments[0]).getPropertyValue('--lumo-font-size-m')",
+                htmlElement));
     }
 }
