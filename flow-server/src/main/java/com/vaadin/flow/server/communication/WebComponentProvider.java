@@ -198,7 +198,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         } else {
             response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
             return WebComponentGenerator.generateModule(configuration,
-                    getFrontendPath(request), true);
+                    getFrontendPath(request), true, null);
         }
     }
 

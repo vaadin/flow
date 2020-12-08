@@ -434,15 +434,15 @@ public class NodeTasks implements FallibleCommand {
             classFinder = new ClassFinder.CachedClassFinder(
                     builder.classFinder);
 
-            if (builder.generateEmbeddableWebComponents) {
-                FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
-                        classFinder);
-                generator.generateWebComponents(builder.generatedFolder);
-            }
-
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(!builder.useByteCodeScanner, classFinder,
                             builder.generateEmbeddableWebComponents);
+
+            if (builder.generateEmbeddableWebComponents) {
+                FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
+                    classFinder);
+                generator.generateWebComponents(builder.generatedFolder, frontendDependencies.getThemeDefinition());
+            }
 
             commands.add(new TaskGenerateTsFiles(builder.npmFolder, frontendDependencies.getModules()));
         }

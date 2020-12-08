@@ -42,6 +42,7 @@
         <module>test-embedding-generic</module>
         <module>test-embedding-theme-variant</module>
         <module>test-embedding-production-mode</module>
+        <module>test-embedding-application-theme</module>
 
         <!-- compatibility -->
         <module>test-embedding-generic-compatibility</module>
