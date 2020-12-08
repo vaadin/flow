@@ -22,7 +22,7 @@ import {
   AbstractFieldStrategy
 } from "../../../main/resources/META-INF/resources/frontend/form";
 
-import { OrderModel, TestModel, TestEntity } from "./TestModels";
+import {OrderModel, TestModel, TestEntity, Order} from "./TestModels";
 
 import { customElement, html, LitElement, query} from 'lit-element';
 import { PropertyPart, AttributeCommitter } from "lit-html";
@@ -42,7 +42,8 @@ suite("form/Field", () => {
         return this.__value;
       }
       set value(value) {
-        this.__value = value;
+        // Native inputs stringify incoming values
+        this.__value = String(value);
       }
       valueSpy = sinon.spy(this, 'value', ['get', 'set']);
 
@@ -75,6 +76,9 @@ suite("form/Field", () => {
       @query('#customerNickNameField')
       customerNickNameField?: MockTextFieldElement;
 
+      @query('#priorityField')
+      priorityField?: MockTextFieldElement;
+
       render() {
         return html`
           <mock-text-field
@@ -90,6 +94,11 @@ suite("form/Field", () => {
           <mock-text-field
            id="customerNickNameField"
            ...="${field(this.binder.model.customer.nickName)}"
+           ></mock-text-field>
+
+          <mock-text-field
+           id="priorityField"
+           ...="${field(this.binder.model.priority)}"
            ></mock-text-field>
         `;
       }
@@ -244,6 +253,70 @@ suite("form/Field", () => {
 
       expect(binderNode.visited).to.be.true;
     });
+
+    suite('number model', () => {
+      let view: OrderViewWithTextField,
+        priorityField: MockTextFieldElement,
+        binder: Binder<Order, OrderModel>;
+
+      beforeEach(async() => {
+        view = orderViewWithTextField;
+        binder = view.binder;
+        priorityField = view.priorityField!;
+      });
+
+      test('should set initial zero', async () => {
+        expect(priorityField.value).to.equal('0');
+      });
+
+      test('should set number value from binder', async () => {
+        priorityField.valueSpy.get.resetHistory();
+        priorityField.valueSpy.set.resetHistory();
+
+        binder.for(binder.model.priority).value = 1.2;
+        await view.updateComplete;
+        sinon.assert.calledOnceWithExactly(priorityField.valueSpy.set, 1.2);
+      });
+
+      test('should update binder value on typing', async () => {
+        const cases: Array<[string, number]> = [
+          ['1', 1],
+          ['1.', 1],
+          ['1.2', 1.2],
+          ['', NaN],
+          ['not a number', NaN],
+          ['.', NaN],
+          ['.1', 0.1]
+        ];
+
+        for (const [inputValue, expectedNumber] of cases) {
+          for (const eventName of ['input', 'change']) {
+            priorityField.value = inputValue;
+            priorityField.valueSpy.get.resetHistory();
+            priorityField.valueSpy.set.resetHistory();
+            priorityField.dispatchEvent(new CustomEvent(
+              eventName,
+              {bubbles: true, composed: true, cancelable: false}
+            ));
+            await view.updateComplete;
+
+            if (Number.isNaN(expectedNumber)) {
+              // NaN never equals
+              expect(binder.value.priority).to.satisfy(Number.isNaN);
+            } else {
+              expect(binder.value.priority).to.eq(expectedNumber);
+            }
+            sinon.assert.calledOnce(priorityField.valueSpy.get);
+            // Should not change typed value
+            sinon.assert.notCalled(priorityField.valueSpy.set);
+            expect(priorityField.value).to.equal(inputValue);
+
+            priorityField.valueSpy.get.resetHistory();
+            priorityField.valueSpy.set.resetHistory();
+          }
+        }
+      });
+    });
   });
 
   suite('field with input', () => {
@@ -254,7 +327,8 @@ suite("form/Field", () => {
         return this.__value;
       }
       set value(value) {
-        this.__value = value;
+        // Native inputs stringify incoming values
+        this.__value = String(value);
       }
       valueSpy = sinon.spy(this, 'value', ['get', 'set']);
 
@@ -275,11 +349,15 @@ suite("form/Field", () => {
       @query('#customerNickNameField')
       customerNickNameField?: MockInputElement;
 
+      @query('#priorityField')
+      priorityField?: MockInputElement;
+
       render() {
         return html`
           <mock-input id="notesField" ...="${field(this.binder.model.notes)}"></mock-input>
           <mock-input id="customerFullNameField" ...="${field(this.binder.model.customer.fullName)}"></mock-input>
           <mock-input id="customerNickNameField" ...="${field(this.binder.model.customer.nickName)}"></mock-input>
+          <mock-input id="priorityField" ...="${field(this.binder.model.priority)}"></mock-input>
         `;
       }
     }
@@ -310,6 +388,70 @@ suite("form/Field", () => {
 
       sinon.assert.calledTwice(orderViewWithInput.customerFullNameField!.setAttributeSpy);
       sinon.assert.calledOnce(orderViewWithInput.customerNickNameField!.setAttributeSpy);
+    });
+
+    suite('number model', () => {
+      let view: OrderViewWithInput,
+        priorityField: MockInputElement,
+        binder: Binder<Order, OrderModel>;
+
+      beforeEach(async () => {
+        view = orderViewWithInput;
+        binder = view.binder;
+        priorityField = view.priorityField!;
+      });
+
+      test('should set initial zero', async () => {
+        expect(priorityField.value).to.equal('0');
+      });
+
+      test('should set number value from binder', async () => {
+        priorityField.valueSpy.get.resetHistory();
+        priorityField.valueSpy.set.resetHistory();
+
+        binder.for(binder.model.priority).value = 1.2;
+        await view.updateComplete;
+        sinon.assert.calledOnceWithExactly(priorityField.valueSpy.set, 1.2);
+      });
+
+      test('should update binder value on typing', async () => {
+        const cases: Array<[string, number]> = [
+          ['1', 1],
+          ['1.', 1],
+          ['1.2', 1.2],
+          ['', NaN],
+          ['not a number', NaN],
+          ['.', NaN],
+          ['.1', 0.1]
+        ];
+
+        for (const [inputValue, expectedNumber] of cases) {
+          for (const eventName of ['input', 'change']) {
+            priorityField.value = inputValue;
+            priorityField.valueSpy.get.resetHistory();
+            priorityField.valueSpy.set.resetHistory();
+            priorityField.dispatchEvent(new CustomEvent(
+              eventName,
+              {bubbles: true, composed: true, cancelable: false}
+            ));
+            await view.updateComplete;
+
+            if (Number.isNaN(expectedNumber)) {
+              // NaN never equals
+              expect(binder.value.priority).to.satisfy(Number.isNaN);
+            } else {
+              expect(binder.value.priority).to.eq(expectedNumber);
+            }
+            sinon.assert.calledOnce(priorityField.valueSpy.get);
+            // Should not change typed value
+            sinon.assert.notCalled(priorityField.valueSpy.set);
+            expect(priorityField.value).to.equal(inputValue);
+
+            priorityField.valueSpy.get.resetHistory();
+            priorityField.valueSpy.set.resetHistory();
+          }
+        }
+      });
     });
   });
 

@@ -10,6 +10,7 @@ import {
   Digits,
   Email,
   Future,
+  IsNumber,
   Max,
   Min,
   Negative,
@@ -118,6 +119,18 @@ suite("form/Validators", () => {
     assert.isTrue(validator.validate(null));
     assert.isFalse(validator.validate('true'));
     assert.isFalse(validator.validate(true));
+  });
+
+  test('IsNumber', () => {
+    const validator = new IsNumber();
+    assert.isNotTrue(validator.impliesRequired);
+    assert.isTrue(validator.validate(0));
+    assert.isTrue(validator.validate(1));
+    assert.isTrue(validator.validate(1.2));
+    assert.isTrue(validator.validate(-0.5));
+    assert.isFalse(validator.validate(Infinity));
+    assert.isFalse(validator.validate(-Infinity));
+    assert.isFalse(validator.validate(NaN));
   });
 
   test("Min", () => {

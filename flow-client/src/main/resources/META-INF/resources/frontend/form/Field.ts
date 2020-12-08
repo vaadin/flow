@@ -120,6 +120,11 @@ export const field = directive(<T>(
   const binderNode = getBinderNode(model);
   const fieldStrategy = binderNode.binder.getFieldStrategy(element);
 
+  const convertFieldValue = (fieldValue: any) => {
+    const fromString = (model as any)[_fromString];
+    return typeof fieldValue === 'string' && fromString ? fromString(fieldValue) : fieldValue;
+  };
+
   if (fieldStateMap.has(propertyPart)) {
     fieldState = fieldStateMap.get(propertyPart)!;
   } else {
@@ -135,8 +140,7 @@ export const field = directive(<T>(
 
     const updateValueFromElement = () => {
       fieldState.value = fieldState.strategy.value;
-      const convert = typeof fieldState.value === 'string' && (model as any)[_fromString];
-      binderNode.value = convert ? convert(fieldState.value) : fieldState.value;
+      binderNode.value = convertFieldValue(fieldState.value);
       if (effect !== undefined) {
         effect.call(element, element);
       }
@@ -161,7 +165,8 @@ export const field = directive(<T>(
   }
 
   const value = binderNode.value;
-  if (value !== fieldState.value) {
+  const fieldValue = convertFieldValue(fieldState.value);
+  if (value !== fieldValue && !(Number.isNaN(value) && Number.isNaN(fieldValue))) {
     fieldState.strategy.value = fieldState.value = value;
   }
 

@@ -8,6 +8,7 @@ import {
   _key,
   ArrayModel,
   Binder,
+  IsNumber,
   NotBlank,
   NotEmpty,
   NotNull,
@@ -53,6 +54,13 @@ suite("form/Model", () => {
     test(`Size validator with min 0 should not be mark a model as required`, async () => {
       binder.for(binder.model.fieldString).addValidator(new Size({min:0}));
       expect(binder.for(binder.model.fieldString).required).to.be.false;
+    });
+  });
+
+  suite('number model', () => {
+    test('should contain IsNumber validator by default', async () => {
+      const validators = binder.for(binder.model.fieldNumber).validators;
+      expect(validators[0]).to.be.instanceOf(IsNumber);
     });
   });
 
@@ -129,7 +137,7 @@ suite("form/Model", () => {
 
     /**
      * default value is used for checking dirty state
-     * use case: adding a new order line, which contains a product 
+     * use case: adding a new order line, which contains a product
      * and a quantity field. The product model's dirty state is
      * comparing the default value, which is getting from the parent
      * order line model, which is an array item.
@@ -262,7 +270,8 @@ suite("form/Model", () => {
         Array.from(rowBinder.model).forEach((cellBinder, j) => {
           expect(cellBinder.model).to.be.instanceOf(NumberModel);
           expect(cellBinder.value).to.be.equal(matrix[i][j]);
-          expect(cellBinder.validators[0]).to.be.instanceOf(Positive);
+          const [, lastValidator] = cellBinder.validators;
+          expect(lastValidator).to.be.instanceOf(Positive);
           walkedCells++;
         });
       });

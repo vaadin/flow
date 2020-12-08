@@ -2,6 +2,7 @@
 
 import {BinderNode} from "./BinderNode";
 import {Validator} from "./Validation";
+import {IsNumber} from "./Validators";
 
 export const _ItemModel = Symbol('ItemModel');
 export const _parent = Symbol('parent');
@@ -79,7 +80,16 @@ export class BooleanModel extends PrimitiveModel<boolean> implements HasFromStri
 
 export class NumberModel extends PrimitiveModel<number> implements HasFromString<number> {
   static createEmptyValue = Number;
-  [_fromString] = Number;
+  [_fromString] = Number.parseFloat;
+  constructor(
+    parent: ModelParent<number>,
+    key: keyof any,
+    optional: boolean,
+    ...validators: ReadonlyArray<Validator<number>>
+  ) {
+    // Prepend a built-in validator to indicate NaN input
+    super(parent, key, optional, new IsNumber(), ...validators);
+  }
 }
 
 export class StringModel extends PrimitiveModel<string> implements HasFromString<string> {
