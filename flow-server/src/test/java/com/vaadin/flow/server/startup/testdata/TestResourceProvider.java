@@ -36,17 +36,6 @@ public class TestResourceProvider implements ResourceProvider {
     }
 
     @Override
-    public List<URL> getApplicationResources(Object context, String path)
-            throws IOException {
-        return null;
-    }
-
-    @Override
-    public URL getApplicationResource(Object context, String path) {
-        return null;
-    }
-
-    @Override
     public URL getClientResource(String path) {
         return null;
     }

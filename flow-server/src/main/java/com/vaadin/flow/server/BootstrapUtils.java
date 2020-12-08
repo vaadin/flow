@@ -257,8 +257,12 @@ class BootstrapUtils {
         VaadinService service = request.getService();
         ResourceProvider resourceProvider = service.getContext()
                 .getAttribute(Lookup.class).lookup(ResourceProvider.class);
-        URL appResource = resourceProvider.getApplicationResource(service,
-                file);
+        Class<?> clazz = null;
+        if (service instanceof VaadinServletService) {
+            clazz = ((VaadinServletService) service).getServlet().getClass();
+        }
+        URL appResource = clazz == null ? null
+                : resourceProvider.getApplicationResource(clazz, file);
 
         InputStream stream = null;
         try {

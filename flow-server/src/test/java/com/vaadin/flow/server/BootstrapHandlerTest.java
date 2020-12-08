@@ -389,6 +389,15 @@ public class BootstrapHandlerTest {
         context = new BootstrapContext(request, null, session, ui,
                 this::contextRootRelativePath);
         ui.getInternals().setContextRoot(contextRootRelativePath(request));
+
+        Lookup lookup = testUI.getSession().getService().getContext()
+                .getAttribute(Lookup.class);
+        ResourceProvider provider = lookup.lookup(ResourceProvider.class);
+        Mockito.when(provider.getApplicationResource(Mockito.any(),
+                Mockito.anyString()))
+                .thenReturn(BootstrapContextTest.class.getClassLoader()
+                        .getResource(Constants.VAADIN_SERVLET_RESOURCES
+                                + Constants.STATISTICS_JSON_DEFAULT));
     }
 
     private void initUI(UI ui, VaadinRequest request,
@@ -402,13 +411,7 @@ public class BootstrapHandlerTest {
             navigationTargets.forEach(routeConfiguration::setAnnotatedRoute);
         });
 
-        this.request = request;
-
-        ui.doInit(request, 0);
-        ui.getInternals().getRouter().initializeUI(ui, request);
-        context = new BootstrapContext(request, null, session, ui,
-                this::contextRootRelativePath);
-        ui.getInternals().setContextRoot(contextRootRelativePath(request));
+        initUI(ui, request);
     }
 
     @Test
@@ -1077,28 +1080,23 @@ public class BootstrapHandlerTest {
     @Test
     public void useDependencyFilters_removeDependenciesAndAddNewOnes()
             throws ServiceException {
-        List<DependencyFilter> filters = Arrays.asList(
-                (list, context) -> {
-                    list.clear(); // remove everything
-                    return list;
-                },
-                (list, context) -> {
-                    list.add(new Dependency(Dependency.Type.JAVASCRIPT,
-                                            "imported-by-filter.js", LoadMode.EAGER));
-                    list.add(new Dependency(Dependency.Type.JAVASCRIPT,
-                                            "imported-by-filter2.js", LoadMode.EAGER));
-                    return list;
-                },
-                (list, context) -> {
-                    list.remove(1); // removes the imported-by-filter2.js
-                    return list;
-                },
-                (list, context) -> {
-                    list.add(new Dependency(Dependency.Type.STYLESHEET,
-                                            "imported-by-filter.css", LoadMode.EAGER));
-                    return list;
-                }
-        );
+        List<DependencyFilter> filters = Arrays.asList((list, context) -> {
+            list.clear(); // remove everything
+            return list;
+        }, (list, context) -> {
+            list.add(new Dependency(Dependency.Type.JAVASCRIPT,
+                    "imported-by-filter.js", LoadMode.EAGER));
+            list.add(new Dependency(Dependency.Type.JAVASCRIPT,
+                    "imported-by-filter2.js", LoadMode.EAGER));
+            return list;
+        }, (list, context) -> {
+            list.remove(1); // removes the imported-by-filter2.js
+            return list;
+        }, (list, context) -> {
+            list.add(new Dependency(Dependency.Type.STYLESHEET,
+                    "imported-by-filter.css", LoadMode.EAGER));
+            return list;
+        });
         service.setDependencyFilters(filters);
 
         initUI(testUI);
@@ -1334,17 +1332,14 @@ public class BootstrapHandlerTest {
     @Test
     public void getBootstrapPage_jsModulesDoNotContainDeferAttribute()
             throws ServiceException {
-        List<DependencyFilter> filters = Arrays.asList(
-                (list, context) -> {
-                    list.clear(); // remove everything
-                    return list;
-                },
-                (list, context) -> {
-                    list.add(new Dependency(Dependency.Type.JS_MODULE, "//module.js",
-                                            LoadMode.EAGER));
-                    return list;
-                }
-        );
+        List<DependencyFilter> filters = Arrays.asList((list, context) -> {
+            list.clear(); // remove everything
+            return list;
+        }, (list, context) -> {
+            list.add(new Dependency(Dependency.Type.JS_MODULE, "//module.js",
+                    LoadMode.EAGER));
+            return list;
+        });
         service.setDependencyFilters(filters);
 
         initUI(testUI);
@@ -1408,9 +1403,8 @@ public class BootstrapHandlerTest {
         Lookup lookup = testUI.getSession().getService().getContext()
                 .getAttribute(Lookup.class);
         ResourceProvider provider = lookup.lookup(ResourceProvider.class);
-        Mockito.when(provider.getApplicationResource(
-                Mockito.any(VaadinService.class), Mockito.anyString()))
-                .thenReturn(tmpFile.toURI().toURL());
+        Mockito.when(provider.getApplicationResource(Mockito.any(),
+                Mockito.anyString())).thenReturn(tmpFile.toURI().toURL());
 
         BootstrapContext bootstrapContext = new BootstrapContext(request, null,
                 session, testUI, this::contextRootRelativePath);

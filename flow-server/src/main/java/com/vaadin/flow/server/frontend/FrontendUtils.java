@@ -48,6 +48,7 @@ import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 
 import elemental.json.JsonArray;
@@ -608,7 +609,13 @@ public class FrontendUtils {
                 .replaceFirst("^/", "");
         ResourceProvider resourceProvider = service.getContext()
                 .getAttribute(Lookup.class).lookup(ResourceProvider.class);
-        URL statsUrl = resourceProvider.getApplicationResource(service, stats);
+        Class<?> appClass = null;
+        if (service instanceof VaadinServletService) {
+            appClass = ((VaadinServletService) service).getServlet().getClass();
+        }
+
+        URL statsUrl = appClass == null ? null
+                : resourceProvider.getApplicationResource(appClass, stats);
         InputStream stream = null;
         try {
             stream = statsUrl == null ? null : statsUrl.openStream();

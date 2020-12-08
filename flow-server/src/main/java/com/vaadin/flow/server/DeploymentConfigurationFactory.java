@@ -29,8 +29,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -370,14 +368,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
         ResourceProvider resourceProvider = lookup
                 .lookup(ResourceProvider.class);
 
-        List<URL> classResources = resourceProvider
+        List<URL> resources = resourceProvider
                 .getApplicationResources(contextClass, tokenResource);
-        List<URL> contextResources = resourceProvider
-                .getApplicationResources(context, tokenResource);
-
-        List<URL> resources = Stream
-                .concat(classResources.stream(), contextResources.stream())
-                .collect(Collectors.toList());
 
         // Accept resource that doesn't contain
         // 'jar!/META-INF/Vaadin/config/flow-build-info.json'
@@ -414,12 +406,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
         assert !resources
                 .isEmpty() : "Possible jar resource requires resources to be available.";
 
-        URL webpackGenerated = resourceProvider.getApplicationResource(context,
-                FrontendUtils.WEBPACK_GENERATED);
-        if (webpackGenerated == null) {
-            webpackGenerated = resourceProvider.getApplicationResource(
-                    contextClass, FrontendUtils.WEBPACK_GENERATED);
-        }
+        URL webpackGenerated = resourceProvider.getApplicationResource(
+                contextClass, FrontendUtils.WEBPACK_GENERATED);
 
         // If jar!/ exists 2 times for webpack.generated.json then we are
         // running from a jar

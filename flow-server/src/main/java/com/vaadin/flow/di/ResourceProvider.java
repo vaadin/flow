@@ -20,9 +20,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
-
 /**
  * Static "classpath" resources provider.
  * <p>
@@ -70,67 +67,6 @@ public interface ResourceProvider {
      */
     List<URL> getApplicationResources(Class<?> contextClass, String path)
             throws IOException;
-
-    /**
-     * Gets all the web application resources identified by the {@code path}
-     * using the provided {@code context}.
-     * <p>
-     * The context doesn't have to be in the same bundle as the resource. The
-     * resource location is the web application bundle (WAR or WAB) which might
-     * not contain the {@code context} declaration at all. The {@code context}
-     * instance is only used to find the correct bundle where the resource is
-     * located.
-     * <p>
-     * A typical scenario could be : the {@code context} object is a
-     * {@link VaadinService} or {@link VaadinServlet} instance and the path is
-     * some resource in the web application (which is very specific for the
-     * application), e.g. {@code "stats.json"}. Both {@link VaadinService} and
-     * {@link VaadinServlet} are located in "flow-server" bundle which doesn't
-     * know anything about web app specific resources. If a servlet is
-     * registered manually in the WAB then its bundle may be used to find the
-     * resource. Otherwise some context information about WAB should be
-     * retrieved from the {@code context}.
-     * 
-     * @param context
-     *            a context object
-     * @param path
-     *            the resource path
-     * @return a list of URLs of the resources or an empty list if resources are
-     *         not found
-     * 
-     * @throws IOException
-     *             if there is an I/O error
-     */
-    List<URL> getApplicationResources(Object context, String path)
-            throws IOException;
-
-    /**
-     * Gets the web application resource identified by the {@code path} using
-     * the provided {@code context}.
-     * <p>
-     * The context doesn't have to be in the same bundle as the resource. The
-     * resource location is the web application bundle (WAR or WAB) which might
-     * not contain the {@code context} declaration at all. The {@code context}
-     * instance is only used to find the correct bundle where the resource is
-     * located.
-     * <p>
-     * A typical scenario could be : the {@code context} object is a
-     * {@link VaadinService} or {@link VaadinServlet} instance and the path is
-     * some resource in the web application (which is very specific for the
-     * application), e.g. {@code "stats.json"}. Both {@link VaadinService} and
-     * {@link VaadinServlet} are located in "flow-server" bundle which doesn't
-     * know anything about web app specific resources. If a servlet is
-     * registered manually in the WAB then its bundle may be used to find the
-     * resource. Otherwise some context information about WAB should be
-     * retrieved from the {@code context}.
-     * 
-     * @param context
-     *            a context object
-     * @param path
-     *            the resource path
-     * @return an URL of the resource, may be {@code null}
-     */
-    URL getApplicationResource(Object context, String path);
 
     /**
      * Gets "flow-client" bundle resource identified by the {@code path}.

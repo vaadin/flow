@@ -261,10 +261,6 @@ public class ServletDeployerTest {
         expect(resourceProvider.getApplicationResources(anyObject(),
                 anyObject())).andReturn(Collections.emptyList()).anyTimes();
 
-        expect(resourceProvider.getApplicationResources(anyObject(Object.class),
-                anyObject())).andAnswer(() -> Collections.emptyList())
-                        .anyTimes();
-
         replay(resourceProvider);
 
         expect(lookup.lookup(ResourceProvider.class))
