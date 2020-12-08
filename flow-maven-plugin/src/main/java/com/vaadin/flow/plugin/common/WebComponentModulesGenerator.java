@@ -79,7 +79,7 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
 
         return WebComponentModulesWriter.DirectoryWriter
                 .generateWebComponentsToDirectory(getWriterClass(),
-                        exporterRelatedClasses, outputDirectory, true);
+                        exporterRelatedClasses, outputDirectory, true, null);
     }
 
     private Class<?> getWriterClass() {

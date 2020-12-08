@@ -47,3 +47,4 @@ flow-tests/**/types.d.ts
 flow-tests/test-themes/frontend/theme/app-theme/app-theme.js
 package.json
 package-lock.json
+flow-tests/test-embedding/test-embedding-application-theme/frontend/theme/embedded-theme/embedded-theme.js

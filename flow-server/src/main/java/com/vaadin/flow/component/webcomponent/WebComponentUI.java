@@ -335,7 +335,7 @@ public class WebComponentUI extends UI {
         WebComponentConfigurationRegistry registry = getConfigurationRegistry();
         Optional<Theme> theme = registry
                 .getEmbeddedApplicationAnnotation(Theme.class);
-        if (theme.isPresent()) {
+        if (theme.isPresent() && !theme.get().value().equals(AbstractTheme.class)) {
             getInternals().setTheme(theme.get().value());
             assignVariant(registry, theme.get());
         } else {
