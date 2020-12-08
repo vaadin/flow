@@ -24,7 +24,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
