@@ -239,7 +239,7 @@ public class VaadinServletContextInitializer
             }
 
             Set<Class<?>> classes = findByAnnotationOrSuperType(
-                    getDefaultPackages(), appContext, Collections.emptyList(),
+                    getLookupPackages(), appContext, Collections.emptyList(),
                     getServiceTypes()).collect(Collectors.toSet());
             process(classes, event.getServletContext());
         }
@@ -735,6 +735,12 @@ public class VaadinServletContextInitializer
             packagesList = AutoConfigurationPackages.get(appContext);
         }
         return packagesList;
+    }
+
+    private List<String> getLookupPackages() {
+        return Stream.concat(getDefaultPackages().stream(),
+                Stream.of("com.vaadin.flow.server.frontend.fusion", "com.vaadin.flow.component.polymertemplate.rpc"))
+                .collect(Collectors.toList());
     }
 
     private static void collectHandleTypes(Class<?> clazz,
