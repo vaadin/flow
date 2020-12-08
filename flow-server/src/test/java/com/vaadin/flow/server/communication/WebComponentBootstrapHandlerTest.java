@@ -104,7 +104,8 @@ public class WebComponentBootstrapHandlerTest {
     }
 
     @Test
-    public void writeBootstrapPage_escapeAttributeValue() throws IOException {
+    public void writeBootstrapPage_scriptSrcHasNoDoubleQuotes_attributeIsTransferred()
+            throws IOException {
         WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -113,15 +114,31 @@ public class WebComponentBootstrapHandlerTest {
 
         Element script = head.ownerDocument().createElement("script");
         head.appendChild(script);
-        script.attr("src", "foo'bar %27?baz%22");
+        script.attr("src", "foo'bar%20%27?baz%22");
 
         VaadinResponse response = getMockResponse(stream);
         handler.writeBootstrapPage("", response, head, "");
 
         String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
+        MatcherAssert.assertThat(resultingScript, CoreMatchers
+                .not(CoreMatchers.containsString("foo'bar %27?baz%22")));
+    }
 
-        MatcherAssert.assertThat(resultingScript,
-                CoreMatchers.containsString("foo%27bar+%2527?baz%2522"));
+    @Test(expected = IllegalStateException.class)
+    public void writeBootstrapPage_scriptSrcHasDoubleQuotes_throws()
+            throws IOException {
+        WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+        Element head = new Document("").normalise().head();
+
+        Element script = head.ownerDocument().createElement("script");
+        head.appendChild(script);
+        script.attr("src", "foo\"");
+
+        VaadinResponse response = getMockResponse(stream);
+        handler.writeBootstrapPage("", response, head, "");
     }
 
     @Test

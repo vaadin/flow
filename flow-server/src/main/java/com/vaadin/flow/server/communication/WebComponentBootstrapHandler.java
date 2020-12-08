@@ -23,8 +23,6 @@ import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -359,7 +357,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 if ("src".equals(attribute.getKey())) {
                     path = modifyPath(basePath, path);
                 }
-                writer.append("'").append(path).append("'");
+                writer.append("\"").append(path).append("\"");
             }
             writer.append(");");
         }
@@ -390,19 +388,18 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         if (vaadinIndex > 0) {
             suffix = suffix.substring(vaadinIndex);
         }
-        int queryIndex = suffix.indexOf('?');
-        if (queryIndex > 0) {
-            suffix = encode(suffix.substring(0, queryIndex)) + '?'
-                    + encode(suffix.substring(queryIndex + 1));
-        }
-        return URI.create(basePath + suffix).toString();
+        return URI.create(checkURL(basePath + suffix)).toString();
     }
 
-    private String encode(String str) throws UnsupportedEncodingException {
-        if (str == null) {
+    private String checkURL(String url) {
+        if (url == null) {
             return null;
         }
-        return URLEncoder.encode(str, StandardCharsets.UTF_8.name());
+        if (url.contains("\"")) {
+            throw new IllegalStateException(
+                    "URL '" + url + "' may not contain double quotes");
+        }
+        return url;
     }
 
     private static String inlineHTML(String html) {
