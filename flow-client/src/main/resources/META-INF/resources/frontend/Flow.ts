@@ -388,9 +388,15 @@ export class Flow {
     let timeout2nd: any;
     let timeout3rd: any;
     $wnd.Vaadin.Flow.loading = (action: boolean) => {
+      // true if we should reveal indicator (first loading starting)
       const show = action && this.isActiveCount === 0;
+      // true if we should hide indicator (last loading finished)
       const hide = !action && this.isActiveCount === 1;
-      this.isActiveCount = Math.max(0, this.isActiveCount + (action ? 1 : -1));
+      if (action) {
+        this.isActiveCount++;
+      } else if (this.isActiveCount > 0) {
+        this.isActiveCount--;
+      }
       if (show || hide) {
         clearTimeout(timeout2nd);
         clearTimeout(timeout3rd);
