@@ -43,7 +43,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
@@ -78,11 +77,6 @@ public class VaadinConnectControllerTest {
     private static final Method TEST_VALIDATION_METHOD;
     private HttpServletRequest requestMock;
     private Principal principal;
-    /**
-     * Make the server a field instance to prevent it from garbage collected,
-     * which could fail unit test randomly.
-     */
-    private MockVaadinServletService service = new MockVaadinServletService();
 
     static {
         TEST_METHOD = Stream.of(TEST_ENDPOINT.getClass().getDeclaredMethods())

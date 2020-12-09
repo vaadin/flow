@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.startup;
+package com.vaadin.flow.server.startup.fusion;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
+import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
 
 /**
  * Validation class that is run during servlet container initialization which

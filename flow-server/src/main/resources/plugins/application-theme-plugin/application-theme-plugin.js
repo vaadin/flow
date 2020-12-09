@@ -17,7 +17,7 @@
 const fs = require('fs');
 const path = require('path');
 const generateThemeFile = require('./theme-generator');
-const { copyThemeResources, copyStaticAssets } = require('./theme-copy');
+const copyStaticAssets = require('./theme-copy');
 
 let logger;
 
@@ -112,10 +112,9 @@ function handleThemes(themeName, themesFolder, projectStaticAssetsOutputFolder) 
 
     const themeProperties = getThemeProperties(themeFolder);
 
-    copyThemeResources(themeFolder, projectStaticAssetsOutputFolder);
     copyStaticAssets(themeProperties, projectStaticAssetsOutputFolder, logger);
 
-    const themeFile = generateThemeFile(themeFolder, themeName);
+    const themeFile = generateThemeFile(themeFolder, themeName, themeProperties);
 
     fs.writeFileSync(path.resolve(themeFolder, themeName + '.js'), themeFile);
     return true;
