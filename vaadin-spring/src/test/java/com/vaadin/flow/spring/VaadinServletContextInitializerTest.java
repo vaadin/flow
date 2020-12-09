@@ -70,8 +70,8 @@ public class VaadinServletContextInitializerTest {
     public void init() {
         MockitoAnnotations.openMocks(this);
 
-        Mockito.when(applicationContext.getBean(TaskExecutor.class))
-                .thenReturn(executor);
+        Mockito.when(applicationContext.getBeansOfType(TaskExecutor.class))
+                .thenReturn(Collections.singletonMap("foo", executor));
 
         PowerMockito.mockStatic(
                 VaadinServletContextInitializer.SpringStubServletConfig.class);
@@ -107,7 +107,7 @@ public class VaadinServletContextInitializerTest {
             theMock.verifyNoMoreInteractions();
         }
 
-        Mockito.verify(applicationContext).getBean(TaskExecutor.class);
+        Mockito.verify(applicationContext).getBeansOfType(TaskExecutor.class);
         Mockito.verify(servletContext).setAttribute(
                 Mockito.eq(Lookup.class.getName()), capture.capture());
         Lookup lookup = capture.getValue();

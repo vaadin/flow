@@ -258,8 +258,12 @@ public class VaadinServletContextInitializer
         @Override
         protected Lookup createLookup(
                 Map<Class<?>, Collection<Object>> services) {
-            services.put(Executor.class, Collections
-                    .singleton(appContext.getBean(TaskExecutor.class)));
+            Map<String, TaskExecutor> executors = appContext
+                    .getBeansOfType(TaskExecutor.class);
+            if (!executors.isEmpty()) {
+                services.put(Executor.class, Collections
+                        .singleton(executors.values().iterator().next()));
+            }
             return super.createLookup(services);
         }
 
@@ -739,7 +743,8 @@ public class VaadinServletContextInitializer
 
     private List<String> getLookupPackages() {
         return Stream.concat(getDefaultPackages().stream(),
-                Stream.of("com.vaadin.flow.server.frontend.fusion", "com.vaadin.flow.component.polymertemplate.rpc"))
+                Stream.of("com.vaadin.flow.server.frontend.fusion",
+                        "com.vaadin.flow.component.polymertemplate.rpc"))
                 .collect(Collectors.toList());
     }
 
