@@ -314,7 +314,7 @@ public class MockServletServiceSessionSetup {
                 resourceProvider.getApplicationResource(Mockito.anyString()))
                 .thenAnswer(invocation -> {
                     return MockServletServiceSessionSetup.class.getResource(
-                            "/" + invocation.getArgumentAt(1, String.class));
+                            "/" + invocation.getArgumentAt(0, String.class));
                 });
 
         servlet.init(servletConfig);

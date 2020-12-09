@@ -81,7 +81,7 @@ public class NpmTemplateParserTest {
                 resourceProvider.getApplicationResource(Mockito.anyString()))
                 .thenAnswer(invocation -> NpmTemplateParserTest.class
                         .getResource('/'
-                                + invocation.getArgumentAt(1, String.class)));
+                                + invocation.getArgumentAt(0, String.class)));
     }
 
     @Test
