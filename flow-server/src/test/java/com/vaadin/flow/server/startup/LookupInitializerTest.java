@@ -45,7 +45,6 @@ import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEve
 import com.vaadin.flow.di.InstantiatorFactory;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.testdata.AnotherTestInstantiatorFactory;
 import com.vaadin.flow.server.startup.testdata.OneMoreTestInstantiatorFactory;
 import com.vaadin.flow.server.startup.testdata.TestInstantiatorFactory;
@@ -165,68 +164,21 @@ public class LookupInitializerTest {
         ResourceProvider resourceProvider = lookup
                 .lookup(ResourceProvider.class);
 
-        // ======== resourceProvider.getApplicationResource(s)(Class, String)
-        URL applicationResource = resourceProvider.getApplicationResource(
-                LookupInitializerTest.class,
-                "resource-provider/some-resource.json");
+        // ======== resourceProvider.getApplicationResource(s)(String)
+        URL applicationResource = resourceProvider
+                .getApplicationResource("resource-provider/some-resource.json");
 
         Assert.assertNotNull(applicationResource);
 
         List<URL> resources = resourceProvider.getApplicationResources(
-                LookupInitializerTest.class,
                 "resource-provider/some-resource.json");
 
         Assert.assertEquals(1, resources.size());
 
         Assert.assertNotNull(resources.get(0));
 
-        URL nonExistent = resourceProvider.getApplicationResource(
-                LookupInitializerTest.class,
-                "resource-provider/non-existent.txt");
-
-        Assert.assertNull(nonExistent);
-
-        // ======== resourceProvider.getApplicationResource(s)(Object, String)
-        String path = "foo/bar";
-
-        // == sub test: check VaadinService instance
-        VaadinService service = Mockito.mock(VaadinService.class);
-        ClassLoader loader = Mockito.mock(ClassLoader.class);
-
-        URL singleResourceURL = new URL("file:/baz");
-        Mockito.when(loader.getResource(path)).thenReturn(singleResourceURL);
-        Mockito.when(loader.getResources(path))
-                .thenReturn(Collections.enumeration(Arrays
-                        .asList(new URL("file:/foo"), new URL("file:/bar"))));
-
-        Mockito.when(service.getClassLoader()).thenReturn(loader);
-        URL serviceResource = resourceProvider.getApplicationResource(service,
-                path);
-        Assert.assertEquals(singleResourceURL, serviceResource);
-
-        List<URL> serviceResources = resourceProvider
-                .getApplicationResources(service, path);
-
-        Assert.assertEquals(2, serviceResources.size());
-
-        Assert.assertEquals(new URL("file:/foo"), serviceResources.get(0));
-        Assert.assertEquals(new URL("file:/bar"), serviceResources.get(1));
-
-        // == sub test: check non VaadinService instance
-        applicationResource = resourceProvider.getApplicationResource(
-                initializer, "resource-provider/some-resource.json");
-
-        Assert.assertNotNull(applicationResource);
-
-        resources = resourceProvider.getApplicationResources(initializer,
-                "resource-provider/some-resource.json");
-
-        Assert.assertEquals(1, resources.size());
-
-        Assert.assertNotNull(resources.get(0));
-
-        nonExistent = resourceProvider.getApplicationResource(initializer,
-                "resource-provider/non-existent.txt");
+        URL nonExistent = resourceProvider
+                .getApplicationResource("resource-provider/non-existent.txt");
 
         Assert.assertNull(nonExistent);
 
