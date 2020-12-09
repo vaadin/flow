@@ -61,6 +61,8 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
         getInShadowRoot(findElement(By.tagName("about-view")),
                 By.id("navigate-hello")).click();
 
+        getCommandExecutor().waitForVaadin();
+
         Assert.assertThat(getDriver().getCurrentUrl(),
                 CoreMatchers.endsWith("/hello"));
 
