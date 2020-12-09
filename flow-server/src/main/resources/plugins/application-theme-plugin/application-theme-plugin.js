@@ -114,7 +114,7 @@ function handleThemes(themeName, themesFolder, projectStaticAssetsOutputFolder) 
 
     copyStaticAssets(themeProperties, projectStaticAssetsOutputFolder, logger);
 
-    const themeFile = generateThemeFile(themeFolder, themeName);
+    const themeFile = generateThemeFile(themeFolder, themeName, themeProperties);
 
     fs.writeFileSync(path.resolve(themeFolder, themeName + '.js'), themeFile);
     return true;
