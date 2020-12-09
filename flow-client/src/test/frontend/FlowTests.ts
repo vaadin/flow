@@ -153,6 +153,20 @@ suite("Flow", () => {
     assert.isFalse(indicator.classList.contains('third'));
   });
 
+  test("loading should stack isActive", async () => {
+    const flow = new Flow({imports: () => {}});
+    assert.isFalse(flow.isActive);
+    $wnd.Vaadin.Flow.loading(true);
+    assert.isTrue(flow.isActive);
+    $wnd.Vaadin.Flow.loading(true);
+    assert.isTrue(flow.isActive);
+    $wnd.Vaadin.Flow.loading(false);
+    assert.isTrue(flow.isActive);
+    $wnd.Vaadin.Flow.loading(false);
+    assert.isFalse(flow.isActive);
+
+  });
+
   test("should initialize Flow server navigation when calling flowInit(true)", () => {
     assert.isUndefined($wnd.Vaadin);
 
