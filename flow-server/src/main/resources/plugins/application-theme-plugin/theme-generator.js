@@ -20,6 +20,7 @@
  */
 const glob = require('glob');
 const path = require('path');
+const fs = require('fs');
 
 // Special folder inside a theme for component themes that go inside the component shadow root
 const themeComponentsFolder = 'components';
@@ -83,6 +84,11 @@ function generateThemeFile(themeFolder, themeName, themeProperties) {
   let i = 0;
   if (themeProperties.importCss) {
     themeProperties.importCss.forEach((cssPath) => {
+      const nodeSources = path.resolve('node_modules/', cssPath);
+      if(!fs.existsSync(nodeSources)) {
+        throw Error("Missing resource '" + cssPath + "'. Install package by adding a @NpmPackage annotation or install it using 'npm/pnpm i'");
+      }
+
       const variable = 'module' + i++;
       imports.push(`import ${variable} from '${cssPath}';\n`);
       globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n`);

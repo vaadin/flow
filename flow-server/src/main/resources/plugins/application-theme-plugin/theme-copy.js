@@ -66,7 +66,10 @@ function copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputF
     const copyRules = assets[module];
     Object.keys(copyRules).forEach((copyRule) => {
       const nodeSources = path.resolve('node_modules/', module, copyRule);
-      const files = glob.sync(nodeSources, {nodir: true});
+      if(!fs.existsSync(path.resolve('node_modules/', module))) {
+        throw Error("Missing '" + module + "'. Install package by adding a @NpmPackage annotation or install it using 'npm/pnpm i'");
+      }
+      const files = glob.sync(nodeSources, { nodir: true });
       const targetFolder = path.resolve(projectStaticAssetsOutputFolder, "theme", themeName, copyRules[copyRule]);
 
       fs.mkdirSync(targetFolder, {
