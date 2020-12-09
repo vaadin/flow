@@ -35,6 +35,7 @@ public class ThemeView extends Div {
     public static final String SNOWFLAKE_ID = "fortawesome";
     public static final String BUTTERFLY_ID = "butterfly";
     public static final String OCTOPUSS_ID = "octopuss";
+    public static final String FONTAWESOME_ID = "font-awesome";
     public static final String SUB_COMPONENT_ID = "sub-component";
 
     public ThemeView() {
@@ -50,12 +51,16 @@ public class ThemeView extends Div {
         Span octopuss = new Span();
         octopuss.setId(OCTOPUSS_ID);
 
+        Span faText = new Span("This test is FontAwesome.");
+        faText.setClassName("fas fa-coffee");
+        faText.setId(FONTAWESOME_ID);
+
         Image snowFlake = new Image(
             "VAADIN/static/fortawesome/icons/snowflake.svg", "snowflake");
         snowFlake.setHeight("1em");
         snowFlake.setId(SNOWFLAKE_ID);
 
-        add(textSpan, snowFlake, subCss, butterfly, octopuss);
+        add(textSpan, snowFlake, subCss, butterfly, octopuss, faText);
 
         add(new Div());
         add(new MyPolymerField().withId(MY_POLYMER_ID));
