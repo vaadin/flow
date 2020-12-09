@@ -74,9 +74,10 @@ function generateThemeFile(themeFolder, themeName, themeProperties) {
     const variable = camelCase(filename);
     imports.push(`import ${variable} from './${filename}';\n`);
     if (filename == themeFileAlwaysAddToDocument) {
-      globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n`);
+      globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n   `);
+    } else {
+      globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n    `);
     }
-    globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n`);
   });
 
   let i = 0;
@@ -102,7 +103,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties) {
         \${unsafeCSS(${variable}.toString())}
       \`
     );
-`;
+    `;
     componentCssCode.push(componentString);
   });
 

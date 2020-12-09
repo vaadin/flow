@@ -25,6 +25,8 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
+import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * Generates embeddable web component files in npm mode, hiding the complexity
@@ -67,12 +69,16 @@ public class FrontendWebComponentGenerator implements Serializable {
      * outputDirectory}.
      *
      * @param outputDirectory
-     *     target directory for the web component module files
+     *            target directory for the web component module files
+     * @param theme
+     *            the theme defined using {@link Theme} or {@code null} if not
+     *            defined
      * @return generated files
      * @throws java.lang.IllegalStateException
      *             if {@code finder} cannot locate required classes
      */
-    public Set<File> generateWebComponents(File outputDirectory) {
+    public Set<File> generateWebComponents(File outputDirectory,
+            ThemeDefinition theme) {
         try {
             final Class<?> writerClass = finder
                     .loadClass(WebComponentModulesWriter.class.getName());
@@ -81,9 +87,10 @@ public class FrontendWebComponentGenerator implements Serializable {
                     .forEach(exporterRelatedClasses::add);
             finder.getSubTypesOf(WebComponentExporterFactory.class.getName())
                     .forEach(exporterRelatedClasses::add);
+            final String themeName = theme == null ? "" : theme.getName();
             return WebComponentModulesWriter.DirectoryWriter
-                    .generateWebComponentsToDirectory(writerClass,
-                            exporterRelatedClasses, outputDirectory, false);
+                .generateWebComponentsToDirectory(writerClass,
+                    exporterRelatedClasses, outputDirectory, false, themeName);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(
                     "Unable to locate a required class using custom class "

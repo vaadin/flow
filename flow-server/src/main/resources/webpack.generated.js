@@ -210,7 +210,7 @@ module.exports = {
             name(resourcePath, resourceQuery) {
               const urlResource = resourcePath.substring(frontendFolder.length);
               if(urlResource.match(themePartRegex)){
-                return /^(\\|\/)theme\1[\s\S]*?\1(.*)/.exec(urlResource)[2];
+                return /^(\\|\/)theme\1[\s\S]*?\1(.*)/.exec(urlResource)[2].replace(/\\/, "/");
               }
               if(urlResource.match(/(\\|\/)node_modules\1/)) {
                 return /(\\|\/)node_modules\1(?!.*node_modules)([\S]*)/.exec(urlResource)[2].replace(/\\/g, "/");

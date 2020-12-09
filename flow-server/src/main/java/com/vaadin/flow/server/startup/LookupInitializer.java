@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
@@ -37,6 +38,7 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 
@@ -47,6 +49,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 
 /**
  * Standard servlet initializer for collecting all SPI implementations.
@@ -56,7 +59,8 @@ import com.vaadin.flow.server.VaadinServletContext;
  *
  */
 @HandlesTypes({ ResourceProvider.class, InstantiatorFactory.class,
-        DeprecatedPolymerPublishedEventHandler.class })
+        DeprecatedPolymerPublishedEventHandler.class,
+        EndpointGeneratorTaskFactory.class })
 public class LookupInitializer
         implements ClassLoaderAwareServletContainerInitializer {
 
@@ -243,6 +247,49 @@ public class LookupInitializer
         return false;
     }
 
+    /**
+     * Creates a lookup based on provided {@code services}.
+     * 
+     * @param services
+     *            the service objects mapped to the service type to create a
+     *            lookup
+     * @return the lookup instance created with provided services
+     */
+    protected Lookup createLookup(Map<Class<?>, Collection<Object>> services) {
+        return new LookupImpl(services);
+    }
+
+    /**
+     * Gets the service types that are used to set services into the
+     * {@link Lookup} based on found subtypes by the
+     * {@link ServletContainerInitializer}.
+     * <p>
+     * {@link LookupInitializer} uses {@link ServletContainerInitializer}
+     * classes discovering mechanism based on {@link HandlesTypes} annotation.
+     * The method may be overridden to return the service types which should be
+     * put into the {@link Lookup} instance if another mechanism of class
+     * searching is used (e.g. Spring boot case).
+     * <p>
+     * The set of classes (passed into the {@link #process(Set, ServletContext)}
+     * method) will be filtered via checking whether they are assignable to the
+     * service types and the resulting classes will be instantiated via
+     * reflection.
+     * 
+     * @return a collection of service types which should be available via
+     *         Lookup
+     * @see LookupInitializer#createLookup(Map)
+     */
+    protected Collection<Class<?>> getServiceTypes() {
+        HandlesTypes annotation = getClass().getAnnotation(HandlesTypes.class);
+        if (annotation == null) {
+            throw new IllegalStateException(
+                    "Cannot collect service types based on "
+                            + HandlesTypes.class.getSimpleName()
+                            + " annotation. The default 'getServiceTypes' method implementation can't be used.");
+        }
+        return Stream.of(annotation.value()).collect(Collectors.toSet());
+    }
+
     private void initStandardLookup(Set<Class<?>> classSet,
             ServletContext servletContext) {
         VaadinServletContext vaadinContext = new VaadinServletContext(
@@ -250,13 +297,15 @@ public class LookupInitializer
 
         Map<Class<?>, Collection<Object>> services = new HashMap<>();
 
-        collectResourceProviders(classSet, services);
-        collectSubclasses(InstantiatorFactory.class, classSet, services);
-        collectSubclasses(DeprecatedPolymerPublishedEventHandler.class,
-                classSet, services);
+        for (Class<?> serviceType : getServiceTypes()) {
+            if (ResourceProvider.class.equals(serviceType)) {
+                collectResourceProviders(classSet, services);
+            } else {
+                collectSubclasses(serviceType, classSet, services);
+            }
+        }
 
-        LookupImpl lookup = new LookupImpl(services);
-        vaadinContext.setAttribute(Lookup.class, lookup);
+        vaadinContext.setAttribute(Lookup.class, createLookup(services));
     }
 
     private void collectSubclasses(Class<?> clazz, Set<Class<?>> classSet,
@@ -285,14 +334,10 @@ public class LookupInitializer
     }
 
     private Set<Class<?>> filterResourceProviders(Set<Class<?>> classes) {
-        return classes == null ? Collections.emptySet()
-                : classes.stream()
-                        .filter(ResourceProvider.class::isAssignableFrom)
-                        .filter(cls -> !cls.isInterface() && !cls.isSynthetic()
-                                && !Modifier.isAbstract(cls.getModifiers()))
-                        .filter(clazz -> !ResourceProvider.class.equals(clazz)
-                                && !ResourceProviderImpl.class.equals(clazz))
-                        .collect(Collectors.toSet());
+        Set<Class<?>> resourceProviders = filterSubClasses(
+                ResourceProvider.class, classes);
+        resourceProviders.remove(ResourceProviderImpl.class);
+        return resourceProviders;
     }
 
     private Set<Class<?>> filterSubClasses(Class<?> clazz,
