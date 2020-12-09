@@ -25,11 +25,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.ApplicationClassLoaderAccess;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.VaadinContextInitializer;
 
 @NotThreadSafe
 public class VaadinServletTest {
@@ -220,6 +223,48 @@ public class VaadinServletTest {
         } finally {
             CurrentInstance.clearAll();
         }
+    }
+
+    @Test
+    public void init_appClassLoaderIsSet() throws ServletException {
+        VaadinServlet servlet = new VaadinServlet();
+
+        ServletConfig config = mockConfig();
+        ServletContext servletContext = config.getServletContext();
+        ClassLoader loader = Mockito.mock(ClassLoader.class);
+        Mockito.when(servletContext.getClassLoader()).thenReturn(loader);
+        servlet.init(config);
+
+        ArgumentCaptor<ApplicationClassLoaderAccess> captor = ArgumentCaptor
+                .forClass(ApplicationClassLoaderAccess.class);
+        Mockito.verify(servletContext).setAttribute(
+                Mockito.eq(ApplicationClassLoaderAccess.class.getName()),
+                captor.capture());
+
+        ApplicationClassLoaderAccess access = captor.getValue();
+        Assert.assertSame(loader, access.getClassloader());
+    }
+
+    @Test
+    public void init_contextInitializationIsExecuted() throws ServletException {
+        VaadinServlet servlet = new VaadinServlet();
+
+        ServletConfig config = mockConfig();
+        ServletContext servletContext = config.getServletContext();
+        ClassLoader loader = Mockito.mock(ClassLoader.class);
+
+        VaadinContextInitializer initializer = Mockito
+                .mock(VaadinContextInitializer.class);
+
+        Mockito.when(servletContext
+                .getAttribute(VaadinContextInitializer.class.getName()))
+                .thenReturn(initializer);
+
+        Mockito.when(servletContext.getClassLoader()).thenReturn(loader);
+        servlet.init(config);
+
+        Mockito.verify(initializer)
+                .initialize(Mockito.any(VaadinContext.class));
     }
 
     private ServletConfig mockConfig() {
