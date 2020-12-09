@@ -208,11 +208,11 @@ module.exports = {
           options: {
             outputPath: 'static/',
             name(resourcePath, resourceQuery) {
-              
-              if(resourcePath.match(/(\\|\/)node_modules\1/)) {
+              if (resourcePath.match(/(\\|\/)node_modules\1/)) {
                 return /(\\|\/)node_modules\1(?!.*node_modules)([\S]*)/.exec(resourcePath)[2].replace(/\\/g, "/");
               }
               return '[path][name].[ext]';
+            }
           }
         }],
       },
