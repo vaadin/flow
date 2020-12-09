@@ -18,7 +18,6 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,6 +58,7 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WE
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
+import static com.vaadin.flow.server.StaticFileServer.themeFolder;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
 import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
@@ -285,9 +285,9 @@ public final class DevModeHandler implements RequestHandler {
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
         String pathInfo = request.getPathInfo();
-        return pathInfo != null && pathInfo.startsWith("/" + VAADIN_MAPPING)
-                && !pathInfo
-                        .startsWith("/" + StreamRequestHandler.DYN_RES_PREFIX);
+        return pathInfo != null && (pathInfo.startsWith("/" + VAADIN_MAPPING)
+            || themeFolder.matcher(pathInfo).find()) && !pathInfo
+            .startsWith("/" + StreamRequestHandler.DYN_RES_PREFIX);
     }
 
     /**
@@ -323,6 +323,11 @@ public final class DevModeHandler implements RequestHandler {
                     requestFilename);
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return true;
+        }
+
+        // Redirect theme source request
+        if(themeFolder.matcher(requestFilename).find()) {
+            requestFilename = "/VAADIN/static" + requestFilename;
         }
 
         HttpURLConnection connection = prepareConnection(requestFilename,

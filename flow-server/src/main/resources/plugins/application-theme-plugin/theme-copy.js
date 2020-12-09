@@ -66,15 +66,19 @@ function copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputF
     const copyRules = assets[module];
     Object.keys(copyRules).forEach((copyRule) => {
       const nodeSources = path.resolve('node_modules/', module, copyRule);
-      const files = glob.sync(nodeSources, { nodir: true });
+      const files = glob.sync(nodeSources, {nodir: true});
       const targetFolder = path.resolve(projectStaticAssetsOutputFolder, "theme", themeName, copyRules[copyRule]);
 
       fs.mkdirSync(targetFolder, {
         recursive: true
       });
       files.forEach((file) => {
-        logger.trace("Copying: ", file, '=>', targetFolder);
-        fs.copyFileSync(file, path.resolve(targetFolder, path.basename(file)));
+        const copyTarget = path.resolve(targetFolder, path.basename(file));
+        // Only copy if target file doesn't exist or if file to copy is newer
+        if (!fs.existsSync(copyTarget) || fs.statSync(copyTarget).mtime < fs.statSync(file).mtime) {
+          logger.trace("Copying: ", file, '=>', targetFolder);
+          fs.copyFileSync(file, copyTarget);
+        }
       });
     });
   });

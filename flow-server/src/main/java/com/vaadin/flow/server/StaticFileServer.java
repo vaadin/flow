@@ -57,7 +57,7 @@ public class StaticFileServer implements StaticFileHandler {
     private DeploymentConfiguration deploymentConfiguration;
 
     // Matcher to match string starting with '/theme/[theme-name]/'
-    private static final Pattern themeFolder = Pattern.compile("^\\/theme\\/[\\s\\S]*?\\/");
+    protected static final Pattern themeFolder = Pattern.compile("^\\/theme\\/[\\s\\S]*?\\/");
 
     /**
      * Constructs a file server.
