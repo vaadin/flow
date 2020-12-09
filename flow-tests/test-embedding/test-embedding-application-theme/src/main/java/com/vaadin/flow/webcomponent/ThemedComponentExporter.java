@@ -16,10 +16,12 @@
 package com.vaadin.flow.webcomponent;
 
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.theme.Theme;
 
 @Theme("embedded-theme")
+@NpmPackage(value = "@fortawesome/fontawesome-free", version = "5.15.1")
 public class ThemedComponentExporter
         extends WebComponentExporter<ThemedComponent> {
     public ThemedComponentExporter() {
