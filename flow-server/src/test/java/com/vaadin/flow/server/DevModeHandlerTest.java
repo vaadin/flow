@@ -253,7 +253,8 @@ public class DevModeHandlerTest {
 
     @Test
     public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
-        int port = prepareHttpServer(0, HTTP_OK, "bar");
+        final String manifestJsonResponse = "{}";
+        int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
         DevModeHandler handler = DevModeHandler.start(port,
                 createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
@@ -341,7 +342,7 @@ public class DevModeHandlerTest {
         int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
 
         DevModeHandler devModeHandler = DevModeHandler.start(port,
-                configuration, npmFolder,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         devModeHandler.join();
 
@@ -356,7 +357,7 @@ public class DevModeHandlerTest {
         int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
 
         DevModeHandler devModeHandler = DevModeHandler.start(port,
-                configuration, npmFolder,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         devModeHandler.join();
 
