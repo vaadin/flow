@@ -55,10 +55,10 @@ public interface ResourceProvider {
      * or there is no resource with the given path then this method returns an
      * empty list.
      * 
-     * @param contextClass
-     *            a class to find an application bundle @param path the resource
-     *            path @return a list of URLs of the resources or an empty list
-     *            if resources are not found
+     * @param path
+     *            the resource path
+     * @return a list of URLs of the resources or an empty list if resources are
+     *         not found
      * @throws IOException
      *             if there is an I/O error
      */
