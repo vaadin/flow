@@ -59,7 +59,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
 
         try {
             FileUtils.write(themeImportFile, String.format(
-                "import {applyTheme as _applyTheme} from 'theme/%s/%s.js';%n"
+                "import {applyTheme as _applyTheme} from 'themes/%s/%s.js';%n"
                     + "export const applyTheme = _applyTheme;%n",
                 theme.getName(), theme.getName()), StandardCharsets.UTF_8);
         } catch (IOException e) {
