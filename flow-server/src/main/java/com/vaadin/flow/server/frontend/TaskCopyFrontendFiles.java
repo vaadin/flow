@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.RESOURCES_THEME;
 
 
 /**
@@ -42,7 +43,7 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
     /**
      * Scans the jar files given defined by {@code resourcesToScan}.
      *
-     * @param npmFolder
+     * @param targetDirectory
      *            target directory for the discovered files
      * @param resourcesToScan
      *            folders and jar files to scan.
@@ -79,6 +80,11 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                 jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
                         location, COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
                         targetDirectory, WILDCARD_INCLUSIONS);
+
+                File targetThemeFolder = new File(targetDirectory, "theme");
+                targetThemeFolder.mkdir();
+                jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
+                        location, RESOURCES_THEME, targetThemeFolder, "**");
             }
         }
         long ms = (System.nanoTime() - start) / 1000000;
