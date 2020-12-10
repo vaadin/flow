@@ -55,10 +55,12 @@ import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
+import static com.vaadin.flow.server.StaticFileServer.APP_THEME_PATTERN;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
 import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
@@ -280,9 +282,10 @@ public final class DevModeHandler implements RequestHandler {
      * @return true if the request should be forwarded to webpack
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
-        final String pathInfo = request.getPathInfo();
-        return pathInfo != null && pathInfo.matches(".+\\.js") && !pathInfo
-                .startsWith("/" + StreamRequestHandler.DYN_RES_PREFIX);
+        String pathInfo = request.getPathInfo();
+        return pathInfo != null && (pathInfo.startsWith("/" + VAADIN_MAPPING)
+            || APP_THEME_PATTERN.matcher(pathInfo).find()) && !pathInfo
+            .startsWith("/" + StreamRequestHandler.DYN_RES_PREFIX);
     }
 
     /**
@@ -318,6 +321,11 @@ public final class DevModeHandler implements RequestHandler {
                     requestFilename);
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return true;
+        }
+
+        // Redirect theme source request
+        if(APP_THEME_PATTERN.matcher(requestFilename).find()) {
+            requestFilename = "/VAADIN/static" + requestFilename;
         }
 
         HttpURLConnection connection = prepareConnection(requestFilename,

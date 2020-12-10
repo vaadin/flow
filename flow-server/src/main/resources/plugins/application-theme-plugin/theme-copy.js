@@ -45,11 +45,12 @@ const glob = require('glob');
  *
  * Note! there can be multiple copy-rules with target folders for one npm package asset.
  *
- * @param {json} themeProperties
- * @param {string} projectStaticAssetsOutputFolder
+ * @param {string} themeName name of the theme we are copying assets for
+ * @param {json} themeProperties theme properties json with data on assets
+ * @param {string} projectStaticAssetsOutputFolder project output folder where we copy assets to under theme/[themeName]
  * @param {logger} theme plugin logger
  */
-function copyStaticAssets(themeProperties, projectStaticAssetsOutputFolder, logger) {
+function copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputFolder, logger) {
 
   const assets = themeProperties['assets'];
   if (!assets) {
@@ -65,15 +66,19 @@ function copyStaticAssets(themeProperties, projectStaticAssetsOutputFolder, logg
     const copyRules = assets[module];
     Object.keys(copyRules).forEach((copyRule) => {
       const nodeSources = path.resolve('node_modules/', module, copyRule);
-      const files = glob.sync(nodeSources, { nodir: true });
-      const targetFolder = path.resolve(projectStaticAssetsOutputFolder, copyRules[copyRule]);
+      const files = glob.sync(nodeSources, {nodir: true});
+      const targetFolder = path.resolve(projectStaticAssetsOutputFolder, "theme", themeName, copyRules[copyRule]);
 
       fs.mkdirSync(targetFolder, {
         recursive: true
       });
       files.forEach((file) => {
-        logger.trace("Copying: ", file, '=>', targetFolder);
-        fs.copyFileSync(file, path.resolve(targetFolder, path.basename(file)));
+        const copyTarget = path.resolve(targetFolder, path.basename(file));
+        // Only copy if target file doesn't exist or if file to copy is newer
+        if (!fs.existsSync(copyTarget) || fs.statSync(copyTarget).mtime < fs.statSync(file).mtime) {
+          logger.trace("Copying: ", file, '=>', targetFolder);
+          fs.copyFileSync(file, copyTarget);
+        }
       });
     });
   });
