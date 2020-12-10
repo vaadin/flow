@@ -227,6 +227,7 @@ module.exports = {
     !devMode && new CompressionPlugin(),
 
     new ApplicationThemePlugin({
+      // The following matches target/flow-frontend/theme/theme-generated.js and not frontend/themes
       themeResourceFolder: path.resolve(flowFrontendFolder, 'theme'),
       themeProjectFolders: themeProjectFolders,
       projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,

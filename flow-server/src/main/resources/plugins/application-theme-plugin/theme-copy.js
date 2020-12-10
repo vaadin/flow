@@ -67,7 +67,7 @@ function copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputF
     Object.keys(copyRules).forEach((copyRule) => {
       const nodeSources = path.resolve('node_modules/', module, copyRule);
       const files = glob.sync(nodeSources, {nodir: true});
-      const targetFolder = path.resolve(projectStaticAssetsOutputFolder, "theme", themeName, copyRules[copyRule]);
+      const targetFolder = path.resolve(projectStaticAssetsOutputFolder, "themes", themeName, copyRules[copyRule]);
 
       fs.mkdirSync(targetFolder, {
         recursive: true
