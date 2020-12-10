@@ -21,6 +21,7 @@
 const glob = require('glob');
 const path = require('path');
 const fs = require('fs');
+const { checkModules } = require('./theme-copy');
 
 // Special folder inside a theme for component themes that go inside the component shadow root
 const themeComponentsFolder = 'components';
@@ -83,12 +84,14 @@ function generateThemeFile(themeFolder, themeName, themeProperties) {
 
   let i = 0;
   if (themeProperties.importCss) {
-    themeProperties.importCss.forEach((cssPath) => {
-      const nodeSources = path.resolve('node_modules/', cssPath);
-      if(!fs.existsSync(nodeSources)) {
-        throw Error("Missing resource '" + cssPath + "'. Install package by adding a @NpmPackage annotation or install it using 'npm/pnpm i'");
-      }
+    const missingModules = checkModules(themeProperties.importCss);
+    if(missingModules.length > 0) {
+      throw Error("Missing npm modules or files '" + missingModules.join("', '")
+        + "' for importCss marked in 'theme.json'.\n" +
+        "Install or update package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm i'");
 
+    }
+    themeProperties.importCss.forEach((cssPath) => {
       const variable = 'module' + i++;
       imports.push(`import ${variable} from '${cssPath}';\n`);
       globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n`);
