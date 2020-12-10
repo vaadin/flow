@@ -198,8 +198,7 @@ public class NpmTemplateParser implements TemplateParser {
                 .lookup(ResourceProvider.class);
         InputStream content = null;
         try {
-            URL appResource = resourceProvider.getApplicationResource(service,
-                    url);
+            URL appResource = resourceProvider.getApplicationResource(url);
             content = appResource == null ? null : appResource.openStream();
         } catch (IOException exception) {
             getLogger().warn("Coudln't get resource for the template '{}'", url,

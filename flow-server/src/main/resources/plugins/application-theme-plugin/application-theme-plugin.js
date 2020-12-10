@@ -112,7 +112,7 @@ function handleThemes(themeName, themesFolder, projectStaticAssetsOutputFolder) 
 
     const themeProperties = getThemeProperties(themeFolder);
 
-    copyStaticAssets(themeProperties, projectStaticAssetsOutputFolder, logger);
+    copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputFolder, logger);
 
     const themeFile = generateThemeFile(themeFolder, themeName, themeProperties);
 

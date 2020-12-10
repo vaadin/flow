@@ -353,7 +353,7 @@ export class ConnectClient {
       async(context: MiddlewareContext): Promise<Response> => {
         this.loading(true);
         try {
-          return fetch(context.request);
+          return await fetch(context.request);
         } finally {
           this.loading(false); 
         }
