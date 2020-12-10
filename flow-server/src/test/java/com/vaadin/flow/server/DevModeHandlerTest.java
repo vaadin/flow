@@ -356,7 +356,7 @@ public class DevModeHandlerTest {
     @Test
     public void vaadinServlet_forDifferentRequests_shouldHaveCorrectResponse()
             throws Exception {
-        HttpServletRequest request = prepareRequest("/foo.js");
+        HttpServletRequest request = prepareRequest("/VAADIN/foo.js");
         HttpServletResponse response = prepareResponse();
         int port = prepareHttpServer(0, HTTP_OK, "");
 
