@@ -57,7 +57,8 @@ public class StaticFileServer implements StaticFileHandler {
     private DeploymentConfiguration deploymentConfiguration;
 
     // Matcher to match string starting with '/theme/[theme-name]/'
-    protected static final Pattern themeFolder = Pattern.compile("^\\/theme\\/[\\s\\S]*?\\/");
+    protected static final Pattern APP_THEME_PATTERN = Pattern
+        .compile("^\\/theme\\/[\\s\\S]+?\\/");
 
     /**
      * Constructs a file server.
@@ -83,8 +84,9 @@ public class StaticFileServer implements StaticFileHandler {
             return false;
         }
 
-        if (themeFolder.matcher(requestFilename).find() || requestFilename.startsWith("/" + VAADIN_STATIC_FILES_PATH)
-                || requestFilename.startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
+        if (APP_THEME_PATTERN.matcher(requestFilename).find() || requestFilename
+            .startsWith("/" + VAADIN_STATIC_FILES_PATH) || requestFilename
+            .startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
             // The path is reserved for internal resources only
             // We rather serve 404 than let it fall through
             return true;
@@ -114,7 +116,7 @@ public class StaticFileServer implements StaticFileHandler {
 
         URL resourceUrl = null;
         if (isAllowedVAADINBuildOrStaticUrl(filenameWithPath)) {
-            if(themeFolder.matcher(filenameWithPath).find()) {
+            if(APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
                 resourceUrl = servletService.getClassLoader()
                     .getResource("META-INF/VAADIN/static" + filenameWithPath);
             } else {
@@ -203,9 +205,10 @@ public class StaticFileServer implements StaticFileHandler {
      * @return true if we are ok to try serving the file
      */
     private boolean isAllowedVAADINBuildOrStaticUrl(String filenameWithPath) {
-        // Check that we target VAADIN/build
-        return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH) || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH)
-            || themeFolder.matcher(filenameWithPath).find();
+        // Check that we target VAADIN/build | VAADIN/static | theme/theme-name
+        return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
+            || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH)
+            || APP_THEME_PATTERN.matcher(filenameWithPath).find();
     }
 
     /**
@@ -297,7 +300,7 @@ public class StaticFileServer implements StaticFileHandler {
         if (request.getPathInfo() == null) {
             return request.getServletPath();
         } else if (request.getPathInfo().startsWith("/" + VAADIN_MAPPING)
-            || themeFolder.matcher(request.getPathInfo()).find()) {
+            || APP_THEME_PATTERN.matcher(request.getPathInfo()).find()) {
             return request.getPathInfo();
         }
         return request.getServletPath() + request.getPathInfo();

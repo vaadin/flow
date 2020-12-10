@@ -58,7 +58,7 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WE
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
-import static com.vaadin.flow.server.StaticFileServer.themeFolder;
+import static com.vaadin.flow.server.StaticFileServer.APP_THEME_PATTERN;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
 import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
@@ -286,7 +286,7 @@ public final class DevModeHandler implements RequestHandler {
     public boolean isDevModeRequest(HttpServletRequest request) {
         String pathInfo = request.getPathInfo();
         return pathInfo != null && (pathInfo.startsWith("/" + VAADIN_MAPPING)
-            || themeFolder.matcher(pathInfo).find()) && !pathInfo
+            || APP_THEME_PATTERN.matcher(pathInfo).find()) && !pathInfo
             .startsWith("/" + StreamRequestHandler.DYN_RES_PREFIX);
     }
 
@@ -326,7 +326,7 @@ public final class DevModeHandler implements RequestHandler {
         }
 
         // Redirect theme source request
-        if(themeFolder.matcher(requestFilename).find()) {
+        if(APP_THEME_PATTERN.matcher(requestFilename).find()) {
             requestFilename = "/VAADIN/static" + requestFilename;
         }
 
