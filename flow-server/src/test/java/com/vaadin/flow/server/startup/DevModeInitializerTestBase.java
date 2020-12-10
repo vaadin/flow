@@ -66,9 +66,9 @@ public class DevModeInitializerTestBase {
     File webpackFile;
     String baseDir;
     Lookup lookup = Mockito.mock(Lookup.class);;
-    EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = Mockito.mock(EndpointGeneratorTaskFactory.class);
-    TaskGenerateConnect taskGenerateConnect = Mockito.mock(TaskGenerateConnect.class);
-    TaskGenerateOpenApi taskGenerateOpenApi = Mockito.mock(TaskGenerateOpenApi.class);
+    EndpointGeneratorTaskFactory endpointGeneratorTaskFactory;
+    TaskGenerateConnect taskGenerateConnect;
+    TaskGenerateOpenApi taskGenerateOpenApi;
 
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -94,6 +94,9 @@ public class DevModeInitializerTestBase {
 
         Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
+        endpointGeneratorTaskFactory = Mockito.mock(EndpointGeneratorTaskFactory.class);
+        taskGenerateConnect = Mockito.mock(TaskGenerateConnect.class);
+        taskGenerateOpenApi = Mockito.mock(TaskGenerateOpenApi.class);
         Mockito.doReturn(endpointGeneratorTaskFactory).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
         Mockito.doReturn(taskGenerateConnect).when(endpointGeneratorTaskFactory)
