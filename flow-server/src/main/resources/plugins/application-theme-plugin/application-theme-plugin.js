@@ -17,7 +17,7 @@
 const fs = require('fs');
 const path = require('path');
 const generateThemeFile = require('./theme-generator');
-const copyStaticAssets = require('./theme-copy');
+const { copyStaticAssets } = require('./theme-copy');
 
 let logger;
 
