@@ -17,12 +17,12 @@
 const fs = require('fs');
 const path = require('path');
 const generateThemeFile = require('./theme-generator');
-const copyStaticAssets = require('./theme-copy');
+const { copyStaticAssets } = require('./theme-copy');
 
 let logger;
 
-// matches themes folder name in 'themes/my-theme/my-theme.js'
-const nameRegex = /themes\/(.*)\/\1.js/g;
+// matches theme folder name in 'themes/my-theme/my-theme.js'
+const nameRegex = /themes\/(.*)\/\1.generated.js/g;
 
 /**
  * The application theme plugin is for generating, collecting and copying of theme files for the application theme.
@@ -116,7 +116,7 @@ function handleThemes(themeName, themesFolder, projectStaticAssetsOutputFolder) 
 
     const themeFile = generateThemeFile(themeFolder, themeName, themeProperties);
 
-    fs.writeFileSync(path.resolve(themeFolder, themeName + '.js'), themeFile);
+    fs.writeFileSync(path.resolve(themeFolder, themeName + '.generated.js'), themeFile);
     return true;
   }
   return false;

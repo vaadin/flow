@@ -54,5 +54,5 @@ yarn.lock
 
 flow-client/src/main/resources/META-INF/resources/frontend/FlowClient.js
 flow-tests/**/types.d.ts
-flow-tests/test-themes/frontend/theme/app-theme/app-theme.js
-flow-tests/test-embedding/test-embedding-application-theme/frontend/theme/embedded-theme/embedded-theme.js
+/flow-tests/**/*.generated.js
+

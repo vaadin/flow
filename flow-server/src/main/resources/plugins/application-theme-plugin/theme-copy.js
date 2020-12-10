@@ -61,6 +61,12 @@ function copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputF
   fs.mkdirSync(projectStaticAssetsOutputFolder, {
     recursive: true
   });
+  const missingModules = checkModules(Object.keys(assets));
+  if (missingModules.length > 0) {
+    throw Error("Missing npm modules '" + missingModules.join("', '")
+      + "' for assets marked in 'theme.json'.\n" +
+      "Install package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm i'");
+  }
   Object.keys(assets).forEach((module) => {
 
     const copyRules = assets[module];
@@ -84,4 +90,16 @@ function copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputF
   });
 };
 
-module.exports = copyStaticAssets;
+function checkModules(modules) {
+  const missing = [];
+
+  modules.forEach((module) => {
+    if (!fs.existsSync(path.resolve('node_modules/', module))) {
+      missing.push(module);
+    }
+  });
+
+  return missing;
+}
+
+module.exports = {checkModules, copyStaticAssets};
