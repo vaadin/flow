@@ -231,7 +231,7 @@ module.exports = {
     !devMode && new CompressionPlugin(),
 
     new ApplicationThemePlugin({
-      themeResourceFolder: path.resolve(flowFrontendFolder, 'themes'),
+      themeResourceFolder: path.resolve(flowFrontendFolder, 'theme'),
       themeProjectFolders: themeProjectFolders,
       projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
     }),
