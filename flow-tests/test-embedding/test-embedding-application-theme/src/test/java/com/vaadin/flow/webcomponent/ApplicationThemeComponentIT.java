@@ -29,6 +29,7 @@ import static com.vaadin.flow.webcomponent.ThemedComponent.EMBEDDED_ID;
 import static com.vaadin.flow.webcomponent.ThemedComponent.HAND_ID;
 import static com.vaadin.flow.webcomponent.ThemedComponent.MY_LIT_ID;
 import static com.vaadin.flow.webcomponent.ThemedComponent.MY_POLYMER_ID;
+import static com.vaadin.flow.webcomponent.ThemedComponent.TEST_TEXT_ID;
 
 public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
@@ -38,7 +39,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void applicationTheme_GlobalCss_isUsedOnlyInEmbeddeComponent() {
+    public void applicationTheme_GlobalCss_isUsedOnlyInEmbeddedComponent() {
         open();
         // No exception for bg-image should exist
         checkLogsForErrors();
@@ -82,9 +83,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     public void componentThemeIsApplied_forPolymerAndLit() {
         open();
 
-        final TestBenchElement themedComponent = $("themed-component").first();
-        final TestBenchElement embeddedComponent = themedComponent
-            .$(DivElement.class).id(EMBEDDED_ID);
+        final TestBenchElement embeddedComponent = getEmbeddedComponent();
 
         TestBenchElement myField = embeddedComponent.$(TestBenchElement.class)
             .id(MY_POLYMER_ID);
@@ -105,12 +104,23 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void documentCssFonts_fontsAreAppliedAndAvailable() {
+    public void documentCssFonts_fromNpm_fontsAreAvailableInDocumentRoot() {
+        open();
+
+        WebElement spanElement = findElement(
+                By.id("npm-document-css-element"));
+
+        Assert.assertEquals(
+                "Expected Fontawesome to be imported and available on host page",
+                "\"Font Awesome 5 Free\"",
+                spanElement.getCssValue("font-family"));
+    }
+
+    @Test
+    public void documentCssFonts_fromNpm_fontsAreAvailableInEmbeddedComponent() {
         open();
         checkLogsForErrors();
-        final TestBenchElement themedComponent = $("themed-component").first();
-        final TestBenchElement embeddedComponent = themedComponent
-            .$(DivElement.class).id(EMBEDDED_ID);
+        final TestBenchElement embeddedComponent = getEmbeddedComponent();
 
         final SpanElement handElement = embeddedComponent.$(SpanElement.class)
             .id(HAND_ID);
@@ -120,10 +130,42 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
             handElement.getCssValue("font-weight"));
         Assert.assertEquals("display value faulty", "inline-block",
             handElement.getCssValue("display"));
+    }
 
+    @Test
+    public void documentCssFonts_fromLocalCssFile_fontsAreAppliedInDocumentRoot() {
+        open();
+
+        WebElement spanElement = findElement(
+                By.id("local-document-css-element"));
+
+        Assert.assertEquals(
+                "Expected Open Sans font to be applied for document root element",
+                "\"Open Sans\"", spanElement.getCssValue("font-family"));
+    }
+
+    @Test
+    public void documentCssFonts_fromLocalCssFile_fontsAreNotAppliedInEmbeddedComponent() {
+        open();
+
+        TestBenchElement embeddedComponent = getEmbeddedComponent();
+        WebElement textSpan = embeddedComponent.findElement(By.id(TEST_TEXT_ID));
+
+        Assert.assertNotEquals(
+                "Expected no font-face from document.css has been applied to embedded element",
+                "\"Open Sans\"", textSpan.getCssValue("font-family"));
+    }
+
+    @Test
+    public void documentCssFonts_fontsAreAvailable() {
         getDriver().get(getRootURL()
-            + "/path/VAADIN/static/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2");
+                + "/path/VAADIN/static/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2");
         Assert.assertFalse("Font resource should be available",
-            driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
+                driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
+    }
+
+    private TestBenchElement getEmbeddedComponent() {
+        final TestBenchElement themedComponent = $("themed-component").first();
+        return themedComponent.$(DivElement.class).id(EMBEDDED_ID);
     }
 }
