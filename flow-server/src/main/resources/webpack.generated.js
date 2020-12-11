@@ -228,7 +228,7 @@ module.exports = {
 
     new ApplicationThemePlugin({
       // The following matches target/flow-frontend/theme/theme-generated.js and not frontend/themes
-      themeResourceFolder: path.resolve(flowFrontendFolder, 'theme'),
+      themeResourceFolder: path.resolve(flowFrontendFolder, 'themes'),
       themeProjectFolders: themeProjectFolders,
       projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
     }),
