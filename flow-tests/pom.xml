@@ -453,12 +453,11 @@
                                     <fileset>
                                         <directory>${project.basedir}</directory>
                                         <includes>
-                                            <include>frontend/main.js</include>
                                             <include>package*.json</include>
                                             <include>webpack.*.js</include>
                                             <include>types.d.ts</include>
                                             <include>tsconfig.json</include>
-                                            <include>pmpm-lock.yaml</include>
+                                            <include>pnpm-lock.yaml</include>
                                             <include>node_modules/**</include>
                                         </includes>
                                     </fileset>
