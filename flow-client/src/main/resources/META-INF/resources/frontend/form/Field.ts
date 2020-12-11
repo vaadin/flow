@@ -1,11 +1,7 @@
 /* tslint:disable:max-classes-per-file */
 
-import { directive, Part, PropertyPart } from "lit-html";
-import {
-  _fromString,
-  AbstractModel,
-  getBinderNode
-} from "./Models";
+import {directive, Part, PropertyPart} from "lit-html";
+import {_fromString, AbstractModel, getBinderNode} from "./Models";
 
 interface Field {
   required: boolean,
@@ -165,8 +161,8 @@ export const field = directive(<T>(
   }
 
   const value = binderNode.value;
-  const fieldValue = convertFieldValue(fieldState.value);
-  if (value !== fieldValue && !(Number.isNaN(value) && Number.isNaN(fieldValue))) {
+  const valueFromField = convertFieldValue(fieldState.value);
+  if (value !== valueFromField && !(Number.isNaN(value) && Number.isNaN(valueFromField))) {
     fieldState.strategy.value = fieldState.value = value;
   }
 
