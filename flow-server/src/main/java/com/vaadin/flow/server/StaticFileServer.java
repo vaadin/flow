@@ -56,9 +56,9 @@ public class StaticFileServer implements StaticFileHandler {
     private final VaadinServletService servletService;
     private DeploymentConfiguration deploymentConfiguration;
 
-    // Matcher to match string starting with '/theme/[theme-name]/'
+    // Matcher to match string starting with '/themes/[theme-name]/'
     protected static final Pattern APP_THEME_PATTERN = Pattern
-        .compile("^\\/theme\\/[\\s\\S]+?\\/");
+        .compile("^\\/themes\\/[\\s\\S]+?\\/");
 
     /**
      * Constructs a file server.
@@ -213,7 +213,7 @@ public class StaticFileServer implements StaticFileHandler {
                     filenameWithPath);
             return false;
         }
-        // Check that we target VAADIN/build | VAADIN/static | theme/theme-name
+        // Check that we target VAADIN/build | VAADIN/static | themes/theme-name
         return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
             || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH)
             || APP_THEME_PATTERN.matcher(filenameWithPath).find();
