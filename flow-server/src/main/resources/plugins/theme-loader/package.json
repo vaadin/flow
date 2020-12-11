@@ -6,7 +6,7 @@
   ],
   "repository": "vaadin/flow",
   "name": "@vaadin/theme-loader",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "theme-loader.js",
   "author": "Vaadin Ltd",
   "license": "Apache-2.0",

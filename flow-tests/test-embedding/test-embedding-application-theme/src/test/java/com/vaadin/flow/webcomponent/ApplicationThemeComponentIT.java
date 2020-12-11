@@ -45,7 +45,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         final TestBenchElement themedComponent = $("themed-component").first();
 
         Assert.assertEquals(
-            "url(\"" + getRootURL() + "/VAADIN/static/theme/embedded-theme/img/bg.jpg\")",
+            "url(\"" + getRootURL() + "/VAADIN/static/themes/embedded-theme/img/bg.jpg\")",
             themedComponent.getCssValue("background-image"));
 
         Assert.assertEquals("Ostrich",
@@ -53,12 +53,12 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
         final WebElement body = findElement(By.tagName("body"));
         Assert.assertNotEquals(
-            "url(\"" + getRootURL() + "/path/VAADIN/static/theme/embedded-theme/img/bg.jpg\")",
+            "url(\"" + getRootURL() + "/path/VAADIN/static/themes/embedded-theme/img/bg.jpg\")",
             body.getCssValue("background-image"));
 
         Assert.assertNotEquals("Ostrich", body.getCssValue("font-family"));
 
-        getDriver().get(getRootURL() + "/VAADIN/static/theme/embedded-theme/img/bg.jpg");
+        getDriver().get(getRootURL() + "/VAADIN/static/themes/embedded-theme/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
             driver.getPageSource().contains("Could not navigate"));
     }

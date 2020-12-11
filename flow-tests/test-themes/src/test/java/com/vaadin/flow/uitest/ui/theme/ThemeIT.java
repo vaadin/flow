@@ -38,11 +38,11 @@ public class ThemeIT extends ChromeBrowserTest {
 
     @Test
     public void secondTheme_staticFilesNotCopied() {
-        getDriver().get(getRootURL() + "/path/theme/app-theme/img/bg.jpg");
+        getDriver().get(getRootURL() + "/path/VAADIN/static/themes/app-theme/img/bg.jpg");
         Assert.assertFalse("app-theme static files should be copied",
             driver.getPageSource().contains("HTTP ERROR 404"));
 
-        getDriver().get(getRootURL() + "/path/theme/app-theme/no-copy.txt");
+        getDriver().get(getRootURL() + "/path/VAADIN/static/themes/no-copy/no-copy.txt");
         Assert.assertTrue("no-copy theme should not be handled",
             driver.getPageSource().contains("HTTP ERROR 404"));
     }
@@ -54,15 +54,15 @@ public class ThemeIT extends ChromeBrowserTest {
         checkLogsForErrors();
 
         final WebElement body = findElement(By.tagName("body"));
-        // Note theme/app-theme gets VAADIN/static from the file-loader
+        // Note themes/app-theme gets VAADIN/static from the file-loader
         Assert.assertEquals(
-            "url(\"" + getRootURL() + "/path/VAADIN/static/theme/app-theme/img/bg.jpg\")",
+            "url(\"" + getRootURL() + "/path/VAADIN/static/themes/app-theme/img/bg.jpg\")",
             body.getCssValue("background-image"));
 
         Assert.assertEquals("Ostrich", body.getCssValue("font-family"));
 
-        // Note theme/app-theme gets VAADIN/static from the file-loader
-        getDriver().get(getRootURL() + "/path/VAADIN/static/theme/app-theme/img/bg.jpg");
+        // Note themes/app-theme gets VAADIN/static from the file-loader
+        getDriver().get(getRootURL() + "/path/VAADIN/static/themes/app-theme/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
             driver.getPageSource().contains("Could not navigate"));
     }
@@ -114,10 +114,10 @@ public class ThemeIT extends ChromeBrowserTest {
         open();
         checkLogsForErrors();
 
-        // Note theme/app-theme gets VAADIN/static from the file-loader
+        // Note themes/app-theme gets VAADIN/static from the file-loader
         Assert.assertEquals("Imported css file URLs should have been handled.",
             "url(\"" + getRootURL()
-                + "/path/VAADIN/static/theme/app-theme/icons/archive.png\")",
+                + "/path/VAADIN/static/themes/app-theme/icons/archive.png\")",
             $(SpanElement.class).id(SUB_COMPONENT_ID)
                 .getCssValue("background-image"));
     }
@@ -128,9 +128,9 @@ public class ThemeIT extends ChromeBrowserTest {
         checkLogsForErrors();
 
         Assert.assertEquals(
-            "Node assets should have been copied to 'theme/app-theme'",
+            "Node assets should have been copied to 'themes/app-theme'",
             getRootURL()
-                + "/path/theme/app-theme/fortawesome/icons/snowflake.svg",
+                + "/path/themes/app-theme/fortawesome/icons/snowflake.svg",
             $(ImageElement.class).id(SNOWFLAKE_ID).getAttribute("src"));
 
         open(getRootURL() + "/path/" + $(ImageElement.class).id(SNOWFLAKE_ID)
