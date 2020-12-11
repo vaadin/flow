@@ -120,7 +120,10 @@ public class PwaTestIT extends ChromeDeviceTest {
         while (matcher.find()) {
             precacheUrls.add(matcher.group(2));
         }
-        Assert.assertFalse("Expected at least one precache URL", precacheUrls.isEmpty());
+        Assert.assertFalse("Expected at least one precache URL",
+                precacheUrls.isEmpty());
+        Assert.assertTrue("Expected precached appshell",
+                precacheUrls.contains("."));
         checkResources(precacheUrls.toArray(new String[] {}));
         checkResources("yes.png", "offline.html");
     }
