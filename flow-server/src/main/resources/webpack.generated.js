@@ -15,8 +15,8 @@ const ApplicationThemePlugin = require('@vaadin/application-theme-plugin');
 
 const path = require('path');
 
-// this matches /theme/my-theme/ and is used to check css url handling and file path build.
-const themePartRegex = /(\\|\/)theme\1[\s\S]*?\1/;
+// this matches /themes/my-theme/ and is used to check css url handling and file path build.
+const themePartRegex = /(\\|\/)themes\1[\s\S]*?\1/;
 
 // the folder of app resources:
 //  - flow templates for classic Flow
@@ -50,7 +50,7 @@ const projectStaticAssetsOutputFolder = [to-be-generated-by-flow];
 
 // Folders in the project which can contain application themes
 const themeProjectFolders = projectStaticAssetsFolders.map((folder) =>
-  path.resolve(folder, 'theme')
+  path.resolve(folder, 'themes')
 );
 
 
@@ -183,7 +183,7 @@ module.exports = {
               url: (url, resourcePath) => {
                 // Only translate files from node_modules
                 const resolve = resourcePath.match(/(\\|\/)node_modules\1/);
-                const themeResource = resourcePath.match(themePartRegex) && url.match(/^theme\/[\s\S]*?\//);
+                const themeResource = resourcePath.match(themePartRegex) && url.match(/^themes\/[\s\S]*?\//);
                 return resolve || themeResource;
               },
               // use theme-loader to also handle any imports in css files
@@ -227,6 +227,7 @@ module.exports = {
     !devMode && new CompressionPlugin(),
 
     new ApplicationThemePlugin({
+      // The following matches target/flow-frontend/theme/theme-generated.js and not frontend/themes
       themeResourceFolder: path.resolve(flowFrontendFolder, 'theme'),
       themeProjectFolders: themeProjectFolders,
       projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
