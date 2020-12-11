@@ -16,7 +16,7 @@
 
 /**
  * This file handles the generation of the '[theme-name].js' to
- * the theme/[theme-name] folder according to properties from 'theme.json'.
+ * the themes/[theme-name] folder according to properties from 'theme.json'.
  */
 const glob = require('glob');
 const path = require('path');
