@@ -171,26 +171,6 @@ public interface DeploymentConfiguration
      * {@link DeploymentConfiguration#getApplicationOrSystemProperty(String, Object, Function)}
      * for {@link String} type.
      *
-     * @param propertyName
-     *            The simple of the property, in some contexts, lookup might be
-     *            performed using variations of the provided name.
-     * @param defaultValue
-     *            the default value that should be used if no value has been
-     *            defined
-     * @return the property value, or the passed default value if no property
-     *         value is found
-     */
-    @Override
-    default String getStringProperty(String propertyName, String defaultValue) {
-        return getApplicationOrSystemProperty(propertyName, defaultValue,
-                Function.identity());
-    }
-
-    /**
-     * A shorthand of
-     * {@link DeploymentConfiguration#getApplicationOrSystemProperty(String, Object, Function)}
-     * for {@link String} type.
-     *
      * Considers {@code ""} to be equal {@code true} in order to treat params
      * like {@code -Dtest.param} as enabled ({@code test.param == true}).
      *
@@ -297,9 +277,22 @@ public interface DeploymentConfiguration
     }
 
     /**
-     * Get if the dev server should be reused on each reload. True by default,
-     * set it to false in tests so as dev server is not kept as a daemon after
-     * the test.
+     * <<<<<<< Upstream, based on master ======= Get if the dev server should be
+     * enabled. True by default
+     *
+     * @return true if dev server should be used
+     */
+    @Override
+    default boolean enableDevServer() {
+        return getBooleanProperty(
+                InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER, true);
+    }
+
+    /**
+     * >>>>>>> 01eb234 refactor: extract common config functionality and
+     * introduce add config Get if the dev server should be reused on each
+     * reload. True by default, set it to false in tests so as dev server is not
+     * kept as a daemon after the test.
      *
      * @return true if dev server should be reused
      */
