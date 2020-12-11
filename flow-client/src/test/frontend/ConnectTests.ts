@@ -157,16 +157,31 @@ describe('ConnectClient', () => {
       expect(fetchMock.lastOptions()).to.include({method: 'POST'});
     });
 
-    it('should update Vaadin.connectionState.state', async() => {
-      let calls: ConnectionState[] = [];
-      (window as any).Vaadin.connectionState.addStateChangeListener((_, current: ConnectionState) => calls.push(current));
+    it('should call Flow.loading indicator', async() => {
+      let calls: Array<boolean> = [];
+      (window as any).Vaadin.Flow = {
+        clients: {
+          TypeScript: {
+            loadingStarted: () => calls.push(true),
+            loadingFinished: () => calls.push(false)
+          }
+        }
+      };
       await client.call('FooEndpoint', 'fooMethod');
-      expect(calls).to.deep.equal([ConnectionState.LOADING, ConnectionState.CONNECTED]);
+      expect(calls).to.deep.equal([true, false]);
     });
 
-    it('should transition to CONNECTION_LOST upon network failure', async() => {
-      let calls: ConnectionState[] = [];
-      (window as any).Vaadin.connectionState.addStateChangeListener((_, current: ConnectionState) => calls.push(current));
+    it('should hide Flow.loading indicator and transition to CONNECTION_LOST upon network failure', async() => {
+      let calls: Array<boolean> = [];
+      (window as any).Vaadin.Flow = {
+        clients: {
+          TypeScript: {
+            loadingStarted: () => calls.push(true),
+            loadingFinished: () => calls.push(false)
+          }
+        }
+      };
+
       fetchMock.post(
         base + '/connect/FooEndpoint/reject',
         Promise.reject(new TypeError('Network failure'))
@@ -176,29 +191,37 @@ describe('ConnectClient', () => {
       } catch (error) {
         // expected
       } finally {
-        expect(calls).to.deep.equal([ConnectionState.LOADING, ConnectionState.CONNECTION_LOST]);
+        expect(calls).to.deep.equal([true, false]);
+        expect((window as any).Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
       }
     });
 
-    it('should transition to CONNECTED upon server error', async() => {
+    it('should hide Flow.loading indicator upon server error', async() => {
       const body = 'Unexpected error';
       const errorResponse = new Response(
-          body,
-          {
-            status: 500,
-            statusText: 'Internal Server Error'
-          }
+        body,
+        {
+          status: 500,
+          statusText: 'Internal Server Error'
+        }
       );
       fetchMock.post(base + '/connect/FooEndpoint/vaadinConnectResponse', errorResponse);
 
-      let calls: ConnectionState[] = [];
-      (window as any).Vaadin.connectionState.addStateChangeListener((_, current: ConnectionState) => calls.push(current));
+      let calls: Array<boolean> = [];
+      (window as any).Vaadin.Flow = {
+        clients: {
+          TypeScript: {
+            loadingStarted: () => calls.push(true),
+            loadingFinished: () => calls.push(false)
+          }
+        }
+      };
       try {
         await client.call('FooEndpoint', 'vaadinConnectResponse');
       } catch (error) {
         // expected
       } finally {
-        expect(calls).to.deep.equal([ConnectionState.LOADING, ConnectionState.CONNECTED]);
+        expect(calls).to.deep.equal([true, false]);
       }
     });
 
