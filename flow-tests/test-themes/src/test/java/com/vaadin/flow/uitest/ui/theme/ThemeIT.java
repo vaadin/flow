@@ -54,11 +54,11 @@ public class ThemeIT extends ChromeBrowserTest {
 
     @Test
     public void secondTheme_staticFilesNotCopied() {
-        getDriver().get(getRootURL() + "/path/VAADIN/static/themes/app-theme/img/bg.jpg");
+        getDriver().get(getRootURL() + "/path/themes/app-theme/img/bg.jpg");
         Assert.assertFalse("app-theme static files should be copied",
             driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
 
-        getDriver().get(getRootURL() + "/path/VAADIN/static/themes/no-copy/no-copy.txt");
+        getDriver().get(getRootURL() + "/path/themes/no-copy/no-copy.txt");
         Assert.assertTrue("no-copy theme should not be handled",
             driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
     }
