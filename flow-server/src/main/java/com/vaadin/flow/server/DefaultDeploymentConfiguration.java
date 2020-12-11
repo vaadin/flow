@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -56,7 +57,8 @@ public class DefaultDeploymentConfiguration
             + "Client-side views written in TypeScript are not supported. Vaadin 15+ enables client-side and server-side views.\n"
             + "See https://vaadin.com/docs/v15/flow/typescript/starting-the-app.html for more information.";
 
-    // not a warning anymore, but keeping variable name to avoid breaking anything
+    // not a warning anymore, but keeping variable name to avoid breaking
+    // anything
     public static final String WARNING_V15_BOOTSTRAP = "Using Vaadin 15+ bootstrap mode.%n %s%n %s";
 
     private static final String DEPLOYMENT_WARNINGS = "Following issues were discovered with deployment configuration:";
@@ -128,8 +130,8 @@ public class DefaultDeploymentConfiguration
      *            the init parameters that should make up the foundation for
      *            this configuration
      */
-    public DefaultDeploymentConfiguration(Class<?> systemPropertyBaseClass,
-            Properties initParameters) {
+    public DefaultDeploymentConfiguration(ApplicationConfiguration parentConfig,
+            Class<?> systemPropertyBaseClass, Properties initParameters) {
         super(systemPropertyBaseClass, initParameters);
 
         boolean log = logging.getAndSet(false);
@@ -362,7 +364,8 @@ public class DefaultDeploymentConfiguration
      */
     private void checkRequestTiming() {
         requestTiming = getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_REQUEST_TIMING, !productionMode);
+                InitParameters.SERVLET_PARAMETER_REQUEST_TIMING,
+                !productionMode);
     }
 
     /**
@@ -370,7 +373,8 @@ public class DefaultDeploymentConfiguration
      */
     private void checkXsrfProtection(boolean loggWarning) {
         xsrfProtectionEnabled = !getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, false);
+                InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
+                false);
         if (!xsrfProtectionEnabled && loggWarning) {
             warnings.add(WARNING_XSRF_PROTECTION_DISABLED);
         }
@@ -422,9 +426,9 @@ public class DefaultDeploymentConfiguration
     private void checkPushMode() {
         try {
             pushMode = getApplicationOrSystemProperty(
-                    InitParameters.SERVLET_PARAMETER_PUSH_MODE, PushMode.DISABLED,
-                    stringMode -> Enum.valueOf(PushMode.class,
-                            stringMode.toUpperCase()));
+                    InitParameters.SERVLET_PARAMETER_PUSH_MODE,
+                    PushMode.DISABLED, stringMode -> Enum
+                            .valueOf(PushMode.class, stringMode.toUpperCase()));
         } catch (IllegalArgumentException e) {
             warnings.add(WARNING_PUSH_MODE_NOT_RECOGNIZED);
             pushMode = PushMode.DISABLED;
@@ -432,7 +436,8 @@ public class DefaultDeploymentConfiguration
     }
 
     private void checkPushURL() {
-        pushURL = getStringProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL, "");
+        pushURL = getStringProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL,
+                "");
     }
 
     private void checkSyncIdCheck() {

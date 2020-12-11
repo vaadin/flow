@@ -22,12 +22,9 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -36,21 +33,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.AbstractConfigurationFactory;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
  * Creates {@link DeploymentConfiguration} filled with all parameters specified
@@ -58,7 +51,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
  *
  * @since 1.2
  */
-public final class DeploymentConfigurationFactory implements Serializable {
+public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
+        implements Serializable {
 
     public static final Object FALLBACK_CHUNK = new Serializable() {
     };
@@ -67,13 +61,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
             + "the project/working directory. Ensure 'webpack.config.js' is present or trigger creation of "
             + "'flow-build-info.json' via running 'prepare-frontend' Maven goal.";
 
-    public static final String DEV_FOLDER_MISSING_MESSAGE = "Running project in development mode with no access to folder '%s'.%n"
-            + "Build project in production mode instead, see https://vaadin.com/docs/v15/flow/production/tutorial-production-mode-basic.html";
     private static final Logger logger = LoggerFactory
             .getLogger(DeploymentConfigurationFactory.class);
-
-    private DeploymentConfigurationFactory() {
-    }
 
     /**
      * Creates a {@link DeploymentConfiguration} instance that is filled with
@@ -87,10 +76,12 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @throws VaadinConfigurationException
      *             thrown if property construction fails
      */
-    public static DeploymentConfiguration createDeploymentConfiguration(
+    public DeploymentConfiguration createDeploymentConfiguration(
             Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig)
             throws VaadinConfigurationException {
-        return new DefaultDeploymentConfiguration(systemPropertyBaseClass,
+        return new DefaultDeploymentConfiguration(
+                ApplicationConfiguration.get(vaadinConfig.getVaadinContext()),
+                systemPropertyBaseClass,
                 createInitParameters(systemPropertyBaseClass, vaadinConfig));
     }
 
@@ -107,10 +98,12 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @throws VaadinConfigurationException
      *             thrown if property construction fails
      */
-    public static DeploymentConfiguration createPropertyDeploymentConfiguration(
+    public DeploymentConfiguration createPropertyDeploymentConfiguration(
             Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig)
             throws VaadinConfigurationException {
-        return new PropertyDeploymentConfiguration(systemPropertyBaseClass,
+        return new PropertyDeploymentConfiguration(
+                ApplicationConfiguration.get(vaadinConfig.getVaadinContext()),
+                systemPropertyBaseClass,
                 createInitParameters(systemPropertyBaseClass, vaadinConfig));
     }
 
@@ -126,21 +119,11 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @throws VaadinConfigurationException
      *             thrown if property construction fails
      */
-    protected static Properties createInitParameters(
-            Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig)
-            throws VaadinConfigurationException {
+    protected Properties createInitParameters(Class<?> systemPropertyBaseClass,
+            VaadinConfig vaadinConfig) throws VaadinConfigurationException {
         Properties initParameters = new Properties();
         readUiFromEnclosingClass(systemPropertyBaseClass, initParameters);
         readConfigurationAnnotation(systemPropertyBaseClass, initParameters);
-
-        // TODO : will be removed in futher commits
-        // Read default parameters from server.xml
-        final VaadinContext context = vaadinConfig.getVaadinContext();
-        for (final Enumeration<String> e = context.getContextParameterNames(); e
-                .hasMoreElements();) {
-            final String name = e.nextElement();
-            initParameters.setProperty(name, context.getContextParameter(name));
-        }
 
         // Override with application config from web.xml
         for (final Enumeration<String> e = vaadinConfig
@@ -155,19 +138,17 @@ public final class DeploymentConfigurationFactory implements Serializable {
         return initParameters;
     }
 
-    private static void readBuildInfo(Class<?> systemPropertyBaseClass,
+    private void readBuildInfo(Class<?> systemPropertyBaseClass,
             Properties initParameters, VaadinContext context) {
-        String json = getTokenFileContents(systemPropertyBaseClass,
-                initParameters, context);
+        String json = getTokenFileContents(initParameters);
 
         // Read the json and set the appropriate system properties if not
         // already set.
         if (json != null) {
             JsonObject buildInfo = JsonUtil.parse(json);
-            // TODO : will be rewritten properly without extra instantiation
-            Map<String, String> params = new AbstractConfigurationFactory()
-                    .getConfigParametersUsingTokenData(buildInfo);
-            initParameters.putAll(params);
+            Map<String, String> properties = getInitParametersUsingTokenData(
+                    buildInfo);
+            initParameters.putAll(properties);
 
             FallbackChunk fallbackChunk = FrontendUtils
                     .readFallbackChunk(buildInfo);
@@ -177,18 +158,12 @@ public final class DeploymentConfigurationFactory implements Serializable {
         }
     }
 
-    private static String getTokenFileContents(Class<?> systemPropertyBaseClass,
-            Properties initParameters, VaadinContext context) {
-        String json = null;
+    private static String getTokenFileContents(Properties initParameters) {
         try {
-            json = getResourceFromFile(initParameters);
-            if (json == null) {
-                json = getTokenFileFromClassloader(context);
-            }
+            return getResourceFromFile(initParameters);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        return json;
     }
 
     private static String getResourceFromFile(Properties initParameters)
@@ -204,132 +179,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
             }
         }
         return json;
-    }
-
-    /**
-     * Gets token file from the classpath using the provided {@code context}.
-     * <p>
-     * The {@code contextClass} may be a class which is defined in the Web
-     * Application module/bundle and in this case it may be used to get Web
-     * Application resources. Also a {@link VaadinContext} {@code context}
-     * instance may be used to get a context of the Web Application (since the
-     * {@code contextClass} may be a class not from Web Application module). In
-     * WAR case it doesn't matter which class is used to get the resources (Web
-     * Application classes or e.g. "flow-server" classes) since they are loaded
-     * by the same {@link ClassLoader}. But in OSGi "flow-server" module classes
-     * can't be used to get Web Application resources since they are in
-     * different bundles.
-     * 
-     * @param context
-     *            a VaadinContext which may provide information how to get token
-     *            file for the web application
-     * @return the token file content
-     * @throws IOException
-     *             if I/O fails during access to the token file
-     */
-    private static String getTokenFileFromClassloader(VaadinContext context)
-            throws IOException {
-        String tokenResource = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
-
-        Lookup lookup = context.getAttribute(Lookup.class);
-        ResourceProvider resourceProvider = lookup
-                .lookup(ResourceProvider.class);
-
-        List<URL> resources = resourceProvider
-                .getApplicationResources(tokenResource);
-
-        // Accept resource that doesn't contain
-        // 'jar!/META-INF/Vaadin/config/flow-build-info.json'
-        URL resource = resources.stream()
-                .filter(url -> !url.getPath().endsWith("jar!/" + tokenResource))
-                .findFirst().orElse(null);
-        if (resource == null && !resources.isEmpty()) {
-            // For no non jar build info, in production mode check for
-            // webpack.generated.json if it's in a jar then accept
-            // single jar flow-build-info.
-            return getPossibleJarResource(context, resources);
-        }
-        return resource == null ? null
-                : FrontendUtils.streamToString(resource.openStream());
-
-    }
-
-    /**
-     * Check if the webpack.generated.js resources is inside 2 jars
-     * (flow-server.jar and application.jar) if this is the case then we can
-     * accept a build info file from inside jar with a single jar in the path.
-     * <p>
-     * Else we will accept any flow-build-info and log a warning that it may not
-     * be the correct file, but it's the best we could find.
-     */
-    private static String getPossibleJarResource(VaadinContext context,
-            List<URL> resources) throws IOException {
-        Objects.requireNonNull(resources);
-
-        Lookup lookup = context.getAttribute(Lookup.class);
-        ResourceProvider resourceProvider = lookup
-                .lookup(ResourceProvider.class);
-
-        assert !resources
-                .isEmpty() : "Possible jar resource requires resources to be available.";
-
-        URL webpackGenerated = resourceProvider
-                .getApplicationResource(FrontendUtils.WEBPACK_GENERATED);
-
-        // If jar!/ exists 2 times for webpack.generated.json then we are
-        // running from a jar
-        if (webpackGenerated != null
-                && countInstances(webpackGenerated.getPath(), "jar!/") >= 2) {
-            for (URL resource : resources) {
-                // As we now know that we are running from a jar we can accept a
-                // build info with a single jar in the path
-                if (countInstances(resource.getPath(), "jar!/") == 1) {
-                    return FrontendUtils.streamToString(resource.openStream());
-                }
-            }
-        }
-        URL firstResource = resources.get(0);
-        if (resources.size() > 1) {
-            String warningMessage = String.format(
-                    "Unable to fully determine correct flow-build-info.%n"
-                            + "Accepting file '%s' first match of '%s' possible.%n"
-                            + "Please verify flow-build-info file content.",
-                    firstResource.getPath(), resources.size());
-            logger.warn(warningMessage);
-        } else {
-            String debugMessage = String.format(
-                    "Unable to fully determine correct flow-build-info.%n"
-                            + "Accepting file '%s'",
-                    firstResource.getPath());
-            logger.debug(debugMessage);
-        }
-        return FrontendUtils.streamToString(firstResource.openStream());
-    }
-
-    private static int countInstances(String input, String value) {
-        return input.split(value, -1).length - 1;
-    }
-
-    /**
-     * Verify that given folder actually exists on the system if we are not in
-     * production mode.
-     * <p>
-     * If folder doesn't exist throw IllegalStateException saying that this
-     * should probably be a production mode build.
-     *
-     * @param initParameters
-     *            deployment init parameters
-     * @param folder
-     *            folder to check exists
-     */
-    private static void verifyFolderExists(Properties initParameters,
-            String folder) {
-        Boolean productionMode = Boolean.parseBoolean(initParameters
-                .getProperty(SERVLET_PARAMETER_PRODUCTION_MODE, "false"));
-        if (!productionMode && !new File(folder).exists()) {
-            String message = String.format(DEV_FOLDER_MISSING_MESSAGE, folder);
-            throw new IllegalStateException(message);
-        }
     }
 
     private static void readUiFromEnclosingClass(

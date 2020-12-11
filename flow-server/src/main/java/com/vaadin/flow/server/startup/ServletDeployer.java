@@ -21,12 +21,16 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
@@ -43,8 +47,6 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Context listener that automatically registers Vaadin servlets.
@@ -65,8 +67,8 @@ import org.slf4j.LoggerFactory;
  * <p>
  * In addition to the rules above, a servlet won't be registered, if any servlet
  * had been mapped to the same path already or if
- * {@link InitParameters#DISABLE_AUTOMATIC_SERVLET_REGISTRATION}
- * system property is set to {@code true}.
+ * {@link InitParameters#DISABLE_AUTOMATIC_SERVLET_REGISTRATION} system property
+ * is set to {@code true}.
  *
  * @author Vaadin Ltd
  * @see VaadinServletConfiguration#disableAutomaticServletRegistration()
@@ -126,7 +128,7 @@ public class ServletDeployer implements ServletContextListener {
     /**
      * Default ServletConfig implementation.
      */
-    public static class StubServletConfig implements ServletConfig {
+    private static class StubServletConfig implements ServletConfig {
         private final ServletContext context;
         private final ServletRegistration registration;
 
@@ -261,7 +263,8 @@ public class ServletDeployer implements ServletContextListener {
     }
 
     /**
-     * Prints to sysout a notification to the user that the application has been deployed.
+     * Prints to sysout a notification to the user that the application has been
+     * deployed.
      * <p>
      * This method is public so that it can be called in add-ons that map
      * servlet automatically but don't use this class for that.

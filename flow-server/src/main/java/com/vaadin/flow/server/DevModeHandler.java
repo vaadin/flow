@@ -52,6 +52,7 @@ import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
@@ -200,8 +201,8 @@ public final class DevModeHandler implements RequestHandler {
      */
     public static DevModeHandler start(int runningPort, Lookup lookup,
             File npmFolder, CompletableFuture<Void> waitFor) {
-        DeploymentConfiguration configuration = lookup
-                .lookup(DeploymentConfiguration.class);
+        ApplicationConfiguration configuration = lookup
+                .lookup(ApplicationConfiguration.class);
         if (configuration.isProductionMode()
                 || !configuration.enableDevServer()) {
             return null;
