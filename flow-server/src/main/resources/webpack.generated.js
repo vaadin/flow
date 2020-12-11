@@ -256,14 +256,8 @@ module.exports = {
     maxAssetSize: 2097152 // 2MB
   },
   plugins: [
-    // Service worker for offline
-    pwaEnabled && serviceWorkerPlugin,
-
     // Generate manifest.json file
     new ManifestPlugin(),
-
-    // Generate compressed bundles when not devMode
-    !devMode && new CompressionPlugin(),
 
     new ApplicationThemePlugin({
       themeResourceFolder: path.resolve(flowFrontendFolder, 'theme'),
@@ -289,5 +283,11 @@ module.exports = {
     useClientSideIndexFileForBootstrapping && new ScriptExtHtmlWebpackPlugin({
       defaultAttribute: 'defer'
     }),
+
+    // Service worker for offline
+    pwaEnabled && serviceWorkerPlugin,
+
+    // Generate compressed bundles when not devMode
+    !devMode && new CompressionPlugin(),
   ].filter(Boolean)
 };
