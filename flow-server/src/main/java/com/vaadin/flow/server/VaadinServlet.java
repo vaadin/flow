@@ -30,7 +30,9 @@ import java.util.Properties;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.ApplicationClassLoaderAccess;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -84,8 +86,11 @@ public class VaadinServlet extends HttpServlet {
              * its "init" method is called from the {@code
              * ServletContextListener} with the same ServletConfig instance.
              */
+            VaadinServletContext vaadinServletContext = null;
             if (getServletConfig() == null) {
                 super.init(servletConfig);
+
+                vaadinServletContext = initializeContext();
             }
 
             if (getServletConfig() != servletConfig) {
@@ -94,11 +99,13 @@ public class VaadinServlet extends HttpServlet {
                                 + "instance which has been used for the initial method call");
             }
 
-            ServletContext servletContext = getServletConfig()
-                    .getServletContext();
-            if (servletService != null
-                    || new VaadinServletContext(servletContext)
-                            .getAttribute(Lookup.class) == null) {
+            if (vaadinServletContext == null) {
+                vaadinServletContext = new VaadinServletContext(
+                        getServletConfig().getServletContext());
+            }
+
+            if (servletService != null || vaadinServletContext
+                    .getAttribute(Lookup.class) == null) {
                 return;
             }
 
@@ -511,6 +518,24 @@ public class VaadinServlet extends HttpServlet {
     public void destroy() {
         super.destroy();
         getService().destroy();
+    }
+
+    private VaadinServletContext initializeContext() {
+        ServletContext servletContext = getServletConfig().getServletContext();
+        VaadinServletContext vaadinServletContext = new VaadinServletContext(
+                servletContext);
+        // ensure the web application classloader is available via context
+        ApplicationClassLoaderAccess access = () -> servletContext
+                .getClassLoader();
+        vaadinServletContext.getAttribute(ApplicationClassLoaderAccess.class,
+                () -> access);
+
+        VaadinContextInitializer initializer = vaadinServletContext
+                .getAttribute(VaadinContextInitializer.class);
+        if (initializer != null) {
+            initializer.initialize(vaadinServletContext);
+        }
+        return vaadinServletContext;
     }
 
 }

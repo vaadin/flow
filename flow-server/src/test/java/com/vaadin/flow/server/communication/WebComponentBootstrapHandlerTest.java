@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.Assert;
@@ -30,6 +31,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.PwaConfiguration;
@@ -40,6 +42,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
@@ -47,8 +50,6 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 
@@ -100,6 +101,44 @@ public class WebComponentBootstrapHandlerTest {
                 .containsString("body {height:100vh;width:100vw;margin:0;}")));
         Assert.assertThat(resultingScript,
                 CoreMatchers.not(CoreMatchers.containsString("http-equiv")));
+    }
+
+    @Test
+    public void writeBootstrapPage_scriptSrcHasNoDoubleQuotes_attributeIsTransferred()
+            throws IOException {
+        WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+        Element head = new Document("").normalise().head();
+
+        Element script = head.ownerDocument().createElement("script");
+        head.appendChild(script);
+        script.attr("src", "foo'bar%20%27?baz%22");
+
+        VaadinResponse response = getMockResponse(stream);
+        handler.writeBootstrapPage("", response, head, "");
+
+        String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
+        MatcherAssert.assertThat(resultingScript,
+                CoreMatchers.containsString("foo'bar%20%27?baz%22"));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void writeBootstrapPage_scriptSrcHasDoubleQuotes_throws()
+            throws IOException {
+        WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+        Element head = new Document("").normalise().head();
+
+        Element script = head.ownerDocument().createElement("script");
+        head.appendChild(script);
+        script.attr("src", "foo\"");
+
+        VaadinResponse response = getMockResponse(stream);
+        handler.writeBootstrapPage("", response, head, "");
     }
 
     @Test
@@ -200,8 +239,6 @@ public class WebComponentBootstrapHandlerTest {
         handler.writeBootstrapPage("", response, head, "");
 
         String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
-
-        System.err.println(resultingScript);
     }
 
     private void initLookup(VaadinServletService service) throws IOException {
@@ -214,11 +251,16 @@ public class WebComponentBootstrapHandlerTest {
         Mockito.when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(provider);
 
-        Mockito.when(provider.getApplicationResource(service,
-                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
-                .thenReturn(WebComponentBootstrapHandlerTest.class
-                        .getClassLoader().getResource(VAADIN_SERVLET_RESOURCES
-                                + STATISTICS_JSON_DEFAULT));
+        Class<? extends VaadinServlet> servletClass = service.getServlet()
+                .getClass();
+
+        Mockito.when(provider
+                .getApplicationResource(Constants.VAADIN_SERVLET_RESOURCES
+                        + Constants.STATISTICS_JSON_DEFAULT))
+                .thenReturn(
+                        WebComponentBootstrapHandlerTest.class.getClassLoader()
+                                .getResource(Constants.VAADIN_SERVLET_RESOURCES
+                                        + Constants.STATISTICS_JSON_DEFAULT));
 
         Mockito.when(provider.getClientResourceAsStream(
                 "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH

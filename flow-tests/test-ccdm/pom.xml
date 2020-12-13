@@ -18,6 +18,15 @@
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
+    <dependencies>
+        <!-- Project dependencies -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>fusion-endpoint</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <!-- This module is mapped to default web context -->
