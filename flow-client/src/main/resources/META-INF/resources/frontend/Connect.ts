@@ -309,14 +309,6 @@ export class ConnectClient {
       );
     }
 
-    return this.requestCall(endpoint, method, params);
-  }
-
-  private async requestCall(
-    endpoint: string,
-    method: string,
-    params?: any
-  ): Promise<any> {
     const headers: Record<string, string> = {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
