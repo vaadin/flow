@@ -22,6 +22,8 @@ import java.util.function.Function;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 
 /**
+ * Provides a configuration based on string properties.
+ * 
  * @author Vaadin Ltd
  * @since
  *
@@ -31,6 +33,12 @@ public abstract class AbstractPropertyConfiguration
 
     private final Map<String, String> properties;
 
+    /**
+     * Creates a new instance with given {@code properties}
+     * 
+     * @param properties
+     *            configuration properties
+     */
     public AbstractPropertyConfiguration(Map<String, String> properties) {
         this.properties = properties;
     }

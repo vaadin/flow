@@ -22,7 +22,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
@@ -56,9 +55,8 @@ public class PropertyDeploymentConfiguration
      *            the init parameters that should make up the foundation for
      *            this configuration
      */
-    public PropertyDeploymentConfiguration(
-            ApplicationConfiguration parentConfig,
-            Class<?> systemPropertyBaseClass, Properties initParameters) {
+    public PropertyDeploymentConfiguration(Class<?> systemPropertyBaseClass,
+            Properties initParameters) {
         super(filterStringProperties(initParameters));
         initialParameters = initParameters;
         this.systemPropertyBaseClass = systemPropertyBaseClass;

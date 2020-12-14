@@ -43,6 +43,8 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BO
 import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
 
 /**
+ * A configuraiton factory base logic which reads the token file.
+ * 
  * @author Vaadin Ltd
  * @since
  *
@@ -52,7 +54,14 @@ public class AbstractConfigurationFactory {
     public static final String DEV_FOLDER_MISSING_MESSAGE = "Running project in development mode with no access to folder '%s'.%n"
             + "Build project in production mode instead, see https://vaadin.com/docs/v15/flow/production/tutorial-production-mode-basic.html";
 
-    protected Map<String, String> getInitParametersUsingTokenData(
+    /**
+     * Returns the config parameters from the token file data {@code buildInfo}.
+     * 
+     * @param buildInfo
+     *            the token file data
+     * @return the config parameters
+     */
+    public Map<String, String> getConfigParametersUsingTokenData(
             JsonObject buildInfo) {
         Map<String, String> params = new HashMap<>();
         if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
@@ -141,6 +150,16 @@ public class AbstractConfigurationFactory {
         return params;
     }
 
+    /**
+     * Sets to the dev mode properties to the configuration parameters.
+     * 
+     * @see #getConfigParametersUsingTokenData(JsonObject)
+     * 
+     * @param params
+     *            the configuration parameters to set dev mode properties to
+     * @param buildInfo
+     *            the token file data
+     */
     protected void setDevModePropertiesUsingTokenData(
             Map<String, String> params, JsonObject buildInfo) {
         // read dev mode properties from the token and set init parameter only

@@ -92,7 +92,7 @@ public class DefaultApplicationConfigurationFactory
             JsonObject buildInfo = JsonUtil
                     .parse(getTokenFileFromClassloader(context));
 
-            props.putAll(getInitParametersUsingTokenData(buildInfo));
+            props.putAll(getConfigParametersUsingTokenData(buildInfo));
         } catch (IOException exception) {
             throw new UncheckedIOException(exception);
         }
