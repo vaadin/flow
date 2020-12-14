@@ -40,10 +40,10 @@ import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.DeploymentConfigurationFactory.DEV_FOLDER_MISSING_MESSAGE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+import static com.vaadin.flow.server.startup.AbstractConfigurationFactory.DEV_FOLDER_MISSING_MESSAGE;
 import static java.util.Collections.emptyMap;
 import static org.easymock.EasyMock.capture;
 import static org.easymock.EasyMock.expect;
@@ -100,7 +100,7 @@ public class DeploymentConfigurationFactoryTest {
         Map<String, String> servletConfigParams = new HashMap<>(
                 new HashMap<>(defaultServletParams));
 
-        DeploymentConfiguration config = DeploymentConfigurationFactory
+        DeploymentConfiguration config = new DeploymentConfigurationFactory()
                 .createDeploymentConfiguration(servlet,
                         createVaadinConfigMock(servletConfigParams,
                                 Collections.singletonMap(PARAM_TOKEN_FILE,
@@ -124,7 +124,7 @@ public class DeploymentConfigurationFactoryTest {
         Map<String, String> servletConfigParams = new HashMap<>(
                 defaultServletParams);
 
-        DeploymentConfiguration config = DeploymentConfigurationFactory
+        DeploymentConfiguration config = new DeploymentConfigurationFactory()
                 .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         servletConfigParams, emptyMap()));
 
@@ -144,7 +144,7 @@ public class DeploymentConfigurationFactoryTest {
         Map<String, String> servletConfigParams = new HashMap<>(
                 defaultServletParams);
 
-        DeploymentConfiguration config = DeploymentConfigurationFactory
+        DeploymentConfiguration config = new DeploymentConfigurationFactory()
                 .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         servletConfigParams, emptyMap()));
 
@@ -172,7 +172,7 @@ public class DeploymentConfigurationFactoryTest {
                 InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(overridingHeartbeatIntervalValue));
 
-        DeploymentConfiguration config = DeploymentConfigurationFactory
+        DeploymentConfiguration config = new DeploymentConfigurationFactory()
                 .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         servletConfigParams, emptyMap()));
 
@@ -201,7 +201,7 @@ public class DeploymentConfigurationFactoryTest {
                 InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(overridingHeartbeatIntervalValue));
 
-        DeploymentConfiguration config = DeploymentConfigurationFactory
+        DeploymentConfiguration config = new DeploymentConfigurationFactory()
                 .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         emptyMap(), servletContextParams));
 
@@ -240,7 +240,7 @@ public class DeploymentConfigurationFactoryTest {
                 InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(servletContextHeartbeatIntervalValue));
 
-        DeploymentConfiguration config = DeploymentConfigurationFactory
+        DeploymentConfiguration config = new DeploymentConfigurationFactory()
                 .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         servletConfigParams, servletContextParams));
 
@@ -264,7 +264,7 @@ public class DeploymentConfigurationFactoryTest {
                 FrontendUtils.WEBPACK_CONFIG);
         FileUtils.writeLines(webPack, Arrays.asList("./webpack.generated.js"));
 
-        DeploymentConfigurationFactory.createDeploymentConfiguration(
+        new DeploymentConfigurationFactory().createDeploymentConfiguration(
                 VaadinServlet.class, createVaadinConfigMock(map, emptyMap()));
     }
 
@@ -437,7 +437,7 @@ public class DeploymentConfigurationFactoryTest {
         Mockito.when(context.getInitParameter(FrontendUtils.PARAM_TOKEN_FILE))
                 .thenReturn(tokenFile.getPath());
 
-        Properties properties = DeploymentConfigurationFactory
+        Properties properties = new DeploymentConfigurationFactory()
                 .createInitParameters(Object.class,
                         new VaadinServletConfig(config));
 
@@ -482,7 +482,7 @@ public class DeploymentConfigurationFactoryTest {
         ResourceProvider resourceProvider = mockResourceProvider(config,
                 context);
 
-        DeploymentConfigurationFactory.createInitParameters(
+        new DeploymentConfigurationFactory().createInitParameters(
                 DeploymentConfigurationFactoryTest.class, config);
 
         Mockito.verify(resourceProvider)
@@ -519,7 +519,7 @@ public class DeploymentConfigurationFactoryTest {
                 .getApplicationResource(FrontendUtils.WEBPACK_GENERATED))
                 .thenReturn(tmpFile.toURI().toURL());
 
-        DeploymentConfigurationFactory.createInitParameters(
+        new DeploymentConfigurationFactory().createInitParameters(
                 DeploymentConfigurationFactoryTest.class, config);
 
         Mockito.verify(resourceProvider)
@@ -557,8 +557,9 @@ public class DeploymentConfigurationFactoryTest {
 
     private DeploymentConfiguration createConfig(Map<String, String> map)
             throws Exception {
-        return DeploymentConfigurationFactory.createDeploymentConfiguration(
-                VaadinServlet.class, createVaadinConfigMock(map, emptyMap()));
+        return new DeploymentConfigurationFactory()
+                .createDeploymentConfiguration(VaadinServlet.class,
+                        createVaadinConfigMock(map, emptyMap()));
     }
 
     private VaadinConfig createVaadinConfigMock(

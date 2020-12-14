@@ -132,7 +132,7 @@ public class DefaultDeploymentConfiguration
      */
     public DefaultDeploymentConfiguration(ApplicationConfiguration parentConfig,
             Class<?> systemPropertyBaseClass, Properties initParameters) {
-        super(systemPropertyBaseClass, initParameters);
+        super(parentConfig, systemPropertyBaseClass, initParameters);
 
         boolean log = logging.getAndSet(false);
 
@@ -289,8 +289,12 @@ public class DefaultDeploymentConfiguration
      * Log a warning if Vaadin is not running in production mode.
      */
     private void checkProductionMode(boolean log) {
-        productionMode = getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, false);
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE)) {
+            productionMode = getBooleanProperty(
+                    InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, false);
+        } else {
+            productionMode = getParentConfiguration().isProductionMode();
+        }
         if (log) {
             if (productionMode) {
                 info.add("Vaadin is running in production mode.");
@@ -308,8 +312,13 @@ public class DefaultDeploymentConfiguration
      * Log a message about the bootstrapping being used.
      */
     private void checkV14Bootsrapping(boolean log) {
-        useDeprecatedV14Bootstrapping = getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP)) {
+            useDeprecatedV14Bootstrapping = getBooleanProperty(
+                    InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
+        } else {
+            useDeprecatedV14Bootstrapping = getParentConfiguration()
+                    .useV14Bootstrap();
+        }
         if (log) {
             if (useDeprecatedV14Bootstrapping) {
                 warnings.add(WARNING_V14_BOOTSTRAP);
@@ -451,4 +460,5 @@ public class DefaultDeploymentConfiguration
                 InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 DEFAULT_SEND_URLS_AS_PARAMETERS);
     }
+
 }

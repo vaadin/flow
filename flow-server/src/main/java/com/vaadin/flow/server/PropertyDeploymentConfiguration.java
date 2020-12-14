@@ -32,6 +32,7 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REQUEST_TIMING;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_SYNC_ID_CHECK;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 
 /**
  * The property handling implementation of {@link DeploymentConfiguration} based
@@ -45,6 +46,8 @@ public class PropertyDeploymentConfiguration
     private final Class<?> systemPropertyBaseClass;
 
     private final Properties initialParameters;
+
+    private final ApplicationConfiguration parentConfig;
 
     /**
      * Create a new property deployment configuration instance.
@@ -62,6 +65,7 @@ public class PropertyDeploymentConfiguration
             ApplicationConfiguration parentConfig,
             Class<?> systemPropertyBaseClass, Properties initParameters) {
         super(filterStringProperties(initParameters));
+        this.parentConfig = parentConfig;
         initialParameters = initParameters;
         this.systemPropertyBaseClass = systemPropertyBaseClass;
     }
@@ -118,22 +122,38 @@ public class PropertyDeploymentConfiguration
      */
     @Override
     public String getApplicationProperty(String parameterName) {
-
-        String val = getProperties().get(parameterName);
-        if (val != null) {
-            return val;
+        String val = getApplicationProperty(getProperties()::get,
+                parameterName);
+        if (val == null) {
+            val = getApplicationProperty(
+                    parentConfig.getStringProperty(parameterName, null));
         }
-
-        // Try lower case application properties for backward compatibility with
-        // 3.0.2 and earlier
-        val = getProperties().get(parameterName.toLowerCase());
-
         return val;
     }
 
     @Override
     public boolean isProductionMode() {
-        return getBooleanProperty(SERVLET_PARAMETER_PRODUCTION_MODE, false);
+        return getBooleanProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
+                parentConfig.isProductionMode());
+    }
+
+    @Override
+    public boolean enableDevServer() {
+        return getBooleanProperty(
+                InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER,
+                parentConfig.enableDevServer());
+    }
+
+    @Override
+    public boolean useV14Bootstrap() {
+        return getBooleanProperty(SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
+                parentConfig.useV14Bootstrap());
+    }
+
+    @Override
+    public boolean isPnpmEnabled() {
+        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
+                parentConfig.isPnpmEnabled());
     }
 
     @Override
@@ -209,6 +229,34 @@ public class PropertyDeploymentConfiguration
                 && enableDevServer(); // gizmo excluded from prod bundle
     }
 
+    /**
+     * Checks whether the given {@code property} is the property explicitly set
+     * in this deployment configuration (not in it's parent config).
+     * <p>
+     * The deployment configuration consists of properties defined in the
+     * configuration itself and properties which are coming from the application
+     * configuration. The properties which are defined in the deployment
+     * configuration itself (own properties) should take precedence: their
+     * values should override the parent config properties values.
+     * 
+     * @param property
+     *            a property name
+     * @return whether the {@code property} is explicitly set in the
+     *         configuration
+     */
+    protected boolean isOwnProperty(String property) {
+        return getApplicationProperty(getProperties()::get, property) != null;
+    }
+
+    /**
+     * Returns parent application configuration;
+     * 
+     * @return the parent config
+     */
+    protected ApplicationConfiguration getParentConfiguration() {
+        return parentConfig;
+    }
+
     private static Map<String, String> filterStringProperties(
             Properties properties) {
         Map<String, String> result = new HashMap<>();
@@ -222,4 +270,5 @@ public class PropertyDeploymentConfiguration
         }
         return result;
     }
+
 }

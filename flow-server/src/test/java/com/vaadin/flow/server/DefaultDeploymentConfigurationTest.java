@@ -18,6 +18,9 @@ package com.vaadin.flow.server;
 import java.util.Properties;
 
 import org.junit.Test;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -41,8 +44,10 @@ public class DefaultDeploymentConfigurationTest {
         String prop = "prop";
         System.setProperty(prop, value);
         Properties initParameters = new Properties();
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                clazz, initParameters);
+                appConfig, clazz, initParameters);
         assertEquals(value, config.getSystemProperty(prop));
     }
 
@@ -55,8 +60,11 @@ public class DefaultDeploymentConfigurationTest {
                         + '.' + prop,
                 value);
         Properties initParameters = new Properties();
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                DefaultDeploymentConfigurationTest.class, initParameters);
+                appConfig, DefaultDeploymentConfigurationTest.class,
+                initParameters);
         assertEquals(value, config.getSystemProperty(prop));
     }
 
@@ -64,7 +72,8 @@ public class DefaultDeploymentConfigurationTest {
     public void booleanValueReadIgnoreTheCase_true() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
-                InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "tRUe");
+                InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+                "tRUe");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -77,7 +86,8 @@ public class DefaultDeploymentConfigurationTest {
     public void booleanValueReadIgnoreTheCase_false() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
-                InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "FaLsE");
+                InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+                "FaLsE");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -112,7 +122,9 @@ public class DefaultDeploymentConfigurationTest {
 
     private DefaultDeploymentConfiguration createDeploymentConfig(
             Properties initParameters) {
-        return new DefaultDeploymentConfiguration(
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        return new DefaultDeploymentConfiguration(appConfig,
                 DefaultDeploymentConfigurationTest.class, initParameters);
     }
 
@@ -127,7 +139,8 @@ public class DefaultDeploymentConfigurationTest {
     @Test
     public void pushUrl() {
         Properties initParameters = new Properties();
-        initParameters.setProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL, "foo");
+        initParameters.setProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL,
+                "foo");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -149,7 +162,8 @@ public class DefaultDeploymentConfigurationTest {
     public void maxMessageSuspendTimeout_invalidValue_defaultValue() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
-                InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT, "kk");
+                InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
+                "kk");
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
         assertEquals(5000, config.getMaxMessageSuspendTimeout());

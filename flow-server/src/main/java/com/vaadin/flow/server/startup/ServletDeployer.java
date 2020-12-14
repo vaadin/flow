@@ -184,7 +184,7 @@ public class ServletDeployer implements ServletContextListener {
             try {
                 ServletConfig servletConfig = new StubServletConfig(context,
                         registration);
-                return DeploymentConfigurationFactory
+                return new DeploymentConfigurationFactory()
                         .createPropertyDeploymentConfiguration(servletClass,
                                 new VaadinServletConfig(servletConfig));
             } catch (VaadinConfigurationException e) {
@@ -206,7 +206,7 @@ public class ServletDeployer implements ServletContextListener {
         public static DeploymentConfiguration createDeploymentConfiguration(
                 ServletContext context, Class<?> servletClass) {
             try {
-                return DeploymentConfigurationFactory
+                return new DeploymentConfigurationFactory()
                         .createPropertyDeploymentConfiguration(servletClass,
                                 new VaadinServletContextConfig(context));
             } catch (VaadinConfigurationException e) {

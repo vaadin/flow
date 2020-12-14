@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Properties;
 
-import com.vaadin.flow.server.DefaultDeploymentConfiguration;
-import com.vaadin.flow.server.VaadinServletService;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResponse;
@@ -30,6 +28,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 public class PushAtmosphereHandlerTest {
 
@@ -52,8 +54,10 @@ public class PushAtmosphereHandlerTest {
         Mockito.when(resource.getRequest()).thenReturn(request);
         Mockito.when(resource.getResponse()).thenReturn(response);
 
+        ApplicationConfiguration congif = Mockito
+                .mock(ApplicationConfiguration.class);
         VaadinServletService service = new VaadinServletService(null,
-                new DefaultDeploymentConfiguration(getClass(),
+                new DefaultDeploymentConfiguration(congif, getClass(),
                         new Properties()));
 
         PushHandler handler = new PushHandler(service);
@@ -72,7 +76,8 @@ public class PushAtmosphereHandlerTest {
         writeSessionExpiredAsync("POST");
     }
 
-    private void writeSessionExpiredAsync(String httpMethod) throws IOException {
+    private void writeSessionExpiredAsync(String httpMethod)
+            throws IOException {
         Mockito.when(request.getMethod()).thenReturn(httpMethod);
 
         atmosphereHandler.onRequest(resource);
