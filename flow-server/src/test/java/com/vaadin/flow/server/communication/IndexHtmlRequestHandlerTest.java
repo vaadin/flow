@@ -414,6 +414,21 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
+    public void should_not_include_token_in_dom_when_referer_is_service_worker()
+            throws IOException {
+        Mockito.when(session.getCsrfToken()).thenReturn("foo");
+        VaadinServletRequest vaadinRequest = createVaadinRequest("/");
+        Mockito.when(((HttpServletRequest) vaadinRequest.getRequest())
+                .getHeader("referer"))
+                .thenReturn("http://somewhere.test/sw.js");
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                vaadinRequest, response);
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Assert.assertFalse(indexHtml.contains("csrfToken"));
+    }
+
+    @Test
     public void should_use_client_routing_when_there_is_a_router_call()
             throws IOException {
 
