@@ -39,7 +39,6 @@ import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.Constants;
@@ -171,7 +170,7 @@ public class VaadinAppShellInitializer
      * scanning.
      *
      * @return list of annotations handled by
-     *         {@link VaadinAppShellInitializer#init(Set, ServletContext, DeploymentConfiguration)}
+     *         {@link VaadinAppShellInitializer#init(Set, ServletContext)}
      */
     @SuppressWarnings("unchecked")
     public static List<Class<? extends Annotation>> getValidAnnotations() {
@@ -187,7 +186,7 @@ public class VaadinAppShellInitializer
      * scanning.
      *
      * @return list of super classes handled by
-     *         {@link VaadinAppShellInitializer#init(Set, ServletContext, DeploymentConfiguration)}
+     *         {@link VaadinAppShellInitializer#init(Set, ServletContext)}
      */
     public static List<Class<?>> getValidSupers() {
         return Arrays.stream(getHandledTypes())
