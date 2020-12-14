@@ -34,7 +34,7 @@ import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.SNOWFLAKE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.OCTOPUSS_ID;
 import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.SUB_COMPONENT_ID;
 
-public class ThemeIT extends ChromeBrowserTest {
+public class ReusableThemeIT extends ChromeBrowserTest {
 
     @Test
     public void typeScriptCssImport_stylesAreApplied() {
@@ -54,11 +54,11 @@ public class ThemeIT extends ChromeBrowserTest {
 
     @Test
     public void secondTheme_staticFilesNotCopied() {
-        getDriver().get(getRootURL() + "/path/VAADIN/static/themes/app-theme/img/bg.jpg");
-        Assert.assertFalse("app-theme static files should be copied",
+        getDriver().get(getRootURL() + "/path/VAADIN/static/_/target/flow-frontend/themes/reusable-theme/img/bg.jpg");
+        Assert.assertFalse("reusable-theme static files should be copied",
             driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
 
-        getDriver().get(getRootURL() + "/path/VAADIN/static/themes/no-copy/no-copy.txt");
+        getDriver().get(getRootURL() + "/path/VAADIN/static/_/target/flow-frontend/themes/no-copy/no-copy.txt");
         Assert.assertTrue("no-copy theme should not be handled",
             driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
     }
@@ -70,16 +70,16 @@ public class ThemeIT extends ChromeBrowserTest {
         checkLogsForErrors();
 
         final WebElement body = findElement(By.tagName("body"));
-        // Note themes/app-theme gets VAADIN/static from the file-loader
+        // Note themes/reusable-theme gets VAADIN/static from the file-loader
         Assert.assertEquals(
-            "url(\"" + getRootURL() + "/path/VAADIN/static/themes/app-theme/img/bg.jpg\")",
+            "url(\"" + getRootURL() + "/path/VAADIN/static/_/target/flow-frontend/themes/reusable-theme/img/bg.jpg\")",
             body.getCssValue("background-image"));
 
         Assert.assertEquals("Ostrich", body.getCssValue("font-family"));
 
-        // Note themes/app-theme gets VAADIN/static from the file-loader
-        getDriver().get(getRootURL() + "/path/VAADIN/static/themes/app-theme/img/bg.jpg");
-        Assert.assertFalse("app-theme background file should be served",
+        // Note themes/reusable-theme gets VAADIN/static from the file-loader
+        getDriver().get(getRootURL() + "/path/VAADIN/static/_/target/flow-frontend/themes/reusable-theme/img/bg.jpg");
+        Assert.assertFalse("reusable-theme background file should be served",
             driver.getPageSource().contains("Could not navigate"));
     }
 
@@ -130,10 +130,10 @@ public class ThemeIT extends ChromeBrowserTest {
         open();
         checkLogsForErrors();
 
-        // Note themes/app-theme gets VAADIN/static from the file-loader
+        // Note themes/reusable-theme gets VAADIN/static from the file-loader
         Assert.assertEquals("Imported css file URLs should have been handled.",
             "url(\"" + getRootURL()
-                + "/path/VAADIN/static/themes/app-theme/icons/archive.png\")",
+                + "/path/VAADIN/static/_/target/flow-frontend/themes/reusable-theme/icons/archive.png\")",
             $(SpanElement.class).id(SUB_COMPONENT_ID)
                 .getCssValue("background-image"));
     }
@@ -144,9 +144,9 @@ public class ThemeIT extends ChromeBrowserTest {
         checkLogsForErrors();
 
         Assert.assertEquals(
-            "Node assets should have been copied to 'themes/app-theme'",
+            "Node assets should have been copied to 'themes/reusable-theme'",
             getRootURL()
-                + "/path/themes/app-theme/fortawesome/icons/snowflake.svg",
+                + "/path/themes/reusable-theme/fortawesome/icons/snowflake.svg",
             $(ImageElement.class).id(SNOWFLAKE_ID).getAttribute("src"));
 
         open(getRootURL() + "/path/" + $(ImageElement.class).id(SNOWFLAKE_ID)
