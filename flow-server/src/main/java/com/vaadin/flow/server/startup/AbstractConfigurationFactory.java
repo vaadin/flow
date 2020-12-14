@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.startup;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,7 +50,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
  * @since
  *
  */
-public class AbstractConfigurationFactory {
+public class AbstractConfigurationFactory implements Serializable {
 
     public static final String DEV_FOLDER_MISSING_MESSAGE = "Running project in development mode with no access to folder '%s'.%n"
             + "Build project in production mode instead, see https://vaadin.com/docs/v15/flow/production/tutorial-production-mode-basic.html";

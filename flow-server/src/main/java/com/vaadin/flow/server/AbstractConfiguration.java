@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.Serializable;
+
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 
 /**
@@ -25,7 +27,7 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BO
  * @since
  *
  */
-public interface AbstractConfiguration {
+public interface AbstractConfiguration extends Serializable {
     /**
      * Returns whether Vaadin is in production mode.
      *
