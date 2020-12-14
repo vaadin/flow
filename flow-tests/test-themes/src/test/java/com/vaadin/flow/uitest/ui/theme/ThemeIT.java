@@ -106,6 +106,22 @@ public class ThemeIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void parentTheme_isApplied() {
+        open();
+        checkLogsForErrors();
+
+        Assert.assertEquals(
+            "Color from parent theme should be applied.",
+            "rgba(0, 255, 255, 1)", $(SpanElement.class).id(FONTAWESOME_ID)
+                .getCssValue("color"));
+
+        Assert.assertEquals(
+            "Color from parent theme should be applied.",
+            "5px", $(SpanElement.class).id(FONTAWESOME_ID)
+                .getCssValue("margin"));
+
+    }
+    @Test
     public void componentThemeIsApplied_forPolymerAndLit() {
         open();
         TestBenchElement myField = $(TestBenchElement.class).id(MY_POLYMER_ID);

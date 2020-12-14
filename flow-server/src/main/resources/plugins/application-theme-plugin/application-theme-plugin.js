@@ -20,6 +20,7 @@ const generateThemeFile = require('./theme-generator');
 const { copyStaticAssets } = require('./theme-copy');
 
 let logger;
+let executionOptions;
 
 // matches theme folder name in 'themes/my-theme/my-theme.js'
 const nameRegex = /themes\/(.*)\/\1.generated.js/g;
@@ -60,32 +61,9 @@ class ApplicationThemePlugin {
         if (!themeName) {
           throw new Error("Couldn't parse theme name from '" + generatedThemeFile + "'.");
         }
+        executionOptions = this.options;
+        findThemeFolderAndHandleTheme(themeName);
 
-        let themeFound = false;
-        for (let i = 0; i<this.options.themeProjectFolders.length; i++) {
-          const themeProjectFolder = this.options.themeProjectFolders[i];
-          if (fs.existsSync(themeProjectFolder)) {
-            logger.info("Searching themes folder ", themeProjectFolder, " for theme ", themeName);
-            const handled = handleThemes(themeName, themeProjectFolder, this.options.projectStaticAssetsOutputFolder);
-            if (handled) {
-              if(themeFound) {
-                throw new Error("Found theme files in '" + themeProjectFolder + "' and '"
-                  + themeFound + "'. Theme should only be available in one folder");
-              }
-              logger.info("Found theme files from '", themeProjectFolder, "'");
-              themeFound = themeProjectFolder;
-            }
-          }
-        }
-
-        if (fs.existsSync(this.options.themeResourceFolder)) {
-          if (themeFound && fs.existsSync(path.resolve(this.options.themeResourceFolder, themeName))) {
-            throw new Error("Theme '" + themeName + "'should not exist inside a jar and in the project at the same time\n" +
-              "Extending another theme is possible by adding { \"parent\": \"my-parent-theme\" } entry to the theme.json file inside your theme folder.");
-          }
-          logger.debug("Searching theme jar resource folder ", this.options.themeResourceFolder, " for theme ", themeName);
-          handleThemes(themeName, this.options.themeResourceFolder, this.options.projectStaticAssetsOutputFolder);
-        }
       } else {
         logger.debug("Skipping Vaadin application theme handling.");
         logger.trace("Most likely no @Theme annotation for application or only themeClass used.");
@@ -95,6 +73,40 @@ class ApplicationThemePlugin {
 }
 
 module.exports = ApplicationThemePlugin;
+
+/**
+ * Search for the given theme in the project and resource folders.
+ *
+ * @param {string} name of theme to find
+ */
+function findThemeFolderAndHandleTheme(themeName) {
+
+  let themeFound = false;
+  for (let i = 0; i < executionOptions.themeProjectFolders.length; i++) {
+    const themeProjectFolder = executionOptions.themeProjectFolders[i];
+    if (fs.existsSync(themeProjectFolder)) {
+      logger.info("Searching themes folder ", themeProjectFolder, " for theme ", themeName);
+      const handled = handleThemes(themeName, themeProjectFolder, executionOptions.projectStaticAssetsOutputFolder);
+      if (handled) {
+        if (themeFound) {
+          throw new Error("Found theme files in '" + themeProjectFolder + "' and '"
+            + themeFound + "'. Theme should only be available in one folder");
+        }
+        logger.info("Found theme files from '", themeProjectFolder, "'");
+        themeFound = themeProjectFolder;
+      }
+    }
+  }
+
+  if (fs.existsSync(executionOptions.themeResourceFolder)) {
+    if (themeFound && fs.existsSync(path.resolve(executionOptions.themeResourceFolder, themeName))) {
+      throw new Error("Theme '" + themeName + "'should not exist inside a jar and in the project at the same time\n" +
+        "Extending another theme is possible by adding { \"parent\": \"my-parent-theme\" } entry to the theme.json file inside your theme folder.");
+    }
+    logger.debug("Searching theme jar resource folder ", executionOptions.themeResourceFolder, " for theme ", themeName);
+    handleThemes(themeName, executionOptions.themeResourceFolder, executionOptions.projectStaticAssetsOutputFolder);
+  }
+}
 
 /**
  * Copies static resources for theme and generates/writes the [theme-name].js for webpack to handle.
@@ -111,6 +123,11 @@ function handleThemes(themeName, themesFolder, projectStaticAssetsOutputFolder) 
     logger.debug("Found theme ", themeName, " in folder ", themeFolder);
 
     const themeProperties = getThemeProperties(themeFolder);
+
+    // If theme has parent handle parent theme immediately.
+    if (themeProperties.parent) {
+      findThemeFolderAndHandleTheme(themeProperties.parent);
+    }
 
     copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputFolder, logger);
 
