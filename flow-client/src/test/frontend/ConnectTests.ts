@@ -66,15 +66,6 @@ describe('ConnectClient', () => {
       expect(client).to.have.property('middlewares')
         .deep.equal([myMiddleware]);
     });
-
-    it('should support deferredCallHandler', () => {
-      const defaultClient = new ConnectClient();
-      expect(defaultClient.deferredCallHandler).to.be.undefined;
-
-      const deferredCallHandler = sinon.stub().resolves();
-      const client = new ConnectClient({deferredCallHandler});
-      expect(client).to.have.property('deferredCallHandler').equal(deferredCallHandler);
-    })
   });
 
   describe('prefix', () => {
@@ -393,7 +384,6 @@ describe('ConnectClient', () => {
           expect(context.method).to.equal('fooMethod');
           expect(context.params).to.deep.equal({fooParam: 'foo'});
           expect(context.request).to.be.instanceOf(Request);
-          expect(context.isDeferred).to.be.false;
           return next(context);
         });
         client.middlewares = [spyMiddleware];

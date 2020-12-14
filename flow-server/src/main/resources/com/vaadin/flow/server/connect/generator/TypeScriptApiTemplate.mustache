@@ -37,12 +37,6 @@ So `// @ts-ignore` is used for now to mute this error. The consequences are:
 
 }}// @ts-ignore
 import client from '{{vaadinConnectDefaultClientPath}}';
-{{#vendorExtensions.x-vaadin-connect-deferrable}}
-// @ts-ignore
-import '@vaadin/flow-frontend/DeferrableEndpoint';
-// @ts-ignore
-import { DeferrableResult } from '@vaadin/flow-frontend/Connect';
-{{/vendorExtensions.x-vaadin-connect-deferrable}}
 {{#each imports}}
 import {{~#importAs}} {{importAs}}{{/importAs}}{{~^importAs}} {{className}}{{/importAs}} from '{{importPath}}';
 {{/each}}
@@ -58,32 +52,6 @@ import {{~#importAs}} {{importAs}}{{/importAs}}{{~^importAs}} {{className}}{{/im
  }}{{/each}}
  *{{#responses}}{{#message}} {{message}}{{/message}}{{/responses}}
  */{{/vendorExtensions.x-vaadin-connect-show-tsdoc}}
-{{#vendorExtensions.x-vaadin-connect-deferrable}}
-function _{{vendorExtensions.x-vaadin-connect-method-name}}({{!
- }}{{#each bodyParam.vendorExtensions.x-vaadin-connect-parameters}}
- {{name}}{{^required}}?{{/required}}: {{{getClassNameFromImports type ../../imports}}}{{#if @last}}{{! Append new line if it's the last param.}}
-{{else}},{{! Used the `~` after if to remove extra empty line by the each loop}}{{/if~}}
-{{/each}}): Promise<DeferrableResult<{{!
-}}{{#responses}}{{#dataType}}{{{getClassNameFromImports dataType ../../../imports}}}{{/dataType}}{{^dataType}}void{{/dataType}}{{/responses}}{{!
-}}>> {
-{{=<% %>=}}
- return client.deferrableCall(<%!
-   %>'<%vendorExtensions.x-vaadin-connect-endpoint-name%>', <%!
-   %>'<%vendorExtensions.x-vaadin-connect-method-name%>'<%!
-   %><%^bodyParams%><%!
-     %><%^authMethods%>, undefined<%/authMethods%><%!
-   %><%/bodyParams%><%!
-   %><%#bodyParams%>, {<%!
-   %><%#each bodyParam.vendorExtensions.x-vaadin-connect-parameters%><%!
-     %><%name%><%#if @last%><%else%>, <%/if%><%!
-   %><%/each%><%!
-   %>}<%/bodyParams%><%!
-   %><%^authMethods%>, {requireCredentials: false}<%/authMethods%><%!
- %>);
-}
-<%={{ }}=%>
-{{/vendorExtensions.x-vaadin-connect-deferrable}}
-{{^vendorExtensions.x-vaadin-connect-deferrable}}
 function _{{vendorExtensions.x-vaadin-connect-method-name}}({{!
  }}{{#each bodyParam.vendorExtensions.x-vaadin-connect-parameters}}
  {{name}}{{^required}}?{{/required}}: {{{getClassNameFromImports type ../../imports}}}{{#if @last}}{{! Append new line if it's the last param.}}
@@ -106,9 +74,6 @@ function _{{vendorExtensions.x-vaadin-connect-method-name}}({{!
    %><%^authMethods%>, {requireCredentials: false}<%/authMethods%><%!
  %>);
 }
-<%={{ }}=%>
-{{/vendorExtensions.x-vaadin-connect-deferrable}}
-{{=<% %>=}}
 export {_<%vendorExtensions.x-vaadin-connect-method-name%> as <%vendorExtensions.x-vaadin-connect-method-name%>};
 <%={{ }}=%>
 {{/operation}}
