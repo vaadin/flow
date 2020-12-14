@@ -228,8 +228,6 @@ public class DevModeInitializer
      *            classes to check for npm- and js modules
      * @param context
      *            servlet context we are running in
-     * @param config
-     *            deployment configuration
      *
      * @throws ServletException
      *             if dev mode can't be initialized

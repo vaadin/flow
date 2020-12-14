@@ -87,8 +87,6 @@ public class VaadinAppShellInitializer
      *            this class.
      * @param context
      *            the servlet context.
-     * @param config
-     *            the vaadin configuration for the application.
      */
     @SuppressWarnings("unchecked")
     public static void init(Set<Class<?>> classes, ServletContext context) {
