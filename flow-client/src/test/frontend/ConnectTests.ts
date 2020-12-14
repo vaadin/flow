@@ -50,9 +50,19 @@ describe('ConnectClient', () => {
     expect(client).to.be.instanceOf(ConnectClient);
   });
 
-  it('should add a global loading indicator', () => {
+  it('should add a global connection indicator', () => {
     new ConnectClient();
     expect((window as any).Vaadin.connectionIndicator).is.not.undefined;
+  });
+
+  it('should transition to CONNECTION_LOST on offline and to CONNECTED on subsequent online', async() => {
+    new ConnectClient();
+    let $wnd = (window as any);
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
+    $wnd.dispatchEvent(new Event('offline'));
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
+    $wnd.dispatchEvent(new Event('online'));
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
   });
 
   describe('constructor options', () => {
@@ -148,7 +158,7 @@ describe('ConnectClient', () => {
       expect(fetchMock.lastOptions()).to.include({method: 'POST'});
     });
 
-    it('should call Flow.loading indicator', async() => {
+    it('should call Flow.loadingStarted followed by loadingFinished', async() => {
       let calls: Array<boolean> = [];
       (window as any).Vaadin.Flow = {
         clients: {
@@ -162,7 +172,7 @@ describe('ConnectClient', () => {
       expect(calls).to.deep.equal([true, false]);
     });
 
-    it('should hide Flow.loading indicator and transition to CONNECTION_LOST upon network failure', async() => {
+    it('should call Flow.loadingFinished and transition to CONNECTION_LOST upon network failure', async() => {
       let calls: Array<boolean> = [];
       (window as any).Vaadin.Flow = {
         clients: {
@@ -187,7 +197,7 @@ describe('ConnectClient', () => {
       }
     });
 
-    it('should hide Flow.loading indicator upon server error', async() => {
+    it('should call Flow.loadingFinished upon server error', async() => {
       const body = 'Unexpected error';
       const errorResponse = new Response(
         body,
