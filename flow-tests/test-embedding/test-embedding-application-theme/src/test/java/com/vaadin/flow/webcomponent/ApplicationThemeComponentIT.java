@@ -88,4 +88,43 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         Assert.assertEquals("Lit radiobutton should have red background",
             "rgba(255, 0, 0, 1)", radio.getCssValue("background-color"));
     }
+
+    @Test
+    public void documentCssFonts_fromLocalCssFile_fontsAreAppliedInDocumentRoot() {
+        open();
+
+        Long adoptedStyles = (Long) getCommandExecutor().executeScript(
+                "return document.adoptedStyleSheets !== undefined ? document"
+                        + ".adoptedStyleSheets.length : 0");
+
+        Assert.assertTrue(
+                "Expected the document root to have the adopted styles",
+                adoptedStyles > 0);
+
+        Object openSansFontStylesFound = getCommandExecutor().executeScript(
+                "return document.adoptedStyleSheets.map(styleSheet => styleSheet"
+                        + ".cssRules[0].cssText).filter(cssText => cssText"
+                        + ".indexOf('Open Sans') > 0).length > 0;");
+
+        Assert.assertEquals(
+                "Expected Open Sans font to be applied to document root element",
+                Boolean.TRUE, openSansFontStylesFound);
+    }
+
+    @Test
+    public void documentCssFonts_fromLocalCssFile_fontsAreNotAppliedInEmbeddedComponent() {
+        open();
+
+        Object openSansFontStylesNotFoundForEmbedded = getCommandExecutor()
+                .executeScript(
+                        "return document.getElementsByTagName('themed-component')[0]"
+                                + ".shadowRoot.adoptedStyleSheets.map(styleSheet => "
+                                + "styleSheet.cssRules[0].cssText).filter(cssText => "
+                                + "cssText.indexOf('Open Sans') > 0).length === 0;");
+
+        Assert.assertEquals(
+                "Expected no font-face from document.css has been applied to "
+                        + "embedded element",
+                Boolean.TRUE, openSansFontStylesNotFoundForEmbedded);
+    }
 }
