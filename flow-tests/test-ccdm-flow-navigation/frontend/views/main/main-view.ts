@@ -32,6 +32,7 @@ export class MainView extends LitElement {
             <ul>
                 <li><a href="/about" id="menu-about">About</a></li>
                 <li><a href="/another" id="menu-another">Another</a></li>
+                <li><a href="/deep/another" id="menu-deep-another">Deep another</a></li>
                 <li><a href="/hello" id="menu-hello">Hello (server side)</a></li>            
             </ul>
             <hr>
