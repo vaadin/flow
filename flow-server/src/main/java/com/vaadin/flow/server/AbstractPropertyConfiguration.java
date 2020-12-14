@@ -34,7 +34,7 @@ public abstract class AbstractPropertyConfiguration
     private final Map<String, String> properties;
 
     /**
-     * Creates a new instance with given {@code properties}
+     * Creates a new instance with given {@code properties}.
      * 
      * @param properties
      *            configuration properties

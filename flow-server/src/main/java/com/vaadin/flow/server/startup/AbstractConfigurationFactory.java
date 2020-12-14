@@ -43,7 +43,7 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BO
 import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
 
 /**
- * A configuraiton factory base logic which reads the token file.
+ * A configuration factory base logic which reads the token file.
  * 
  * @author Vaadin Ltd
  * @since
