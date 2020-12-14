@@ -360,13 +360,14 @@ export class ConnectClient {
     // this way makes the folding down below more concise.
     const fetchNext: MiddlewareNext =
       async (context: MiddlewareContext): Promise<Response> => {
-        $wnd.Vaadin.connectionState.loadingStarted();
+        $wnd.Vaadin.Flow?.clients?.TypeScript?.loadingStarted();
         return fetch(context.request)
           .then(response => {
-            $wnd.Vaadin.connectionState.loadingSucceeded();
+            $wnd.Vaadin.Flow?.clients?.TypeScript?.loadingFinished();
             return response;
           })
           .catch(error => {
+            $wnd.Vaadin.Flow?.clients?.TypeScript?.loadingFinished();
             $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
             return Promise.reject(error);
           });
