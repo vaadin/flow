@@ -55,7 +55,7 @@ export class ConnectionStateStore {
     this.loadingCount += 1;
   }
 
-  loadingSucceeded(): void {
+  loadingFinished(): void {
     if (this.loadingCount > 0) {
       this.loadingCount -= 1;
       if (this.loadingCount === 0) {
