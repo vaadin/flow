@@ -1,7 +1,6 @@
 /* tslint:disable:max-classes-per-file */
 import { getConnectionIndicator } from './ConnectionIndicator';
 import { ConnectionState } from './ConnectionState';
-import { DeferrableResult, DeferredCallHandler, OfflineHelper } from './Offline';
 
 const $wnd = window as any;
 $wnd.Vaadin = $wnd.Vaadin || {};
@@ -175,10 +174,6 @@ export interface ConnectClientOptions {
    */
   middlewares?: Middleware[];
 
-  /**
-   * The `deferredCallHandler` property value.
-   */
-  deferredCallHandler?: DeferredCallHandler;
 }
 
 export interface EndpointCallMetaInfo {
@@ -207,11 +202,6 @@ export interface MiddlewareContext extends EndpointCallMetaInfo{
    * The Fetch API Request object reflecting the other properties.
    */
   request: Request;
-
-  /**
-   * Indicates that the call is from deferred queue.
-   */
-  isDeferred: boolean
 }
 
 /**
@@ -280,12 +270,6 @@ export class ConnectClient {
    */
   middlewares: Middleware[] = [];
 
-  /**
-   * The handler for handling deferred calls
-   */
-  deferredCallHandler?: DeferredCallHandler;
-
-  private offlineHelper = new OfflineHelper();
 
   /**
    * @param options Constructor options.
@@ -298,12 +282,6 @@ export class ConnectClient {
     if (options.middlewares) {
       this.middlewares = options.middlewares;
     }
-
-    this.deferredCallHandler = options.deferredCallHandler;
-
-    this.submitDeferredCalls = this.submitDeferredCalls.bind(this);
-
-    self.addEventListener('online', this.submitDeferredCalls);
 
     // ensure connection indicator is visible from this entry point
     getConnectionIndicator();
@@ -331,44 +309,6 @@ export class ConnectClient {
       );
     }
 
-    return this.requestCall(false, endpoint, method, params);
-  }
-
-  async deferrableCall(
-    endpoint: string,
-    method: string,
-    params?: any,
-  ): Promise<DeferrableResult<any>> {
-    if ($wnd.Vaadin.connectionState.online) {
-      try {
-        const result = await this.call(endpoint, method, params);
-        return { isDeferred: false, result };
-      } catch (error) {
-        if ((error instanceof EndpointResponseError) || (error instanceof EndpointError)) {
-          // Error thrown in the client, carry to the user
-          throw error;
-        } else {
-          // Network error
-          return this.offlineHelper.storeDeferredCall({ endpoint, method, params });
-        }
-      }
-    } else {
-      return this.offlineHelper.storeDeferredCall({ endpoint, method, params });
-    }
-  }
-
-  async submitDeferredCalls() {
-    await this.offlineHelper.processDeferredCalls(
-      (endpoint, method, params) => this.requestCall(true, endpoint, method, params),
-      this.deferredCallHandler);
-  }
-
-  private async requestCall(
-    isDeferred: boolean,
-    endpoint: string,
-    method: string,
-    params?: any
-  ): Promise<any> {
     const headers: Record<string, string> = {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
@@ -395,7 +335,6 @@ export class ConnectClient {
     // The middleware `context`, includes the call arguments and the request
     // constructed from them
     const initialContext: MiddlewareContext = {
-      isDeferred,
       endpoint,
       method,
       params,
