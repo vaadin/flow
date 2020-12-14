@@ -232,7 +232,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         if(frontendDir.endsWith(File.separator)) {
             indexHtmlFilePath = frontendDir + "index.html";
         } else {
-            indexHtmlFilePath = frontendDir + File.separatorChar + "/index.html";
+            indexHtmlFilePath = frontendDir + File.separatorChar + "index.html";
         }
         String message = String
                 .format("Failed to load content of '%1$s'. "
