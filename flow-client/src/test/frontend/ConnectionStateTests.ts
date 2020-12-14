@@ -72,8 +72,8 @@ describe('ConnectionStateStore', () => {
 
     store.loadingStarted();
     store.loadingStarted();
-    store.loadingSucceeded();
-    store.loadingSucceeded();
+    store.loadingFinished();
+    store.loadingFinished();
     assert.deepEqual(states,
       [[ConnectionState.CONNECTED, ConnectionState.LOADING],
         [ConnectionState.LOADING, ConnectionState.CONNECTED]]);
@@ -90,7 +90,7 @@ describe('ConnectionStateStore', () => {
     store.loadingStarted();
     store.state = ConnectionState.CONNECTION_LOST;
     store.loadingStarted();
-    store.loadingSucceeded();
+    store.loadingFinished();
 
     assert.deepEqual(states,
       [[ConnectionState.CONNECTED, ConnectionState.LOADING],
