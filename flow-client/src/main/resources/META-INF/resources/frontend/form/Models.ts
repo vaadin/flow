@@ -3,6 +3,7 @@
 import {BinderNode} from "./BinderNode";
 import {Validator} from "./Validation";
 import {IsNumber} from "./Validators";
+import isNumeric from 'validator/es/lib/isNumeric';
 
 export const _ItemModel = Symbol('ItemModel');
 export const _parent = Symbol('parent');
@@ -80,7 +81,9 @@ export class BooleanModel extends PrimitiveModel<boolean> implements HasFromStri
 
 export class NumberModel extends PrimitiveModel<number> implements HasFromString<number> {
   static createEmptyValue = Number;
-  [_fromString] = Number.parseFloat;
+  [_fromString](str: string): number {
+    return isNumeric(str) ? Number.parseFloat(str) : NaN;
+  }
   constructor(
     parent: ModelParent<number>,
     key: keyof any,

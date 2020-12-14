@@ -281,12 +281,17 @@ suite("form/Field", () => {
       test('should update binder value on typing', async () => {
         const cases: Array<[string, number]> = [
           ['1', 1],
-          ['1.', 1],
+          ['1.', NaN], // not allowed format
           ['1.2', 1.2],
           ['', NaN],
           ['not a number', NaN],
           ['.', NaN],
-          ['.1', 0.1]
+          ['.1', 0.1],
+          // Invalid separator
+          [',', NaN],
+          [',2', NaN],
+          ['1,', NaN],
+          ['1,2', NaN]
         ];
 
         for (const [inputValue, expectedNumber] of cases) {
@@ -417,16 +422,22 @@ suite("form/Field", () => {
       test('should update binder value on typing', async () => {
         const cases: Array<[string, number]> = [
           ['1', 1],
-          ['1.', 1],
+          ['1.', NaN], // not allowed format
           ['1.2', 1.2],
           ['', NaN],
           ['not a number', NaN],
           ['.', NaN],
-          ['.1', 0.1]
+          ['.1', 0.1],
+          // Invalid separator
+          [',', NaN],
+          [',2', NaN],
+          ['1,', NaN],
+          ['1,2', NaN]
         ];
 
         for (const [inputValue, expectedNumber] of cases) {
           for (const eventName of ['input', 'change']) {
+            debugger;
             priorityField.value = inputValue;
             priorityField.valueSpy.get.resetHistory();
             priorityField.valueSpy.set.resetHistory();

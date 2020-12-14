@@ -5,6 +5,7 @@ const {expect} = intern.getPlugin("chai");
 
 // API to test
 import {
+  _fromString,
   _key,
   ArrayModel,
   Binder,
@@ -61,6 +62,45 @@ suite("form/Model", () => {
     test('should contain IsNumber validator by default', async () => {
       const validators = binder.for(binder.model.fieldNumber).validators;
       expect(validators[0]).to.be.instanceOf(IsNumber);
+    });
+
+    suite('_fromString', () => {
+      let fromString: (str: string) => number;
+
+      beforeEach(() => {
+        fromString = binder.model.fieldNumber[_fromString];
+      });
+
+      test('should disallow empty string', async () => {
+        expect(fromString('')).to.satisfy(Number.isNaN);
+      });
+
+      test('should integer format', async () => {
+        expect(fromString('0')).to.equal(0);
+        expect(fromString('01')).to.equal(1);
+        expect(fromString('10')).to.equal(10);
+        expect(fromString('+10')).to.equal(10);
+        expect(fromString('-10')).to.equal(-10);
+      });
+
+      test('should support decimal format', async () => {
+        expect(fromString('1.2')).to.equal(1.2);
+        expect(fromString('.2')).to.equal(.2);
+        expect(fromString('+1.2')).to.equal(1.2);
+        expect(fromString('-1.2')).to.equal(-1.2);
+      });
+
+      test('should disallow incorrect formats', async () => {
+        expect(fromString('1.')).to.satisfy(Number.isNaN);
+        // Wrong separator
+        expect(fromString('1,')).to.satisfy(Number.isNaN);
+        expect(fromString(',2')).to.satisfy(Number.isNaN);
+        expect(fromString('1,2')).to.satisfy(Number.isNaN);
+        // Extra symbols
+        expect(fromString('e1')).to.satisfy(Number.isNaN);
+        expect(fromString('1e')).to.satisfy(Number.isNaN);
+        expect(fromString('1e0')).to.satisfy(Number.isNaN);
+      });
     });
   });
 
