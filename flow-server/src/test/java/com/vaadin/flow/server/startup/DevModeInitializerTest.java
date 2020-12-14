@@ -53,6 +53,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;;
 
 @NotThreadSafe
 public class DevModeInitializerTest extends DevModeInitializerTestBase {
@@ -300,54 +301,95 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void should_generateOpenApi_when_EndpointPresents()
             throws Exception {
-
-        // Configure a folder to check the endpoints, doesn't matter
-        // which folder, since the actual task won't be run, just
-        // to verify the mocked task is executed.
-        File src = new File(
-                getClass().getClassLoader().getResource("com").getFile());
-        System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
-                src.getAbsolutePath());
-
+        String originalJavaSourceFolder = null;
         File generatedOpenApiJson = Paths
-                .get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE).toFile();
+                    .get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE).toFile();
+        try {
+            originalJavaSourceFolder = System.getProperty("vaadin." 
+                + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
 
-        Assert.assertFalse(generatedOpenApiJson.exists());
-        DevModeInitializer devModeInitializer = new DevModeInitializer();
-        devModeInitializer.onStartup(classes, servletContext);
-        waitForDevModeServer();
-        
-        Mockito.verify(taskGenerateConnect, times(1)).execute();
+            // Configure a folder to check the endpoints, doesn't matter
+            // which folder, since the actual task won't be run, just
+            // to verify the mocked task is executed.
+            System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                javaSourceFolder.getRoot().getAbsolutePath());
+
+            Assert.assertFalse(generatedOpenApiJson.exists());
+            DevModeInitializer devModeInitializer = new DevModeInitializer();
+            devModeInitializer.onStartup(classes, servletContext);
+            waitForDevModeServer();
+
+            Mockito.verify(taskGenerateConnect, times(1)).execute();
+        } finally {
+            if (originalJavaSourceFolder != null) {
+                System.setProperty("vaadin." 
+                    + CONNECT_JAVA_SOURCE_FOLDER_TOKEN, originalJavaSourceFolder);
+            } else {
+                System.clearProperty("vaadin." 
+                    + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
+            }
+            generatedOpenApiJson.delete();
+        }
+
     }
 
     @Test
     public void should_notGenerateOpenApi_when_EndpointIsNotUsed()
             throws Exception {
+        String originalJavaSourceFolder = null;
         File generatedOpenApiJson = Paths
-                .get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE).toFile();
-        Assert.assertFalse(generatedOpenApiJson.exists());
-        devModeInitializer.onStartup(classes, servletContext);
-        
-        Mockito.verify(taskGenerateConnect, times(0)).execute();
+                    .get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE).toFile();
+        try {
+            originalJavaSourceFolder = System.getProperty("vaadin." 
+                + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
+            System.clearProperty("vaadin." 
+                + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
+
+            
+            Assert.assertFalse(generatedOpenApiJson.exists());
+            devModeInitializer.onStartup(classes, servletContext);
+
+            Mockito.verify(taskGenerateConnect, never()).execute();
+        } finally {
+            if (originalJavaSourceFolder != null) {
+                System.setProperty("vaadin." 
+                    + CONNECT_JAVA_SOURCE_FOLDER_TOKEN, originalJavaSourceFolder);
+            } else {
+                System.clearProperty("vaadin." 
+                    + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
+            }
+            generatedOpenApiJson.delete();
+        }
     }
 
     @Test
     public void should_generateTs_files() throws Exception {
+        String originalJavaSourceFolder = null;
+        try {
+            originalJavaSourceFolder = System.getProperty("vaadin." 
+                + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
 
-        // Configure a folder to check the endpoints, doesn't matter
-        // which folder, since the actual task won't be run, just
-        // to verify the mocked task is executed.
-        File src = new File(
-                getClass().getClassLoader().getResource("com").getFile());
-        System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
-                src.getAbsolutePath());
+            // Configure a folder to check the endpoints, doesn't matter
+            // which folder, since the actual task won't be run, just
+            // to verify the mocked task is executed.
+            System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                javaSourceFolder.getRoot().getAbsolutePath());
 
-        DevModeInitializer devModeInitializer = new DevModeInitializer();
+            DevModeInitializer devModeInitializer = new DevModeInitializer();
 
-        devModeInitializer.onStartup(classes, servletContext);
-        waitForDevModeServer();
+            devModeInitializer.onStartup(classes, servletContext);
+            waitForDevModeServer();
 
-        Mockito.verify(taskGenerateConnect, times(1)).execute();
+            Mockito.verify(taskGenerateConnect, times(1)).execute();
+        } finally {
+            if (originalJavaSourceFolder != null) {
+                System.setProperty("vaadin." 
+                    + CONNECT_JAVA_SOURCE_FOLDER_TOKEN, originalJavaSourceFolder);
+            } else {
+                System.clearProperty("vaadin." 
+                    + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
+            }
+        }
     }
 
     @Test

@@ -17,12 +17,12 @@
 const fs = require('fs');
 const path = require('path');
 const generateThemeFile = require('./theme-generator');
-const copyStaticAssets = require('./theme-copy');
+const { copyStaticAssets } = require('./theme-copy');
 
 let logger;
 
-// matches theme folder name in 'theme/my-theme/my-theme.js'
-const nameRegex = /theme\/(.*)\/\1.js/g;
+// matches theme folder name in 'themes/my-theme/my-theme.js'
+const nameRegex = /themes\/(.*)\/\1.generated.js/g;
 
 /**
  * The application theme plugin is for generating, collecting and copying of theme files for the application theme.
@@ -65,11 +65,11 @@ class ApplicationThemePlugin {
         for (let i = 0; i<this.options.themeProjectFolders.length; i++) {
           const themeProjectFolder = this.options.themeProjectFolders[i];
           if (fs.existsSync(themeProjectFolder)) {
-            logger.info("Searching theme folder ", themeProjectFolder, " for theme ", themeName);
+            logger.info("Searching themes folder ", themeProjectFolder, " for theme ", themeName);
             const handled = handleThemes(themeName, themeProjectFolder, this.options.projectStaticAssetsOutputFolder);
             if (handled) {
               if(themeFound) {
-                throw new Error("Found theme filed in '" + themeProjectFolder + "' and '"
+                throw new Error("Found theme files in '" + themeProjectFolder + "' and '"
                   + themeFound + "'. Theme should only be available in one folder");
               }
               logger.info("Found theme files from '", themeProjectFolder, "'");
@@ -112,11 +112,11 @@ function handleThemes(themeName, themesFolder, projectStaticAssetsOutputFolder) 
 
     const themeProperties = getThemeProperties(themeFolder);
 
-    copyStaticAssets(themeProperties, projectStaticAssetsOutputFolder, logger);
+    copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputFolder, logger);
 
     const themeFile = generateThemeFile(themeFolder, themeName, themeProperties);
 
-    fs.writeFileSync(path.resolve(themeFolder, themeName + '.js'), themeFile);
+    fs.writeFileSync(path.resolve(themeFolder, themeName + '.generated.js'), themeFile);
     return true;
   }
   return false;

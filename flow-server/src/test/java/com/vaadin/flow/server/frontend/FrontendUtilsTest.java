@@ -42,6 +42,8 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
@@ -276,25 +278,29 @@ public class FrontendUtilsTest {
     @Test
     public void getStatsContent_getStatsFromClassPath_delegateToGetApplicationResource()
             throws IOException {
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinServletService service = mockServletService();
 
         ResourceProvider provider = mockResourceProvider(service);
 
         FrontendUtils.getStatsContent(service);
 
-        Mockito.verify(provider).getApplicationResource(service, "foo");
+        VaadinServlet servlet = service.getServlet();
+
+        Mockito.verify(provider).getApplicationResource("foo");
     }
 
     @Test
     public void getStatsAssetsByChunkName_getStatsFromClassPath_delegateToGetApplicationResource()
             throws IOException {
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinServletService service = mockServletService();
 
         ResourceProvider provider = mockResourceProvider(service);
 
         FrontendUtils.getStatsAssetsByChunkName(service);
 
-        Mockito.verify(provider).getApplicationResource(service, "foo");
+        VaadinServlet servlet = service.getServlet();
+
+        Mockito.verify(provider).getApplicationResource("foo");
     }
 
     private ResourceProvider mockResourceProvider(VaadinService service) {
@@ -332,7 +338,8 @@ public class FrontendUtilsTest {
             throws ServiceException, IOException {
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         configuration.setProductionMode(true);
-        VaadinService service = new MockVaadinServletService(configuration);
+        MockVaadinServletService service = new MockVaadinServletService(
+                configuration);
 
         VaadinContext context = service.getContext();
 
@@ -350,11 +357,20 @@ public class FrontendUtilsTest {
                     tmpFile)) {
                 IOUtils.write(content, outputStream, StandardCharsets.UTF_8);
             }
-            Mockito.when(provider.getApplicationResource(service,
+            VaadinServlet servlet = service.getServlet();
+            Mockito.when(provider.getApplicationResource(
                     VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                     .thenReturn(tmpFile.toURI().toURL());
         }
 
+        return service;
+    }
+
+    private VaadinServletService mockServletService() {
+        VaadinServletService service = Mockito.mock(VaadinServletService.class);
+
+        VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
+        Mockito.when(service.getServlet()).thenReturn(servlet);
         return service;
     }
 

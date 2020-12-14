@@ -16,10 +16,12 @@
 
 /**
  * This file handles the generation of the '[theme-name].js' to
- * the theme/[theme-name] folder according to properties from 'theme.json'.
+ * the themes/[theme-name] folder according to properties from 'theme.json'.
  */
 const glob = require('glob');
 const path = require('path');
+const fs = require('fs');
+const { checkModules } = require('./theme-copy');
 
 // Special folder inside a theme for component themes that go inside the component shadow root
 const themeComponentsFolder = 'components';
@@ -44,7 +46,7 @@ export const injectGlobalCss = (css, target) => {
  *
  * @param {string} themeFolder folder of the theme
  * @param {string} themeName name of the handled theme
- * @param {json} themeProperties theme.json contents
+ * @param {JSON Object} themeProperties content of theme.json
  * @returns {string} theme file content
  */
 function generateThemeFile(themeFolder, themeName, themeProperties) {
@@ -82,6 +84,13 @@ function generateThemeFile(themeFolder, themeName, themeProperties) {
 
   let i = 0;
   if (themeProperties.documentCss) {
+    const missingModules = checkModules(themeProperties.documentCss);
+    if(missingModules.length > 0) {
+      throw Error("Missing npm modules or files '" + missingModules.join("', '")
+        + "' for documentCss marked in 'theme.json'.\n" +
+        "Install or update package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm i'");
+
+    }
     themeProperties.documentCss.forEach((cssImport) => {
       const variable = 'module' + i++;
       imports.push(`import ${variable} from '${cssImport}';\n`);
@@ -89,6 +98,21 @@ function generateThemeFile(themeFolder, themeName, themeProperties) {
       globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n    `);
     });
   }
+  if (themeProperties.importCss) {
+    const missingModules = checkModules(themeProperties.importCss);
+    if(missingModules.length > 0) {
+      throw Error("Missing npm modules or files '" + missingModules.join("', '")
+        + "' for importCss marked in 'theme.json'.\n" +
+        "Install or update package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm i'");
+
+    }
+    themeProperties.importCss.forEach((cssPath) => {
+      const variable = 'module' + i++;
+      imports.push(`import ${variable} from '${cssPath}';\n`);
+      globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n`);
+    });
+  }
+
   componentsFiles.forEach((componentCss) => {
     const filename = path.basename(componentCss);
     const tag = filename.replace('.css', '');
