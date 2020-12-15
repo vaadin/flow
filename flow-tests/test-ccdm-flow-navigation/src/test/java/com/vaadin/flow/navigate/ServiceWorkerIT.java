@@ -282,4 +282,9 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
             setConnectionType(NetworkConnection.ConnectionType.ALL);
         }
     }
+
+    @Override
+    protected String getRootURL()  {
+        return super.getRootURL() + "/context-path";
+    }
 }

@@ -41,6 +41,10 @@
                             <value>false</value>
                         </systemProperty>
                     </systemProperties>
+                    <webApp>
+                        <!-- use a non-root context -->
+                        <contextPath>/context-path</contextPath>
+                    </webApp>
                 </configuration>
             </plugin>
             <plugin>

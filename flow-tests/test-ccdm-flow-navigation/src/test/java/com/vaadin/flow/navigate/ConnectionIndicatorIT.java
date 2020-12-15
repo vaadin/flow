@@ -110,4 +110,8 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
                 .executeScript("return window.Vaadin.connectionState.state === '" + state + "'"), 2);
     }
 
+    @Override
+    protected String getRootURL()  {
+        return super.getRootURL() + "/context-path";
+    }
 }
