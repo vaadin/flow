@@ -32,6 +32,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.AbstractPropertyConfiguration;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.JsonObject;
@@ -57,10 +58,13 @@ public class DefaultApplicationConfigurationFactory
 
         private final VaadinContext context;
 
+        private final FallbackChunk fallbackChunk;
+
         protected ApplicationConfigurationImpl(VaadinContext context,
-                Map<String, String> properties) {
+                FallbackChunk fallbackChunk, Map<String, String> properties) {
             super(properties);
             this.context = context;
+            this.fallbackChunk = fallbackChunk;
         }
 
         @Override
@@ -78,6 +82,11 @@ public class DefaultApplicationConfigurationFactory
             return context;
         }
 
+        @Override
+        public FallbackChunk getFallbackChunk() {
+            return fallbackChunk;
+        }
+
     }
 
     @Override
@@ -88,15 +97,23 @@ public class DefaultApplicationConfigurationFactory
             final String name = e.nextElement();
             props.put(name, context.getContextParameter(name));
         }
+        JsonObject buildInfo = null;
         try {
-            JsonObject buildInfo = JsonUtil
-                    .parse(getTokenFileFromClassloader(context));
-
-            props.putAll(getConfigParametersUsingTokenData(buildInfo));
+            String content = getTokenFileContent(props::get);
+            if (content == null) {
+                content = getTokenFileFromClassloader(context);
+            }
+            buildInfo = content == null ? null : JsonUtil.parse(content);
+            if (buildInfo != null) {
+                props.putAll(getConfigParametersUsingTokenData(buildInfo));
+            }
         } catch (IOException exception) {
             throw new UncheckedIOException(exception);
         }
-        return new ApplicationConfigurationImpl(context, props);
+        return new ApplicationConfigurationImpl(context,
+                buildInfo == null ? null
+                        : FrontendUtils.readFallbackChunk(buildInfo),
+                props);
     }
 
     /**
@@ -204,4 +221,5 @@ public class DefaultApplicationConfigurationFactory
         return LoggerFactory
                 .getLogger(DefaultApplicationConfigurationFactory.class);
     }
+
 }

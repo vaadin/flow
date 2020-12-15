@@ -126,7 +126,8 @@ public class PropertyDeploymentConfiguration
                 parameterName);
         if (val == null) {
             val = getApplicationProperty(
-                    parentConfig.getStringProperty(parameterName, null));
+                    prop -> parentConfig.getStringProperty(prop, null),
+                    parameterName);
         }
         return val;
     }

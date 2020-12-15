@@ -23,6 +23,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.frontend.FallbackChunk;
 
 /**
  * Configuration on the application level.
@@ -68,5 +69,13 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
      * @return the vaadin context
      */
     VaadinContext getContext();
+
+    /**
+     * Gets a fallback chunk for the application or {@code null} if it's not
+     * available.
+     * 
+     * @return the application fallback chunk, may be {@code null}.
+     */
+    FallbackChunk getFallbackChunk();
 
 }

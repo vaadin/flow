@@ -16,25 +16,16 @@
 
 package com.vaadin.flow.server;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.UncheckedIOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.AbstractConfigurationFactory;
@@ -42,8 +33,6 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 
 /**
  * Creates {@link DeploymentConfiguration} filled with all parameters specified
@@ -123,7 +112,6 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
             VaadinConfig vaadinConfig) throws VaadinConfigurationException {
         Properties initParameters = new Properties();
         readUiFromEnclosingClass(systemPropertyBaseClass, initParameters);
-        readConfigurationAnnotation(systemPropertyBaseClass, initParameters);
 
         // Override with application config from web.xml
         for (final Enumeration<String> e = vaadinConfig
@@ -140,45 +128,27 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
 
     private void readBuildInfo(Class<?> systemPropertyBaseClass,
             Properties initParameters, VaadinContext context) {
-        String json = getTokenFileContents(initParameters);
+        String json = getTokenFileContent(initParameters::getProperty);
+
+        FallbackChunk fallbackChunk = null;
 
         // Read the json and set the appropriate system properties if not
         // already set.
         if (json != null) {
             JsonObject buildInfo = JsonUtil.parse(json);
-            Map<String, String> properties = getInitParametersUsingTokenData(
+            Map<String, String> properties = getConfigParametersUsingTokenData(
                     buildInfo);
             initParameters.putAll(properties);
 
-            FallbackChunk fallbackChunk = FrontendUtils
-                    .readFallbackChunk(buildInfo);
-            if (fallbackChunk != null) {
-                initParameters.put(FALLBACK_CHUNK, fallbackChunk);
-            }
+            fallbackChunk = FrontendUtils.readFallbackChunk(buildInfo);
         }
-    }
-
-    private static String getTokenFileContents(Properties initParameters) {
-        try {
-            return getResourceFromFile(initParameters);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+        if (fallbackChunk == null) {
+            fallbackChunk = ApplicationConfiguration.get(context)
+                    .getFallbackChunk();
         }
-    }
-
-    private static String getResourceFromFile(Properties initParameters)
-            throws IOException {
-        String json = null;
-        // token file location passed via init parameter property
-        String tokenLocation = initParameters.getProperty(PARAM_TOKEN_FILE);
-        if (tokenLocation != null) {
-            File tokenFile = new File(tokenLocation);
-            if (tokenFile != null && tokenFile.canRead()) {
-                json = FileUtils.readFileToString(tokenFile,
-                        StandardCharsets.UTF_8);
-            }
+        if (fallbackChunk != null) {
+            initParameters.put(FALLBACK_CHUNK, fallbackChunk);
         }
-        return json;
     }
 
     private static void readUiFromEnclosingClass(
@@ -192,57 +162,4 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
         }
     }
 
-    /**
-     * Read the VaadinServletConfiguration annotation for initialization name
-     * value pairs and add them to the initial properties object.
-     *
-     * @param systemPropertyBaseClass
-     *            base class for constructing the configuration
-     * @param initParameters
-     *            current initParameters object
-     * @throws VaadinConfigurationException
-     *             exception thrown for failure in invoking method on
-     *             configuration annotation
-     */
-    private static void readConfigurationAnnotation(
-            Class<?> systemPropertyBaseClass, Properties initParameters)
-            throws VaadinConfigurationException {
-        Optional<VaadinServletConfiguration> optionalConfigAnnotation = AnnotationReader
-                .getAnnotationFor(systemPropertyBaseClass,
-                        VaadinServletConfiguration.class);
-
-        if (!optionalConfigAnnotation.isPresent()) {
-            return;
-        }
-
-        VaadinServletConfiguration configuration = optionalConfigAnnotation
-                .get();
-        Method[] methods = VaadinServletConfiguration.class
-                .getDeclaredMethods();
-        for (Method method : methods) {
-            VaadinServletConfiguration.InitParameterName name = method
-                    .getAnnotation(
-                            VaadinServletConfiguration.InitParameterName.class);
-            assert name != null : "All methods declared in VaadinServletConfiguration should have a @InitParameterName annotation";
-
-            try {
-                Object value = method.invoke(configuration);
-
-                String stringValue;
-                if (value instanceof Class<?>) {
-                    stringValue = ((Class<?>) value).getName();
-                } else {
-                    stringValue = value.toString();
-                }
-
-                initParameters.setProperty(name.value(), stringValue);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                // This should never happen
-                throw new VaadinConfigurationException(
-                        "Could not read @VaadinServletConfiguration value "
-                                + method.getName(),
-                        e);
-            }
-        }
-    }
 }
