@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.hamcrest.CoreMatchers;
@@ -26,6 +27,9 @@ import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
+import static org.junit.Assert.assertEquals;
+
 
 /**
  * 
