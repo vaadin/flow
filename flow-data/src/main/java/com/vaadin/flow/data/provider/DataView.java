@@ -74,6 +74,11 @@ public interface DataView<T> extends Serializable {
     void refreshItem(T item);
 
     /**
+     * Notifies the component that all the items should be refreshed.
+     */
+    void refreshAll();
+
+    /**
      * Add an item count change listener that is fired when the item count
      * changes. This can happen for instance when filtering the items.
      * <p>

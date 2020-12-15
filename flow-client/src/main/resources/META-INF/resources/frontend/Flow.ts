@@ -73,6 +73,7 @@ export class Flow {
 
   // flag used to inform Testbench whether a server route is in progress
   private isActive = false;
+
   private baseRegex = /^\//;
   private appShellTitle: string;
 
@@ -86,9 +87,7 @@ export class Flow {
     $wnd.Vaadin.Flow = $wnd.Vaadin.Flow || {};
     $wnd.Vaadin.Flow.clients = {
       TypeScript: {
-        isActive: () => this.isActive,
-        loadingStarted: this.loadingStarted,
-        loadingFinished: this.loadingFinished
+        isActive: () => this.isActive
       }
     };
 

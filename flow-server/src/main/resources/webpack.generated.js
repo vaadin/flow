@@ -18,6 +18,9 @@ const ApplicationThemePlugin = require('@vaadin/application-theme-plugin');
 
 const path = require('path');
 
+// this matches /themes/my-theme/ and is used to check css url handling and file path build.
+const themePartRegex = /(\\|\/)themes\1[\s\S]*?\1/;
+
 // the folder of app resources:
 //  - flow templates for classic Flow
 //  - client code with index.html and index.[ts/js] for CCDM
@@ -59,7 +62,7 @@ const projectStaticAssetsOutputFolder = [to-be-generated-by-flow];
 
 // Folders in the project which can contain application themes
 const themeProjectFolders = projectStaticAssetsFolders.map((folder) =>
-  path.resolve(folder, 'theme')
+  path.resolve(folder, 'themes')
 );
 
 
@@ -229,11 +232,19 @@ module.exports = {
         test: /\.css$/i,
         use: [
           {
+            loader: "lit-css-loader"
+          },
+          {
+            loader: "extract-loader"
+          },
+          {
             loader: 'css-loader',
             options: {
               url: (url, resourcePath) => {
                 // Only translate files from node_modules
-                return resourcePath.includes('/node_modules/');
+                const resolve = resourcePath.match(/(\\|\/)node_modules\1/);
+                const themeResource = resourcePath.match(themePartRegex) && url.match(/^themes\/[\s\S]*?\//);
+                return resolve || themeResource;
               },
               // use theme-loader to also handle any imports in css files
               importLoaders: 1
@@ -249,6 +260,22 @@ module.exports = {
           }
         ],
       },
+      {
+        // File-loader only copies files used as imports in .js files or handled by css-loader
+        test: /\.(png|gif|jpg|jpeg|svg|eot|woff|woff2|ttf)$/,
+        use: [{
+          loader: 'file-loader',
+          options: {
+            outputPath: 'static/',
+            name(resourcePath, resourceQuery) {
+              if (resourcePath.match(/(\\|\/)node_modules\1/)) {
+                return /(\\|\/)node_modules\1(?!.*node_modules)([\S]+)/.exec(resourcePath)[2].replace(/\\/g, "/");
+              }
+              return '[path][name].[ext]';
+            }
+          }
+        }],
+      },
     ]
   },
   performance: {
@@ -260,6 +287,7 @@ module.exports = {
     new ManifestPlugin(),
 
     new ApplicationThemePlugin({
+      // The following matches target/flow-frontend/theme/theme-generated.js and not frontend/themes
       themeResourceFolder: path.resolve(flowFrontendFolder, 'theme'),
       themeProjectFolders: themeProjectFolders,
       projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,

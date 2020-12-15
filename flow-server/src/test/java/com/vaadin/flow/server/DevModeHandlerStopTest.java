@@ -30,6 +30,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
@@ -94,7 +96,7 @@ public class DevModeHandlerStopTest {
 
         startTestServer(port, HTTP_OK, "OK");
 
-        DevModeHandler.start(port, configuration, npmFolder,
+        DevModeHandler.start(port, createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null)).join();
         assertEquals(port, DevModeHandler.getDevModeHandler().getPort());
         assertNotNull(requestWebpackServer(port, "/bar"));
@@ -110,14 +112,14 @@ public class DevModeHandlerStopTest {
 
         startTestServer(port, HTTP_OK, "OK");
 
-        DevModeHandler.start(port, configuration, npmFolder,
+        DevModeHandler.start(port, createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null)).join();
 
         // Simulate a server restart by removing the handler, and starting a new
         // one
         DevModeHandlerTest.removeDevModeHandlerInstance();
         assertNull(DevModeHandler.getDevModeHandler());
-        DevModeHandler.start(configuration, npmFolder,
+        DevModeHandler.start(createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null)).join();
 
         // Webpack server should continue working
@@ -154,6 +156,10 @@ public class DevModeHandlerStopTest {
         });
         httpServer.start();
         return port;
+    }
+
+    private Lookup createDevModeLookup() {
+        return Lookup.of(configuration, DeploymentConfiguration.class);
     }
 
 }
