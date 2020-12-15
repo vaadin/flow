@@ -90,7 +90,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void documentCssFonts_fromLocalCssFile_fontsAreAppliedInDocumentRoot() {
+    public void documentCssFonts_fromLocalCssFile_fontAppliedToDocumentRoot() {
         open();
 
         Long adoptedStyles = (Long) getCommandExecutor().executeScript(
@@ -101,30 +101,29 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 "Expected the document root to have the adopted styles",
                 adoptedStyles > 0);
 
-        Object openSansFontStylesFound = getCommandExecutor().executeScript(
+        Object ostrichFontStylesFound = getCommandExecutor().executeScript(
                 "return document.adoptedStyleSheets.map(styleSheet => styleSheet"
                         + ".cssRules[0].cssText).filter(cssText => cssText"
-                        + ".indexOf('Open Sans') > 0).length > 0;");
+                        + ".indexOf('Ostrich') > 0).length > 0;");
 
         Assert.assertEquals(
-                "Expected Open Sans font to be applied to document root element",
-                Boolean.TRUE, openSansFontStylesFound);
+                "Expected Ostrich font to be applied to document root element",
+                Boolean.TRUE, ostrichFontStylesFound);
     }
 
     @Test
-    public void documentCssFonts_fromLocalCssFile_fontsAreNotAppliedInEmbeddedComponent() {
+    public void documentCssFonts_fromLocalCssFile_fontAppliedToEmbeddedComponent() {
         open();
 
-        Object openSansFontStylesNotFoundForEmbedded = getCommandExecutor()
+        Object ostrichFontStylesFoundForEmbedded = getCommandExecutor()
                 .executeScript(
                         "return document.getElementsByTagName('themed-component')[0]"
                                 + ".shadowRoot.adoptedStyleSheets.map(styleSheet => "
                                 + "styleSheet.cssRules[0].cssText).filter(cssText => "
-                                + "cssText.indexOf('Open Sans') > 0).length === 0;");
+                                + "cssText.indexOf('Ostrich') > 0).length > 0;");
 
         Assert.assertEquals(
-                "Expected no font-face from document.css has been applied to "
-                        + "embedded element",
-                Boolean.TRUE, openSansFontStylesNotFoundForEmbedded);
+                "Expected Ostrich font to be applied to embedded component",
+                Boolean.TRUE, ostrichFontStylesFoundForEmbedded);
     }
 }
