@@ -39,7 +39,7 @@ import elemental.json.JsonObject;
 public class CompositeDataGenerator<T>
         implements DataGenerator<T>, HasDataGenerators<T> {
 
-    private final Set<DataGenerator<T>> dataGenerators = new LinkedHashSet<>();
+    final Set<DataGenerator<T>> dataGenerators = new LinkedHashSet<>();
 
     @Override
     public void generateData(T item, JsonObject jsonObject) {
