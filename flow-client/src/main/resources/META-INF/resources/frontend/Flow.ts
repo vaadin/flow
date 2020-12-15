@@ -87,7 +87,9 @@ export class Flow {
     $wnd.Vaadin.Flow = $wnd.Vaadin.Flow || {};
     $wnd.Vaadin.Flow.clients = {
       TypeScript: {
-        isActive: () => this.isActive
+        isActive: () => this.isActive,
+        loadingStarted: this.loadingStarted,
+        loadingFinished: this.loadingFinished
       }
     };
 
