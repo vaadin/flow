@@ -31,6 +31,21 @@ import static com.vaadin.flow.webcomponent.ThemedComponent.MY_POLYMER_ID;
 
 public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
+    private static final String FIND_FONT_FACE_RULE_SCRIPT =
+    //@formatter:off
+        "let found = false;"
+        + "for (let as = 0; as < target.adoptedStyleSheets.length; ++as) {"
+        + "    let styleSheetRules = target.adoptedStyleSheets[as].rules;"
+        + "    for (var ss = 0; ss < styleSheetRules.length; ++ss) {"
+        + "        let cssRule = styleSheetRules[ss];"
+        + "        if (cssRule instanceof CSSFontFaceRule && cssRule.cssText.startsWith(\"@font-face { font-family: Ostrich;\")) {"
+        + "            found = true;"
+        + "        }"
+        + "    }"
+        + "}"
+        + "return found;";
+    //@formatter:on
+
     @Override
     protected String getTestPath() {
         return "/index.html";
@@ -93,37 +108,25 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     public void documentCssFonts_fromLocalCssFile_fontAppliedToDocumentRoot() {
         open();
 
-        Long adoptedStyles = (Long) getCommandExecutor().executeScript(
-                "return document.adoptedStyleSheets !== undefined ? document"
-                        + ".adoptedStyleSheets.length : 0");
+        Object ostrichFontStylesFound = getCommandExecutor().executeScript(
+                "let target = document;" + FIND_FONT_FACE_RULE_SCRIPT);
 
         Assert.assertTrue(
-                "Expected the document root to have the adopted styles",
-                adoptedStyles > 0);
-
-        Object ostrichFontStylesFound = getCommandExecutor().executeScript(
-                "return document.adoptedStyleSheets.map(styleSheet => styleSheet"
-                        + ".cssRules[0].cssText).filter(cssText => cssText"
-                        + ".indexOf('Ostrich') > 0).length > 0;");
-
-        Assert.assertEquals(
                 "Expected Ostrich font to be applied to document root element",
-                Boolean.TRUE, ostrichFontStylesFound);
+                (Boolean) ostrichFontStylesFound);
     }
 
     @Test
-    public void documentCssFonts_fromLocalCssFile_fontAppliedToEmbeddedComponent() {
+    public void documentCssFonts_fromLocalCssFile_fontNotAppliedToEmbeddedComponent() {
         open();
 
         Object ostrichFontStylesFoundForEmbedded = getCommandExecutor()
-                .executeScript(
-                        "return document.getElementsByTagName('themed-component')[0]"
-                                + ".shadowRoot.adoptedStyleSheets.map(styleSheet => "
-                                + "styleSheet.cssRules[0].cssText).filter(cssText => "
-                                + "cssText.indexOf('Ostrich') > 0).length > 0;");
+                .executeScript("let target = document.getElementsByTagName"
+                        + "('themed-component')[0].shadowRoot;"
+                        + FIND_FONT_FACE_RULE_SCRIPT);
 
-        Assert.assertEquals(
-                "Expected Ostrich font to be applied to embedded component",
-                Boolean.TRUE, ostrichFontStylesFoundForEmbedded);
+        Assert.assertFalse(
+                "Expected no Ostrich font to be applied to embedded component",
+                (Boolean) ostrichFontStylesFoundForEmbedded);
     }
 }
