@@ -620,7 +620,7 @@ public class FrontendUtils {
                 .replaceFirst("^/", "");
         ResourceProvider resourceProvider = service.getContext()
                 .getAttribute(Lookup.class).lookup(ResourceProvider.class);
-        URL statsUrl = resourceProvider.getApplicationResource(service, stats);
+        URL statsUrl = resourceProvider.getApplicationResource(stats);
         InputStream stream = null;
         try {
             stream = statsUrl == null ? null : statsUrl.openStream();

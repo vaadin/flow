@@ -1,0 +1,7 @@
+:host {
+    width: 1200px;
+    height: 600px;
+    display: block;
+    background-image: url("./img/bg.jpg");
+    font-family: "Ostrich";
+}

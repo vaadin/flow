@@ -15,19 +15,9 @@
  */
 package com.vaadin.flow.server;
 
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
-import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
-import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
-import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
-import static com.vaadin.flow.server.frontend.FrontendUtils.console;
-import static java.lang.String.format;
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_OK;
-
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,25 +34,38 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
-
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
+import static com.vaadin.flow.server.StaticFileServer.APP_THEME_PATTERN;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
+import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
+import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
+import static com.vaadin.flow.server.frontend.FrontendUtils.console;
+import static java.lang.String.format;
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * Handles getting resources from <code>webpack-dev-server</code>.
@@ -139,28 +142,39 @@ public final class DevModeHandler implements RequestHandler {
 
     private final File npmFolder;
 
-    private DevModeHandler(DeploymentConfiguration config, int runningPort,
-            File npmFolder, CompletableFuture<Void> waitFor) {
+    private DevModeHandler(Lookup lookup, int runningPort, File npmFolder,
+            CompletableFuture<Void> waitFor) {
 
         this.npmFolder = npmFolder;
         port = runningPort;
+        DeploymentConfiguration config = lookup
+                .lookup(DeploymentConfiguration.class);
         reuseDevServer = config.reuseDevServer();
         devServerPortFile = getDevServerPortFile(npmFolder);
 
-        devServerStartFuture = waitFor.whenCompleteAsync((value, exception) -> {
+        // Check whether executor is provided by the caller (framework)
+        Executor service = lookup.lookup(Executor.class);
+
+        BiConsumer<Void, ? super Throwable> action = (value, exception) -> {
             // this will throw an exception if an exception has been thrown by
             // the waitFor task
             waitFor.getNow(null);
             runOnFutureComplete(config);
-        });
+        };
 
+        if (service == null) {
+            devServerStartFuture = waitFor.whenCompleteAsync(action);
+        } else {
+            // if there is an executor use it to run the task
+            devServerStartFuture = waitFor.whenCompleteAsync(action, service);
+        }
     }
 
     /**
      * Start the dev mode handler if none has been started yet.
      *
-     * @param configuration
-     *            deployment configuration
+     * @param lookup
+     *            the provided lookup to get required data
      * @param npmFolder
      *            folder with npm configuration files
      * @param waitFor
@@ -169,9 +183,9 @@ public final class DevModeHandler implements RequestHandler {
      *
      * @return the instance in case everything is alright, null otherwise
      */
-    public static DevModeHandler start(DeploymentConfiguration configuration,
-            File npmFolder, CompletableFuture<Void> waitFor) {
-        return start(0, configuration, npmFolder, waitFor);
+    public static DevModeHandler start(Lookup lookup, File npmFolder,
+            CompletableFuture<Void> waitFor) {
+        return start(0, lookup, npmFolder, waitFor);
     }
 
     /**
@@ -179,8 +193,8 @@ public final class DevModeHandler implements RequestHandler {
      *
      * @param runningPort
      *            port on which Webpack is listening.
-     * @param configuration
-     *            deployment configuration
+     * @param lookup
+     *            the provided lookup to get required data
      * @param npmFolder
      *            folder with npm configuration files
      * @param waitFor
@@ -189,16 +203,17 @@ public final class DevModeHandler implements RequestHandler {
      *
      * @return the instance in case everything is alright, null otherwise
      */
-    public static DevModeHandler start(int runningPort,
-            DeploymentConfiguration configuration, File npmFolder,
-            CompletableFuture<Void> waitFor) {
+    public static DevModeHandler start(int runningPort, Lookup lookup,
+            File npmFolder, CompletableFuture<Void> waitFor) {
+        DeploymentConfiguration configuration = lookup
+                .lookup(DeploymentConfiguration.class);
         if (configuration.isProductionMode()
                 || !configuration.enableDevServer()) {
             return null;
         }
         if (atomicHandler.get() == null) {
-            atomicHandler.compareAndSet(null, createInstance(runningPort,
-                    configuration, npmFolder, waitFor));
+            atomicHandler.compareAndSet(null,
+                    createInstance(runningPort, lookup, npmFolder, waitFor));
         }
         return getDevModeHandler();
     }
@@ -261,11 +276,9 @@ public final class DevModeHandler implements RequestHandler {
         }
     }
 
-    private static DevModeHandler createInstance(int runningPort,
-            DeploymentConfiguration configuration, File npmFolder,
-            CompletableFuture<Void> waitFor) {
-        return new DevModeHandler(configuration, runningPort, npmFolder,
-                waitFor);
+    private static DevModeHandler createInstance(int runningPort, Lookup lookup,
+            File npmFolder, CompletableFuture<Void> waitFor) {
+        return new DevModeHandler(lookup, runningPort, npmFolder, waitFor);
     }
 
     /**
@@ -277,9 +290,9 @@ public final class DevModeHandler implements RequestHandler {
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
         String pathInfo = request.getPathInfo();
-        if (pathInfo != null && pathInfo.startsWith("/" + VAADIN_MAPPING)
-                && !pathInfo
-                        .startsWith("/" + StreamRequestHandler.DYN_RES_PREFIX)) {
+        if (pathInfo != null
+                && (pathInfo.startsWith("/" + VAADIN_MAPPING) || APP_THEME_PATTERN.matcher(pathInfo).find())
+                && !pathInfo.startsWith("/" + StreamRequestHandler.DYN_RES_PREFIX)) {
             return true;
         }
 
@@ -319,6 +332,11 @@ public final class DevModeHandler implements RequestHandler {
                     requestFilename);
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return true;
+        }
+
+        // Redirect theme source request
+        if(APP_THEME_PATTERN.matcher(requestFilename).find()) {
+            requestFilename = "/VAADIN/static" + requestFilename;
         }
 
         HttpURLConnection connection = prepareConnection(requestFilename,
@@ -712,8 +730,10 @@ public final class DevModeHandler implements RequestHandler {
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info(LOG_END, ms);
             return true;
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             getLogger().error("Failed to start the webpack process", e);
+        } catch (InterruptedException e) {
+            getLogger().debug("Webpack process start has been interrupted", e);
         }
         return false;
     }

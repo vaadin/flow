@@ -25,24 +25,12 @@ import com.vaadin.flow.di.ResourceProvider;
 public class TestResourceProvider implements ResourceProvider {
 
     @Override
-    public URL getApplicationResource(Class<?> contextClass, String path) {
+    public URL getApplicationResource(String path) {
         return null;
     }
 
     @Override
-    public List<URL> getApplicationResources(Class<?> contextClass, String path)
-            throws IOException {
-        return null;
-    }
-
-    @Override
-    public List<URL> getApplicationResources(Object context, String path)
-            throws IOException {
-        return null;
-    }
-
-    @Override
-    public URL getApplicationResource(Object context, String path) {
+    public List<URL> getApplicationResources(String path) throws IOException {
         return null;
     }
 

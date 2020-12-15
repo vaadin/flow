@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -13,10 +11,12 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -28,7 +28,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
-import static org.junit.Assert.assertTrue;
 public class NodeTasksTest {
 
     @Rule
@@ -45,11 +44,15 @@ public class NodeTasksTest {
 
     @Test
     public void should_UseDefaultFolders() throws Exception {
-        Builder builder = new Builder(
-                new DefaultClassFinder(this.getClass().getClassLoader()),
-                new File(userDir)).enablePackagesUpdate(false)
-                        .enableImportsUpdate(true).runNpmInstall(false)
-                        .withEmbeddableWebComponents(false);
+        Lookup mockedLookup = Mockito.mock(Lookup.class);
+        Mockito.doReturn(new DefaultClassFinder(this.getClass().getClassLoader()))
+                .when(mockedLookup).lookup(ClassFinder.class);
+        Builder builder = new Builder(mockedLookup,
+                new File(userDir))
+            .enablePackagesUpdate(false)
+            .enableImportsUpdate(true)
+            .runNpmInstall(false)
+            .withEmbeddableWebComponents(false);
 
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
@@ -68,8 +71,11 @@ public class NodeTasksTest {
 
     @Test
     public void should_generateServiceWorkerWhenPwa() throws Exception {
+        Lookup mockedLookup = Mockito.mock(Lookup.class);
+        Mockito.doReturn(new DefaultClassFinder(this.getClass().getClassLoader()))
+                .when(mockedLookup).lookup(ClassFinder.class);
         Builder builder = new Builder(
-                new DefaultClassFinder(this.getClass().getClassLoader()),
+                mockedLookup,
                 new File(userDir)).enablePackagesUpdate(false)
                         .enableImportsUpdate(true).runNpmInstall(false)
                         .withEmbeddableWebComponents(false);
@@ -94,21 +100,20 @@ public class NodeTasksTest {
         System.setProperty(PARAM_FRONTEND_DIR, "my_custom_sources_folder");
         System.setProperty(PARAM_GENERATED_DIR, "my/custom/generated/folder");
 
-        Builder builder = new Builder(
-                new DefaultClassFinder(this.getClass().getClassLoader()),
-                new File(userDir)).enablePackagesUpdate(false)
-                        .enableImportsUpdate(true).runNpmInstall(false)
-                        .withEmbeddableWebComponents(false);
+        Lookup mockedLookup = Mockito.mock(Lookup.class);
+        Mockito.doReturn(new DefaultClassFinder(this.getClass().getClassLoader()))
+                .when(mockedLookup).lookup(ClassFinder.class);
+        Builder builder = new Builder(mockedLookup,
+                new File(userDir))
+            .enablePackagesUpdate(false)
+            .enableImportsUpdate(true)
+            .runNpmInstall(false)
+            .withEmbeddableWebComponents(false);
 
-        Assert.assertEquals(
-                new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
-                ((File) getFieldValue(builder, "frontendDirectory"))
-                        .getAbsolutePath());
-        Assert.assertEquals(
-                new File(userDir, "my/custom/generated/folder")
-                        .getAbsolutePath(),
-                ((File) getFieldValue(builder, "generatedFolder"))
-                        .getAbsolutePath());
+        Assert.assertEquals(new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
+                ((File)getFieldValue(builder, "frontendDirectory")).getAbsolutePath());
+        Assert.assertEquals(new File(userDir, "my/custom/generated/folder").getAbsolutePath(),
+                ((File)getFieldValue(builder, "generatedFolder")).getAbsolutePath());
 
         builder.build().execute();
         Assert.assertTrue(
@@ -119,8 +124,10 @@ public class NodeTasksTest {
     @Test
     public void should_SetIsClientBootstrapMode_When_EnableClientSideBootstrapMode()
             throws ExecutionFailedException, IOException {
-        Builder builder = new Builder(
-                new DefaultClassFinder(this.getClass().getClassLoader()),
+        Lookup mockedLookup = Mockito.mock(Lookup.class);
+        Mockito.doReturn(new DefaultClassFinder(this.getClass().getClassLoader()))
+                .when(mockedLookup).lookup(ClassFinder.class);
+        Builder builder = new Builder(mockedLookup,
                 new File(userDir))
                         .enablePackagesUpdate(false)
                         .withWebpack(new File(userDir, TARGET + "webapp"),
@@ -140,42 +147,9 @@ public class NodeTasksTest {
                         "const useClientSideIndexFileForBootstrapping = true;"));
     }
 
-    @Test
-    public void should_Generate_Connect_Files() throws Exception {
-        File src = new File(
-                getClass().getClassLoader().getResource("java").getFile());
-        File dir = new File(userDir);
-        File json = new File(dir, "api-file.json");
-
-        Builder builder = new Builder(new DefaultClassFinder(
-                Collections.singleton(ConnectEndpointsForTesting.class)), dir)
-                        .enablePackagesUpdate(false).enableImportsUpdate(false)
-                        .withEmbeddableWebComponents(false)
-                        .withConnectJavaSourceFolder(src)
-                        .withConnectGeneratedOpenApiJson(json)
-                        .withConnectClientTsApiFolder(new File(dir, "api"));
-
-        builder.build().execute();
-
-        Arrays.asList(
-                // enableClientSide
-                "target/index.html", "target/index.ts",
-                // withConnectJavaSourceFolder and
-                // withConnectGeneratedOpenApiJson
-                "api-file.json",
-                // withConnectClientTsApiFolder
-                "api/connect-client.default.ts", "api/MyEndpoint.ts")
-                .forEach(name -> assertTrue(name + " not created.",
-                        new File(dir, name).exists()));
-    }
-
     private Object getFieldValue(Object obj, String name) throws Exception {
         Field field = obj.getClass().getDeclaredField(name);
         field.setAccessible(true);
         return field.get(obj);
-    }
-
-    @Endpoint
-    public static class ConnectEndpointsForTesting {
     }
 }

@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -130,32 +131,34 @@ public class NodeTasks implements FallibleCommand {
          */
         private URI nodeDownloadRoot = URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
 
+        private Lookup lookup;
+
         /**
          * Create a builder instance given an specific npm folder.
          *
-         * @param classFinder
-         *            a class finder
+         * @param lookup
+         *            a {@link Lookup} to discover services used by Flow (SPI)
          * @param npmFolder
          *            folder with the `package.json` file
          */
-        public Builder(ClassFinder classFinder, File npmFolder) {
-            this(classFinder, npmFolder, new File(npmFolder, System
+        public Builder(Lookup lookup, File npmFolder) {
+            this(lookup, npmFolder, new File(npmFolder, System
                     .getProperty(PARAM_GENERATED_DIR, DEFAULT_GENERATED_DIR)));
         }
 
         /**
          * Create a builder instance with custom npmFolder and generatedPath
          *
-         * @param classFinder
-         *            a class finder
+         * @param lookup
+         *            a {@link Lookup} to discover services used by Flow (SPI)
          * @param npmFolder
          *            folder with the `package.json` file
          * @param generatedPath
          *            folder where flow generated files will be placed.
          */
-        public Builder(ClassFinder classFinder, File npmFolder,
+        public Builder(Lookup lookup, File npmFolder,
                 File generatedPath) {
-            this(classFinder, npmFolder, generatedPath,
+            this(lookup, npmFolder, generatedPath,
                     new File(npmFolder, System.getProperty(PARAM_FRONTEND_DIR,
                             DEFAULT_FRONTEND_DIR)));
         }
@@ -163,8 +166,8 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Create a builder instance with all parameters.
          *
-         * @param classFinder
-         *            a class finder
+         * @param lookup
+         *            a {@link Lookup} to discover services used by Flow (SPI)
          * @param npmFolder
          *            folder with the `package.json` file
          * @param generatedPath
@@ -172,9 +175,10 @@ public class NodeTasks implements FallibleCommand {
          * @param frontendDirectory
          *            a directory with project's frontend files
          */
-        public Builder(ClassFinder classFinder, File npmFolder,
+        public Builder(Lookup lookup, File npmFolder,
                 File generatedPath, File frontendDirectory) {
-            this.classFinder = classFinder;
+            this.lookup = lookup;
+            this.classFinder = lookup.lookup(ClassFinder.class);
             this.npmFolder = npmFolder;
             this.generatedFolder = generatedPath.isAbsolute() ? generatedPath
                     : new File(npmFolder, generatedPath.getPath());
@@ -529,7 +533,7 @@ public class NodeTasks implements FallibleCommand {
             if (builder.generateEmbeddableWebComponents) {
                 FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
                         classFinder);
-                generator.generateWebComponents(builder.generatedFolder);
+                generator.generateWebComponents(builder.generatedFolder, frontendDependencies.getThemeDefinition());
             }
         }
 
@@ -634,20 +638,21 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private void addConnectServicesTasks(Builder builder) {
-        TaskGenerateOpenApi taskGenerateOpenApi = new TaskGenerateOpenApi(
-                builder.connectApplicationProperties,
-                builder.connectJavaSourceFolder,
-                builder.classFinder.getClassLoader(),
-                builder.connectGeneratedOpenApiFile);
-        commands.add(taskGenerateOpenApi);
+        Lookup lookup = builder.lookup;
+        EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup.lookup(EndpointGeneratorTaskFactory.class);
 
-        if (builder.connectClientTsApiFolder != null) {
-            TaskGenerateConnect taskGenerateConnectTs = new TaskGenerateConnect(
-                    builder.connectApplicationProperties,
-                    builder.connectGeneratedOpenApiFile,
-                    builder.connectClientTsApiFolder,
-                    builder.frontendDirectory);
-            commands.add(taskGenerateConnectTs);
+        if (endpointGeneratorTaskFactory != null) {
+            TaskGenerateOpenApi taskGenerateOpenApi = endpointGeneratorTaskFactory.createTaskGenerateOpenApi(
+                    builder.connectApplicationProperties, builder.connectJavaSourceFolder,
+                    builder.classFinder.getClassLoader(), builder.connectGeneratedOpenApiFile);
+            commands.add(taskGenerateOpenApi);
+
+            if (builder.connectClientTsApiFolder != null) {
+                TaskGenerateConnect taskGenerateConnectTs = endpointGeneratorTaskFactory.createTaskGenerateConnect(
+                        builder.connectApplicationProperties, builder.connectGeneratedOpenApiFile,
+                        builder.connectClientTsApiFolder, builder.frontendDirectory);
+                commands.add(taskGenerateConnectTs);
+            }
         }
     }
 
