@@ -137,9 +137,6 @@ public class DefaultApplicationConfigurationFactory
                 .filter(url -> !url.getPath().endsWith("jar!/" + tokenResource))
                 .findFirst().orElse(null);
         if (resource == null && !resources.isEmpty()) {
-            // For no non jar build info, in production mode check for
-            // webpack.generated.json if it's in a jar then accept
-            // single jar flow-build-info.
             return getPossibleJarResource(context, resources);
         }
         return resource == null ? null
