@@ -330,11 +330,11 @@ suite("Flow", () => {
     const indicator = $wnd.document.querySelector('.v-loading-indicator');
 
     let wasActive = false;
-    let style = '';
+    let wasVisible = false;
     setTimeout(() => {
-    // Check the `isActive` flag and indicator.style at the time the action is being executed
-    wasActive = $wnd.Vaadin.Flow.clients.TypeScript.isActive();
-      style = indicator.getAttribute('style');
+      // Check the `isActive` flag and indicator.style at the time the action is being executed
+      wasActive = wasActive || $wnd.Vaadin.Flow.clients.TypeScript.isActive();
+      wasVisible = wasVisible || indicator.getAttribute('style') === 'display: block';
     }, 5);
 
     return route
@@ -361,7 +361,7 @@ suite("Flow", () => {
         // Check that `isActive` flag was active during the action
         assert.isTrue(wasActive);
         // Check that indicator was visible during the action
-        assert.equal(style, 'display: block');
+        assert.isTrue(wasVisible);
         // Check that `isActive` flag is set to false after the action
         assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
       });
@@ -445,9 +445,9 @@ suite("Flow", () => {
         // after action TB isActive flag should be false
         assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
 
-        // Store `isAcive` flag when the onBeforeEnter is being executed
+        // Store `isActive` flag when the onBeforeEnter is being executed
         let wasActive = false;
-        setTimeout(() => wasActive = $wnd.Vaadin.Flow.clients.TypeScript.isActive(), 5);
+        setTimeout(() => wasActive = wasActive || $wnd.Vaadin.Flow.clients.TypeScript.isActive(), 5);
         // @ts-ignore
         await elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {});
         // TB should be informed when the server call was in progress and when it is finished
