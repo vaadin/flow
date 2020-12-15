@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.data.provider;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.vaadin.flow.shared.Registration;
 
@@ -39,7 +39,7 @@ import elemental.json.JsonObject;
 public class CompositeDataGenerator<T>
         implements DataGenerator<T>, HasDataGenerators<T> {
 
-    private final Set<DataGenerator<T>> dataGenerators = new HashSet<>();
+    private final List<DataGenerator<T>> dataGenerators = new ArrayList<>();
 
     @Override
     public void generateData(T item, JsonObject jsonObject) {
