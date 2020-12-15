@@ -437,7 +437,6 @@ suite("form/Field", () => {
 
         for (const [inputValue, expectedNumber] of cases) {
           for (const eventName of ['input', 'change']) {
-            debugger;
             priorityField.value = inputValue;
             priorityField.valueSpy.get.resetHistory();
             priorityField.valueSpy.set.resetHistory();
