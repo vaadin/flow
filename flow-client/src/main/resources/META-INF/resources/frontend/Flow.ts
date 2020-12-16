@@ -73,6 +73,7 @@ export class Flow {
 
   // flag used to inform Testbench whether a server route is in progress
   private isActive = false;
+
   private baseRegex = /^\//;
   private appShellTitle: string;
 
