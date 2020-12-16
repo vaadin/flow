@@ -183,8 +183,6 @@ public class AbstractConfigurationFactory implements Serializable {
      * @param locationProvider
      *            the token file location provider
      * @return the token file location, may be {@code null}
-     * @throws IOException
-     *             if an error occurs
      */
     protected String getTokenFileContent(
             Function<String, String> locationProvider) {

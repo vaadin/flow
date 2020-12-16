@@ -17,13 +17,15 @@ package com.vaadin.flow.server.startup;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.file.Files;
 import java.util.Collections;
-import java.util.function.Function;
+import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -37,6 +39,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 public class DefaultApplicationConfigurationFactoryTest {
@@ -44,18 +47,8 @@ public class DefaultApplicationConfigurationFactoryTest {
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private static class TestDefaultApplicationConfigurationFactory
-            extends DefaultApplicationConfigurationFactory {
-
-        @Override
-        protected String getTokenFileContent(
-                Function<String, String> locationProvider) {
-            return super.getTokenFileContent(locationProvider);
-        }
-    }
-
     @Test
-    public void createInitParameters_checkWebpackGeneratedFromContext()
+    public void getTokenFileFromClassloader_tokenFileIsRead_checkWebpackGeneratedFromContext()
             throws VaadinConfigurationException, IOException {
         VaadinContext context = Mockito.mock(VaadinContext.class);
         VaadinConfig config = Mockito.mock(VaadinConfig.class);
@@ -65,8 +58,83 @@ public class DefaultApplicationConfigurationFactoryTest {
 
         String path = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
 
+        String content = "{ 'foo':'bar' }";
+        mockClassPathTokenFile(resourceProvider, content);
+
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+
+        String tokenFileContent = factory.getTokenFileFromClassloader(context);
+
+        Mockito.verify(resourceProvider)
+                .getApplicationResource(FrontendUtils.WEBPACK_GENERATED);
+
+        Mockito.verify(resourceProvider).getApplicationResources(path);
+
+        Assert.assertEquals(content, tokenFileContent.trim());
+    }
+
+    @Test
+    public void create_tokenFileIsSetViaContext_tokenFileIsReadViaContextProperty_propertiesAreReadFromContext()
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        Mockito.when(context.getContextParameterNames())
+                .thenReturn(Collections.enumeration(
+                        Collections.singleton(FrontendUtils.PARAM_TOKEN_FILE)));
+
         File tmpFile = temporaryFolder.newFile();
-        Files.write(tmpFile.toPath(), Collections.singletonList("{}"));
+        String content = "{ '" + SERVLET_PARAMETER_USE_V14_BOOTSTRAP
+                + "':true }";
+        Files.write(tmpFile.toPath(), Collections.singletonList(content));
+
+        Mockito.when(
+                context.getContextParameter(FrontendUtils.PARAM_TOKEN_FILE))
+                .thenReturn(tmpFile.getPath());
+
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+        ApplicationConfiguration configuration = factory.create(context);
+
+        List<String> propertyNames = Collections
+                .list(configuration.getPropertyNames());
+        Assert.assertEquals(2, propertyNames.size());
+        Assert.assertEquals(FrontendUtils.PARAM_TOKEN_FILE,
+                propertyNames.get(0));
+        Assert.assertEquals(SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
+                propertyNames.get(1));
+
+        Assert.assertTrue(configuration.useV14Bootstrap());
+    }
+
+    @Test
+    public void create_propertiesAreReadFromContext()
+            throws IOException, VaadinConfigurationException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        Mockito.when(context.getContextParameterNames()).thenReturn(
+                Collections.enumeration(Collections.singleton("foo")));
+        Mockito.when(context.getContextParameter("foo")).thenReturn("bar");
+
+        mockClassPathTokenFile(resourceProvider, "{}");
+
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+        ApplicationConfiguration configuration = factory.create(context);
+
+        List<String> propertyNames = Collections
+                .list(configuration.getPropertyNames());
+        Assert.assertEquals(1, propertyNames.size());
+        Assert.assertEquals("foo", propertyNames.get(0));
+        Assert.assertEquals("bar",
+                configuration.getStringProperty("foo", null));
+    }
+
+    private void mockClassPathTokenFile(ResourceProvider resourceProvider,
+            String content) throws IOException, MalformedURLException {
+        String path = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
+
+        File tmpFile = temporaryFolder.newFile();
+        Files.write(tmpFile.toPath(), Collections.singletonList(content));
 
         URLStreamHandler handler = new URLStreamHandler() {
 
@@ -79,18 +147,6 @@ public class DefaultApplicationConfigurationFactoryTest {
 
         Mockito.when(resourceProvider.getApplicationResources(path))
                 .thenReturn(Collections.singletonList(url));
-
-        Mockito.when(resourceProvider
-                .getApplicationResource(FrontendUtils.WEBPACK_GENERATED))
-                .thenReturn(tmpFile.toURI().toURL());
-
-        TestDefaultApplicationConfigurationFactory factory = new TestDefaultApplicationConfigurationFactory();
-
-        factory.getTokenFileFromClassloader(context);
-
-        Mockito.verify(resourceProvider)
-                .getApplicationResource(FrontendUtils.WEBPACK_GENERATED);
-
     }
 
     private ResourceProvider mockResourceProvider(VaadinConfig config,

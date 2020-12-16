@@ -277,22 +277,9 @@ public interface DeploymentConfiguration
     }
 
     /**
-     * <<<<<<< Upstream, based on master ======= Get if the dev server should be
-     * enabled. True by default
-     *
-     * @return true if dev server should be used
-     */
-    @Override
-    default boolean enableDevServer() {
-        return getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER, true);
-    }
-
-    /**
-     * >>>>>>> 01eb234 refactor: extract common config functionality and
-     * introduce add config Get if the dev server should be reused on each
-     * reload. True by default, set it to false in tests so as dev server is not
-     * kept as a daemon after the test.
+     * Get if the dev server should be reused on each reload. True by default,
+     * set it to false in tests so as dev server is not kept as a daemon after
+     * the test.
      *
      * @return true if dev server should be reused
      */

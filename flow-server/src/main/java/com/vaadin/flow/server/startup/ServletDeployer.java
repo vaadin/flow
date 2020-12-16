@@ -42,7 +42,6 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfig;
-import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -71,7 +70,6 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
  * is set to {@code true}.
  *
  * @author Vaadin Ltd
- * @see VaadinServletConfiguration#disableAutomaticServletRegistration()
  * @since 1.0
  */
 public class ServletDeployer implements ServletContextListener {
