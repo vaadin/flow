@@ -35,8 +35,8 @@ import static com.vaadin.flow.server.Constants.TARGET_THEME_FOLDER;
  */
 public class TaskCopyFrontendFiles implements FallibleCommand {
     private static final String[] WILDCARD_INCLUSIONS = new String[] {
-            "**/*.js", "**/*.css", "**/*.ts", "**/themes/**/*" };
-
+            "**/*.js", "**/*.css", "**/*.ts" };
+    private static final String WILDCARD_INCLUSION_APP_THEME_JAR = "**/themes/**/*";
     private File targetDirectory;
     private Set<File> resourceLocations = null;
 
@@ -86,7 +86,7 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                 targetThemeFolder.mkdir();
                 jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
                         location, RESOURCES_JAR_DEFAULT, targetDirectory,
-                        WILDCARD_INCLUSIONS);
+                        WILDCARD_INCLUSION_APP_THEME_JAR);
             }
         }
         long ms = (System.nanoTime() - start) / 1000000;
