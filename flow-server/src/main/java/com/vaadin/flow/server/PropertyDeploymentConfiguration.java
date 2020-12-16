@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.function.Function;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -29,7 +31,6 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REQUEST_TIMING;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_SYNC_ID_CHECK;
-import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 
 /**
  * The property handling implementation of {@link DeploymentConfiguration} based
@@ -40,8 +41,9 @@ import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 public class PropertyDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
 
-    private final Properties initParameters;
     private final Class<?> systemPropertyBaseClass;
+
+    private final Properties initialParameters;
 
     /**
      * Create a new property deployment configuration instance.
@@ -55,26 +57,9 @@ public class PropertyDeploymentConfiguration
      */
     public PropertyDeploymentConfiguration(Class<?> systemPropertyBaseClass,
             Properties initParameters) {
-        this.initParameters = initParameters;
+        super(filterStringProperties(initParameters));
+        initialParameters = initParameters;
         this.systemPropertyBaseClass = systemPropertyBaseClass;
-    }
-
-    @Override
-    public <T> T getApplicationOrSystemProperty(String propertyName,
-            T defaultValue, Function<String, T> converter) {
-        // Try system properties
-        String val = getSystemProperty(propertyName);
-        if (val != null) {
-            return converter.apply(val);
-        }
-
-        // Try application properties
-        val = getApplicationProperty(propertyName);
-        if (val != null) {
-            return converter.apply(val);
-        }
-
-        return defaultValue;
     }
 
     /**
@@ -84,6 +69,7 @@ public class PropertyDeploymentConfiguration
      *            the Name or the parameter.
      * @return String value or null if not found
      */
+    @Override
     protected String getSystemProperty(String parameterName) {
         String pkgName;
         final Package pkg = systemPropertyBaseClass.getPackage();
@@ -116,10 +102,7 @@ public class PropertyDeploymentConfiguration
             return val;
         }
 
-        // version prefixed with just "vaadin."
-        val = System.getProperty(VAADIN_PREFIX + parameterName);
-
-        return val;
+        return super.getSystemProperty(parameterName);
     }
 
     /**
@@ -129,16 +112,17 @@ public class PropertyDeploymentConfiguration
      *            the Name or the parameter.
      * @return String value or null if not found
      */
+    @Override
     public String getApplicationProperty(String parameterName) {
 
-        String val = initParameters.getProperty(parameterName);
+        String val = getProperties().get(parameterName);
         if (val != null) {
             return val;
         }
 
         // Try lower case application properties for backward compatibility with
         // 3.0.2 and earlier
-        val = initParameters.getProperty(parameterName.toLowerCase());
+        val = getProperties().get(parameterName.toLowerCase());
 
         return val;
     }
@@ -203,7 +187,7 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public Properties getInitParameters() {
-        return initParameters;
+        return initialParameters;
     }
 
     /**
@@ -215,8 +199,23 @@ public class PropertyDeploymentConfiguration
      */
     @Override
     public boolean isDevModeLiveReloadEnabled() {
-        return !isProductionMode() && getBooleanProperty(
-                SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD, true)
+        return !isProductionMode()
+                && getBooleanProperty(
+                        SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD, true)
                 && enableDevServer(); // gizmo excluded from prod bundle
+    }
+
+    private static Map<String, String> filterStringProperties(
+            Properties properties) {
+        Map<String, String> result = new HashMap<>();
+        for (Entry<Object, Object> entry : properties.entrySet()) {
+            Object key = entry.getKey();
+            Object value = entry.getValue();
+            // Hashtable doesn't allow null for key and value
+            if (key instanceof String && value instanceof String) {
+                result.put(key.toString(), value.toString());
+            }
+        }
+        return result;
     }
 }
