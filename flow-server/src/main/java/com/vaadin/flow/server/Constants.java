@@ -241,9 +241,9 @@ public final class Constants implements Serializable {
     public static final String RESOURCES_FRONTEND_DEFAULT = "META-INF/frontend";
 
     /**
-     * Location for the theme resources which are copied to /target/
+     * The name of the application theme root folder.
      */
-    public static final String TARGET_THEME_FOLDER = "themes";
+    public static final String APPLICATION_THEME_ROOT = "themes";
 
     /**
      * Location for the resources in jar files.

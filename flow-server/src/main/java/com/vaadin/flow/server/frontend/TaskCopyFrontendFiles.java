@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_JAR_DEFAULT;
-import static com.vaadin.flow.server.Constants.TARGET_THEME_FOLDER;
+import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
 
 /**
  * Copies JavaScript and CSS files from JAR files into a given folder.
@@ -80,10 +80,6 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                 jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
                         location, COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
                         targetDirectory, WILDCARD_INCLUSIONS);
-
-                File targetThemeFolder = new File(targetDirectory,
-                        TARGET_THEME_FOLDER);
-                targetThemeFolder.mkdir();
                 jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
                         location, RESOURCES_JAR_DEFAULT, targetDirectory,
                         WILDCARD_INCLUSION_APP_THEME_JAR);
