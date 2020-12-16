@@ -211,6 +211,9 @@ module.exports = {
               if (resourcePath.match(/(\\|\/)node_modules\1/)) {
                 return /(\\|\/)node_modules\1(?!.*node_modules)([\S]+)/.exec(resourcePath)[2].replace(/\\/g, "/");
               }
+              if (resourcePath.match(/(\\|\/)flow-frontend\1/)) {
+                return /(\\|\/)flow-frontend\1(?!.*flow-frontend)([\S]+)/.exec(resourcePath)[2].replace(/\\/g, "/");
+              }
               return '[path][name].[ext]';
             }
           }

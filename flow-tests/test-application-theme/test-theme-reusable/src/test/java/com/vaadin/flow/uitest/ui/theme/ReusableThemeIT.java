@@ -54,11 +54,11 @@ public class ReusableThemeIT extends ChromeBrowserTest {
 
     @Test
     public void secondTheme_staticFilesNotCopied() {
-        getDriver().get(getRootURL() + "/path/VAADIN/static/_/target/flow-frontend/themes/reusable-theme/img/bg.jpg");
+        getDriver().get(getRootURL() + "/path/themes/reusable-theme/img/bg.jpg");
         Assert.assertFalse("reusable-theme static files should be copied",
             driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
 
-        getDriver().get(getRootURL() + "/path/VAADIN/static/_/target/flow-frontend/themes/no-copy/no-copy.txt");
+        getDriver().get(getRootURL() + "/path/themes/no-copy/no-copy.txt");
         Assert.assertTrue("no-copy theme should not be handled",
             driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
     }
@@ -72,13 +72,13 @@ public class ReusableThemeIT extends ChromeBrowserTest {
         final WebElement body = findElement(By.tagName("body"));
         // Note themes/reusable-theme gets VAADIN/static from the file-loader
         Assert.assertEquals(
-            "url(\"" + getRootURL() + "/path/VAADIN/static/_/target/flow-frontend/themes/reusable-theme/img/bg.jpg\")",
+            "url(\"" + getRootURL() + "/path/VAADIN/static/themes/reusable-theme/img/bg.jpg\")",
             body.getCssValue("background-image"));
 
         Assert.assertEquals("Ostrich", body.getCssValue("font-family"));
 
         // Note themes/reusable-theme gets VAADIN/static from the file-loader
-        getDriver().get(getRootURL() + "/path/VAADIN/static/_/target/flow-frontend/themes/reusable-theme/img/bg.jpg");
+        getDriver().get(getRootURL() + "/path/VAADIN/static/themes/reusable-theme/img/bg.jpg");
         Assert.assertFalse("reusable-theme background file should be served",
             driver.getPageSource().contains("Could not navigate"));
     }
@@ -133,7 +133,7 @@ public class ReusableThemeIT extends ChromeBrowserTest {
         // Note themes/reusable-theme gets VAADIN/static from the file-loader
         Assert.assertEquals("Imported css file URLs should have been handled.",
             "url(\"" + getRootURL()
-                + "/path/VAADIN/static/_/target/flow-frontend/themes/reusable-theme/icons/archive.png\")",
+                + "/path/VAADIN/static/themes/reusable-theme/icons/archive.png\")",
             $(SpanElement.class).id(SUB_COMPONENT_ID)
                 .getCssValue("background-image"));
     }

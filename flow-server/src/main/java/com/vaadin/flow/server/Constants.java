@@ -246,10 +246,9 @@ public final class Constants implements Serializable {
     public static final String TARGET_THEME_FOLDER = "themes";
 
     /**
-     * Location for the theme resources in jar files.
+     * Location for the resources in jar files.
      */
-    public static final String RESOURCES_THEME = "META-INF/resources/"
-            + TARGET_THEME_FOLDER;
+    public static final String RESOURCES_JAR_DEFAULT = "META-INF/resources/";
 
     /**
      * @deprecated Use
