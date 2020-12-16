@@ -79,8 +79,8 @@ public class TaskUpdateThemeImport implements FallibleCommand {
 
     private void verifyThemeDirectoryExistence() throws ExecutionFailedException {
         File themesDir = new File (frontendDirectory, THEMES_FOLDER_NAME);
-        File shouldExistThemeDir = new File (themesDir, theme.getName());
-        if (Files.notExists(shouldExistThemeDir.toPath())) {
+        File customThemeDir = new File (themesDir, theme.getName());
+        if (!customThemeDir.exists()) {
             String errorMessage = "Discovered @Theme(\"%s\") annotation but " +
                     "no \"%s/%s/%s/\" directory present in the " +
                     "project or available or inside a jar dependency for the " +
