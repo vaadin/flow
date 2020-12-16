@@ -21,6 +21,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
@@ -65,12 +66,15 @@ public class DevModeInitializerTestBase {
     File mainPackageFile;
     File webpackFile;
     String baseDir;
-    Lookup lookup = Mockito.mock(Lookup.class);;
-    EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = Mockito.mock(EndpointGeneratorTaskFactory.class);
-    TaskGenerateConnect taskGenerateConnect = Mockito.mock(TaskGenerateConnect.class);
-    TaskGenerateOpenApi taskGenerateOpenApi = Mockito.mock(TaskGenerateOpenApi.class);
+    Lookup lookup;
+    EndpointGeneratorTaskFactory endpointGeneratorTaskFactory;
+    TaskGenerateConnect taskGenerateConnect;
+    TaskGenerateOpenApi taskGenerateOpenApi;
 
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    @Rule
+    public final TemporaryFolder javaSourceFolder = new TemporaryFolder();
 
     public static class VaadinServletSubClass extends VaadinServlet {
 
@@ -92,8 +96,12 @@ public class DevModeInitializerTestBase {
         ServletRegistration vaadinServletRegistration = Mockito
                 .mock(ServletRegistration.class);
 
+        lookup = Mockito.mock(Lookup.class);;
         Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
+        endpointGeneratorTaskFactory = Mockito.mock(EndpointGeneratorTaskFactory.class);
+        taskGenerateConnect = Mockito.mock(TaskGenerateConnect.class);
+        taskGenerateOpenApi = Mockito.mock(TaskGenerateOpenApi.class);
         Mockito.doReturn(endpointGeneratorTaskFactory).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
         Mockito.doReturn(taskGenerateConnect).when(endpointGeneratorTaskFactory)
@@ -184,6 +192,7 @@ public class DevModeInitializerTestBase {
         webpackFile.delete();
         mainPackageFile.delete();
         temporaryFolder.delete();
+        javaSourceFolder.delete();
         if (getDevModeHandler() != null) {
             getDevModeHandler().stop();
         }
