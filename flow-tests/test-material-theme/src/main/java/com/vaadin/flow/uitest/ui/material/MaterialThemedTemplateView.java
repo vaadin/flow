@@ -25,7 +25,7 @@ import com.vaadin.flow.theme.material.Material;
 @Tag("material-themed-template")
 @JsModule("./src/MaterialThemedTemplate.js")
 @Route(value = "com.vaadin.flow.uitest.ui.material.MaterialThemedTemplateView")
-@Theme(Material.class)
+@Theme(themeClass = Material.class)
 /*
  * Note that this is using component instead of polymer template, because
  * otherwise the themed module would have to import the original /src module, and

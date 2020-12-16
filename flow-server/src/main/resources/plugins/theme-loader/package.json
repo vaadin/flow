@@ -1,0 +1,19 @@
+{
+  "description": "theme-loader updates css urls targeting './' to instead be 'VAADIN/static/' as used by app theme",
+  "keywords": [
+    "plugin",
+    "application theme"
+  ],
+  "repository": "vaadin/flow",
+  "name": "@vaadin/theme-loader",
+  "version": "0.0.4",
+  "main": "theme-loader.js",
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/flow/issues"
+  },
+  "files": [
+    "theme-loader.js"
+  ]
+}

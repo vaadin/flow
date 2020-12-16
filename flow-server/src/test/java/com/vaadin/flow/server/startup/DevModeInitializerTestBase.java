@@ -21,27 +21,34 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.TaskGenerateConnect;
+import com.vaadin.flow.server.frontend.TaskGenerateOpenApi;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
-import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.any;
 
 /**
  * Base class for DevModeInitializer tests. It is an independent class so as it
@@ -59,8 +66,15 @@ public class DevModeInitializerTestBase {
     File mainPackageFile;
     File webpackFile;
     String baseDir;
+    Lookup lookup;
+    EndpointGeneratorTaskFactory endpointGeneratorTaskFactory;
+    TaskGenerateConnect taskGenerateConnect;
+    TaskGenerateOpenApi taskGenerateOpenApi;
 
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    @Rule
+    public final TemporaryFolder javaSourceFolder = new TemporaryFolder();
 
     public static class VaadinServletSubClass extends VaadinServlet {
 
@@ -81,6 +95,24 @@ public class DevModeInitializerTestBase {
         servletContext = Mockito.mock(ServletContext.class);
         ServletRegistration vaadinServletRegistration = Mockito
                 .mock(ServletRegistration.class);
+
+        lookup = Mockito.mock(Lookup.class);;
+        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
+                .thenReturn(lookup);
+        endpointGeneratorTaskFactory = Mockito.mock(EndpointGeneratorTaskFactory.class);
+        taskGenerateConnect = Mockito.mock(TaskGenerateConnect.class);
+        taskGenerateOpenApi = Mockito.mock(TaskGenerateOpenApi.class);
+        Mockito.doReturn(endpointGeneratorTaskFactory).when(lookup)
+                .lookup(EndpointGeneratorTaskFactory.class);
+        Mockito.doReturn(taskGenerateConnect).when(endpointGeneratorTaskFactory)
+                .createTaskGenerateConnect(any(), any(), any(), any());
+        Mockito.doReturn(taskGenerateOpenApi).when(endpointGeneratorTaskFactory)
+                .createTaskGenerateOpenApi(any(), any(), any(), any());
+
+        ResourceProvider resourceProvider = Mockito
+                .mock(ResourceProvider.class);
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(resourceProvider);
 
         Mockito.when(vaadinServletRegistration.getClassName())
                 .thenReturn(VaadinServletSubClass.class.getName());
@@ -160,6 +192,7 @@ public class DevModeInitializerTestBase {
         webpackFile.delete();
         mainPackageFile.delete();
         temporaryFolder.delete();
+        javaSourceFolder.delete();
         if (getDevModeHandler() != null) {
             getDevModeHandler().stop();
         }

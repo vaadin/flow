@@ -7,7 +7,7 @@
     <artifactId>flow-project</artifactId>
     <name>Flow</name>
     <packaging>pom</packaging>
-    <version>5.0-SNAPSHOT</version>
+    <version>6.0-SNAPSHOT</version>
 
     <parent>
         <groupId>com.vaadin</groupId>
@@ -34,6 +34,7 @@
         <module>flow-maven-plugin</module>
         <module>flow-test-generic</module>
         <module>flow-bom</module>
+        <module>fusion-endpoint</module>
         <module>build-tools</module>
     </modules>
 
@@ -123,8 +124,8 @@
             ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}
         </osgi.bundle.version>
         <bnd.version>3.3.0</bnd.version>
-        <osgi.core.version>6.0.0</osgi.core.version>
-        <osgi.compendium.version>6.0.0</osgi.compendium.version>
+        <osgi.core.version>7.0.0</osgi.core.version>
+        <osgi.compendium.version>7.0.0</osgi.compendium.version>
 
         <maven.test.skip>false</maven.test.skip>
 

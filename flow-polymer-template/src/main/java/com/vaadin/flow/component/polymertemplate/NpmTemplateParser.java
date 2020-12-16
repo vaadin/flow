@@ -17,6 +17,7 @@ package com.vaadin.flow.component.polymertemplate;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.Pair;
@@ -111,7 +114,7 @@ public class NpmTemplateParser implements TemplateParser {
             }
 
             String url = dependency.getUrl();
-            String source = getSourcesFromTemplate(tag, url);
+            String source = getSourcesFromTemplate(service, tag, url);
             if (source == null) {
                 try {
                     source = getSourcesFromStats(service, url);
@@ -158,24 +161,25 @@ public class NpmTemplateParser implements TemplateParser {
     }
 
     /**
-     * Dependency should match the tag name  ignoring the extension of the file.
+     * Dependency should match the tag name ignoring the extension of the file.
      *
      * @param dependency
-     *     dependency to check
+     *            dependency to check
      * @param tag
-     *     tag name for element
+     *            tag name for element
      * @return true if dependency file matches the tag name.
      */
     private boolean dependencyHasTagName(Dependency dependency, String tag) {
         String url = FilenameUtils.removeExtension(dependency.getUrl())
-            .toLowerCase(Locale.ENGLISH);
+                .toLowerCase(Locale.ENGLISH);
         return url.endsWith("/" + tag);
     }
-
 
     /**
      * Finds the JavaScript sources for given tag.
      *
+     * @param service
+     *            the related Vaadin service
      * @param tag
      *            the value of the {@link com.vaadin.flow.component.Tag}
      *            annotation, e.g. `my-component`
@@ -187,9 +191,19 @@ public class NpmTemplateParser implements TemplateParser {
      * @return the .js source which declares given custom element, or null if no
      *         such source can be found.
      */
-    protected String getSourcesFromTemplate(String tag, String url) {
-        InputStream content = getClass().getClassLoader()
-                .getResourceAsStream(url);
+    protected String getSourcesFromTemplate(VaadinService service, String tag,
+            String url) {
+        Lookup lookup = service.getContext().getAttribute(Lookup.class);
+        ResourceProvider resourceProvider = lookup
+                .lookup(ResourceProvider.class);
+        InputStream content = null;
+        try {
+            URL appResource = resourceProvider.getApplicationResource(url);
+            content = appResource == null ? null : appResource.openStream();
+        } catch (IOException exception) {
+            getLogger().warn("Coudln't get resource for the template '{}'", url,
+                    exception);
+        }
         if (content != null) {
             getLogger().debug(
                     "Found sources from the tag '{}' in the template '{}'", tag,

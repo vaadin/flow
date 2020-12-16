@@ -2,10 +2,12 @@ package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
 
-import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,7 +24,9 @@ import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -37,6 +41,8 @@ import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
@@ -327,12 +333,14 @@ public class BootstrapHandlerTest {
     private MockServletServiceSessionSetup mocks;
     private BootstrapHandler.BootstrapPageBuilder pageBuilder = new BootstrapHandler.BootstrapPageBuilder();
 
+    @Rule
+    public final TemporaryFolder tmpDir = new TemporaryFolder();
+
     @Before
     public void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
         TestRouteRegistry routeRegistry = new TestRouteRegistry();
 
-        BootstrapHandler.clientEngineFile = () -> "foobar";
         testUI = new TestUI();
 
         deploymentConfiguration = mocks.getDeploymentConfiguration();
@@ -364,6 +372,7 @@ public class BootstrapHandlerTest {
 
     @After
     public void tearDown() {
+        service.setDependencyFilters(null); // Reset to default
         session.unlock();
         mocks.cleanup();
     }
@@ -393,13 +402,7 @@ public class BootstrapHandlerTest {
             navigationTargets.forEach(routeConfiguration::setAnnotatedRoute);
         });
 
-        this.request = request;
-
-        ui.doInit(request, 0);
-        ui.getInternals().getRouter().initializeUI(ui, request);
-        context = new BootstrapContext(request, null, session, ui,
-                this::contextRootRelativePath);
-        ui.getInternals().setContextRoot(contextRootRelativePath(request));
+        initUI(ui, request);
     }
 
     @Test
@@ -1068,28 +1071,24 @@ public class BootstrapHandlerTest {
     @Test
     public void useDependencyFilters_removeDependenciesAndAddNewOnes()
             throws ServiceException {
-        List<DependencyFilter> filters = (List<DependencyFilter>) service
-                .getDependencyFilters();
-        filters.add((list, context) -> {
+        List<DependencyFilter> filters = Arrays.asList((list, context) -> {
             list.clear(); // remove everything
             return list;
-        });
-        filters.add((list, context) -> {
+        }, (list, context) -> {
             list.add(new Dependency(Dependency.Type.JAVASCRIPT,
                     "imported-by-filter.js", LoadMode.EAGER));
             list.add(new Dependency(Dependency.Type.JAVASCRIPT,
                     "imported-by-filter2.js", LoadMode.EAGER));
             return list;
-        });
-        filters.add((list, context) -> {
+        }, (list, context) -> {
             list.remove(1); // removes the imported-by-filter2.js
             return list;
-        });
-        filters.add((list, context) -> {
+        }, (list, context) -> {
             list.add(new Dependency(Dependency.Type.STYLESHEET,
                     "imported-by-filter.css", LoadMode.EAGER));
             return list;
         });
+        service.setDependencyFilters(filters);
 
         initUI(testUI);
 
@@ -1324,17 +1323,15 @@ public class BootstrapHandlerTest {
     @Test
     public void getBootstrapPage_jsModulesDoNotContainDeferAttribute()
             throws ServiceException {
-        List<DependencyFilter> filters = (List<DependencyFilter>) service
-                .getDependencyFilters();
-        filters.add((list, context) -> {
+        List<DependencyFilter> filters = Arrays.asList((list, context) -> {
             list.clear(); // remove everything
             return list;
-        });
-        filters.add((list, context) -> {
+        }, (list, context) -> {
             list.add(new Dependency(Dependency.Type.JS_MODULE, "//module.js",
                     LoadMode.EAGER));
             return list;
         });
+        service.setDependencyFilters(filters);
 
         initUI(testUI);
 
@@ -1379,12 +1376,9 @@ public class BootstrapHandlerTest {
 
     @Test // #7158
     public void getBootstrapPage_assetChunksIsAnARRAY_bootstrapParsesOk()
-            throws ServiceException {
+            throws ServiceException, IOException {
 
         initUI(testUI);
-
-        ClassLoader classLoader = Mockito.mock(ClassLoader.class);
-        service.setClassLoader(classLoader);
 
         String statsJson = "{\n" + " \"errors\": [],\n" + " \"warnings\": [],\n"
                 + " \"assetsByChunkName\": {\n" + "  \"bundle\": [\n"
@@ -1392,8 +1386,16 @@ public class BootstrapHandlerTest {
                 + "    \"build/vaadin-bundle-e77008557c8d410bf0dc.cache.js.map\"\n"
                 + "  ],\n" + " }" + "}";
 
-        Mockito.when(classLoader.getResourceAsStream(Mockito.anyString()))
-                .thenReturn(new ByteArrayInputStream(statsJson.getBytes()));
+        File tmpFile = tmpDir.newFile();
+        try (FileOutputStream stream = new FileOutputStream(tmpFile)) {
+            IOUtils.write(statsJson, stream, StandardCharsets.UTF_8);
+        }
+
+        Lookup lookup = testUI.getSession().getService().getContext()
+                .getAttribute(Lookup.class);
+        ResourceProvider provider = lookup.lookup(ResourceProvider.class);
+        Mockito.when(provider.getApplicationResource(Mockito.anyString()))
+                .thenReturn(tmpFile.toURI().toURL());
 
         BootstrapContext bootstrapContext = new BootstrapContext(request, null,
                 session, testUI, this::contextRootRelativePath);

@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.misc.ui;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.misc.ui.MiscelaneousView.MyTheme;
@@ -27,10 +30,7 @@ import com.vaadin.flow.theme.Theme;
 
 // Import a test component that sets CSS properties.
 @JsModule("./src/my-component-themed.js")
-
-// `src/` in component above should be replaced by `theme/my-theme`
-@Theme(MyTheme.class)
-@PWA(name = "Project Base for Vaadin", shortName = "Project Base")
+// `src/` in component should be replaced by `legacyTheme/my-theme`
 public class MiscelaneousView extends Div {
 
     public static final String TEST_VIEW_ID = "MiscellaneousView";
@@ -43,7 +43,13 @@ public class MiscelaneousView extends Div {
 
         @Override
         public String getThemeUrl() {
-            return "theme/my-theme";
+            return "legacyTheme/my-theme";
+        }
+
+        @Override
+        public List<String> getHeaderInlineContents() {
+            return Collections.singletonList("<custom-style>\n <style>\n   html {\n"
+                + "      font-size: 20px;\n  color:red;  }\n <style>\n </custom-style>");
         }
     }
 

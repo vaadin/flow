@@ -1,16 +1,16 @@
 <!--
-Please read these instructions through before submitting an issue, Thank You!
+Please READ these instructions & USE the issue template below, Thank You!
 
 Only use GitHub issues for bugs and feature requests.   
-For general support from the community, use https://vaadin.com/forum or https://gitter.im/vaadin/flow instead.
+For general support from the community, use https://vaadin.com/forum or Vaadin discord chat https://discord.gg/MYFq5RTbBn instead.
 
-NOTE: Issues concerning certain component should go to the corresponding components repository like [vaadin/vaadin-grid-flow](https://github.com/vaadin/vaadin-grid-flow).
+NOTE: Issues concerning certain UI components should go to the components repository https://github.com/vaadin/vaadin-flow-components .
 
 For feature requests, always include your use case - what are you trying to achieve and why.
 
-Good quality bug report increases the likelihood to get the bug fixed. Please use the following template to report bugs.```
+Good quality bug report increases the likelihood to get the bug fixed. A bad quality one will likely be just closed. Please use the following template to report bugs.
 -->
-### Description of the bug
+### Description of the bug / feature
 <!-- Explain briefly what is broken or what you want to achieve -->
 ### Minimal reproducible example
 <!-- What are the steps to reproduce the issue, example project or a code snippet without dependencies -->

@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -1339,7 +1340,7 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void filter_setFilterAsPermanent_shouldRetainFilter() {
+    public void filter_setFilterThroughFilterConsumer_shouldRetainFilterBetweenRequests() {
         SerializableConsumer<SerializablePredicate<Item>> filterConsumer = dataCommunicator
                 .setDataProvider(DataProvider.ofItems(new Item(1), new Item(2),
                         new Item(3)), item -> item.id > 1);
@@ -1351,7 +1352,7 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         Assert.assertNotNull(
-                "Permanent filter should be retained after data request",
+                "Filter should be retained after data request",
                 dataCommunicator.getFilter());
 
         Assert.assertEquals("Unexpected items count", 2,
@@ -1364,7 +1365,7 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         Assert.assertNotNull(
-                "Permanent filter should be retained after data request",
+                "Filter should be retained after data request",
                 dataCommunicator.getFilter());
 
         Assert.assertEquals("Unexpected items count", 1,
@@ -1372,52 +1373,7 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void filter_setFilterAsDisposable_shouldDiscardFilterAfterFirstFlush() {
-        SerializableConsumer<DataCommunicator.Filter<SerializablePredicate<Item>>> filterConsumer = dataCommunicator
-                .setDataProvider(DataProvider.ofItems(new Item(1), new Item(2),
-                        new Item(3)), item -> item.id > 1, false);
-
-        Assert.assertNotNull("Expected initial filter to be set",
-                dataCommunicator.getFilter());
-
-        dataCommunicator.setRequestedRange(0, 50);
-        fakeClientCommunication();
-
-        Assert.assertNull(
-                "Disposable filter should be discarded after data request",
-                dataCommunicator.getFilter());
-
-        Assert.assertEquals("Unexpected items count", 2,
-                dataCommunicator.getItemCount());
-
-        // Check that the filter change works properly
-        filterConsumer.accept(
-                new DataCommunicator.Filter<>(item -> item.id > 2, false));
-
-        dataCommunicator.setRequestedRange(0, 50);
-        fakeClientCommunication();
-
-        Assert.assertNull(
-                "Disposable filter should be discarded after data request",
-                dataCommunicator.getFilter());
-
-        Assert.assertEquals("Unexpected items count", 1,
-                dataCommunicator.getItemCount());
-
-        // Change to permanent and check that it's not discarded
-        filterConsumer.accept(
-                new DataCommunicator.Filter<>(item -> item.id > 2, true));
-
-        dataCommunicator.setRequestedRange(0, 50);
-        fakeClientCommunication();
-
-        Assert.assertNotNull(
-                "Permanent filter should be retained after data request",
-                dataCommunicator.getFilter());
-    }
-
-    @Test
-    public void filter_setFilterAsPermanent_firesItemChangeEvent() {
+    public void filter_setNotifyOnFilterChange_firesItemChangeEvent() {
         TestComponent testComponent = new TestComponent(element);
 
         AtomicBoolean eventTriggered = new AtomicBoolean(false);
@@ -1435,16 +1391,16 @@ public class DataCommunicatorTest {
         dataCommunicator.setRequestedRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertTrue("Expected event to be triggered for permanent filter",
+        Assert.assertTrue("Expected event to be triggered",
                 eventTriggered.get());
     }
 
     @Test
-    public void filter_setFilterAsDisposable_doesNotFireItemChangeEvent() {
+    public void filter_skipNotifyOnFilterChange_doesNotFireItemChangeEvent() {
         TestComponent testComponent = new TestComponent(element);
 
         testComponent.addItemChangeListener(event -> Assert
-                .fail("Event triggering not expected for disposable filter"));
+                .fail("Event triggering not expected"));
 
         dataCommunicator.setDataProvider(
                 DataProvider.ofItems(new Item(1), new Item(2), new Item(3)),
@@ -1452,6 +1408,41 @@ public class DataCommunicatorTest {
 
         dataCommunicator.setRequestedRange(0, 50);
         fakeClientCommunication();
+    }
+
+    @Test
+    public void setDataProvider_setNewDataProvider_filteringAndSortingRemoved() {
+        dataCommunicator.setDataProvider(
+                DataProvider.ofItems(new Item(0), new Item(1), new Item(2)),
+                null);
+
+        ListDataView<Item, ?> listDataView = new AbstractListDataView<Item>(
+                dataCommunicator::getDataProvider, new TestComponent(element),
+                (filter, sorting) -> {
+                }) {
+        };
+
+        Assert.assertEquals("Unexpected items count before filter", 3,
+                listDataView.getItems().count());
+        Assert.assertEquals("Unexpected items order before sorting",
+                new Item(0), listDataView.getItems().findFirst().orElse(null));
+
+        listDataView.setFilter(item -> item.id < 2);
+        listDataView.setSortOrder(item -> item.id, SortDirection.DESCENDING);
+
+        Assert.assertEquals("Unexpected items count after filter", 2,
+                listDataView.getItems().count());
+        Assert.assertEquals("Unexpected items order after sorting", new Item(1),
+                listDataView.getItems().findFirst().orElse(null));
+
+        dataCommunicator.setDataProvider(
+                DataProvider.ofItems(new Item(0), new Item(1), new Item(2)),
+                null);
+
+        Assert.assertEquals("Unexpected items count after data provider reset",
+                3, listDataView.getItems().count());
+        Assert.assertEquals("Unexpected items order after data provider reset",
+                new Item(0), listDataView.getItems().findFirst().orElse(null));
     }
 
     @Tag("test-component")

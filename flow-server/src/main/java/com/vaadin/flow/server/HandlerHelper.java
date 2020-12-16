@@ -16,8 +16,12 @@
 package com.vaadin.flow.server;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.function.BiConsumer;
+import java.util.regex.Pattern;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -34,6 +38,15 @@ public class HandlerHelper implements Serializable {
      * The default SystemMessages (read-only).
      */
     static final SystemMessages DEFAULT_SYSTEM_MESSAGES = new SystemMessages();
+
+    /**
+     * The pattern of error message shown when the URL path contains unsafe
+     * double encoding.
+     */
+    static final String UNSAFE_PATH_ERROR_MESSAGE_PATTERN = "Blocked attempt to access file: {}";
+
+    private static final Pattern PARENT_DIRECTORY_REGEX = Pattern
+            .compile("(/|\\\\)\\.\\.(/|\\\\)?", Pattern.CASE_INSENSITIVE);
 
     /**
      * Framework internal enum for tracking the type of a request.
@@ -174,6 +187,28 @@ public class HandlerHelper implements Serializable {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * Checks if the given URL path contains the directory change instruction
+     * (dot-dot), taking into account possible double encoding in hexadecimal
+     * format, which can be injected maliciously.
+     *
+     * @param path
+     *            the URL path to be verified.
+     * @return {@code true}, if the given path has a directory change
+     *         instruction, {@code false} otherwise.
+     */
+    public static boolean isPathUnsafe(String path) {
+        // Check that the path does not have '/../', '\..\', %5C..%5C,
+        // %2F..%2F, nor '/..', '\..', %5C.., %2F..
+        try {
+            path = URLDecoder.decode(path, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("An error occurred during decoding URL.",
+                    e);
+        }
+        return PARENT_DIRECTORY_REGEX.matcher(path).find();
     }
 
 }

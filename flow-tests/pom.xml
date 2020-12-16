@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>5.0-SNAPSHOT</version>
+        <version>6.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-tests</artifactId>
     <name>Flow tests</name>
@@ -63,6 +63,36 @@
     </dependencies>
     <build>
         <plugins>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+                <version>${bnd.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>bnd-process</goal>
+                        </goals>
+                        <configuration>
+                            <bnd><![CDATA[-fixupmessages: "Classes found in the wrong directory";is:=warning]]>
+                            </bnd>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.2</version>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                        <index>false</index>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
@@ -295,7 +325,6 @@
                 <module>test-mixed/pom-npm.xml</module>
                 <module>test-dev-mode</module>
                 <module>test-pwa</module>
-                <module>test-subcontext</module>
                 <module>test-root-ui-context</module>
                 <module>test-router-custom-context</module>
                 <module>test-live-reload</module>
@@ -411,6 +440,32 @@
                     com.vaadin.flow.testcategory.PushTests
                 </test.excludegroup>
             </properties>
+        </profile>
+        <profile>
+            <id>deepClean</id>
+            <build>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-clean-plugin</artifactId>
+                            <version>3.1.0</version>
+                            <configuration>
+                                <filesets>
+                                    <fileset>
+                                        <directory>${project.basedir}</directory>
+                                        <includes>
+                                            <include>package*.json</include>
+                                            <include>webpack.*.js</include>
+                                            <include>types.d.ts</include>
+                                            <include>tsconfig.json</include>
+                                            <include>pnpm-lock.yaml</include>
+                                            <include>node_modules/**</include>
+                                        </includes>
+                                    </fileset>
+                                </filesets>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+            </build>
         </profile>
     </profiles>
 

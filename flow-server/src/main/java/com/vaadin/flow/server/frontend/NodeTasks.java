@@ -24,16 +24,17 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 
@@ -125,32 +126,34 @@ public class NodeTasks implements FallibleCommand {
          */
         private URI nodeDownloadRoot = URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
 
+        private Lookup lookup;
+
         /**
          * Create a builder instance given an specific npm folder.
          *
-         * @param classFinder
-         *            a class finder
+         * @param lookup
+         *            a {@link Lookup} to discover services used by Flow (SPI)
          * @param npmFolder
          *            folder with the `package.json` file
          */
-        public Builder(ClassFinder classFinder, File npmFolder) {
-            this(classFinder, npmFolder, new File(npmFolder, System
+        public Builder(Lookup lookup, File npmFolder) {
+            this(lookup, npmFolder, new File(npmFolder, System
                     .getProperty(PARAM_GENERATED_DIR, DEFAULT_GENERATED_DIR)));
         }
 
         /**
          * Create a builder instance with custom npmFolder and generatedPath
          *
-         * @param classFinder
-         *            a class finder
+         * @param lookup
+         *            a {@link Lookup} to discover services used by Flow (SPI)
          * @param npmFolder
          *            folder with the `package.json` file
          * @param generatedPath
          *            folder where flow generated files will be placed.
          */
-        public Builder(ClassFinder classFinder, File npmFolder,
+        public Builder(Lookup lookup, File npmFolder,
                 File generatedPath) {
-            this(classFinder, npmFolder, generatedPath,
+            this(lookup, npmFolder, generatedPath,
                     new File(npmFolder, System.getProperty(PARAM_FRONTEND_DIR,
                             DEFAULT_FRONTEND_DIR)));
         }
@@ -158,8 +161,8 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Create a builder instance with all parameters.
          *
-         * @param classFinder
-         *            a class finder
+         * @param lookup
+         *            a {@link Lookup} to discover services used by Flow (SPI)
          * @param npmFolder
          *            folder with the `package.json` file
          * @param generatedPath
@@ -167,9 +170,10 @@ public class NodeTasks implements FallibleCommand {
          * @param frontendDirectory
          *            a directory with project's frontend files
          */
-        public Builder(ClassFinder classFinder, File npmFolder,
+        public Builder(Lookup lookup, File npmFolder,
                 File generatedPath, File frontendDirectory) {
-            this.classFinder = classFinder;
+            this.lookup = lookup;
+            this.classFinder = lookup.lookup(ClassFinder.class);
             this.npmFolder = npmFolder;
             this.generatedFolder = generatedPath.isAbsolute() ? generatedPath
                     : new File(npmFolder, generatedPath.getPath());
@@ -388,8 +392,7 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
-         * Set source paths that OpenAPI generator searches for connect
-         * endpoints.
+         * Set source paths that OpenAPI generator searches for endpoints.
          *
          * @param connectJavaSourceFolder
          *            java source folder
@@ -504,15 +507,15 @@ public class NodeTasks implements FallibleCommand {
         FrontendDependenciesScanner frontendDependencies = null;
 
         if (builder.enablePackagesUpdate || builder.enableImportsUpdate) {
-            if (builder.generateEmbeddableWebComponents) {
-                FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
-                        classFinder);
-                generator.generateWebComponents(builder.generatedFolder);
-            }
-
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(!builder.useByteCodeScanner, classFinder,
                             builder.generateEmbeddableWebComponents);
+
+            if (builder.generateEmbeddableWebComponents) {
+                FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
+                        classFinder);
+                generator.generateWebComponents(builder.generatedFolder, frontendDependencies.getThemeDefinition());
+            }
         }
 
         if (builder.createMissingPackageJson) {
@@ -544,6 +547,9 @@ public class NodeTasks implements FallibleCommand {
                         classFinder, packageUpdater,
                         builder.enablePnpm, builder.requireHomeNodeExec,
                         builder.nodeVersion, builder.nodeDownloadRoot));
+
+                commands.add(new TaskInstallWebpackPlugins(
+                    new File(builder.npmFolder, NODE_MODULES)));
             }
         }
 
@@ -575,6 +581,9 @@ public class NodeTasks implements FallibleCommand {
                             builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.tokenFile,
                             builder.tokenFileData, builder.enablePnpm));
+
+            commands.add(new TaskUpdateThemeImport(builder.npmFolder,
+                frontendDependencies.getThemeDefinition()));
         }
     }
 
@@ -600,20 +609,21 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private void addConnectServicesTasks(Builder builder) {
-        TaskGenerateOpenApi taskGenerateOpenApi = new TaskGenerateOpenApi(
-                builder.connectApplicationProperties,
-                builder.connectJavaSourceFolder,
-                builder.classFinder.getClassLoader(),
-                builder.connectGeneratedOpenApiFile);
-        commands.add(taskGenerateOpenApi);
+        Lookup lookup = builder.lookup;
+        EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup.lookup(EndpointGeneratorTaskFactory.class);
 
-        if (builder.connectClientTsApiFolder != null) {
-            TaskGenerateConnect taskGenerateConnectTs = new TaskGenerateConnect(
-                    builder.connectApplicationProperties,
-                    builder.connectGeneratedOpenApiFile,
-                    builder.connectClientTsApiFolder,
-                    builder.frontendDirectory);
-            commands.add(taskGenerateConnectTs);
+        if (endpointGeneratorTaskFactory != null) {
+            TaskGenerateOpenApi taskGenerateOpenApi = endpointGeneratorTaskFactory.createTaskGenerateOpenApi(
+                    builder.connectApplicationProperties, builder.connectJavaSourceFolder,
+                    builder.classFinder.getClassLoader(), builder.connectGeneratedOpenApiFile);
+            commands.add(taskGenerateOpenApi);
+
+            if (builder.connectClientTsApiFolder != null) {
+                TaskGenerateConnect taskGenerateConnectTs = endpointGeneratorTaskFactory.createTaskGenerateConnect(
+                        builder.connectApplicationProperties, builder.connectGeneratedOpenApiFile,
+                        builder.connectClientTsApiFolder, builder.frontendDirectory);
+                commands.add(taskGenerateConnectTs);
+            }
         }
     }
 

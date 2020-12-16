@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.communication;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -37,14 +38,18 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
@@ -56,11 +61,13 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static com.vaadin.flow.server.DevModeHandlerTest.createStubWebpackTcpListener;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.verify;
 
 public class IndexHtmlRequestHandlerTest {
     private MockServletServiceSessionSetup mocks;
@@ -123,7 +130,7 @@ public class IndexHtmlRequestHandlerTest {
         Mockito.when(vaadinRequest.getService()).thenReturn(vaadinService);
 
         String path;
-        if(DEFAULT_FRONTEND_DIR.endsWith(File.separator)) {
+        if (DEFAULT_FRONTEND_DIR.endsWith(File.separator)) {
             path = DEFAULT_FRONTEND_DIR + "index.html";
         } else {
             path = DEFAULT_FRONTEND_DIR + File.separatorChar + "/index.html";
@@ -136,8 +143,8 @@ public class IndexHtmlRequestHandlerTest {
         exceptionRule.expect(IOException.class);
         exceptionRule.expectMessage(expectedError);
 
-        indexHtmlRequestHandler
-                .synchronizedHandleRequest(session, vaadinRequest, response);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                vaadinRequest, response);
     }
 
     @Test
@@ -344,21 +351,34 @@ public class IndexHtmlRequestHandlerTest {
             throws IOException {
         deploymentConfiguration.setEagerServerLoad(true);
 
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                createVaadinRequest("/"), response);
+        VaadinRequest request = createVaadinRequest("/");
 
-        Assert.assertNotNull(
-                indexHtmlRequestHandler.getIndexHtmlResponse().getUI());
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+
+                request, response);
+
+        ArgumentCaptor<IndexHtmlResponse> captor = ArgumentCaptor
+                .forClass(IndexHtmlResponse.class);
+
+        verify(request.getService()).modifyIndexHtmlResponse(captor.capture());
+
+        Assert.assertNotNull(captor.getValue().getUI());
     }
 
     @Test
     public void should_getter_UI_return_empty_when_not_includeInitialBootstrapUidl()
             throws IOException {
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                createVaadinRequest("/"), response);
+        VaadinRequest request = createVaadinRequest("/");
 
-        Assert.assertEquals(Optional.empty(),
-                indexHtmlRequestHandler.getIndexHtmlResponse().getUI());
+        indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
+                response);
+
+        ArgumentCaptor<IndexHtmlResponse> captor = ArgumentCaptor
+                .forClass(IndexHtmlResponse.class);
+
+        verify(request.getService()).modifyIndexHtmlResponse(captor.capture());
+
+        Assert.assertEquals(Optional.empty(), captor.getValue().getUI());
     }
 
     @Test
@@ -429,8 +449,9 @@ public class IndexHtmlRequestHandlerTest {
         deploymentConfiguration.setEnableDevServer(true);
         deploymentConfiguration.setProductionMode(false);
         DevModeHandler handler = DevModeHandler.start(0,
-                deploymentConfiguration, npmFolder,
-                CompletableFuture.completedFuture(null));
+                Lookup.of(deploymentConfiguration,
+                        DeploymentConfiguration.class),
+                npmFolder, CompletableFuture.completedFuture(null));
         Method join = DevModeHandler.class.getDeclaredMethod("join");
         join.setAccessible(true);
         join.invoke(handler);
@@ -608,12 +629,13 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_store_IndexHtmltitleToUI_When_LoadingServerEagerly() 
+    public void should_store_IndexHtmltitleToUI_When_LoadingServerEagerly()
             throws IOException {
         deploymentConfiguration.setEagerServerLoad(true);
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
-        assertEquals("Flow Test CCDM", UI.getCurrent().getInternals().getAppShellTitle());
+        assertEquals("Flow Test CCDM",
+                UI.getCurrent().getInternals().getAppShellTitle());
     }
 
     @After
@@ -632,7 +654,7 @@ public class IndexHtmlRequestHandlerTest {
 
     private VaadinServletRequest createVaadinRequest(String pathInfo) {
         HttpServletRequest request = createRequest(pathInfo);
-        return new VaadinServletRequest(request, service);
+        return new VaadinServletRequest(request, Mockito.spy(service));
     }
 
     private HttpServletRequest createRequest(String pathInfo) {

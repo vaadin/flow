@@ -15,10 +15,9 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-
-import java.util.Collections;
 import java.util.Locale;
+import java.util.Properties;
+import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
 import org.jsoup.nodes.Element;
@@ -29,42 +28,60 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.stubbing.Answer;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
+import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+
 public class NpmTemplateParserTest {
+
+    private MockVaadinServletService service;
     @Mock
-    VaadinContext context;
-    @Mock
-    VaadinService service;
-    @Mock
-    DeploymentConfiguration configuration;
+    private DeploymentConfiguration configuration;
+
+    private ResourceProvider resourceProvider;
 
     @Before
-    public void init() {
+    public void init() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        Mockito.when(service.getDependencyFilters())
-                .thenReturn(Collections.emptyList());
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-        Mockito.when(service.getClassLoader())
-                .thenAnswer(invocation -> this.getClass().getClassLoader());
-        Mockito.when(service.getContext()).thenReturn(context);
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
-                .thenAnswer((Answer<String>) invocation -> {
-                    Object[] args = invocation.getArguments();
-                    return (String) args[1];
-                });
+                .thenAnswer(invocation -> invocation.getArgumentAt(1,
+                        String.class));
+
+        Properties properties = new Properties();
+        Mockito.when(configuration.getInitParameters()).thenReturn(properties);
+
+        Instantiator instantiator = Mockito.mock(Instantiator.class);
+        Mockito.when(instantiator.getServiceInitListeners())
+                .thenReturn(Stream.empty());
+        Mockito.when(instantiator.getDependencyFilters(Mockito.any()))
+                .thenReturn(Stream.empty());
+        Mockito.when(instantiator.getBootstrapListeners(Mockito.any()))
+                .thenReturn(Stream.empty());
+        Mockito.when(instantiator.getIndexHtmlRequestListeners(Mockito.any()))
+                .thenReturn(Stream.empty());
+        service = new MockVaadinServletService(configuration);
+        service.init(instantiator);
+
+        resourceProvider = service.getContext().getAttribute(Lookup.class)
+                .lookup(ResourceProvider.class);
+        Mockito.when(
+                resourceProvider.getApplicationResource(Mockito.anyString()))
+                .thenAnswer(invocation -> NpmTemplateParserTest.class
+                        .getResource('/'
+                                + invocation.getArgumentAt(0, String.class)));
     }
 
     @Test
@@ -90,10 +107,13 @@ public class NpmTemplateParserTest {
 
     @Test
     public void getTemplateContent_polymer2TemplateStyleInsertion_contentParsedCorrectly() {
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenReturn(VAADIN_SERVLET_RESOURCES
-                        + "config/no-html-template.json");
+        ResourceProvider resourceProvider = service.getContext()
+                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+        Mockito.when(resourceProvider.getApplicationResource(
+                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
+                .thenReturn(NpmTemplateParser.class
+                        .getResource("/" + VAADIN_SERVLET_RESOURCES
+                                + "config/no-html-template.json"));
 
         TemplateParser parser = NpmTemplateParser.getInstance();
         TemplateData data = parser.getTemplateContent(
@@ -107,10 +127,13 @@ public class NpmTemplateParserTest {
 
     @Test
     public void getTemplateContent_polymer2TemplateStyleInsertion_severalDomModules_correctTemplateContentIsChosen() {
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenReturn(VAADIN_SERVLET_RESOURCES
-                        + "config/no-html-template.json");
+        ResourceProvider resourceProvider = service.getContext()
+                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+        Mockito.when(resourceProvider.getApplicationResource(
+                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
+                .thenReturn(NpmTemplateParser.class
+                        .getResource("/" + VAADIN_SERVLET_RESOURCES
+                                + "config/no-html-template.json"));
 
         TemplateParser parser = NpmTemplateParser.getInstance();
         TemplateData data = parser.getTemplateContent(
@@ -146,27 +169,29 @@ public class NpmTemplateParserTest {
     @Test
     public void getTypescriptTemplateContent_templateExists_getTemplateContent() {
         TemplateParser instance = NpmTemplateParser.getInstance();
-        TemplateData templateContent = instance.getTemplateContent(
-            MyForm.class, "my-form", service);
+        TemplateData templateContent = instance.getTemplateContent(MyForm.class,
+                "my-form", service);
 
         Assert.assertEquals("Parent element ID not the expected one.",
-            "my-form",
-            templateContent.getTemplateElement().parent().id());
+                "my-form", templateContent.getTemplateElement().parent().id());
 
         Assert.assertEquals("Expected template element to have 2 children", 2,
-            templateContent.getTemplateElement().childNodeSize());
+                templateContent.getTemplateElement().childNodeSize());
 
         Assert.assertEquals(
-            "Template element should have contained a div element with the id 'label'",
-            "vaadin-text-field", templateContent.getTemplateElement()
-                .getElementById("nameField").tag().toString());
+                "Template element should have contained a div element with the id 'label'",
+                "vaadin-text-field", templateContent.getTemplateElement()
+                        .getElementById("nameField").tag().toString());
     }
 
     @Test(expected = IllegalStateException.class)
     public void should_throwException_when_LocalFileNotFound() {
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenReturn("META-INF/resources/foo-bar.json");
+        ResourceProvider resourceProvider = service.getContext()
+                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+        Mockito.when(resourceProvider.getApplicationResource(
+                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
+                .thenReturn(NpmTemplateParser.class
+                        .getResource("/META-INF/resources/foo-bar.json"));
         TemplateParser instance = NpmTemplateParser.getInstance();
         instance.getTemplateContent(FooView.class, "foo-view", service);
     }
@@ -181,9 +206,6 @@ public class NpmTemplateParserTest {
     public void sourceFileWithFaultyTemplateGetter_shouldJustReturnEmptyTemplateElement() {
         // If the template getter can not be found it should result in no
         // template element children
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
         TemplateParser.TemplateData templateContent = NpmTemplateParser
                 .getInstance().getTemplateContent(LikeableFaulty.class,
                         "likeable-element", service);
@@ -197,9 +219,6 @@ public class NpmTemplateParserTest {
         // Template with no closing style tag should parse as one big style tag
         // and thus
         // the document body should have no elements.
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
         TemplateParser.TemplateData templateContent = NpmTemplateParser
                 .getInstance().getTemplateContent(LikeableBroken.class,
                         "likeable-element", service);
@@ -210,9 +229,6 @@ public class NpmTemplateParserTest {
 
     @Test
     public void nonLocalTemplate_shouldParseCorrectly() {
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
         TemplateParser.TemplateData templateContent = NpmTemplateParser
                 .getInstance().getTemplateContent(HelloWorld.class,
                         HelloWorld.class.getAnnotation(Tag.class).value(),
@@ -232,9 +248,13 @@ public class NpmTemplateParserTest {
 
     @Test
     public void bableStats_shouldAlwaysParseCorrectly() {
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString())).thenReturn(
-                        VAADIN_SERVLET_RESOURCES + "config/babel_stats.json");
+        ResourceProvider resourceProvider = service.getContext()
+                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+        Mockito.when(resourceProvider.getApplicationResource(
+                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
+                .thenReturn(NpmTemplateParser.class
+                        .getResource("/" + VAADIN_SERVLET_RESOURCES
+                                + "config/babel_stats.json"));
         TemplateParser instance = NpmTemplateParser.getInstance();
         TemplateParser.TemplateData templateContent = instance
                 .getTemplateContent(MyComponent.class, "my-component", service);
@@ -287,10 +307,13 @@ public class NpmTemplateParserTest {
      */
     @Test
     public void hierarchicalTemplate_templateHasChild_childHasCorrectPosition() {
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenReturn(VAADIN_SERVLET_RESOURCES
-                        + "config/template-in-template-stats.json");
+        ResourceProvider resourceProvider = service.getContext()
+                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+        Mockito.when(resourceProvider.getApplicationResource(
+                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
+                .thenReturn(NpmTemplateParser.class
+                        .getResource("/" + VAADIN_SERVLET_RESOURCES
+                                + "config/template-in-template-stats.json"));
         TemplateParser instance = NpmTemplateParser.getInstance();
         TemplateParser.TemplateData templateContent = instance
                 .getTemplateContent(ParentTemplate.class, "parent-template",
@@ -311,10 +334,6 @@ public class NpmTemplateParserTest {
 
     @Test
     public void severalJsModuleAnnotations_theFirstFileDoesNotExist_fileWithContentIsChosen() {
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
-
         TemplateParser instance = NpmTemplateParser.getInstance();
         TemplateParser.TemplateData templateContent = instance
                 .getTemplateContent(BrokenJsModuleAnnotation.class,
@@ -327,10 +346,6 @@ public class NpmTemplateParserTest {
 
     @Test
     public void severalJsModuleAnnotations_parserSelectsByName() {
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
-
         TemplateParser instance = NpmTemplateParser.getInstance();
         TemplateParser.TemplateData templateContent = instance
                 .getTemplateContent(SeveralJsModuleAnnotations.class,
@@ -432,7 +447,7 @@ public class NpmTemplateParserTest {
 
     @Tag("my-form")
     @JsModule("./frontend/my-form.ts")
-    public class MyForm extends PolymerTemplate<TemplateModel>  {
+    public class MyForm extends PolymerTemplate<TemplateModel> {
     }
 
 }

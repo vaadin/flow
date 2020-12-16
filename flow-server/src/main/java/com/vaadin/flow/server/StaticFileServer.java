@@ -17,14 +17,10 @@ package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -55,12 +51,14 @@ public class StaticFileServer implements StaticFileHandler {
             + "fixIncorrectWebjarPaths";
     private static final Pattern INCORRECT_WEBJAR_PATH_REGEX = Pattern
             .compile("^/frontend[-\\w/]*/webjars/");
-    private static final Pattern PARENT_DIRECTORY_REGEX = Pattern
-            .compile("(/|\\\\)\\.\\.(/|\\\\)", Pattern.CASE_INSENSITIVE);
 
     private final ResponseWriter responseWriter;
     private final VaadinServletService servletService;
     private DeploymentConfiguration deploymentConfiguration;
+
+    // Matcher to match string starting with '/themes/[theme-name]/'
+    protected static final Pattern APP_THEME_PATTERN = Pattern
+        .compile("^\\/themes\\/[\\s\\S]+?\\/");
 
     /**
      * Constructs a file server.
@@ -86,8 +84,9 @@ public class StaticFileServer implements StaticFileHandler {
             return false;
         }
 
-        if (requestFilename.startsWith("/" + VAADIN_STATIC_FILES_PATH)
-                || requestFilename.startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
+        if (APP_THEME_PATTERN.matcher(requestFilename).find() || requestFilename
+            .startsWith("/" + VAADIN_STATIC_FILES_PATH) || requestFilename
+            .startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
             // The path is reserved for internal resources only
             // We rather serve 404 than let it fall through
             return true;
@@ -108,17 +107,22 @@ public class StaticFileServer implements StaticFileHandler {
             HttpServletResponse response) throws IOException {
 
         String filenameWithPath = getRequestFilename(request);
-        if (!isPathSafe(filenameWithPath)) {
-            getLogger().info("Blocked attempt to access file: {}",
+        if (HandlerHelper.isPathUnsafe(filenameWithPath)) {
+            getLogger().info(HandlerHelper.UNSAFE_PATH_ERROR_MESSAGE_PATTERN,
                     filenameWithPath);
-            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return true;
         }
 
         URL resourceUrl = null;
-        if (isAllowedVAADINBuildUrl(filenameWithPath)) {
-            resourceUrl = servletService.getClassLoader()
+        if (isAllowedVAADINBuildOrStaticUrl(filenameWithPath)) {
+            if(APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
+                resourceUrl = servletService.getClassLoader()
+                    .getResource("META-INF/VAADIN/static" + filenameWithPath);
+            } else {
+                resourceUrl = servletService.getClassLoader()
                     .getResource("META-INF" + filenameWithPath);
+            }
         }
         if (resourceUrl == null) {
             resourceUrl = servletService.getStaticResource(filenameWithPath);
@@ -190,18 +194,6 @@ public class StaticFileServer implements StaticFileHandler {
                 .replaceAll("/webjars/");
     }
 
-    private boolean isPathSafe(String path) {
-        // Check that the path does not have '/../', '\..\', %5C..%5C, or
-        // %2F..%2F
-        try {
-            path = URLDecoder.decode(path, StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("An error occurred during decoding URL.",
-                    e);
-        }
-        return !PARENT_DIRECTORY_REGEX.matcher(path).find();
-    }
-
     /**
      * Check if it is ok to serve the requested file from the classpath.
      * <p>
@@ -212,9 +204,11 @@ public class StaticFileServer implements StaticFileHandler {
      *            requested filename containing path
      * @return true if we are ok to try serving the file
      */
-    private boolean isAllowedVAADINBuildUrl(String filenameWithPath) {
-        // Check that we target VAADIN/build
-        return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH);
+    private boolean isAllowedVAADINBuildOrStaticUrl(String filenameWithPath) {
+        // Check that we target VAADIN/build | VAADIN/static | themes/theme-name
+        return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
+            || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH)
+            || APP_THEME_PATTERN.matcher(filenameWithPath).find();
     }
 
     /**
@@ -305,7 +299,8 @@ public class StaticFileServer implements StaticFileHandler {
         // /VAADIN/folder/file.js
         if (request.getPathInfo() == null) {
             return request.getServletPath();
-        } else if (request.getPathInfo().startsWith("/" + VAADIN_MAPPING)) {
+        } else if (request.getPathInfo().startsWith("/" + VAADIN_MAPPING)
+            || APP_THEME_PATTERN.matcher(request.getPathInfo()).find()) {
             return request.getPathInfo();
         }
         return request.getServletPath() + request.getPathInfo();

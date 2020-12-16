@@ -70,14 +70,12 @@ public class BootstrapContextTest {
         MockVaadinSession session = new MockVaadinSession();
         ui = new UI();
         ui.getInternals().setSession(session);
-
-        session.getService().init();
     }
 
     @Test
     public void getPushAnnotation_routeTargetPresents_pushFromTheClassDefinitionIsUsed() {
-        ui.getInternals().getRouter().getRegistry().setRoute("foo", MainView.class,
-                Collections.emptyList());
+        ui.getInternals().getRouter().getRegistry().setRoute("foo",
+                MainView.class, Collections.emptyList());
         Mockito.when(request.getPathInfo()).thenReturn("/foo");
 
         BootstrapContext context = new BootstrapContext(request,
@@ -93,8 +91,8 @@ public class BootstrapContextTest {
 
     @Test
     public void getPushAnnotation_routeTargetPresents_pushDefinedOnParentLayout_pushFromTheClassDefinitionIsUsed() {
-        ui.getInternals().getRouter().getRegistry().setRoute("foo", OtherView.class,
-                Collections.singletonList(MainView.class));
+        ui.getInternals().getRouter().getRegistry().setRoute("foo",
+                OtherView.class, Collections.singletonList(MainView.class));
         Mockito.when(request.getPathInfo()).thenReturn("/foo");
 
         BootstrapContext context = new BootstrapContext(request,

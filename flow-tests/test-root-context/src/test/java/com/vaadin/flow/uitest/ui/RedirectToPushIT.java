@@ -17,11 +17,14 @@ package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
+@Category(IgnoreOSGi.class)
 public class RedirectToPushIT extends ChromeBrowserTest {
 
     @Test
@@ -31,7 +34,8 @@ public class RedirectToPushIT extends ChromeBrowserTest {
         $(NativeButtonElement.class).first().click();
 
         // when running V15-Bootstrapping push must be configured in AppShell
-        // otherwise @Push annotation in routes are logged in startup but ignored.
+        // otherwise @Push annotation in routes are logged in startup but
+        // ignored.
         String pushMode = Boolean.getBoolean(
                 "vaadin.useDeprecatedV14Bootstrapping") ? "AUTOMATIC"
                         : "DISABLED";

@@ -7,8 +7,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -29,14 +32,16 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.DeploymentConfigurationFactory.DEV_FOLDER_MISSING_MESSAGE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static java.util.Collections.emptyMap;
@@ -163,7 +168,8 @@ public class DeploymentConfigurationFactoryTest {
                 defaultServletParams);
         servletConfigParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(overridingProductionModeValue));
-        servletConfigParams.put(InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
+        servletConfigParams.put(
+                InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(overridingHeartbeatIntervalValue));
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
@@ -191,7 +197,8 @@ public class DeploymentConfigurationFactoryTest {
                 defaultServletParams);
         servletContextParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(overridingProductionModeValue));
-        servletContextParams.put(InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
+        servletContextParams.put(
+                InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(overridingHeartbeatIntervalValue));
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
@@ -219,7 +226,8 @@ public class DeploymentConfigurationFactoryTest {
                 defaultServletParams);
         servletConfigParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(servletConfigProductionModeValue));
-        servletConfigParams.put(InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
+        servletConfigParams.put(
+                InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(servletConfigHeartbeatIntervalValue));
 
         boolean servletContextProductionModeValue = false;
@@ -228,7 +236,8 @@ public class DeploymentConfigurationFactoryTest {
         Map<String, String> servletContextParams = new HashMap<>();
         servletContextParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(servletContextProductionModeValue));
-        servletContextParams.put(InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
+        servletContextParams.put(
+                InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(servletContextHeartbeatIntervalValue));
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
@@ -465,6 +474,60 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
+    public void createInitParameters_readTokenFileFromContext()
+            throws VaadinConfigurationException, IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        DeploymentConfigurationFactory.createInitParameters(
+                DeploymentConfigurationFactoryTest.class, config);
+
+        Mockito.verify(resourceProvider)
+                .getApplicationResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
+    }
+
+    @Test
+    public void createInitParameters_checkWebpackGeneratedFromContext()
+            throws VaadinConfigurationException, IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        String path = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
+
+        File tmpFile = temporaryFolder.newFile();
+        Files.write(tmpFile.toPath(), Collections.singletonList("{}"));
+
+        URLStreamHandler handler = new URLStreamHandler() {
+
+            @Override
+            protected URLConnection openConnection(URL u) throws IOException {
+                return tmpFile.toURI().toURL().openConnection();
+            }
+        };
+        URL url = new URL("file", "", -1, "foo.jar!/" + path, handler);
+
+        Mockito.when(resourceProvider.getApplicationResources(path))
+                .thenReturn(Collections.singletonList(url));
+
+        Mockito.when(resourceProvider
+                .getApplicationResource(FrontendUtils.WEBPACK_GENERATED))
+                .thenReturn(tmpFile.toURI().toURL());
+
+        DeploymentConfigurationFactory.createInitParameters(
+                DeploymentConfigurationFactoryTest.class, config);
+
+        Mockito.verify(resourceProvider)
+                .getApplicationResource(FrontendUtils.WEBPACK_GENERATED);
+
+    }
+
+    @Test
     public void createInitParameters_initParamtersAreSet_tokenDevModePropertiesAreNotSet()
             throws Exception {
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
@@ -505,6 +568,25 @@ public class DeploymentConfigurationFactoryTest {
                 servletConfigParameters, servletContextParameters));
     }
 
+    private ResourceProvider mockResourceProvider(VaadinConfig config,
+            VaadinContext context) throws VaadinConfigurationException {
+        Mockito.when(config.getVaadinContext()).thenReturn(context);
+
+        Mockito.when(context.getContextParameterNames())
+                .thenReturn(Collections.emptyEnumeration());
+        Mockito.when(config.getConfigParameterNames())
+                .thenReturn(Collections.emptyEnumeration());
+
+        Lookup lookup = Mockito.mock(Lookup.class);
+        ResourceProvider resourceProvider = Mockito
+                .mock(ResourceProvider.class);
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(resourceProvider);
+        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+
+        return resourceProvider;
+    }
+
     private ServletConfig createServletConfigMock(
             Map<String, String> servletConfigParameters,
             Map<String, String> servletContextParameters) throws Exception {
@@ -522,6 +604,33 @@ public class DeploymentConfigurationFactoryTest {
                 .andAnswer(() -> servletContextParameters
                         .get(initParameterNameCapture.getValue()))
                 .anyTimes();
+
+        ResourceProvider provider = EasyMock.mock(ResourceProvider.class);
+
+        Lookup lookup = new Lookup() {
+
+            @Override
+            public <T> Collection<T> lookupAll(Class<T> serviceClass) {
+                return null;
+            }
+
+            @Override
+            public <T> T lookup(Class<T> serviceClass) {
+                if (ResourceProvider.class.equals(serviceClass)) {
+                    return serviceClass.cast(provider);
+                }
+                return null;
+            }
+        };
+
+        expect(provider
+                .getApplicationResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
+                        .andAnswer(() -> Collections.emptyList()).anyTimes();
+
+        replay(provider);
+
+        expect(contextMock.getAttribute(Lookup.class.getName()))
+                .andAnswer(() -> lookup).anyTimes();
 
         Capture<String> resourceCapture = EasyMock.newCapture();
         expect(contextMock.getResource(capture(resourceCapture)))

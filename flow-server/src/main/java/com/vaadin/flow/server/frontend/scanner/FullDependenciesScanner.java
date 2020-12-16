@@ -264,7 +264,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         ThemeData data = verifyTheme();
 
         if (data == null) {
-            setupTheme(getLumoTheme(), "");
+            setupTheme(getLumoTheme(), "", "");
             return;
         }
 
@@ -274,18 +274,19 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
         try {
             Class<? extends AbstractTheme> theme = getFinder()
-                    .loadClass(data.name);
-            setupTheme(theme, data.variant);
+                    .loadClass(data.getThemeClass());
+            setupTheme(theme, data.getVariant(), data.getThemeName());
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
-                    "Could not load theme class " + data.name, exception);
+                "Could not load theme class " + data.getThemeClass(),
+                exception);
         }
     }
 
     private void setupTheme(Class<? extends AbstractTheme> theme,
-            String variant) {
+            String variant, String name) {
         if (theme != null) {
-            themeDefinition = new ThemeDefinition(theme, variant);
+            themeDefinition = new ThemeDefinition(theme, variant, name);
             try {
                 themeInstance = new ThemeWrapper(theme);
             } catch (InstantiationException | IllegalAccessException e) {
@@ -306,9 +307,10 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                     .flatMap(clazz -> annotationFinder
                             .apply(clazz, loadedThemeAnnotation).stream())
                     .map(theme -> new ThemeData(
-                            ((Class<?>) invokeAnnotationMethod(theme, VALUE))
+                            ((Class<?>) invokeAnnotationMethod(theme, "themeClass"))
                                     .getName(),
-                            invokeAnnotationMethodAsString(theme, "variant")))
+                            invokeAnnotationMethodAsString(theme, "variant"),
+                            invokeAnnotationMethodAsString(theme, VALUE)))
                     .collect(Collectors.toSet());
 
             Class<? extends Annotation> loadedNoThemeAnnotation = getFinder()
@@ -342,9 +344,10 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     private String getThemesList(Collection<ThemeData> themes) {
-        return themes
-                .stream().map(theme -> "name = '" + theme.getName()
-                        + "' and variant = '" + theme.getVariant() + "'")
+        return themes.stream()
+                .map(theme -> "themeClass = '" + theme.getThemeClass()
+                        + "' and variant = '" + theme.getVariant()
+                        + "' and name = '" + theme.getThemeName() + "'")
                 .collect(Collectors.joining(", "));
     }
 

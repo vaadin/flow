@@ -29,8 +29,8 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,8 +51,20 @@ import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
 public class ResponseWriter implements Serializable {
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
 
-    private static final Pattern RANGE_HEADER_PATTERN = Pattern.compile("^bytes=(([0-9]+-[0-9]+,?\\s*)+)$");
-    private static final Pattern BYTE_RANGE_PATTERN = Pattern.compile("([0-9]+)-([0-9]+)");
+    private static final Pattern RANGE_HEADER_PATTERN = Pattern.compile(
+            "^bytes=((\\d*-\\d*\\s*,\\s*)*\\d*-\\d*\\s*)$");
+    private static final Pattern BYTE_RANGE_PATTERN = Pattern.compile(
+            "(\\d*)-(\\d*)");
+
+    /**
+     * Maximum number of ranges accepted in a single Range header. Remaining ranges will be ignored.
+     */
+    private static final int MAX_RANGE_COUNT = 16;
+
+    /**
+     * Maximum number of overlapping ranges allowed. The request will be denied if above this threshold.
+     */
+    private static final int MAX_OVERLAPPING_RANGE_COUNT = 2;
 
     private final int bufferSize;
     private final boolean brotliEnabled;
@@ -196,18 +208,36 @@ public class ResponseWriter implements Serializable {
         long resourceLength = connection.getContentLengthLong();
         Matcher rangeMatcher = BYTE_RANGE_PATTERN.matcher(byteRanges);
 
-        List<Pair<Long, Long>> ranges = new ArrayList<>();
-        while (rangeMatcher.find()) {
-            final long start = Long.parseLong(rangeMatcher.group(1));
-            final long end = Long.parseLong(rangeMatcher.group(2));
+        Stack<Pair<Long, Long>> ranges = new Stack<>();
+        while (rangeMatcher.find() && ranges.size() < MAX_RANGE_COUNT) {
+            String startGroup = rangeMatcher.group(1);
+            String endGroup = rangeMatcher.group(2);
+            if (startGroup.isEmpty() && endGroup.isEmpty()) {
+                response.setContentLengthLong(0L);
+                response.setStatus(416); // Range Not Satisfiable
+                getLogger().info("received a malformed range: '{}'", rangeMatcher.group());
+                return;
+            }
+            long start = startGroup.isEmpty() ? 0L : Long.parseLong(startGroup);
+            long end = endGroup.isEmpty() ? Long.MAX_VALUE
+                    : Long.parseLong(endGroup);
             if (end < start
                     || (resourceLength >= 0 && start >= resourceLength)) {
                 // illegal range -> 416
+                getLogger().info("received an illegal range '{}' for resource '{}'",
+                        rangeMatcher.group(), resourceURL);
                 response.setContentLengthLong(0L);
                 response.setStatus(416);
                 return;
             }
-            ranges.add(new Pair<>(start, end));
+            ranges.push(new Pair<>(start, end));
+
+            if (!verifyRangeLimits(ranges)) {
+                ranges.pop();
+                getLogger().info("serving only {} ranges for resource '{}' even though more were requested",
+                        ranges.size(), resourceURL);
+                break;
+            }
         }
 
         response.setStatus(206);
@@ -304,6 +334,32 @@ public class ResponseWriter implements Serializable {
         } catch (Exception e) {
             getLogger().debug("Error setting the content length", e);
         }
+    }
+
+    /**
+     * Returns true if the number of ranges in <code>ranges</code> is less than the
+     * upper limit and the number that overlap (= have at least one byte in common)
+     * with the range <code>[start, end]</code> are less than the upper limit.
+     */
+    private boolean verifyRangeLimits(List<Pair<Long, Long>> ranges) {
+        if (ranges.size() > MAX_RANGE_COUNT) {
+            getLogger().info("more than {} ranges requested", MAX_RANGE_COUNT);
+            return false;
+        }
+        int count = 0;
+        for (int i = 0; i < ranges.size(); i++) {
+            for (int j = i + 1; j < ranges.size(); j++) {
+                if (ranges.get(i).getFirst() <= ranges.get(j).getSecond()
+                        && ranges.get(j).getFirst() <= ranges.get(i).getSecond()) {
+                    count++;
+                }
+            }
+        }
+        if (count > MAX_OVERLAPPING_RANGE_COUNT) {
+            getLogger().info("more than {} overlapping ranges requested", MAX_OVERLAPPING_RANGE_COUNT);
+            return false;
+        }
+        return true;
     }
 
     private URL getResource(HttpServletRequest request, String resource)

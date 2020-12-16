@@ -84,6 +84,7 @@ public class InternalErrorIT extends ChromeBrowserTest {
         getDriver().navigate().refresh();
 
         clickButton(UPDATE);
+        waitUntil(driver -> isMessageUpdated());
         clickButton(CLOSE_SESSION);
 
         // Just click on any button to make a request after killing the session

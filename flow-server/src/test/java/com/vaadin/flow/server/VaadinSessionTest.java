@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionBindingEvent;
@@ -39,9 +38,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.tests.util.MockUI;
-import net.jcip.annotations.NotThreadSafe;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Before;
@@ -51,13 +47,11 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-@NotThreadSafe
 public class VaadinSessionTest {
 
     /**
@@ -72,39 +66,17 @@ public class VaadinSessionTest {
     private VaadinSession session;
     private VaadinServlet mockServlet;
     private VaadinServletService mockService;
-    private ServletConfig mockServletConfig;
     private HttpSession mockHttpSession;
     private WrappedSession mockWrappedSession;
     private VaadinServletRequest vaadinRequest;
     private UI ui;
     private Lock httpSessionLock;
 
-    private static class TestServlet extends VaadinServlet {
-
-        @Override
-        protected VaadinServletService createServletService(
-                DeploymentConfiguration deploymentConfiguration)
-                throws ServiceException {
-            VaadinServletService service = new VaadinServletService(this,
-                    deploymentConfiguration) {
-
-                @Override
-                public Router getRouter() {
-                    return Mockito.mock(Router.class);
-                }
-            };
-            service.init();
-            return service;
-        }
-    }
-
     @Before
     public void setup() throws Exception {
         httpSessionLock = new ReentrantLock();
-        mockServletConfig = new MockServletConfig();
-        mockServlet = new TestServlet();
-        mockServlet.init(mockServletConfig);
-        mockService = mockServlet.getService();
+        mockService = new MockVaadinServletService();
+        mockServlet = mockService.getServlet();
 
         mockHttpSession = EasyMock.createMock(HttpSession.class);
         mockWrappedSession = new WrappedHttpSession(mockHttpSession) {

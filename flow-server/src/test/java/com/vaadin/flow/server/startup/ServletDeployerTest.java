@@ -31,6 +31,8 @@ import org.junit.rules.TemporaryFolder;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.InitParameters;
@@ -155,6 +157,29 @@ public class ServletDeployerTest {
     }
 
     @Test
+    public void frontendServletIsNotRegisteredWhenProductionModeIsActive()
+            throws Exception {
+        deployer.contextInitialized(getContextEvent(true, true,
+                getServletRegistration("testServlet", TestServlet.class,
+                        singletonList("/test/*"),
+                        singletonMap(
+                                InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
+                                "true"))));
+
+        assertMappingsCount(1, 1);
+        assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
+    }
+
+    @Test
+    public void frontendServletIsNotRegistered_whenMainServletIsRegistered()
+            throws Exception {
+        deployer.contextInitialized(getContextEvent(true, true));
+
+        assertMappingsCount(1, 1);
+        assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
+    }
+
+    @Test
     public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_mainServlet()
             throws Exception {
         dynamicMockCheck = registration -> EasyMock
@@ -226,6 +251,22 @@ public class ServletDeployerTest {
                 .andReturn(Collections.emptySet()).anyTimes();
 
         ServletContext contextMock = mock(ServletContext.class);
+
+        Lookup lookup = mock(Lookup.class);
+        expect(contextMock.getAttribute(Lookup.class.getName()))
+                .andReturn(lookup).anyTimes();
+
+        ResourceProvider resourceProvider = mock(ResourceProvider.class);
+
+        expect(resourceProvider.getApplicationResources(anyObject()))
+                .andReturn(Collections.emptyList()).anyTimes();
+
+        replay(resourceProvider);
+
+        expect(lookup.lookup(ResourceProvider.class))
+                .andReturn(resourceProvider).anyTimes();
+
+        replay(lookup);
 
         expect(contextMock.getContextPath()).andReturn("").once();
         expect(contextMock.getClassLoader())

@@ -121,7 +121,7 @@ public class AppShellRegistry implements Serializable {
      * null to reset the previous one when reusing the instance.
      *
      * @param shell
-     *            the class extending VaadinAppShell class.
+     *            the class implementing AppShellConfigurator.
      */
     public void setShell(Class<? extends AppShellConfigurator> shell) {
         if (this.appShellClass != null && shell != null) {
@@ -151,6 +151,11 @@ public class AppShellRegistry implements Serializable {
     public boolean isShell(Class<?> clz) {
         assert clz != null;
         try {
+            // first try to check without loading class via the {@code clz}
+            // classloader
+            if (AppShellConfigurator.class.isAssignableFrom(clz)) {
+                return true;
+            }
             // Use the same class-loader for the checking
             return clz.getClassLoader()
                     .loadClass(AppShellConfigurator.class.getName())
@@ -232,7 +237,8 @@ public class AppShellRegistry implements Serializable {
     public void modifyIndexHtml(Document document, VaadinRequest request) {
         AppShellSettings settings = createSettings();
         if (appShellClass != null) {
-            VaadinService.getCurrent().getInstantiator().getOrCreate(appShellClass).configurePage(settings);
+            VaadinService.getCurrent().getInstantiator()
+                    .getOrCreate(appShellClass).configurePage(settings);
         }
 
         settings.getHeadElements(Position.PREPEND).forEach(

@@ -16,9 +16,6 @@
 
 package com.vaadin.flow.testutil;
 
-import static java.lang.reflect.Modifier.isStatic;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -37,6 +34,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Test;
+
+import static java.lang.reflect.Modifier.isStatic;
+import static org.junit.Assert.fail;
 
 /**
  * A superclass for serialization testing. The test scans all the classpath and
@@ -66,8 +66,15 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 ".*\\.slf4j\\..*", ".*\\.testbench\\..*", ".*\\.testutil\\..*",
                 // Various utils with inner classes
                 ".*\\.demo\\..*", "com\\.vaadin\\..*Util(s)?(\\$\\w+)?$",
+                "com\\.vaadin\\.flow\\.osgi\\.support\\..*",
+                "com\\.vaadin\\.flow\\.server\\.osgi\\..*",
 
+                "com\\.vaadin\\.flow\\.internal\\.VaadinContextInitializer",
+                "com\\.vaadin\\.flow\\.internal\\.ApplicationClassLoaderAccess",
                 "com\\.vaadin\\.flow\\.data\\.provider\\.InMemoryDataProviderHelpers",
+                "com\\.vaadin\\.flow\\.di\\.InstantiatorFactory",
+                "com\\.vaadin\\.flow\\.di\\.Lookup(\\$.*)?",
+                "com\\.vaadin\\.flow\\.di\\.ResourceProvider",
                 "com\\.vaadin\\.flow\\.dom\\.ElementConstants",
                 "com\\.vaadin\\.flow\\.component\\.board\\.internal\\.FunctionCaller",
                 "com\\.vaadin\\.flow\\.component\\.grid\\.ColumnGroupHelpers",
@@ -98,12 +105,17 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.VaadinServletRequest",
                 "com\\.vaadin\\.flow\\.server\\.VaadinServletResponse",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.AnnotationValidator",
+                "com\\.vaadin\\.flow\\.server\\.startup\\.ApplicationConfigurationFactory",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ApplicationRouteRegistry\\$RouteRegistryServletContextListener",
+                "com\\.vaadin\\.flow\\.server\\.startup\\.ApplicationRouteRegistry\\$OSGiRouteRegistry",
+                "com\\.vaadin\\.flow\\.server\\.startup\\.ApplicationRouteRegistry\\$OSGiDataCollector",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ClassLoaderAwareServletContainerInitializer",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ServletDeployer",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ServletDeployer\\$StubServletConfig",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ServletContextListeners",
+                "com\\.vaadin\\.flow\\.server\\.startup\\.DeferredServletContextInitializers(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.DevModeInitializer(\\$.*)?",
+                "com\\.vaadin\\.flow\\.server\\.startup\\.LookupInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.communication.JSR356WebsocketInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.BootstrapHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.BootstrapPageResponse",
@@ -114,10 +126,6 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.communication\\.PushRequestHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.JavaScriptBootstrapHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.templatemodel\\.PathLookup",
-                "com\\.vaadin\\.flow\\.server\\.osgi\\.ServletContainerInitializerExtender",
-                "com\\.vaadin\\.flow\\.server\\.osgi\\.OSGiAccess",
-                "com\\.vaadin\\.flow\\.server\\.osgi\\.OSGiAccess(\\$.*)",
-                "com\\.vaadin\\.flow\\.server\\.osgi\\.VaadinBundleTracker",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ErrorNavigationTargetInitializer",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ServletVerifier",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.RouteRegistryInitializer",
@@ -169,8 +177,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.JarContentsManager",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.VersionsJsonConverter",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.VersionsJsonFilter",
-                // connect is stateless
-                "com\\.vaadin\\.flow\\.server\\.connect\\..*",
+
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractUpdateImports",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.FallibleCommand",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeTasks",
@@ -182,7 +189,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdateImports(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdatePackages",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdateWebpack",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractTaskConnectGenerator",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateEndpointBase",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateConnect",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateOpenApi",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractTaskClientGenerator",
@@ -190,6 +197,9 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateIndexHtml",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateIndexTs",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateTsDefinitions",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskInstallWebpackPlugins",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdateThemeImport",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.EndpointGeneratorTaskFactory",
 
                 // Node downloader classes
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.DefaultArchiveExtractor",

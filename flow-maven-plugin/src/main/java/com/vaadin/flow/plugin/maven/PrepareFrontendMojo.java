@@ -37,11 +37,13 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -123,8 +125,10 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         try {
             File flowResourcesFolder = new File(npmFolder,
                     DEFAULT_FLOW_RESOURCES_FOLDER);
+            ClassFinder classFinder = getClassFinder(project);
+            Lookup lookup= createLookup(classFinder);
             NodeTasks.Builder builder = new NodeTasks.Builder(
-                    getClassFinder(project), npmFolder, generatedFolder,
+                    lookup, npmFolder, generatedFolder,
                     frontendDirectory)
                             .withWebpack(webpackOutputDirectory,
                                     webpackTemplate, webpackGeneratedTemplate)
