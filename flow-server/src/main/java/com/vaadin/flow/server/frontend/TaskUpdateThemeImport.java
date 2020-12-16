@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
@@ -33,16 +34,21 @@ import com.vaadin.flow.theme.ThemeDefinition;
  */
 public class TaskUpdateThemeImport implements FallibleCommand {
 
+    private static final String THEMES_FOLDER_NAME = "themes";
+
     private File themeImportFile;
     private ThemeDefinition theme;
+    private File frontendDirectory;
 
-    TaskUpdateThemeImport(File npmFolder, ThemeDefinition theme) {
+    TaskUpdateThemeImport(File npmFolder, ThemeDefinition theme,
+                          File frontendDirectory) {
         File nodeModules = new File(npmFolder, FrontendUtils.NODE_MODULES);
         File flowFrontend = new File(nodeModules,
             FrontendUtils.FLOW_NPM_PACKAGE_NAME);
         this.themeImportFile = new File(new File(flowFrontend, "theme"),
             "theme-generated.js");
         this.theme = theme;
+        this.frontendDirectory = frontendDirectory;
     }
 
     @Override
@@ -50,6 +56,9 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         if (theme == null || theme.getName().isEmpty()) {
             return;
         }
+
+        verifyThemeDirectoryExistence();
+
         if (!themeImportFile.getParentFile().mkdirs()) {
             LoggerFactory.getLogger(getClass()).debug(
                 "Didn't create folders as they probably already exist. "
@@ -65,6 +74,22 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         } catch (IOException e) {
             throw new ExecutionFailedException(
                 "Unable to write theme import file", e);
+        }
+    }
+
+    private void verifyThemeDirectoryExistence() throws ExecutionFailedException {
+        File themesDir = new File (frontendDirectory, THEMES_FOLDER_NAME);
+        File shouldExistThemeDir = new File (themesDir, theme.getName());
+        if (Files.notExists(shouldExistThemeDir.toPath())) {
+            String errorMessage = "Discovered @Theme(\"%s\") annotation but " +
+                    "no \"%s/%s/%s/\" directory present in the " +
+                    "project or available or inside a jar dependency for the " +
+                    "app. Check if you forgot to create the folder or have " +
+                    "typo in the theme or folder name \"%s\".";
+
+            throw new ExecutionFailedException(String.format(errorMessage,
+                    theme.getName(), frontendDirectory.getName(),
+                    THEMES_FOLDER_NAME, theme.getName(), theme.getName()));
         }
     }
 }
