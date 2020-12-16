@@ -277,8 +277,8 @@ public class LookupInitializer
         for (Class<?> serviceType : getServiceTypes()) {
             if (ResourceProvider.class.equals(serviceType)) {
                 collectResourceProviders(classSet, services);
-            }
-            if (ApplicationConfigurationFactory.class.equals(serviceType)) {
+            } else if (ApplicationConfigurationFactory.class
+                    .equals(serviceType)) {
                 collectApplicationConfigurationFactories(classSet, services);
             } else {
                 collectSubclasses(serviceType, classSet, services);
@@ -330,9 +330,8 @@ public class LookupInitializer
                     + SPI + classSet + ONE_IMPL_REQUIRED);
         } else {
             Class<?> clazz = factories.iterator().next();
-            services.put(DefaultApplicationConfigurationFactory.class,
-                    Collections
-                            .singletonList(ReflectTools.createInstance(clazz)));
+            services.put(ApplicationConfigurationFactory.class, Collections
+                    .singletonList(ReflectTools.createInstance(clazz)));
         }
     }
 
@@ -346,7 +345,8 @@ public class LookupInitializer
     private Set<Class<?>> filterSubClasses(Class<?> clazz,
             Set<Class<?>> classes) {
         return classes == null ? Collections.emptySet()
-                : classes.stream().filter(ReflectTools::isInstantiableService)
+                : classes.stream().filter(clazz::isAssignableFrom)
+                        .filter(ReflectTools::isInstantiableService)
                         .filter(cls -> !clazz.equals(cls))
                         .collect(Collectors.toSet());
     }
