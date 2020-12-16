@@ -92,9 +92,9 @@ public class DefaultApplicationConfigurationFactory
     @Override
     public ApplicationConfiguration create(VaadinContext context) {
         Map<String, String> props = new HashMap<>();
-        for (final Enumeration<String> e = context.getContextParameterNames(); e
-                .hasMoreElements();) {
-            final String name = e.nextElement();
+        for (final Enumeration<String> paramNames = context
+                .getContextParameterNames(); paramNames.hasMoreElements();) {
+            final String name = paramNames.nextElement();
             props.put(name, context.getContextParameter(name));
         }
         JsonObject buildInfo = null;
