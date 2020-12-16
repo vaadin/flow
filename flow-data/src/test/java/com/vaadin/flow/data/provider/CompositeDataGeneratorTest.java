@@ -201,7 +201,7 @@ public class CompositeDataGeneratorTest {
     }
 
     @Test
-    public void orderIsPreserved() {
+    public void addDataGenerator_orderIsPreserved() {
         CompositeDataGenerator<String> cdg = new CompositeDataGenerator<>();
         DataGenerator<String> dg1 = (String, JsonObject) -> {};
         DataGenerator<String> dg2 = (String, JsonObject) -> {};
