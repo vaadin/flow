@@ -15,8 +15,7 @@
  */
 
 /**
- * This file handles copying of theme files to
- * [staticResourcesFolder]
+ * This contains functions and features used to copy theme files.
  */
 
 const fs = require('fs');
@@ -84,11 +83,12 @@ function copyThemeFiles(folderToCopy, targetFolder) {
  *
  * Note! there can be multiple copy-rules with target folders for one npm package asset.
  *
- * @param {json} themeProperties
- * @param {string} projectStaticAssetsOutputFolder
+ * @param {string} themeName name of the theme we are copying assets for
+ * @param {json} themeProperties theme properties json with data on assets
+ * @param {string} projectStaticAssetsOutputFolder project output folder where we copy assets to under theme/[themeName]
  * @param {logger} theme plugin logger
  */
-function copyStaticAssets(themeProperties, projectStaticAssetsOutputFolder, logger) {
+function copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputFolder, logger) {
 
   const assets = themeProperties['assets'];
   if (!assets) {
@@ -99,23 +99,45 @@ function copyStaticAssets(themeProperties, projectStaticAssetsOutputFolder, logg
   fs.mkdirSync(projectStaticAssetsOutputFolder, {
     recursive: true
   });
+  const missingModules = checkModules(Object.keys(assets));
+  if (missingModules.length > 0) {
+    throw Error("Missing npm modules '" + missingModules.join("', '")
+      + "' for assets marked in 'theme.json'.\n" +
+      "Install package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm i'");
+  }
   Object.keys(assets).forEach((module) => {
 
     const copyRules = assets[module];
     Object.keys(copyRules).forEach((copyRule) => {
       const nodeSources = path.resolve('node_modules/', module, copyRule);
-      const files = glob.sync(nodeSources, { nodir: true });
-      const targetFolder = path.resolve(projectStaticAssetsOutputFolder, copyRules[copyRule]);
+      const files = glob.sync(nodeSources, {nodir: true});
+      const targetFolder = path.resolve(projectStaticAssetsOutputFolder, "themes", themeName, copyRules[copyRule]);
 
       fs.mkdirSync(targetFolder, {
         recursive: true
       });
       files.forEach((file) => {
-        logger.trace("Copying: ", file, '=>', targetFolder);
-        fs.copyFileSync(file, path.resolve(targetFolder, path.basename(file)));
+        const copyTarget = path.resolve(targetFolder, path.basename(file));
+        // Only copy if target file doesn't exist or if file to copy is newer
+        if (!fs.existsSync(copyTarget) || fs.statSync(copyTarget).mtime < fs.statSync(file).mtime) {
+          logger.trace("Copying: ", file, '=>', targetFolder);
+          fs.copyFileSync(file, copyTarget);
+        }
       });
     });
   });
 };
 
-module.exports = { copyThemeResources, copyStaticAssets };
+function checkModules(modules) {
+  const missing = [];
+
+  modules.forEach((module) => {
+    if (!fs.existsSync(path.resolve('node_modules/', module))) {
+      missing.push(module);
+    }
+  });
+
+  return missing;
+}
+
+module.exports = {checkModules, copyStaticAssets};
