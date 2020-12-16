@@ -17,6 +17,7 @@ package com.vaadin.flow.server;
 
 import java.util.Properties;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -120,14 +121,6 @@ public class DefaultDeploymentConfigurationTest {
         createDeploymentConfig(initParameters);
     }
 
-    private DefaultDeploymentConfiguration createDeploymentConfig(
-            Properties initParameters) {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        return new DefaultDeploymentConfiguration(appConfig,
-                DefaultDeploymentConfigurationTest.class, initParameters);
-    }
-
     @Test
     public void defaultPushUrl() {
         Properties initParameters = new Properties();
@@ -167,5 +160,87 @@ public class DefaultDeploymentConfigurationTest {
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
         assertEquals(5000, config.getMaxMessageSuspendTimeout());
+    }
+
+    @Test
+    public void isProductionMode_productionModeIsSetViaParentOnly_productionModeIsTakenFromParent() {
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.isProductionMode()).thenReturn(true);
+
+        // Note: application configuration doesn't contain production mode
+        // parameter !
+        Assert.assertNull(appConfig.getStringProperty(
+                InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, null));
+
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                appConfig, new Properties());
+        Assert.assertTrue(config.isProductionMode());
+        Assert.assertTrue(config.getProperties().isEmpty());
+    }
+
+    @Test
+    public void isProductionMode_productionModeIsSetViaPropertiesAndViaParent_productionModeIsTakenFromProperties() {
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.isProductionMode()).thenReturn(false);
+
+        Properties initParameters = new Properties();
+        initParameters.setProperty(
+                InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
+                Boolean.TRUE.toString());
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                appConfig, initParameters);
+        // the deployment configuration parameter takes precedence over parent
+        // config
+        Assert.assertTrue(config.isProductionMode());
+    }
+
+    @Test
+    public void useV14Bootstrap_v14ModeIsSetViaParentOnly_v14ModeIsTakenFromParent() {
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.useV14Bootstrap()).thenReturn(true);
+
+        // Note: application configuration doesn't contain production mode
+        // parameter !
+        Assert.assertNull(appConfig.getStringProperty(
+                InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP, null));
+
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                appConfig, new Properties());
+        Assert.assertTrue(config.useV14Bootstrap());
+        Assert.assertTrue(config.getProperties().isEmpty());
+    }
+
+    @Test
+    public void useV14Bootstrap_v14ModeIsSetViaParentOnlyAndViaParent_v14ModeIsTakenFromParent() {
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.useV14Bootstrap()).thenReturn(true);
+
+        Properties initParameters = new Properties();
+        initParameters.setProperty(
+                InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
+                Boolean.TRUE.toString());
+
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                appConfig, initParameters);
+        // the deployment configuration parameter takes precedence over parent
+        // config
+        Assert.assertTrue(config.useV14Bootstrap());
+    }
+
+    private DefaultDeploymentConfiguration createDeploymentConfig(
+            Properties initParameters) {
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        return createDeploymentConfig(appConfig, initParameters);
+    }
+
+    private DefaultDeploymentConfiguration createDeploymentConfig(
+            ApplicationConfiguration appConfig, Properties initParameters) {
+        return new DefaultDeploymentConfiguration(appConfig,
+                DefaultDeploymentConfigurationTest.class, initParameters);
     }
 }
