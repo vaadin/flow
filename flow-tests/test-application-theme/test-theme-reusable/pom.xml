@@ -34,7 +34,7 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-themes-npm</artifactId>
+            <artifactId>flow-test-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
