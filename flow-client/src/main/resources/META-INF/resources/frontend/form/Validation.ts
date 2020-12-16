@@ -4,6 +4,7 @@ import { Binder } from "./Binder";
 import {
   AbstractModel,
   getBinderNode,
+  NumberModel,
 } from "./Models";
 import { Required } from "./Validators";
 
@@ -45,8 +46,12 @@ export class ServerValidator implements Validator<any> {
 
 export async function runValidator<T>(model: AbstractModel<T>, validator: Validator<T>): Promise<ReadonlyArray<ValueError<T>>> {
   const value = getBinderNode(model).value;
-  // if model is not required and value empty, do not run any validator
-  if (!getBinderNode(model).required && !new Required().validate(value!)) {
+  // If model is not required and value empty, do not run any validator. Except
+  // always validate NumberModel, which has a mandatory builtin validator
+  // to indicate NaN input.
+  if (!getBinderNode(model).required
+    && !new Required().validate(value!)
+    && !(model instanceof NumberModel)) {
     return [];
   }
   return (async () => validator.validate(value!, getBinderNode(model).binder))()
