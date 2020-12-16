@@ -205,7 +205,7 @@ public class CompositeDataGeneratorTest {
         CompositeDataGenerator<String> cdg = new CompositeDataGenerator<>();
         DataGenerator<String> dg1 = (String, JsonObject) -> {};
         DataGenerator<String> dg2 = (String, JsonObject) -> {};
-        List<DataGenerator<String>> expected = Arrays.asList(dg1,dg2);
+        List<DataGenerator<String>> expected = Arrays.asList(dg1, dg2);
         cdg.addDataGenerator(dg1);
         cdg.addDataGenerator(dg2);
         assertEquals(expected,new ArrayList<>(cdg.dataGenerators));
