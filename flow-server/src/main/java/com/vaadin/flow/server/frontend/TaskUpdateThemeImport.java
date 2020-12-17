@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.APP_THEMES_FOLDER_NAME;
+
 /**
  * Task for generating the theme-generated.js file for importing application
  * theme.
@@ -32,8 +34,6 @@ import com.vaadin.flow.theme.ThemeDefinition;
  * @since
  */
 public class TaskUpdateThemeImport implements FallibleCommand {
-
-    private static final String THEMES_FOLDER_NAME = "themes";
 
     private File themeImportFile;
     private ThemeDefinition theme;
@@ -77,7 +77,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
     }
 
     private void verifyThemeDirectoryExistence() throws ExecutionFailedException {
-        File themesDir = new File (frontendDirectory, THEMES_FOLDER_NAME);
+        File themesDir = new File (frontendDirectory, APP_THEMES_FOLDER_NAME);
         File customThemeDir = new File (themesDir, theme.getName());
         if (!customThemeDir.exists()) {
             String errorMessage = "Discovered @Theme(\"%s\") annotation but " +
@@ -88,7 +88,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
 
             throw new ExecutionFailedException(String.format(errorMessage,
                     theme.getName(), frontendDirectory.getName(),
-                    THEMES_FOLDER_NAME, theme.getName(), theme.getName()));
+                    APP_THEMES_FOLDER_NAME, theme.getName(), theme.getName()));
         }
     }
 }
