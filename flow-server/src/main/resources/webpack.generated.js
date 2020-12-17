@@ -202,7 +202,7 @@ module.exports = {
       },
       {
         // File-loader only copies files used as imports in .js files or handled by css-loader
-        test: /\.(png|gif|jpg|jpeg|svg|eot|woff|woff2|ttf)$/,
+        test: /\.(png|gif|jpg|jpeg|svg|eot|woff|woff2|otf|ttf)$/,
         use: [{
           loader: 'file-loader',
           options: {
