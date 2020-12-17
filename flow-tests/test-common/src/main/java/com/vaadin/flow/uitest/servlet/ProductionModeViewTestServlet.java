@@ -15,12 +15,11 @@
  */
 package com.vaadin.flow.uitest.servlet;
 
+import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.flow.server.VaadinServletConfiguration;
-
-@WebServlet(asyncSupported = true, urlPatterns = { "/view-production/*" })
-@VaadinServletConfiguration(productionMode = true)
+@WebServlet(asyncSupported = true, urlPatterns = {
+        "/view-production/*" }, initParams = @WebInitParam(name = "productionMode", value = "true"))
 public class ProductionModeViewTestServlet extends ViewTestServlet {
 
 }
