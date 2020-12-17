@@ -20,9 +20,8 @@ const generateThemeFile = require('./theme-generator');
 const { copyStaticAssets } = require('./theme-copy');
 
 let logger;
-
-// matches theme folder name in 'themes/my-theme/my-theme.js'
-const nameRegex = /themes\/(.*)\/\1.generated.js/g;
+let themeName;
+let themeGeneratedFileName;
 
 /**
  * The application theme plugin is for generating, collecting and copying of theme files for the application theme.
@@ -51,12 +50,16 @@ class ApplicationThemePlugin {
   apply(compiler) {
     logger = compiler.getInfrastructureLogger("ApplicationThemePlugin");
 
-    compiler.hooks.afterEnvironment.tap("ApplicationThemePlugin", () => {
+    const handleThemesHook = () => {
       const generatedThemeFile = path.resolve(this.options.themeResourceFolder, "theme-generated.js");
       if (fs.existsSync(generatedThemeFile)) {
+        // matches theme folder name in 'themes/my-theme/my-theme.generated.js'
+        const nameRegex = /themes\/(.*)\/\1.generated.js/g;
 
         // read theme name from the theme-generated.js as there we always mark the used theme for webpack to handle.
-        const themeName = nameRegex.exec(fs.readFileSync(generatedThemeFile, {encoding: 'utf8'}))[1];
+        themeName = nameRegex.exec(fs.readFileSync(generatedThemeFile, {encoding: 'utf8'}))[1];
+        themeGeneratedFileName = themeName + '.generated.js';
+
         if (!themeName) {
           throw new Error("Couldn't parse theme name from '" + generatedThemeFile + "'.");
         }
@@ -70,7 +73,7 @@ class ApplicationThemePlugin {
             if (handled) {
               if(themeFound) {
                 throw new Error("Found theme files in '" + themeProjectFolder + "' and '"
-                  + themeFound + "'. Theme should only be available in one folder");
+                    + themeFound + "'. Theme should only be available in one folder");
               }
               logger.info("Found theme files from '", themeProjectFolder, "'");
               themeFound = themeProjectFolder;
@@ -81,7 +84,7 @@ class ApplicationThemePlugin {
         if (fs.existsSync(this.options.themeResourceFolder)) {
           if (themeFound && fs.existsSync(path.resolve(this.options.themeResourceFolder, themeName))) {
             throw new Error("Theme '" + themeName + "'should not exist inside a jar and in the project at the same time\n" +
-              "Extending another theme is possible by adding { \"parent\": \"my-parent-theme\" } entry to the theme.json file inside your theme folder.");
+                "Extending another theme is possible by adding { \"parent\": \"my-parent-theme\" } entry to the theme.json file inside your theme folder.");
           }
           logger.debug("Searching theme jar resource folder ", this.options.themeResourceFolder, " for theme ", themeName);
           handleThemes(themeName, this.options.themeResourceFolder, this.options.projectStaticAssetsOutputFolder);
@@ -90,6 +93,36 @@ class ApplicationThemePlugin {
         logger.debug("Skipping Vaadin application theme handling.");
         logger.trace("Most likely no @Theme annotation for application or only themeClass used.");
       }
+    };
+
+    compiler.hooks.afterEnvironment.tap("ApplicationThemePlugin", handleThemesHook);
+
+    // Adds the active application theme folder for webpack watching
+    compiler.plugin("after-compile", function (compilation, callback) {
+      if (themeName) {
+        compilation.contextDependencies.add('frontend/themes/' + themeName);
+      }
+      callback();
+    });
+
+    // Adds a hook for theme files change event
+    compiler.plugin("watch-run", (compilation, callback) => {
+      const changedFilesMap = compiler.watchFileSystem.watcher.mtimes;
+      if (changedFilesMap !== {}) {
+        let themeGeneratedFileChanged = false;
+        const changedFiles = Object.keys(changedFilesMap)
+            .map(file => `${file}`)
+            .forEach(file => {
+              if (file.indexOf(themeGeneratedFileName) > -1) {
+                themeGeneratedFileChanged = true;
+              }
+            });
+        logger.debug("Detected changes in the following files " + changedFiles);
+        if (!themeGeneratedFileChanged) {
+          handleThemesHook();
+        }
+      }
+      callback();
     });
   }
 }
@@ -116,7 +149,7 @@ function handleThemes(themeName, themesFolder, projectStaticAssetsOutputFolder) 
 
     const themeFile = generateThemeFile(themeFolder, themeName, themeProperties);
 
-    fs.writeFileSync(path.resolve(themeFolder, themeName + '.generated.js'), themeFile);
+    fs.writeFileSync(path.resolve(themeFolder, themeGeneratedFileName), themeFile);
     return true;
   }
   return false;
