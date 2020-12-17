@@ -32,6 +32,21 @@ import static com.vaadin.flow.webcomponent.ThemedComponent.MY_POLYMER_ID;
 
 public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
+    private static final String FIND_FONT_FACE_RULE_SCRIPT =
+    //@formatter:off
+        "let found = false;"
+        + "for (let as = 0; as < target.adoptedStyleSheets.length; ++as) {"
+        + "    let styleSheetRules = target.adoptedStyleSheets[as].rules;"
+        + "    for (var ss = 0; ss < styleSheetRules.length; ++ss) {"
+        + "        let cssRule = styleSheetRules[ss];"
+        + "        if (cssRule instanceof CSSFontFaceRule && cssRule.cssText.startsWith(\"@font-face { font-family: Ostrich;\")) {"
+        + "            found = true;"
+        + "        }"
+        + "    }"
+        + "}"
+        + "return found;";
+    //@formatter:on
+
     @Override
     protected String getTestPath() {
         return "/index.html";
@@ -125,5 +140,30 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
             + "/path/VAADIN/static/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2");
         Assert.assertFalse("Font resource should be available",
             driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
+    }
+
+    public void documentCssFonts_fromLocalCssFile_fontAppliedToDocumentRoot() {
+        open();
+
+        Object ostrichFontStylesFound = getCommandExecutor().executeScript(
+                "let target = document;" + FIND_FONT_FACE_RULE_SCRIPT);
+
+        Assert.assertTrue(
+                "Expected Ostrich font to be applied to document root element",
+                (Boolean) ostrichFontStylesFound);
+    }
+
+    @Test
+    public void documentCssFonts_fromLocalCssFile_fontNotAppliedToEmbeddedComponent() {
+        open();
+
+        Object ostrichFontStylesFoundForEmbedded = getCommandExecutor()
+                .executeScript("let target = document.getElementsByTagName"
+                        + "('themed-component')[0].shadowRoot;"
+                        + FIND_FONT_FACE_RULE_SCRIPT);
+
+        Assert.assertFalse(
+                "Expected no Ostrich font to be applied to embedded component",
+                (Boolean) ostrichFontStylesFoundForEmbedded);
     }
 }
