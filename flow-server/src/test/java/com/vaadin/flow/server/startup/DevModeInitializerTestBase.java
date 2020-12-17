@@ -48,7 +48,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.any;
+import static org.mockito.Matchers.any;
 
 /**
  * Base class for DevModeInitializer tests. It is an independent class so as it
@@ -71,6 +71,8 @@ public class DevModeInitializerTestBase {
     TaskGenerateConnect taskGenerateConnect;
     TaskGenerateOpenApi taskGenerateOpenApi;
 
+    ApplicationConfiguration appConfig;
+
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Rule
@@ -89,6 +91,9 @@ public class DevModeInitializerTestBase {
         baseDir = temporaryFolder.getRoot().getPath();
         Boolean enablePnpm = Boolean.TRUE;
 
+        appConfig = Mockito.mock(ApplicationConfiguration.class);
+        mockApplicationConfiguration(appConfig);
+
         createStubNode(false, true, enablePnpm, baseDir);
         createStubWebpackServer("Compiled", 500, baseDir);
 
@@ -96,10 +101,15 @@ public class DevModeInitializerTestBase {
         ServletRegistration vaadinServletRegistration = Mockito
                 .mock(ServletRegistration.class);
 
-        lookup = Mockito.mock(Lookup.class);;
+        Mockito.when(servletContext
+                .getAttribute(ApplicationConfiguration.class.getName()))
+                .thenReturn(appConfig);
+
+        lookup = Mockito.mock(Lookup.class);
         Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
-        endpointGeneratorTaskFactory = Mockito.mock(EndpointGeneratorTaskFactory.class);
+        endpointGeneratorTaskFactory = Mockito
+                .mock(EndpointGeneratorTaskFactory.class);
         taskGenerateConnect = Mockito.mock(TaskGenerateConnect.class);
         taskGenerateOpenApi = Mockito.mock(TaskGenerateOpenApi.class);
         Mockito.doReturn(endpointGeneratorTaskFactory).when(lookup)
@@ -214,6 +224,21 @@ public class DevModeInitializerTestBase {
 
     public void runDestroy() throws Exception {
         devModeInitializer.contextDestroyed(null);
+    }
+
+    private void mockApplicationConfiguration(
+            ApplicationConfiguration appConfig) {
+        Mockito.when(appConfig.isProductionMode()).thenReturn(false);
+        Mockito.when(appConfig.enableDevServer()).thenReturn(true);
+
+        Mockito.when(appConfig.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
+                .thenAnswer(invocation -> invocation.getArgumentAt(1,
+                        String.class));
+        Mockito.when(appConfig.getBooleanProperty(Mockito.anyString(),
+                Mockito.anyBoolean()))
+                .thenAnswer(invocation -> invocation.getArgumentAt(1,
+                        Boolean.class));
     }
 
     static List<URL> getClasspathURLs() {

@@ -182,7 +182,6 @@ public class VaadinAppShellInitializerTest {
 
     private ServletContext servletContext;
     private VaadinServletContext context;
-    private Map<String, String> initParams;
     private Set<Class<?>> classes;
     private Document document;
     private Map<String, Object> attributeMap = new HashMap<>();
@@ -190,6 +189,7 @@ public class VaadinAppShellInitializerTest {
     private MockServletServiceSessionSetup.TestVaadinServletService service;
     private PushConfiguration pushConfiguration;
     private Logger logger;
+    private ApplicationConfiguration appConfig;
 
     @Before
     public void setup() throws Exception {
@@ -200,8 +200,11 @@ public class VaadinAppShellInitializerTest {
 
         servletContext = mocks.getServletContext();
 
+        appConfig = mockApplicationConfiguration();
+
         attributeMap.put(Lookup.class.getName(),
                 servletContext.getAttribute(Lookup.class.getName()));
+        attributeMap.put(ApplicationConfiguration.class.getName(), appConfig);
 
         service = mocks.getService();
         Mockito.when(servletContext.getAttribute(Mockito.anyString()))
@@ -215,9 +218,6 @@ public class VaadinAppShellInitializerTest {
         ServletRegistration registration = Mockito
                 .mock(ServletRegistration.class);
         context = new VaadinServletContext(servletContext);
-
-        initParams = new HashMap<>();
-        Mockito.when(registration.getInitParameters()).thenReturn(initParams);
 
         classes = new HashSet<>();
 
@@ -380,7 +380,8 @@ public class VaadinAppShellInitializerTest {
         exception.expectMessage(containsString(
                 "Found app shell configuration annotations in non"));
         exception.expectMessage(containsString(
-                "- @Meta, @Inline, @Viewport, @BodySize, @Push, @Theme" + " from"));
+                "- @Meta, @Inline, @Viewport, @BodySize, @Push, @Theme"
+                        + " from"));
         classes.add(MyAppShellWithoutAnnotations.class);
         classes.add(OffendingClass.class);
         initializer.process(classes, servletContext);
@@ -422,8 +423,8 @@ public class VaadinAppShellInitializerTest {
     @Test
     public void should_not_throw_when_appShellAnnotationsAreAllowed_and_offendingClass()
             throws Exception {
-        initParams.put(Constants.ALLOW_APPSHELL_ANNOTATIONS,
-                Boolean.TRUE.toString());
+        Mockito.when(appConfig.getBooleanProperty(
+                Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
         classes.add(OffendingClass.class);
         initializer.process(classes, servletContext);
 
@@ -436,8 +437,8 @@ public class VaadinAppShellInitializerTest {
 
     @Test
     public void should_link_to_PWA_article() throws Exception {
-        initParams.put(Constants.ALLOW_APPSHELL_ANNOTATIONS,
-                Boolean.TRUE.toString());
+        Mockito.when(appConfig.getBooleanProperty(
+                Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
         ArgumentCaptor<String> arg = ArgumentCaptor.forClass(String.class);
         classes.add(OffendingPwaClass.class);
         initializer.process(classes, servletContext);
@@ -448,8 +449,8 @@ public class VaadinAppShellInitializerTest {
 
     @Test
     public void should_not_link_to_PWA_article() throws Exception {
-        initParams.put(Constants.ALLOW_APPSHELL_ANNOTATIONS,
-                Boolean.TRUE.toString());
+        Mockito.when(appConfig.getBooleanProperty(
+                Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
         ArgumentCaptor<String> arg = ArgumentCaptor.forClass(String.class);
         classes.add(OffendingNonPwaClass.class);
         initializer.process(classes, servletContext);
@@ -490,5 +491,22 @@ public class VaadinAppShellInitializerTest {
                 .get(ilogger);
         map.clear();
         return map;
+    }
+
+    private ApplicationConfiguration mockApplicationConfiguration() {
+        ApplicationConfiguration config = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(config.isProductionMode()).thenReturn(false);
+        Mockito.when(config.enableDevServer()).thenReturn(true);
+
+        Mockito.when(config.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
+                .thenAnswer(invocation -> invocation.getArgumentAt(1,
+                        String.class));
+        Mockito.when(config.getBooleanProperty(Mockito.anyString(),
+                Mockito.anyBoolean()))
+                .thenAnswer(invocation -> invocation.getArgumentAt(1,
+                        Boolean.class));
+        return config;
     }
 }
