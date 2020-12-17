@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.Collections;
 import java.util.Properties;
 
 import org.junit.Assert;
@@ -47,6 +48,8 @@ public class DefaultDeploymentConfigurationTest {
         Properties initParameters = new Properties();
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.getPropertyNames())
+                .thenReturn(Collections.emptyEnumeration());
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
                 appConfig, clazz, initParameters);
         assertEquals(value, config.getSystemProperty(prop));
@@ -63,6 +66,8 @@ public class DefaultDeploymentConfigurationTest {
         Properties initParameters = new Properties();
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.getPropertyNames())
+                .thenReturn(Collections.emptyEnumeration());
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
                 appConfig, DefaultDeploymentConfigurationTest.class,
                 initParameters);
@@ -240,6 +245,8 @@ public class DefaultDeploymentConfigurationTest {
 
     private DefaultDeploymentConfiguration createDeploymentConfig(
             ApplicationConfiguration appConfig, Properties initParameters) {
+        Mockito.when(appConfig.getPropertyNames())
+                .thenReturn(Collections.emptyEnumeration());
         return new DefaultDeploymentConfiguration(appConfig,
                 DefaultDeploymentConfigurationTest.class, initParameters);
     }

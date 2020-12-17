@@ -20,6 +20,7 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
+import java.util.Collections;
 import java.util.Properties;
 
 import org.junit.Assert;
@@ -69,10 +70,12 @@ public class UidlRequestHandlerTest {
 
     @Test
     public void writeSessionExpired() throws Exception {
-        ApplicationConfiguration congif = Mockito
+        ApplicationConfiguration config = Mockito
                 .mock(ApplicationConfiguration.class);
+        Mockito.when(config.getPropertyNames())
+                .thenReturn(Collections.emptyEnumeration());
         VaadinService service = new VaadinServletService(null,
-                new DefaultDeploymentConfiguration(congif, getClass(),
+                new DefaultDeploymentConfiguration(config, getClass(),
                         new Properties()));
         when(request.getService()).thenReturn(service);
 

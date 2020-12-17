@@ -19,6 +19,7 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collections;
 import java.util.Properties;
 
 import org.atmosphere.cpr.AtmosphereRequest;
@@ -54,10 +55,12 @@ public class PushAtmosphereHandlerTest {
         Mockito.when(resource.getRequest()).thenReturn(request);
         Mockito.when(resource.getResponse()).thenReturn(response);
 
-        ApplicationConfiguration congif = Mockito
+        ApplicationConfiguration config = Mockito
                 .mock(ApplicationConfiguration.class);
+        Mockito.when(config.getPropertyNames())
+                .thenReturn(Collections.emptyEnumeration());
         VaadinServletService service = new VaadinServletService(null,
-                new DefaultDeploymentConfiguration(congif, getClass(),
+                new DefaultDeploymentConfiguration(config, getClass(),
                         new Properties()));
 
         PushHandler handler = new PushHandler(service);
