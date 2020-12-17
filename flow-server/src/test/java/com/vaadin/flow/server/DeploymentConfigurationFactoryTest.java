@@ -483,6 +483,8 @@ public class DeploymentConfigurationFactoryTest {
         expect(configuration.useV14Bootstrap()).andReturn(false).anyTimes();
         expect(configuration.getStringProperty(EasyMock.anyString(),
                 EasyMock.anyString())).andReturn(null).anyTimes();
+        expect(configuration.isXsrfProtectionEnabled()).andReturn(false)
+                .anyTimes();
 
         expect(configuration.getPropertyNames())
                 .andReturn(Collections.emptyEnumeration()).anyTimes();

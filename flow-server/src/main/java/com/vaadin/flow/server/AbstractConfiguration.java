@@ -17,6 +17,7 @@ package com.vaadin.flow.server;
 
 import java.io.Serializable;
 
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 
 /**
@@ -111,6 +112,9 @@ public interface AbstractConfiguration extends Serializable {
      *
      * @return true if XSRF protection is enabled, false otherwise.
      */
-    boolean isXsrfProtectionEnabled();
+    default boolean isXsrfProtectionEnabled() {
+        return !getBooleanProperty(SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
+                false);
+    }
 
 }
