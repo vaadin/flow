@@ -22,6 +22,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.DomEvent;
@@ -42,8 +44,8 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
+
 import elemental.json.JsonObject;
-import org.slf4j.LoggerFactory;
 
 /**
  * Custom UI for use with WebComponents served from the server.
@@ -286,7 +288,8 @@ public class WebComponentUI extends UI {
         WebComponentConfigurationRegistry registry = getConfigurationRegistry();
         Optional<Theme> theme = registry
                 .getEmbeddedApplicationAnnotation(Theme.class);
-        if (!theme.isPresent()) {
+        if (!theme.isPresent() || theme.get().themeClass()
+            .equals(AbstractTheme.class)) {
             return;
         }
         AbstractTheme themeInstance = Instantiator.get(this)

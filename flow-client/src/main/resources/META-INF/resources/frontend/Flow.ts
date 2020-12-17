@@ -60,8 +60,8 @@ export class Flow {
   // @ts-ignore
   container : HTMLRouterContainer;
 
-  // flag used to inform Testbench whether a server route is in progress
-  private isActive = false;
+  private isActiveCount = 0;
+
   private baseRegex = /^\//;
   private appShellTitle: string;
 
@@ -307,15 +307,18 @@ export class Flow {
     });
   }
 
+  // flag used to inform Testbench whether a server route is in progress
+  get isActive(): boolean {
+    return this.isActiveCount > 0;
+  }
+
   private showLoading() {
     // Make Testbench know that server request is in progress
-    this.isActive = true;
     $wnd.Vaadin.Flow.loading(true);
   }
 
   private hideLoading() {
     // Make Testbench know that server request has finished
-    this.isActive = false;
     $wnd.Vaadin.Flow.loading(false);
   }
 
@@ -385,16 +388,27 @@ export class Flow {
     let timeout2nd: any;
     let timeout3rd: any;
     $wnd.Vaadin.Flow.loading = (action: boolean) => {
-      clearTimeout(timeout2nd);
-      clearTimeout(timeout3rd);
-      loading.classList.remove('second');
-      loading.classList.remove('third');
+      // true if we should reveal indicator (first loading starting)
+      const show = action && this.isActiveCount === 0;
+      // true if we should hide indicator (last loading finished)
+      const hide = !action && this.isActiveCount === 1;
       if (action) {
-        loading.removeAttribute('style');
-        timeout2nd = setTimeout(() => loading.classList.add('second'), 1500);
-        timeout3rd = setTimeout(() => loading.classList.add('third'), 5000);
-      } else {
-        loading.setAttribute('style', 'none');
+        this.isActiveCount++;
+      } else if (this.isActiveCount > 0) {
+        this.isActiveCount--;
+      }
+      if (show || hide) {
+        clearTimeout(timeout2nd);
+        clearTimeout(timeout3rd);
+        loading.classList.remove('second');
+        loading.classList.remove('third');
+        if (show) {
+          loading.removeAttribute('style');
+          timeout2nd = setTimeout(() => loading.classList.add('second'), 1500);
+          timeout3rd = setTimeout(() => loading.classList.add('third'), 5000);
+        } else {
+          loading.setAttribute('style', 'none');
+        }
       }
     };
   }

@@ -1,0 +1,205 @@
+/*
+ * Copyright 2000-2020 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.server.startup;
+
+import java.io.File;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+
+import elemental.json.JsonObject;
+
+import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
+import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_FILE;
+import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_FILE_TOKEN;
+import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL;
+import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL_TOKEN;
+import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
+import static com.vaadin.flow.server.Constants.NPM_TOKEN;
+import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
+
+/**
+ * A configuration factory base logic which reads the token file.
+ * 
+ * @author Vaadin Ltd
+ * @since
+ *
+ */
+public class AbstractConfigurationFactory implements Serializable {
+
+    public static final String DEV_FOLDER_MISSING_MESSAGE = "Running project in development mode with no access to folder '%s'.%n"
+            + "Build project in production mode instead, see https://vaadin.com/docs/v15/flow/production/tutorial-production-mode-basic.html";
+
+    /**
+     * Returns the config parameters from the token file data {@code buildInfo}.
+     * 
+     * @param buildInfo
+     *            the token file data
+     * @return the config parameters
+     */
+    public Map<String, String> getConfigParametersUsingTokenData(
+            JsonObject buildInfo) {
+        Map<String, String> params = new HashMap<>();
+        if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
+            params.put(SERVLET_PARAMETER_PRODUCTION_MODE, String.valueOf(
+                    buildInfo.getBoolean(SERVLET_PARAMETER_PRODUCTION_MODE)));
+        }
+        if (buildInfo.hasKey(EXTERNAL_STATS_FILE_TOKEN)
+                || buildInfo.hasKey(EXTERNAL_STATS_URL_TOKEN)) {
+            // If external stats file is flagged then
+            // dev server should be false - only variable that can
+            // be configured, in addition to stats variables, is
+            // production mode
+            params.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER,
+                    Boolean.toString(false));
+            params.put(EXTERNAL_STATS_FILE, Boolean.toString(true));
+            if (buildInfo.hasKey(EXTERNAL_STATS_URL_TOKEN)) {
+                params.put(EXTERNAL_STATS_URL,
+                        buildInfo.getString(EXTERNAL_STATS_URL_TOKEN));
+            }
+            // NO OTHER CONFIGURATION:
+            return params;
+        }
+        if (buildInfo.hasKey(SERVLET_PARAMETER_USE_V14_BOOTSTRAP)) {
+            params.put(SERVLET_PARAMETER_USE_V14_BOOTSTRAP, String.valueOf(
+                    buildInfo.getBoolean(SERVLET_PARAMETER_USE_V14_BOOTSTRAP)));
+            // Need to be sure that we remove the system property,
+            // because it has priority in the configuration getter
+            System.clearProperty(
+                    VAADIN_PREFIX + SERVLET_PARAMETER_USE_V14_BOOTSTRAP);
+        }
+        if (buildInfo.hasKey(SERVLET_PARAMETER_INITIAL_UIDL)) {
+            params.put(SERVLET_PARAMETER_INITIAL_UIDL, String.valueOf(
+                    buildInfo.getBoolean(SERVLET_PARAMETER_INITIAL_UIDL)));
+            // Need to be sure that we remove the system property,
+            // because it has priority in the configuration getter
+            System.clearProperty(
+                    VAADIN_PREFIX + SERVLET_PARAMETER_INITIAL_UIDL);
+        }
+
+        if (buildInfo.hasKey(NPM_TOKEN)) {
+            params.put(PROJECT_BASEDIR, buildInfo.getString(NPM_TOKEN));
+            verifyFolderExists(params, buildInfo.getString(NPM_TOKEN));
+        }
+
+        if (buildInfo.hasKey(FRONTEND_TOKEN)) {
+            params.put(FrontendUtils.PARAM_FRONTEND_DIR,
+                    buildInfo.getString(FRONTEND_TOKEN));
+            // Only verify frontend folder if it's not a subfolder of the
+            // npm folder.
+            if (!buildInfo.hasKey(NPM_TOKEN)
+                    || !buildInfo.getString(FRONTEND_TOKEN)
+                            .startsWith(buildInfo.getString(NPM_TOKEN))) {
+                verifyFolderExists(params, buildInfo.getString(FRONTEND_TOKEN));
+            }
+        }
+
+        // These should be internal only so if there is a System
+        // property override then the user probably knows what
+        // they are doing.
+        if (buildInfo.hasKey(SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
+            params.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, String.valueOf(
+                    buildInfo.getBoolean(SERVLET_PARAMETER_ENABLE_DEV_SERVER)));
+        }
+        if (buildInfo.hasKey(SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
+            params.put(SERVLET_PARAMETER_REUSE_DEV_SERVER, String.valueOf(
+                    buildInfo.getBoolean(SERVLET_PARAMETER_REUSE_DEV_SERVER)));
+        }
+        if (buildInfo.hasKey(CONNECT_JAVA_SOURCE_FOLDER_TOKEN)) {
+            params.put(CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                    buildInfo.getString(CONNECT_JAVA_SOURCE_FOLDER_TOKEN));
+        }
+        if (buildInfo.hasKey(CONNECT_OPEN_API_FILE_TOKEN)) {
+            params.put(CONNECT_OPEN_API_FILE_TOKEN,
+                    buildInfo.getString(CONNECT_OPEN_API_FILE_TOKEN));
+        }
+        if (buildInfo.hasKey(CONNECT_APPLICATION_PROPERTIES_TOKEN)) {
+            params.put(CONNECT_APPLICATION_PROPERTIES_TOKEN,
+                    buildInfo.getString(CONNECT_APPLICATION_PROPERTIES_TOKEN));
+        }
+        if (buildInfo.hasKey(CONNECT_GENERATED_TS_DIR_TOKEN)) {
+            params.put(CONNECT_GENERATED_TS_DIR_TOKEN,
+                    buildInfo.getString(CONNECT_GENERATED_TS_DIR_TOKEN));
+        }
+
+        setDevModePropertiesUsingTokenData(params, buildInfo);
+        return params;
+    }
+
+    /**
+     * Sets to the dev mode properties to the configuration parameters.
+     * 
+     * @see #getConfigParametersUsingTokenData(JsonObject)
+     * 
+     * @param params
+     *            the configuration parameters to set dev mode properties to
+     * @param buildInfo
+     *            the token file data
+     */
+    protected void setDevModePropertiesUsingTokenData(
+            Map<String, String> params, JsonObject buildInfo) {
+        // read dev mode properties from the token and set init parameter only
+        // if it's not yet set
+        if (params.get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM) == null
+                && buildInfo
+                        .hasKey(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)) {
+            params.put(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
+                    String.valueOf(buildInfo.getBoolean(
+                            InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)));
+        }
+        if (params.get(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE) == null
+                && buildInfo
+                        .hasKey(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)) {
+            params.put(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE,
+                    String.valueOf(buildInfo.getBoolean(
+                            InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)));
+        }
+    }
+
+    /**
+     * Verify that given folder actually exists on the system if we are not in
+     * production mode.
+     * <p>
+     * If folder doesn't exist throw IllegalStateException saying that this
+     * should probably be a production mode build.
+     *
+     * @param params
+     *            parameters map
+     * @param folder
+     *            folder to check exists
+     */
+    protected void verifyFolderExists(Map<String, String> params,
+            String folder) {
+        Boolean productionMode = Boolean.parseBoolean(params
+                .getOrDefault(SERVLET_PARAMETER_PRODUCTION_MODE, "false"));
+        if (!productionMode && !new File(folder).exists()) {
+            String message = String.format(DEV_FOLDER_MISSING_MESSAGE, folder);
+            throw new IllegalStateException(message);
+        }
+    }
+}
