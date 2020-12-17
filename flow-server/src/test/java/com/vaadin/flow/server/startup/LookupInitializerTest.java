@@ -15,22 +15,24 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -43,7 +45,6 @@ import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEve
 import com.vaadin.flow.di.InstantiatorFactory;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.testdata.AnotherTestInstantiatorFactory;
 import com.vaadin.flow.server.startup.testdata.OneMoreTestInstantiatorFactory;
 import com.vaadin.flow.server.startup.testdata.TestInstantiatorFactory;
@@ -163,68 +164,21 @@ public class LookupInitializerTest {
         ResourceProvider resourceProvider = lookup
                 .lookup(ResourceProvider.class);
 
-        // ======== resourceProvider.getApplicationResource(s)(Class, String)
-        URL applicationResource = resourceProvider.getApplicationResource(
-                LookupInitializerTest.class,
-                "resource-provider/some-resource.json");
+        // ======== resourceProvider.getApplicationResource(s)(String)
+        URL applicationResource = resourceProvider
+                .getApplicationResource("resource-provider/some-resource.json");
 
         Assert.assertNotNull(applicationResource);
 
         List<URL> resources = resourceProvider.getApplicationResources(
-                LookupInitializerTest.class,
                 "resource-provider/some-resource.json");
 
         Assert.assertEquals(1, resources.size());
 
         Assert.assertNotNull(resources.get(0));
 
-        URL nonExistent = resourceProvider.getApplicationResource(
-                LookupInitializerTest.class,
-                "resource-provider/non-existent.txt");
-
-        Assert.assertNull(nonExistent);
-
-        // ======== resourceProvider.getApplicationResource(s)(Object, String)
-        String path = "foo/bar";
-
-        // == sub test: check VaadinService instance
-        VaadinService service = Mockito.mock(VaadinService.class);
-        ClassLoader loader = Mockito.mock(ClassLoader.class);
-
-        URL singleResourceURL = new URL("file:/baz");
-        Mockito.when(loader.getResource(path)).thenReturn(singleResourceURL);
-        Mockito.when(loader.getResources(path))
-                .thenReturn(Collections.enumeration(Arrays
-                        .asList(new URL("file:/foo"), new URL("file:/bar"))));
-
-        Mockito.when(service.getClassLoader()).thenReturn(loader);
-        URL serviceResource = resourceProvider.getApplicationResource(service,
-                path);
-        Assert.assertEquals(singleResourceURL, serviceResource);
-
-        List<URL> serviceResources = resourceProvider
-                .getApplicationResources(service, path);
-
-        Assert.assertEquals(2, serviceResources.size());
-
-        Assert.assertEquals(new URL("file:/foo"), serviceResources.get(0));
-        Assert.assertEquals(new URL("file:/bar"), serviceResources.get(1));
-
-        // == sub test: check non VaadinService instance
-        applicationResource = resourceProvider.getApplicationResource(
-                initializer, "resource-provider/some-resource.json");
-
-        Assert.assertNotNull(applicationResource);
-
-        resources = resourceProvider.getApplicationResources(initializer,
-                "resource-provider/some-resource.json");
-
-        Assert.assertEquals(1, resources.size());
-
-        Assert.assertNotNull(resources.get(0));
-
-        nonExistent = resourceProvider.getApplicationResource(initializer,
-                "resource-provider/non-existent.txt");
+        URL nonExistent = resourceProvider
+                .getApplicationResource("resource-provider/non-existent.txt");
 
         Assert.assertNull(nonExistent);
 
@@ -258,6 +212,68 @@ public class LookupInitializerTest {
         Mockito.verify(deferredInitializers).runInitializers(context);
         Mockito.verify(context).removeAttribute(
                 DeferredServletContextInitializers.class.getName());
+    }
+
+    @Test
+    public void createLookup_createLookupIsInvoked_lookupIsInstantiatedCreateLookup()
+            throws ServletException {
+        Lookup lookup = Mockito.mock(Lookup.class);
+        initializer = new LookupInitializer() {
+            @Override
+            protected Lookup createLookup(
+                    Map<Class<?>, Collection<Object>> services) {
+                Assert.assertTrue(services.containsKey(ResourceProvider.class));
+                Assert.assertTrue(
+                        services.containsKey(InstantiatorFactory.class));
+                Assert.assertTrue(services.containsKey(
+                        DeprecatedPolymerPublishedEventHandler.class));
+                Collection<Object> serviceObjects = services
+                        .get(ResourceProvider.class);
+                Assert.assertEquals(1, serviceObjects.size());
+                Assert.assertTrue(TestResourceProvider.class
+                        .isInstance(serviceObjects.iterator().next()));
+                return lookup;
+            }
+
+            @Override
+            protected Collection<Class<?>> getServiceTypes() {
+                return new LookupInitializer().getServiceTypes();
+            }
+        };
+
+        Lookup resultLookup = mockLookup(TestResourceProvider.class);
+        Assert.assertSame(lookup, resultLookup);
+    }
+
+    @Test
+    public void getServiceTypes_getServiceTypesIsInvoked_lookupContainsOnlyReturnedServiceTypes()
+            throws ServletException {
+        initializer = new LookupInitializer() {
+            @Override
+            protected Lookup createLookup(
+                    Map<Class<?>, Collection<Object>> services) {
+                Assert.assertFalse(
+                        services.containsKey(ResourceProvider.class));
+                Assert.assertFalse(
+                        services.containsKey(InstantiatorFactory.class));
+                Assert.assertFalse(services.containsKey(
+                        DeprecatedPolymerPublishedEventHandler.class));
+                Collection<Object> serviceObjects = services.get(List.class);
+                Assert.assertEquals(1, serviceObjects.size());
+                Assert.assertTrue(ArrayList.class
+                        .isInstance(serviceObjects.iterator().next()));
+                return super.createLookup(services);
+            }
+
+            @Override
+            protected Collection<Class<?>> getServiceTypes() {
+                return Collections.singleton(List.class);
+            }
+        };
+
+        Lookup resultLookup = mockLookup(ArrayList.class);
+        List<?> list = resultLookup.lookup(List.class);
+        Assert.assertTrue(list instanceof ArrayList<?>);
     }
 
     private Lookup mockLookup(ServletContext context, Class<?>... classes)

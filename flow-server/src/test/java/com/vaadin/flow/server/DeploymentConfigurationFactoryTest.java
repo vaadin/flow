@@ -45,7 +45,6 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static java.util.Collections.emptyMap;
-import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.capture;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.mock;
@@ -486,11 +485,8 @@ public class DeploymentConfigurationFactoryTest {
         DeploymentConfigurationFactory.createInitParameters(
                 DeploymentConfigurationFactoryTest.class, config);
 
-        Mockito.verify(resourceProvider).getApplicationResources(
-                DeploymentConfigurationFactoryTest.class,
-                VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
-        Mockito.verify(resourceProvider).getApplicationResources(context,
-                VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
+        Mockito.verify(resourceProvider)
+                .getApplicationResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
     }
 
     @Test
@@ -516,24 +512,18 @@ public class DeploymentConfigurationFactoryTest {
         };
         URL url = new URL("file", "", -1, "foo.jar!/" + path, handler);
 
-        Mockito.when(resourceProvider.getApplicationResources(
-                DeploymentConfigurationFactoryTest.class, path))
+        Mockito.when(resourceProvider.getApplicationResources(path))
                 .thenReturn(Collections.singletonList(url));
 
-        Mockito.when(resourceProvider.getApplicationResource(
-                DeploymentConfigurationFactoryTest.class,
-                FrontendUtils.WEBPACK_GENERATED))
+        Mockito.when(resourceProvider
+                .getApplicationResource(FrontendUtils.WEBPACK_GENERATED))
                 .thenReturn(tmpFile.toURI().toURL());
 
         DeploymentConfigurationFactory.createInitParameters(
                 DeploymentConfigurationFactoryTest.class, config);
 
-        Mockito.verify(resourceProvider).getApplicationResource(
-                DeploymentConfigurationFactoryTest.class,
-                FrontendUtils.WEBPACK_GENERATED);
-
-        Mockito.verify(resourceProvider).getApplicationResource(context,
-                FrontendUtils.WEBPACK_GENERATED);
+        Mockito.verify(resourceProvider)
+                .getApplicationResource(FrontendUtils.WEBPACK_GENERATED);
 
     }
 
@@ -633,13 +623,9 @@ public class DeploymentConfigurationFactoryTest {
             }
         };
 
-        expect(provider.getApplicationResources(VaadinServlet.class,
-                VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
+        expect(provider
+                .getApplicationResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
                         .andAnswer(() -> Collections.emptyList()).anyTimes();
-
-        expect(provider.getApplicationResources(anyObject(Object.class),
-                anyObject())).andAnswer(() -> Collections.emptyList())
-                        .anyTimes();
 
         replay(provider);
 

@@ -66,7 +66,7 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
         try {
             expectConnectionState("connection-lost");
             findElement(By.id(ConnectionIndicatorView.CONNECT_SERVER)).click();
-            testBench().disableWaitForVaadin(); // offline - do run the WAIT_FOR_VAADIN script
+            testBench().disableWaitForVaadin(); // offline - do not run the WAIT_FOR_VAADIN script
             expectConnectionState("reconnecting");
             Assert.assertEquals("Custom reconnecting", getConnectionIndicatorStatusText());
         } finally {
@@ -84,7 +84,7 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
             Assert.assertEquals(ConnectionIndicatorView.CUSTOM_OFFLINE_MESSAGE,
                 getConnectionIndicatorStatusText());
             findElement(By.id(ConnectionIndicatorView.CONNECT_SERVER)).click();
-            testBench().disableWaitForVaadin(); // offline - do run the WAIT_FOR_VAADIN script
+            testBench().disableWaitForVaadin(); // offline - do not run the WAIT_FOR_VAADIN script
             expectConnectionState("reconnecting");
             Assert.assertEquals(ConnectionIndicatorView.CUSTOM_RECONNECTING_MESSAGE,
                 getConnectionIndicatorStatusText());
@@ -95,7 +95,12 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
     }
 
     private String getConnectionIndicatorStatusText() {
-        WebElement statusTextElement = findElement(By.xpath("//vaadin-connection-indicator/div[contains(@class,'v-status-message')]/span"));
+        By statusMessageLocator = By.xpath("//vaadin-connection-indicator/div[contains(@class,'v-status-message')]/span");
+        waitUntil(driver -> {
+            WebElement statusTextElement = findElement(statusMessageLocator);
+            return statusTextElement != null && !statusTextElement.getText().isEmpty();
+        });
+        WebElement statusTextElement = findElement(statusMessageLocator);
         Assert.assertNotNull("Unable to find connection indicator status text", statusTextElement);
         return statusTextElement.getText();
     }
@@ -105,4 +110,8 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
                 .executeScript("return window.Vaadin.connectionState.state === '" + state + "'"), 2);
     }
 
+    @Override
+    protected String getRootURL()  {
+        return super.getRootURL() + "/context-path";
+    }
 }

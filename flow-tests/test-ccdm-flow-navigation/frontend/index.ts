@@ -33,6 +33,13 @@ const routes = [
                     await import ('./views/another/another-view');
                 }
             },
+            {
+                path: 'deep/another',
+                component: 'another-view',
+                action: async () => {
+                    await import ('./views/another/another-view');
+                }
+            },
             // for server-side, the next magic line sends all unmatched routes:
             ...serverSideRoutes // IMPORTANT: this must be the last entry in the array
         ]

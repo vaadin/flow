@@ -125,6 +125,10 @@ public class ChromeDeviceTest extends ViewOrUITest {
 
             // NOTE: this flag is not supported in headless Chrome, see
             // https://crbug.com/814146
+
+            // For test stability on Linux when not running headless.
+            // https://stackoverflow.com/questions/50642308/webdriverexception-unknown-error-devtoolsactiveport-file-doesnt-exist-while-t
+            chromeOptions.addArguments("--disable-dev-shm-usage");
         }
 
         return chromeOptions;
