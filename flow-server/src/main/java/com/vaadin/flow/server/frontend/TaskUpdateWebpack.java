@@ -23,15 +23,21 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.server.PwaConfiguration;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
+import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
@@ -49,12 +55,15 @@ public class TaskUpdateWebpack implements FallibleCommand {
      */
     private final String webpackTemplate;
     private final String webpackGeneratedTemplate;
+    private final String serviceWorkerTemplate;
     private final Path webpackOutputPath;
+    private final Path resourceOutputPath;
     private final Path flowImportsFilePath;
     private final Path webpackConfigPath;
     private final Path frontendDirectory;
     private final boolean useV14Bootstrapping;
     private final Path flowResourcesFolder;
+    private final PwaConfiguration pwaConfiguration;
     private final Path resourceFolder;
 
     /**
@@ -66,12 +75,17 @@ public class TaskUpdateWebpack implements FallibleCommand {
      *            folder with the `webpack.config.js` file.
      * @param webpackOutputDirectory
      *            the directory to set for webpack to output its build results.
+     * @param resourceOutputDirectory
+     *            the directory for generated non-served resources.
      * @param webpackTemplate
      *            name of the webpack resource to be used as template when
      *            creating the <code>webpack.config.js</code> file.
      * @param webpackGeneratedTemplate
      *            name of the webpack resource to be used as template when
      *            creating the <code>webpack.generated.js</code> file.
+     * @param serviceWorkerTemplate
+     *            name of the service worker resource to be used as template
+     *            when creating the <code>sw.ts</code> file.
      * @param generatedFlowImports
      *            name of the JS file to update with the Flow project imports
      * @param useV14Bootstrapping
@@ -79,20 +93,26 @@ public class TaskUpdateWebpack implements FallibleCommand {
      * @param flowResourcesFolder
      *            relative path to `flow-frontend` package
      */
+    @SuppressWarnings("squid:S00107")
     TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
-            File webpackOutputDirectory, String webpackTemplate,
-            String webpackGeneratedTemplate, File generatedFlowImports,
-            boolean useV14Bootstrapping, File flowResourcesFolder) {
+            File webpackOutputDirectory, File resourceOutputDirectory,
+            String webpackTemplate, String webpackGeneratedTemplate,
+            String serviceWorkerTemplate, File generatedFlowImports,
+            boolean useV14Bootstrapping, File flowResourcesFolder,
+            PwaConfiguration pwaConfiguration) {
         this.frontendDirectory = frontendDirectory.toPath();
         this.webpackTemplate = webpackTemplate;
         this.webpackGeneratedTemplate = webpackGeneratedTemplate;
+        this.serviceWorkerTemplate = serviceWorkerTemplate;
         this.webpackOutputPath = webpackOutputDirectory.toPath();
+        this.resourceOutputPath = resourceOutputDirectory.toPath();
         this.flowImportsFilePath = generatedFlowImports.toPath();
         this.webpackConfigPath = webpackConfigFolder.toPath();
         this.useV14Bootstrapping = useV14Bootstrapping;
         this.flowResourcesFolder = flowResourcesFolder.toPath();
-        this.resourceFolder = new File(webpackOutputDirectory.getParentFile(),
-            VAADIN_STATIC_FILES_PATH).toPath();
+        this.pwaConfiguration = pwaConfiguration;
+        this.resourceFolder = new File(webpackOutputDirectory,
+                VAADIN_STATIC_FILES_PATH).toPath();
     }
 
     @Override
@@ -143,72 +163,71 @@ public class TaskUpdateWebpack implements FallibleCommand {
 
     private List<String> modifyWebpackConfig(File generatedFile)
             throws IOException {
-        List<String> lines = FileUtils.readLines(generatedFile, StandardCharsets.UTF_8);
-
-        String frontendLine = "const frontendFolder = require('path').resolve(__dirname, '"
-                + getEscapedRelativeWebpackPath(frontendDirectory) + "');";
-
-        String outputLine = "const mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '"
-                + getEscapedRelativeWebpackPath(webpackOutputPath) + "');";
-        String mainLine = "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
-                + getEscapedRelativeWebpackPath(flowImportsFilePath) + "');";
-        String isClientSideBootstrapModeLine = "const useClientSideIndexFileForBootstrapping = "
-                + !useV14Bootstrapping + ";";
-        String devModeGizmoJSLine = "const devmodeGizmoJS = require('path').resolve(__dirname, '"
-                + getEscapedRelativeWebpackPath(
-                        flowResourcesFolder.resolve("VaadinDevmodeGizmo.js"))
-                + "');";
-
-        String frontendFolder =
-            "const flowFrontendFolder = require('path').resolve(__dirname, '" + getEscapedRelativeWebpackPath(
-                flowResourcesFolder) + "');";
-        String assetsResourceFolder =
-            "const projectStaticAssetsOutputFolder = require('path').resolve(__dirname, '"
-                + getEscapedRelativeWebpackPath(resourceFolder) + "');";
+    List<String> lines = FileUtils.readLines(generatedFile, StandardCharsets.UTF_8);
+        List<Pair<String, String>> replacements = getReplacements();
+        String declaration = "%s = %s;";
 
         for (int i = 0; i < lines.size(); i++) {
-            if (lines.get(i).startsWith(
-                    "const fileNameOfTheFlowGeneratedMainEntryPoint")) {
-                lines.set(i, mainLine);
-            } else if (lines.get(i)
-                .startsWith("const mavenOutputFolderForFlowBundledFiles")) {
-                lines.set(i, outputLine);
-            } else if (lines.get(i).startsWith("const frontendFolder")) {
-                lines.set(i, frontendLine);
-            } else if (lines.get(i)
-                .startsWith("const useClientSideIndexFileForBootstrapping")) {
-                lines.set(i, isClientSideBootstrapModeLine);
-            } else if (lines.get(i).startsWith("const clientSideIndexHTML")) {
-                lines.set(i, getIndexHtmlPath());
-            } else if (lines.get(i)
-                .startsWith("const clientSideIndexEntryPoint")) {
-                lines.set(i, getClientEntryPoint());
-            } else if (lines.get(i).startsWith("const devmodeGizmoJS")) {
-                lines.set(i, devModeGizmoJSLine);
-            } else if (lines.get(i).startsWith("const flowFrontendFolder")) {
-                lines.set(i, frontendFolder);
-            } else if (lines.get(i)
-                .startsWith("const projectStaticAssetsOutputFolder")) {
-                lines.set(i, assetsResourceFolder);
+            for (int j = 0; j < replacements.size(); j++) {
+                Pair<String, String> pair = replacements.get(j);
+                if (lines.get(i).startsWith(pair.getFirst() + " ")) {
+                    lines.set(i, String.format(declaration, pair.getFirst(),
+                            pair.getSecond()));
+                }
             }
         }
         return lines;
     }
 
+    private List<Pair<String, String>> getReplacements() {
+        return Arrays.asList(
+                new Pair<>("const frontendFolder",
+                        formatPathResolve(getEscapedRelativeWebpackPath(
+                                frontendDirectory))),
+                new Pair<>("const mavenOutputFolderForFlowBundledFiles",
+                        formatPathResolve(getEscapedRelativeWebpackPath(
+                                webpackOutputPath))),
+                new Pair<>("const mavenOutputFolderForResourceFiles",
+                        formatPathResolve(getEscapedRelativeWebpackPath(
+                                resourceOutputPath))),
+                new Pair<>("const fileNameOfTheFlowGeneratedMainEntryPoint",
+                        formatPathResolve(getEscapedRelativeWebpackPath(
+                                flowImportsFilePath))),
+                new Pair<>("const useClientSideIndexFileForBootstrapping",
+                        Boolean.toString(!useV14Bootstrapping)),
+                new Pair<>("const clientSideIndexHTML", getIndexHtmlPath()),
+                new Pair<>("const clientSideIndexEntryPoint",
+                        getClientEntryPoint()),
+                new Pair<>("const devmodeGizmoJS",
+                        formatPathResolve(getEscapedRelativeWebpackPath(
+                                flowResourcesFolder
+                                        .resolve("VaadinDevmodeGizmo.js")))),
+                new Pair<>("const pwaEnabled",
+                        Boolean.toString(
+                                pwaConfiguration.isEnabled())),
+                new Pair<>("const offlinePathEnabled",
+                        Boolean.toString(
+                                pwaConfiguration.isOfflinePathEnabled())),
+                new Pair<>("const offlinePath", getOfflinePath()),
+                new Pair<>("const clientServiceWorkerEntryPoint", getClientServiceWorker()),
+                new Pair<>("const flowFrontendFolder",
+                        formatPathResolve(getEscapedRelativeWebpackPath(
+                                flowResourcesFolder))),
+                new Pair<>("const projectStaticAssetsOutputFolder",
+                        formatPathResolve(getEscapedRelativeWebpackPath(
+                                resourceFolder))));
+    }
+
     private String getIndexHtmlPath() {
         boolean exists = new File(frontendDirectory.toFile(), INDEX_HTML)
                 .exists();
-        String declaration = "const clientSideIndexHTML = %s;";
         if (!exists) {
             Path path = Paths.get(
                     getEscapedRelativeWebpackPath(webpackConfigPath), TARGET,
                     INDEX_HTML);
-            String relativePath = String.format(
-                    "require('path').resolve(__dirname, '%s')",
-                    getEscapedRelativeWebpackPath(path));
-            return String.format(declaration, relativePath);
+            return formatPathResolve(getEscapedRelativeWebpackPath(path));
         } else {
-            return String.format(declaration, "'./" + INDEX_HTML +"'");
+            return "'./" + INDEX_HTML +"'";
         }
     }
 
@@ -216,17 +235,31 @@ public class TaskUpdateWebpack implements FallibleCommand {
         boolean exists = new File(frontendDirectory.toFile(), INDEX_TS)
                 .exists()
                 || new File(frontendDirectory.toFile(), INDEX_JS).exists();
-        String declaration = "const clientSideIndexEntryPoint = %s;";
         if (!exists) {
             Path path = Paths.get(
                     getEscapedRelativeWebpackPath(webpackConfigPath), TARGET,
                     INDEX_TS);
-            String relativePath = String.format(
-                    "require('path').resolve(__dirname, '%s')",
-                    getEscapedRelativeWebpackPath(path).replaceFirst("\\.[tj]s$", ""));
-            return String.format(declaration, relativePath);
+            return formatPathResolve(
+                    getEscapedRelativeWebpackPath(path)
+                            .replaceFirst("\\.[tj]s$", ""));
         } else {
-            return String.format(declaration, "'./index'");
+            return "'./index'";
+        }
+    }
+
+    private String getClientServiceWorker() {
+        boolean exists = new File(frontendDirectory.toFile(), SERVICE_WORKER_SRC)
+                .exists()
+                || new File(frontendDirectory.toFile(), SERVICE_WORKER_SRC_JS).exists();
+        if (!exists) {
+            Path path = Paths.get(
+                    getEscapedRelativeWebpackPath(webpackConfigPath), TARGET,
+                    SERVICE_WORKER_SRC);
+            return formatPathResolve(
+                    getEscapedRelativeWebpackPath(path)
+                            .replaceFirst("\\.[tj]s$", ""));
+        } else {
+            return "'./sw'";
         }
     }
 
@@ -236,6 +269,15 @@ public class TaskUpdateWebpack implements FallibleCommand {
         } else {
             return FrontendUtils.getUnixPath(path);
         }
+    }
+
+    private String getOfflinePath() {
+        return "'" + getEscapedRelativeWebpackPath(
+                Paths.get(pwaConfiguration.getOfflinePath())) + "'";
+    }
+
+    private String formatPathResolve(String path) {
+        return String.format("path.resolve(__dirname, '%s')", path);
     }
 
     private Logger log() {

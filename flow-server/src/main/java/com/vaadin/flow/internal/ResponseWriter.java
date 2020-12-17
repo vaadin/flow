@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 
 import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 
 /**
  * The class that handles writing the response data into the response.
@@ -370,7 +371,8 @@ public class ResponseWriter implements Serializable {
         } else if (resource.startsWith("/" + VAADIN_BUILD_FILES_PATH)
                 && isAllowedVAADINBuildUrl(resource)) {
             url = request.getServletContext().getClassLoader()
-                    .getResource("META-INF" + resource);
+                    .getResource(VAADIN_WEBAPP_RESOURCES
+                            + resource.replaceFirst("^/", ""));
         }
         return url;
     }

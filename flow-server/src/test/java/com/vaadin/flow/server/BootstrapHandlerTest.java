@@ -319,8 +319,6 @@ public class BootstrapHandlerTest {
                     .setSecondDelay(SECOND_DELAY);
 
             settings.getPushConfiguration().setPushMode(PushMode.MANUAL);
-
-            settings.getReconnectDialogConfiguration().setDialogModal(true);
         }
     }
 
@@ -1382,8 +1380,10 @@ public class BootstrapHandlerTest {
 
         String statsJson = "{\n" + " \"errors\": [],\n" + " \"warnings\": [],\n"
                 + " \"assetsByChunkName\": {\n" + "  \"bundle\": [\n"
-                + "    \"build/vaadin-bundle-e77008557c8d410bf0dc.cache.js\",\n"
-                + "    \"build/vaadin-bundle-e77008557c8d410bf0dc.cache.js.map\"\n"
+                + "    \"VAADIN/build/vaadin-bundle-e77008557c8d410bf0dc" +
+                ".cache.js\",\n"
+                + "    \"VAADIN/build/vaadin-bundle-e77008557c8d410bf0dc" +
+                ".cache.js.map\"\n"
                 + "  ],\n" + " }" + "}";
 
         File tmpFile = tmpDir.newFile();
@@ -1527,9 +1527,6 @@ public class BootstrapHandlerTest {
 
         Assert.assertEquals(PushMode.MANUAL,
                 testUI.getPushConfiguration().getPushMode());
-
-        Assert.assertTrue(
-                testUI.getReconnectDialogConfiguration().isDialogModal());
     }
 
 }

@@ -1,9 +1,18 @@
+/* tslint:disable: no-unused-expression */
+import object from "intern/lib/interfaces/object";
+
 const {describe, it, beforeEach, afterEach, after} = intern.getPlugin('interface.bdd');
 const {expect} = intern.getPlugin('chai');
 const {fetchMock} = intern.getPlugin('fetchMock');
 const {sinon} = intern.getPlugin('sinon');
 
-import { ConnectClient,  EndpointError, EndpointResponseError, EndpointValidationError } from "../../main/resources/META-INF/resources/frontend";
+import {
+  ConnectClient,
+  EndpointError,
+  EndpointResponseError,
+  EndpointValidationError,
+} from "../../main/resources/META-INF/resources/frontend/Connect";
+import {ConnectionState, ConnectionStateStore} from "../../main/resources/META-INF/resources/frontend/ConnectionState";
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
@@ -16,11 +25,20 @@ describe('ConnectClient', () => {
     return next(ctx);
   }
 
-  beforeEach(() => localStorage.clear());
+  beforeEach(() => {
+    const connectionStateStore = new ConnectionStateStore(ConnectionState.CONNECTED);
+    (window as any).Vaadin.connectionState = connectionStateStore;
+    localStorage.clear();
+  });
 
   after(() => {
-    // @ts-ignore
-    delete window.Vaadin;
+    const $wnd = window as any;
+    const indicator = $wnd.document.body.querySelector('vaadin-connection-indicator');
+    if (indicator) {
+      indicator.remove();
+    }
+    delete $wnd.Vaadin?.connectionIndicator;
+    delete $wnd.Vaadin;
   });
 
   it('should be exported', () => {
@@ -30,6 +48,21 @@ describe('ConnectClient', () => {
   it('should instantiate without arguments', () => {
     const client = new ConnectClient();
     expect(client).to.be.instanceOf(ConnectClient);
+  });
+
+  it('should add a global connection indicator', () => {
+    new ConnectClient();
+    expect((window as any).Vaadin.connectionIndicator).is.not.undefined;
+  });
+
+  it('should transition to CONNECTION_LOST on offline and to CONNECTED on subsequent online', async() => {
+    new ConnectClient();
+    let $wnd = (window as any);
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
+    $wnd.dispatchEvent(new Event('offline'));
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
+    $wnd.dispatchEvent(new Event('online'));
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
   });
 
   describe('constructor options', () => {
@@ -125,16 +158,31 @@ describe('ConnectClient', () => {
       expect(fetchMock.lastOptions()).to.include({method: 'POST'});
     });
 
-    it('should call Flow.loading indicator', async() => {
-      let calls = '';
-      (window as any).Vaadin.Flow = {loading: (action: boolean) => calls += action};
+    it('should call Flow.loadingStarted followed by loadingFinished', async() => {
+      let calls: Array<boolean> = [];
+      (window as any).Vaadin.Flow = {
+        clients: {
+          TypeScript: {
+            loadingStarted: () => calls.push(true),
+            loadingFinished: () => calls.push(false)
+          }
+        }
+      };
       await client.call('FooEndpoint', 'fooMethod');
-      expect(calls).to.equal('truefalse');
+      expect(calls).to.deep.equal([true, false]);
     });
 
-    it('should hide Flow.loading indicator upon network failure', async() => {
-      let calls = '';
-      (window as any).Vaadin.Flow = {loading: (action: boolean) => calls += action};
+    it('should call Flow.loadingFinished and transition to CONNECTION_LOST upon network failure', async() => {
+      let calls: Array<boolean> = [];
+      (window as any).Vaadin.Flow = {
+        clients: {
+          TypeScript: {
+            loadingStarted: () => calls.push(true),
+            loadingFinished: () => calls.push(false)
+          }
+        }
+      };
+
       fetchMock.post(
         base + '/connect/FooEndpoint/reject',
         Promise.reject(new TypeError('Network failure'))
@@ -144,29 +192,37 @@ describe('ConnectClient', () => {
       } catch (error) {
         // expected
       } finally {
-        expect(calls).to.equal('truefalse');
+        expect(calls).to.deep.equal([true, false]);
+        expect((window as any).Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
       }
     });
 
-    it('should hide Flow.loading indicator upon server error', async() => {
+    it('should call Flow.loadingFinished upon server error', async() => {
       const body = 'Unexpected error';
       const errorResponse = new Response(
-          body,
-          {
-            status: 500,
-            statusText: 'Internal Server Error'
-          }
+        body,
+        {
+          status: 500,
+          statusText: 'Internal Server Error'
+        }
       );
       fetchMock.post(base + '/connect/FooEndpoint/vaadinConnectResponse', errorResponse);
 
-      let calls = '';
-      (window as any).Vaadin.Flow = {loading: (action: boolean) => calls += action};
+      let calls: Array<boolean> = [];
+      (window as any).Vaadin.Flow = {
+        clients: {
+          TypeScript: {
+            loadingStarted: () => calls.push(true),
+            loadingFinished: () => calls.push(false)
+          }
+        }
+      };
       try {
         await client.call('FooEndpoint', 'vaadinConnectResponse');
       } catch (error) {
         // expected
       } finally {
-        expect(calls).to.equal('truefalse');
+        expect(calls).to.deep.equal([true, false]);
       }
     });
 
@@ -193,7 +249,10 @@ describe('ConnectClient', () => {
       // @ts-ignore
       const OriginalVaadin = window.Vaadin;
       // @ts-ignore
-      window.Vaadin = {TypeScript: {csrfToken: 'foo'}};
+      window.Vaadin = {
+        TypeScript: {csrfToken: 'foo'},
+        connectionState: (window as any).Vaadin.connectionState
+      };
 
       await client.call('FooEndpoint', 'fooMethod');
 
@@ -357,7 +416,7 @@ describe('ConnectClient', () => {
             myUrl,
             {
               method: 'POST',
-              headers: {...context.request.headers, 
+              headers: {...context.request.headers,
                 'X-Foo': 'Bar'},
               body: '{"baz": "qux"}'
             }
@@ -375,7 +434,7 @@ describe('ConnectClient', () => {
       });
 
       it('should allow modified response', async() => {
-        const myMiddleware = async(context: any, next?: any) => {
+        const myMiddleware = async(_context: any, _next?: any) => {
           return new Response('{"baz": "qux"}');
         };
 
@@ -415,7 +474,7 @@ describe('ConnectClient', () => {
         const myResponse = new Response('{}');
         const myContext = {foo: 'bar', request: myRequest};
 
-        const firstMiddleware = async(context?: any, next?: any) => {
+        const firstMiddleware = async(_context?: any, next?: any) => {
           // Pass modified context
           const response = await next(myContext);
           // Expect modified response
@@ -423,7 +482,7 @@ describe('ConnectClient', () => {
           return response;
         };
 
-        const secondMiddleware = async(context: any, next?: any) => {
+        const secondMiddleware = async(context: any, _next?: any) => {
           // Expect modified context
           expect(context).to.equal(myContext);
           // Pass modified response

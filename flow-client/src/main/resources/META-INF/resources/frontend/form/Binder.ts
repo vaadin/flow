@@ -40,7 +40,7 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
   private [_validating]: boolean = false;
   private [_validationRequestSymbol]: Promise<void> | undefined = undefined;
   private [_onChange]: (oldValue?: T) => void;
-  private [_onSubmit]: (value: T) => Promise<T|void>;
+  private [_onSubmit]: (value: T) => Promise<any>;
 
   private [_validations]: Map<AbstractModel<any>, Map<Validator<any>, Promise<ReadonlyArray<ValueError<any>>>>> = new Map();
 
@@ -156,7 +156,7 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
    * 
    * @param endpointMethod the callback function
    */
-  async submitTo(endpointMethod: (value: T) => Promise<T|void>): Promise<T|void> {
+  async submitTo<V>(endpointMethod: (value: T) => Promise<V>): Promise<V> {
     const errors = await this.validate();
     if (errors.length) {
       throw new ValidationError(errors);

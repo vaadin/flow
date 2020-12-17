@@ -42,6 +42,6 @@ public class SessionViewIT extends ChromeBrowserTest {
 
     @Override
     protected String getTestPath() {
-        return "/session";
+        return "/context-path/session";
     }
 }

@@ -309,6 +309,12 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("loader-utils", "1.4.0");
         defaults.put("lit-element", "2.3.1");
         defaults.put("lit-html", "1.2.1");
+        final String WORKBOX_VERSION = "5.1.4";
+        defaults.put("workbox-webpack-plugin", WORKBOX_VERSION);
+        defaults.put("workbox-core", WORKBOX_VERSION);
+        defaults.put("workbox-precaching", WORKBOX_VERSION);
+        defaults.put("glob", "7.1.6");
+        defaults.put("webpack-manifest-plugin", "2.2.0");
         defaults.put("@types/validator", "13.1.0");
         defaults.put("validator", "13.1.17");
         // Constructable style sheets is only implemented for chrome,
@@ -318,6 +324,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         // Forcing chokidar version for now until new babel version is available
         // check out https://github.com/babel/babel/issues/11488
         defaults.put("chokidar", "^3.4.0");
+
+        defaults.put("idb", "5.0.6");
 
         return defaults;
     }
