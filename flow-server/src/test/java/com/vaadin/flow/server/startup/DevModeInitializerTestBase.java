@@ -60,7 +60,6 @@ public class DevModeInitializerTestBase {
     // These fields are intentionally scoped default so
     // as they can be used in package tests
     ServletContext servletContext;
-    Map<String, String> initParams;
     Set<Class<?>> classes;
     File mainPackageFile;
     File webpackFile;
@@ -125,9 +124,6 @@ public class DevModeInitializerTestBase {
 
         Mockito.when(vaadinServletRegistration.getClassName())
                 .thenReturn(VaadinServletSubClass.class.getName());
-
-        Mockito.when(vaadinServletRegistration.getInitParameters())
-                .thenReturn(initParams);
 
         classes = new HashSet<>();
         classes.add(this.getClass());

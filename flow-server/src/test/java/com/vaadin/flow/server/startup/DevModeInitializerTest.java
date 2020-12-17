@@ -13,7 +13,6 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EventListener;
@@ -46,7 +45,6 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -252,7 +250,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void listener_should_stopDevModeHandler_onDestroy()
             throws Exception {
-        initParams.put(SERVLET_PARAMETER_REUSE_DEV_SERVER, "false");
+        Mockito.when(appConfig.reuseDevServer()).thenReturn(false);
 
         process();
 
@@ -397,19 +395,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     public void onStartup_emptyServletRegistrations_shouldCreateDevModeHandler()
             throws Exception {
         DevModeInitializer devModeInitializer = new DevModeInitializer();
-        Mockito.when(servletContext.getServletRegistrations())
-                .thenReturn(Collections.emptyMap());
-        Mockito.when(servletContext.getInitParameterNames())
-                .thenReturn(Collections.enumeration(new HashSet<>(Arrays.asList(
-                        InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
-                        FrontendUtils.PROJECT_BASEDIR))));
-        Mockito.when(
-                servletContext.getInitParameter(FrontendUtils.PROJECT_BASEDIR))
-                .thenReturn(initParams.get(FrontendUtils.PROJECT_BASEDIR));
-        Mockito.when(servletContext
-                .getInitParameter(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM))
-                .thenReturn(initParams
-                        .get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
         devModeInitializer.onStartup(classes, servletContext);
         assertNotNull(DevModeHandler.getDevModeHandler());
     }
@@ -447,7 +432,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test(expected = IllegalStateException.class)
     public void onStartup_fallbackBaseDirIsNotProjectDirectory_throws()
             throws Exception {
-        initParams.remove(FrontendUtils.PROJECT_BASEDIR);
+        Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
+                null)).thenReturn(null);
         TemporaryFolder tmp = new TemporaryFolder();
         tmp.create();
         baseDir = tmp.getRoot().getPath();
@@ -467,7 +453,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void onStartup_fallbackBaseDirIsMavenProjectDirectory_isAccepted()
             throws Exception {
-        initParams.remove(FrontendUtils.PROJECT_BASEDIR);
+        Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
+                null)).thenReturn(null);
         TemporaryFolder tmp = new TemporaryFolder();
         tmp.create();
         tmp.newFile("pom.xml");
@@ -488,7 +475,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void onStartup_fallbackBaseDirIsGradleProjectDirectory_isAccepted()
             throws Exception {
-        initParams.remove(FrontendUtils.PROJECT_BASEDIR);
+        Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
+                null)).thenReturn(null);
         TemporaryFolder tmp = new TemporaryFolder();
         tmp.create();
         tmp.newFile("build.gradle");

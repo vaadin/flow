@@ -1,6 +1,7 @@
 package com.vaadin.flow.server;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -61,9 +62,11 @@ public class CustomUIClassLoaderTest extends TestCase {
     private static DeploymentConfiguration createConfigurationMock() {
         Properties properties = new Properties();
         properties.put(InitParameters.UI_PARAMETER, MyUI.class.getName());
-        ApplicationConfiguration congif = Mockito
+        ApplicationConfiguration config = Mockito
                 .mock(ApplicationConfiguration.class);
-        return new DefaultDeploymentConfiguration(congif,
+        Mockito.when(config.getPropertyNames())
+                .thenReturn(Collections.emptyEnumeration());
+        return new DefaultDeploymentConfiguration(config,
                 CustomUIClassLoaderTest.class, properties);
     }
 
