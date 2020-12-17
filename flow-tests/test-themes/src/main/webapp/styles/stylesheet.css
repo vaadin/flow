@@ -1,9 +1,5 @@
 /* This file is for testing CSS loading by `@StyleSheet` */
 
-html {
-    --lumo-font-size-m: 30px;
-}
-
 p.stylesheet {
     color: rgba(0, 0, 255, 1);
 }

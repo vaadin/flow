@@ -31,7 +31,20 @@ public class CssLoadingIT extends ChromeBrowserTest {
 
     private static final String BLUE_RGBA = "rgba(0, 0, 255, 1)";
     private static final String GREEN_RGBA = "rgba(0, 255, 0, 1)";
-    private static final String STYLESHEET_LUMO_FONT_SIZE_M = " 30px";
+    private static final String STYLESHEET_LUMO_FONT_SIZE_M = " 1.1rem";
+
+    @Test
+    public void appTheme_overrides_Lumo() {
+        open();
+        WebElement htmlElement = findElement(By.tagName("html"));
+
+        Assert.assertEquals(
+                "Lumo styles should have the lowest priority and can be overridden by App Theme global style.",
+                STYLESHEET_LUMO_FONT_SIZE_M,
+                executeScript(
+                        "return getComputedStyle(arguments[0]).getPropertyValue('--lumo-font-size-m')",
+                        htmlElement));
+    }
 
     @Test
     public void StyleSheet_overrides_CssImport() {
@@ -47,7 +60,7 @@ public class CssLoadingIT extends ChromeBrowserTest {
     public void addStyleSheet_overrides_StyleSheet() {
         open();
         Assert.assertEquals(
-                "Styles from addStyleSheet() should have a higher priority than from @StyleSheet.",
+                "Styles from @StyleSheet should have a higher priority than from addStyleSheet().",
                 BLUE_RGBA,
                 $(ParagraphElement.class).id(PAGE_ADD_STYLESHEET__STYLESHEET)
                         .getCssValue("color"));
@@ -63,13 +76,4 @@ public class CssLoadingIT extends ChromeBrowserTest {
                         .getCssValue("color"));
     }
 
-    @Test
-    public void lumoStyleIsOverridden() {
-        open();
-        WebElement htmlElement = findElement(By.tagName("html"));
-
-        Assert.assertEquals(STYLESHEET_LUMO_FONT_SIZE_M, executeScript(
-                "return getComputedStyle(arguments[0]).getPropertyValue('--lumo-font-size-m')",
-                htmlElement));
-    }
 }
