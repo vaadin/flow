@@ -58,14 +58,8 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         // No exception for bg-image should exist
         checkLogsForErrors();
 
-        final TestBenchElement themedComponent = $("themed-component").first();
-
-        Assert.assertEquals(
-            "url(\"" + getRootURL() + "/VAADIN/static/themes/embedded-theme/img/bg.jpg\")",
-            themedComponent.getCssValue("background-image"));
-
-        Assert.assertEquals("Ostrich",
-            themedComponent.getCssValue("font-family"));
+        validateEmbeddedComponent($("themed-component").id("first"), "first");
+        validateEmbeddedComponent($("themed-component").id("second"), "second");
 
         final WebElement body = findElement(By.tagName("body"));
         Assert.assertNotEquals(
@@ -73,6 +67,23 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
             body.getCssValue("background-image"));
 
         Assert.assertNotEquals("Ostrich", body.getCssValue("font-family"));
+
+        Assert
+            .assertEquals("Embedded style should not match external component",
+                "rgba(0, 0, 255, 1)",
+                $(SpanElement.class).id("overflow").getCssValue("color"));
+                getDriver().get(getRootURL() + "/themes/embedded-theme/img/bg.jpg");
+        Assert.assertFalse("app-theme background file should be served",
+            driver.getPageSource().contains("Could not navigate"));
+    }
+
+    private void validateEmbeddedComponent(TestBenchElement themedComponent, String target) {
+        Assert.assertEquals(target + " didn't contain the background image",
+            "url(\"" + getRootURL() + "/VAADIN/static/themes/embedded-theme/img/bg.jpg\")",
+            themedComponent.getCssValue("background-image"));
+
+        Assert.assertEquals(target + " didn't contain font-family", "Ostrich",
+            themedComponent.getCssValue("font-family"));
 
         final TestBenchElement embeddedComponent = themedComponent
             .$(DivElement.class).id(EMBEDDED_ID);
@@ -83,14 +94,6 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         Assert
             .assertEquals("Color should have been applied", "rgba(0, 128, 0, 1)",
                 handElement.getCssValue("color"));
-
-        Assert
-            .assertEquals("Embedded style should not match external component",
-                "rgba(0, 0, 255, 1)",
-                $(SpanElement.class).id("overflow").getCssValue("color"));
-                getDriver().get(getRootURL() + "/themes/embedded-theme/img/bg.jpg");
-        Assert.assertFalse("app-theme background file should be served",
-            driver.getPageSource().contains("Could not navigate"));
     }
 
     @Test
