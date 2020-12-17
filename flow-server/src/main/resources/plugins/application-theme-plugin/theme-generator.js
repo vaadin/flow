@@ -94,7 +94,11 @@ function generateThemeFile(themeFolder, themeName, themeProperties) {
     themeProperties.documentCss.forEach((cssImport) => {
       const variable = 'module' + i++;
       imports.push(`import ${variable} from '${cssImport}';\n`);
-      globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n    `);
+      // Due to chrome bug https://bugs.chromium.org/p/chromium/issues/detail?id=336876 font-face will not work
+      // inside shadowRoot so we need to inject it there also.
+      globalCssCode.push(`if(target !== document) {
+      injectGlobalCss(${variable}.toString(), target);
+    }\n    `);
       globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n    `);
     });
   }
