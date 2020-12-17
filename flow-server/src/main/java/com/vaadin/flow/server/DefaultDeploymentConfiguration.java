@@ -381,9 +381,15 @@ public class DefaultDeploymentConfiguration
      * Log a warning if cross-site request forgery protection is disabled.
      */
     private void checkXsrfProtection(boolean loggWarning) {
-        xsrfProtectionEnabled = !getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
-                false);
+        if (isOwnProperty(
+                InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION)) {
+            xsrfProtectionEnabled = !getBooleanProperty(
+                    InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
+                    false);
+        } else {
+            xsrfProtectionEnabled = getParentConfiguration()
+                    .isXsrfProtectionEnabled();
+        }
         if (!xsrfProtectionEnabled && loggWarning) {
             warnings.add(WARNING_XSRF_PROTECTION_DISABLED);
         }

@@ -236,6 +236,42 @@ public class DefaultDeploymentConfigurationTest {
         Assert.assertTrue(config.useV14Bootstrap());
     }
 
+    @Test
+    public void isXsrfProtectionEnabled_valueIsSetViaParentOnly_valueIsTakenFromParent() {
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.isXsrfProtectionEnabled()).thenReturn(true);
+
+        // Note: application configuration doesn't contain production mode
+        // parameter !
+        Assert.assertNull(appConfig.getStringProperty(
+                InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
+                null));
+
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                appConfig, new Properties());
+        Assert.assertTrue(config.isXsrfProtectionEnabled());
+        Assert.assertTrue(config.getProperties().isEmpty());
+    }
+
+    @Test
+    public void isXsrfProtectionEnabled_valueIsSetViaParentOnlyAndViaParent_valueIsTakenFromParent() {
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.isXsrfProtectionEnabled()).thenReturn(false);
+
+        Properties initParameters = new Properties();
+        initParameters.setProperty(
+                InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
+                Boolean.FALSE.toString());
+
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                appConfig, initParameters);
+        // the deployment configuration parameter takes precedence over parent
+        // config
+        Assert.assertTrue(config.isXsrfProtectionEnabled());
+    }
+
     private DefaultDeploymentConfiguration createDeploymentConfig(
             Properties initParameters) {
         ApplicationConfiguration appConfig = Mockito

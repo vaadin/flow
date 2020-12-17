@@ -183,8 +183,11 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean isXsrfProtectionEnabled() {
-        return !getBooleanProperty(SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
-                false);
+        if (isOwnProperty(SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION)) {
+            return !getBooleanProperty(
+                    SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, false);
+        }
+        return parentConfig.isXsrfProtectionEnabled();
     }
 
     @Override

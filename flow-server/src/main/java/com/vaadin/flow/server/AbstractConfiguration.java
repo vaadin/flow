@@ -106,4 +106,11 @@ public interface AbstractConfiguration extends Serializable {
                 Boolean.valueOf(Constants.ENABLE_PNPM_DEFAULT_STRING));
     }
 
+    /**
+     * Returns whether cross-site request forgery protection is enabled.
+     *
+     * @return true if XSRF protection is enabled, false otherwise.
+     */
+    boolean isXsrfProtectionEnabled();
+
 }
