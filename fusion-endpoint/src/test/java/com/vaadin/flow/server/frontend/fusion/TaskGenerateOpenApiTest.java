@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.server.frontend.fusion;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +31,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.vaadin.flow.server.frontend.TaskGenerateOpenApi;
 import com.vaadin.flow.server.connect.generator.OpenApiSpecGenerator;
 
 /**
@@ -60,10 +61,9 @@ public class TaskGenerateOpenApiTest {
     @Test
     public void should_UseDefaultProperties_when_applicationPropertiesIsEmpty()
             throws Exception {
-        taskGenerateOpenApi = new TaskGenerateOpenApi(applicationPropertiesFile,
-                javaSource,
-                this.getClass().getClassLoader(),
-                generatedOpenAPI);
+        taskGenerateOpenApi = new TaskGenerateOpenApiImpl(applicationPropertiesFile, javaSource, 
+                        this.getClass().getClassLoader(),generatedOpenAPI);
+        
         taskGenerateOpenApi.execute();
 
         OpenAPI generatedOpenAPI = getGeneratedOpenAPI();
@@ -116,11 +116,9 @@ public class TaskGenerateOpenApiTest {
         FileUtils.writeStringToFile(applicationPropertiesFile,
                 applicationPropertiesBuilder.toString(),
                 StandardCharsets.UTF_8);
-
-        taskGenerateOpenApi = new TaskGenerateOpenApi(applicationPropertiesFile,
-                javaSource,
-                this.getClass().getClassLoader(),
-                generatedOpenAPI);
+        
+        taskGenerateOpenApi = new TaskGenerateOpenApiImpl(applicationPropertiesFile, javaSource, 
+                        this.getClass().getClassLoader(),generatedOpenAPI);
         taskGenerateOpenApi.execute();
 
         OpenAPI generatedOpenAPI = getGeneratedOpenAPI();
@@ -148,10 +146,8 @@ public class TaskGenerateOpenApiTest {
     @Test
     public void should_UseCustomEndpointName_InsteadOf_UsingClassName()
             throws Exception {
-        taskGenerateOpenApi = new TaskGenerateOpenApi(applicationPropertiesFile,
-                javaSource,
-                this.getClass().getClassLoader(),
-                generatedOpenAPI);
+        taskGenerateOpenApi = new TaskGenerateOpenApiImpl(applicationPropertiesFile, javaSource, 
+                        this.getClass().getClassLoader(),generatedOpenAPI);
         taskGenerateOpenApi.execute();
 
         OpenAPI generatedOpenAPI = getGeneratedOpenAPI();
@@ -165,10 +161,8 @@ public class TaskGenerateOpenApiTest {
     @Test
     public void should_UseCustomEndpointNameWithoutValueEqual_InsteadOf_UsingClassName()
             throws Exception {
-        taskGenerateOpenApi = new TaskGenerateOpenApi(applicationPropertiesFile,
-                javaSource,
-                this.getClass().getClassLoader(),
-                generatedOpenAPI);
+        taskGenerateOpenApi = new TaskGenerateOpenApiImpl(applicationPropertiesFile, javaSource, 
+                        this.getClass().getClassLoader(),generatedOpenAPI);
         taskGenerateOpenApi.execute();
 
         OpenAPI generatedOpenAPI = getGeneratedOpenAPI();

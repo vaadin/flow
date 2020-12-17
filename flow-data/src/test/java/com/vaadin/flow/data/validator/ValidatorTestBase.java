@@ -30,10 +30,11 @@ public class ValidatorTestBase {
 
     private TestLabel localeContext;
     private Locale locale = Locale.US;
+    private UI ui;
 
     @Before
     public void setUp() {
-        UI ui = new UI() {
+        ui = new UI() {
             @Override
             public Locale getLocale() {
                 return locale;

@@ -27,7 +27,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
@@ -78,7 +80,9 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
                 FrontendResourcesAreCopiedAfterCleaningTest.class
                         .getClassLoader());
-        NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
+        Lookup mockLookup = Mockito.mock(Lookup.class);
+        Mockito.doReturn(classFinder).when(mockLookup).lookup(ClassFinder.class);
+        NodeTasks.Builder builder = new NodeTasks.Builder(mockLookup,
                 npmFolder);
         File resourcesFolder = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
@@ -93,7 +97,9 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
                 FrontendResourcesAreCopiedAfterCleaningTest.class
                         .getClassLoader());
-        NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
+        Lookup mockLookup = Mockito.mock(Lookup.class);
+        Mockito.doReturn(classFinder).when(mockLookup).lookup(ClassFinder.class);
+        NodeTasks.Builder builder = new NodeTasks.Builder(mockLookup,
                 npmFolder);
         File resourcesFolder = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)

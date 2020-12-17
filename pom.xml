@@ -34,6 +34,7 @@
         <module>flow-maven-plugin</module>
         <module>flow-test-generic</module>
         <module>flow-bom</module>
+        <module>fusion-endpoint</module>
         <module>build-tools</module>
     </modules>
 

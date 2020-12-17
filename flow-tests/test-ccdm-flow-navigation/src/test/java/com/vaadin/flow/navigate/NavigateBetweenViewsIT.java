@@ -70,4 +70,8 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
                 $(NativeButtonElement.class).id(NAVIGATE_ABOUT).isDisplayed());
     }
 
+    @Override
+    protected String getRootURL()  {
+        return super.getRootURL() + "/context-path";
+    }
 }

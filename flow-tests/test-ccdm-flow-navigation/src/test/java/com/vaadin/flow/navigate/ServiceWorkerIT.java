@@ -118,6 +118,47 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     }
 
     @Test
+    public void offlineDeepPath_reload_viewReloaded_baseUrlRewritten() throws IOException {
+        getDriver().get(getRootURL() + "/");
+        waitForDevServer();
+        waitForServiceWorkerReady();
+
+        // Set offline network conditions in ChromeDriver
+        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+
+        try {
+            $("main-view").first().$("a").id("menu-deep-another").click();
+
+            // Wait for component inside shadow root as there is no vaadin
+            // to wait for as with server-side
+            waitUntil(input -> $("another-view").first().$("div").id("another-content")
+                    .isDisplayed());
+
+            // Reload the page in offline mode
+            executeScript("window.location.reload();");
+            waitUntil(webDriver -> ((JavascriptExecutor) driver)
+                    .executeScript("return document.readyState")
+                    .equals("complete"));
+
+            MatcherAssert.assertThat(getDriver().getCurrentUrl(),
+                    CoreMatchers.endsWith("/another"));
+            Assert.assertTrue(getInShadowRoot(findElement(By.tagName("another-view")),
+                    By.id("another-content")).isDisplayed());
+
+            // Verify <base href> by navigating with a relative link
+            $("main-view").first().$("a").id("menu-about").click();
+
+            MatcherAssert.assertThat(getDriver().getCurrentUrl(),
+                    CoreMatchers.endsWith("/about"));
+            Assert.assertNotNull("Should have <about-view> in DOM",
+                    findElement(By.tagName("about-view")));
+        } finally {
+            // Reset network conditions back
+            setConnectionType(NetworkConnection.ConnectionType.ALL);
+        }
+    }
+
+    @Test
     public void offlineTsView_navigateToOtherTsView_navigationSuccessful() throws IOException {
         getDriver().get(getRootURL() + "/about");
         waitForDevServer();
@@ -240,5 +281,10 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
         } finally {
             setConnectionType(NetworkConnection.ConnectionType.ALL);
         }
+    }
+
+    @Override
+    protected String getRootURL()  {
+        return super.getRootURL() + "/context-path";
     }
 }

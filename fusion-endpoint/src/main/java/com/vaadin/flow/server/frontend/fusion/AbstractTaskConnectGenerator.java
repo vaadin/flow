@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.server.frontend.fusion;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,6 +24,8 @@ import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.server.frontend.FallibleCommand;
 
 /**
  * Abstract class for Vaadin Fusion related generators.

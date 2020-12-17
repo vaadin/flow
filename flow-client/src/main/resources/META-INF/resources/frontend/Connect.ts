@@ -412,4 +412,3 @@ export class ConnectClient {
     return chain(initialContext);
   }
 }
-
