@@ -26,6 +26,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.webcomponent.ThemedComponent.EMBEDDED_ID;
+import static com.vaadin.flow.webcomponent.ThemedComponent.HAND_ID;
 import static com.vaadin.flow.webcomponent.ThemedComponent.MY_LIT_ID;
 import static com.vaadin.flow.webcomponent.ThemedComponent.MY_POLYMER_ID;
 
@@ -57,14 +58,8 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         // No exception for bg-image should exist
         checkLogsForErrors();
 
-        final TestBenchElement themedComponent = $("themed-component").first();
-
-        Assert.assertEquals(
-            "url(\"" + getRootURL() + "/VAADIN/static/themes/embedded-theme/img/bg.jpg\")",
-            themedComponent.getCssValue("background-image"));
-
-        Assert.assertEquals("Ostrich",
-            themedComponent.getCssValue("font-family"));
+        validateEmbeddedComponent($("themed-component").id("first"), "first");
+        validateEmbeddedComponent($("themed-component").id("second"), "second");
 
         final WebElement body = findElement(By.tagName("body"));
         Assert.assertNotEquals(
@@ -73,9 +68,32 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
         Assert.assertNotEquals("Ostrich", body.getCssValue("font-family"));
 
-        getDriver().get(getRootURL() + "/VAADIN/static/themes/embedded-theme/img/bg.jpg");
+        Assert
+            .assertEquals("Embedded style should not match external component",
+                "rgba(0, 0, 255, 1)",
+                $(SpanElement.class).id("overflow").getCssValue("color"));
+                getDriver().get(getRootURL() + "/themes/embedded-theme/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
             driver.getPageSource().contains("Could not navigate"));
+    }
+
+    private void validateEmbeddedComponent(TestBenchElement themedComponent, String target) {
+        Assert.assertEquals(target + " didn't contain the background image",
+            "url(\"" + getRootURL() + "/VAADIN/static/themes/embedded-theme/img/bg.jpg\")",
+            themedComponent.getCssValue("background-image"));
+
+        Assert.assertEquals(target + " didn't contain font-family", "Ostrich",
+            themedComponent.getCssValue("font-family"));
+
+        final TestBenchElement embeddedComponent = themedComponent
+            .$(DivElement.class).id(EMBEDDED_ID);
+
+        final SpanElement handElement = embeddedComponent.$(SpanElement.class)
+            .id(HAND_ID);
+
+        Assert
+            .assertEquals("Color should have been applied", "rgba(0, 128, 0, 1)",
+                handElement.getCssValue("color"));
     }
 
     @Test
@@ -105,6 +123,28 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void documentCssFonts_fontsAreAppliedAndAvailable() {
+        open();
+        checkLogsForErrors();
+        final TestBenchElement themedComponent = $("themed-component").first();
+        final TestBenchElement embeddedComponent = themedComponent
+            .$(DivElement.class).id(EMBEDDED_ID);
+
+        final SpanElement handElement = embeddedComponent.$(SpanElement.class)
+            .id(HAND_ID);
+        Assert.assertEquals("Font family faulty", "\"Font Awesome 5 Free\"",
+            handElement.getCssValue("font-family"));
+        Assert.assertEquals("Font weight faulty", "900",
+            handElement.getCssValue("font-weight"));
+        Assert.assertEquals("display value faulty", "inline-block",
+            handElement.getCssValue("display"));
+
+        getDriver().get(getRootURL()
+            + "/path/VAADIN/static/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2");
+        Assert.assertFalse("Font resource should be available",
+            driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
+    }
+
     public void documentCssFonts_fromLocalCssFile_fontAppliedToDocumentRoot() {
         open();
 

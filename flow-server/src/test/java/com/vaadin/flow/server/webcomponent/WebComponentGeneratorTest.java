@@ -190,7 +190,7 @@ public class WebComponentGeneratorTest {
                 + "      }\n" //
                 + "    `;\n"));
 
-        MatcherAssert.assertThat(module, containsString("applyTheme(shadow);\nshadow.appendChild(style);"));
+        MatcherAssert.assertThat(module, containsString("applyTheme(shadow);\n    shadow.appendChild(style);"));
         MatcherAssert.assertThat(module,
                 containsString("customElements.define('tag', Tag);\n"));
     }

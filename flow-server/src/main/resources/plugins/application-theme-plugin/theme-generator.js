@@ -76,13 +76,32 @@ function generateThemeFile(themeFolder, themeName, themeProperties) {
     const variable = camelCase(filename);
     imports.push(`import ${variable} from './${filename}';\n`);
     if (filename == themeFileAlwaysAddToDocument) {
-      globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n   `);
+      globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n    `);
     } else {
       globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n    `);
     }
   });
 
   let i = 0;
+  if (themeProperties.documentCss) {
+    const missingModules = checkModules(themeProperties.documentCss);
+    if(missingModules.length > 0) {
+      throw Error("Missing npm modules or files '" + missingModules.join("', '")
+        + "' for documentCss marked in 'theme.json'.\n" +
+        "Install or update package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm i'");
+
+    }
+    themeProperties.documentCss.forEach((cssImport) => {
+      const variable = 'module' + i++;
+      imports.push(`import ${variable} from '${cssImport}';\n`);
+      // Due to chrome bug https://bugs.chromium.org/p/chromium/issues/detail?id=336876 font-face will not work
+      // inside shadowRoot so we need to inject it there also.
+      globalCssCode.push(`if(target !== document) {
+      injectGlobalCss(${variable}.toString(), target);
+    }\n    `);
+      globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n    `);
+    });
+  }
   if (themeProperties.importCss) {
     const missingModules = checkModules(themeProperties.importCss);
     if(missingModules.length > 0) {
@@ -121,13 +140,19 @@ function generateThemeFile(themeFolder, themeName, themeProperties) {
   const componentCssFlag = themeIdentifier + 'componentCss';
 
   themeFile += imports.join('');
+  themeFile += `
+window.Vaadin = window.Vaadin || {};
+window.Vaadin.Flow = window.Vaadin.Flow || {};
+window.Vaadin.Flow['${globalCssFlag}'] = window.Vaadin.Flow['${globalCssFlag}'] || [];
+`;
 
 // Don't format as the generated file formatting will get wonky!
 // If targets check that we only register the style parts once, checks exist for global css and component css
   const themeFileApply = `export const applyTheme = (target) => {
-  if (!target['${globalCssFlag}']) {
+  const injectGlobal = (window.Vaadin.Flow['${globalCssFlag}'].length === 0) || (!window.Vaadin.Flow['${globalCssFlag}'].includes(target) && target !== document);
+  if (injectGlobal) {
     ${globalCssCode.join('')}
-    target['${globalCssFlag}'] = true;
+    window.Vaadin.Flow['${globalCssFlag}'].push(target);
   }
   if (!document['${componentCssFlag}']) {
     ${componentCssCode.join('')}
