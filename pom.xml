@@ -36,6 +36,7 @@
         <module>flow-bom</module>
         <module>fusion-endpoint</module>
         <module>build-tools</module>
+        <module>flow-tests/test-application-theme/reusable-theme</module>
     </modules>
 
     <organization>

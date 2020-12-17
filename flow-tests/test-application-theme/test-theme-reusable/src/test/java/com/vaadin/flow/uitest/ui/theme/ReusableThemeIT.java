@@ -37,22 +37,6 @@ import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.SUB_COMPONENT_ID
 public class ReusableThemeIT extends ChromeBrowserTest {
 
     @Test
-    public void typeScriptCssImport_stylesAreApplied() {
-        getDriver().get(getRootURL() + "/path/hello");
-
-        checkLogsForErrors();
-
-        final TestBenchElement helloWorld = $(TestBenchElement.class).first()
-            .findElement(By.tagName("hello-world-view"));
-
-        Assert.assertEquals("hello-world-view", helloWorld.getTagName());
-
-        Assert.assertEquals(
-            "CSS was not applied as background color was not as expected.",
-            "rgba(255, 165, 0, 1)", helloWorld.getCssValue("background-color"));
-    }
-
-    @Test
     public void secondTheme_staticFilesNotCopied() {
         getDriver().get(getRootURL() + "/path/themes/reusable-theme/img/bg.jpg");
         Assert.assertFalse("reusable-theme static files should be copied",

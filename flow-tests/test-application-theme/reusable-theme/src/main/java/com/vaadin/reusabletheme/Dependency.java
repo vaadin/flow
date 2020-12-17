@@ -1,4 +1,4 @@
-package org.vaadin.apptheme.reusabletheme;
+package com.vaadin.reusabletheme;
 
 import com.vaadin.flow.component.dependency.NpmPackage;
 
