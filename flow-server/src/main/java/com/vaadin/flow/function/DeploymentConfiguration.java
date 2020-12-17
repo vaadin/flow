@@ -277,18 +277,6 @@ public interface DeploymentConfiguration
     }
 
     /**
-     * Get if the dev server should be reused on each reload. True by default,
-     * set it to false in tests so as dev server is not kept as a daemon after
-     * the test.
-     *
-     * @return true if dev server should be reused
-     */
-    default boolean reuseDevServer() {
-        return getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER, true);
-    }
-
-    /**
      * Get if the stats.json file should be retrieved from an external service
      * or through the classpath.
      *

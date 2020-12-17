@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,7 +47,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
@@ -143,8 +143,8 @@ public final class DevModeHandler implements RequestHandler {
 
         this.npmFolder = npmFolder;
         port = runningPort;
-        DeploymentConfiguration config = lookup
-                .lookup(DeploymentConfiguration.class);
+        ApplicationConfiguration config = lookup
+                .lookup(ApplicationConfiguration.class);
         reuseDevServer = config.reuseDevServer();
         devServerPortFile = getDevServerPortFile(npmFolder);
 
@@ -286,9 +286,11 @@ public final class DevModeHandler implements RequestHandler {
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
         String pathInfo = request.getPathInfo();
-        return pathInfo != null && (pathInfo.startsWith("/" + VAADIN_MAPPING)
-            || APP_THEME_PATTERN.matcher(pathInfo).find()) && !pathInfo
-            .startsWith("/" + StreamRequestHandler.DYN_RES_PREFIX);
+        return pathInfo != null
+                && (pathInfo.startsWith("/" + VAADIN_MAPPING)
+                        || APP_THEME_PATTERN.matcher(pathInfo).find())
+                && !pathInfo
+                        .startsWith("/" + StreamRequestHandler.DYN_RES_PREFIX);
     }
 
     /**
@@ -327,7 +329,7 @@ public final class DevModeHandler implements RequestHandler {
         }
 
         // Redirect theme source request
-        if(APP_THEME_PATTERN.matcher(requestFilename).find()) {
+        if (APP_THEME_PATTERN.matcher(requestFilename).find()) {
             requestFilename = "/VAADIN/static" + requestFilename;
         }
 
@@ -531,7 +533,7 @@ public final class DevModeHandler implements RequestHandler {
         FileUtils.deleteQuietly(devServerPortFile);
     }
 
-    private void runOnFutureComplete(DeploymentConfiguration config) {
+    private void runOnFutureComplete(ApplicationConfiguration config) {
         try {
             doStartDevModeServer(config);
         } catch (ExecutionFailedException exception) {
@@ -565,7 +567,7 @@ public final class DevModeHandler implements RequestHandler {
 
     }
 
-    private void doStartDevModeServer(DeploymentConfiguration config)
+    private void doStartDevModeServer(ApplicationConfiguration config)
             throws ExecutionFailedException {
         // If port is defined, means that webpack is already running
         if (port > 0) {
@@ -612,7 +614,7 @@ public final class DevModeHandler implements RequestHandler {
         }
     }
 
-    private boolean doStartWebpack(DeploymentConfiguration config,
+    private boolean doStartWebpack(ApplicationConfiguration config,
             Pair<File, File> webPackFiles, long start) {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
@@ -701,7 +703,7 @@ public final class DevModeHandler implements RequestHandler {
         watchDog.set(null);
     }
 
-    private List<String> makeCommands(DeploymentConfiguration config,
+    private List<String> makeCommands(ApplicationConfiguration config,
             File webpack, File webpackConfig, String nodeExec) {
         List<String> command = new ArrayList<>();
         command.add(nodeExec);

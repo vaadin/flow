@@ -46,6 +46,18 @@ public interface AbstractConfiguration extends Serializable {
     }
 
     /**
+     * Get if the dev server should be reused on each reload. True by default,
+     * set it to false in tests so as dev server is not kept as a daemon after
+     * the test.
+     *
+     * @return true if dev server should be reused
+     */
+    default boolean reuseDevServer() {
+        return getBooleanProperty(
+                InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER, true);
+    }
+
+    /**
      * Returns whether Vaadin is running in useDeprecatedV14Bootstrapping.
      *
      * @return true if in useDeprecatedV14Bootstrapping, false otherwise.

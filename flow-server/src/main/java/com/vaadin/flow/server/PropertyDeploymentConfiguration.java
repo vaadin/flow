@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -32,7 +33,6 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REQUEST_TIMING;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_SYNC_ID_CHECK;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 
 /**
  * The property handling implementation of {@link DeploymentConfiguration} based
@@ -45,7 +45,10 @@ public class PropertyDeploymentConfiguration
 
     private final Class<?> systemPropertyBaseClass;
 
-    private final Properties initialParameters;
+    /**
+     * Contains properties from both: parent config and provided properties.
+     */
+    private final Properties allProperties;
 
     private final ApplicationConfiguration parentConfig;
 
@@ -66,7 +69,7 @@ public class PropertyDeploymentConfiguration
             Class<?> systemPropertyBaseClass, Properties initParameters) {
         super(filterStringProperties(initParameters));
         this.parentConfig = parentConfig;
-        initialParameters = initParameters;
+        allProperties = mergeProperties(parentConfig, initParameters);
         this.systemPropertyBaseClass = systemPropertyBaseClass;
     }
 
@@ -134,27 +137,42 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean isProductionMode() {
-        return getBooleanProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
-                parentConfig.isProductionMode());
+        if (isOwnProperty(SERVLET_PARAMETER_PRODUCTION_MODE)) {
+            return getBooleanProperty(SERVLET_PARAMETER_PRODUCTION_MODE, false);
+        }
+        return parentConfig.isProductionMode();
     }
 
     @Override
     public boolean enableDevServer() {
-        return getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER,
-                parentConfig.enableDevServer());
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
+            return super.enableDevServer();
+        }
+        return parentConfig.enableDevServer();
     }
 
     @Override
     public boolean useV14Bootstrap() {
-        return getBooleanProperty(SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
-                parentConfig.useV14Bootstrap());
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP)) {
+            return super.useV14Bootstrap();
+        }
+        return parentConfig.useV14Bootstrap();
     }
 
     @Override
     public boolean isPnpmEnabled() {
-        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
-                parentConfig.isPnpmEnabled());
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)) {
+            return super.isPnpmEnabled();
+        }
+        return parentConfig.isPnpmEnabled();
+    }
+
+    @Override
+    public boolean reuseDevServer() {
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
+            return super.reuseDevServer();
+        }
+        return parentConfig.reuseDevServer();
     }
 
     @Override
@@ -212,7 +230,7 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public Properties getInitParameters() {
-        return initialParameters;
+        return allProperties;
     }
 
     /**
@@ -256,6 +274,18 @@ public class PropertyDeploymentConfiguration
      */
     protected ApplicationConfiguration getParentConfiguration() {
         return parentConfig;
+    }
+
+    private Properties mergeProperties(ApplicationConfiguration config,
+            Properties properties) {
+        Properties result = new Properties();
+        Enumeration<String> propertyNames = config.getPropertyNames();
+        while (propertyNames.hasMoreElements()) {
+            String property = propertyNames.nextElement();
+            result.put(property, config.getStringProperty(property, null));
+        }
+        result.putAll(properties);
+        return result;
     }
 
     private static Map<String, String> filterStringProperties(

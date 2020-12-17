@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.Collections;
 import java.util.Properties;
 
 import org.junit.Assert;
@@ -27,8 +28,7 @@ public class PropertyDeploymentConfigurationTest {
 
     @Test
     public void isProductionMode_modeIsProvidedViaParentOnly_valueFromParentIsReturned() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mockAppConfig();
         Mockito.when(appConfig.isProductionMode()).thenReturn(true);
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 new Properties());
@@ -39,8 +39,7 @@ public class PropertyDeploymentConfigurationTest {
 
     @Test
     public void isProductionMode_modeIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mockAppConfig();
         Mockito.when(appConfig.isProductionMode()).thenReturn(false);
 
         Properties properties = new Properties();
@@ -54,8 +53,7 @@ public class PropertyDeploymentConfigurationTest {
 
     @Test
     public void enableDevServer_valueIsProvidedViaParentOnly_valueFromParentIsReturned() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mockAppConfig();
         Mockito.when(appConfig.enableDevServer()).thenReturn(true);
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 new Properties());
@@ -65,9 +63,33 @@ public class PropertyDeploymentConfigurationTest {
     }
 
     @Test
+    public void reuseDevServer_valueIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
+        ApplicationConfiguration appConfig = mockAppConfig();
+        Mockito.when(appConfig.reuseDevServer()).thenReturn(false);
+
+        Properties properties = new Properties();
+        properties.put(InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER,
+                Boolean.TRUE.toString());
+        PropertyDeploymentConfiguration config = createConfiguration(appConfig,
+                properties);
+        Assert.assertTrue(config.reuseDevServer());
+        Assert.assertEquals(properties, config.getInitParameters());
+    }
+
+    @Test
+    public void reuseDevServer_valueIsProvidedViaParentOnly_valueFromParentIsReturned() {
+        ApplicationConfiguration appConfig = mockAppConfig();
+        Mockito.when(appConfig.reuseDevServer()).thenReturn(true);
+        PropertyDeploymentConfiguration config = createConfiguration(appConfig,
+                new Properties());
+        Assert.assertTrue(config.reuseDevServer());
+        // there is no any property
+        Assert.assertTrue(config.getInitParameters().isEmpty());
+    }
+
+    @Test
     public void enableDevServer_valueIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mockAppConfig();
         Mockito.when(appConfig.enableDevServer()).thenReturn(false);
 
         Properties properties = new Properties();
@@ -81,8 +103,7 @@ public class PropertyDeploymentConfigurationTest {
 
     @Test
     public void useV14Bootstrap_valueIsProvidedViaParentOnly_valueFromParentIsReturned() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mockAppConfig();
         Mockito.when(appConfig.useV14Bootstrap()).thenReturn(true);
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 new Properties());
@@ -93,8 +114,7 @@ public class PropertyDeploymentConfigurationTest {
 
     @Test
     public void useV14Bootstrap_valueIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mockAppConfig();
         Mockito.when(appConfig.useV14Bootstrap()).thenReturn(false);
 
         Properties properties = new Properties();
@@ -108,8 +128,7 @@ public class PropertyDeploymentConfigurationTest {
 
     @Test
     public void isPnpmEnabled_valueIsProvidedViaParentOnly_valueFromParentIsReturned() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mockAppConfig();
         Mockito.when(appConfig.isPnpmEnabled()).thenReturn(true);
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 new Properties());
@@ -120,8 +139,7 @@ public class PropertyDeploymentConfigurationTest {
 
     @Test
     public void isPnpmEnabled_valueIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mockAppConfig();
         Mockito.when(appConfig.isPnpmEnabled()).thenReturn(false);
 
         Properties properties = new Properties();
@@ -135,8 +153,7 @@ public class PropertyDeploymentConfigurationTest {
 
     @Test
     public void getApplicationProperty_propertyIsDefinedInParentOnly_valueFromParentIsReturned() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mockAppConfig();
 
         Mockito.when(appConfig.getStringProperty("foo", null))
                 .thenReturn("bar");
@@ -151,8 +168,7 @@ public class PropertyDeploymentConfigurationTest {
 
     @Test
     public void getApplicationProperty_propertyIsDefinedInPropertiesAndParent_valueFromPropertiesIsReturned() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mockAppConfig();
 
         Mockito.when(appConfig.getStringProperty("foo", null))
                 .thenReturn("bar");
@@ -165,6 +181,175 @@ public class PropertyDeploymentConfigurationTest {
 
         Assert.assertEquals("baz", configuration.getApplicationProperty("foo"));
         Assert.assertEquals(properties, configuration.getInitParameters());
+    }
+
+    @Test
+    public void isProductionMode_modeIsProvidedViaParentOnly_propertyIsSetToAnotherValue_valueFromParentIsReturnedViaAPI() {
+        ApplicationConfiguration appConfig = mockAppConfig();
+
+        // The property value is provided via API
+        Mockito.when(appConfig.isProductionMode()).thenReturn(true);
+
+        // The property whose value is overridden above via API is different
+        Mockito.when(appConfig.getPropertyNames())
+                .thenReturn(Collections.enumeration(Collections.singleton(
+                        InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE)));
+
+        Mockito.when(appConfig.getStringProperty(
+                InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, null))
+                .thenReturn(Boolean.FALSE.toString());
+
+        PropertyDeploymentConfiguration config = createConfiguration(appConfig,
+                new Properties());
+        // Several things are checked: the value from parent is used via API and
+        // deployment configuration doesn't read the property directly even
+        // though its "getInitParameters" method returns the property. Also
+        // "getApplicationProperty" method checks the parent properties which
+        // should not be taken into account here
+        Assert.assertTrue(config.isProductionMode());
+        Assert.assertTrue(config.getInitParameters()
+                .containsKey(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE));
+    }
+
+    @Test
+    public void enableDevServer_valueIsProvidedViaParentOnly_propertyIsSetToAnotherValue_valueFromParentIsReturnedViaAPI() {
+        ApplicationConfiguration appConfig = mockAppConfig();
+
+        // The property value is provided via API
+        Mockito.when(appConfig.enableDevServer()).thenReturn(true);
+
+        // The property whose value is overridden above via API is different
+        Mockito.when(appConfig.getPropertyNames())
+                .thenReturn(Collections.enumeration(Collections.singleton(
+                        InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER)));
+
+        Mockito.when(appConfig.getStringProperty(
+                InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER, null))
+                .thenReturn(Boolean.FALSE.toString());
+
+        PropertyDeploymentConfiguration config = createConfiguration(appConfig,
+                new Properties());
+        // Several things are checked: the value from parent is used via API and
+        // deployment configuration doesn't read the property directly even
+        // though its "getInitParameters" method returns the property. Also
+        // "getApplicationProperty" method checks the parent properties which
+        // should not be taken into account here
+        Assert.assertTrue(config.enableDevServer());
+        Assert.assertTrue(config.getInitParameters().containsKey(
+                InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER));
+    }
+
+    @Test
+    public void useV14Bootstrap_valueIsProvidedViaParentOnly_propertyIsSetToAnotherValue_valueFromParentIsReturnedViaAPI() {
+        ApplicationConfiguration appConfig = mockAppConfig();
+
+        // The property value is provided via API
+        Mockito.when(appConfig.useV14Bootstrap()).thenReturn(true);
+
+        // The property whose value is overridden above via API is different
+        Mockito.when(appConfig.getPropertyNames())
+                .thenReturn(Collections.enumeration(Collections.singleton(
+                        InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP)));
+
+        Mockito.when(appConfig.getStringProperty(
+                InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP, null))
+                .thenReturn(Boolean.FALSE.toString());
+
+        PropertyDeploymentConfiguration config = createConfiguration(appConfig,
+                new Properties());
+        // Several things are checked: the value from parent is used via API and
+        // deployment configuration doesn't read the property directly even
+        // though its "getInitParameters" method returns the property. Also
+        // "getApplicationProperty" method checks the parent properties which
+        // should not be taken into account here
+        Assert.assertTrue(config.useV14Bootstrap());
+        Assert.assertTrue(config.getInitParameters().containsKey(
+                InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP));
+    }
+
+    @Test
+    public void isPnpmEnabled_valueIsProvidedViaParentOnly_propertyIsSetToAnotherValue_valueFromParentIsReturnedViaAPI() {
+        ApplicationConfiguration appConfig = mockAppConfig();
+
+        // The property value is provided via API
+        Mockito.when(appConfig.isPnpmEnabled()).thenReturn(true);
+
+        // The property whose value is overridden above via API is different
+        Mockito.when(appConfig.getPropertyNames())
+                .thenReturn(Collections.enumeration(Collections.singleton(
+                        InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)));
+
+        Mockito.when(appConfig.getStringProperty(
+                InitParameters.SERVLET_PARAMETER_ENABLE_PNPM, null))
+                .thenReturn(Boolean.FALSE.toString());
+
+        PropertyDeploymentConfiguration config = createConfiguration(appConfig,
+                new Properties());
+        // Several things are checked: the value from parent is used via API and
+        // deployment configuration doesn't read the property directly even
+        // though its "getInitParameters" method returns the property. Also
+        // "getApplicationProperty" method checks the parent properties which
+        // should not be taken into account here
+        Assert.assertTrue(config.isPnpmEnabled());
+        Assert.assertTrue(config.getInitParameters()
+                .containsKey(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
+    }
+
+    @Test
+    public void reuseDevServer_valueIsProvidedViaParentOnly_propertyIsSetToAnotherValue_valueFromParentIsReturnedViaAPI() {
+        ApplicationConfiguration appConfig = mockAppConfig();
+
+        // The property value is provided via API
+        Mockito.when(appConfig.reuseDevServer()).thenReturn(true);
+
+        // The property whose value is overridden above via API is different
+        Mockito.when(appConfig.getPropertyNames())
+                .thenReturn(Collections.enumeration(Collections.singleton(
+                        InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER)));
+
+        Mockito.when(appConfig.getStringProperty(
+                InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER, null))
+                .thenReturn(Boolean.FALSE.toString());
+
+        PropertyDeploymentConfiguration config = createConfiguration(appConfig,
+                new Properties());
+        // Several things are checked: the value from parent is used via API and
+        // deployment configuration doesn't read the property directly even
+        // though its "getInitParameters" method returns the property. Also
+        // "getApplicationProperty" method checks the parent properties which
+        // should not be taken into account here
+        Assert.assertTrue(config.reuseDevServer());
+        Assert.assertTrue(config.getInitParameters().containsKey(
+                InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER));
+    }
+
+    @Test
+    public void getInitParameters_prorprtiesAreMergedFromParentAndDeploymentConfig() {
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.getPropertyNames()).thenReturn(
+                Collections.enumeration(Collections.singleton("foo")));
+
+        Mockito.when(appConfig.getStringProperty("foo", null))
+                .thenReturn("foobar");
+
+        Properties properties = new Properties();
+        properties.put("bar", "baz");
+        PropertyDeploymentConfiguration configuration = createConfiguration(
+                appConfig, properties);
+        Properties initParameters = configuration.getInitParameters();
+
+        Assert.assertEquals("foobar", initParameters.get("foo"));
+        Assert.assertEquals("baz", initParameters.get("bar"));
+    }
+
+    private ApplicationConfiguration mockAppConfig() {
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.getPropertyNames())
+                .thenReturn(Collections.emptyEnumeration());
+
+        return appConfig;
     }
 
     private PropertyDeploymentConfiguration createConfiguration(
