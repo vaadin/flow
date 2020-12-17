@@ -91,6 +91,7 @@ public class DefaultApplicationConfigurationFactory
 
     @Override
     public ApplicationConfiguration create(VaadinContext context) {
+        Objects.requireNonNull(context);
         Map<String, String> props = new HashMap<>();
         for (final Enumeration<String> paramNames = context
                 .getContextParameterNames(); paramNames.hasMoreElements();) {
@@ -110,10 +111,26 @@ public class DefaultApplicationConfigurationFactory
         } catch (IOException exception) {
             throw new UncheckedIOException(exception);
         }
-        return new ApplicationConfigurationImpl(context,
-                buildInfo == null ? null
-                        : FrontendUtils.readFallbackChunk(buildInfo),
-                props);
+        return doCreate(context, buildInfo == null ? null
+                : FrontendUtils.readFallbackChunk(buildInfo), props);
+    }
+
+    /**
+     * Creates application configuration instance based on provided data.
+     * 
+     * @param context
+     *            the Vaadin context, not {@code null}
+     * @param chunk
+     *            the fallback chunk, may be {@cod null}
+     * @param properties
+     *            the context parameters, not {@code nulll}
+     * @return a new application configuration instance
+     */
+    protected ApplicationConfigurationImpl doCreate(VaadinContext context,
+            FallbackChunk chunk, Map<String, String> properties) {
+        Objects.requireNonNull(context);
+        Objects.requireNonNull(properties);
+        return new ApplicationConfigurationImpl(context, chunk, properties);
     }
 
     /**
