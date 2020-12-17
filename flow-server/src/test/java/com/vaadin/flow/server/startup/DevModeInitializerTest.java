@@ -39,6 +39,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -344,10 +345,11 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                 + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
             System.clearProperty("vaadin." 
                 + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
+            Mockito.doReturn(null).when(lookup).lookup(EndpointGeneratorTaskFactory.class);
 
-            
             Assert.assertFalse(generatedOpenApiJson.exists());
             devModeInitializer.onStartup(classes, servletContext);
+            waitForDevModeServer();
 
             Mockito.verify(taskGenerateConnect, never()).execute();
         } finally {
