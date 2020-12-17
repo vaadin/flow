@@ -484,6 +484,9 @@ public class DeploymentConfigurationFactoryTest {
         expect(configuration.getStringProperty(EasyMock.anyString(),
                 EasyMock.anyString())).andReturn(null).anyTimes();
 
+        expect(configuration.getPropertyNames())
+                .andReturn(Collections.emptyEnumeration()).anyTimes();
+
         fallbackChunk = mock(FallbackChunk.class);
 
         expect(configuration.getFallbackChunk()).andReturn(fallbackChunk)
