@@ -44,7 +44,6 @@ public class TaskUpdateThemeImportTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private TaskUpdateThemeImport taskUpdateThemeImport;
     private Class<? extends AbstractTheme> dummyThemeClass;
     private File projectRoot;
     private File npmFolder;
@@ -67,12 +66,12 @@ public class TaskUpdateThemeImportTest {
                  CUSTOM_VARIANT_NAME, CUSTOM_THEME_NAME
         );
 
-        taskUpdateThemeImport = new TaskUpdateThemeImport(npmFolder,
-                customTheme, faultyFrontendDirectory);
+        TaskUpdateThemeImport taskUpdateThemeImport = new TaskUpdateThemeImport(
+                npmFolder, customTheme, faultyFrontendDirectory);
 
         ExecutionFailedException e = Assert.assertThrows(
                                         ExecutionFailedException.class,
-                                        () -> taskUpdateThemeImport.execute());
+                                        taskUpdateThemeImport::execute);
 
         Assert.assertTrue(e.getMessage().contains(
                 String.format("Discovered @Theme(\"%s\") annotation but",
@@ -100,8 +99,8 @@ public class TaskUpdateThemeImportTest {
                 CUSTOM_VARIANT_NAME, CUSTOM_THEME_NAME
         );
 
-        taskUpdateThemeImport = new TaskUpdateThemeImport(npmFolder,
-                customTheme, correctFrontendDirectory);
+        TaskUpdateThemeImport taskUpdateThemeImport = new TaskUpdateThemeImport(
+                npmFolder, customTheme, correctFrontendDirectory);
 
         File nodeModules = new File(npmFolder, FrontendUtils.NODE_MODULES);
         File flowFrontend = new File(nodeModules,
