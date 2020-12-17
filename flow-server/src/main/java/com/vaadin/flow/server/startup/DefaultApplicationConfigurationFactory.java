@@ -121,9 +121,9 @@ public class DefaultApplicationConfigurationFactory
      * @param context
      *            the Vaadin context, not {@code null}
      * @param chunk
-     *            the fallback chunk, may be {@cod null}
+     *            the fallback chunk, may be {@code null}
      * @param properties
-     *            the context parameters, not {@code nulll}
+     *            the context parameters, not {@code null}
      * @return a new application configuration instance
      */
     protected ApplicationConfigurationImpl doCreate(VaadinContext context,
