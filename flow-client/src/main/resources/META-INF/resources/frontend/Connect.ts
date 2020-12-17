@@ -285,6 +285,19 @@ export class ConnectClient {
 
     // ensure connection indicator is visible from this entry point
     getConnectionIndicator();
+
+    // Listen to browser online/offline events and update the loading indicator accordingly.
+    // Note: if Flow.ts is loaded, it instead handles the state transitions.
+    $wnd.addEventListener('online', () => {
+      if ($wnd.Vaadin.Flow === undefined) {
+        $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
+      }
+    });
+    $wnd.addEventListener('offline', () => {
+      if ($wnd.Vaadin.Flow === undefined) {
+        $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
+      }
+    });
   }
 
   /**
