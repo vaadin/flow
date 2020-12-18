@@ -211,6 +211,9 @@ module.exports = {
               if (resourcePath.match(/(\\|\/)node_modules\1/)) {
                 return /(\\|\/)node_modules\1(?!.*node_modules)([\S]+)/.exec(resourcePath)[2].replace(/\\/g, "/");
               }
+              if (resourcePath.match(/(\\|\/)flow-frontend\1/)) {
+                return /(\\|\/)flow-frontend\1(?!.*flow-frontend)([\S]+)/.exec(resourcePath)[2].replace(/\\/g, "/");
+              }
               return '[path][name].[ext]';
             }
           }
@@ -227,8 +230,10 @@ module.exports = {
     !devMode && new CompressionPlugin(),
 
     new ApplicationThemePlugin({
-      // The following matches target/flow-frontend/theme/theme-generated.js and not frontend/themes
-      themeResourceFolder: path.resolve(flowFrontendFolder, 'theme'),
+      // The following matches target/flow-frontend/themes/theme-generated.js
+      // and for theme in JAR that is copied to target/flow-frontend/themes/
+      // and not frontend/themes
+      themeResourceFolder: path.resolve(flowFrontendFolder, 'themes'),
       themeProjectFolders: themeProjectFolders,
       projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
     }),

@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
+
 /**
  * Task for generating the theme-generated.js file for importing application
  * theme.
@@ -40,7 +42,8 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         File nodeModules = new File(npmFolder, FrontendUtils.NODE_MODULES);
         File flowFrontend = new File(nodeModules,
             FrontendUtils.FLOW_NPM_PACKAGE_NAME);
-        this.themeImportFile = new File(new File(flowFrontend, "theme"),
+        this.themeImportFile = new File(
+                new File(flowFrontend, APPLICATION_THEME_ROOT),
             "theme-generated.js");
         this.theme = theme;
     }
