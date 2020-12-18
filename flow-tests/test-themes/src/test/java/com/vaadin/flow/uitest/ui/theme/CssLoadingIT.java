@@ -26,12 +26,11 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 /**
  * Test CSS loading order from different sources.
  *
- * The expected order is: Lumo styles < @CssImport < page.addStylesheet
+ * The expected priority is: Lumo styles < @CssImport < page.addStylesheet
  * < @Stylehseet < parent theme < current theme (app theme)
  */
 public class CssLoadingIT extends ChromeBrowserTest {
 
-    private static final String RED_RGBA = "rgba(255, 0, 0, 1)";
     private static final String BLUE_RGBA = "rgba(0, 0, 255, 1)";
     private static final String GREEN_RGBA = "rgba(0, 255, 0, 1)";
     private static final String YELLOW_RGBA = "rgba(255, 255, 0, 1)";
@@ -50,21 +49,13 @@ public class CssLoadingIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void pageAddStylesheet_overrides_CssImport() {
+    public void multipleDefinitions_correctOverrides() {
         open();
         assertStylesOverride("p1", GREEN_RGBA, "16px", "1px");
-    }
 
-    @Test
-    public void Stylesheet_overrides_pageAddStylesheetAndCssImport() {
-        open();
         // @Stylesheet should override color and font-size but not margin
         assertStylesOverride("p2", BLUE_RGBA, "18px", "1px");
-    }
 
-    @Test
-    public void appTheme_overrides_all() {
-        open();
         assertStylesOverride("p3", YELLOW_RGBA, "20px", "2px");
     }
 
