@@ -219,9 +219,6 @@
                         </execution>
                     </executions>
                     <configuration>
-                        <webAppConfig>
-                            <containerIncludeJarPattern>^$</containerIncludeJarPattern>
-                        </webAppConfig>
                         <scanIntervalSeconds>-1</scanIntervalSeconds>
                         <httpConnector>
                             <port>${server.port}</port>
@@ -279,6 +276,7 @@
                 <module>test-themes</module> <!-- Only npm theme tests -->
                 <module>test-themes-legacy</module>
                 <module>test-themes-legacy/pom-npm.xml</module>
+                <module>test-application-theme</module>
                 <module>test-lumo-theme</module>
                 <module>test-material-theme</module>
                 <module>servlet-containers</module>

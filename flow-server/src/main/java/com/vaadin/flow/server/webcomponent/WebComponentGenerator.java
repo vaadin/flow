@@ -160,7 +160,7 @@ public class WebComponentGenerator {
 
         if (themeName != null && !themeName.isEmpty()) {
             replacements.put("ThemeImport",
-                "import {applyTheme} from 'theme/theme-generated.js';\n\n");
+                "import {applyTheme} from 'themes/theme-generated.js';\n\n");
             replacements.put("ApplyTheme", "applyTheme(shadow);\n    ");
         } else {
             replacements.put("ThemeImport", "");
