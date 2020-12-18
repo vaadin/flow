@@ -38,25 +38,23 @@ import com.vaadin.flow.shared.ui.LoadMode;
 @StyleSheet("context://styles/stylesheet.css")
 public class CssLoadingView extends Div {
 
-    public static final String CSS_IMPORT__STYLESHEET = "css-import-stylesheet";
-    public static final String CSS_IMPORT__PAGE_ADD_STYLESHEET = "css-import-page-stylesheet";
-    public static final String PAGE_ADD_STYLESHEET__STYLESHEET = "page-stylesheet-stylesheet";
-
     public CssLoadingView() {
-        UI.getCurrent().getPage().addStyleSheet("/styles/page-style.css",
+        UI.getCurrent().getPage().addStyleSheet("/styles/page-stylesheet.css",
                 LoadMode.INLINE);
 
-        Paragraph p1 = new Paragraph("This is paragraph 1.");
-        p1.setId(CSS_IMPORT__STYLESHEET);
-        p1.addClassNames("css-import", "stylesheet");
+        Paragraph p1 = new Paragraph("Having @CssImport and Page.addStylesheet()");
+        p1.setId("p1");
+        p1.addClassNames("css-import", "page-add-stylesheet");
 
-        Paragraph p2 = new Paragraph("This is paragraph 2.");
-        p2.setId(CSS_IMPORT__PAGE_ADD_STYLESHEET);
-        p2.addClassNames("css-import", "page-style");
+        Paragraph p2 = new Paragraph(
+                "@CssImport, Page.addStylesheet() and @Stylesheet");
+        p2.setId("p2");
+        p2.addClassNames("css-import", "page-add-stylesheet", "stylesheet");
 
-        Paragraph p3 = new Paragraph("This is paragraph 3.");
-        p3.setId(PAGE_ADD_STYLESHEET__STYLESHEET);
-        p3.addClassNames("page-style", "stylesheet");
+        Paragraph p3 = new Paragraph(
+                "Having App Theme, @CssImport, Page.addStylesheet() and @Stylesheet");
+        p3.setId("p3");
+        p3.addClassNames("css-import", "page-add-stylesheet", "stylesheet", "global");
 
         add(p1, p2, p3);
         setId("styled-components");

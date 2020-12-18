@@ -1,5 +1,0 @@
-/* This file is for testing CSS loading by `addStyleSheet` */
-
-p.page-style {
-    color: rgba(0, 255, 0, 1);
-}

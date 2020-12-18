@@ -23,23 +23,26 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.component.html.testbench.ParagraphElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-import static com.vaadin.flow.uitest.ui.theme.CssLoadingView.CSS_IMPORT__PAGE_ADD_STYLESHEET;
-import static com.vaadin.flow.uitest.ui.theme.CssLoadingView.CSS_IMPORT__STYLESHEET;
-import static com.vaadin.flow.uitest.ui.theme.CssLoadingView.PAGE_ADD_STYLESHEET__STYLESHEET;
-
+/**
+ * Test CSS loading order from different sources.
+ *
+ * The expected order is: Lumo styles < @CssImport < page.addStylesheet
+ * < @Stylehseet < parent theme < current theme (app theme)
+ */
 public class CssLoadingIT extends ChromeBrowserTest {
 
+    private static final String RED_RGBA = "rgba(255, 0, 0, 1)";
     private static final String BLUE_RGBA = "rgba(0, 0, 255, 1)";
     private static final String GREEN_RGBA = "rgba(0, 255, 0, 1)";
+    private static final String YELLOW_RGBA = "rgba(255, 255, 0, 1)";
     private static final String STYLESHEET_LUMO_FONT_SIZE_M = " 1.1rem";
 
     @Test
-    public void appTheme_overrides_Lumo() {
+    public void CssImport_overrides_Lumo() {
         open();
         WebElement htmlElement = findElement(By.tagName("html"));
 
-        Assert.assertEquals(
-                "Lumo styles should have the lowest priority and can be overridden by App Theme global style.",
+        Assert.assertEquals("CssImport styles should override Lumo styles.",
                 STYLESHEET_LUMO_FONT_SIZE_M,
                 executeScript(
                         "return getComputedStyle(arguments[0]).getPropertyValue('--lumo-font-size-m')",
@@ -47,33 +50,31 @@ public class CssLoadingIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void StyleSheet_overrides_CssImport() {
+    public void pageAddStylesheet_overrides_CssImport() {
         open();
-        // @StyleSheet [blue] > page.addStyleSheet() [green] < @CssImport [red]
-        Assert.assertEquals(
-                "Styles from @StyleSheet should have a higher priority than from @CssImport.",
-                BLUE_RGBA, $(ParagraphElement.class).id(CSS_IMPORT__STYLESHEET)
-                        .getCssValue("color"));
+        assertStylesOverride("p1", GREEN_RGBA, "16px", "1px");
     }
 
     @Test
-    public void addStyleSheet_overrides_StyleSheet() {
+    public void Stylesheet_overrides_pageAddStylesheetAndCssImport() {
         open();
-        Assert.assertEquals(
-                "Styles from @StyleSheet should have a higher priority than from addStyleSheet().",
-                BLUE_RGBA,
-                $(ParagraphElement.class).id(PAGE_ADD_STYLESHEET__STYLESHEET)
-                        .getCssValue("color"));
+        // @Stylesheet should override color and font-size but not margin
+        assertStylesOverride("p2", BLUE_RGBA, "18px", "1px");
     }
 
     @Test
-    public void addStyleSheet_overrides_CssImport() {
+    public void appTheme_overrides_all() {
         open();
-        Assert.assertEquals(
-                "Styles from addStyleSheet() should have a higher priority than from @CssImport.",
-                GREEN_RGBA,
-                $(ParagraphElement.class).id(CSS_IMPORT__PAGE_ADD_STYLESHEET)
-                        .getCssValue("color"));
+        assertStylesOverride("p3", YELLOW_RGBA, "20px", "2px");
     }
 
+    private void assertStylesOverride(String elementId, String expectedColor,
+            String expectedFontSize, String expectedMargin) {
+        Assert.assertEquals(expectedColor,
+                $(ParagraphElement.class).id(elementId).getCssValue("color"));
+        Assert.assertEquals(expectedFontSize, $(ParagraphElement.class)
+                .id(elementId).getCssValue("font-size"));
+        Assert.assertEquals(expectedMargin,
+                $(ParagraphElement.class).id(elementId).getCssValue("margin"));
+    }
 }

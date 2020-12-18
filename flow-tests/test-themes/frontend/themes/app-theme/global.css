@@ -1,9 +1,5 @@
 @import 'sub-css/sub.css';
 
-html {
-    --lumo-font-size-m: 1.1rem;
-}
-
 @font-face {
     font-family: "Ostrich";
     src: url("./font/ostrich-sans-regular.ttf") format("TrueType");
@@ -27,4 +23,10 @@ body {
     width: 224px;
     height: 224px;
     display: block;
+}
+
+p.global {
+    color: rgba(255, 255, 0, 1); /* yellow */
+    font-size: 20px;
+    margin: 2px;
 }
