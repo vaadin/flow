@@ -17,11 +17,15 @@ package com.vaadin.flow;
 
 import java.util.Map;
 
+import org.osgi.service.component.annotations.Component;
+
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FallbackChunk;
+import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
 
+@Component(service = ApplicationConfigurationFactory.class)
 public class ItApplicationConfigurationFactory
         extends DefaultApplicationConfigurationFactory {
 
