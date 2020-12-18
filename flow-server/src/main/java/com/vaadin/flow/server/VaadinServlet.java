@@ -203,9 +203,11 @@ public class VaadinServlet extends HttpServlet {
      */
     protected DeploymentConfiguration createDeploymentConfiguration(
             Properties initParameters) {
+        VaadinServletContext context = new VaadinServletContext(
+                getServletContext());
         return new DefaultDeploymentConfiguration(
-                ApplicationConfiguration.get(getService().getContext()),
-                getClass(), initParameters);
+                ApplicationConfiguration.get(context), getClass(),
+                initParameters);
     }
 
     /**
