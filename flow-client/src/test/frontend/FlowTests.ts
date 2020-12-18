@@ -500,15 +500,11 @@ suite("Flow", () => {
     stubServerRemoteFunction('foobar-12345', true);
     mockInitResponse('foobar-12345');
 
-    await new Promise(resolve => setTimeout(resolve, 150));
-
     const flow = new Flow();
     const route = flow.serverSideRoutes[0];
 
     return route.action({pathname: 'Foo'})
       .then((elem: any) => {
-        //await new Promise(resolve => setTimeout(resolve, 500));
-
         assert.isDefined(elem.onBeforeLeave);
         assert.equal('Foo', flow.pathname);
 
