@@ -291,6 +291,16 @@ public final class Constants implements Serializable {
     public static final String RESOURCES_FRONTEND_DEFAULT = "META-INF/frontend";
 
     /**
+     * The name of the application theme root folder.
+     */
+    public static final String APPLICATION_THEME_ROOT = "themes";
+
+    /**
+     * Location for the resources in jar files.
+     */
+    public static final String RESOURCES_JAR_DEFAULT = "META-INF/resources/";
+
+    /**
      * @deprecated Use
      *             {@link InitParameters#SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT}
      *             instead.

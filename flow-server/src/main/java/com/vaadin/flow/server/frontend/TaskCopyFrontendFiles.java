@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.RESOURCES_JAR_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
@@ -35,9 +36,10 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
  */
 public class TaskCopyFrontendFiles implements FallibleCommand {
     private static final String[] WILDCARD_INCLUSIONS = new String[] {
-            "**/*.js", "**/*.css" };
-
+            "**/*.js", "**/*.css", "**/*.ts" };
+    private static final String WILDCARD_INCLUSION_APP_THEME_JAR = "**/themes/**/*";
     private File targetDirectory;
+    private File frontendTargetDirectory;
     private Set<File> resourceLocations = null;
 
     /**
@@ -57,6 +59,7 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                 NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
         resourceLocations = resourcesToScan.stream().filter(File::exists)
                 .collect(Collectors.toSet());
+        this.frontendTargetDirectory = new File(npmFolder, FrontendUtils.DEFAULT_GENERATED_DIR);
     }
 
     @Override
@@ -64,6 +67,7 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
         long start = System.nanoTime();
         log().info("Copying frontend resources from jar files ...");
         TaskCopyLocalFrontendFiles.createTargetFolder(targetDirectory);
+        TaskCopyLocalFrontendFiles.createTargetFolder(frontendTargetDirectory);
         JarContentsManager jarContentsManager = new JarContentsManager();
         for (File location : resourceLocations) {
             if (location.isDirectory()) {
@@ -81,6 +85,9 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                 jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
                         location, COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
                         targetDirectory, WILDCARD_INCLUSIONS);
+                jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
+                        location, RESOURCES_JAR_DEFAULT, frontendTargetDirectory,
+                        WILDCARD_INCLUSION_APP_THEME_JAR);
             }
         }
         long ms = (System.nanoTime() - start) / 1000000;
