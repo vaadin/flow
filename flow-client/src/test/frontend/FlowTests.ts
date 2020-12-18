@@ -495,7 +495,7 @@ suite("Flow", () => {
       });
   });
 
-  test("onBeforeLeave should cancel `server->client` navigation", async () => {
+  test("onBeforeLeave should cancel `server->client` navigation", () => {
     // true to prevent navigation from server
     stubServerRemoteFunction('foobar-12345', true);
     mockInitResponse('foobar-12345');
