@@ -58,6 +58,7 @@ import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.SystemMessagesProvider;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
@@ -246,7 +247,8 @@ public class ApplicationRunnerServlet extends VaadinServlet {
             Properties initParameters) {
         // Get the original configuration from the super class
         final DeploymentConfiguration originalConfiguration = new DefaultDeploymentConfiguration(
-                ApplicationConfiguration.get(getService().getContext()),
+                ApplicationConfiguration
+                        .get(new VaadinServletContext(getServletContext())),
                 getClass(), initParameters) {
             @Override
             public String getUIClassName() {
