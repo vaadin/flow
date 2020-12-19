@@ -21,9 +21,6 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.frontend.FallbackChunk;
@@ -49,9 +46,6 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
     public static final String ERROR_DEV_MODE_NO_FILES = "There are neither 'flow-build-info.json' nor 'webpack.config.js' file available in "
             + "the project/working directory. Ensure 'webpack.config.js' is present or trigger creation of "
             + "'flow-build-info.json' via running 'prepare-frontend' Maven goal.";
-
-    private static final Logger logger = LoggerFactory
-            .getLogger(DeploymentConfigurationFactory.class);
 
     /**
      * Creates a {@link DeploymentConfiguration} instance that is filled with

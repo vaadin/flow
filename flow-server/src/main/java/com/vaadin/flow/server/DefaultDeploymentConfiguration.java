@@ -122,7 +122,9 @@ public class DefaultDeploymentConfiguration
 
     /**
      * Create a new deployment configuration instance.
-     *
+     * 
+     * @param parentConfig
+     *            a parent application configuration
      * @param systemPropertyBaseClass
      *            the class that should be used as a basis when reading system
      *            properties
