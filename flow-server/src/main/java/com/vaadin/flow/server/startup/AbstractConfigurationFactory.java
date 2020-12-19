@@ -157,6 +157,16 @@ public class AbstractConfigurationFactory implements Serializable {
         return params;
     }
 
+    /**
+     * Sets to the dev mode properties to the configuration parameters.
+     * 
+     * @see #getConfigParametersUsingTokenData(JsonObject)
+     * 
+     * @param params
+     *            the configuration parameters to set dev mode properties to
+     * @param buildInfo
+     *            the token file data
+     */
     protected void setDevModePropertiesUsingTokenData(
             Map<String, String> params, JsonObject buildInfo) {
         // read dev mode properties from the token and set init parameter only

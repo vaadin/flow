@@ -232,29 +232,54 @@ public class UidlRequestHandlerTest {
     }
 
     private JsonObject generateUidl(boolean withLocation, boolean withHash) {
-        JsonObject uidl = JsonUtil.parse("{" + "  \"syncId\": 3,"
-                + "  \"clientId\": 3," + "  \"changes\": [],"
-                + "  \"execute\": [" + "   [\"\", \"document.title = $0\"],"
-                + "   [\"\", \"setTimeout(() => window.history.pushState(null, '', $0))\"],"
-                + "   [[0, 16], \"___PLACE_FOR_V7_UIDL___\", \"$0.firstElementChild.setResponse($1)\"],"
-                + "   [1,null,[0, 16], \"return (function() { this.$server['}p']($0, true, $1)}).apply($2)\"]"
-                + "  ]," + "  \"timings\": []" + "}");
 
-        String v7String = "\"syncId\": 2," + "\"clientId\": 2,"
-                + "\"changes\": ["
-                + "  [],[\"___PLACE_FOR_LOCATION_CHANGE___\"]" + "],"
-                + "\"state\": {" + "}," + "\"types\": {" + "},"
-                + "\"hierarchy\": {" + "}," + "\"rpc\": [" + " [],["
-                + "  \"11\","
-                + "  \"com.vaadin.shared.extension.javascriptmanager.ExecuteJavaScriptRpc\","
-                + "  \"executeJavaScript\", [ \"___PLACE_FOR_HASH_RPC___\" ]"
-                + " ],[" + "  \"12\"," + "  \"com.example.FooRpc\","
-                + "  \"barMethod\", [{}, {}]" + " ],[]" + "],"
-                + "\"meta\": {}, \"resources\": {},\"typeMappings\": {},\"typeInheritanceMap\": {}, \"timings\": []";
+        // @formatter:off
+        JsonObject uidl = JsonUtil.parse(
+                "{" +
+                "  \"syncId\": 3," +
+                "  \"clientId\": 3," +
+                "  \"changes\": []," +
+                "  \"execute\": [" +
+                "   [\"\", \"document.title = $0\"]," +
+                "   [\"\", \"setTimeout(() => window.history.pushState(null, '', $0))\"]," +
+                "   [[0, 16], \"___PLACE_FOR_V7_UIDL___\", \"$0.firstElementChild.setResponse($1)\"]," +
+                "   [1,null,[0, 16], \"return (function() { this.$server['}p']($0, true, $1)}).apply($2)\"]" +
+                "  ]," +
+                "  \"timings\": []" +
+                "}");
 
-        String locationChange = "\"change\", {\"pid\": \"0\"}, [\"0\", {\"id\": \"0\", \"location\": \"http://localhost:9998/#!away\"}]";
+        String v7String =
+            "\"syncId\": 2," +
+            "\"clientId\": 2," +
+            "\"changes\": [" +
+            "  [],[\"___PLACE_FOR_LOCATION_CHANGE___\"]" +
+            "]," +
+            "\"state\": {" +
+            "}," +
+            "\"types\": {" +
+            "}," +
+            "\"hierarchy\": {" +
+            "}," +
+            "\"rpc\": [" +
+            " [],[" +
+            "  \"11\"," +
+            "  \"com.vaadin.shared.extension.javascriptmanager.ExecuteJavaScriptRpc\"," +
+            "  \"executeJavaScript\", [ \"___PLACE_FOR_HASH_RPC___\" ]" +
+            " ],[" +
+            "  \"12\"," +
+            "  \"com.example.FooRpc\"," +
+            "  \"barMethod\", [{}, {}]" +
+            " ],[]" +
+            "]," +
+            "\"meta\": {}, \"resources\": {},\"typeMappings\": {},\"typeInheritanceMap\": {}, \"timings\": []";
 
-        String hashRpc = "window.location.hash = '!away';";
+        String locationChange =
+            "\"change\", {\"pid\": \"0\"}, [\"0\", {\"id\": \"0\", \"location\": \"http://localhost:9998/#!away\"}]";
+
+        String hashRpc =
+             "window.location.hash = '!away';";
+
+        // @formatter:on
 
         if (withLocation) {
             v7String = v7String.replace("\"___PLACE_FOR_LOCATION_CHANGE___\"",
