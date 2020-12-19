@@ -37,7 +37,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinConfig;
-import com.vaadin.flow.server.VaadinConfigurationException;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
@@ -179,17 +178,11 @@ public class ServletDeployer implements ServletContextListener {
         public static DeploymentConfiguration createDeploymentConfiguration(
                 ServletContext context, ServletRegistration registration,
                 Class<?> servletClass) {
-            try {
-                ServletConfig servletConfig = new StubServletConfig(context,
-                        registration);
-                return new DeploymentConfigurationFactory()
-                        .createPropertyDeploymentConfiguration(servletClass,
-                                new VaadinServletConfig(servletConfig));
-            } catch (VaadinConfigurationException e) {
-                throw new IllegalStateException(String.format(
-                        "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
-                        registration.getName(), servletClass), e);
-            }
+            ServletConfig servletConfig = new StubServletConfig(context,
+                    registration);
+            return new DeploymentConfigurationFactory()
+                    .createPropertyDeploymentConfiguration(servletClass,
+                            new VaadinServletConfig(servletConfig));
         }
 
         /**
@@ -203,15 +196,9 @@ public class ServletDeployer implements ServletContextListener {
          */
         public static DeploymentConfiguration createDeploymentConfiguration(
                 ServletContext context, Class<?> servletClass) {
-            try {
-                return new DeploymentConfigurationFactory()
-                        .createPropertyDeploymentConfiguration(servletClass,
-                                new VaadinServletContextConfig(context));
-            } catch (VaadinConfigurationException e) {
-                throw new IllegalStateException(String.format(
-                        "Failed to get deployment configuration data for servlet class '%s'",
-                        servletClass), e);
-            }
+            return new DeploymentConfigurationFactory()
+                    .createPropertyDeploymentConfiguration(servletClass,
+                            new VaadinServletContextConfig(context));
         }
     }
 

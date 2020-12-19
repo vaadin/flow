@@ -34,7 +34,6 @@ import org.mockito.Mockito;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.VaadinConfig;
-import com.vaadin.flow.server.VaadinConfigurationException;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -49,7 +48,7 @@ public class DefaultApplicationConfigurationFactoryTest {
 
     @Test
     public void getTokenFileFromClassloader_tokenFileIsRead_checkWebpackGeneratedFromContext()
-            throws VaadinConfigurationException, IOException {
+            throws IOException {
         VaadinContext context = Mockito.mock(VaadinContext.class);
         VaadinConfig config = Mockito.mock(VaadinConfig.class);
 
@@ -105,8 +104,7 @@ public class DefaultApplicationConfigurationFactoryTest {
     }
 
     @Test
-    public void create_propertiesAreReadFromContext()
-            throws IOException, VaadinConfigurationException {
+    public void create_propertiesAreReadFromContext() throws IOException {
         VaadinContext context = Mockito.mock(VaadinContext.class);
         VaadinConfig config = Mockito.mock(VaadinConfig.class);
         ResourceProvider resourceProvider = mockResourceProvider(config,
@@ -150,7 +148,7 @@ public class DefaultApplicationConfigurationFactoryTest {
     }
 
     private ResourceProvider mockResourceProvider(VaadinConfig config,
-            VaadinContext context) throws VaadinConfigurationException {
+            VaadinContext context) {
         Mockito.when(config.getVaadinContext()).thenReturn(context);
 
         Mockito.when(context.getContextParameterNames())

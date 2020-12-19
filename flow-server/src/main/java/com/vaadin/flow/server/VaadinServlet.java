@@ -181,15 +181,10 @@ public class VaadinServlet extends HttpServlet {
      */
     protected DeploymentConfiguration createDeploymentConfiguration()
             throws ServletException {
-        try {
-            return createDeploymentConfiguration(
-                    new DeploymentConfigurationFactory().createInitParameters(
-                            getClass(),
-                            new VaadinServletConfig(getServletConfig())));
-        } catch (VaadinConfigurationException e) {
-            throw new ServletException(
-                    "Failed to construct DeploymentConfiguration.", e);
-        }
+        return createDeploymentConfiguration(
+                new DeploymentConfigurationFactory().createInitParameters(
+                        getClass(),
+                        new VaadinServletConfig(getServletConfig())));
     }
 
     /**

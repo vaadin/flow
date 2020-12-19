@@ -79,8 +79,7 @@ public class DeploymentConfigurationFactoryTest {
             extends DeploymentConfigurationFactory {
         @Override
         protected Properties createInitParameters(
-                Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig)
-                throws VaadinConfigurationException {
+                Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig) {
             return super.createInitParameters(systemPropertyBaseClass,
                     vaadinConfig);
         }
@@ -348,7 +347,7 @@ public class DeploymentConfigurationFactoryTest {
 
     @Test
     public void createInitParameters_fallbackChunkIsCreatedViaAppConfig_fallbackChunkObjectIsInInitParams()
-            throws VaadinConfigurationException, IOException {
+            throws IOException {
         ServletContext context = Mockito.mock(ServletContext.class);
         ServletConfig config = Mockito.mock(ServletConfig.class);
         ApplicationConfiguration appConfig = Mockito
@@ -375,7 +374,7 @@ public class DeploymentConfigurationFactoryTest {
 
     @Test
     public void createInitParameters_servletConfigDefinesTokenFile_fallbackChunkObjectIsInInitParams()
-            throws IOException, VaadinConfigurationException {
+            throws IOException {
         ServletContext context = Mockito.mock(ServletContext.class);
         ServletConfig config = Mockito.mock(ServletConfig.class);
         Mockito.when(config.getServletContext()).thenReturn(context);

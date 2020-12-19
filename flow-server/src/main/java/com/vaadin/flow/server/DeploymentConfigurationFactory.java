@@ -60,8 +60,7 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
      *             thrown if property construction fails
      */
     public DeploymentConfiguration createDeploymentConfiguration(
-            Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig)
-            throws VaadinConfigurationException {
+            Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig) {
         return new DefaultDeploymentConfiguration(
                 ApplicationConfiguration.get(vaadinConfig.getVaadinContext()),
                 systemPropertyBaseClass,
@@ -82,8 +81,7 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
      *             thrown if property construction fails
      */
     public DeploymentConfiguration createPropertyDeploymentConfiguration(
-            Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig)
-            throws VaadinConfigurationException {
+            Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig) {
         return new PropertyDeploymentConfiguration(
                 ApplicationConfiguration.get(vaadinConfig.getVaadinContext()),
                 systemPropertyBaseClass,
@@ -103,7 +101,7 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
      *             thrown if property construction fails
      */
     protected Properties createInitParameters(Class<?> systemPropertyBaseClass,
-            VaadinConfig vaadinConfig) throws VaadinConfigurationException {
+            VaadinConfig vaadinConfig) {
         Properties initParameters = new Properties();
         readUiFromEnclosingClass(systemPropertyBaseClass, initParameters);
 
@@ -115,13 +113,12 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
                     vaadinConfig.getConfigParameter(name));
         }
 
-        readBuildInfo(systemPropertyBaseClass, initParameters,
-                vaadinConfig.getVaadinContext());
+        readBuildInfo(initParameters, vaadinConfig.getVaadinContext());
         return initParameters;
     }
 
-    private void readBuildInfo(Class<?> systemPropertyBaseClass,
-            Properties initParameters, VaadinContext context) {
+    private void readBuildInfo(Properties initParameters,
+            VaadinContext context) {
         String json = getTokenFileContent(initParameters::getProperty);
 
         FallbackChunk fallbackChunk = null;
