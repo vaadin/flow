@@ -109,11 +109,10 @@ public class TaskUpdateThemeImport implements FallibleCommand {
                         "'%s' in more than one place in the project. Please " +
                         "remove the duplicate(s) and try again. The " +
                         "recommended place to put the theme folder inside " +
-                        "the project is './%s/%s/'";
+                        "the project is '%s'";
 
                 throw new ExecutionFailedException(String.format(errorMessage,
-                        themeName, frontendDirectory.getName(),
-                        APPLICATION_THEME_ROOT));
+                        themeName, mainThemesDir));
             }
         }
     }
