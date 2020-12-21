@@ -103,23 +103,24 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         String classPathThemeResourcePath = FrontendUtils.NODE_MODULES
                 + FrontendUtils.FLOW_NPM_PACKAGE_NAME + themePath;
 
-        if (existingAppThemeDirectories.stream().map(File::getPath)
-                .anyMatch(path -> path.contains(classPathThemeResourcePath))) {
-            if (mainCustomThemeDir.exists()
-                    || existingAppThemeDirectories.size() > 1) {
-                String errorMessage = "Theme '%s' should not exist inside a "
-                        + "jar and in the project at the same time.\n"
-                        + "Extending another theme is possible by adding "
-                        + "{ \"parent\": \"your-parent-theme\" } entry to the "
-                        + "'theme.json' file inside your theme folder.";
-                throw new ExecutionFailedException(
-                        String.format(errorMessage, themeName));
-            }
+        boolean appThemeFoundInClassPath = existingAppThemeDirectories.stream()
+                .map(File::getPath)
+                .anyMatch(path -> path.contains(classPathThemeResourcePath));
+        
+        if (appThemeFoundInClassPath && (mainCustomThemeDir.exists()
+                || existingAppThemeDirectories.size() > 1)) {
+            String errorMessage = "Theme '%s' should not exist inside a "
+                    + "jar and in the project at the same time.%n"
+                    + "Extending another theme is possible by adding "
+                    + "{ \"parent\": \"your-parent-theme\" } entry to the "
+                    + "'theme.json' file inside your theme folder.";
+            throw new ExecutionFailedException(
+                    String.format(errorMessage, themeName));
         }
 
         if (existingAppThemeDirectories.size() > 1
                 || (mainCustomThemeDir.exists()
-                        && existingAppThemeDirectories.size() >= 1)) {
+                        && !existingAppThemeDirectories.isEmpty())) {
             String errorMessage = "Discovered Theme folder for theme '%s' "
                     + "in more than one place in the project. Please "
                     + "make sure there is only one theme folder with name '%s' "
@@ -130,16 +131,15 @@ public class TaskUpdateThemeImport implements FallibleCommand {
                     themeName, themeName, mainCustomThemeDir.getPath()));
         }
 
-        if (!mainCustomThemeDir.exists()) {
-            if (existingAppThemeDirectories.size() == 0) {
-                String errorMessage = "Discovered @Theme annotation with theme "
-                        + "name '%s', but could not find the theme directory "
-                        + "in the project or available as a jar dependency. "
-                        + "Check if you forgot to create the folder under '%s' "
-                        + "or have mistyped the theme or folder name for '%s'.";
-                throw new ExecutionFailedException(String.format(errorMessage,
-                        themeName, mainCustomThemeDir.getPath(), themeName));
-            }
+        if (!mainCustomThemeDir.exists()
+                && existingAppThemeDirectories.isEmpty()) {
+            String errorMessage = "Discovered @Theme annotation with theme "
+                    + "name '%s', but could not find the theme directory "
+                    + "in the project or available as a jar dependency. "
+                    + "Check if you forgot to create the folder under '%s' "
+                    + "or have mistyped the theme or folder name for '%s'.";
+            throw new ExecutionFailedException(String.format(errorMessage,
+                    themeName, mainCustomThemeDir.getPath(), themeName));
         }
     }
 
