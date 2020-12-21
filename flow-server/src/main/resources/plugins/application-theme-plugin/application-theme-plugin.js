@@ -160,5 +160,9 @@ function getThemeProperties(themeFolder) {
   if (!fs.existsSync(themePropertyFile)) {
     return {};
   }
-  return JSON.parse(fs.readFileSync(themePropertyFile));
+  const themePropertyFileAsString = fs.readFileSync(themePropertyFile);
+  if (themePropertyFileAsString.length === 0) {
+    return {};
+  }
+  return JSON.parse(themePropertyFileAsString);
 };
