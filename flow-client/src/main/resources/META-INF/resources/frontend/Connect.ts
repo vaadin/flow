@@ -283,9 +283,8 @@ export class ConnectClient {
       this.middlewares = options.middlewares;
     }
 
-    // accessor ensures connection indicator exists and is added to DOM
-    // tslint:disable-next-line:no-unused-expression
-    ConnectionIndicator.instance;
+    // add connection indicator to DOM
+    ConnectionIndicator.create();
 
     // Listen to browser online/offline events and update the loading indicator accordingly.
     // Note: if Flow.ts is loaded, it instead handles the state transitions.

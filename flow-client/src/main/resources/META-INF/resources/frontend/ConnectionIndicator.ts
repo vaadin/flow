@@ -25,6 +25,21 @@ const DEFAULT_STYLE_ID = 'css-loading-indicator';
  * listens for changes on `window.Vaadin.connectionState` ConnectionStateStore.
  */
 export class ConnectionIndicator extends LitElement {
+
+  /**
+   * Initialize global connection indicator instance at window.Vaadin.connectionIndicator
+   * and add instance to the document body.
+   */
+  static create(): ConnectionIndicator {
+    const $wnd = window as any;
+    if (!$wnd.Vaadin?.connectionIndicator) {
+      $wnd.Vaadin = $wnd.Vaadin || {};
+      $wnd.Vaadin.connectionIndicator = document.createElement('vaadin-connection-indicator');
+      document.body.appendChild($wnd.Vaadin.connectionIndicator);
+    }
+    return $wnd.Vaadin?.connectionIndicator as ConnectionIndicator;
+  }
+
   /**
    * The delay before showing the loading indicator, in ms.
    */
@@ -394,18 +409,8 @@ export class ConnectionIndicator extends LitElement {
     return enabled ? window.setTimeout(handler, delay) : 0;
   }
 
-  /**
-   * Initialize global connection indicator instance at window.Vaadin.connectionIndicator
-   * and add instance to the document body.
-   */
   static get instance(): ConnectionIndicator {
-    const $wnd = window as any;
-    if (!$wnd.Vaadin?.connectionIndicator) {
-      $wnd.Vaadin = $wnd.Vaadin || {};
-      $wnd.Vaadin.connectionIndicator = document.createElement('vaadin-connection-indicator');
-      document.body.appendChild($wnd.Vaadin.connectionIndicator);
-    }
-    return $wnd.Vaadin?.connectionIndicator as ConnectionIndicator;
+    return ConnectionIndicator.create();
   }
 }
 
