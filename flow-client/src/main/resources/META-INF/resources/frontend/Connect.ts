@@ -1,5 +1,5 @@
 /* tslint:disable:max-classes-per-file */
-import { getConnectionIndicator } from './ConnectionIndicator';
+import { ConnectionIndicator } from './ConnectionIndicator';
 import { ConnectionState } from './ConnectionState';
 
 const $wnd = window as any;
@@ -283,8 +283,8 @@ export class ConnectClient {
       this.middlewares = options.middlewares;
     }
 
-    // ensure connection indicator is visible from this entry point
-    getConnectionIndicator();
+    // add connection indicator to DOM
+    ConnectionIndicator.create();
 
     // Listen to browser online/offline events and update the loading indicator accordingly.
     // Note: if Flow.ts is loaded, it instead handles the state transitions.
