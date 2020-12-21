@@ -49,6 +49,7 @@ import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.server.connect.exception.EndpointException;
 import com.vaadin.flow.server.connect.exception.EndpointValidationException;
+import com.vaadin.flow.server.connect.generator.endpoints.collectionendpoint.IterableEndpoint;
 import com.vaadin.flow.server.connect.generator.endpoints.superclassmethods.PersonEndpoint;
 import com.vaadin.flow.server.connect.testendpoint.BridgeMethodTestEndpoint;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -1130,6 +1131,15 @@ public class VaadinConnectControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("\"Hello\"", response.getBody());
+    }
+
+    @Test
+    public void should_ConvertIterableIntoArray() {
+        ResponseEntity<?> response = createVaadinController(new IterableEndpoint())
+            .serveEndpoint("IterableEndpoint", "getFoos", createRequestParameters("{}"), requestMock);
+        
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("[{\"bar\":\"bar\"},{\"bar\":\"bar\"}]", response.getBody());
     }
 
     private void assertEndpointInfoPresent(String responseBody) {
