@@ -28,6 +28,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.PwaConfiguration;
@@ -195,11 +197,10 @@ public class WebComponentBootstrapHandlerTest {
 
     @Test
     public void writeBootstrapPage_devmodeGizmoIsDisabled()
-            throws IOException, ServiceException {
+            throws IOException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
-        VaadinServletService service = new MockVaadinServletService();
-
-        initLookup(service);
+        MockVaadinServletService service = new MockVaadinServletService();
+        service.init();
 
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
@@ -235,29 +236,6 @@ public class WebComponentBootstrapHandlerTest {
         handler.writeBootstrapPage("", response, head, "");
 
         String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
-    }
-
-    private void initLookup(VaadinServletService service) throws IOException {
-        VaadinContext context = service.getContext();
-        Lookup lookup = Mockito.mock(Lookup.class);
-        context.setAttribute(Lookup.class, lookup);
-
-        ResourceProvider provider = Mockito.mock(ResourceProvider.class);
-
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(provider);
-
-        Mockito.when(provider.getApplicationResource(service,
-                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
-                .thenReturn(WebComponentBootstrapHandlerTest.class
-                        .getClassLoader().getResource(VAADIN_SERVLET_RESOURCES
-                                + STATISTICS_JSON_DEFAULT));
-
-        Mockito.when(provider.getClientResourceAsStream(
-                "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
-                        + "/compile.properties"))
-                .thenAnswer(invocation -> new ByteArrayInputStream(
-                        "jsFile=foo".getBytes(StandardCharsets.UTF_8)));
     }
 
     private VaadinResponse getMockResponse(ByteArrayOutputStream stream)
