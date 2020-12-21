@@ -1,3 +1,10 @@
 #font-awesome {
     color: aqua;
+    margin: 15px;
 }
+
+html, :host {
+    --lumo-primary-text-color: orange;
+    --lumo-border-radius: 0;
+}
+

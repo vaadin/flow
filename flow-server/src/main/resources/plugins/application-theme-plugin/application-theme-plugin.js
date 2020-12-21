@@ -17,7 +17,7 @@
 const fs = require('fs');
 const path = require('path');
 const generateThemeFile = require('./theme-generator');
-const { copyStaticAssets } = require('./theme-copy');
+const {copyStaticAssets} = require('./theme-copy');
 
 let logger;
 let executionOptions;
@@ -33,6 +33,8 @@ const nameRegex = /themes\/(.*)\/\1.generated.js/g;
  *  themeResourceFolder             - theme folder where flow copies local and jar resource frontend files
  *  themeProjectFolders             - array of possible locations for theme folders inside the project
  *  projectStaticAssetsOutputFolder - path to where static assets should be put
+ *
+ *  @throws Error in constructor if required option is not received
  */
 class ApplicationThemePlugin {
   constructor(options) {
@@ -78,6 +80,8 @@ module.exports = ApplicationThemePlugin;
  * Search for the given theme in the project and resource folders.
  *
  * @param {string} name of theme to find
+ *
+ * @return true or false for if theme was found
  */
 function findThemeFolderAndHandleTheme(themeName) {
 
@@ -85,14 +89,14 @@ function findThemeFolderAndHandleTheme(themeName) {
   for (let i = 0; i < executionOptions.themeProjectFolders.length; i++) {
     const themeProjectFolder = executionOptions.themeProjectFolders[i];
     if (fs.existsSync(themeProjectFolder)) {
-      logger.info("Searching themes folder ", themeProjectFolder, " for theme ", themeName);
+      logger.info("Searching themes folder", themeProjectFolder, "for theme", themeName);
       const handled = handleThemes(themeName, themeProjectFolder, executionOptions.projectStaticAssetsOutputFolder);
       if (handled) {
         if (themeFound) {
           throw new Error("Found theme files in '" + themeProjectFolder + "' and '"
             + themeFound + "'. Theme should only be available in one folder");
         }
-        logger.info("Found theme files from '", themeProjectFolder, "'");
+        logger.info("Found theme files from '" + themeProjectFolder + "'");
         themeFound = themeProjectFolder;
       }
     }
@@ -105,15 +109,22 @@ function findThemeFolderAndHandleTheme(themeName) {
     }
     logger.debug("Searching theme jar resource folder ", executionOptions.themeResourceFolder, " for theme ", themeName);
     handleThemes(themeName, executionOptions.themeResourceFolder, executionOptions.projectStaticAssetsOutputFolder);
+    themeFound = true;
   }
+  return themeFound;
 }
 
 /**
  * Copies static resources for theme and generates/writes the [theme-name].js for webpack to handle.
  *
+ * Note! If a parent theme is defined it will also be handled here so that the parent theme generated file is
+ * generated in advance of the theme generated file.
+ *
  * @param {string} themeName name of theme to handle
  * @param {string} themesFolder folder containing application theme folders
  * @param {string} projectStaticAssetsOutputFolder folder to output files to
+ *
+ * @throws Error if parent theme defined, but can't locate parent theme
  *
  * @returns true if theme was found else false.
  */
@@ -126,7 +137,11 @@ function handleThemes(themeName, themesFolder, projectStaticAssetsOutputFolder) 
 
     // If theme has parent handle parent theme immediately.
     if (themeProperties.parent) {
-      findThemeFolderAndHandleTheme(themeProperties.parent);
+      const found = findThemeFolderAndHandleTheme(themeProperties.parent);
+      if (!found) {
+        throw new Error("Could not locate files for defined parent theme '" + themeProperties.parent + "'.\n" +
+          "Please verify that dependency is added or theme folder exists.")
+      }
     }
 
     copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputFolder, logger);

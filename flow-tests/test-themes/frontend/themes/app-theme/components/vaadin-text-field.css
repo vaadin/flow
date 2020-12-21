@@ -1,3 +1,5 @@
 [part="input-field"] {
     background: red;
+    border-radius: var(--lumo-border-radius);
+    color: var(--lumo-primary-text-color);
 }
