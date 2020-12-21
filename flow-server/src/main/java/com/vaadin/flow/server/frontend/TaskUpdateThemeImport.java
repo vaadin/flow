@@ -48,7 +48,8 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         File nodeModules = new File(npmFolder, FrontendUtils.NODE_MODULES);
         File flowFrontend = new File(nodeModules,
             FrontendUtils.FLOW_NPM_PACKAGE_NAME);
-        this.themeImportFile = new File(new File(flowFrontend, "theme"),
+        this.themeImportFile = new File(
+                new File(flowFrontend, APPLICATION_THEME_ROOT),
             "theme-generated.js");
         this.theme = theme;
         this.frontendDirectory = frontendDirectory;

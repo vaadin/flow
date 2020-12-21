@@ -5,6 +5,14 @@
     src: url("./font/ostrich-sans-regular.ttf") format("TrueType");
 }
 
+@font-face {
+    font-family: 'IBM Plex Mono';
+    font-style: normal;
+    font-weight: 400;
+    src: url("./font/IBMPlexMono-Regular.otf") format("opentype");
+
+}
+
 body {
     background-image: url("./img/bg.jpg");
     font-family: "Ostrich";
@@ -23,4 +31,10 @@ body {
     width: 224px;
     height: 224px;
     display: block;
+}
+
+p.global {
+    color: rgba(255, 255, 0, 1); /* yellow */
+    font-size: 20px;
+    margin: 2px;
 }

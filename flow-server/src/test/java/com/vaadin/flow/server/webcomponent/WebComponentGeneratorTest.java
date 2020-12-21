@@ -181,7 +181,7 @@ public class WebComponentGeneratorTest {
         // make sure that the test works on windows machines:
         module = module.replace("\r", "");
         MatcherAssert.assertThat(module,
-                startsWith("import {applyTheme} from 'theme/theme-generated.js';\n\nclass Tag extends HTMLElement {"));
+                startsWith("import {applyTheme} from 'themes/theme-generated.js';\n\nclass Tag extends HTMLElement {"));
         MatcherAssert
             .assertThat(module, containsString("style.innerHTML = `\n" //
                 + "      :host {\n" //
@@ -190,7 +190,7 @@ public class WebComponentGeneratorTest {
                 + "      }\n" //
                 + "    `;\n"));
 
-        MatcherAssert.assertThat(module, containsString("applyTheme(shadow);\nshadow.appendChild(style);"));
+        MatcherAssert.assertThat(module, containsString("applyTheme(shadow);\n    shadow.appendChild(style);"));
         MatcherAssert.assertThat(module,
                 containsString("customElements.define('tag', Tag);\n"));
     }
