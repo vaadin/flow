@@ -32,3 +32,9 @@ body {
     height: 224px;
     display: block;
 }
+
+p.global {
+    color: rgba(255, 255, 0, 1); /* yellow */
+    font-size: 20px;
+    margin: 2px;
+}
