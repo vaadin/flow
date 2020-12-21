@@ -393,6 +393,20 @@ export class ConnectionIndicator extends LitElement {
 
     return enabled ? window.setTimeout(handler, delay) : 0;
   }
+
+  /**
+   * Initialize global connection indicator instance at window.Vaadin.connectionIndicator
+   * and add instance to the document body.
+   */
+  static get instance(): ConnectionIndicator {
+    const $wnd = window as any;
+    if (!$wnd.Vaadin?.connectionIndicator) {
+      $wnd.Vaadin = $wnd.Vaadin || {};
+      $wnd.Vaadin.connectionIndicator = document.createElement('vaadin-connection-indicator');
+      document.body.appendChild($wnd.Vaadin.connectionIndicator);
+    }
+    return $wnd.Vaadin?.connectionIndicator as ConnectionIndicator;
+  }
 }
 
 /**
@@ -409,23 +423,14 @@ if (customElements.get('vaadin-connection-indicator') === undefined) {
   customElements.define('vaadin-connection-indicator', ConnectionIndicator);
 }
 
-
 /**
- * Gets the global connection indicator object. Its appearance and behavior
- * can be configured via properties:
+ * The global connection indicator object. Its appearance and behavior can be
+ * configured via properties:
  *
- * getConnectionIndicator().firstDelay = 0;
- * getConnectionIndicator().onlineText = 'The application is online';
+ * connectionIndicator.firstDelay = 0;
+ * connectionIndicator.onlineText = 'The application is online';
  *
  * To avoid altering the appearance while the indicator is active, apply the
  * configuration in your application 'frontend/index.ts' file.
  */
-export function getConnectionIndicator(): ConnectionIndicator {
-  const $wnd = window as any;
-  if (!$wnd.Vaadin?.connectionIndicator) {
-    $wnd.Vaadin = $wnd.Vaadin || {};
-    $wnd.Vaadin.connectionIndicator = document.createElement('vaadin-connection-indicator');
-    document.body.appendChild($wnd.Vaadin.connectionIndicator);
-  }
-  return $wnd.Vaadin.connectionIndicator as ConnectionIndicator;
-}
+export const connectionIndicator = ConnectionIndicator.instance;

@@ -1,4 +1,4 @@
-import {getConnectionIndicator} from "./ConnectionIndicator";
+import {ConnectionIndicator} from "./ConnectionIndicator";
 import {ConnectionState, ConnectionStateChangeListener, ConnectionStateStore} from './ConnectionState';
 
 export interface FlowConfig {
@@ -353,7 +353,9 @@ export class Flow {
 
   // Create shared connection state store and connection indicator
   private addConnectionIndicator() {
-    getConnectionIndicator();
+    // accessor ensures connection indicator exists and is added to DOM
+    // tslint:disable-next-line:no-unused-expression
+    ConnectionIndicator.instance;
 
     // Listen to browser online/offline events and update the loading indicator accordingly.
     // Note: if flow-client is loaded, it instead handles the state transitions.
