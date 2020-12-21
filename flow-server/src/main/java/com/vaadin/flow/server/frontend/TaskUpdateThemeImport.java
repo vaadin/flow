@@ -97,12 +97,11 @@ public class TaskUpdateThemeImport implements FallibleCommand {
                         "theme name '%s', but could not find the theme " +
                         "directory in the project or available as a jar " +
                         "dependency. Check if you forgot to create the " +
-                        "folder under './%s/%s/' or have mistyped the theme " +
+                        "folder under '%s' or have mistyped the theme " +
                         "or folder name for '%s'.";
 
                 throw new ExecutionFailedException(String.format(errorMessage,
-                        themeName, frontendDirectory.getName(),
-                        APPLICATION_THEME_ROOT, themeName));
+                        themeName, mainThemesDir, themeName));
             }
         } else {
             if (otherFoldersToSearch.anyMatch(File::exists)) {
