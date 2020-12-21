@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.util.function.Supplier;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
@@ -66,8 +67,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         IndexHtmlResponse indexHtmlResponse;
 
         Document indexDocument = config.isProductionMode()
-                ? getCachedIndexHtmlDocument(request.getService())
-                : getIndexHtmlDocument(request.getService());
+                ? getCachedIndexHtmlDocument(request)
+                : getIndexHtmlDocument(request);
 
         prependBaseHref(request, indexDocument);
 
@@ -197,13 +198,13 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
     }
 
-    private void configureErrorDialogStyles(Document document) {
+    protected void configureErrorDialogStyles(Document document) {
         Element styles = document.createElement("style");
         document.head().appendChild(styles);
         setupErrorDialogs(styles);
     }
 
-    private static void prependBaseHref(VaadinRequest request,
+    protected void prependBaseHref(VaadinRequest request,
             Document indexDocument) {
         Elements base = indexDocument.head().getElementsByTag("base");
         String baseHref = getServiceUrl(request);
@@ -214,20 +215,27 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
     }
 
-    private static Document getCachedIndexHtmlDocument(VaadinService service) {
-        return service.getContext()
-                .getAttribute(IndexHtmlHolder.class, () -> new IndexHtmlHolder(service))
-                .getDocument();
+    protected Document getCachedIndexHtmlDocument(VaadinRequest request) {
+        VaadinService service = request.getService();
+        Supplier<IndexHtmlHolder> indexSupplyer = () -> {
+            try {
+                Document doc = getIndexHtmlDocument(request);
+                return new IndexHtmlHolder(doc);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        };
+        return service.getContext().getAttribute(IndexHtmlHolder.class, indexSupplyer).getDocument();
     }
 
-    private static Document getIndexHtmlDocument(VaadinService service)
+    protected Document getIndexHtmlDocument(VaadinRequest request)
             throws IOException {
-        String index = FrontendUtils.getIndexHtmlContent(service);
+        String index = FrontendUtils.getIndexHtmlContent(request.getService());
         if (index != null) {
             return Jsoup.parse(index);
         }
         String frontendDir = FrontendUtils.getProjectFrontendDir(
-                service.getDeploymentConfiguration());
+                request.getService().getDeploymentConfiguration());
         String indexHtmlFilePath;
         if(frontendDir.endsWith(File.separator)) {
             indexHtmlFilePath = frontendDir + "index.html";
@@ -252,13 +260,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static final class IndexHtmlHolder implements Serializable {
         private final transient Document indexHtmlDocument;
 
-        private IndexHtmlHolder(VaadinService service) {
-            try {
-                this.indexHtmlDocument = getIndexHtmlDocument(service);
-                this.indexHtmlDocument.outputSettings().prettyPrint(false);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
+        private IndexHtmlHolder(Document indexHtmlDocument ) {
+           this.indexHtmlDocument =indexHtmlDocument;
+           this.indexHtmlDocument.outputSettings().prettyPrint(false);
         }
 
         private Document getDocument() {
