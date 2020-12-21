@@ -134,7 +134,11 @@ suite("Flow", () => {
     mock.teardown();
     delete $wnd.Vaadin;
     delete flowRoot.$;
-    delete flowRoot.$server;
+    if (flowRoot.$server) {
+      // clear timers started in stubServerRemoteFunction
+      flowRoot.$server.timers.forEach(clearTimeout);
+      delete flowRoot.$server;
+    }
     listeners.forEach( recorded => {
       $wnd.removeEventListener(recorded.type, recorded.listener);
     });
@@ -488,7 +492,6 @@ suite("Flow", () => {
             return {cancel: true};
           }})
           .then(obj => assert.isTrue(obj.cancel));
-
       });
   });
 
@@ -753,6 +756,8 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRege
 
   // Stub remote function exported in JavaScriptBootstrapUI.
   flowRoot.$server = {
+    timers: [],
+
     connectClient: (localName: string, elemId: string, route: string) => {
 
       assert.isDefined(localName);
@@ -777,15 +782,17 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRege
       container.appendChild(document.createElement('div'));
 
       // asynchronously resolve the remote server call
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         container.serverConnected(cancel, url);
         // container should be visible when not cancelled or not has redirect server-client
         assert.equal(cancel || url ? 'none' : '', container.style.display);
       }, 10);
+      flowRoot.$server.timers.push(timer);
     },
     leaveNavigation: () => {
       // asynchronously resolve the promise
-      setTimeout(() => container.serverConnected(cancel, url), 10);
+      const timer = setTimeout(() => container.serverConnected(cancel, url), 10);
+      flowRoot.$server.timers.push(timer);
     }
   };
 }
