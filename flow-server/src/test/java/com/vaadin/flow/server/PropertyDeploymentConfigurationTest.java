@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Properties;
 
@@ -394,6 +395,27 @@ public class PropertyDeploymentConfigurationTest {
 
         Assert.assertEquals("foobar", initParameters.get("foo"));
         Assert.assertEquals("baz", initParameters.get("bar"));
+    }
+
+    @Test
+    public void allDefaultAbstractConfigurationMethodsAreOverridden() {
+        Method[] methods = PropertyDeploymentConfiguration.class.getMethods();
+        for (Method method : methods) {
+            Assert.assertNotEquals("There is a method '" + method.getName()
+                    + "' which is declared in  " + AbstractConfiguration.class
+                    + " interface but it's not overriden in the "
+                    + PropertyDeploymentConfiguration.class
+                    + ". That's most likely a mistake because every method implementation in "
+                    + PropertyDeploymentConfiguration.class
+                    + " must take into account parent "
+                    + ApplicationConfiguration.class
+                    + " API which shares the same interface "
+                    + AbstractConfiguration.class + " with "
+                    + PropertyDeploymentConfiguration.class
+                    + ", so every API method should call parent config and may not use just default implementation of "
+                    + AbstractConfiguration.class, AbstractConfiguration.class,
+                    method.getDeclaringClass());
+        }
     }
 
     private ApplicationConfiguration mockAppConfig() {
