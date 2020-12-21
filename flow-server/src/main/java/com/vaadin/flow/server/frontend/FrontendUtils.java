@@ -317,13 +317,6 @@ public class FrontendUtils {
     public static final String BRIGHT_BLUE = "\u001b[94m%s\u001b[0m";
 
     /**
-     * The directory name for the themes directory. It should be the direct
-     * child of frontend directory which is by default named as "frontend", @see
-     * {@link FrontendUtils#FRONTEND} and {@link FrontendUtils#DEFAULT_FRONTEND_DIR}
-     */
-    public static final String APP_THEMES_FOLDER_NAME = "themes";
-
-    /**
      * Only static stuff here.
      */
     private FrontendUtils() {

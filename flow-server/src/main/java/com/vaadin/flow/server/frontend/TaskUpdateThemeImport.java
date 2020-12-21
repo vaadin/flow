@@ -18,6 +18,8 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
@@ -25,7 +27,9 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.APP_THEMES_FOLDER_NAME;
+import static com.vaadin.flow.server.Constants.APPLICATION_META_INF_RESOURCES;
+import static com.vaadin.flow.server.Constants.APPLICATION_STATIC_RESOURCES;
+import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
 
 /**
  * Task for generating the theme-generated.js file for importing application
@@ -56,7 +60,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
             return;
         }
 
-        verifyThemeDirectoryExistence();
+        verifyThemeDirectoryExistence(theme.getName(), frontendDirectory);
 
         if (!themeImportFile.getParentFile().mkdirs()) {
             LoggerFactory.getLogger(getClass()).debug(
@@ -76,18 +80,63 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         }
     }
 
-    private void verifyThemeDirectoryExistence() throws ExecutionFailedException {
-        File themesDir = new File (frontendDirectory, APP_THEMES_FOLDER_NAME);
-        File customThemeDir = new File (themesDir, theme.getName());
-        if (!customThemeDir.exists()) {
-            String errorMessage = "Discovered @Theme annotation with theme name '%s', " +
-                    "but could not find the theme directory in the " +
-                    "project or available as a jar dependency." +
-                    "Check if you forgot to create the folder in '%s' or have " +
-                    "mistyped the theme or folder name for '%s'.";
+    private void verifyThemeDirectoryExistence(String themeName,
+                                               File frontendDirectory)
+            throws ExecutionFailedException {
 
-            throw new ExecutionFailedException(String.format(errorMessage,
-                    theme.getName(), themesDir, theme.getName()));
+        File mainThemesDir = new File (frontendDirectory, APPLICATION_THEME_ROOT);
+        File mainCustomThemeDir = new File (mainThemesDir, themeName);
+
+        Stream<File> otherFoldersToSearch = getOtherFoldersToSearchForAppTheme(
+                themeName, frontendDirectory);
+
+        if (!mainCustomThemeDir.exists()) {
+            if (otherFoldersToSearch.noneMatch(File::exists)) {
+                String errorMessage = "Discovered @Theme annotation with " +
+                        "theme name '%s', but could not find the theme " +
+                        "directory in the project or available as a jar " +
+                        "dependency. Check if you forgot to create the " +
+                        "folder under './%s/%s/' or have mistyped the theme " +
+                        "or folder name for '%s'.";
+
+                throw new ExecutionFailedException(String.format(errorMessage,
+                        themeName, frontendDirectory.getName(),
+                        APPLICATION_THEME_ROOT, themeName));
+            }
+        } else {
+            if (otherFoldersToSearch.anyMatch(File::exists)) {
+                String errorMessage = "Discovered Theme folder for theme " +
+                        "'%s' in more than one place in the project. Please " +
+                        "remove the duplicate(s) and try again. The " +
+                        "recommended place to put the theme folder inside " +
+                        "the project is './%s/%s/'";
+
+                throw new ExecutionFailedException(String.format(errorMessage,
+                        themeName, frontendDirectory.getName(),
+                        APPLICATION_THEME_ROOT));
+            }
         }
+    }
+
+    private Stream<File> getOtherFoldersToSearchForAppTheme(String themeName,
+                                                    File frontendDirectory) {
+        File projectRootDir = frontendDirectory.getParentFile();
+
+        File metaInfDir = new File(projectRootDir,
+                APPLICATION_META_INF_RESOURCES);
+        File metaInfThemesDir = new File(metaInfDir, APPLICATION_THEME_ROOT);
+        File metaInfCustomThemeDir = new File(metaInfThemesDir, themeName);
+
+        File staticDir = new File(projectRootDir, APPLICATION_STATIC_RESOURCES);
+        File staticThemesDir = new File(staticDir, APPLICATION_THEME_ROOT);
+        File staticCustomThemeDir = new File(staticThemesDir, themeName);
+
+        File classpathThemesDir = new File(
+                themeImportFile.getParentFile().getParent(),
+                APPLICATION_THEME_ROOT);
+        File classpathCustomThemeDir = new File(classpathThemesDir, themeName);
+
+        return Arrays.stream(new File[] { metaInfCustomThemeDir,
+                staticCustomThemeDir, classpathCustomThemeDir });
     }
 }
