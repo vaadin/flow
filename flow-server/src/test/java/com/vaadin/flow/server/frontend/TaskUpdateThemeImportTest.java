@@ -17,10 +17,16 @@
 
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.TaskUpdateThemeImport.APPLICATION_META_INF_RESOURCES;
+import static com.vaadin.flow.server.frontend.TaskUpdateThemeImport.APPLICATION_STATIC_RESOURCES;
+
 import java.io.File;
 import java.io.IOException;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,18 +38,15 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static com.vaadin.flow.server.Constants.APPLICATION_META_INF_RESOURCES;
-import static com.vaadin.flow.server.Constants.APPLICATION_STATIC_RESOURCES;
-import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class TaskUpdateThemeImportTest {
 
     private static final String CUSTOM_THEME_NAME = "custom-theme";
     private static final String CUSTOM_VARIANT_NAME = "custom-variant";
+    private static final String CUSTOM_THEME_PATH = String.join("/",
+            APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME);
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -63,9 +66,9 @@ public class TaskUpdateThemeImportTest {
         frontendDirectory = new File(projectRoot, DEFAULT_FRONTEND_DIR);
 
         File nodeModules = new File(npmFolder, NODE_MODULES);
-        File flowFrontend = new File(nodeModules,
-                FLOW_NPM_PACKAGE_NAME);
-        themeImportFile = new File(new File(flowFrontend, "theme"),
+        File flowFrontend = new File(nodeModules, FLOW_NPM_PACKAGE_NAME);
+        themeImportFile = new File(
+                new File(flowFrontend, APPLICATION_THEME_ROOT),
                 "theme-generated.js");
 
         dummyThemeClass = Mockito.mock(AbstractTheme.class).getClass();
@@ -86,14 +89,14 @@ public class TaskUpdateThemeImportTest {
                         faultyFrontendDirectory);
 
         ExecutionFailedException e = Assert.assertThrows(
-                                        ExecutionFailedException.class,
+                ExecutionFailedException.class,
                 taskUpdateThemeImportWithNonExistentThemeFolder::execute);
 
-        Assert.assertTrue(e.getMessage().contains(
-            String.format("Discovered @Theme annotation with theme name '%s', " +
-                            "but could not find the theme directory in the " +
-                            "project or available as a jar dependency.",
-                    CUSTOM_THEME_NAME)));
+        Assert.assertTrue(e.getMessage().contains(String.format(
+                "Discovered @Theme annotation with theme name '%s', "
+                        + "but could not find the theme directory in the "
+                        + "project or available as a jar dependency.",
+                CUSTOM_THEME_NAME)));
     }
 
     @Test
@@ -108,16 +111,18 @@ public class TaskUpdateThemeImportTest {
         Assert.assertTrue(String.format(
                 "%s directory should be created at '%s%s/%s' but failed.",
                 CUSTOM_THEME_NAME, DEFAULT_FRONTEND_DIR, APPLICATION_THEME_ROOT,
-                CUSTOM_THEME_NAME),
-                customThemeDirCreatedSuccessfully);
+                CUSTOM_THEME_NAME), customThemeDirCreatedSuccessfully);
 
-        Assert.assertFalse("\"theme-generated.js\" should not exist before" +
-                " executing TaskUpdateThemeImport.", themeImportFile.exists());
+        Assert.assertFalse(
+                "\"theme-generated.js\" should not exist before"
+                        + " executing TaskUpdateThemeImport.",
+                themeImportFile.exists());
 
         taskUpdateThemeImport.execute();
 
-        Assert.assertTrue("\"theme-generated.js\" should be created as the " +
-                        "result of executing TaskUpdateThemeImport.",
+        Assert.assertTrue(
+                "\"theme-generated.js\" should be created as the "
+                        + "result of executing TaskUpdateThemeImport.",
                 themeImportFile.exists());
     }
 
@@ -139,13 +144,16 @@ public class TaskUpdateThemeImportTest {
                 APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME),
                 customThemeDirCreatedSuccessfully);
 
-        Assert.assertFalse("\"theme-generated.js\" should not exist before" +
-                " executing TaskUpdateThemeImport.", themeImportFile.exists());
+        Assert.assertFalse(
+                "\"theme-generated.js\" should not exist before"
+                        + " executing TaskUpdateThemeImport.",
+                themeImportFile.exists());
 
         taskUpdateThemeImport.execute();
 
-        Assert.assertTrue("\"theme-generated.js\" should be created as the " +
-                        "result of executing TaskUpdateThemeImport.",
+        Assert.assertTrue(
+                "\"theme-generated.js\" should be created as the "
+                        + "result of executing TaskUpdateThemeImport.",
                 themeImportFile.exists());
     }
 
@@ -167,13 +175,16 @@ public class TaskUpdateThemeImportTest {
                 APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME),
                 customThemeDirCreatedSuccessfully);
 
-        Assert.assertFalse("\"theme-generated.js\" should not exist before" +
-                " executing TaskUpdateThemeImport.", themeImportFile.exists());
+        Assert.assertFalse(
+                "\"theme-generated.js\" should not exist before"
+                        + " executing TaskUpdateThemeImport.",
+                themeImportFile.exists());
 
         taskUpdateThemeImport.execute();
 
-        Assert.assertTrue("\"theme-generated.js\" should be created as the " +
-                        "result of executing TaskUpdateThemeImport.",
+        Assert.assertTrue(
+                "\"theme-generated.js\" should be created as the "
+                        + "result of executing TaskUpdateThemeImport.",
                 themeImportFile.exists());
     }
 
@@ -181,12 +192,10 @@ public class TaskUpdateThemeImportTest {
     public void taskExecuted_customThemeWithThemeFolderInClasspath_ensuresThemeGeneratedJsCreatedSuccessfully()
             throws Exception {
 
-        File correctNodeModulesDirectory = new File(projectRoot,
-                NODE_MODULES);
+        File correctNodeModulesDirectory = new File(projectRoot, NODE_MODULES);
         File vaadinNpmPackageDir = new File(correctNodeModulesDirectory,
                 FLOW_NPM_PACKAGE_NAME);
-        File themesDir = new File(vaadinNpmPackageDir,
-                APPLICATION_THEME_ROOT);
+        File themesDir = new File(vaadinNpmPackageDir, APPLICATION_THEME_ROOT);
         File aCustomThemeDir = new File(themesDir, CUSTOM_THEME_NAME);
 
         boolean customThemeDirCreatedSuccessfully = aCustomThemeDir.mkdirs();
@@ -197,13 +206,206 @@ public class TaskUpdateThemeImportTest {
                 APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME),
                 customThemeDirCreatedSuccessfully);
 
-        Assert.assertFalse("\"theme-generated.js\" should not exist before" +
-                " executing TaskUpdateThemeImport.", themeImportFile.exists());
+        Assert.assertFalse(
+                "\"theme-generated.js\" should not exist before"
+                        + " executing TaskUpdateThemeImport.",
+                themeImportFile.exists());
 
         taskUpdateThemeImport.execute();
 
-        Assert.assertTrue("\"theme-generated.js\" should be created as the " +
-                        "result of executing TaskUpdateThemeImport.",
+        Assert.assertTrue(
+                "\"theme-generated.js\" should be created as the "
+                        + "result of executing TaskUpdateThemeImport.",
                 themeImportFile.exists());
+    }
+
+    @Test
+    public void taskExecuted_customThemeFolderExistsInBothFrontendAndInClasspath_throwsException() {
+
+        File themeDir = new File(frontendDirectory, CUSTOM_THEME_PATH);
+        Assert.assertTrue(themeDir.mkdirs());
+
+        String classPathThemePath = NODE_MODULES + FLOW_NPM_PACKAGE_NAME
+                + CUSTOM_THEME_PATH;
+        File classPathThemeDir = new File(projectRoot, classPathThemePath);
+        Assert.assertTrue(classPathThemeDir.mkdirs());
+
+        ExecutionFailedException e = Assert.assertThrows(
+                ExecutionFailedException.class, taskUpdateThemeImport::execute);
+
+        Assert.assertTrue(e.getMessage()
+                .contains(String.format(
+                        "Theme '%s' should not exist inside a "
+                                + "jar and in the project at the same time.",
+                        CUSTOM_THEME_NAME)));
+    }
+
+    @Test
+    public void taskExecuted_customThemeFolderExistsInBothMetaInfResourcesAndInClasspath_throwsException() {
+
+        String metaInfResources = String.join("/",
+                APPLICATION_META_INF_RESOURCES, CUSTOM_THEME_PATH);
+        File themeDir = new File(projectRoot, metaInfResources);
+        Assert.assertTrue(themeDir.mkdirs());
+
+        String classPathThemePath = NODE_MODULES + FLOW_NPM_PACKAGE_NAME
+                + CUSTOM_THEME_PATH;
+        File classPathThemeDir = new File(projectRoot, classPathThemePath);
+        Assert.assertTrue(classPathThemeDir.mkdirs());
+
+        ExecutionFailedException e = Assert.assertThrows(
+                ExecutionFailedException.class, taskUpdateThemeImport::execute);
+
+        Assert.assertTrue(e.getMessage()
+                .contains(String.format(
+                        "Theme '%s' should not exist inside a "
+                                + "jar and in the project at the same time.",
+                        CUSTOM_THEME_NAME)));
+    }
+
+    @Test
+    public void taskExecuted_customThemeFolderExistsInBothStaticResourcesAndInClasspath_throwsException() {
+
+        String staticResources = String.join("/", APPLICATION_STATIC_RESOURCES,
+                CUSTOM_THEME_PATH);
+        File themeDir = new File(projectRoot, staticResources);
+        Assert.assertTrue(themeDir.mkdirs());
+
+        String classPathThemePath = NODE_MODULES + FLOW_NPM_PACKAGE_NAME
+                + CUSTOM_THEME_PATH;
+        File classPathThemeDir = new File(projectRoot, classPathThemePath);
+        Assert.assertTrue(classPathThemeDir.mkdirs());
+
+        ExecutionFailedException e = Assert.assertThrows(
+                ExecutionFailedException.class, taskUpdateThemeImport::execute);
+
+        Assert.assertTrue(e.getMessage()
+                .contains(String.format(
+                        "Theme '%s' should not exist inside a "
+                                + "jar and in the project at the same time.",
+                        CUSTOM_THEME_NAME)));
+    }
+
+    @Test
+    public void taskExecuted_customThemeFolderExistsInBothStaticAndMetaInfResources_throwsException() {
+
+        String staticResources = String.join("/", APPLICATION_STATIC_RESOURCES,
+                CUSTOM_THEME_PATH);
+        File themeDirInStatic = new File(projectRoot, staticResources);
+        Assert.assertTrue(themeDirInStatic.mkdirs());
+
+        String metaInfResources = String.join("/",
+                APPLICATION_META_INF_RESOURCES, CUSTOM_THEME_PATH);
+        File themeDirInMetaInf = new File(projectRoot, metaInfResources);
+        Assert.assertTrue(themeDirInMetaInf.mkdirs());
+
+        ExecutionFailedException e = Assert.assertThrows(
+                ExecutionFailedException.class, taskUpdateThemeImport::execute);
+
+        Assert.assertTrue(e.getMessage().contains(String.format(
+                "Discovered Theme folder for theme '%s' "
+                        + "in more than one place in the project. Please "
+                        + "make sure there is only one theme folder with name '%s' "
+                        + "exists in the your project. ",
+                CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
+    }
+
+    @Test
+    public void taskExecuted_customThemeFolderExistsInBothFrontendAndMetaInfResources_throwsException() {
+
+        File themeDir = new File(frontendDirectory, CUSTOM_THEME_PATH);
+        Assert.assertTrue(themeDir.mkdirs());
+
+        String metaInfResources = String.join("/",
+                APPLICATION_META_INF_RESOURCES, CUSTOM_THEME_PATH);
+        File themeDirInMetaInf = new File(projectRoot, metaInfResources);
+        Assert.assertTrue(themeDirInMetaInf.mkdirs());
+
+        ExecutionFailedException e = Assert.assertThrows(
+                ExecutionFailedException.class, taskUpdateThemeImport::execute);
+
+        Assert.assertTrue(e.getMessage().contains(String.format(
+            "Discovered Theme folder for theme '%s' "
+                    + "in more than one place in the project. Please "
+                    + "make sure there is only one theme folder with name '%s' "
+                    + "exists in the your project. ",
+            CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
+    }
+
+    @Test
+    public void taskExecuted_customThemeFolderExistsInBothFrontendAndStaticResources_throwsException() {
+
+        File themeDir = new File(frontendDirectory, CUSTOM_THEME_PATH);
+        Assert.assertTrue(themeDir.mkdirs());
+
+        String staticResources = String.join("/", APPLICATION_STATIC_RESOURCES,
+                CUSTOM_THEME_PATH);
+        File themeDirInStatic = new File(projectRoot, staticResources);
+        Assert.assertTrue(themeDirInStatic.mkdirs());
+
+        ExecutionFailedException e = Assert.assertThrows(
+                ExecutionFailedException.class, taskUpdateThemeImport::execute);
+
+        Assert.assertTrue(e.getMessage().contains(String.format(
+            "Discovered Theme folder for theme '%s' "
+                    + "in more than one place in the project. Please "
+                    + "make sure there is only one theme folder with name '%s' "
+                    + "exists in the your project. ",
+            CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
+    }
+
+    @Test
+    public void taskExecuted_customThemeFolderExistsInFrontendAndStaticAndMetaInfResources_throwsException() {
+
+        File themeDir = new File(frontendDirectory, CUSTOM_THEME_PATH);
+        Assert.assertTrue(themeDir.mkdirs());
+
+        String staticResources = String.join("/", APPLICATION_STATIC_RESOURCES,
+                CUSTOM_THEME_PATH);
+        File themeDirInStatic = new File(projectRoot, staticResources);
+        Assert.assertTrue(themeDirInStatic.mkdirs());
+
+        String metaInfResources = String.join("/",
+                APPLICATION_META_INF_RESOURCES, CUSTOM_THEME_PATH);
+        File themeDirInMetaInf = new File(projectRoot, metaInfResources);
+        Assert.assertTrue(themeDirInMetaInf.mkdirs());
+
+        ExecutionFailedException e = Assert.assertThrows(
+                ExecutionFailedException.class, taskUpdateThemeImport::execute);
+
+        Assert.assertTrue(e.getMessage().contains(String.format(
+            "Discovered Theme folder for theme '%s' "
+                    + "in more than one place in the project. Please "
+                    + "make sure there is only one theme folder with name '%s' "
+                    + "exists in the your project. ",
+            CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
+    }
+
+    @Test
+    public void taskExecuted_customThemeFolderExistsInClassPathAndStaticAndMetaInfResources_throwsException() {
+
+        String classPathThemePath = NODE_MODULES + FLOW_NPM_PACKAGE_NAME
+                + CUSTOM_THEME_PATH;
+        File classPathThemeDir = new File(projectRoot, classPathThemePath);
+        Assert.assertTrue(classPathThemeDir.mkdirs());
+
+        String staticResources = String.join("/", APPLICATION_STATIC_RESOURCES,
+                CUSTOM_THEME_PATH);
+        File themeDirInStatic = new File(projectRoot, staticResources);
+        Assert.assertTrue(themeDirInStatic.mkdirs());
+
+        String metaInfResources = String.join("/",
+                APPLICATION_META_INF_RESOURCES, CUSTOM_THEME_PATH);
+        File themeDirInMetaInf = new File(projectRoot, metaInfResources);
+        Assert.assertTrue(themeDirInMetaInf.mkdirs());
+
+        ExecutionFailedException e = Assert.assertThrows(
+                ExecutionFailedException.class, taskUpdateThemeImport::execute);
+
+        Assert.assertTrue(e.getMessage()
+                .contains(String.format(
+                        "Theme '%s' should not exist inside a "
+                                + "jar and in the project at the same time.",
+                        CUSTOM_THEME_NAME)));
     }
 }

@@ -422,25 +422,6 @@ public final class Constants implements Serializable {
     // Non-default port currently not supported (#7970)
     public static final int SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT = 35729;
 
-    /**
-     * The name of the application theme root folder.
-     *
-     * It should be the direct child of frontend directory which is by default
-     * named as "frontend".
-     */
-    public static final String APPLICATION_THEME_ROOT = "themes";
-
-    /**
-     * The constant "src/main/resources/META-INF/resources" path in project
-     * source files.
-     */
-    public static final String APPLICATION_META_INF_RESOURCES = "src/main/resources/META-INF/resources";
-
-    /**
-     * The constant "src/main/resources/static" path in project sources files.
-     */
-    public static final String APPLICATION_STATIC_RESOURCES = "src/main/resources/static";
-
     private Constants() {
         // prevent instantiation constants class only
     }
