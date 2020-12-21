@@ -75,16 +75,6 @@ public class DeploymentConfigurationFactoryTest {
         }
     }
 
-    private static class TestDeploymentConfigurationFactory
-            extends DeploymentConfigurationFactory {
-        @Override
-        protected Properties createInitParameters(
-                Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig) {
-            return super.createInitParameters(systemPropertyBaseClass,
-                    vaadinConfig);
-        }
-    }
-
     @Before
     public void setup() throws IOException {
         System.setProperty("user.dir",
@@ -293,7 +283,7 @@ public class DeploymentConfigurationFactoryTest {
     @Test
     public void createInitParameters_valuesFromContextAreIgnored_valuesAreTakenFromservletConfig()
             throws Exception {
-        TestDeploymentConfigurationFactory factory = new TestDeploymentConfigurationFactory();
+        DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
 
         VaadinContext context = Mockito.mock(VaadinContext.class);
         VaadinConfig config = Mockito.mock(VaadinConfig.class);
@@ -320,6 +310,90 @@ public class DeploymentConfigurationFactoryTest {
 
         Assert.assertEquals("baz", parameters.get("foo"));
         Assert.assertFalse(parameters.contains("bar"));
+    }
+
+    @Test
+    public void createInitParameters_tokenFileIsSetViaContext_externalStatsUrlIsReadFromTokenFile_predefinedProperties()
+            throws Exception {
+        DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
+
+        VaadinConfig config = mockTokenFileViaContextParam(
+                "{ 'externalStatsUrl': 'http://my.server/static/stats.json'}");
+
+        Properties parameters = factory.createInitParameters(Object.class,
+                config);
+
+        Assert.assertEquals("http://my.server/static/stats.json",
+                parameters.get(Constants.EXTERNAL_STATS_URL));
+        Assert.assertEquals(Boolean.TRUE.toString(),
+                parameters.get(Constants.EXTERNAL_STATS_FILE));
+        Assert.assertEquals(Boolean.FALSE.toString(), parameters
+                .get(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER));
+    }
+
+    @Test
+    public void createInitParameters_tokenFileIsSetViaContext_externalStatsFileIsReadFromTokenFile_predefinedProperties()
+            throws Exception {
+        DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
+
+        VaadinConfig config = mockTokenFileViaContextParam(
+                "{ 'externalStatsFile': true}");
+
+        Properties parameters = factory.createInitParameters(Object.class,
+                config);
+
+        Assert.assertEquals(Boolean.TRUE.toString(),
+                parameters.get(Constants.EXTERNAL_STATS_FILE));
+        Assert.assertEquals(Boolean.FALSE.toString(), parameters
+                .get(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER));
+    }
+
+    @Test
+    public void createInitParameters_tokenFileIsSetViaContext_setPropertyFromTokenFile()
+            throws Exception {
+        DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
+
+        VaadinConfig config = mockTokenFileViaContextParam(
+                "{ '" + SERVLET_PARAMETER_PRODUCTION_MODE + "': true}");
+
+        Properties parameters = factory.createInitParameters(Object.class,
+                config);
+
+        Assert.assertEquals(Boolean.TRUE.toString(),
+                parameters.get(SERVLET_PARAMETER_PRODUCTION_MODE));
+    }
+
+    private VaadinConfig mockTokenFileViaContextParam(String content)
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+
+        Mockito.when(config.getConfigParameterNames())
+                .thenReturn(Collections.enumeration(
+                        Collections.singleton(FrontendUtils.PARAM_TOKEN_FILE)));
+        Mockito.when(context.getContextParameterNames())
+                .thenReturn(Collections.emptyEnumeration());
+
+        Mockito.when(config.getVaadinContext()).thenReturn(context);
+
+        File tmpFile = temporaryFolder.newFile();
+        Files.write(tmpFile.toPath(), Collections.singletonList(content));
+
+        Mockito.when(
+                context.getContextParameter(FrontendUtils.PARAM_TOKEN_FILE))
+                .thenReturn(tmpFile.getPath());
+
+        Mockito.when(config.getConfigParameter(FrontendUtils.PARAM_TOKEN_FILE))
+                .thenReturn(tmpFile.toString());
+
+        Mockito.when(context.getAttribute(
+                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
+                .thenReturn(appConfig);
+
+        return config;
     }
 
     @Test

@@ -33,6 +33,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -73,21 +74,54 @@ public class DefaultApplicationConfigurationFactoryTest {
     }
 
     @Test
+    public void create_tokenFileIsReadFromClassloader_externalStatsFileIsReadFromTokenFile_predefinedContext()
+            throws MalformedURLException, IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        String content = "{ 'externalStatsFile':true }";
+        mockClassPathTokenFile(resourceProvider, content);
+
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+        ApplicationConfiguration configuration = factory.create(context);
+
+        List<String> propertyNames = Collections
+                .list(configuration.getPropertyNames());
+        Assert.assertTrue(
+                propertyNames.contains(Constants.EXTERNAL_STATS_FILE));
+        Assert.assertTrue(configuration
+                .getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false));
+        Assert.assertFalse(configuration.isProductionMode());
+        Assert.assertFalse(configuration.enableDevServer());
+    }
+
+    @Test
+    public void create_tokenFileIsSetViaContext_externalStatsFileIsReadFromTokenFile_predefinedContext()
+            throws MalformedURLException, IOException {
+        String content = "{ 'externalStatsFile':true }";
+        VaadinContext context = mockTokenFileViaContextParam(content);
+
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+        ApplicationConfiguration configuration = factory.create(context);
+
+        List<String> propertyNames = Collections
+                .list(configuration.getPropertyNames());
+        Assert.assertTrue(
+                propertyNames.contains(Constants.EXTERNAL_STATS_FILE));
+        Assert.assertTrue(configuration
+                .getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false));
+        Assert.assertFalse(configuration.isProductionMode());
+        Assert.assertFalse(configuration.enableDevServer());
+    }
+
+    @Test
     public void create_tokenFileIsSetViaContext_tokenFileIsReadViaContextProperty_propertiesAreReadFromContext()
             throws IOException {
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        Mockito.when(context.getContextParameterNames())
-                .thenReturn(Collections.enumeration(
-                        Collections.singleton(FrontendUtils.PARAM_TOKEN_FILE)));
-
-        File tmpFile = temporaryFolder.newFile();
-        String content = "{ '" + SERVLET_PARAMETER_USE_V14_BOOTSTRAP
-                + "':true }";
-        Files.write(tmpFile.toPath(), Collections.singletonList(content));
-
-        Mockito.when(
-                context.getContextParameter(FrontendUtils.PARAM_TOKEN_FILE))
-                .thenReturn(tmpFile.getPath());
+        VaadinContext context = mockTokenFileViaContextParam(
+                "{ '" + SERVLET_PARAMETER_USE_V14_BOOTSTRAP + "':true }");
 
         DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
         ApplicationConfiguration configuration = factory.create(context);
@@ -101,6 +135,52 @@ public class DefaultApplicationConfigurationFactoryTest {
                 propertyNames.get(1));
 
         Assert.assertTrue(configuration.useV14Bootstrap());
+    }
+
+    @Test
+    public void create_tokenFileIsSetViaContext_externalStatsUrlIsReadFromTokenFile_predefinedContext()
+            throws MalformedURLException, IOException {
+        String content = "{ 'externalStatsUrl': 'http://my.server/static/stats.json'}";
+        VaadinContext context = mockTokenFileViaContextParam(content);
+
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+        ApplicationConfiguration configuration = factory.create(context);
+
+        List<String> propertyNames = Collections
+                .list(configuration.getPropertyNames());
+        Assert.assertTrue(propertyNames.contains(Constants.EXTERNAL_STATS_URL));
+        Assert.assertTrue(configuration
+                .getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false));
+        Assert.assertEquals("http://my.server/static/stats.json", configuration
+                .getStringProperty(Constants.EXTERNAL_STATS_URL, null));
+        Assert.assertFalse(configuration.isProductionMode());
+        Assert.assertFalse(configuration.enableDevServer());
+    }
+
+    @Test
+    public void create_tokenFileIsReadFromClassloader_externalStatsUrlIsReadFromTokenFile_predefinedContext()
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        mockClassPathTokenFile(resourceProvider,
+                "{ 'externalStatsUrl': 'http://my.server/static/stats.json'}");
+
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+        ApplicationConfiguration configuration = factory.create(context);
+
+        List<String> propertyNames = Collections
+                .list(configuration.getPropertyNames());
+        Assert.assertTrue(propertyNames.contains(Constants.EXTERNAL_STATS_URL));
+        Assert.assertTrue(configuration
+                .getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false));
+        Assert.assertEquals("http://my.server/static/stats.json", configuration
+                .getStringProperty(Constants.EXTERNAL_STATS_URL, null));
+        Assert.assertFalse(configuration.isProductionMode());
+        Assert.assertFalse(configuration.enableDevServer());
     }
 
     @Test
@@ -173,5 +253,21 @@ public class DefaultApplicationConfigurationFactoryTest {
         Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
 
         return resourceProvider;
+    }
+
+    private VaadinContext mockTokenFileViaContextParam(String content)
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        Mockito.when(context.getContextParameterNames())
+                .thenReturn(Collections.enumeration(
+                        Collections.singleton(FrontendUtils.PARAM_TOKEN_FILE)));
+
+        File tmpFile = temporaryFolder.newFile();
+        Files.write(tmpFile.toPath(), Collections.singletonList(content));
+
+        Mockito.when(
+                context.getContextParameter(FrontendUtils.PARAM_TOKEN_FILE))
+                .thenReturn(tmpFile.getPath());
+        return context;
     }
 }
