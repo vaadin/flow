@@ -98,8 +98,7 @@ public class SpringServlet extends VaadinServlet {
      *            prefixed with
      *            {@link VaadinServletConfiguration#VAADIN_SERVLET_MAPPING}
      */
-    public SpringServlet(ApplicationContext context,
-            boolean rootMapping) {
+    public SpringServlet(ApplicationContext context, boolean rootMapping) {
         this.context = context;
         this.rootMapping = rootMapping;
     }
@@ -137,7 +136,7 @@ public class SpringServlet extends VaadinServlet {
             customPushUrl = customPushUrl.replaceFirst("context://", "/");
             customPushUrl = customPushUrl.replaceFirst(Pattern.quote(mapping),
                     ""); // if workaround "/vaadinServlet/myCustomUrl" used
-            customPushUrl = customPushUrl.replaceFirst("^/","");
+            customPushUrl = customPushUrl.replaceFirst("^/", "");
             properties.setProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL,
                     VaadinMVCWebAppInitializer.makeContextRelative(
                             mapping + "/" + customPushUrl));
@@ -158,9 +157,9 @@ public class SpringServlet extends VaadinServlet {
     }
 
     private Properties config(Properties initParameters) {
-        Properties properties = new Properties(initParameters);
-        PROPERTY_NAMES
-                .forEach(property -> setProperty(property, properties));
+        Properties properties = new Properties();
+        properties.putAll(initParameters);
+        PROPERTY_NAMES.forEach(property -> setProperty(property, properties));
 
         // transfer non-string init parameters (such as
         // DeploymentConfigurationFactory.FALLBACK_CHUNK)
