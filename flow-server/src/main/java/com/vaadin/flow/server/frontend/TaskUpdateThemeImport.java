@@ -111,12 +111,12 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         }
         if (existingAppThemeDirectories.size() >= 2) {
 
-            boolean appThemeFoundInClassPath = existingAppThemeDirectories
+            boolean themeFoundInJar = existingAppThemeDirectories
                     .stream().map(File::getPath)
                     .anyMatch(path -> path
                             .contains(FrontendUtils.FLOW_NPM_PACKAGE_NAME));
 
-            if (appThemeFoundInClassPath) {
+            if (themeFoundInJar) {
                 String errorMessage = "Theme '%s' should not exist inside a "
                         + "jar and in the project at the same time.%n"
                         + "Extending another theme is possible by adding "
