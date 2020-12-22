@@ -16,6 +16,7 @@
     <modules>
         <module>reusable-theme</module>
         <module>test-theme-reusable</module>
+        <module>test-reusable-as-parent</module>
     </modules>
 
 </project>
