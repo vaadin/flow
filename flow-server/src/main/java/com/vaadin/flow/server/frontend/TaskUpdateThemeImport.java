@@ -90,7 +90,6 @@ public class TaskUpdateThemeImport implements FallibleCommand {
 
         String themeName = theme.getName();
         String themePath = String.join("/", APPLICATION_THEME_ROOT, themeName);
-        File mainCustomThemeDir = new File(frontendDirectory, themePath);
 
         List<String> appThemePossiblePaths = getAppThemePossiblePaths(
                 themePath);
@@ -100,61 +99,63 @@ public class TaskUpdateThemeImport implements FallibleCommand {
                 .filter(File::exists)
                 .collect(Collectors.toList());
 
-        String classPathThemeResourcePath = FrontendUtils.NODE_MODULES
-                + FrontendUtils.FLOW_NPM_PACKAGE_NAME + themePath;
-
-        boolean appThemeFoundInClassPath = existingAppThemeDirectories.stream()
-                .map(File::getPath)
-                .anyMatch(path -> path.contains(classPathThemeResourcePath));
         
-        if (appThemeFoundInClassPath && (mainCustomThemeDir.exists()
-                || existingAppThemeDirectories.size() > 1)) {
-            String errorMessage = "Theme '%s' should not exist inside a "
+        if (existingAppThemeDirectories.isEmpty()) {
+            String errorMessage = "Discovered @Theme annotation with theme "
+                + "name '%s', but could not find the theme directory "
+                + "in the project or available as a jar dependency. "
+                + "Check if you forgot to create the folder under '%s' "
+                + "or have mistyped the theme or folder name for '%s'.";
+            throw new ExecutionFailedException(String
+                .format(errorMessage, themeName,
+                    new File(frontendDirectory, APPLICATION_THEME_ROOT)
+                        .getPath(), themeName));
+        }
+        if (existingAppThemeDirectories.size() >= 2) {
+
+            boolean appThemeFoundInClassPath = existingAppThemeDirectories
+                .stream().map(File::getPath)
+                .anyMatch(path -> path.contains(FrontendUtils.FLOW_NPM_PACKAGE_NAME));
+
+            if (appThemeFoundInClassPath) {
+                String errorMessage = "Theme '%s' should not exist inside a "
                     + "jar and in the project at the same time.%n"
                     + "Extending another theme is possible by adding "
                     + "{ \"parent\": \"your-parent-theme\" } entry to the "
                     + "'theme.json' file inside your theme folder.";
-            throw new ExecutionFailedException(
+                throw new ExecutionFailedException(
                     String.format(errorMessage, themeName));
-        }
-
-        if (existingAppThemeDirectories.size() > 1
-                || (mainCustomThemeDir.exists()
-                        && !existingAppThemeDirectories.isEmpty())) {
-            String errorMessage = "Discovered Theme folder for theme '%s' "
+            } else {
+                String errorMessage = "Discovered Theme folder for theme '%s' "
                     + "in more than one place in the project. Please "
                     + "make sure there is only one theme folder with name '%s' "
                     + "exists in the your project. "
                     + "The recommended place to put the theme folder inside "
                     + "the project is '%s'";
-            throw new ExecutionFailedException(String.format(errorMessage,
-                    themeName, themeName, mainCustomThemeDir.getPath()));
-        }
-
-        if (!mainCustomThemeDir.exists()
-                && existingAppThemeDirectories.isEmpty()) {
-            String errorMessage = "Discovered @Theme annotation with theme "
-                    + "name '%s', but could not find the theme directory "
-                    + "in the project or available as a jar dependency. "
-                    + "Check if you forgot to create the folder under '%s' "
-                    + "or have mistyped the theme or folder name for '%s'.";
-            throw new ExecutionFailedException(String.format(errorMessage,
-                    themeName, mainCustomThemeDir.getPath(), themeName));
+                throw new ExecutionFailedException(String
+                    .format(errorMessage, themeName, themeName,
+                        new File(frontendDirectory, APPLICATION_THEME_ROOT)
+                            .getPath()));
+            }
         }
     }
 
     private List<String> getAppThemePossiblePaths(String themePath) {
-
+        String frontendTheme = String.join("/",
+            npmFolder.toPath().relativize(frontendDirectory.toPath())
+                .toString(), themePath);
+                
         String themePathInMetaInfResources = String.join("/",
                 APPLICATION_META_INF_RESOURCES, themePath);
 
         String themePathInStaticResources = String.join("/",
                 APPLICATION_STATIC_RESOURCES, themePath);
 
-        String themePathInClassPathResources = FrontendUtils.NODE_MODULES
-                + FrontendUtils.FLOW_NPM_PACKAGE_NAME + themePath;
+        String themePathInClassPathResources = String
+            .join("", FrontendUtils.NODE_MODULES,
+                FrontendUtils.FLOW_NPM_PACKAGE_NAME, themePath);
 
-        return Arrays.asList(themePathInMetaInfResources,
-                themePathInStaticResources, themePathInClassPathResources);
+        return Arrays.asList(frontendTheme, themePathInMetaInfResources,
+            themePathInStaticResources, themePathInClassPathResources);
     }
 }
