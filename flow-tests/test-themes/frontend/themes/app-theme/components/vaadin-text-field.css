@@ -1,5 +1,5 @@
 [part="input-field"] {
-    background: red;
+    background: rgba(255, 0, 0, 1); /* red */
     border-radius: var(--lumo-border-radius);
     color: var(--lumo-primary-text-color);
 }

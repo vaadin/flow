@@ -131,7 +131,7 @@ public class ThemeIT extends ChromeBrowserTest {
         Assert.assertEquals("Polymer text field should get parent border radius",
             "0px", input.getCssValue("border-radius"));
 
-        Assert.assertEquals("Polymer text field should get parent border radius",
+        Assert.assertEquals("Polymer text field should use green as color",
             "rgba(0, 128, 0, 1)", input.getCssValue("color"));
 
     }

@@ -42,7 +42,7 @@ public class ParentThemeIT extends ChromeBrowserTest {
         checkLogsForErrors();
 
         final WebElement body = findElement(By.tagName("body"));
-        // Note themes/reusable-theme gets VAADIN/static from the file-loader
+
         Assert.assertEquals(
             "url(\"" + getRootURL() + "/VAADIN/static/themes/child-theme/bg.jpg\")",
             body.getCssValue("background-image"));
@@ -70,7 +70,7 @@ public class ParentThemeIT extends ChromeBrowserTest {
         Assert.assertEquals("Polymer text field should have red background",
             "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
 
-        Assert.assertEquals("Polymer text field should have red background",
+        Assert.assertEquals("Text field should have color as green",
             "rgba(0, 128, 0, 1)", input.getCssValue("color"));
 
     }
