@@ -16,6 +16,7 @@
   "files": [
     "application-theme-plugin.js",
     "theme-generator.js",
-    "theme-copy.js"
+    "theme-copy.js",
+    "theme-handle.js"
   ]
 }

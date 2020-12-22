@@ -8,10 +8,12 @@ const fs = require('fs');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
+const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 
 // Flow plugins
 const StatsPlugin = require('@vaadin/stats-plugin');
-const ApplicationThemePlugin = require('@vaadin/application-theme-plugin');
+const ThemeLiveReloadPlugin = require('@vaadin/theme-live-reload-plugin');
+const { ApplicationThemePlugin, getThemeName, getGenerateThemeCallback } = require('@vaadin/application-theme-plugin');
 
 const path = require('path');
 
@@ -237,6 +239,13 @@ module.exports = {
       themeProjectFolders: themeProjectFolders,
       projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
     }),
+
+    devMode && new ExtraWatchWebpackPlugin({
+      files: [],
+      dirs: [ 'frontend/themes/' + getThemeName() ]
+    }),
+
+    devMode && new ThemeLiveReloadPlugin(getThemeName, getGenerateThemeCallback),
 
     new StatsPlugin({
       devMode: devMode,

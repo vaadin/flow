@@ -2,6 +2,7 @@
   "plugins": [
     "stats-plugin",
     "application-theme-plugin",
-    "theme-loader"
+    "theme-loader",
+    "theme-live-reload-plugin"
   ]
 }
