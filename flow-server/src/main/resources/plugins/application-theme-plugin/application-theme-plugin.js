@@ -19,6 +19,9 @@ const path = require('path');
 const generateThemeFile = require('./theme-generator');
 const { copyStaticAssets } = require('./theme-copy');
 
+// matches theme folder name in 'themes/my-theme/my-theme.generated.js'
+const nameRegex = /themes\/(.*)\/\1.generated.js/;
+
 let logger;
 let themeName;
 let themeGeneratedFileName;
@@ -50,52 +53,7 @@ class ApplicationThemePlugin {
   apply(compiler) {
     logger = compiler.getInfrastructureLogger("ApplicationThemePlugin");
 
-    const handleThemesHook = () => {
-      const generatedThemeFile = path.resolve(this.options.themeResourceFolder, "theme-generated.js");
-      if (fs.existsSync(generatedThemeFile)) {
-        // matches theme folder name in 'themes/my-theme/my-theme.generated.js'
-        const nameRegex = /themes\/(.*)\/\1.generated.js/g;
-
-        // read theme name from the theme-generated.js as there we always mark the used theme for webpack to handle.
-        themeName = nameRegex.exec(fs.readFileSync(generatedThemeFile, {encoding: 'utf8'}))[1];
-        themeGeneratedFileName = themeName + '.generated.js';
-
-        if (!themeName) {
-          throw new Error("Couldn't parse theme name from '" + generatedThemeFile + "'.");
-        }
-
-        let themeFound = false;
-        for (let i = 0; i<this.options.themeProjectFolders.length; i++) {
-          const themeProjectFolder = this.options.themeProjectFolders[i];
-          if (fs.existsSync(themeProjectFolder)) {
-            logger.info("Searching themes folder ", themeProjectFolder, " for theme ", themeName);
-            const handled = handleThemes(themeName, themeProjectFolder, this.options.projectStaticAssetsOutputFolder);
-            if (handled) {
-              if(themeFound) {
-                throw new Error("Found theme files in '" + themeProjectFolder + "' and '"
-                    + themeFound + "'. Theme should only be available in one folder");
-              }
-              logger.info("Found theme files from '", themeProjectFolder, "'");
-              themeFound = themeProjectFolder;
-            }
-          }
-        }
-
-        if (fs.existsSync(this.options.themeResourceFolder)) {
-          if (themeFound && fs.existsSync(path.resolve(this.options.themeResourceFolder, themeName))) {
-            throw new Error("Theme '" + themeName + "'should not exist inside a jar and in the project at the same time\n" +
-                "Extending another theme is possible by adding { \"parent\": \"my-parent-theme\" } entry to the theme.json file inside your theme folder.");
-          }
-          logger.debug("Searching theme jar resource folder ", this.options.themeResourceFolder, " for theme ", themeName);
-          handleThemes(themeName, this.options.themeResourceFolder, this.options.projectStaticAssetsOutputFolder);
-        }
-      } else {
-        logger.debug("Skipping Vaadin application theme handling.");
-        logger.trace("Most likely no @Theme annotation for application or only themeClass used.");
-      }
-    };
-
-    compiler.hooks.afterEnvironment.tap("ApplicationThemePlugin", handleThemesHook);
+    compiler.hooks.afterEnvironment.tap("ApplicationThemePlugin", () => generateTheme(this.options));
 
     // Adds the active application theme folder for webpack watching
     compiler.plugin("after-compile", function (compilation, callback) {
@@ -119,7 +77,7 @@ class ApplicationThemePlugin {
             });
         logger.debug("Detected changes in the following files " + changedFiles);
         if (!themeGeneratedFileChanged) {
-          handleThemesHook();
+          generateTheme(this.options);
         }
       }
       callback();
@@ -130,7 +88,55 @@ class ApplicationThemePlugin {
 module.exports = ApplicationThemePlugin;
 
 /**
- * Copies static resources for theme and generates/writes the [theme-name].js for webpack to handle.
+ * Looks up for a theme in a current project and in jar dependencies, copies
+ * static resources of the found theme and generates/writes the
+ * [theme-name].generated.js for webpack to handle.
+ */
+function generateTheme(options) {
+  const generatedThemeFile = path.resolve(options.themeResourceFolder, "theme-generated.js");
+  if (fs.existsSync(generatedThemeFile)) {
+    // read theme name from the theme-generated.js as there we always mark the used theme for webpack to handle.
+    themeName = nameRegex.exec(fs.readFileSync(generatedThemeFile, {encoding: 'utf8'}))[1];
+    themeGeneratedFileName = themeName + '.generated.js';
+
+    if (!themeName) {
+      throw new Error("Couldn't parse theme name from '" + generatedThemeFile + "'.");
+    }
+
+    let themeFound = false;
+    for (let i = 0; i < options.themeProjectFolders.length; i++) {
+      const themeProjectFolder = options.themeProjectFolders[i];
+      if (fs.existsSync(themeProjectFolder)) {
+        logger.info("Searching themes folder ", themeProjectFolder, " for theme ", themeName);
+        const handled = handleThemes(themeName, themeProjectFolder, options.projectStaticAssetsOutputFolder);
+        if (handled) {
+          if(themeFound) {
+            throw new Error("Found theme files in '" + themeProjectFolder + "' and '"
+              + themeFound + "'. Theme should only be available in one folder");
+          }
+          logger.info("Found theme files from '", themeProjectFolder, "'");
+          themeFound = themeProjectFolder;
+        }
+      }
+    }
+
+    if (fs.existsSync(options.themeResourceFolder)) {
+      if (themeFound && fs.existsSync(path.resolve(options.themeResourceFolder, themeName))) {
+        throw new Error("Theme '" + themeName + "'should not exist inside a jar and in the project at the same time\n" +
+          "Extending another theme is possible by adding { \"parent\": \"my-parent-theme\" } entry to the theme.json file inside your theme folder.");
+      }
+      logger.debug("Searching theme jar resource folder ", options.themeResourceFolder, " for theme ", themeName);
+      handleThemes(themeName, options.themeResourceFolder, options.projectStaticAssetsOutputFolder);
+    }
+  } else {
+    logger.debug("Skipping Vaadin application theme handling.");
+    logger.trace("Most likely no @Theme annotation for application or only themeClass used.");
+  }
+}
+
+/**
+ * Copies static resources for theme and generates/writes the
+ * [theme-name].generated.js for webpack to handle.
  *
  * @param {string} themeName name of theme to handle
  * @param {string} themesFolder folder containing application theme folders
