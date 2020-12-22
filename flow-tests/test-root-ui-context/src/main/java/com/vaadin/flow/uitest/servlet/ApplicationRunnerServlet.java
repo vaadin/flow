@@ -58,9 +58,11 @@ import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.SystemMessagesProvider;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.uitest.servlet.CustomDeploymentConfiguration.Conf;
 
 import elemental.json.JsonValue;
@@ -245,6 +247,8 @@ public class ApplicationRunnerServlet extends VaadinServlet {
             Properties initParameters) {
         // Get the original configuration from the super class
         final DeploymentConfiguration originalConfiguration = new DefaultDeploymentConfiguration(
+                ApplicationConfiguration
+                        .get(new VaadinServletContext(getServletContext())),
                 getClass(), initParameters) {
             @Override
             public String getUIClassName() {
@@ -399,6 +403,8 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                                     getApplicationRunnerApplicationClassName(
                                             request.get()));
                             configuration = new DefaultDeploymentConfiguration(
+                                    ApplicationConfiguration
+                                            .get(getService().getContext()),
                                     servlet.getClass(), initParameters);
                         } else {
                             configuration = originalConfiguration;

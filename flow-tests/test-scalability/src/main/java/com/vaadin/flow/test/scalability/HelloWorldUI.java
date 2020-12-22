@@ -1,5 +1,6 @@
 package com.vaadin.flow.test.scalability;
 
+import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.component.Text;
@@ -7,7 +8,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletConfiguration;
 
 /*
  * Copyright 2000-2020 Vaadin Ltd.
@@ -29,12 +29,15 @@ public class HelloWorldUI extends UI {
 
     public static final String PATH = "/helloworld/";
 
+    public static final String HELLO_WORLD_UI = HelloWorldUI.class.getName();
+
     /**
      * The main servlet for the application.
      */
     @WebServlet(urlPatterns = PATH
-            + "*", name = "UIServlet", asyncSupported = true)
-    @VaadinServletConfiguration(ui = HelloWorldUI.class, productionMode = false)
+            + "*", name = "UIServlet", asyncSupported = true, initParams = {
+                    @WebInitParam(name = "ui", value = "com.vaadin.flow.test.scalability.HelloWorldUI"),
+                    @WebInitParam(name = "productionMode", value = "false") })
     public static class Servlet extends VaadinServlet {
     }
 

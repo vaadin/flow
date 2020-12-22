@@ -50,13 +50,6 @@ public interface DeploymentConfiguration
     boolean isRequestTiming();
 
     /**
-     * Returns whether cross-site request forgery protection is enabled.
-     *
-     * @return true if XSRF protection is enabled, false otherwise.
-     */
-    boolean isXsrfProtectionEnabled();
-
-    /**
      * Returns whether sync id checking is enabled. The sync id is used to
      * gracefully handle situations when the client sends a message to a
      * connector that has recently been removed on the server.
@@ -171,26 +164,6 @@ public interface DeploymentConfiguration
      * {@link DeploymentConfiguration#getApplicationOrSystemProperty(String, Object, Function)}
      * for {@link String} type.
      *
-     * @param propertyName
-     *            The simple of the property, in some contexts, lookup might be
-     *            performed using variations of the provided name.
-     * @param defaultValue
-     *            the default value that should be used if no value has been
-     *            defined
-     * @return the property value, or the passed default value if no property
-     *         value is found
-     */
-    @Override
-    default String getStringProperty(String propertyName, String defaultValue) {
-        return getApplicationOrSystemProperty(propertyName, defaultValue,
-                Function.identity());
-    }
-
-    /**
-     * A shorthand of
-     * {@link DeploymentConfiguration#getApplicationOrSystemProperty(String, Object, Function)}
-     * for {@link String} type.
-     *
      * Considers {@code ""} to be equal {@code true} in order to treat params
      * like {@code -Dtest.param} as enabled ({@code test.param == true}).
      *
@@ -294,18 +267,6 @@ public interface DeploymentConfiguration
                         POLYFILLS_DEFAULT_VALUE).split("[, ]+"))
                 .stream().filter(polyfill -> !polyfill.isEmpty())
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Get if the dev server should be reused on each reload. True by default,
-     * set it to false in tests so as dev server is not kept as a daemon after
-     * the test.
-     *
-     * @return true if dev server should be reused
-     */
-    default boolean reuseDevServer() {
-        return getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER, true);
     }
 
     /**
