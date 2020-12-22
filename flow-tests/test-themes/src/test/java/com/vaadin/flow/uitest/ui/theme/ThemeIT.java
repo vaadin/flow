@@ -106,6 +106,36 @@ public class ThemeIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void parentTheme_isApplied() {
+        open();
+        checkLogsForErrors();
+
+        Assert.assertEquals(
+            "Color from parent theme should be applied.",
+            "rgba(0, 255, 255, 1)", $(SpanElement.class).id(FONTAWESOME_ID)
+                .getCssValue("color"));
+
+        Assert.assertEquals(
+            "Child theme should override parent theme values",
+            "5px", $(SpanElement.class).id(FONTAWESOME_ID)
+                .getCssValue("margin"));
+
+        Assert.assertEquals(
+            "Child theme values should be applied",
+            "5px", $(SpanElement.class).id(FONTAWESOME_ID)
+                .getCssValue("padding"));
+
+        TestBenchElement myField = $(TestBenchElement.class).id(MY_POLYMER_ID);
+        TestBenchElement input = myField.$(TestBenchElement.class)
+            .id("vaadin-text-field-input-0");
+        Assert.assertEquals("Polymer text field should get parent border radius",
+            "0px", input.getCssValue("border-radius"));
+
+        Assert.assertEquals("Polymer text field should use green as color",
+            "rgba(0, 128, 0, 1)", input.getCssValue("color"));
+
+    }
+    @Test
     public void componentThemeIsApplied_forPolymerAndLit() {
         open();
         TestBenchElement myField = $(TestBenchElement.class).id(MY_POLYMER_ID);
