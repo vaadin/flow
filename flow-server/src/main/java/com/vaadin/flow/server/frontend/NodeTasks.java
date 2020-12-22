@@ -499,7 +499,8 @@ public class NodeTasks implements FallibleCommand {
                             builder.additionalFrontendModules));
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
-                frontendDependencies.getThemeDefinition()));
+                frontendDependencies.getThemeDefinition(),
+                    builder.frontendDirectory));
         }
     }
 

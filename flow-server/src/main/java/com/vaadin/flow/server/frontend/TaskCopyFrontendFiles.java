@@ -26,8 +26,10 @@ import org.slf4j.LoggerFactory;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_JAR_DEFAULT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 
 /**
  * Copies JavaScript and CSS files from JAR files into a given folder.
@@ -39,7 +41,7 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
             "**/*.js", "**/*.css", "**/*.ts" };
     private static final String WILDCARD_INCLUSION_APP_THEME_JAR = "**/themes/**/*";
     private File targetDirectory;
-    private File frontendTargetDirectory;
+    private File themeJarTargetDirectory;
     private Set<File> resourceLocations = null;
 
     /**
@@ -59,7 +61,9 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                 NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
         resourceLocations = resourcesToScan.stream().filter(File::exists)
                 .collect(Collectors.toSet());
-        this.frontendTargetDirectory = new File(npmFolder, FrontendUtils.DEFAULT_GENERATED_DIR);
+        String generatedDir = System.getProperty(PARAM_GENERATED_DIR,
+            DEFAULT_GENERATED_DIR);
+        this.themeJarTargetDirectory = new File(npmFolder, generatedDir);
     }
 
     @Override
@@ -67,7 +71,7 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
         long start = System.nanoTime();
         log().info("Copying frontend resources from jar files ...");
         TaskCopyLocalFrontendFiles.createTargetFolder(targetDirectory);
-        TaskCopyLocalFrontendFiles.createTargetFolder(frontendTargetDirectory);
+        TaskCopyLocalFrontendFiles.createTargetFolder(themeJarTargetDirectory);
         JarContentsManager jarContentsManager = new JarContentsManager();
         for (File location : resourceLocations) {
             if (location.isDirectory()) {
@@ -86,8 +90,8 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                         location, COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
                         targetDirectory, WILDCARD_INCLUSIONS);
                 jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
-                        location, RESOURCES_JAR_DEFAULT, frontendTargetDirectory,
-                        WILDCARD_INCLUSION_APP_THEME_JAR);
+                        location, RESOURCES_JAR_DEFAULT,
+                        themeJarTargetDirectory, WILDCARD_INCLUSION_APP_THEME_JAR);
             }
         }
         long ms = (System.nanoTime() - start) / 1000000;

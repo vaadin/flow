@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
@@ -79,7 +80,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
         this.flowImportsFilePath = generatedFlowImports.toPath();
         this.webpackConfigPath = webpackConfigFolder.toPath();
         this.flowResourcesFolder = new File(webpackConfigFolder,
-            DEFAULT_GENERATED_DIR).toPath();
+            System.getProperty(PARAM_GENERATED_DIR,
+                DEFAULT_GENERATED_DIR)).toPath();
         this.resourceFolder = new File(webpackOutputDirectory.getParentFile(),
             VAADIN_STATIC_FILES_PATH).toPath();
     }
