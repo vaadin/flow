@@ -13,23 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server;
+package com.vaadin.flow.uitest.ui.servlets;
+
+import javax.servlet.annotation.WebServlet;
+
+import com.vaadin.flow.server.VaadinServlet;
 
 /**
- * Exception thrown for failures in the generation of a deployment configuration
- * object.
+ * This is a temporary workaround until #5740 is fixed.
+ *
+ * @since 2.0
  */
-public class VaadinConfigurationException extends Exception {
+@WebServlet("/path/*")
+public class WorkaroundServlet extends VaadinServlet {
 
-    /**
-     * Exception constructor.
-     *
-     * @param message
-     *         exception message
-     * @param exception
-     *         exception cause
-     */
-    public VaadinConfigurationException(String message, Exception exception) {
-        super(message, exception);
-    }
 }

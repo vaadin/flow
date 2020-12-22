@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -56,7 +57,8 @@ public class DefaultDeploymentConfiguration
             + "Client-side views written in TypeScript are not supported. Vaadin 15+ enables client-side and server-side views.\n"
             + "See https://vaadin.com/docs/v15/flow/typescript/starting-the-app.html for more information.";
 
-    // not a warning anymore, but keeping variable name to avoid breaking anything
+    // not a warning anymore, but keeping variable name to avoid breaking
+    // anything
     public static final String WARNING_V15_BOOTSTRAP = "Using Vaadin 15+ bootstrap mode.%n %s%n %s";
 
     private static final String DEPLOYMENT_WARNINGS = "Following issues were discovered with deployment configuration:";
@@ -120,7 +122,9 @@ public class DefaultDeploymentConfiguration
 
     /**
      * Create a new deployment configuration instance.
-     *
+     * 
+     * @param parentConfig
+     *            a parent application configuration
      * @param systemPropertyBaseClass
      *            the class that should be used as a basis when reading system
      *            properties
@@ -128,9 +132,9 @@ public class DefaultDeploymentConfiguration
      *            the init parameters that should make up the foundation for
      *            this configuration
      */
-    public DefaultDeploymentConfiguration(Class<?> systemPropertyBaseClass,
-            Properties initParameters) {
-        super(systemPropertyBaseClass, initParameters);
+    public DefaultDeploymentConfiguration(ApplicationConfiguration parentConfig,
+            Class<?> systemPropertyBaseClass, Properties initParameters) {
+        super(parentConfig, systemPropertyBaseClass, initParameters);
 
         boolean log = logging.getAndSet(false);
 
@@ -287,8 +291,12 @@ public class DefaultDeploymentConfiguration
      * Log a warning if Vaadin is not running in production mode.
      */
     private void checkProductionMode(boolean log) {
-        productionMode = getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, false);
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE)) {
+            productionMode = getBooleanProperty(
+                    InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, false);
+        } else {
+            productionMode = getParentConfiguration().isProductionMode();
+        }
         if (log) {
             if (productionMode) {
                 info.add("Vaadin is running in production mode.");
@@ -306,8 +314,13 @@ public class DefaultDeploymentConfiguration
      * Log a message about the bootstrapping being used.
      */
     private void checkV14Bootsrapping(boolean log) {
-        useDeprecatedV14Bootstrapping = getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP)) {
+            useDeprecatedV14Bootstrapping = getBooleanProperty(
+                    InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
+        } else {
+            useDeprecatedV14Bootstrapping = getParentConfiguration()
+                    .useV14Bootstrap();
+        }
         if (log) {
             if (useDeprecatedV14Bootstrapping) {
                 warnings.add(WARNING_V14_BOOTSTRAP);
@@ -362,15 +375,23 @@ public class DefaultDeploymentConfiguration
      */
     private void checkRequestTiming() {
         requestTiming = getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_REQUEST_TIMING, !productionMode);
+                InitParameters.SERVLET_PARAMETER_REQUEST_TIMING,
+                !productionMode);
     }
 
     /**
      * Log a warning if cross-site request forgery protection is disabled.
      */
     private void checkXsrfProtection(boolean loggWarning) {
-        xsrfProtectionEnabled = !getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, false);
+        if (isOwnProperty(
+                InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION)) {
+            xsrfProtectionEnabled = !getBooleanProperty(
+                    InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
+                    false);
+        } else {
+            xsrfProtectionEnabled = getParentConfiguration()
+                    .isXsrfProtectionEnabled();
+        }
         if (!xsrfProtectionEnabled && loggWarning) {
             warnings.add(WARNING_XSRF_PROTECTION_DISABLED);
         }
@@ -422,9 +443,9 @@ public class DefaultDeploymentConfiguration
     private void checkPushMode() {
         try {
             pushMode = getApplicationOrSystemProperty(
-                    InitParameters.SERVLET_PARAMETER_PUSH_MODE, PushMode.DISABLED,
-                    stringMode -> Enum.valueOf(PushMode.class,
-                            stringMode.toUpperCase()));
+                    InitParameters.SERVLET_PARAMETER_PUSH_MODE,
+                    PushMode.DISABLED, stringMode -> Enum
+                            .valueOf(PushMode.class, stringMode.toUpperCase()));
         } catch (IllegalArgumentException e) {
             warnings.add(WARNING_PUSH_MODE_NOT_RECOGNIZED);
             pushMode = PushMode.DISABLED;
@@ -432,7 +453,8 @@ public class DefaultDeploymentConfiguration
     }
 
     private void checkPushURL() {
-        pushURL = getStringProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL, "");
+        pushURL = getStringProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL,
+                "");
     }
 
     private void checkSyncIdCheck() {
@@ -446,4 +468,5 @@ public class DefaultDeploymentConfiguration
                 InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 DEFAULT_SEND_URLS_AS_PARAMETERS);
     }
+
 }

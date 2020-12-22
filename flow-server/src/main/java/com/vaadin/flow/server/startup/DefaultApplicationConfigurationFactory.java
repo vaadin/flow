@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.propertytypes.ServiceRanking;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +34,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.AbstractPropertyConfiguration;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.JsonObject;
@@ -48,6 +51,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
  * @since
  *
  */
+@Component(service = ApplicationConfigurationFactory.class)
+@ServiceRanking(Integer.MIN_VALUE)
 public class DefaultApplicationConfigurationFactory
         extends AbstractConfigurationFactory
         implements ApplicationConfigurationFactory {
@@ -57,10 +62,13 @@ public class DefaultApplicationConfigurationFactory
 
         private final VaadinContext context;
 
+        private final FallbackChunk fallbackChunk;
+
         protected ApplicationConfigurationImpl(VaadinContext context,
-                Map<String, String> properties) {
+                FallbackChunk fallbackChunk, Map<String, String> properties) {
             super(properties);
             this.context = context;
+            this.fallbackChunk = fallbackChunk;
         }
 
         @Override
@@ -78,25 +86,55 @@ public class DefaultApplicationConfigurationFactory
             return context;
         }
 
+        @Override
+        public FallbackChunk getFallbackChunk() {
+            return fallbackChunk;
+        }
+
     }
 
     @Override
     public ApplicationConfiguration create(VaadinContext context) {
+        Objects.requireNonNull(context);
         Map<String, String> props = new HashMap<>();
-        for (final Enumeration<String> e = context.getContextParameterNames(); e
-                .hasMoreElements();) {
-            final String name = e.nextElement();
+        for (final Enumeration<String> paramNames = context
+                .getContextParameterNames(); paramNames.hasMoreElements();) {
+            final String name = paramNames.nextElement();
             props.put(name, context.getContextParameter(name));
         }
+        JsonObject buildInfo = null;
         try {
-            JsonObject buildInfo = JsonUtil
-                    .parse(getTokenFileFromClassloader(context));
-
-            props.putAll(getConfigParametersUsingTokenData(buildInfo));
+            String content = getTokenFileContent(props::get);
+            if (content == null) {
+                content = getTokenFileFromClassloader(context);
+            }
+            buildInfo = content == null ? null : JsonUtil.parse(content);
+            if (buildInfo != null) {
+                props.putAll(getConfigParametersUsingTokenData(buildInfo));
+            }
         } catch (IOException exception) {
             throw new UncheckedIOException(exception);
         }
-        return new ApplicationConfigurationImpl(context, props);
+        return doCreate(context, buildInfo == null ? null
+                : FrontendUtils.readFallbackChunk(buildInfo), props);
+    }
+
+    /**
+     * Creates application configuration instance based on provided data.
+     * 
+     * @param context
+     *            the Vaadin context, not {@code null}
+     * @param chunk
+     *            the fallback chunk, may be {@code null}
+     * @param properties
+     *            the context parameters, not {@code null}
+     * @return a new application configuration instance
+     */
+    protected ApplicationConfigurationImpl doCreate(VaadinContext context,
+            FallbackChunk chunk, Map<String, String> properties) {
+        Objects.requireNonNull(context);
+        Objects.requireNonNull(properties);
+        return new ApplicationConfigurationImpl(context, chunk, properties);
     }
 
     /**
@@ -204,4 +242,5 @@ public class DefaultApplicationConfigurationFactory
         return LoggerFactory
                 .getLogger(DefaultApplicationConfigurationFactory.class);
     }
+
 }

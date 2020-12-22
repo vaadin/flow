@@ -34,6 +34,7 @@ import com.vaadin.flow.internal.ApplicationClassLoaderAccess;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -180,14 +181,10 @@ public class VaadinServlet extends HttpServlet {
      */
     protected DeploymentConfiguration createDeploymentConfiguration()
             throws ServletException {
-        try {
-            return createDeploymentConfiguration(DeploymentConfigurationFactory
-                    .createInitParameters(getClass(),
-                            new VaadinServletConfig(getServletConfig())));
-        } catch (VaadinConfigurationException e) {
-            throw new ServletException(
-                    "Failed to construct DeploymentConfiguration.", e);
-        }
+        return createDeploymentConfiguration(
+                new DeploymentConfigurationFactory().createInitParameters(
+                        getClass(),
+                        new VaadinServletConfig(getServletConfig())));
     }
 
     /**
@@ -201,7 +198,11 @@ public class VaadinServlet extends HttpServlet {
      */
     protected DeploymentConfiguration createDeploymentConfiguration(
             Properties initParameters) {
-        return new DefaultDeploymentConfiguration(getClass(), initParameters);
+        VaadinServletContext context = new VaadinServletContext(
+                getServletContext());
+        return new DefaultDeploymentConfiguration(
+                ApplicationConfiguration.get(context), getClass(),
+                initParameters);
     }
 
     /**
