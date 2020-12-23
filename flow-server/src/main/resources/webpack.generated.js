@@ -105,8 +105,6 @@ if (useClientSideIndexFileForBootstrapping) {
   webPackEntries.bundle = fileNameOfTheFlowGeneratedMainEntryPoint;
 }
 
-webPackEntries.bootstrap = path.resolve(frontendFolder, "generated", "vaadin.ts");
-
 if (devMode) {
   webPackEntries.devmodeGizmo = devmodeGizmoJS;
 }
@@ -252,7 +250,7 @@ module.exports = {
     useClientSideIndexFileForBootstrapping && new HtmlWebpackPlugin({
       template: clientSideIndexHTML,
       inject: 'head',
-      chunks: ['bundle', 'bootstrap', ...(devMode ? ['devmodeGizmo'] : [])]
+      chunks: ['bundle', ...(devMode ? ['devmodeGizmo'] : [])]
     }),
     useClientSideIndexFileForBootstrapping && new ScriptExtHtmlWebpackPlugin({
       defaultAttribute: 'defer'
