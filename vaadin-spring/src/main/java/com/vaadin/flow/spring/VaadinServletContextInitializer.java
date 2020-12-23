@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.spring;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -30,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -50,7 +48,6 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.env.Environment;
@@ -64,7 +61,6 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.NotFoundException;
@@ -73,15 +69,14 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
-import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.VaadinConfigurationException;
-import com.vaadin.flow.server.VaadinServletConfig;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.AnnotationValidator;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
 import com.vaadin.flow.server.startup.DevModeInitializer;
@@ -264,6 +259,12 @@ public class VaadinServletContextInitializer
                 services.put(Executor.class, Collections
                         .singleton(executors.values().iterator().next()));
             }
+
+            if (!services.containsKey(ApplicationConfigurationFactory.class)) {
+                services.put(ApplicationConfigurationFactory.class,
+                        Collections.singleton(
+                                new SpringApplicationConfigurationFactory()));
+            }
             return super.createLookup(services);
         }
 
@@ -427,9 +428,9 @@ public class VaadinServletContextInitializer
         @Override
         public void failFastContextInitialized(ServletContextEvent event)
                 throws ServletException {
-            DeploymentConfiguration config = SpringStubServletConfig
-                    .createDeploymentConfiguration(this.getClass(), event,
-                            appContext);
+
+            ApplicationConfiguration config = ApplicationConfiguration
+                    .get(new VaadinServletContext(event.getServletContext()));
 
             if (config == null || config.isProductionMode()
                     || !config.enableDevServer()
@@ -462,7 +463,7 @@ public class VaadinServletContextInitializer
 
             try {
                 DevModeInitializer.initDevModeHandler(classes,
-                        event.getServletContext(), config);
+                        event.getServletContext());
             } catch (ServletException e) {
                 throw new RuntimeException(
                         "Unable to initialize Vaadin DevModeHandler", e);
@@ -538,8 +539,8 @@ public class VaadinServletContextInitializer
         public void failFastContextInitialized(ServletContextEvent event) {
             long start = System.nanoTime();
 
-            DeploymentConfiguration config = SpringStubServletConfig
-                    .createDeploymentConfiguration(this, event, appContext);
+            ApplicationConfiguration config = ApplicationConfiguration
+                    .get(new VaadinServletContext(event.getServletContext()));
 
             if (config == null || config.useV14Bootstrap()) {
                 return;
@@ -554,8 +555,7 @@ public class VaadinServletContextInitializer
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info("Search for VaadinAppShell took {} ms", ms);
 
-            VaadinAppShellInitializer.init(classes, event.getServletContext(),
-                    config);
+            VaadinAppShellInitializer.init(classes, event.getServletContext());
         }
     }
 
@@ -851,112 +851,6 @@ public class VaadinServletContextInitializer
 
         private boolean shouldPathBeScanned(String path) {
             return scanAlways.hasPrefix(path) || !scanNever.hasPrefix(path);
-        }
-    }
-
-    /**
-     * ServletConfig implementation for getting initial properties for building
-     * the DeploymentConfiguration.
-     */
-    protected static class SpringStubServletConfig implements ServletConfig {
-
-        private final ServletContext context;
-        private final ServletRegistrationBean<?> registration;
-        private final ApplicationContext appContext;
-
-        /**
-         * Constructor.
-         *
-         * @param context
-         *            the ServletContext
-         * @param registration
-         *            the ServletRegistration for this ServletConfig instance
-         */
-        private SpringStubServletConfig(ServletContext context,
-                ServletRegistrationBean<?> registration,
-                ApplicationContext appContext) {
-            this.context = context;
-            this.registration = registration;
-            this.appContext = appContext;
-        }
-
-        @Override
-        public String getServletName() {
-            return registration.getServletName();
-        }
-
-        @Override
-        public ServletContext getServletContext() {
-            return context;
-        }
-
-        @Override
-        public String getInitParameter(String name) {
-            Environment env = appContext.getBean(Environment.class);
-            String propertyValue = env.getProperty("vaadin." + name);
-            if (propertyValue != null) {
-                return propertyValue;
-            }
-
-            return registration.getInitParameters().get(name);
-        }
-
-        @Override
-        public Enumeration<String> getInitParameterNames() {
-            Environment env = appContext.getBean(Environment.class);
-            // Collect any vaadin.XZY properties from application.properties
-            List<String> initParameters = SpringServlet.PROPERTY_NAMES.stream()
-                    .filter(name -> env.getProperty("vaadin." + name) != null)
-                    .collect(Collectors.toList());
-            initParameters.addAll(registration.getInitParameters().keySet());
-            return Collections.enumeration(initParameters);
-        }
-
-        private static DeploymentConfiguration createDeploymentConfiguration(
-                Object listener, ServletContextEvent event,
-                ApplicationContext appContext) {
-
-            ServletRegistrationBean<?> servletRegistrationBean = appContext
-                    .getBean("servletRegistrationBean",
-                            ServletRegistrationBean.class);
-
-            if (servletRegistrationBean == null) {
-                getLogger().warn(
-                        "No servlet registration found. {} will not be started!",
-                        listener.getClass().getSimpleName());
-                return null;
-            }
-
-            return SpringStubServletConfig.createDeploymentConfiguration(
-                    event.getServletContext(), servletRegistrationBean,
-                    SpringServlet.class, appContext);
-        }
-
-        /**
-         * Creates a DeploymentConfiguration.
-         *
-         * @param context
-         *            the ServletContext
-         * @param registration
-         *            the ServletRegistrationBean to get servlet parameters from
-         * @param servletClass
-         *            the class to look for properties defined with annotations
-         * @return a DeploymentConfiguration instance
-         */
-        public static DeploymentConfiguration createDeploymentConfiguration(
-                ServletContext context, ServletRegistrationBean<?> registration,
-                Class<?> servletClass, ApplicationContext appContext) {
-            try {
-                ServletConfig servletConfig = new SpringStubServletConfig(
-                        context, registration, appContext);
-                return DeploymentConfigurationFactory
-                        .createPropertyDeploymentConfiguration(servletClass,
-                                new VaadinServletConfig(servletConfig));
-            } catch (VaadinConfigurationException e) {
-                throw new IllegalStateException(String.format(
-                        "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
-                        registration.getServletName(), servletClass), e);
-            }
         }
     }
 

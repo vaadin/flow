@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring.scopes;
 
+import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -25,11 +26,11 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
 
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.spring.SpringVaadinSession;
 
 import static org.mockito.Mockito.doCallRealMethod;
@@ -139,9 +140,13 @@ public abstract class AbstractScopeTest {
         when(session.getState()).thenReturn(VaadinSessionState.OPEN);
 
         final Properties initParameters = new Properties();
-        when(session.getConfiguration())
-                .thenReturn(new DefaultDeploymentConfiguration(getClass(),
-                        initParameters));
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.getPropertyNames())
+                .thenReturn(Collections.emptyEnumeration());
+        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
+                appConfig, getClass(), initParameters);
+        when(session.getConfiguration()).thenReturn(config);
 
         VaadinSession.setCurrent(session);
         when(session.hasLock()).thenReturn(true);

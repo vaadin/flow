@@ -50,6 +50,7 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.spring.SpringInstantiator;
 import com.vaadin.flow.spring.SpringServlet;
 
@@ -181,6 +182,14 @@ public class SpringInstantiatorTest {
 
         ServletConfig config = Mockito.mock(ServletConfig.class);
         ServletContext servletContext = Mockito.mock(ServletContext.class);
+
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.getPropertyNames())
+                .thenReturn(Collections.emptyEnumeration());
+        Mockito.when(servletContext
+                .getAttribute(ApplicationConfiguration.class.getName()))
+                .thenReturn(appConfig);
 
         Lookup lookup = Mockito.mock(Lookup.class);
         ResourceProvider provider = Mockito.mock(ResourceProvider.class);

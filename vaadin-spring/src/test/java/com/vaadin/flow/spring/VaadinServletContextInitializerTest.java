@@ -38,6 +38,7 @@ import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.DevModeInitializer;
 import com.vaadin.flow.server.startup.ServletDeployer;
@@ -45,9 +46,7 @@ import com.vaadin.flow.spring.router.SpringRouteNotFoundError;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ DevModeInitializer.class,
-        VaadinServletContextInitializer.SpringStubServletConfig.class,
         VaadinServletContextInitializer.class, ServletDeployer.class,
-        ServletDeployer.StubServletConfig.class,
         AutoConfigurationPackages.class })
 public class VaadinServletContextInitializerTest {
 
@@ -73,10 +72,7 @@ public class VaadinServletContextInitializerTest {
         Mockito.when(applicationContext.getBeansOfType(TaskExecutor.class))
                 .thenReturn(Collections.singletonMap("foo", executor));
 
-        PowerMockito.mockStatic(
-                VaadinServletContextInitializer.SpringStubServletConfig.class);
         PowerMockito.mockStatic(ServletDeployer.class);
-        PowerMockito.mockStatic(ServletDeployer.StubServletConfig.class);
         PowerMockito.mockStatic(DevModeInitializer.class);
         PowerMockito.mockStatic(AutoConfigurationPackages.class);
     }
@@ -100,10 +96,9 @@ public class VaadinServletContextInitializerTest {
             // onStartup() call,
             // that means DevModeInitializer.initDevModeHandler() should has
             // been called exactly one time
-            DevModeInitializer.initDevModeHandler(Mockito.any(), Mockito.any(),
-                    Mockito.any());
-            theMock.verify(() -> DevModeInitializer.initDevModeHandler(
-                    Mockito.any(), Mockito.any(), Mockito.any()));
+            DevModeInitializer.initDevModeHandler(Mockito.any(), Mockito.any());
+            theMock.verify(() -> DevModeInitializer
+                    .initDevModeHandler(Mockito.any(), Mockito.any()));
             theMock.verifyNoMoreInteractions();
         }
 
@@ -134,10 +129,9 @@ public class VaadinServletContextInitializerTest {
             // onStartup() call,
             // that means DevModeInitializer.initDevModeHandler() should has
             // been called exactly one time
-            DevModeInitializer.initDevModeHandler(Mockito.any(), Mockito.any(),
-                    Mockito.any());
-            theMock.verify(() -> DevModeInitializer.initDevModeHandler(
-                    Mockito.any(), Mockito.any(), Mockito.any()));
+            DevModeInitializer.initDevModeHandler(Mockito.any(), Mockito.any());
+            theMock.verify(() -> DevModeInitializer
+                    .initDevModeHandler(Mockito.any(), Mockito.any()));
             theMock.verifyNoMoreInteractions();
         }
     }
@@ -259,11 +253,6 @@ public class VaadinServletContextInitializerTest {
     }
 
     private DevModeInitializer getStubbedDevModeInitializer() throws Exception {
-        PowerMockito.when(ServletDeployer.StubServletConfig.class,
-                "createDeploymentConfiguration", Mockito.any(), Mockito.any())
-                // https://github.com/powermock/powermock/issues/992
-                .thenAnswer(
-                        (Answer<DeploymentConfiguration>) invocation -> deploymentConfiguration);
 
         PowerMockito.when(DevModeInitializer.class, "isDevModeAlreadyStarted",
                 servletContext).thenCallRealMethod();
@@ -275,13 +264,6 @@ public class VaadinServletContextInitializerTest {
             throws Exception {
         VaadinServletContextInitializer vaadinServletContextInitializerMock = PowerMockito
                 .spy(new VaadinServletContextInitializer(applicationContext));
-
-        PowerMockito.when(
-                VaadinServletContextInitializer.SpringStubServletConfig.class,
-                "createDeploymentConfiguration", Mockito.any(), Mockito.any(),
-                // https://github.com/powermock/powermock/issues/992
-                Mockito.any()).thenAnswer(
-                        (Answer<DeploymentConfiguration>) invocation -> deploymentConfiguration);
 
         PowerMockito.doAnswer(invocation -> Stream.empty()).when(
                 vaadinServletContextInitializerMock,
@@ -327,6 +309,14 @@ public class VaadinServletContextInitializerTest {
                         .get(answer.getArgument(0, String.class)));
         Mockito.when(servletContext.getServletRegistrations())
                 .thenReturn(new HashMap<>());
+
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+
+        Mockito.when(servletContext
+                .getAttribute(ApplicationConfiguration.class.getName()))
+                .thenReturn(appConfig);
+
     }
 
     private void mockEnvironment() {

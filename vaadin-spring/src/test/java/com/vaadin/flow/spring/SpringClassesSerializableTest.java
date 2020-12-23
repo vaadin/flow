@@ -16,18 +16,21 @@
 package com.vaadin.flow.spring;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.spring.scopes.TestBeanStore;
 import com.vaadin.flow.testutil.ClassesSerializableTest;
 
@@ -75,6 +78,7 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.spring\\.VaadinServletConfiguration",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinScopesConfig",
                 "com\\.vaadin\\.flow\\.spring\\.SpringBootAutoConfiguration",
+                "com\\.vaadin\\.flow\\.spring\\.SpringApplicationConfigurationFactory(\\$.*)?",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinConfigurationProperties",
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.VaadinSessionScope",
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.AbstractScope",
@@ -122,8 +126,13 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
 
     private TestBeanStore createStore() {
         final Properties initParameters = new Properties();
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.getPropertyNames())
+                .thenReturn(Collections.emptyEnumeration());
         VaadinService service = new VaadinServletService(new VaadinServlet(),
-                new DefaultDeploymentConfiguration(getClass(), initParameters));
+                new DefaultDeploymentConfiguration(appConfig, getClass(),
+                        initParameters));
         VaadinSession session = new TestSession(service);
 
         TestBeanStore store = new TestBeanStore(session);
