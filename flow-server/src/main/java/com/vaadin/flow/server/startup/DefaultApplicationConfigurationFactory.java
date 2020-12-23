@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.propertytypes.ServiceRanking;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,8 +51,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
  * @since
  *
  */
-@Component(service = ApplicationConfigurationFactory.class)
-@ServiceRanking(Integer.MIN_VALUE)
+@Component(service = ApplicationConfigurationFactory.class, property = Constants.SERVICE_RANKING
+        + ":Integer=" + Integer.MIN_VALUE)
 public class DefaultApplicationConfigurationFactory
         extends AbstractConfigurationFactory
         implements ApplicationConfigurationFactory {
