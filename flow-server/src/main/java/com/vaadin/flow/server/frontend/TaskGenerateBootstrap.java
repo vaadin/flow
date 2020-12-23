@@ -47,10 +47,6 @@ public class TaskGenerateBootstrap implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
-        if (!shouldGenerateThemeScript()) {
-            return;
-        }
-
         File bootstrapFile = new File(outputFolder, CUSTOM_BOOTSTRAP_FILE_NAME);
         Collection<String> lines = new ArrayList<>(getThemeLines());
 
@@ -65,13 +61,18 @@ public class TaskGenerateBootstrap implements FallibleCommand {
 
     private Collection<String> getThemeLines() {
         Collection<String> lines = new ArrayList<>();
-        lines.add("//@ts-ignore");
-        lines.add("import {applyTheme} from '../../target/flow-frontend/themes/theme-generated.js';");
-        lines.add("applyTheme(document);");
+        if (shouldGenerateThemeScript()) {
+            lines.add("//@ts-ignore");
+            lines.add("import {applyTheme} from '../../target/flow-frontend/themes/theme-generated.js';");
+            lines.add("applyTheme(document);");
+        }
         return lines;
     }
 
     private boolean shouldGenerateThemeScript() {
+        if (frontDeps == null) {
+            return false;
+        }
         ThemeDefinition themeDef = frontDeps.getThemeDefinition();
         return themeDef != null && !"".equals(themeDef.getName());
     }

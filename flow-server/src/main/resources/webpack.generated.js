@@ -105,10 +105,7 @@ if (useClientSideIndexFileForBootstrapping) {
   webPackEntries.bundle = fileNameOfTheFlowGeneratedMainEntryPoint;
 }
 
-const bootstrapFile = path.resolve(frontendFolder, "generated", "vaadin.ts");
-if(fs.existsSync(bootstrapFile)) {
-  webPackEntries.bootstrap = bootstrapFile;
-}
+webPackEntries.bootstrap = path.resolve(frontendFolder, "generated", "vaadin.ts");
 
 if (devMode) {
   webPackEntries.devmodeGizmo = devmodeGizmoJS;
