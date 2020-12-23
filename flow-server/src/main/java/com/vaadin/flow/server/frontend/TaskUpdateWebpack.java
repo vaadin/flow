@@ -30,8 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
@@ -208,26 +206,14 @@ public class TaskUpdateWebpack implements FallibleCommand {
                     getEscapedRelativeWebpackPath(path));
             return String.format(declaration, relativePath);
         } else {
-            return String.format(declaration, "'./" + INDEX_HTML +"'");
+            return String.format(declaration, "'./" + INDEX_HTML + "'");
         }
     }
 
     private String getClientEntryPoint() {
-        boolean exists = new File(frontendDirectory.toFile(), INDEX_TS)
-                .exists()
-                || new File(frontendDirectory.toFile(), INDEX_JS).exists();
         String declaration = "const clientSideIndexEntryPoint = %s;";
-        if (!exists) {
-            Path path = Paths.get(
-                    getEscapedRelativeWebpackPath(webpackConfigPath), TARGET,
-                    INDEX_TS);
-            String relativePath = String.format(
-                    "require('path').resolve(__dirname, '%s')",
-                    getEscapedRelativeWebpackPath(path).replaceFirst("\\.[tj]s$", ""));
-            return String.format(declaration, relativePath);
-        } else {
-            return String.format(declaration, "'./index'");
-        }
+        return String.format(declaration,
+                "path.resolve(__dirname, 'frontend', 'generated', 'vaadin.ts');");
     }
 
     private String getEscapedRelativeWebpackPath(Path path) {

@@ -18,6 +18,8 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -27,6 +29,10 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
+
 /**
  * A task for generate a TS file which is always executed in a Vaadin app
  *
@@ -35,20 +41,29 @@ import com.vaadin.flow.theme.ThemeDefinition;
 public class TaskGenerateBootstrap implements FallibleCommand {
 
     private final FrontendDependenciesScanner frontDeps;
-    private final File outputFolder;
+    private final File connectClientTsApiFolder;
+    private final File frontendDirectory;
 
     private static final String CUSTOM_BOOTSTRAP_FILE_NAME = "vaadin.ts";
 
     TaskGenerateBootstrap(FrontendDependenciesScanner frontDeps,
-            File outputFolder) {
+            File connectClientTsApiFolder, File frontendDirectory) {
         this.frontDeps = frontDeps;
-        this.outputFolder = outputFolder;
+        this.connectClientTsApiFolder = connectClientTsApiFolder;
+        this.frontendDirectory = frontendDirectory;
     }
 
     @Override
     public void execute() throws ExecutionFailedException {
-        File bootstrapFile = new File(outputFolder, CUSTOM_BOOTSTRAP_FILE_NAME);
-        Collection<String> lines = new ArrayList<>(getThemeLines());
+        if (frontDeps == null || connectClientTsApiFolder == null) {
+            return;
+        }
+
+        File bootstrapFile = new File(connectClientTsApiFolder,
+                CUSTOM_BOOTSTRAP_FILE_NAME);
+        Collection<String> lines = new ArrayList<>();
+        lines.add(String.format("import '%s';\n", getIndexTsEntryPath()));
+        lines.addAll(getThemeLines());
 
         try {
             FileUtils.writeStringToFile(bootstrapFile, String.join("\n", lines),
@@ -59,20 +74,31 @@ public class TaskGenerateBootstrap implements FallibleCommand {
         }
     }
 
+    private String getIndexTsEntryPath() {
+        boolean exists = new File(frontendDirectory, INDEX_TS).exists()
+                || new File(frontendDirectory, INDEX_JS).exists();
+        Path path = exists ? Paths.get(frontendDirectory.getPath(), INDEX_TS)
+                : Paths.get(frontendDirectory.getParentFile().getPath(), TARGET,
+                        INDEX_TS);
+
+        String relativePath = FrontendUtils
+                .getUnixRelativePath(connectClientTsApiFolder.toPath(), path);
+        return relativePath.replaceFirst("\\.[tj]s$", "");
+    }
+
     private Collection<String> getThemeLines() {
         Collection<String> lines = new ArrayList<>();
         if (shouldGenerateThemeScript()) {
             lines.add("//@ts-ignore");
-            lines.add("import {applyTheme} from '../../target/flow-frontend/themes/theme-generated.js';");
+            lines.add(
+                    "import {applyTheme} from '../../target/flow-frontend/themes/theme-generated.js';");
             lines.add("applyTheme(document);");
+            lines.add("");
         }
         return lines;
     }
 
     private boolean shouldGenerateThemeScript() {
-        if (frontDeps == null) {
-            return false;
-        }
         ThemeDefinition themeDef = frontDeps.getThemeDefinition();
         return themeDef != null && !"".equals(themeDef.getName());
     }
