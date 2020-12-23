@@ -24,6 +24,8 @@ const { generateTheme, extractThemeName } = require('./theme-handle');
  *  themeResourceFolder             - theme folder where flow copies local and jar resource frontend files
  *  themeProjectFolders             - array of possible locations for theme folders inside the project
  *  projectStaticAssetsOutputFolder - path to where static assets should be put
+ *
+ *  @throws Error in constructor if required option is not received
  */
 class ApplicationThemePlugin {
   constructor(options) {
