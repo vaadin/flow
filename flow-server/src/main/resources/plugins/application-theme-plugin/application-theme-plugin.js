@@ -14,11 +14,7 @@
  * the License.
  */
 
-const { generateTheme, getResolvedGeneratedThemeFile, extractThemeName } = require('./theme-handle');
-
-let logger;
-let themeName;
-let generateThemeCallback;
+const { generateTheme, extractThemeName } = require('./theme-handle');
 
 /**
  * The application theme plugin is for generating, collecting and copying of theme files for the application theme.
@@ -42,14 +38,10 @@ class ApplicationThemePlugin {
     if (!this.options.themeProjectFolders) {
       throw new Error("Missing themeProjectFolders path array");
     }
-
-    const generatedThemeFile = getResolvedGeneratedThemeFile(this.options);
-    themeName = extractThemeName(generatedThemeFile);
-    generateThemeCallback = (logger) => generateTheme(this.options, logger);
   }
 
   apply(compiler) {
-    logger = compiler.getInfrastructureLogger("ApplicationThemePlugin");
+    const logger = compiler.getInfrastructureLogger("ApplicationThemePlugin");
 
     compiler.hooks.afterEnvironment.tap("ApplicationThemePlugin",
         () => generateTheme(this.options, logger));
@@ -57,13 +49,5 @@ class ApplicationThemePlugin {
 
 }
 
-function getThemeName() {
-  return themeName;
-}
-
-function getGenerateThemeCallback() {
-  return generateThemeCallback;
-}
-
-module.exports = { ApplicationThemePlugin, getThemeName, getGenerateThemeCallback };
+module.exports = { ApplicationThemePlugin, generateTheme, extractThemeName };
 

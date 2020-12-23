@@ -13,7 +13,7 @@ const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 // Flow plugins
 const StatsPlugin = require('@vaadin/stats-plugin');
 const ThemeLiveReloadPlugin = require('@vaadin/theme-live-reload-plugin');
-const { ApplicationThemePlugin, getThemeName, getGenerateThemeCallback } = require('@vaadin/application-theme-plugin');
+const { ApplicationThemePlugin, generateTheme, extractThemeName } = require('@vaadin/application-theme-plugin');
 
 const path = require('path');
 
@@ -110,6 +110,18 @@ if (useClientSideIndexFileForBootstrapping) {
 if (devMode) {
   webPackEntries.devmodeGizmo = devmodeGizmoJS;
 }
+
+const flowFrontendThemesFolder = path.resolve(flowFrontendFolder, 'themes');
+const themeName = extractThemeName(flowFrontendThemesFolder);
+const themeOptions = {
+  // The following matches target/flow-frontend/themes/theme-generated.js
+  // and for theme in JAR that is copied to target/flow-frontend/themes/
+  // and not frontend/themes
+  themeResourceFolder: flowFrontendThemesFolder,
+  themeProjectFolders: themeProjectFolders,
+  projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
+};
+const generateThemeCallback = (logger) => generateTheme(themeOptions, logger);
 
 exports = {
   frontendFolder: `${frontendFolder}`,
@@ -231,21 +243,14 @@ module.exports = {
     // Generate compressed bundles when not devMode
     !devMode && new CompressionPlugin(),
 
-    new ApplicationThemePlugin({
-      // The following matches target/flow-frontend/themes/theme-generated.js
-      // and for theme in JAR that is copied to target/flow-frontend/themes/
-      // and not frontend/themes
-      themeResourceFolder: path.resolve(flowFrontendFolder, 'themes'),
-      themeProjectFolders: themeProjectFolders,
-      projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
-    }),
+    new ApplicationThemePlugin(themeOptions),
 
-    devMode && new ExtraWatchWebpackPlugin({
+    devMode && themeName && new ExtraWatchWebpackPlugin({
       files: [],
-      dirs: [ 'frontend/themes/' + getThemeName() ]
+      dirs: [ 'frontend/themes/' + themeName ]
     }),
 
-    devMode && new ThemeLiveReloadPlugin(getThemeName, getGenerateThemeCallback),
+    devMode && themeName && new ThemeLiveReloadPlugin(themeName, generateThemeCallback),
 
     new StatsPlugin({
       devMode: devMode,

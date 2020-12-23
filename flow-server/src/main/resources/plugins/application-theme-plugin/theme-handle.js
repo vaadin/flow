@@ -21,7 +21,7 @@
 const fs = require('fs');
 const path = require('path');
 const generateThemeFile = require('./theme-generator');
-const { copyStaticAssets } = require('./theme-copy');
+const {copyStaticAssets} = require('./theme-copy');
 
 // matches theme folder name in 'themes/my-theme/my-theme.generated.js'
 const nameRegex = /themes\/(.*)\/\1.generated.js/;
@@ -32,14 +32,8 @@ const nameRegex = /themes\/(.*)\/\1.generated.js/;
  * compilation.
  */
 function generateTheme(options, logger) {
-  const generatedThemeFile = getResolvedGeneratedThemeFile(options);
-  if (fs.existsSync(generatedThemeFile)) {
-    const themeName = extractThemeName(generatedThemeFile);
-
-    if (!themeName) {
-      throw new Error("Couldn't parse theme name from '" + generatedThemeFile + "'.");
-    }
-
+  const themeName = extractThemeName(options.themeResourceFolder);
+  if (themeName) {
     let themeFound = false;
     for (let i = 0; i < options.themeProjectFolders.length; i++) {
       const themeProjectFolder = options.themeProjectFolders[i];
@@ -49,7 +43,7 @@ function generateTheme(options, logger) {
         if (handled) {
           if (themeFound) {
             throw new Error("Found theme files in '" + themeProjectFolder + "' and '"
-                + themeFound + "'. Theme should only be available in one folder");
+              + themeFound + "'. Theme should only be available in one folder");
           }
           logger.info("Found theme files from '", themeProjectFolder, "'");
           themeFound = themeProjectFolder;
@@ -60,7 +54,7 @@ function generateTheme(options, logger) {
     if (fs.existsSync(options.themeResourceFolder)) {
       if (themeFound && fs.existsSync(path.resolve(options.themeResourceFolder, themeName))) {
         throw new Error("Theme '" + themeName + "'should not exist inside a jar and in the project at the same time\n" +
-            "Extending another theme is possible by adding { \"parent\": \"my-parent-theme\" } entry to the theme.json file inside your theme folder.");
+          "Extending another theme is possible by adding { \"parent\": \"my-parent-theme\" } entry to the theme.json file inside your theme folder.");
       }
       logger.debug("Searching theme jar resource folder ", options.themeResourceFolder, " for theme ", themeName);
       handleThemes(themeName, options.themeResourceFolder, options.projectStaticAssetsOutputFolder, logger);
@@ -93,7 +87,7 @@ function handleThemes(themeName, themesFolder, projectStaticAssetsOutputFolder, 
 
     const themeFile = generateThemeFile(themeFolder, themeName, themeProperties);
 
-    fs.writeFileSync(path.resolve(themeFolder, getThemeGeneratedFileName(themeName)), themeFile);
+    fs.writeFileSync(path.resolve(themeFolder, themeName + '.generated.js'), themeFile);
     return true;
   }
   return false;
@@ -112,31 +106,26 @@ function getThemeProperties(themeFolder) {
 }
 
 /**
- * Generates path to theme generated file with theme meta data
- * @param options object containing theme resource folder
- * @returns path to theme generated file
- */
-function getResolvedGeneratedThemeFile(options) {
-  return path.resolve(options.themeResourceFolder, "theme-generated.js");
-}
-
-/**
- * Extracts current theme name from theme generated file
- * @param generatedThemeFile file to extract from
+ * Extracts current theme name from 'theme-generated.js' file located on a
+ * given folder.
+ * @param themeResourceFolder 'theme-generated.js' file folder
  * @returns {string} current theme name
  */
-function extractThemeName(generatedThemeFile) {
-  // read theme name from the theme-generated.js as there we always mark the used theme for webpack to handle.
-  return nameRegex.exec(fs.readFileSync(generatedThemeFile, {encoding: 'utf8'}))[1];
+function extractThemeName(themeResourceFolder) {
+  if (!themeResourceFolder) {
+    throw new Error('Theme resource folder cannot be empty');
+  }
+  const generatedThemeFile = path.resolve(themeResourceFolder, "theme-generated.js");
+  if (fs.existsSync(generatedThemeFile)) {
+    // read theme name from the theme-generated.js as there we always mark the used theme for webpack to handle.
+    const themeName = nameRegex.exec(fs.readFileSync(generatedThemeFile, {encoding: 'utf8'}))[1];
+    if (!themeName) {
+      throw new Error("Couldn't parse theme name from '" + generatedThemeFile + "'.");
+    }
+    return themeName;
+  } else {
+    return '';
+  }
 }
 
-/**
- * Generates theme resources meta data file name
- * @param themeName current theme name
- * @returns {string} theme resources meta data file name
- */
-function getThemeGeneratedFileName(themeName) {
-  return themeName + '.generated.js';
-}
-
-module.exports = { generateTheme, getResolvedGeneratedThemeFile, extractThemeName };
+module.exports = { generateTheme, extractThemeName };

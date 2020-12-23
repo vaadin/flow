@@ -14,8 +14,6 @@
  * the License.
  */
 
-let logger;
-
 /**
  * This plugin handles adding/deleting theme resources events and triggers
  * theme meta data re-generation and application theme update on the fly.
@@ -24,34 +22,37 @@ class ThemeLiveReloadPlugin {
 
     /**
      * Create a new instance of ThemeLiveReloadPlugin
-     * @param themeNameGetter getter function for current theme name
-     * @param generateThemeCallbackGetter getter function for generate theme
-     * callback
+     * @param themeName current theme name
+     * @param generateThemeCallback callback which collects theme resources
+     * and generates theme meta data
      */
-    constructor(themeNameGetter, generateThemeCallbackGetter) {
-      if (!themeNameGetter) {
+    constructor(themeName, generateThemeCallback) {
+      if (!themeName) {
         throw new Error("Missing theme name");
       }
-      this.themeNameGetter = themeNameGetter;
-      this.generateThemeCallbackGetter = generateThemeCallbackGetter;
+      this.themeName = themeName;
+      if (!generateThemeCallback || typeof generateThemeCallback !== 'function') {
+        throw new Error("Missing theme generate callback or incorrect type");
+      }
+      this.generateThemeCallback = generateThemeCallback;
     }
 
     apply(compiler) {
       // Adds a hook for theme files change event
-      compiler.plugin("watch-run", (compilation, callback) => {
-        logger = compiler.getInfrastructureLogger("ThemeLiveReloadPlugin");
+      compiler.hooks.watchRun.tapAsync("ThemeLiveReloadPlugin", (compilation, callback) => {
+        const logger = compiler.getInfrastructureLogger("ThemeLiveReloadPlugin");
         const changedFilesMap = compiler.watchFileSystem.watcher.mtimes;
         if (changedFilesMap !== {}) {
           let themeGeneratedFileChanged = false;
           const changedFilesPaths = Object.keys(changedFilesMap);
           logger.debug("Detected changes in the following files " + changedFilesPaths);
           changedFilesPaths.map(file => `${file}`).forEach(file => {
-              if (file.indexOf(this.themeNameGetter() + '.generated.js') > -1) {
+              if (file.indexOf(this.themeName + '.generated.js') > -1) {
                 themeGeneratedFileChanged = true;
               }
             });
           if (!themeGeneratedFileChanged) {
-            this.generateThemeCallbackGetter()(logger);
+            this.generateThemeCallback(logger);
           }
         }
         callback();
