@@ -25,7 +25,8 @@ import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
 
-@Component(service = ApplicationConfigurationFactory.class)
+@Component(service = ApplicationConfigurationFactory.class, property = org.osgi.framework.Constants.SERVICE_RANKING
+        + ":Integer=" + Integer.MAX_VALUE)
 public class ItApplicationConfigurationFactory
         extends DefaultApplicationConfigurationFactory {
 
