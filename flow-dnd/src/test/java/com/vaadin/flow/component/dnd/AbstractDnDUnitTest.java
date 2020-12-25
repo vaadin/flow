@@ -17,8 +17,14 @@
 package com.vaadin.flow.component.dnd;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dnd.internal.DnDUtilHelper;
@@ -30,11 +36,8 @@ import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ui.Dependency;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 public abstract class AbstractDnDUnitTest {
 
@@ -43,8 +46,12 @@ public abstract class AbstractDnDUnitTest {
 
     @Before
     public void setup() {
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.getPropertyNames())
+                .thenReturn(Collections.emptyEnumeration());
         DefaultDeploymentConfiguration configuration = new DefaultDeploymentConfiguration(
-                VaadinServlet.class, new Properties());
+                appConfig, VaadinServlet.class, new Properties());
 
         VaadinService service = Mockito.mock(VaadinService.class);
         Mockito.when(service.resolveResource(Mockito.anyString()))

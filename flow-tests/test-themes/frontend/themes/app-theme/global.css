@@ -13,6 +13,10 @@
 
 }
 
+html, :host {
+    --lumo-primary-text-color: #008000;
+}
+
 body {
     background-image: url("./img/bg.jpg");
     font-family: "Ostrich";
@@ -31,6 +35,11 @@ body {
     width: 224px;
     height: 224px;
     display: block;
+}
+
+#font-awesome {
+    margin: 5px;
+    padding: 5px;
 }
 
 p.global {

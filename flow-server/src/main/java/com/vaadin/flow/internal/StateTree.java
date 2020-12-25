@@ -97,16 +97,37 @@ public class StateTree implements NodeOwner {
         private final SerializableConsumer<ExecutionContext> execution;
         private final StateNode stateNode;
         private final int index;
+        private final NodeOwner originalOwner;
 
         private BeforeClientResponseEntry(int index, StateNode stateNode,
                 SerializableConsumer<ExecutionContext> execution) {
             this.index = index;
             this.stateNode = stateNode;
             this.execution = execution;
+            originalOwner = stateNode.getOwner();
         }
 
         private int getIndex() {
             return index;
+        }
+
+        /**
+         * Checks whether the entry's execution consumer can be run with the
+         * given {@link UI}.
+         * 
+         * @param ui
+         *            the given to execute the entry with
+         * @return whether the entry may be executed with the given {@code ui}
+         *         instance
+         */
+        private boolean canExecute(UI ui) {
+            if (originalOwner instanceof NullOwner) {
+                // the node has not been attached initially
+                return true;
+            }
+            // if node has been attached initially then it's tree has to be the
+            // same
+            return ui.getInternals().getStateTree() == originalOwner;
         }
 
         public StateNode getStateNode() {
@@ -362,11 +383,12 @@ public class StateTree implements NodeOwner {
             if (callbacks.isEmpty()) {
                 return;
             }
-            callbacks.forEach(entry -> {
-                ExecutionContext context = new ExecutionContext(getUI(),
-                        entry.getStateNode().isClientSideInitialized());
-                entry.getExecution().accept(context);
-            });
+            callbacks.stream().filter(entry -> entry.canExecute(getUI()))
+                    .forEach(entry -> {
+                        ExecutionContext context = new ExecutionContext(getUI(),
+                                entry.getStateNode().isClientSideInitialized());
+                        entry.getExecution().accept(context);
+                    });
         }
     }
 

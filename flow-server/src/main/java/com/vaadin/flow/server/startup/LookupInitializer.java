@@ -24,7 +24,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,7 +57,8 @@ import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
  */
 @HandlesTypes({ ResourceProvider.class, InstantiatorFactory.class,
         DeprecatedPolymerPublishedEventHandler.class,
-        EndpointGeneratorTaskFactory.class })
+        EndpointGeneratorTaskFactory.class,
+        ApplicationConfigurationFactory.class })
 public class LookupInitializer
         implements ClassLoaderAwareServletContainerInitializer {
 
@@ -277,6 +277,9 @@ public class LookupInitializer
         for (Class<?> serviceType : getServiceTypes()) {
             if (ResourceProvider.class.equals(serviceType)) {
                 collectResourceProviders(classSet, services);
+            } else if (ApplicationConfigurationFactory.class
+                    .equals(serviceType)) {
+                collectApplicationConfigurationFactories(classSet, services);
             } else {
                 collectSubclasses(serviceType, classSet, services);
             }
@@ -310,6 +313,28 @@ public class LookupInitializer
         }
     }
 
+    private void collectApplicationConfigurationFactories(
+            Set<Class<?>> classSet,
+            Map<Class<?>, Collection<Object>> services) {
+        Set<Class<?>> factories = filterSubClasses(
+                ApplicationConfigurationFactory.class, classSet);
+        factories.remove(DefaultApplicationConfigurationFactory.class);
+        if (factories.isEmpty()) {
+            services.put(ApplicationConfigurationFactory.class,
+                    Collections.singletonList(
+                            new DefaultApplicationConfigurationFactory()));
+        } else if (factories.size() > 1) {
+            throw new IllegalStateException(SEVERAL_IMPLS
+                    + DefaultApplicationConfigurationFactory.class
+                            .getSimpleName()
+                    + SPI + classSet + ONE_IMPL_REQUIRED);
+        } else {
+            Class<?> clazz = factories.iterator().next();
+            services.put(ApplicationConfigurationFactory.class, Collections
+                    .singletonList(ReflectTools.createInstance(clazz)));
+        }
+    }
+
     private Set<Class<?>> filterResourceProviders(Set<Class<?>> classes) {
         Set<Class<?>> resourceProviders = filterSubClasses(
                 ResourceProvider.class, classes);
@@ -321,8 +346,7 @@ public class LookupInitializer
             Set<Class<?>> classes) {
         return classes == null ? Collections.emptySet()
                 : classes.stream().filter(clazz::isAssignableFrom)
-                        .filter(cls -> !cls.isInterface() && !cls.isSynthetic()
-                                && !Modifier.isAbstract(cls.getModifiers()))
+                        .filter(ReflectTools::isInstantiableService)
                         .filter(cls -> !clazz.equals(cls))
                         .collect(Collectors.toSet());
     }

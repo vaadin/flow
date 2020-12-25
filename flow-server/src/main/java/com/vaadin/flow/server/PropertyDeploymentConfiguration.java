@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -22,6 +23,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
@@ -43,11 +45,18 @@ public class PropertyDeploymentConfiguration
 
     private final Class<?> systemPropertyBaseClass;
 
-    private final Properties initialParameters;
+    /**
+     * Contains properties from both: parent config and provided properties.
+     */
+    private final Properties allProperties;
+
+    private final ApplicationConfiguration parentConfig;
 
     /**
      * Create a new property deployment configuration instance.
-     *
+     * 
+     * @param parentConfig
+     *            a parent application configuration
      * @param systemPropertyBaseClass
      *            the class that should be used as a basis when reading system
      *            properties
@@ -55,10 +64,12 @@ public class PropertyDeploymentConfiguration
      *            the init parameters that should make up the foundation for
      *            this configuration
      */
-    public PropertyDeploymentConfiguration(Class<?> systemPropertyBaseClass,
-            Properties initParameters) {
+    public PropertyDeploymentConfiguration(
+            ApplicationConfiguration parentConfig,
+            Class<?> systemPropertyBaseClass, Properties initParameters) {
         super(filterStringProperties(initParameters));
-        initialParameters = initParameters;
+        this.parentConfig = parentConfig;
+        allProperties = mergeProperties(parentConfig, initParameters);
         this.systemPropertyBaseClass = systemPropertyBaseClass;
     }
 
@@ -114,22 +125,54 @@ public class PropertyDeploymentConfiguration
      */
     @Override
     public String getApplicationProperty(String parameterName) {
-
-        String val = getProperties().get(parameterName);
-        if (val != null) {
-            return val;
+        String val = getApplicationProperty(getProperties()::get,
+                parameterName);
+        if (val == null) {
+            val = getApplicationProperty(
+                    prop -> parentConfig.getStringProperty(prop, null),
+                    parameterName);
         }
-
-        // Try lower case application properties for backward compatibility with
-        // 3.0.2 and earlier
-        val = getProperties().get(parameterName.toLowerCase());
-
         return val;
     }
 
     @Override
     public boolean isProductionMode() {
-        return getBooleanProperty(SERVLET_PARAMETER_PRODUCTION_MODE, false);
+        if (isOwnProperty(SERVLET_PARAMETER_PRODUCTION_MODE)) {
+            return getBooleanProperty(SERVLET_PARAMETER_PRODUCTION_MODE, false);
+        }
+        return parentConfig.isProductionMode();
+    }
+
+    @Override
+    public boolean enableDevServer() {
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
+            return super.enableDevServer();
+        }
+        return parentConfig.enableDevServer();
+    }
+
+    @Override
+    public boolean useV14Bootstrap() {
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP)) {
+            return super.useV14Bootstrap();
+        }
+        return parentConfig.useV14Bootstrap();
+    }
+
+    @Override
+    public boolean isPnpmEnabled() {
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)) {
+            return super.isPnpmEnabled();
+        }
+        return parentConfig.isPnpmEnabled();
+    }
+
+    @Override
+    public boolean reuseDevServer() {
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
+            return super.reuseDevServer();
+        }
+        return parentConfig.reuseDevServer();
     }
 
     @Override
@@ -140,8 +183,10 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean isXsrfProtectionEnabled() {
-        return !getBooleanProperty(SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
-                false);
+        if (isOwnProperty(SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION)) {
+            return super.isXsrfProtectionEnabled();
+        }
+        return parentConfig.isXsrfProtectionEnabled();
     }
 
     @Override
@@ -187,7 +232,7 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public Properties getInitParameters() {
-        return initialParameters;
+        return allProperties;
     }
 
     /**
@@ -205,6 +250,46 @@ public class PropertyDeploymentConfiguration
                 && enableDevServer(); // gizmo excluded from prod bundle
     }
 
+    /**
+     * Checks whether the given {@code property} is the property explicitly set
+     * in this deployment configuration (not in it's parent config).
+     * <p>
+     * The deployment configuration consists of properties defined in the
+     * configuration itself and properties which are coming from the application
+     * configuration. The properties which are defined in the deployment
+     * configuration itself (own properties) should take precedence: their
+     * values should override the parent config properties values.
+     * 
+     * @param property
+     *            a property name
+     * @return whether the {@code property} is explicitly set in the
+     *         configuration
+     */
+    protected boolean isOwnProperty(String property) {
+        return getApplicationProperty(getProperties()::get, property) != null;
+    }
+
+    /**
+     * Returns parent application configuration;
+     * 
+     * @return the parent config
+     */
+    protected ApplicationConfiguration getParentConfiguration() {
+        return parentConfig;
+    }
+
+    private Properties mergeProperties(ApplicationConfiguration config,
+            Properties properties) {
+        Properties result = new Properties();
+        Enumeration<String> propertyNames = config.getPropertyNames();
+        while (propertyNames.hasMoreElements()) {
+            String property = propertyNames.nextElement();
+            result.put(property, config.getStringProperty(property, null));
+        }
+        result.putAll(properties);
+        return result;
+    }
+
     private static Map<String, String> filterStringProperties(
             Properties properties) {
         Map<String, String> result = new HashMap<>();
@@ -218,4 +303,5 @@ public class PropertyDeploymentConfiguration
         }
         return result;
     }
+
 }
