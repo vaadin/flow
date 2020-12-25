@@ -16,16 +16,12 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
-import org.apache.commons.io.FileUtils;
-
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -38,7 +34,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
  *
  * @author Vaadin Ltd
  */
-public class TaskGenerateBootstrap implements FallibleCommand {
+public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
 
     private final FrontendDependenciesScanner frontDeps;
     private final File connectClientTsApiFolder;
@@ -54,24 +50,22 @@ public class TaskGenerateBootstrap implements FallibleCommand {
     }
 
     @Override
-    public void execute() throws ExecutionFailedException {
-        if (frontDeps == null || connectClientTsApiFolder == null) {
-            return;
-        }
-
-        File bootstrapFile = new File(connectClientTsApiFolder,
-                CUSTOM_BOOTSTRAP_FILE_NAME);
-        Collection<String> lines = new ArrayList<>();
+    protected String getFileContent() {
+        List<String> lines = new ArrayList<>();
         lines.add(String.format("import '%s';\n", getIndexTsEntryPath()));
         lines.addAll(getThemeLines());
 
-        try {
-            FileUtils.writeStringToFile(bootstrapFile, String.join("\n", lines),
-                    StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new IllegalStateException(
-                    "Unable to read " + bootstrapFile.getName(), e);
-        }
+        return String.join("\n", lines);
+    }
+
+    @Override
+    protected File getGeneratedFile() {
+        return new File(connectClientTsApiFolder, CUSTOM_BOOTSTRAP_FILE_NAME);
+    }
+
+    @Override
+    protected boolean shouldGenerate() {
+        return frontDeps != null && connectClientTsApiFolder != null;
     }
 
     private String getIndexTsEntryPath() {
@@ -88,7 +82,7 @@ public class TaskGenerateBootstrap implements FallibleCommand {
 
     private Collection<String> getThemeLines() {
         Collection<String> lines = new ArrayList<>();
-        if (shouldGenerateThemeScript()) {
+        if (shouldApplyAppTheme()) {
             lines.add("//@ts-ignore");
             lines.add(
                     "import {applyTheme} from '../../target/flow-frontend/themes/theme-generated.js';");
@@ -98,7 +92,7 @@ public class TaskGenerateBootstrap implements FallibleCommand {
         return lines;
     }
 
-    private boolean shouldGenerateThemeScript() {
+    private boolean shouldApplyAppTheme() {
         ThemeDefinition themeDef = frontDeps.getThemeDefinition();
         return themeDef != null && !"".equals(themeDef.getName());
     }
