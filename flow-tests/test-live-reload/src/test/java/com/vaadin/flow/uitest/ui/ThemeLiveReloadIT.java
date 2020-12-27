@@ -19,6 +19,7 @@ package com.vaadin.flow.uitest.ui;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -32,6 +33,10 @@ public class ThemeLiveReloadIT extends AbstractLiveReloadIT {
 
     private static final String RED_COLOR = "rgba(255, 0, 0, 1)";
 
+    private String globalCSSFilePath;
+    private String globalFontCSSFilePath;
+    private String fontFileName;
+
     @Before
     public void init() {
         File fontsDir = new File("frontend/themes/app-theme/fonts");
@@ -42,16 +47,15 @@ public class ThemeLiveReloadIT extends AbstractLiveReloadIT {
 
     @After
     public void cleanUp() {
-        deleteFile("frontend/themes/app-theme/global.css");
-        deleteFile("frontend/themes/app-theme/global-font.css");
-        deleteFile("frontend/themes/app-theme/fonts/ostrich-sans-regular.ttf");
+        deleteFile(globalCSSFilePath);
+        deleteFile(globalFontCSSFilePath);
+        deleteFile("frontend/themes/app-theme/fonts/" + fontFileName);
     }
 
     @Test
     public void webpackLiveReload_newCssCreatedAndDeleted_stylesUpdatedOnFly()
             throws IOException {
         open();
-        checkLogsForErrors();
 
         // Live reload upon new global.css
         final WebElement htmlElement = findElement(By.tagName("html"));
@@ -61,7 +65,7 @@ public class ThemeLiveReloadIT extends AbstractLiveReloadIT {
         waitUntilCustomBackgroundColor();
 
         // Live reload upon file deletion
-        deleteFile("frontend/themes/app-theme/global.css");
+        deleteFile(globalCSSFilePath);
         waitUntilInitialBackgroundColor();
 
         // TODO: deleting the CSS file reverts the styles, but still produce
@@ -72,8 +76,10 @@ public class ThemeLiveReloadIT extends AbstractLiveReloadIT {
 
         // Live reload upon adding a font
         File copyFontFrom = new File("frontend/fonts/ostrich-sans-regular.ttf");
+        fontFileName = String.format("ostrich-sans-regular-%s.ttf",
+                UUID.randomUUID().toString());
         File copyFontTo = new File(
-                "frontend/themes/app-theme/fonts/ostrich-sans-regular.ttf");
+                "frontend/themes/app-theme/fonts/" + fontFileName);
         FileUtils.copyFile(copyFontFrom, copyFontTo);
         waitUntil(driver -> copyFontTo.exists());
         createGlobalCssWithFont();
@@ -104,7 +110,14 @@ public class ThemeLiveReloadIT extends AbstractLiveReloadIT {
 
     private void createGlobalCssWithBackgroundColor() throws IOException {
         final String styles = "html { background-color: " + RED_COLOR + "; }";
-        File globalCssFile = new File("frontend/themes/app-theme/global.css");
+        // TODO: use unique file name here, because webpack compilation fails
+        // when add->delete->add a file with the same name. Perhaps, webpack
+        // file caching causes this.
+        // https://github.com/vaadin/flow/issues/9596
+        globalCSSFilePath = String.format(
+                "frontend/themes/app-theme/global-%s.css",
+                UUID.randomUUID().toString());
+        File globalCssFile = new File(globalCSSFilePath);
         FileUtils.write(globalCssFile, styles, StandardCharsets.UTF_8.name());
     }
 
@@ -113,17 +126,20 @@ public class ThemeLiveReloadIT extends AbstractLiveReloadIT {
         final String fontStyle = 
                 "@font-face {" +
                 "    font-family: \"Ostrich\";" +
-                "    src: url(\"./fonts/ostrich-sans-regular.ttf\") format(\"TrueType\");" +
+                "    src: url(\"./fonts/" + fontFileName + "\") format(\"TrueType\");" +
                 "}" + 
                 "html {" +
                 "    font-family: \"Ostrich\";" + 
                 "}";
         // @formatter:on
-        // TODO: use another file name here, because webpack compilation fails
-        //  when add->delete->add a file with the same path. Perhaps, webpack
+        // TODO: use unique file name here, because webpack compilation fails
+        // when add->delete->add a file with the same name. Perhaps, webpack
         //  file caching causes this.
         // https://github.com/vaadin/flow/issues/9596
-        File globalCssFile = new File("frontend/themes/app-theme/global-font.css");
+        globalFontCSSFilePath = String.format(
+                "frontend/themes/app-theme/global-font-%s.css",
+                UUID.randomUUID().toString());
+        File globalCssFile = new File(globalFontCSSFilePath);
         FileUtils.write(globalCssFile, fontStyle,
                 StandardCharsets.UTF_8.name());
         waitUntil(driver -> globalCssFile.exists());
