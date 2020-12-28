@@ -150,7 +150,7 @@ public class FrontendTools {
 
     private final String nodeVersion;
     private final URI nodeDownloadRoot;
-    
+
     private final boolean ignoreVersionChecks;
 
     /**
@@ -191,18 +191,17 @@ public class FrontendTools {
      *            they are not found globally or in the {@code baseDir}, may be
      *            {@code null}
      * @param nodeVersion
-     *            The node.js version to be used when node.js is installed automatically
-     *            by Vaadin, for example <code>"v12.18.3"</code>. Use
-     *            {@value #DEFAULT_NODE_VERSION} by default.
+     *            The node.js version to be used when node.js is installed
+     *            automatically by Vaadin, for example <code>"v12.18.3"</code>.
+     *            Use {@value #DEFAULT_NODE_VERSION} by default.
      * @param nodeDownloadRoot
-     *            Download node.js from this URL. Handy in heavily firewalled corporate
-     *            environments where the node.js download can be provided from an intranet
-     *            mirror. Use {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
+     *            Download node.js from this URL. Handy in heavily firewalled
+     *            corporate environments where the node.js download can be
+     *            provided from an intranet mirror. Use
+     *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
      */
-    public FrontendTools(String baseDir,
-                         Supplier<String> alternativeDirGetter,
-                         String nodeVersion,
-                         URI nodeDownloadRoot) {
+    public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
+            String nodeVersion, URI nodeDownloadRoot) {
         this(baseDir, alternativeDirGetter, nodeVersion, nodeDownloadRoot,
                 "true".equalsIgnoreCase(System.getProperty(
                         FrontendUtils.PARAM_IGNORE_VERSION_CHECKS)));
@@ -639,6 +638,9 @@ public class FrontendTools {
     private Supplier<List<String>> doEnsurePnpm() {
         List<String> path = getSuitablePnpm(baseDir);
         if (!path.isEmpty()) {
+            getLogger().trace(
+                    "Found installed pnpm (globally or inside the '{}' project dir)",
+                    baseDir);
             return () -> path;
         }
         String alternativeDir = getAlternativeDir();
@@ -646,6 +648,9 @@ public class FrontendTools {
         if (pnpm.isEmpty()) {
             return () -> getPnpmExecutable(alternativeDir, true);
         } else {
+            getLogger().info(
+                    "Using pnpm command installed in the '{}' directory",
+                    alternativeDir);
             return () -> pnpm;
         }
     }
@@ -719,15 +724,14 @@ public class FrontendTools {
         if (!pnpmCommand.isEmpty()) {
             getLogger().info("using '{}' for frontend package installation",
                     pnpmCommandString);
-        } else {
-            getLogger().info("installing pnpm version {} locally",
-                    SUPPORTED_PNPM_VERSION.getFullVersion());
-
         }
         return pnpmCommand;
     }
 
     private void installPnpm(String dir, List<String> installCommand) {
+        getLogger().info("installing pnpm version {} locally",
+                DEFAULT_PNPM_VERSION);
+
         List<String> command = new ArrayList<>();
         command.addAll(installCommand);
         command.add("install");
