@@ -33,23 +33,49 @@ public class ThemeLiveReloadIT extends AbstractLiveReloadIT {
 
     private static final String RED_COLOR = "rgba(255, 0, 0, 1)";
 
-    private String globalCSSFilePath;
-    private String globalFontCSSFilePath;
-    private String fontFileName;
+    private File baseDir;
+    private File globalCSSFile;
+    private File globalFontCSSFile;
+    private File fontFile;
 
     @Before
     public void init() {
-        File fontsDir = new File("frontend/themes/app-theme/fonts");
+        baseDir = new File(System.getProperty("user.dir", "."));
+
+        File fontsDir = new File(baseDir, "frontend/themes/app-theme/fonts/");
         if (!fontsDir.exists() && !fontsDir.mkdir()) {
             Assert.fail("Unable to create fonts folder");
         }
+
+        // TODO: use unique file name here, because webpack compilation fails
+        // when add->delete->add a file with the same name. Perhaps, webpack
+        // file caching causes this.
+        // https://github.com/vaadin/flow/issues/9596
+        String relativeFilePath = String.format(
+                "frontend/themes/app-theme/global-%s.css",
+                UUID.randomUUID().toString());
+        globalCSSFile = new File(baseDir, relativeFilePath);
+
+        // TODO: use unique file name here, because webpack compilation fails
+        // when add->delete->add a file with the same name. Perhaps, webpack
+        // file caching causes this.
+        // https://github.com/vaadin/flow/issues/9596
+        relativeFilePath = String.format(
+                "frontend/themes/app-theme/global-font-%s.css",
+                UUID.randomUUID().toString());
+        globalFontCSSFile = new File(baseDir, relativeFilePath);
+
+        String fontFileName = String.format("ostrich-sans-regular-%s.ttf",
+                UUID.randomUUID().toString());
+        fontFile = new File(baseDir,
+                "frontend/themes/app-theme/fonts/" + fontFileName);
     }
 
     @After
     public void cleanUp() {
-        deleteFile(globalCSSFilePath);
-        deleteFile(globalFontCSSFilePath);
-        deleteFile("frontend/themes/app-theme/fonts/" + fontFileName);
+        deleteFile(globalCSSFile);
+        deleteFile(globalFontCSSFile);
+        deleteFile(fontFile);
     }
 
     @Test
@@ -65,7 +91,7 @@ public class ThemeLiveReloadIT extends AbstractLiveReloadIT {
         waitUntilCustomBackgroundColor();
 
         // Live reload upon file deletion
-        deleteFile(globalCSSFilePath);
+        deleteFile(globalCSSFile);
         waitUntilInitialBackgroundColor();
 
         // TODO: deleting the CSS file reverts the styles, but still produce
@@ -75,13 +101,11 @@ public class ThemeLiveReloadIT extends AbstractLiveReloadIT {
         // checkLogsForErrors();
 
         // Live reload upon adding a font
-        File copyFontFrom = new File("frontend/fonts/ostrich-sans-regular.ttf");
-        fontFileName = String.format("ostrich-sans-regular-%s.ttf",
-                UUID.randomUUID().toString());
-        File copyFontTo = new File(
-                "frontend/themes/app-theme/fonts/" + fontFileName);
-        FileUtils.copyFile(copyFontFrom, copyFontTo);
-        waitUntil(driver -> copyFontTo.exists());
+        File copyFontFrom = new File(baseDir,
+                "frontend/fonts/ostrich-sans-regular.ttf");
+
+        FileUtils.copyFile(copyFontFrom, fontFile);
+        waitUntil(driver -> fontFile.exists());
         createGlobalCssWithFont();
         waitUntilCustomFont();
     }
@@ -110,15 +134,7 @@ public class ThemeLiveReloadIT extends AbstractLiveReloadIT {
 
     private void createGlobalCssWithBackgroundColor() throws IOException {
         final String styles = "html { background-color: " + RED_COLOR + "; }";
-        // TODO: use unique file name here, because webpack compilation fails
-        // when add->delete->add a file with the same name. Perhaps, webpack
-        // file caching causes this.
-        // https://github.com/vaadin/flow/issues/9596
-        globalCSSFilePath = String.format(
-                "frontend/themes/app-theme/global-%s.css",
-                UUID.randomUUID().toString());
-        File globalCssFile = new File(globalCSSFilePath);
-        FileUtils.write(globalCssFile, styles, StandardCharsets.UTF_8.name());
+        FileUtils.write(globalCSSFile, styles, StandardCharsets.UTF_8.name());
     }
 
     private void createGlobalCssWithFont() throws IOException {
@@ -126,31 +142,21 @@ public class ThemeLiveReloadIT extends AbstractLiveReloadIT {
         final String fontStyle = 
                 "@font-face {" +
                 "    font-family: \"Ostrich\";" +
-                "    src: url(\"./fonts/" + fontFileName + "\") format(\"TrueType\");" +
+                "    src: url(\"./fonts/" + fontFile.getName() + "\") format(\"TrueType\");" +
                 "}" + 
                 "html {" +
                 "    font-family: \"Ostrich\";" + 
                 "}";
         // @formatter:on
-        // TODO: use unique file name here, because webpack compilation fails
-        // when add->delete->add a file with the same name. Perhaps, webpack
-        //  file caching causes this.
-        // https://github.com/vaadin/flow/issues/9596
-        globalFontCSSFilePath = String.format(
-                "frontend/themes/app-theme/global-font-%s.css",
-                UUID.randomUUID().toString());
-        File globalCssFile = new File(globalFontCSSFilePath);
-        FileUtils.write(globalCssFile, fontStyle,
+        FileUtils.write(globalFontCSSFile, fontStyle,
                 StandardCharsets.UTF_8.name());
-        waitUntil(driver -> globalCssFile.exists());
+        waitUntil(driver -> globalFontCSSFile.exists());
     }
 
-    private void deleteFile(String filePath) {
-        if (filePath != null) {
-            File fileToDelete = new File(filePath);
-            if (fileToDelete.exists() && !fileToDelete.delete()) {
-                Assert.fail("Unable to delete " + filePath);
-            }
+    private void deleteFile(File fileToDelete) {
+        if (fileToDelete != null && fileToDelete.exists()
+                && !fileToDelete.delete()) {
+            Assert.fail("Unable to delete " + fileToDelete);
         }
     }
 }
