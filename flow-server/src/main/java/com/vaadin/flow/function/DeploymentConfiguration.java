@@ -23,6 +23,7 @@ import java.util.Properties;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.WrappedSession;
@@ -30,7 +31,6 @@ import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_POLYFILLS;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 
 /**
  * A collection of properties configured at deploy time as well as a way of
@@ -39,23 +39,8 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BO
  * @author Vaadin Ltd
  * @since 1.0
  */
-public interface DeploymentConfiguration extends Serializable {
-
-    /**
-     * Returns whether Vaadin is in production mode.
-     *
-     * @return true if in production mode, false otherwise.
-     */
-    boolean isProductionMode();
-
-    /**
-     * Returns whether Vaadin is running in useDeprecatedV14Bootstrapping.
-     *
-     * @return true if in useDeprecatedV14Bootstrapping, false otherwise.
-     */
-    default boolean useV14Bootstrap() {
-        return getBooleanProperty(SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
-    }
+public interface DeploymentConfiguration
+        extends AbstractConfiguration, Serializable {
 
     /**
      * Returns whether the server provides timing info to the client.
@@ -63,13 +48,6 @@ public interface DeploymentConfiguration extends Serializable {
      * @return true if timing info is provided, false otherwise.
      */
     boolean isRequestTiming();
-
-    /**
-     * Returns whether cross-site request forgery protection is enabled.
-     *
-     * @return true if XSRF protection is enabled, false otherwise.
-     */
-    boolean isXsrfProtectionEnabled();
 
     /**
      * Returns whether sync id checking is enabled. The sync id is used to
@@ -186,25 +164,6 @@ public interface DeploymentConfiguration extends Serializable {
      * {@link DeploymentConfiguration#getApplicationOrSystemProperty(String, Object, Function)}
      * for {@link String} type.
      *
-     * @param propertyName
-     *            The simple of the property, in some contexts, lookup might be
-     *            performed using variations of the provided name.
-     * @param defaultValue
-     *            the default value that should be used if no value has been
-     *            defined
-     * @return the property value, or the passed default value if no property
-     *         value is found
-     */
-    default String getStringProperty(String propertyName, String defaultValue) {
-        return getApplicationOrSystemProperty(propertyName, defaultValue,
-                Function.identity());
-    }
-
-    /**
-     * A shorthand of
-     * {@link DeploymentConfiguration#getApplicationOrSystemProperty(String, Object, Function)}
-     * for {@link String} type.
-     *
      * Considers {@code ""} to be equal {@code true} in order to treat params
      * like {@code -Dtest.param} as enabled ({@code test.param == true}).
      *
@@ -224,6 +183,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @throws IllegalArgumentException
      *             if property value string is not a boolean value
      */
+    @Override
     default boolean getBooleanProperty(String propertyName,
             boolean defaultValue) throws IllegalArgumentException {
         String booleanString = getStringProperty(propertyName, null);
@@ -283,7 +243,8 @@ public interface DeploymentConfiguration extends Serializable {
      *         <code>false</code> to not serve Brotli files.
      */
     default boolean isBrotli() {
-        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_BROTLI, false);
+        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_BROTLI,
+                false);
     }
 
     default String getCompiledWebComponentsPath() {
@@ -295,8 +256,8 @@ public interface DeploymentConfiguration extends Serializable {
      * Returns an array with polyfills to be loaded when the app is loaded.
      *
      * The default value is empty, but it can be changed by setting the
-     * {@link InitParameters#SERVLET_PARAMETER_POLYFILLS} as a comma separated list
-     * of JS files to load.
+     * {@link InitParameters#SERVLET_PARAMETER_POLYFILLS} as a comma separated
+     * list of JS files to load.
      *
      * @return polyfills to load
      */
@@ -306,28 +267,6 @@ public interface DeploymentConfiguration extends Serializable {
                         POLYFILLS_DEFAULT_VALUE).split("[, ]+"))
                 .stream().filter(polyfill -> !polyfill.isEmpty())
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Get if the dev server should be enabled. True by default
-     *
-     * @return true if dev server should be used
-     */
-    default boolean enableDevServer() {
-        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER,
-                true);
-    }
-
-    /**
-     * Get if the dev server should be reused on each reload. True by default,
-     * set it to false in tests so as dev server is not kept as a daemon after
-     * the test.
-     *
-     * @return true if dev server should be reused
-     */
-    default boolean reuseDevServer() {
-        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER,
-                true);
     }
 
     /**
@@ -377,18 +316,9 @@ public interface DeploymentConfiguration extends Serializable {
     /**
      * Checks if dev mode live reload is enabled or not.
      *
-     * @return {@code true} if dev mode live reload is enabled, {@code false} otherwise
+     * @return {@code true} if dev mode live reload is enabled, {@code false}
+     *         otherwise
      */
     boolean isDevModeLiveReloadEnabled();
 
-    /**
-     * Returns whether pnpm is enabled or not.
-     *
-     * @return {@code true} if enabled, {@code false} if not
-     * @since 2.2
-     */
-    default boolean isPnpmEnabled() {
-        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
-                Boolean.valueOf(Constants.ENABLE_PNPM_DEFAULT_STRING));
-    }
 }

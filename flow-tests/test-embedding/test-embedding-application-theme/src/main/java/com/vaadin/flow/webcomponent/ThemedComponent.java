@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.webcomponent;
 
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 
+@NpmPackage(value = "@fortawesome/fontawesome-free", version = "5.15.1")
 public class ThemedComponent extends Div {
 
     public static final String TEST_TEXT_ID = "test-text";
@@ -26,13 +28,19 @@ public class ThemedComponent extends Div {
     public static final String MY_LIT_ID = "button";
     public static final String EMBEDDED_ID = "embedded";
 
+    public static final String HAND_ID = "sparkle-hand";
+
     public ThemedComponent() {
         setId(EMBEDDED_ID);
         final Span textSpan = new Span(
             "Welcome to the embedded application theme test");
         textSpan.setId(TEST_TEXT_ID);
 
-        add(textSpan);
+        Span hand = new Span();
+        hand.setId(HAND_ID);
+        hand.addClassNames("internal", "fas", "fa-hand-sparkles");
+
+        add(textSpan, hand);
 
         add(new Div());
         add(new MyPolymerField().withId(MY_POLYMER_ID));

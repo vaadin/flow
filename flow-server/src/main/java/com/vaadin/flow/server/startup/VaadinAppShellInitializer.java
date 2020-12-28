@@ -19,14 +19,13 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
+
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,16 +39,13 @@ import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 
@@ -79,18 +75,7 @@ public class VaadinAppShellInitializer
     @Override
     public void process(Set<Class<?>> classes, ServletContext context)
             throws ServletException {
-
-        Collection<? extends ServletRegistration> registrations = context
-                .getServletRegistrations().values();
-        if (registrations.isEmpty()) {
-            return;
-        }
-
-        DeploymentConfiguration config = StubServletConfig
-                .createDeploymentConfiguration(context,
-                        registrations.iterator().next(), VaadinServlet.class);
-
-        init(classes, context, config);
+        init(classes, context);
     }
 
     /**
@@ -101,12 +86,11 @@ public class VaadinAppShellInitializer
      *            this class.
      * @param context
      *            the servlet context.
-     * @param config
-     *            the vaadin configuration for the application.
      */
     @SuppressWarnings("unchecked")
-    public static void init(Set<Class<?>> classes, ServletContext context,
-            DeploymentConfiguration config) {
+    public static void init(Set<Class<?>> classes, ServletContext context) {
+        ApplicationConfiguration config = ApplicationConfiguration
+                .get(new VaadinServletContext(context));
 
         if (config.useV14Bootstrap()) {
             return;
@@ -186,7 +170,7 @@ public class VaadinAppShellInitializer
      * scanning.
      *
      * @return list of annotations handled by
-     *         {@link VaadinAppShellInitializer#init(Set, ServletContext, DeploymentConfiguration)}
+     *         {@link VaadinAppShellInitializer#init(Set, ServletContext)}
      */
     @SuppressWarnings("unchecked")
     public static List<Class<? extends Annotation>> getValidAnnotations() {
@@ -202,7 +186,7 @@ public class VaadinAppShellInitializer
      * scanning.
      *
      * @return list of super classes handled by
-     *         {@link VaadinAppShellInitializer#init(Set, ServletContext, DeploymentConfiguration)}
+     *         {@link VaadinAppShellInitializer#init(Set, ServletContext)}
      */
     public static List<Class<?>> getValidSupers() {
         return Arrays.stream(getHandledTypes())

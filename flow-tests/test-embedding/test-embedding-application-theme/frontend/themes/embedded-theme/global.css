@@ -5,3 +5,7 @@
     background-image: url("./img/bg.jpg");
     font-family: "Ostrich";
 }
+
+.internal {
+    color: green;
+}

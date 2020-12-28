@@ -39,6 +39,22 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        
+        <!-- DefaultApplicationConfigurationFactory is declared as an OSGi service -->
+        
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.cmpn</artifactId>
+            <version>${osgi.compendium.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.core</artifactId>
+            <version>${osgi.core.version}</version>
+            <scope>provided</scope>
+        </dependency>
 
 
         <!-- API DEPENDENCIES -->
