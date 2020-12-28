@@ -79,7 +79,7 @@ function findThemeFolderAndHandleTheme(themeName, options, logger) {
         "Extending another theme is possible by adding { \"parent\": \"my-parent-theme\" } entry to the theme.json file inside your theme folder.");
     }
     logger.debug("Searching theme jar resource folder ", options.themeResourceFolder, " for theme ", themeName);
-    handleThemes(themeName, options.themeResourceFolder, options.projectStaticAssetsOutputFolder, logger);
+    handleThemes(themeName, options.themeResourceFolder, options, logger);
     themeFound = true;
   }
   return themeFound;
