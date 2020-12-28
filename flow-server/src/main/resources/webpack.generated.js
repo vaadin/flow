@@ -13,7 +13,7 @@ const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 // Flow plugins
 const StatsPlugin = require('@vaadin/stats-plugin');
 const ThemeLiveReloadPlugin = require('@vaadin/theme-live-reload-plugin');
-const { ApplicationThemePlugin, generateTheme, extractThemeName } = require('@vaadin/application-theme-plugin');
+const { ApplicationThemePlugin, processThemeResources, extractThemeName } = require('@vaadin/application-theme-plugin');
 
 const path = require('path');
 
@@ -121,7 +121,7 @@ const themeOptions = {
   themeProjectFolders: themeProjectFolders,
   projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
 };
-const generateThemeCallback = (logger) => generateTheme(themeOptions, logger);
+const processThemeResourcesCallback = (logger) => processThemeResources(themeOptions, logger);
 
 exports = {
   frontendFolder: `${frontendFolder}`,
@@ -247,10 +247,12 @@ module.exports = {
 
     devMode && themeName && new ExtraWatchWebpackPlugin({
       files: [],
-      dirs: [ 'frontend/themes/' + themeName ]
+      dirs: ['frontend/themes/' + themeName,
+        'src/main/resources/static/themes/' + themeName,
+        'src/main/resources/META-INF/resources/themes' + themeName]
     }),
 
-    devMode && themeName && new ThemeLiveReloadPlugin(themeName, generateThemeCallback),
+    devMode && themeName && new ThemeLiveReloadPlugin(themeName, processThemeResourcesCallback),
 
     new StatsPlugin({
       devMode: devMode,

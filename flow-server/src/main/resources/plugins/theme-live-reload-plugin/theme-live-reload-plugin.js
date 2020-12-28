@@ -23,18 +23,23 @@ class ThemeLiveReloadPlugin {
     /**
      * Create a new instance of ThemeLiveReloadPlugin
      * @param themeName current theme name
-     * @param generateThemeCallback callback which collects theme resources
-     * and generates theme meta data
+     * @param processThemeResourcesCallback callback which is called on
+     * adding/deleting of theme resource files to re-generate theme meta
+     * data and apply theme changes to application.
      */
-    constructor(themeName, generateThemeCallback) {
+    constructor(themeName, processThemeResourcesCallback) {
       if (!themeName) {
         throw new Error("Missing theme name");
       }
       this.themeName = themeName;
-      if (!generateThemeCallback || typeof generateThemeCallback !== 'function') {
-        throw new Error("Missing theme generate callback or incorrect type");
+      if (!processThemeResourcesCallback || typeof processThemeResourcesCallback !== 'function') {
+        throw new Error("Couldn't instantiate a ThemeLiveReloadPlugin" +
+          " instance, because theme resources process callback is not set" +
+          " and, thus, no information provided what to do upon" +
+          " adding/deleting theme resource files. Please provide this" +
+          " callback as a ThemeLiveReloadPlugin constructor parameter.");
       }
-      this.generateThemeCallback = generateThemeCallback;
+      this.processThemeResourcesCallback = processThemeResourcesCallback;
     }
 
     apply(compiler) {
@@ -52,7 +57,7 @@ class ThemeLiveReloadPlugin {
               }
             });
           if (!themeGeneratedFileChanged) {
-            this.generateThemeCallback(logger);
+            this.processThemeResourcesCallback(logger);
           }
         }
         callback();

@@ -14,7 +14,7 @@
  * the License.
  */
 
-const { generateTheme, extractThemeName } = require('./theme-handle');
+const { processThemeResources, extractThemeName } = require('./theme-handle');
 
 /**
  * The application theme plugin is for generating, collecting and copying of theme files for the application theme.
@@ -46,10 +46,10 @@ class ApplicationThemePlugin {
     const logger = compiler.getInfrastructureLogger("ApplicationThemePlugin");
 
     compiler.hooks.afterEnvironment.tap("ApplicationThemePlugin",
-        () => generateTheme(this.options, logger));
+        () => processThemeResources(this.options, logger));
   }
 
 }
 
-module.exports = { ApplicationThemePlugin, generateTheme, extractThemeName };
+module.exports = { ApplicationThemePlugin, processThemeResources, extractThemeName };
 
