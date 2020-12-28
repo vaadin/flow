@@ -247,9 +247,9 @@ module.exports = {
 
     devMode && themeName && new ExtraWatchWebpackPlugin({
       files: [],
-      dirs: ['frontend/themes/' + themeName,
-        'src/main/resources/static/themes/' + themeName,
-        'src/main/resources/META-INF/resources/themes' + themeName]
+      dirs: [path.resolve(__dirname, 'frontend', 'themes', themeName),
+        path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources', 'themes', themeName),
+        path.resolve(__dirname, 'src', 'main', 'resources', 'static', 'themes', themeName)]
     }),
 
     devMode && themeName && new ThemeLiveReloadPlugin(themeName, processThemeResourcesCallback),
