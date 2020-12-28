@@ -262,7 +262,7 @@ module.exports = {
       },
       {
         // File-loader only copies files used as imports in .js files or handled by css-loader
-        test: /\.(png|gif|jpg|jpeg|svg|eot|woff|woff2|ttf)$/,
+        test: /\.(png|gif|jpg|jpeg|svg|eot|woff|woff2|otf|ttf)$/,
         use: [{
           loader: 'file-loader',
           options: {
@@ -270,6 +270,9 @@ module.exports = {
             name(resourcePath, resourceQuery) {
               if (resourcePath.match(/(\\|\/)node_modules\1/)) {
                 return /(\\|\/)node_modules\1(?!.*node_modules)([\S]+)/.exec(resourcePath)[2].replace(/\\/g, "/");
+              }
+              if (resourcePath.match(/(\\|\/)flow-frontend\1/)) {
+                return /(\\|\/)flow-frontend\1(?!.*flow-frontend)([\S]+)/.exec(resourcePath)[2].replace(/\\/g, "/");
               }
               return '[path][name].[ext]';
             }
@@ -287,8 +290,10 @@ module.exports = {
     new ManifestPlugin(),
 
     new ApplicationThemePlugin({
-      // The following matches target/flow-frontend/theme/theme-generated.js and not frontend/themes
-      themeResourceFolder: path.resolve(flowFrontendFolder, 'theme'),
+      // The following matches target/flow-frontend/themes/theme-generated.js
+      // and for theme in JAR that is copied to target/flow-frontend/themes/
+      // and not frontend/themes
+      themeResourceFolder: path.resolve(flowFrontendFolder, 'themes'),
       themeProjectFolders: themeProjectFolders,
       projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
     }),

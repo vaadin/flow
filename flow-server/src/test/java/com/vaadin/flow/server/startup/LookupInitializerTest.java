@@ -45,6 +45,7 @@ import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEve
 import com.vaadin.flow.di.InstantiatorFactory;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.testdata.AnotherTestInstantiatorFactory;
 import com.vaadin.flow.server.startup.testdata.OneMoreTestInstantiatorFactory;
 import com.vaadin.flow.server.startup.testdata.TestInstantiatorFactory;
@@ -73,6 +74,14 @@ public class LookupInitializerTest {
             return null;
         }
 
+    }
+
+    public static class TestApplicationConfigurationFactory
+            implements ApplicationConfigurationFactory {
+        @Override
+        public ApplicationConfiguration create(VaadinContext context) {
+            return null;
+        }
     }
 
     @Test
@@ -274,6 +283,43 @@ public class LookupInitializerTest {
         Lookup resultLookup = mockLookup(ArrayList.class);
         List<?> list = resultLookup.lookup(List.class);
         Assert.assertTrue(list instanceof ArrayList<?>);
+    }
+
+    @Test
+    public void processApplicationConfigurationFactory_noAvailableFactory_defaultFactoryIsReturned()
+            throws ServletException {
+        assertProcessApplicationConfigurationFactory();
+    }
+
+    @Test
+    public void processApplicationConfigurationFactory_defaultFactoryOnly_defaultFactoryIsReturned()
+            throws ServletException {
+        assertProcessApplicationConfigurationFactory(
+                DefaultApplicationConfigurationFactory.class);
+    }
+
+    @Test
+    public void processApplicationConfigurationFactory_factoryIsProvided_providedFactoryIsCreated()
+            throws ServletException {
+        Lookup lookup = mockLookup(DefaultApplicationConfigurationFactory.class,
+                TestApplicationConfigurationFactory.class);
+
+        ApplicationConfigurationFactory config = lookup
+                .lookup(ApplicationConfigurationFactory.class);
+        Assert.assertNotNull(config);
+        Assert.assertTrue(
+                config instanceof TestApplicationConfigurationFactory);
+    }
+
+    private void assertProcessApplicationConfigurationFactory(
+            Class<?>... factoryTypes) throws ServletException {
+        Lookup lookup = mockLookup(factoryTypes);
+
+        ApplicationConfigurationFactory config = lookup
+                .lookup(ApplicationConfigurationFactory.class);
+        Assert.assertNotNull(config);
+        Assert.assertTrue(
+                config instanceof DefaultApplicationConfigurationFactory);
     }
 
     private Lookup mockLookup(ServletContext context, Class<?>... classes)

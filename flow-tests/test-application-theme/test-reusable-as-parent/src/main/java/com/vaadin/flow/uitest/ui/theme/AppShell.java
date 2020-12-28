@@ -13,23 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server;
 
-/**
- * Exception thrown for failures in the generation of a deployment configuration
- * object.
- */
-public class VaadinConfigurationException extends Exception {
+package com.vaadin.flow.uitest.ui.theme;
 
-    /**
-     * Exception constructor.
-     *
-     * @param message
-     *         exception message
-     * @param exception
-     *         exception cause
-     */
-    public VaadinConfigurationException(String message, Exception exception) {
-        super(message, exception);
-    }
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.theme.Theme;
+
+@Theme(value = "child-theme")
+public class AppShell implements AppShellConfigurator {
 }

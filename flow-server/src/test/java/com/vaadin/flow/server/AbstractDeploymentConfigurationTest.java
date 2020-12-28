@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
@@ -65,6 +66,7 @@ public class AbstractDeploymentConfigurationTest {
         private Properties properties;
 
         DeploymentConfigImpl(Properties props) {
+            super(Collections.emptyMap());
             properties = props;
         }
 
