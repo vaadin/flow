@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
 import java.util.Collections;
@@ -33,7 +31,7 @@ import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.internal.CustomElementNameValidator;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
-import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.server.webcomponent.WebComponentExporterUtils;
 
@@ -48,23 +46,22 @@ import com.vaadin.flow.server.webcomponent.WebComponentExporterUtils;
  */
 @HandlesTypes({ WebComponentExporter.class, WebComponentExporterFactory.class })
 public class WebComponentConfigurationRegistryInitializer
-        implements ClassLoaderAwareServletContainerInitializer {
+        implements VaadinContextStartupInitializer {
 
     @Override
     @SuppressWarnings("rawtypes")
-    public void process(Set<Class<?>> set, ServletContext servletContext)
-            throws ServletException {
+    public void load(Set<Class<?>> classSet, VaadinContext context) throws VaadinInitializerException {
         WebComponentConfigurationRegistry instance = WebComponentConfigurationRegistry
-                .getInstance(new VaadinServletContext(servletContext));
+                .getInstance(context);
 
-        if (set == null || set.isEmpty()) {
+        if (classSet == null || classSet.isEmpty()) {
             instance.setConfigurations(Collections.emptySet());
             return;
         }
 
         try {
             Set<WebComponentExporterFactory> factories = WebComponentExporterUtils
-                    .getFactories(set);
+                    .getFactories(classSet);
             Set<WebComponentConfiguration<? extends Component>> configurations = constructConfigurations(
                     factories);
 
@@ -73,7 +70,7 @@ public class WebComponentConfigurationRegistryInitializer
 
             instance.setConfigurations(configurations);
         } catch (Exception e) {
-            throw new ServletException(
+            throw new VaadinInitializerException(
                     String.format("%s failed to collect %s implementations!",
                             WebComponentConfigurationRegistryInitializer.class
                                     .getSimpleName(),

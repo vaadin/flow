@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.server.VaadinContext;
 import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEventHandler;
@@ -200,14 +201,13 @@ public class LookupInitializer
     }
 
     @Override
-    public void process(Set<Class<?>> classSet, ServletContext servletContext)
-            throws ServletException {
-        VaadinServletContext vaadinContext = new VaadinServletContext(
-                servletContext);
-        initStandardLookup(classSet, servletContext);
+    public void process(Set<Class<?>> classSet, ServletContext ctx) throws ServletException {
+
+        VaadinServletContext vaadinContext = new VaadinServletContext(ctx);
+        load(classSet, vaadinContext);
 
         DeferredServletContextInitializers initializers;
-        synchronized (servletContext) {
+        synchronized (ctx) {
             initializers = vaadinContext
                     .getAttribute(DeferredServletContextInitializers.class);
             vaadinContext
@@ -215,7 +215,7 @@ public class LookupInitializer
         }
 
         if (initializers != null) {
-            initializers.runInitializers(servletContext);
+            initializers.runInitializers(ctx);
         }
     }
 
@@ -241,7 +241,7 @@ public class LookupInitializer
      * {@link Lookup} based on found subtypes by the
      * {@link ServletContainerInitializer}.
      * <p>
-     * {@link LookupInitializer} uses {@link ServletContainerInitializer}
+     *  uses {@link ServletContainerInitializer}
      * classes discovering mechanism based on {@link HandlesTypes} annotation.
      * The method may be overridden to return the service types which should be
      * put into the {@link Lookup} instance if another mechanism of class
@@ -267,11 +267,21 @@ public class LookupInitializer
         return Stream.of(annotation.value()).collect(Collectors.toSet());
     }
 
-    private void initStandardLookup(Set<Class<?>> classSet,
-            ServletContext servletContext) {
-        VaadinServletContext vaadinContext = new VaadinServletContext(
-                servletContext);
-
+    /**
+     * Handle initializer using {@link VaadinContext}.
+     *
+     * @param classSet
+     *            the Set of application classes that extend, implement, or have
+     *            been annotated with the class types specified by the
+     *            {@link javax.servlet.annotation.HandlesTypes}
+     *            annotation, or <tt>null</tt> if there are no matches, or this
+     *            initializer has not been annotated with <tt>HandlesTypes</tt>
+     *
+     * @param context
+     *            the {@link VaadinContext} to use with initializer
+     *
+     */
+    public void load(Set<Class<?>> classSet, VaadinContext context) {
         Map<Class<?>, Collection<Object>> services = new HashMap<>();
 
         for (Class<?> serviceType : getServiceTypes()) {
@@ -285,7 +295,7 @@ public class LookupInitializer
             }
         }
 
-        vaadinContext.setAttribute(Lookup.class, createLookup(services));
+        context.setAttribute(Lookup.class, createLookup(services));
     }
 
     private void collectSubclasses(Class<?> clazz, Set<Class<?>> classSet,

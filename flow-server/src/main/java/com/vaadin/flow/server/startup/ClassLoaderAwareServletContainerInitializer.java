@@ -48,7 +48,7 @@ public interface ClassLoaderAwareServletContainerInitializer
     @Override
     default void onStartup(Set<Class<?>> set, ServletContext context)
             throws ServletException {
-        // see DeferredServletContextIntializers
+        // see DeferredServletContextInitializers
         DeferredServletContextInitializers.Initializer deferredInitializer = ctx -> {
             ClassLoader webClassLoader = ctx.getClassLoader();
             ClassLoader classLoader = getClass().getClassLoader();
@@ -92,7 +92,8 @@ public interface ClassLoaderAwareServletContainerInitializer
                         .filter(method -> !method.isDefault()
                                 && !method.isSynthetic())
                         .findFirst().get().getName();
-                Method operation = Stream.of(initializer.getDeclaredMethods())
+
+                Method operation = Stream.of(initializer.getMethods())
                         .filter(method -> method.getName()
                                 .equals(processMethodName))
                         .findFirst().get();
@@ -113,9 +114,9 @@ public interface ClassLoaderAwareServletContainerInitializer
                     DeferredServletContextInitializers initializers = vaadinContext
                             .getAttribute(
                                     DeferredServletContextInitializers.class,
-                                    () -> new DeferredServletContextInitializers());
+                                    DeferredServletContextInitializers::new);
                     initializers.addInitializer(
-                            ctx -> deferredInitializer.init(ctx));
+                            deferredInitializer);
                     return;
                 }
             }
@@ -136,23 +137,23 @@ public interface ClassLoaderAwareServletContainerInitializer
      * Implement this method instead of {@link #onStartup(Set, ServletContext)}
      * to handle classes accessible by different classloaders.
      *
-     * @param set
+     * @param classSet
      *            the Set of application classes that extend, implement, or have
      *            been annotated with the class types specified by the
-     *            {@link javax.servlet.annotation.HandlesTypes HandlesTypes}
-     *            annotation, or <tt>null</tt> if there are no matches, or this
-     *            <tt>ServletContainerInitializer</tt> has not been annotated
+     *            <tt>javax.servlet.annotation.HandlesTypes</tt> annotation,
+     *            or <tt>null</tt> if there are no matches, or this
+     *            {@link ServletContainerInitializer} has not been annotated
      *            with <tt>HandlesTypes</tt>
      *
      * @param ctx
-     *            the <tt>ServletContext</tt> of the web application that is
-     *            being started and in which the classes contained in <tt>c</tt>
+     *            the {@link ServletContext} of the web application that is
+     *            being started and in which the classes contained in <tt>set</tt>
      *            were found
      *
      * @throws ServletException
-     *             if an error has occurred
+     *            if an error has occurred
      *
      * @see #onStartup(Set, ServletContext)
      */
-    void process(Set<Class<?>> set, ServletContext ctx) throws ServletException;
+    void process(Set<Class<?>> classSet, ServletContext ctx) throws ServletException;
 }

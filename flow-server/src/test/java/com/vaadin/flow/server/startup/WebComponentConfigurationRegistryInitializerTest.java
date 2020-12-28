@@ -16,9 +16,6 @@
 
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -50,6 +47,8 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
+import javax.servlet.ServletException;
+
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
@@ -61,8 +60,6 @@ public class WebComponentConfigurationRegistryInitializerTest {
     private WebComponentConfigurationRegistryInitializer initializer;
     @Mock
     private WebComponentConfigurationRegistry registry;
-    @Mock
-    private ServletContext servletContext;
     @Mock
     private VaadinService vaadinService;
     @Mock
@@ -82,9 +79,9 @@ public class WebComponentConfigurationRegistryInitializerTest {
                 .thenReturn(registry);
 
         initializer = new WebComponentConfigurationRegistryInitializer();
-        when(servletContext.getAttribute(
-                WebComponentConfigurationRegistry.class.getName()))
-                        .thenReturn(registry);
+        when(context.getAttribute(
+                WebComponentConfigurationRegistry.class))
+                .thenReturn(registry);
 
         VaadinService.setCurrent(vaadinService);
         when(vaadinService.getInstantiator())
@@ -97,11 +94,11 @@ public class WebComponentConfigurationRegistryInitializerTest {
     }
 
     @Test
-    public void process() throws ServletException {
-        initializer.process(
+    public void process() throws VaadinInitializerException {
+        initializer.load(
                 Stream.of(MyComponentExporter.class, UserBoxExporter.class,
                         ExporterFactory.class).collect(Collectors.toSet()),
-                servletContext);
+                context);
         ArgumentCaptor<Set> captor = ArgumentCaptor.forClass(Set.class);
         Mockito.verify(registry).setConfigurations(captor.capture());
         Set<?> set = captor.getValue();
@@ -118,10 +115,10 @@ public class WebComponentConfigurationRegistryInitializerTest {
     @Test
     public void process_noExceptionWithNullArguments() {
         try {
-            initializer.process(null, servletContext);
+            initializer.load(null, context);
         } catch (Exception e) {
             Assert.fail(
-                    "WebComponentRegistryInitializer.process should not throw with null argument");
+                    "WebComponentRegistryInitializer.load should not throw with null argument");
         }
         // Expect a call to setWebComponents even if we have an empty or null
         // set
@@ -131,12 +128,12 @@ public class WebComponentConfigurationRegistryInitializerTest {
     @Test
     public void process_noExceptionForMultipleCorrectExportsOfTheSameComponent() {
         try {
-            initializer.process(
+            initializer.load(
                     Stream.of(MyComponentExporter.class, SiblingExporter.class)
                             .collect(Collectors.toSet()),
-                    servletContext);
+                    context);
         } catch (Exception e) {
-            Assert.fail("WebComponentRegistryInitializer.process should not "
+            Assert.fail("WebComponentRegistryInitializer.load should not "
                     + "throw with 'sibling' exporters");
         }
     }
@@ -144,30 +141,30 @@ public class WebComponentConfigurationRegistryInitializerTest {
     @Test
     public void emptySet_noExceptionAndWebComponentsSet() {
         try {
-            initializer.process(Collections.emptySet(), servletContext);
+            initializer.load(Collections.emptySet(), context);
         } catch (Exception e) {
             Assert.fail(
-                    "WebComponentRegistryInitializer.process should not throw with empty set");
+                    "WebComponentRegistryInitializer.load should not throw with empty set");
         }
         Mockito.verify(registry).setConfigurations(Collections.emptySet());
     }
 
     @Test
     public void duplicateNamesFoundprocess_exceptionIsThrown()
-            throws ServletException {
-        expectedEx.expect(ServletException.class);
+            throws VaadinInitializerException {
+        expectedEx.expect(VaadinInitializerException.class);
         expectedEx.expectCause(CauseMatcher.ex(IllegalArgumentException.class)
                 .msgStartsWith("Found two WebComponentExporter classes"));
-        initializer.process(
+        initializer.load(
                 Stream.of(MyComponentExporter.class, DuplicateTagExporter.class)
                         .collect(Collectors.toSet()),
-                servletContext);
+                context);
     }
 
     @Test
     public void invalidCustomElementName_initializerThrowsException()
-            throws ServletException {
-        expectedEx.expect(ServletException.class);
+            throws VaadinInitializerException {
+        expectedEx.expect(VaadinInitializerException.class);
         expectedEx.expectCause(CauseMatcher
                 .ex(InvalidCustomElementNameException.class)
                 .msgEquals(String.format(
@@ -176,23 +173,23 @@ public class WebComponentConfigurationRegistryInitializerTest {
                         "invalid",
                         InvalidNameExporter.class.getCanonicalName())));
 
-        initializer.process(Collections.singleton(InvalidNameExporter.class),
-                servletContext);
+        initializer.load(Collections.singleton(InvalidNameExporter.class),
+                context);
     }
 
     @Test
     public void duplicatePropertyRegistration_doesNotCauseIssues()
-            throws ServletException {
-        initializer.process(
+            throws VaadinInitializerException {
+        initializer.load(
                 Collections.singleton(DuplicatePropertyExporter.class),
-                servletContext);
+                context);
     }
 
     @Test
     public void duplicatePropertyRegistrationBetweenParentAndChild_doesNotCauseIssues()
-            throws ServletException {
-        initializer.process(Collections.singleton(ExtendingExporter.class),
-                servletContext);
+            throws VaadinInitializerException {
+        initializer.load(Collections.singleton(ExtendingExporter.class),
+                context);
     }
 
     private static class MyComponent extends Component {
@@ -218,7 +215,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
 
         @Override
         public void configureInstance(WebComponent<MyComponent> webComponent,
-                MyComponent component) {
+                                      MyComponent component) {
 
         }
     }
@@ -242,7 +239,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
 
         @Override
         protected void configureInstance(WebComponent<InvalidName> webComponent,
-                InvalidName component) {
+                                         InvalidName component) {
         }
 
     }
@@ -256,7 +253,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
 
         @Override
         public void configureInstance(WebComponent<UserBox> webComponent,
-                UserBox component) {
+                                      UserBox component) {
 
         }
     }
@@ -270,7 +267,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
 
         @Override
         public void configureInstance(WebComponent<InvalidName> webComponent,
-                InvalidName component) {
+                                      InvalidName component) {
 
         }
     }
@@ -293,7 +290,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
 
         @Override
         public void configureInstance(WebComponent<MyComponent> webComponent,
-                MyComponent component) {
+                                      MyComponent component) {
 
         }
     }
@@ -307,7 +304,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
 
         @Override
         public void configureInstance(WebComponent<MyComponent> webComponent,
-                MyComponent component) {
+                                      MyComponent component) {
 
         }
     }
@@ -323,7 +320,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
 
         @Override
         public void configureInstance(WebComponent<MyComponent> webComponent,
-                MyComponent component) {
+                                      MyComponent component) {
 
         }
     }

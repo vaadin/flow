@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
 import java.util.Set;
@@ -29,7 +27,7 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.VaadinContext;
 
 /**
  * Servlet initializer for collecting all available {@link Route}s on startup.
@@ -38,12 +36,10 @@ import com.vaadin.flow.server.VaadinServletContext;
  */
 @HandlesTypes({ Route.class, RouteAlias.class })
 public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
-        implements ClassLoaderAwareServletContainerInitializer {
+        implements VaadinContextStartupInitializer {
 
     @Override
-    public void process(Set<Class<?>> classSet, ServletContext servletContext)
-            throws ServletException {
-        VaadinServletContext context = new VaadinServletContext(servletContext);
+    public void load(Set<Class<?>> classSet, VaadinContext context) throws VaadinInitializerException {
         try {
             if (classSet == null) {
                 ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
@@ -65,7 +61,7 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             routeRegistry.setPwaConfigurationClass(validatePwaClass(
                     routes.stream().map(clazz -> (Class<?>) clazz)));
         } catch (InvalidRouteConfigurationException irce) {
-            throw new ServletException(
+            throw new VaadinInitializerException(
                     "Exception while registering Routes on servlet startup",
                     irce);
         }
@@ -101,5 +97,4 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
         }
         return false;
     }
-
 }

@@ -25,7 +25,6 @@ import javax.servlet.annotation.WebListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -73,7 +72,6 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FallbackChunk;
@@ -120,7 +118,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
         AppShellConfigurator.class, HasErrorParameter.class })
 @WebListener
 public class DevModeInitializer
-        implements ClassLoaderAwareServletContainerInitializer, Serializable,
+        implements VaadinContextStartupInitializer,
         ServletContextListener {
 
     static class DevModeClassFinder extends DefaultClassFinder {
@@ -168,7 +166,7 @@ public class DevModeInitializer
 
     // Path of jar files in a URL with zip protocol doesn't start with "zip:"
     // nor "file:". It contains only the path of the file.
-    // Weblogic uses zip protocol.
+    // WebLogic uses zip protocol.
     private static final Pattern ZIP_PROTOCOL_JAR_FILE_REGEX = Pattern
             .compile("(.+\\.jar).*");
 
@@ -188,36 +186,16 @@ public class DevModeInitializer
                     + Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT
                     + "/?$");
 
-    // Attribute key for storing Dev Mode Handler startup flag.
-    // If presented in Servlet Context, shows the Dev Mode Handler already
-    // started / become starting.
-    // This attribute helps to avoid Dev Mode running twice.
-    //
-    // Addresses the issue https://github.com/vaadin/spring/issues/502
-    private static final String DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE = "dev-mode-handler-already-started-attribute";
-
     @Override
-    public void process(Set<Class<?>> classes, ServletContext context)
-            throws ServletException {
+    public void load(Set<Class<?>> classes, VaadinContext context)
+            throws VaadinInitializerException {
         initDevModeHandler(classes, context);
 
         setDevModeStarted(context);
     }
 
-    private boolean isVaadinServletSubClass(String className) {
-        try {
-            return VaadinServlet.class
-                    .isAssignableFrom(Class.forName(className));
-        } catch (ClassNotFoundException exception) {// NOSONAR
-            log().debug(String.format("Servlet class name (%s) can't be found!",
-                    className));
-            return false;
-
-        }
-    }
-
-    private void setDevModeStarted(ServletContext context) {
-        context.setAttribute(DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE, true);
+    private void setDevModeStarted(VaadinContext context) {
+        context.setAttribute(DevModeInitializer.class, this);
     }
 
     /**
@@ -227,17 +205,41 @@ public class DevModeInitializer
      * @param classes
      *            classes to check for npm- and js modules
      * @param context
-     *            servlet context we are running in
+     *            {@link ServletContext} we are running in
+     *
+     * @deprecated Use {@link #initDevModeHandler(Set,VaadinContext)} instead
+     *             by wrapping {@link ServletContext} with {@link VaadinServletContext}.
      *
      * @throws ServletException
      *             if dev mode can't be initialized
      */
+    @Deprecated
     public static void initDevModeHandler(Set<Class<?>> classes,
-            ServletContext context) throws ServletException {
-        VaadinContext vaadinContext = new VaadinServletContext(context);
+                                          ServletContext context) throws ServletException {
+        try {
+            initDevModeHandler(classes, new VaadinServletContext(context));
+        } catch (VaadinInitializerException e) {
+            throw new ServletException(e);
+        }
+    }
+
+    /**
+     * Initialize the devmode server if not in production mode or compatibility
+     * mode.
+     *
+     * @param classes
+     *            classes to check for npm- and js modules
+     * @param context
+     *            {@link VaadinContext} we are running in
+     *
+     * @throws VaadinInitializerException
+     *             if dev mode can't be initialized
+     */
+    public static void initDevModeHandler(Set<Class<?>> classes,
+                                          VaadinContext context) throws VaadinInitializerException {
 
         ApplicationConfiguration config = ApplicationConfiguration
-                .get(vaadinContext);
+                .get(context);
         if (config.isProductionMode()) {
             log().debug("Skipping DEV MODE because PRODUCTION MODE is set.");
             return;
@@ -262,12 +264,11 @@ public class DevModeInitializer
         File flowResourcesFolder = new File(baseDir,
                 DEFAULT_FLOW_RESOURCES_FOLDER);
 
-        Lookup lookupFromServletConetext = new VaadinServletContext(context)
-                .getAttribute(Lookup.class);
+        Lookup lookupFromContext = context.getAttribute(Lookup.class);
         Lookup lookupForClassFinder = Lookup.of(new DevModeClassFinder(classes),
                 ClassFinder.class);
         Lookup lookup = Lookup.compose(lookupForClassFinder,
-                lookupFromServletConetext);
+                lookupFromContext);
         Builder builder = new NodeTasks.Builder(lookup, new File(baseDir),
                 new File(generatedDir), new File(frontendFolder));
 
@@ -361,7 +362,7 @@ public class DevModeInitializer
         // Check whether executor is provided by the caller (framework)
         Executor service = lookup.lookup(Executor.class);
 
-        Runnable runnable = () -> runNodeTasks(vaadinContext, tokenFileData,
+        Runnable runnable = () -> runNodeTasks(context, tokenFileData,
                 tasks);
 
         CompletableFuture<Void> nodeTasksFuture;
@@ -389,15 +390,33 @@ public class DevModeInitializer
      * Shows whether {@link DevModeHandler} has been already started or not.
      *
      * @param servletContext
-     *            The servlet context, not <code>null</code>
+     *            The {@link ServletContext}, not <code>null</code>
+     *
+     * @deprecated Use {@link #isDevModeAlreadyStarted(VaadinContext)} instead
+     *             by wrapping {@link ServletContext} with {@link VaadinServletContext}.
+     *
+     * @return <code>true</code> if {@link DevModeHandler} has already been
+     *         started, <code>false</code> - otherwise
+     *
+     */
+    @Deprecated
+    public static boolean isDevModeAlreadyStarted(
+            ServletContext servletContext) {
+        return isDevModeAlreadyStarted(new VaadinServletContext(servletContext));
+    }
+
+    /**
+     * Shows whether {@link DevModeHandler} has been already started or not.
+     *
+     * @param context
+     *            The {@link VaadinContext}, not <code>null</code>
      * @return <code>true</code> if {@link DevModeHandler} has already been
      *         started, <code>false</code> - otherwise
      */
     public static boolean isDevModeAlreadyStarted(
-            ServletContext servletContext) {
-        assert servletContext != null;
-        return servletContext.getAttribute(
-                DevModeInitializer.DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE) != null;
+            VaadinContext context) {
+        assert context != null;
+        return context.getAttribute(DevModeInitializer.class) != null;
     }
 
     private static Logger log() {
@@ -427,7 +446,7 @@ public class DevModeInitializer
         Path path = Paths.get(baseDirCandidate);
         if (path.toFile().isDirectory()
                 && (path.resolve("pom.xml").toFile().exists()
-                        || path.resolve("build.gradle").toFile().exists())) {
+                || path.resolve("build.gradle").toFile().exists())) {
             return path.toString();
         } else {
             throw new IllegalStateException(String.format(
@@ -447,7 +466,7 @@ public class DevModeInitializer
      * will fail in Java 9+
      */
     static Set<File> getFrontendLocationsFromClassloader(
-            ClassLoader classLoader) throws ServletException {
+            ClassLoader classLoader) throws VaadinInitializerException {
         Set<File> frontendFiles = new HashSet<>();
         frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
                 Constants.RESOURCES_FRONTEND_DEFAULT));
@@ -457,7 +476,7 @@ public class DevModeInitializer
     }
 
     private static void runNodeTasks(VaadinContext vaadinContext,
-            JsonObject tokenFileData, NodeTasks tasks) {
+                                     JsonObject tokenFileData, NodeTasks tasks) {
         try {
             tasks.execute();
 
@@ -476,7 +495,7 @@ public class DevModeInitializer
 
     private static Set<File> getFrontendLocationsFromClassloader(
             ClassLoader classLoader, String resourcesFolder)
-            throws ServletException {
+            throws VaadinInitializerException {
         Set<File> frontendFiles = new HashSet<>();
         try {
             Enumeration<URL> en = classLoader.getResources(resourcesFolder);
@@ -532,7 +551,7 @@ public class DevModeInitializer
     }
 
     private static File getPhysicalFileOfJBossVfsDirectory(URL url)
-            throws IOException, ServletException {
+            throws IOException, VaadinInitializerException {
         try {
             Object virtualFile = url.openConnection().getContent();
             Class virtualFileClass = virtualFile.getClass();
@@ -558,12 +577,12 @@ public class DevModeInitializer
             return rootDirectory;
         } catch (NoSuchMethodException | IllegalAccessException
                 | InvocationTargetException exc) {
-            throw new ServletException("Failed to invoke JBoss VFS API.", exc);
+            throw new VaadinInitializerException("Failed to invoke JBoss VFS API.", exc);
         }
     }
 
     private static File getPhysicalFileOfJBossVfsJar(URL url)
-            throws IOException, ServletException {
+            throws IOException, VaadinInitializerException {
         try {
             Object jarVirtualFile = url.openConnection().getContent();
 
@@ -581,12 +600,12 @@ public class DevModeInitializer
             return tempJarFile;
         } catch (NoSuchMethodException | IllegalAccessException
                 | InvocationTargetException exc) {
-            throw new ServletException("Failed to invoke JBoss VFS API.", exc);
+            throw new VaadinInitializerException("Failed to invoke JBoss VFS API.", exc);
         }
     }
 
     private static void generateJarFromJBossVfsFolder(Object jarVirtualFile,
-            Path tempJar) throws IOException, IllegalAccessException,
+                                                      Path tempJar) throws IOException, IllegalAccessException,
             InvocationTargetException, NoSuchMethodException {
         // We should use reflection to use JBoss VFS API as we cannot afford a
         // dependency to WildFly or JBoss
