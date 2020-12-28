@@ -59,7 +59,7 @@ import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
         DeprecatedPolymerPublishedEventHandler.class,
         EndpointGeneratorTaskFactory.class,
         ApplicationConfigurationFactory.class })
-public class LookupInitializer
+public class LookupServletContainerInitializer
         implements ClassLoaderAwareServletContainerInitializer {
 
     private static final String SPI = " SPI: ";
