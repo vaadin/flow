@@ -146,9 +146,11 @@ public class ThemeLiveReloadIT extends AbstractLiveReloadIT {
     }
 
     private void deleteFile(String filePath) {
-        File fileToDelete = new File(filePath);
-        if (fileToDelete.exists() && !fileToDelete.delete()) {
-            Assert.fail("Unable to delete " + filePath);
+        if (filePath != null) {
+            File fileToDelete = new File(filePath);
+            if (fileToDelete.exists() && !fileToDelete.delete()) {
+                Assert.fail("Unable to delete " + filePath);
+            }
         }
     }
 }
