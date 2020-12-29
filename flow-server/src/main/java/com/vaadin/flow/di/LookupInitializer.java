@@ -269,13 +269,16 @@ public class LookupInitializer {
      * in application classpath using {@code @HandlesTypes} annotation declared
      * for {@link LookupServletContainerInitializer}.
      * 
+     * @param context
+     *            a Vaadin context to run initialization for
      * @param services
      *            the map of internal services with their implementations found
      *            in the application classpath
      * @param bootstrap
      *            the web application bootstrap
      */
-    public void initialize(Map<Class<?>, Collection<Class<?>>> services,
+    public void initialize(VaadinContext context,
+            Map<Class<?>, Collection<Class<?>>> services,
             VaadinApplicationInitializationBootstrap bootstrap)
             throws ServletException {
         ensureResourceProviders(services);

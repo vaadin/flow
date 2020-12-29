@@ -66,7 +66,7 @@ public class LookupServletContainerInitializer
 
         collectServiceImplementations(classSet, services);
 
-        initializer.initialize(services, lookup -> {
+        initializer.initialize(vaadinContext, services, lookup -> {
             vaadinContext.setAttribute(Lookup.class, lookup);
 
             DeferredServletContextInitializers deferredInitializers;

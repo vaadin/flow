@@ -91,7 +91,8 @@ public class LookupServletContainerInitializerTest {
     public static class TestLookupInitializer extends LookupInitializer {
 
         @Override
-        public void initialize(Map<Class<?>, Collection<Class<?>>> services,
+        public void initialize(VaadinContext context,
+                Map<Class<?>, Collection<Class<?>>> services,
                 VaadinApplicationInitializationBootstrap bootstrap)
                 throws ServletException {
             TestLookup lookup = new TestLookup();

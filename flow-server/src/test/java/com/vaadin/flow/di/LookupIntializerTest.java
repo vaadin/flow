@@ -81,7 +81,7 @@ public class LookupIntializerTest {
     public void initialize_noResourcePorvider_defaultResourceProviderIsCreated()
             throws ServletException, IOException {
         AtomicReference<Lookup> capture = new AtomicReference<>();
-        initializer.initialize(new HashMap<>(), capture::set);
+        initializer.initialize(null, new HashMap<>(), capture::set);
 
         Lookup lookup = capture.get();
         assertResourceProvider(lookup.lookup(ResourceProvider.class));
@@ -215,7 +215,7 @@ public class LookupIntializerTest {
                 .mock(HashMap.class);
         VaadinApplicationInitializationBootstrap bootstrap = Mockito
                 .mock(VaadinApplicationInitializationBootstrap.class);
-        initializer.initialize(services, bootstrap);
+        initializer.initialize(null, services, bootstrap);
 
         Mockito.verify(initializer)
                 .ensureApplicationConfigurationFactories(services);
