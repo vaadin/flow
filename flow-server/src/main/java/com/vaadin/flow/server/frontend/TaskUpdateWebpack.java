@@ -29,6 +29,8 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.BOOTSTRAP_FILE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
@@ -213,7 +215,9 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private String getClientEntryPoint() {
         String declaration = "const clientSideIndexEntryPoint = %s;";
         return String.format(declaration,
-                "path.resolve(__dirname, 'frontend', 'generated', 'vaadin.ts');");
+                String.format("path.resolve(__dirname, '%s', '%s', '%s');",
+                        getEscapedRelativeWebpackPath(frontendDirectory),
+                        GENERATED, BOOTSTRAP_FILE_NAME));
     }
 
     private String getEscapedRelativeWebpackPath(Path path) {

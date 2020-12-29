@@ -172,6 +172,11 @@ public class FrontendUtils {
     public static final String IMPORTS_D_TS_NAME = "generated-flow-imports.d.ts";
 
     /**
+     * File name of the bootstrap file in client side.
+     */
+    public static final String BOOTSTRAP_FILE_NAME = "vaadin.ts";
+
+    /**
      * File name of the index.html in client side.
      */
     public static final String INDEX_HTML = "index.html";
