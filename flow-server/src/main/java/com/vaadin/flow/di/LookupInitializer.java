@@ -278,6 +278,8 @@ public class LookupInitializer {
      *            in the application classpath
      * @param bootstrap
      *            the web application bootstrap
+     * @throws ServletException
+     *             if initialization failed
      */
     public void initialize(VaadinContext context,
             Map<Class<?>, Collection<Class<?>>> services,

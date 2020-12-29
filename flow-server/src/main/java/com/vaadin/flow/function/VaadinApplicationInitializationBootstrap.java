@@ -39,5 +39,13 @@ import com.vaadin.flow.server.VaadinContext;
 @FunctionalInterface
 public interface VaadinApplicationInitializationBootstrap {
 
+    /**
+     * Bootstraps Vaadin application initialization.
+     * 
+     * @param lookup
+     *            a lookup instance required for initialization
+     * @throws ServletException
+     *             if lookup initialization failed
+     */
     void bootstrap(Lookup lookup) throws ServletException;
 }

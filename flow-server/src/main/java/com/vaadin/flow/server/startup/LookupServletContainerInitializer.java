@@ -33,7 +33,9 @@ import com.vaadin.flow.di.InstantiatorFactory;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 
@@ -107,7 +109,8 @@ public class LookupServletContainerInitializer
      * 
      * @return a collection of service types which should be available via
      *         Lookup
-     * @see LookupInitializer#createLookup(Map)
+     * @see LookupInitializer#initialize(VaadinContext, Map,
+     *      VaadinApplicationInitializationBootstrap)
      */
     protected Collection<Class<?>> getServiceTypes() {
         HandlesTypes annotation = getClass().getAnnotation(HandlesTypes.class);
