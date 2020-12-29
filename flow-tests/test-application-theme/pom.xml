@@ -17,6 +17,7 @@
         <module>reusable-theme</module>
         <module>test-theme-reusable</module>
         <module>test-reusable-as-parent</module>
+        <module>test-theme-live-reload</module>
     </modules>
 
 </project>
