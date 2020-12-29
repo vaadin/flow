@@ -2,14 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>flow-tests</artifactId>
+        <artifactId>test-application-theme</artifactId>
         <groupId>com.vaadin</groupId>
         <version>2.6-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-live-reload-mode</artifactId>
-    <name>Flow tests for live reload in dev mode</name>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>flow-test-application-theme-live-reload</artifactId>
+    <name>Flow tests for application theme live reload in dev mode</name>
 
     <packaging>war</packaging>
     <properties>
@@ -19,19 +19,8 @@
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-resources</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
             <artifactId>flow-test-common</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>annotations</artifactId>
-            <version>3.0.1</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -46,9 +35,6 @@
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
-                <configuration>
-                    <productionMode>false</productionMode>
-                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -56,17 +42,14 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <productionMode>false</productionMode>
+                </configuration>
             </plugin>
             <!-- Run jetty before integration tests, and stop after -->
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <configuration>
-                    <webApp>
-                        <!-- use a non-root context -->
-                        <contextPath>/context</contextPath>
-                    </webApp>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

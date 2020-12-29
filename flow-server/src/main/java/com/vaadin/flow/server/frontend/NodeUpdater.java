@@ -257,6 +257,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("webpack-babel-multi-target-plugin", "2.3.3");
         defaults.put("copy-webpack-plugin", "5.1.2");
         defaults.put("compression-webpack-plugin", "4.0.1");
+        defaults.put("extra-watch-webpack-plugin", "1.0.3");
         defaults.put("webpack-merge", "4.2.2");
         defaults.put("raw-loader", "3.1.0");
         defaults.put("css-loader", "4.2.1");

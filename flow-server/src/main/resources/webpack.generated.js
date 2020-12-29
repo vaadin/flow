@@ -8,10 +8,12 @@ const fs = require('fs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const {BabelMultiTargetPlugin} = require('webpack-babel-multi-target-plugin');
+const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 
 // Flow plugins
 const StatsPlugin = require('@vaadin/stats-plugin');
-const ApplicationThemePlugin = require('@vaadin/application-theme-plugin');
+const ThemeLiveReloadPlugin = require('@vaadin/theme-live-reload-plugin');
+const { ApplicationThemePlugin, processThemeResources, extractThemeName } = require('@vaadin/application-theme-plugin');
 
 const path = require('path');
 const baseDir = path.resolve(__dirname);
@@ -91,6 +93,17 @@ if (watchDogPort) {
 
   runWatchDog();
 }
+
+const flowFrontendThemesFolder = path.resolve(flowFrontendFolder, 'themes');
+const themeName = extractThemeName(flowFrontendThemesFolder);
+const themeOptions = {
+  // The following matches target/frontend/themes/theme-generated.js
+  // and for theme in JAR that is copied to target/frontend/themes/
+  themeResourceFolder: flowFrontendThemesFolder,
+  themeProjectFolders: themeProjectFolders,
+  projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
+};
+const processThemeResourcesCallback = (logger) => processThemeResources(themeOptions, logger);
 
 exports = {
   frontendFolder: `${frontendFolder}`,
@@ -244,14 +257,14 @@ module.exports = {
       }
     })] : []),
 
-    new ApplicationThemePlugin({
-      // The following matches target/flow-frontend/themes/theme-generated.js
-      // and for theme in JAR that is copied to target/flow-frontend/themes/
-      // and not frontend/themes
-      themeResourceFolder: path.resolve(flowFrontendFolder, 'themes'),
-      themeProjectFolders: themeProjectFolders,
-      projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
-    }),
+    new ApplicationThemePlugin(themeOptions),
+
+    ...(devMode && themeName ? [new ExtraWatchWebpackPlugin({
+      files: [],
+      dirs: [path.resolve(__dirname, 'frontend', 'themes', themeName),
+        path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources', 'themes', themeName),
+        path.resolve(__dirname, 'src', 'main', 'resources', 'static', 'themes', themeName)]
+    }), new ThemeLiveReloadPlugin(themeName, processThemeResourcesCallback)] : []),
 
     new StatsPlugin({
       devMode: devMode,
