@@ -34,8 +34,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class ThemeLiveReloadIT extends ChromeBrowserTest {
 
     private static final String RED_COLOR = "rgba(255, 0, 0, 1)";
-    private static final String THEME_FOLDER = "frontend" + File.separator
-            + "themes" + File.separator + "app-theme";
+    private static final String THEME_FOLDER = "frontend/themes/app-theme/";
 
     private File baseDir;
     private File globalCSSFile;
@@ -46,8 +45,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
     public void init() {
         baseDir = new File(System.getProperty("user.dir", "."));
 
-        File fontsDir = new File(baseDir,
-                THEME_FOLDER + File.separator + "fonts");
+        File fontsDir = new File(baseDir, THEME_FOLDER + "fonts");
         if (!fontsDir.exists() && !fontsDir.mkdir()) {
             Assert.fail("Unable to create fonts folder");
         }
@@ -56,8 +54,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         // when add->delete->add a file with the same name. Perhaps, webpack
         // file caching causes this.
         // https://github.com/vaadin/flow/issues/9596
-        String relativeFilePath = String.format(
-                THEME_FOLDER + File.separator + "global-%s.css",
+        String relativeFilePath = String.format(THEME_FOLDER + "global-%s.css",
                 UUID.randomUUID().toString());
         globalCSSFile = new File(baseDir, relativeFilePath);
 
@@ -65,16 +62,13 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         // when add->delete->add a file with the same name. Perhaps, webpack
         // file caching causes this.
         // https://github.com/vaadin/flow/issues/9596
-        relativeFilePath = String.format(
-                "frontend/themes/app-theme/global-font-%s.css",
+        relativeFilePath = String.format(THEME_FOLDER + "global-font-%s.css",
                 UUID.randomUUID().toString());
         globalFontCSSFile = new File(baseDir, relativeFilePath);
 
         String fontFileName = String.format("ostrich-sans-regular-%s.ttf",
                 UUID.randomUUID().toString());
-        fontFile = new File(baseDir,
-                THEME_FOLDER + File.separator + "fonts" + File.separator
-                        + fontFileName);
+        fontFile = new File(baseDir, THEME_FOLDER + "fonts/" + fontFileName);
     }
 
     @After
@@ -108,8 +102,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
 
         // Live reload upon adding a font
         File copyFontFrom = new File(baseDir,
-                "frontend" + File.separator + "fonts" + File.separator +
-                        "ostrich-sans-regular.ttf");
+                "frontend/fonts/ostrich-sans-regular.ttf");
 
         FileUtils.copyFile(copyFontFrom, fontFile);
         waitUntil(driver -> fontFile.exists());
