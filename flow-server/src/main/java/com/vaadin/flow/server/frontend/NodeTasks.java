@@ -534,8 +534,7 @@ public class NodeTasks implements FallibleCommand {
                 addConnectServicesTasks(builder);
             }
 
-            commands.add(new TaskGenerateBootstrap(frontendDependencies,
-                    builder.connectClientTsApiFolder, builder.frontendDirectory));
+            commands.add(new TaskGenerateBootstrap(frontendDependencies, builder.frontendDirectory));
         }
 
         if (builder.enablePackagesUpdate) {

@@ -91,6 +91,11 @@ public class FrontendUtils {
     public static final String FRONTEND = "frontend/";
 
     /**
+     * Default folder for client-side generated files
+     */
+    public static final String GENERATED = "generated/";
+
+    /**
      * Path of the folder containing application frontend source files, it needs
      * to be relative to the {@link FrontendUtils#DEFAULT_NODE_DIR}
      *
@@ -139,7 +144,7 @@ public class FrontendUtils {
     /**
      * Default folder for copying front-end resources present in the classpath
      * jars.
-     * 
+     *
      * @deprecated This is deprecated due to a typo. Use
      *             DEFAULT_FLOW_RESOURCES_FOLDER instead.
      * @see #DEFAULT_FLOW_RESOURCES_FOLDER
@@ -201,7 +206,7 @@ public class FrontendUtils {
      * Default generated path for generated TS files.
      */
     public static final String DEFAULT_CONNECT_GENERATED_TS_DIR = DEFAULT_FRONTEND_DIR
-            + "generated/";
+            + GENERATED;
 
     /**
      * Name of the file that contains all application imports, javascript, theme

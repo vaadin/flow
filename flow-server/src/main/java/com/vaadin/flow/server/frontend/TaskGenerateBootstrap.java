@@ -25,6 +25,7 @@ import java.util.List;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
@@ -43,10 +44,11 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
     private static final String CUSTOM_BOOTSTRAP_FILE_NAME = "vaadin.ts";
 
     TaskGenerateBootstrap(FrontendDependenciesScanner frontDeps,
-            File connectClientTsApiFolder, File frontendDirectory) {
+            File frontendDirectory) {
         this.frontDeps = frontDeps;
-        this.connectClientTsApiFolder = connectClientTsApiFolder;
         this.frontendDirectory = frontendDirectory;
+        this.connectClientTsApiFolder = new File(Paths
+                .get(frontendDirectory.getPath(), GENERATED).toString());
     }
 
     @Override
