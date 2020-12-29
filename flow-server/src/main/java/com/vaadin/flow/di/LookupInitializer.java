@@ -170,7 +170,20 @@ public class LookupInitializer {
             return result;
         }
 
-        private <T> T instantiate(Class<T> serviceClass,
+        /**
+         * Instantiates a service {@code implementation} class for the given
+         * {@code serviceClass}.
+         * 
+         * @param <T>
+         *            service type
+         * @param serviceClass
+         *            a service class
+         * @param implementation
+         *            the service implementation class
+         * @return an instantiated service object or {@code null} if the service
+         *         {@code implementation} should not be stored in the services
+         */
+        protected <T> T instantiate(Class<T> serviceClass,
                 Class<?> implementation) {
             if (ResourceProviderImpl.class.equals(implementation)) {
                 return serviceClass.cast(new ResourceProviderImpl());
