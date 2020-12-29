@@ -300,7 +300,7 @@ public class LookupInitializer {
     }
 
     /**
-     * Ensures that provided {@cod services} contain implementation for
+     * Ensures that provided {@code services} contain implementation for
      * {@link ResourceProvider} SPI.
      * <p>
      * The default {@link ResourceProviderImpl} implementation will be set as
