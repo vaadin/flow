@@ -333,7 +333,7 @@ public class LookupInitializer {
     }
 
     /**
-     * Ensures that provided {@cod services} contain implementation for
+     * Ensures that provided {@code services} contain implementation for
      * {@link ApplicationConfigurationFactory} SPI.
      * <p>
      * The default {@link DefaultApplicationConfigurationFactory} implementation
