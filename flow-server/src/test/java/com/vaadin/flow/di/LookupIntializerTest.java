@@ -61,7 +61,7 @@ public class LookupIntializerTest {
             throws ServletException {
         // Java standard SPI is used to register several instantiators via
         // META-INF/services
-        Lookup lookup = initializer.createLookup(new HashMap<>());
+        Lookup lookup = initializer.createLookup(null, new HashMap<>());
 
         lookup.lookup(InstantiatorFactory.class);
     }
@@ -69,7 +69,7 @@ public class LookupIntializerTest {
     @Test(expected = IllegalStateException.class)
     public void createLookup_instantiatorsAreProvidedAsScannedClasses_lookupThrows()
             throws ServletException {
-        Lookup lookup = initializer.createLookup(
+        Lookup lookup = initializer.createLookup(null,
                 Collections.singletonMap(InstantiatorFactory.class,
                         Arrays.asList(TestInstantiatorFactory.class,
                                 AnotherTestInstantiatorFactory.class)));
@@ -150,7 +150,7 @@ public class LookupIntializerTest {
         map.put(ResourceProvider.class,
                 Collections.singletonList(TestResourceProvider.class));
 
-        Lookup lookup = initializer.createLookup(map);
+        Lookup lookup = initializer.createLookup(null, map);
 
         ResourceProvider resourceProvider = lookup
                 .lookup(ResourceProvider.class);
@@ -175,7 +175,7 @@ public class LookupIntializerTest {
         map.put(InstantiatorFactory.class,
                 Collections.singleton(TestInstantiatorFactory.class));
 
-        Lookup lookup = initializer.createLookup(map);
+        Lookup lookup = initializer.createLookup(null, map);
 
         InstantiatorFactory factory = lookup.lookup(InstantiatorFactory.class);
         Assert.assertNotNull(factory);

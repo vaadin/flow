@@ -283,18 +283,21 @@ public class LookupInitializer {
             throws ServletException {
         ensureResourceProviders(services);
         ensureApplicationConfigurationFactories(services);
-        bootstrap.bootstrap(createLookup(services));
+        bootstrap.bootstrap(createLookup(context, services));
     }
 
     /**
      * Creates a lookup based on provided {@code services}.
+     * 
+     * @param context
+     *            a Vaadin context to create a lookup for
      * 
      * @param services
      *            the service objects mapped to the service type to create a
      *            lookup
      * @return the lookup instance created with provided services
      */
-    protected Lookup createLookup(
+    protected Lookup createLookup(VaadinContext context,
             Map<Class<?>, Collection<Class<?>>> services) {
         return new LookupImpl(services);
     }
