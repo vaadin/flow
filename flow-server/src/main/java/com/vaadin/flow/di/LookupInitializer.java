@@ -188,6 +188,12 @@ public class LookupInitializer {
 
         private Map<String, CachedStreamData> cache = new ConcurrentHashMap<>();
 
+        /**
+         * Creates a new instance.
+         */
+        public ResourceProviderImpl() {
+        }
+
         @Override
         public URL getApplicationResource(String path) {
             return ResourceProviderImpl.class.getClassLoader()
