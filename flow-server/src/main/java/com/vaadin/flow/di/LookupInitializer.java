@@ -30,9 +30,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
@@ -110,15 +112,18 @@ public class LookupInitializer {
          * 
          * @param initialServices
          *            map of initial services with their implementations
+         * @param factory
+         *            a factory to create a service object instance
          */
         protected LookupImpl(
-                Map<Class<?>, Collection<Class<?>>> initialServices) {
+                Map<Class<?>, Collection<Class<?>>> initialServices,
+                BiFunction<Class<?>, Class<?>, Object> factory) {
             serviceMap = new HashMap<>();
-            initialServices.forEach(
-                    (serviceClass, impls) -> serviceMap.put(serviceClass,
-                            impls.stream().map(
-                                    impl -> instantiate(serviceClass, impl))
-                                    .collect(Collectors.toList())));
+            initialServices.forEach((serviceClass,
+                    impls) -> serviceMap.put(serviceClass, impls.stream()
+                            .map(impl -> factory.apply(serviceClass, impl))
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toList())));
         }
 
         @Override
@@ -170,28 +175,6 @@ public class LookupInitializer {
             return result;
         }
 
-        /**
-         * Instantiates a service {@code implementation} class for the given
-         * {@code serviceClass}.
-         * 
-         * @param <T>
-         *            service type
-         * @param serviceClass
-         *            a service class
-         * @param implementation
-         *            the service implementation class
-         * @return an instantiated service object or {@code null} if the service
-         *         {@code implementation} should not be stored in the services
-         */
-        protected <T> T instantiate(Class<T> serviceClass,
-                Class<?> implementation) {
-            if (ResourceProviderImpl.class.equals(implementation)) {
-                return serviceClass.cast(new ResourceProviderImpl());
-            } else {
-                return serviceClass
-                        .cast(ReflectTools.createInstance(implementation));
-            }
-        }
     }
 
     /**
@@ -312,7 +295,7 @@ public class LookupInitializer {
      */
     protected Lookup createLookup(VaadinContext context,
             Map<Class<?>, Collection<Class<?>>> services) {
-        return new LookupImpl(services);
+        return new LookupImpl(services, this::instantiate);
     }
 
     /**
@@ -381,6 +364,15 @@ public class LookupInitializer {
                     + SPI + factories + ONE_IMPL_REQUIRED);
         } else {
             services.put(ApplicationConfigurationFactory.class, factories);
+        }
+    }
+
+    private <T> T instantiate(Class<T> serviceClass, Class<?> implementation) {
+        if (ResourceProviderImpl.class.equals(implementation)) {
+            return serviceClass.cast(new ResourceProviderImpl());
+        } else {
+            return serviceClass
+                    .cast(ReflectTools.createInstance(implementation));
         }
     }
 
