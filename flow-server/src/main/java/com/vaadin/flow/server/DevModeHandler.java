@@ -149,7 +149,8 @@ public final class DevModeHandler implements RequestHandler {
         devServerPortFile = getDevServerPortFile(npmFolder);
 
         // Check whether executor is provided by the caller (framework)
-        Executor service = lookup.lookup(Executor.class);
+        Executor service = lookup.lookupAll(Executor.class).stream().findFirst()
+                .orElse(null);
 
         BiConsumer<Void, ? super Throwable> action = (value, exception) -> {
             // this will throw an exception if an exception has been thrown by

@@ -359,7 +359,8 @@ public class DevModeInitializer
                 .withHomeNodeExecRequired(useHomeNodeExec).build();
 
         // Check whether executor is provided by the caller (framework)
-        Executor service = lookup.lookup(Executor.class);
+        Executor service = lookup.lookupAll(Executor.class).stream().findFirst()
+                .orElse(null);
 
         Runnable runnable = () -> runNodeTasks(vaadinContext, tokenFileData,
                 tasks);
