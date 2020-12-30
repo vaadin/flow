@@ -284,7 +284,7 @@ export class ConnectionIndicator extends LitElement {
       .v-loading-indicator,
       .v-status-message {
         position: fixed;
-        z-index: 1;
+        z-index: 251;
         left: 0;
         right: auto;
         top: 0;
