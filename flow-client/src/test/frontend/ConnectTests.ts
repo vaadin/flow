@@ -27,17 +27,16 @@ describe('ConnectClient', () => {
 
   beforeEach(() => {
     const connectionStateStore = new ConnectionStateStore(ConnectionState.CONNECTED);
-    (window as any).Vaadin.connectionState = connectionStateStore;
+    (window as any).Vaadin = { connectionState: connectionStateStore };
     localStorage.clear();
   });
 
-  after(() => {
+  afterEach(() => {
     const $wnd = window as any;
     const indicator = $wnd.document.body.querySelector('vaadin-connection-indicator');
     if (indicator) {
       indicator.remove();
     }
-    delete $wnd.Vaadin?.connectionIndicator;
     delete $wnd.Vaadin;
   });
 
@@ -55,13 +54,22 @@ describe('ConnectClient', () => {
     expect((window as any).Vaadin.connectionIndicator).is.not.undefined;
   });
 
-  it('should transition to CONNECTION_LOST on offline and to CONNECTED on subsequent online', async() => {
+  it('should transition to CONNECTION_LOST on offline and to CONNECTED on subsequent online if Flow not loaded', async() => {
     new ConnectClient();
     let $wnd = (window as any);
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
     $wnd.dispatchEvent(new Event('offline'));
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
     $wnd.dispatchEvent(new Event('online'));
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
+  });
+
+  it('should not transition connection state if Flow loaded', async() => {
+    new ConnectClient();
+    let $wnd = (window as any);
+    $wnd.Vaadin.Flow = {};
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
+    $wnd.dispatchEvent(new Event('offline'));
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
   });
 
@@ -158,7 +166,16 @@ describe('ConnectClient', () => {
       expect(fetchMock.lastOptions()).to.include({method: 'POST'});
     });
 
-    it('should call Flow.loadingStarted followed by loadingFinished', async() => {
+    it('should set CONNECTED followed by ConnectionState.loadingFinished when Flow is not loaded', async() => {
+      let $wnd = (window as any);
+      let states: Array<ConnectionState> = [];
+      $wnd.Vaadin.connectionState.addStateChangeListener(
+        (_, state) => states.push(state));
+      await client.call('FooEndpoint', 'fooMethod');
+      expect(states).to.deep.equal([ConnectionState.LOADING, ConnectionState.CONNECTED]);
+    });
+
+    it('should call Flow.loadingStarted followed by Flow.loadingFinished when Flow is loaded', async() => {
       let calls: Array<boolean> = [];
       (window as any).Vaadin.Flow = {
         clients: {

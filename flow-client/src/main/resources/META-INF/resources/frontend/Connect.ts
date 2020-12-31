@@ -289,12 +289,12 @@ export class ConnectClient {
     // Listen to browser online/offline events and update the loading indicator accordingly.
     // Note: if Flow.ts is loaded, it instead handles the state transitions.
     $wnd.addEventListener('online', () => {
-      if ($wnd.Vaadin.Flow === undefined) {
+      if (!this.isFlowLoaded()) {
         $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
       }
     });
     $wnd.addEventListener('offline', () => {
-      if ($wnd.Vaadin.Flow === undefined) {
+      if (!this.isFlowLoaded()) {
         $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
       }
     });
@@ -373,14 +373,14 @@ export class ConnectClient {
     // this way makes the folding down below more concise.
     const fetchNext: MiddlewareNext =
       async (context: MiddlewareContext): Promise<Response> => {
-        $wnd.Vaadin.Flow?.clients?.TypeScript?.loadingStarted();
+        this.loadingStarted();
         return fetch(context.request)
           .then(response => {
-            $wnd.Vaadin.Flow?.clients?.TypeScript?.loadingFinished();
+            this.loadingFinished();
             return response;
           })
           .catch(error => {
-            $wnd.Vaadin.Flow?.clients?.TypeScript?.loadingFinished();
+            this.loadingFinished();
             $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
             return Promise.reject(error);
           });
@@ -410,5 +410,30 @@ export class ConnectClient {
 
     // Invoke all the folded async middlewares and return
     return chain(initialContext);
+  }
+
+
+  private isFlowLoaded(): boolean {
+    return $wnd.Vaadin.Flow !== undefined;
+  }
+
+  private loadingStarted() {
+    if (this.isFlowLoaded()) {
+      // call Flow.loadingStarted to pause TestBench tests while backend
+      // requests are ongoing
+      $wnd.Vaadin.Flow.clients?.TypeScript?.loadingStarted();
+    } else {
+      $wnd.Vaadin.connectionState.loadingStarted();
+    }
+  }
+
+  private loadingFinished() {
+    if (this.isFlowLoaded()) {
+      // call Flow.loadingFinished to pause TestBench tests while backend
+      // requests are ongoing
+      $wnd.Vaadin.Flow.clients?.TypeScript?.loadingFinished();
+    } else {
+      $wnd.Vaadin.connectionState.loadingFinished();
+    }
   }
 }
