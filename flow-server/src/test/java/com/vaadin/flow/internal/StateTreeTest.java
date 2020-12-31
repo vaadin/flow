@@ -19,13 +19,14 @@ package com.vaadin.flow.internal;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
@@ -47,13 +48,14 @@ import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
+import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.JsonObject;
 
 public class StateTreeTest {
-    private StateTree tree = new StateTree(new UI().getInternals(),
-            ElementChildrenList.class);
+
+    private StateTree tree = new UI().getInternals().getStateTree();
 
     public static class AttachableNode extends StateNode {
 
@@ -163,7 +165,17 @@ public class StateTreeTest {
     public void testNoRootAttachChange() {
         List<NodeChange> changes = collectChangesExceptChildrenAddRemove();
 
-        Assert.assertEquals(Collections.emptyList(), changes);
+        for (NodeChange change : changes) {
+            if (change instanceof NodeFeatureChange) {
+                Class<? extends NodeFeature> feature = ((NodeFeatureChange) change)
+                        .getFeature();
+                Assert.assertNotEquals(ElementChildrenList.class, feature);
+            } else if (change instanceof NodeAttachChange) {
+                StateNode node = ((NodeAttachChange) change).getNode();
+                Assert.assertNotEquals(tree.getRootNode(), node);
+            }
+        }
+
     }
 
     @Test
@@ -173,9 +185,28 @@ public class StateTreeTest {
 
         List<NodeChange> changes = collectChangesExceptChildrenAddRemove();
 
-        Assert.assertEquals(1, changes.size());
-        NodeAttachChange nodeChange = (NodeAttachChange) changes.get(0);
-        Assert.assertSame(node2, nodeChange.getNode());
+        List<NodeChange> notChildrenChanges = new ArrayList<>();
+        for (NodeChange change : changes) {
+            if (change instanceof NodeFeatureChange) {
+                Class<? extends NodeFeature> feature = ((NodeFeatureChange) change)
+                        .getFeature();
+                Assert.assertNotEquals(ElementChildrenList.class, feature);
+            } else {
+                notChildrenChanges.add(change);
+            }
+        }
+
+        Assert.assertEquals(2, notChildrenChanges.size());
+        NodeAttachChange nodeChange = (NodeAttachChange) notChildrenChanges
+                .get(0);
+        // The first node is not in the "hierarchy" tree but is the Push
+        // config node
+        Assert.assertTrue(nodeChange.getNode()
+                .hasFeature(PushConfigurationParametersMap.class));
+
+        NodeAttachChange attachChange = (NodeAttachChange) notChildrenChanges
+                .get(1);
+        Assert.assertSame(node2, attachChange.getNode());
     }
 
     @Test
@@ -191,8 +222,12 @@ public class StateTreeTest {
                 node2.getOwner());
 
         Set<StateNode> initialDirty = tree.collectDirtyNodes();
+
+        HashSet<StateNode> dirty = initialDirty.stream().filter(
+                node -> !node.hasFeature(PushConfigurationParametersMap.class))
+                .collect(Collectors.toCollection(HashSet::new));
         Assert.assertEquals("Both nodes should initially be empty",
-                new HashSet<>(Arrays.asList(node1, node2)), initialDirty);
+                new HashSet<>(Arrays.asList(node1, node2)), dirty);
 
         tree.collectChanges(change -> {
         });
@@ -219,8 +254,10 @@ public class StateTreeTest {
         expected.add(rootNode);
         expected.addAll(nodes);
 
-        Assert.assertArrayEquals(expected.toArray(),
-                tree.collectDirtyNodes().toArray());
+        Object[] dirty = tree.collectDirtyNodes().stream().filter(
+                node -> !node.hasFeature(PushConfigurationParametersMap.class))
+                .toArray();
+        Assert.assertArrayEquals(expected.toArray(), dirty);
 
         tree.collectChanges(change -> {
         });
@@ -406,6 +443,40 @@ public class StateTreeTest {
     }
 
     @Test
+    public void beforeClientResponse_initiallyAttachedToOneUI_executedWithAnother_executionDoesNotHappen() {
+        StateTree initialTree = new UI().getInternals().getStateTree();
+
+        StateNode child = new StateNode(ElementChildrenList.class);
+        StateNodeTest.setParent(child, initialTree.getRootNode());
+
+        AtomicBoolean isExecuted = new AtomicBoolean();
+        initialTree.beforeClientResponse(child,
+                context -> isExecuted.set(true));
+
+        child.removeFromTree();
+
+        StateNodeTest.setParent(child, tree.getRootNode());
+        tree.runExecutionsBeforeClientResponse();
+
+        Assert.assertFalse(isExecuted.get());
+    }
+
+    @Test
+    public void beforeClientResponse_initiallyNotAttached_executedWithUI_executionRun() {
+        StateTree someTree = new UI().getInternals().getStateTree();
+
+        StateNode child = new StateNode(ElementChildrenList.class);
+
+        AtomicBoolean isExecuted = new AtomicBoolean();
+        someTree.beforeClientResponse(child, context -> isExecuted.set(true));
+
+        StateNodeTest.setParent(child, tree.getRootNode());
+        tree.runExecutionsBeforeClientResponse();
+
+        Assert.assertTrue(isExecuted.get());
+    }
+
+    @Test
     public void beforeClientResponse_withInnerRunnables() {
         StateNode rootNode = new AttachableNode(true);
 
@@ -569,7 +640,6 @@ public class StateTreeTest {
         Assert.assertTrue(collectedNodes.contains(node3));
     }
 
-
     @Test
     public void prepareForResync_nodeHasAttachAndDetachListeners_treeIsDirtyAndListenersAreCalled() {
         StateNode node1 = tree.getRootNode();
@@ -581,13 +651,26 @@ public class StateTreeTest {
         AtomicInteger detachCount = new AtomicInteger();
         node2.addDetachListener(detachCount::incrementAndGet);
 
-        tree.collectChanges(c -> {});
+        tree.collectChanges(c -> {
+        });
         Assert.assertEquals(0, tree.collectDirtyNodes().size());
 
         tree.getRootNode().prepareForResync();
 
         Assert.assertEquals(1, attachCount.get());
         Assert.assertEquals(1, detachCount.get());
-        Assert.assertEquals(2, tree.collectDirtyNodes().size());
+
+        Assert.assertEquals(3, tree.collectDirtyNodes().size());
+
+        Set<StateNode> dirtyNodes = new HashSet<>(tree.collectDirtyNodes());
+        Assert.assertTrue(dirtyNodes.remove(node1));
+        Assert.assertTrue(dirtyNodes.remove(node2));
+
+        StateNode remaining = dirtyNodes.iterator().next();
+        // The remaining node is not in the "hierarchy" tree but is the Push
+        // config node
+        Assert.assertTrue(
+                remaining.hasFeature(PushConfigurationParametersMap.class));
+
     }
 }

@@ -1,14 +1,17 @@
 package com.vaadin.flow.server;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
 import junit.framework.TestCase;
 import org.easymock.EasyMock;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 public class CustomUIClassLoaderTest extends TestCase {
@@ -59,8 +62,12 @@ public class CustomUIClassLoaderTest extends TestCase {
     private static DeploymentConfiguration createConfigurationMock() {
         Properties properties = new Properties();
         properties.put(InitParameters.UI_PARAMETER, MyUI.class.getName());
-        return new DefaultDeploymentConfiguration(CustomUIClassLoaderTest.class,
-                properties);
+        ApplicationConfiguration config = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(config.getPropertyNames())
+                .thenReturn(Collections.emptyEnumeration());
+        return new DefaultDeploymentConfiguration(config,
+                CustomUIClassLoaderTest.class, properties);
     }
 
     private static VaadinRequest createRequestMock(ClassLoader classloader) {

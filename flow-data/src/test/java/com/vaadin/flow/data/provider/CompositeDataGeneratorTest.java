@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.hamcrest.CoreMatchers;
@@ -26,6 +27,9 @@ import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
+import static org.junit.Assert.assertEquals;
+
 
 /**
  * 
@@ -196,4 +200,14 @@ public class CompositeDataGeneratorTest {
                 CoreMatchers.not(CoreMatchers.hasItem("item1")));
     }
 
+    @Test
+    public void addDataGenerator_orderIsPreserved() {
+        CompositeDataGenerator<String> cdg = new CompositeDataGenerator<>();
+        DataGenerator<String> dg1 = (String, JsonObject) -> {};
+        DataGenerator<String> dg2 = (String, JsonObject) -> {};
+        List<DataGenerator<String>> expected = Arrays.asList(dg1, dg2);
+        cdg.addDataGenerator(dg1);
+        cdg.addDataGenerator(dg2);
+        assertEquals(expected,new ArrayList<>(cdg.dataGenerators));
+    }    
 }

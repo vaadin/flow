@@ -16,9 +16,15 @@
 package com.vaadin.flow.server.startup;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
+
+import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -62,7 +68,7 @@ public class AbstractConfigurationFactory implements Serializable {
      *            the token file data
      * @return the config parameters
      */
-    public Map<String, String> getConfigParametersUsingTokenData(
+    protected Map<String, String> getConfigParametersUsingTokenData(
             JsonObject buildInfo) {
         Map<String, String> params = new HashMap<>();
         if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
@@ -178,6 +184,33 @@ public class AbstractConfigurationFactory implements Serializable {
             params.put(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE,
                     String.valueOf(buildInfo.getBoolean(
                             InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)));
+        }
+    }
+
+    /**
+     * Gets the content of the token file with given {@code locationProvider}.
+     * 
+     * @param locationProvider
+     *            the token file location provider
+     * @return the token file location, may be {@code null}
+     */
+    protected String getTokenFileContent(
+            Function<String, String> locationProvider) {
+        String location = locationProvider
+                .apply(FrontendUtils.PARAM_TOKEN_FILE);
+        String json = null;
+        // token file location passed via init parameter property
+        try {
+            if (location != null) {
+                File tokenFile = new File(location);
+                if (tokenFile != null && tokenFile.canRead()) {
+                    json = FileUtils.readFileToString(tokenFile,
+                            StandardCharsets.UTF_8);
+                }
+            }
+            return json;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 

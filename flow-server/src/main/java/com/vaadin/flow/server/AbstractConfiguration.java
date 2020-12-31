@@ -17,6 +17,7 @@ package com.vaadin.flow.server;
 
 import java.io.Serializable;
 
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 
 /**
@@ -43,6 +44,18 @@ public interface AbstractConfiguration extends Serializable {
     default boolean enableDevServer() {
         return getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER, true);
+    }
+
+    /**
+     * Get if the dev server should be reused on each reload. True by default,
+     * set it to false in tests so as dev server is not kept as a daemon after
+     * the test.
+     *
+     * @return true if dev server should be reused
+     */
+    default boolean reuseDevServer() {
+        return getBooleanProperty(
+                InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER, true);
     }
 
     /**
@@ -92,6 +105,16 @@ public interface AbstractConfiguration extends Serializable {
     default boolean isPnpmEnabled() {
         return getBooleanProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
                 Boolean.valueOf(Constants.ENABLE_PNPM_DEFAULT_STRING));
+    }
+
+    /**
+     * Returns whether cross-site request forgery protection is enabled.
+     *
+     * @return true if XSRF protection is enabled, false otherwise.
+     */
+    default boolean isXsrfProtectionEnabled() {
+        return !getBooleanProperty(SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
+                false);
     }
 
 }

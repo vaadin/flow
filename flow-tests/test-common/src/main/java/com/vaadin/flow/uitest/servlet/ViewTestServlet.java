@@ -17,13 +17,13 @@ package com.vaadin.flow.uitest.servlet;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletConfiguration;
 
-@WebServlet(asyncSupported = true, urlPatterns = { "/view/*" })
-@VaadinServletConfiguration(productionMode = false)
+@WebServlet(asyncSupported = true, urlPatterns = {
+        "/view/*" }, initParams = @WebInitParam(name = "productionMode", value = "false"))
 public class ViewTestServlet extends VaadinServlet {
 
     private static ViewClassLocator viewLocator;
