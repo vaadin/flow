@@ -148,8 +148,14 @@ public final class DevModeHandler implements RequestHandler {
         reuseDevServer = config.reuseDevServer();
         devServerPortFile = getDevServerPortFile(npmFolder);
 
-        // Check whether executor is provided by the caller (framework)
-        Executor service = lookup.lookup(Executor.class);
+        /*
+         * Check whether executor is provided by the caller (framework). It
+         * doesn't matter which Executor to use: any is fine. The main reason to
+         * use managed executor is to stop the execution when the framework
+         * stops.
+         */
+        Executor service = lookup.lookupAll(Executor.class).stream().findFirst()
+                .orElse(null);
 
         BiConsumer<Void, ? super Throwable> action = (value, exception) -> {
             // this will throw an exception if an exception has been thrown by
