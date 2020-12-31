@@ -11,10 +11,12 @@ const CompressionPlugin = require('compression-webpack-plugin');
 const { InjectManifest } = require('workbox-webpack-plugin');
 const { DefinePlugin } = require('webpack');
 const ManifestPlugin = require('webpack-manifest-plugin');
+const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 
 // Flow plugins
 const StatsPlugin = require('@vaadin/stats-plugin');
-const ApplicationThemePlugin = require('@vaadin/application-theme-plugin');
+const ThemeLiveReloadPlugin = require('@vaadin/theme-live-reload-plugin');
+const { ApplicationThemePlugin, processThemeResources, extractThemeName } = require('@vaadin/application-theme-plugin');
 
 const path = require('path');
 
@@ -170,6 +172,18 @@ if (devMode) {
   webPackEntries.devmodeGizmo = devmodeGizmoJS;
 }
 
+const flowFrontendThemesFolder = path.resolve(flowFrontendFolder, 'themes');
+const themeName = extractThemeName(flowFrontendThemesFolder);
+const themeOptions = {
+  // The following matches target/flow-frontend/themes/theme-generated.js
+  // and for theme in JAR that is copied to target/flow-frontend/themes/
+  // and not frontend/themes
+  themeResourceFolder: flowFrontendThemesFolder,
+  themeProjectFolders: themeProjectFolders,
+  projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
+};
+const processThemeResourcesCallback = (logger) => processThemeResources(themeOptions, logger);
+
 exports = {
   frontendFolder: `${frontendFolder}`,
   buildFolder: `${buildFolder}`,
@@ -289,14 +303,16 @@ module.exports = {
     // Generate manifest.json file
     new ManifestPlugin(),
 
-    new ApplicationThemePlugin({
-      // The following matches target/flow-frontend/themes/theme-generated.js
-      // and for theme in JAR that is copied to target/flow-frontend/themes/
-      // and not frontend/themes
-      themeResourceFolder: path.resolve(flowFrontendFolder, 'themes'),
-      themeProjectFolders: themeProjectFolders,
-      projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
+    new ApplicationThemePlugin(themeOptions),
+
+    devMode && themeName && new ExtraWatchWebpackPlugin({
+      files: [],
+      dirs: [path.resolve(__dirname, 'frontend', 'themes', themeName),
+        path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources', 'themes', themeName),
+        path.resolve(__dirname, 'src', 'main', 'resources', 'static', 'themes', themeName)]
     }),
+
+    devMode && themeName && new ThemeLiveReloadPlugin(themeName, processThemeResourcesCallback),
 
     new StatsPlugin({
       devMode: devMode,

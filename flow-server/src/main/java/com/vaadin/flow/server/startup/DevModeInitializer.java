@@ -362,8 +362,14 @@ public class DevModeInitializer
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec).build();
 
-        // Check whether executor is provided by the caller (framework)
-        Executor service = lookup.lookup(Executor.class);
+        /*
+         * Check whether executor is provided by the caller (framework). It
+         * doesn't matter which Executor to use: any is fine. The main reason to
+         * use managed executor is to stop the execution when the framework
+         * stops.
+         */
+        Executor service = lookup.lookupAll(Executor.class).stream().findFirst()
+                .orElse(null);
 
         Runnable runnable = () -> runNodeTasks(vaadinContext, tokenFileData,
                 tasks);
