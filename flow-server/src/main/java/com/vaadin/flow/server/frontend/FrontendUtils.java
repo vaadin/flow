@@ -91,7 +91,7 @@ public class FrontendUtils {
     public static final String FRONTEND = "frontend/";
 
     /**
-     * Default folder for client-side generated files
+     * Default folder for client-side generated files.
      */
     public static final String GENERATED = "generated/";
 

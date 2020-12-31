@@ -32,7 +32,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 
 /**
- * A task for generate a TS file which is always executed in a Vaadin app
+ * A task for generate a TS file which is always executed in a Vaadin app.
  *
  * @author Vaadin Ltd
  */
@@ -53,7 +53,7 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
     @Override
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
-        lines.add(String.format("import '%s';\n", getIndexTsEntryPath()));
+        lines.add(String.format("import '%s';%n", getIndexTsEntryPath()));
         lines.addAll(getThemeLines());
 
         return String.join("\n", lines);
