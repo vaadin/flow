@@ -17,6 +17,7 @@ package com.vaadin.flow.component.html;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasOrderedComponents;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 
@@ -27,7 +28,7 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.HEADER)
-public class Header extends HtmlContainer implements ClickNotifier<Header> {
+public class Header extends HtmlContainer implements ClickNotifier<Header>, HasOrderedComponents {
 
     /**
      * Creates a new empty header.
