@@ -59,6 +59,10 @@ public @interface Tag {
      */
     String DD = "dd";
     /**
+     * Tag for an <code>&lt;details&gt;</code>.
+     */
+    String DETAILS = "details";
+    /**
      * Tag for an <code>&lt;div&gt;</code>.
      */
     String DIV = "div";
@@ -170,6 +174,10 @@ public @interface Tag {
      * Tag for an <code>&lt;strong&gt;</code>.
      */
     String STRONG = "strong";
+    /**
+     * Tag for an <code>&lt;summary&gt;</code>.
+     */
+    String SUMMARY = "summary";
     /**
      * Tag for an <code>&lt;textarea&gt;</code>.
      */
