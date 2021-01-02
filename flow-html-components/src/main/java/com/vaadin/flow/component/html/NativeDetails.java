@@ -64,7 +64,7 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
     private Component content;
 
     /**
-     * Creates a new details with an empty summary..
+     * Creates a new details with an empty summary.
      */
     public NativeDetails() {
         super();
@@ -233,6 +233,18 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
 
         private final boolean opened;
 
+        /**
+         * ToggleEvent base constructor.
+         *
+         * @param source
+         *            the source component
+         * @param fromClient
+         *            <code>true</code> if the event originated from the client
+         *            side, <code>false</code> otherwise
+         * @param opened
+         *            <code>true</code> if the details was opened,
+         *            <code>false</code> otherwise
+         */
         public ToggleEvent(NativeDetails source, boolean fromClient,
                            @EventData("event.target.open") boolean opened) {
             super(source, fromClient);
@@ -240,6 +252,8 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
         }
 
         /**
+         * Return whether or not the details was opened or closed in this event.
+         *
          * @return whether details are expanded or collapsed
          */
         public boolean isOpened() {
