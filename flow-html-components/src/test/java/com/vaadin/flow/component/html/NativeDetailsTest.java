@@ -25,6 +25,7 @@ public class NativeDetailsTest extends ComponentTest {
     protected void addProperties() {
         whitelistProperty("content");
         whitelistProperty("summary");
+        whitelistProperty("summaryText");
         addProperty("open", boolean.class, false,
           true, false,true);
     }
@@ -32,18 +33,18 @@ public class NativeDetailsTest extends ComponentTest {
     @Test
     public void testConstructorParams() {
         NativeDetails details = new NativeDetails("text-summary");
-        Assert.assertEquals("text-summary", details.getSummary().getText());
+        Assert.assertEquals("text-summary", details.getSummaryText());
         Assert.assertNull(details.getContent());
 
         details = new NativeDetails(new Paragraph("text-summary"));
-        Assert.assertEquals("", details.getSummary().getText());
+        Assert.assertEquals("", details.getSummaryText());
         Assert.assertEquals("text-summary",
           details.getSummary().getElement().getTextRecursively());
         Assert.assertNull(details.getContent());
 
         Paragraph content = new Paragraph("content");
         details = new NativeDetails("text-summary", content);
-        Assert.assertEquals("text-summary", details.getSummary().getText());
+        Assert.assertEquals("text-summary", details.getSummaryText());
         Assert.assertEquals(content, details.getContent());
     }
 
@@ -52,14 +53,14 @@ public class NativeDetailsTest extends ComponentTest {
     public void testSetSummaryReplacesSummary() {
         Paragraph summmary2 = new Paragraph("summary2");
         NativeDetails details = new NativeDetails("summary1", new Paragraph("content"));
-        Assert.assertEquals("summary1", details.getSummary().getText());
+        Assert.assertEquals("summary1", details.getSummaryText());
 
         details.setSummary(summmary2);
         Assert.assertEquals("summary2",
           details.getSummary().getElement().getTextRecursively());
 
-        details.setSummary("summary3");
-        Assert.assertEquals("summary3", details.getSummary().getText());
+        details.setSummaryText("summary3");
+        Assert.assertEquals("summary3", details.getSummaryText());
     }
     @Test
     public void testSetContentReplacesContent() {

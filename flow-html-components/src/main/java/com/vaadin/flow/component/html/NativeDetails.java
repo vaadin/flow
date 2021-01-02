@@ -27,6 +27,7 @@ import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.shared.Registration;
 import java.util.Objects;
 
@@ -127,7 +128,17 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
      * @return the summary component
      */
     public Summary getSummary() {
-      return summary;
+        return summary;
+    }
+
+    /**
+     * Returns the textual summary of this details.
+     *
+     * @return the text content of the summary, not <code>null</code>
+     * @see Element#getText()
+     */
+    public String getSummaryText() {
+        return summary.getText();
     }
 
     /**
@@ -138,7 +149,7 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
      * @param summary
      *            the summary text to set.
      */
-    public void setSummary(String summary) {
+    public void setSummaryText(String summary) {
         this.summary.setText(summary);
     }
 
@@ -189,7 +200,7 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
      * @return whether details are expanded or collapsed
      */
     public boolean isOpen() {
-        return openDescriptor.get(this);
+        return get(openDescriptor);
     }
 
     /**
@@ -200,7 +211,7 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
      * @param open the boolean value to set
      */
     public void setOpen(boolean open) {
-        openDescriptor.set(this, open);
+        set(openDescriptor, open);
     }
 
     /**
