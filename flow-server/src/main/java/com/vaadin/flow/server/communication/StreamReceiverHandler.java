@@ -567,8 +567,9 @@ public class StreamReceiverHandler implements Serializable {
             } finally {
                 session.unlock();
             }
+            return now;
         }
-        return now;
+        return lastStreamingEvent;
     }
 
     /**
