@@ -1,0 +1,4 @@
+[part="input-field"],
+[part='radio'] {
+    background-color: rgba(255, 0, 0, 1); /* red */
+}
