@@ -139,7 +139,7 @@ public class FrontendUtils {
     /**
      * Default folder for copying front-end resources present in the classpath
      * jars.
-     * 
+     *
      * @deprecated This is deprecated due to a typo. Use
      *             DEFAULT_FLOW_RESOURCES_FOLDER instead.
      * @see #DEFAULT_FLOW_RESOURCES_FOLDER
@@ -165,6 +165,9 @@ public class FrontendUtils {
      * file.
      */
     public static final String IMPORTS_D_TS_NAME = "generated-flow-imports.d.ts";
+
+    public static final String THEME_IMPORTS_D_TS_NAME = "theme-generated.d.ts";
+    public static final String THEME_IMPORTS_NAME = "theme-generated.js";
 
     /**
      * File name of the index.html in client side.
