@@ -73,6 +73,16 @@ public class AppViewIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void should_request_packagePrivate_connect_service() throws Exception {
+        WebElement button = testComponent.$(TestBenchElement.class).id(
+                "helloFromPackagePrivate");
+        button.click();
+
+        // Wait for the server connect response
+        verifyContent("Anonymous access is not allowed");
+    }
+
+    @Test
     public void should_requestAnonymously_connect_service() throws Exception {
         WebElement button = testComponent.$(TestBenchElement.class).id(
                 "helloAnonymous");
@@ -80,6 +90,16 @@ public class AppViewIT extends ChromeBrowserTest {
 
         // Wait for the server connect response
         verifyContent("Hello, stranger!");
+    }
+
+    @Test
+    public void should_requestAnonymously_packagePrivate_connect_service() throws Exception {
+        WebElement button = testComponent.$(TestBenchElement.class).id(
+                "helloAnonymousFromPackagePrivate");
+        button.click();
+
+        // Wait for the server connect response
+        verifyContent("Hello from package private endpoint!");
     }
 
     @Test

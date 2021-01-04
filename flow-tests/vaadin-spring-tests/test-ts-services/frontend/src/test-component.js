@@ -1,6 +1,7 @@
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import * as appEndpoint from '../generated/AppEndpoint';
+import * as packagePrivateEndpoint from '../generated/PackagePrivateEndpoint';
 
 class TestComponent extends PolymerElement {
   static get template() {
@@ -12,6 +13,8 @@ class TestComponent extends PolymerElement {
         <button id="helloAdmin" on-click="helloAdmin">endpoint helloAdmin</button><br/>
         <button id="checkUser" on-click="checkUser">endpoint checkUser</button><br/>
         <button id="checkUserFromVaadinRequest" on-click="checkUserFromVaadinRequest">endpoint checkUser from VaadinRequest</button><br/>
+        <button id="helloFromPackagePrivate" on-click="hello">package private endpoint hello</button><br/>
+        <button id="helloAnonymousFromPackagePrivate" on-click="helloAnonymousFromPackagePrivateEndpoint">package private endpoint helloAnonymous</button><br/>
         <button id="logout" on-click="logout">logout</button><br/>
         <form method="post" action="login">
           <input id="username" name="username"></input>
@@ -42,7 +45,14 @@ class TestComponent extends PolymerElement {
         .helloAnonymous()
         .then(response => this.$.content.textContent = response)
         .catch(error => this.$.content.textContent = 'Error:' + error);
-    }
+  }
+
+  helloAnonymousFromPackagePrivateEndpoint(e) {
+    packagePrivateEndpoint
+      .helloAnonymous()
+      .then(response => this.$.content.textContent = response)
+      .catch(error => this.$.content.textContent = 'Error:' + error);
+  }
 
   echoWithOptional(e) {
     appEndpoint
