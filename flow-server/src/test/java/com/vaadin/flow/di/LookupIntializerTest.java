@@ -67,7 +67,7 @@ public class LookupIntializerTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void createLookup_instantiatorsAreProvidedAsScannedClasses_lookupThrows()
+    public void createLookup_instantiatorsAreProvidedAsScannedClasses_multipleInstantiatorInstances_lookupThrows()
             throws ServletException {
         Lookup lookup = initializer.createLookup(null,
                 Collections.singletonMap(InstantiatorFactory.class,

@@ -51,24 +51,24 @@ import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
  * <p>
  * There are two ways of customizing Lookup in various servlet containers:
  * <ul>
- * <li>Somehow completely disable {@link LookupServletContainerInitializer} and
- * implement own way to set up {@link Lookup} and make it available via
- * {@link VaadinContext#getAttribute(Class)}.
  * <li>Use {@link LookupInitializer} SPI via providing an implementation for the
  * framework which doesn't prevent {@link LookupServletContainerInitializer}
  * execution.
+ * <li>Completely disable {@link LookupServletContainerInitializer} and
+ * implement own way to set up {@link Lookup} and make it available via
+ * {@link VaadinContext#getAttribute(Class)}.
  * </ul>
  * 
- * The first case is only possible when a servlet container doesn't run
- * {@link ServletContainerInitializer}s out of the box (e.g. OSGi or Spring boot
- * executed as a Jar) at all. Otherwise you may not disable an existing
- * {@link ServletContainerInitializer} and it will be executed anyway.
- * <p>
- * The second case allows to customize {@link Lookup} creation and
- * initialization in case when it's not possible to prevent
+ * The first case allows to customize {@link Lookup} creation and initialization
+ * in case when it's not possible to prevent
  * {@link LookupServletContainerInitializer} execution (any container which
  * completely supports Servlet 3.0 specification). In this case it's possible to
  * implement {@link LookupInitializer} for the framework.
+ * <p>
+ * The second case is only possible when a servlet container doesn't run
+ * {@link ServletContainerInitializer}s out of the box (e.g. OSGi or Spring boot
+ * executed as a Jar) at all. Otherwise you may not disable an existing
+ * {@link ServletContainerInitializer} and it will be executed anyway.
  * <p>
  * This is SPI for {@link Lookup} SPI. The difference is:
  * <ul>
