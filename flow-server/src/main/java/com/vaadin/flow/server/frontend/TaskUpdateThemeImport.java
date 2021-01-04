@@ -20,6 +20,7 @@ import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,9 +38,14 @@ import com.vaadin.flow.theme.ThemeDefinition;
  * @since
  */
 public class TaskUpdateThemeImport implements FallibleCommand {
-    
-    public static final String APPLICATION_META_INF_RESOURCES = "src/main/resources/META-INF/resources";
-    public static final String APPLICATION_STATIC_RESOURCES = "src/main/resources/static";
+
+    private static final String SEPARATOR = FileSystems.getDefault()
+            .getSeparator();
+    public static final String APPLICATION_META_INF_RESOURCES = "src/main/resources/META-INF/resources"
+            .replace("/", SEPARATOR);
+    public static final String APPLICATION_STATIC_RESOURCES = "src/main/resources/static"
+            .replace("/", SEPARATOR);
+
 
     private final File themeImportFile;
     private final ThemeDefinition theme;
@@ -89,7 +95,9 @@ public class TaskUpdateThemeImport implements FallibleCommand {
             throws ExecutionFailedException {
 
         String themeName = theme.getName();
-        String themePath = String.join("/", APPLICATION_THEME_ROOT, themeName);
+        String delimiter = FileSystems.getDefault().getSeparator();
+        String themePath = String.join(delimiter, APPLICATION_THEME_ROOT,
+                themeName);
 
         List<String> appThemePossiblePaths = getAppThemePossiblePaths(
                 themePath);
@@ -140,19 +148,24 @@ public class TaskUpdateThemeImport implements FallibleCommand {
     }
 
     private List<String> getAppThemePossiblePaths(String themePath) {
-        String frontendTheme = String.join("/",
-                npmFolder.toPath()
-                .relativize(frontendDirectory.toPath()).toString(), themePath);
+        String separator = FileSystems.getDefault().getSeparator();
+        String frontendTheme = String.join(
+                separator, npmFolder.toPath()
+                            .relativize(frontendDirectory.toPath()).toString(),
+                themePath);
 
-        String themePathInMetaInfResources = String.join("/",
+        String themePathInMetaInfResources = String.join(separator,
                 APPLICATION_META_INF_RESOURCES, themePath);
 
-        String themePathInStaticResources = String.join("/",
+        String themePathInStaticResources = String.join(separator,
                 APPLICATION_STATIC_RESOURCES, themePath);
 
+        String nodeModulesPath = FrontendUtils.NODE_MODULES.replace("/",
+                separator);
+        String flowNpmPackageName = FrontendUtils.FLOW_NPM_PACKAGE_NAME
+                .replace("/", separator);
         String themePathInClassPathResources = String.join("",
-                FrontendUtils.NODE_MODULES, FrontendUtils.FLOW_NPM_PACKAGE_NAME,
-                themePath);
+                nodeModulesPath, flowNpmPackageName, themePath);
 
         return Arrays.asList(frontendTheme, themePathInMetaInfResources,
                 themePathInStaticResources, themePathInClassPathResources);

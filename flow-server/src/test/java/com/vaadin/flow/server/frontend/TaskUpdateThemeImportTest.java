@@ -26,6 +26,7 @@ import static com.vaadin.flow.server.frontend.TaskUpdateThemeImport.APPLICATION_
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -43,9 +44,11 @@ import net.jcip.annotations.NotThreadSafe;
 @NotThreadSafe
 public class TaskUpdateThemeImportTest {
 
+    private static final String SEPARATOR = FileSystems.getDefault()
+            .getSeparator();
     private static final String CUSTOM_THEME_NAME = "custom-theme";
     private static final String CUSTOM_VARIANT_NAME = "custom-variant";
-    private static final String CUSTOM_THEME_PATH = String.join("/",
+    private static final String CUSTOM_THEME_PATH = String.join(SEPARATOR,
             APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME);
 
     @Rule
@@ -243,7 +246,7 @@ public class TaskUpdateThemeImportTest {
     @Test
     public void taskExecuted_customThemeFolderExistsInBothMetaInfResourcesAndInClasspath_throwsException() {
 
-        String metaInfResources = String.join("/",
+        String metaInfResources = String.join(SEPARATOR,
                 APPLICATION_META_INF_RESOURCES, CUSTOM_THEME_PATH);
         File themeDir = new File(projectRoot, metaInfResources);
         Assert.assertTrue(themeDir.mkdirs());
@@ -266,8 +269,8 @@ public class TaskUpdateThemeImportTest {
     @Test
     public void taskExecuted_customThemeFolderExistsInBothStaticResourcesAndInClasspath_throwsException() {
 
-        String staticResources = String.join("/", APPLICATION_STATIC_RESOURCES,
-                CUSTOM_THEME_PATH);
+        String staticResources = String.join(SEPARATOR,
+                APPLICATION_STATIC_RESOURCES, CUSTOM_THEME_PATH);
         File themeDir = new File(projectRoot, staticResources);
         Assert.assertTrue(themeDir.mkdirs());
 
@@ -289,12 +292,12 @@ public class TaskUpdateThemeImportTest {
     @Test
     public void taskExecuted_customThemeFolderExistsInBothStaticAndMetaInfResources_throwsException() {
 
-        String staticResources = String.join("/", APPLICATION_STATIC_RESOURCES,
-                CUSTOM_THEME_PATH);
+        String staticResources = String.join(SEPARATOR,
+                APPLICATION_STATIC_RESOURCES, CUSTOM_THEME_PATH);
         File themeDirInStatic = new File(projectRoot, staticResources);
         Assert.assertTrue(themeDirInStatic.mkdirs());
 
-        String metaInfResources = String.join("/",
+        String metaInfResources = String.join(SEPARATOR,
                 APPLICATION_META_INF_RESOURCES, CUSTOM_THEME_PATH);
         File themeDirInMetaInf = new File(projectRoot, metaInfResources);
         Assert.assertTrue(themeDirInMetaInf.mkdirs());
@@ -303,11 +306,11 @@ public class TaskUpdateThemeImportTest {
                 ExecutionFailedException.class, taskUpdateThemeImport::execute);
 
         Assert.assertTrue(e.getMessage().contains(String.format(
-                "Discovered Theme folder for theme '%s' "
-                        + "in more than one place in the project. Please "
-                        + "make sure there is only one theme folder with name '%s' "
-                        + "exists in the your project. ",
-                CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
+            "Discovered Theme folder for theme '%s' "
+                    + "in more than one place in the project. Please "
+                    + "make sure there is only one theme folder with name '%s' "
+                    + "exists in the your project. ",
+            CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
     }
 
     @Test
@@ -316,7 +319,7 @@ public class TaskUpdateThemeImportTest {
         File themeDir = new File(frontendDirectory, CUSTOM_THEME_PATH);
         Assert.assertTrue(themeDir.mkdirs());
 
-        String metaInfResources = String.join("/",
+        String metaInfResources = String.join(SEPARATOR,
                 APPLICATION_META_INF_RESOURCES, CUSTOM_THEME_PATH);
         File themeDirInMetaInf = new File(projectRoot, metaInfResources);
         Assert.assertTrue(themeDirInMetaInf.mkdirs());
@@ -338,8 +341,8 @@ public class TaskUpdateThemeImportTest {
         File themeDir = new File(frontendDirectory, CUSTOM_THEME_PATH);
         Assert.assertTrue(themeDir.mkdirs());
 
-        String staticResources = String.join("/", APPLICATION_STATIC_RESOURCES,
-                CUSTOM_THEME_PATH);
+        String staticResources = String.join(SEPARATOR,
+                APPLICATION_STATIC_RESOURCES, CUSTOM_THEME_PATH);
         File themeDirInStatic = new File(projectRoot, staticResources);
         Assert.assertTrue(themeDirInStatic.mkdirs());
 
@@ -360,12 +363,12 @@ public class TaskUpdateThemeImportTest {
         File themeDir = new File(frontendDirectory, CUSTOM_THEME_PATH);
         Assert.assertTrue(themeDir.mkdirs());
 
-        String staticResources = String.join("/", APPLICATION_STATIC_RESOURCES,
-                CUSTOM_THEME_PATH);
+        String staticResources = String.join(SEPARATOR,
+                APPLICATION_STATIC_RESOURCES, CUSTOM_THEME_PATH);
         File themeDirInStatic = new File(projectRoot, staticResources);
         Assert.assertTrue(themeDirInStatic.mkdirs());
 
-        String metaInfResources = String.join("/",
+        String metaInfResources = String.join(SEPARATOR,
                 APPLICATION_META_INF_RESOURCES, CUSTOM_THEME_PATH);
         File themeDirInMetaInf = new File(projectRoot, metaInfResources);
         Assert.assertTrue(themeDirInMetaInf.mkdirs());
@@ -389,12 +392,12 @@ public class TaskUpdateThemeImportTest {
         File classPathThemeDir = new File(projectRoot, classPathThemePath);
         Assert.assertTrue(classPathThemeDir.mkdirs());
 
-        String staticResources = String.join("/", APPLICATION_STATIC_RESOURCES,
-                CUSTOM_THEME_PATH);
+        String staticResources = String.join(SEPARATOR,
+                APPLICATION_STATIC_RESOURCES, CUSTOM_THEME_PATH);
         File themeDirInStatic = new File(projectRoot, staticResources);
         Assert.assertTrue(themeDirInStatic.mkdirs());
 
-        String metaInfResources = String.join("/",
+        String metaInfResources = String.join(SEPARATOR,
                 APPLICATION_META_INF_RESOURCES, CUSTOM_THEME_PATH);
         File themeDirInMetaInf = new File(projectRoot, metaInfResources);
         Assert.assertTrue(themeDirInMetaInf.mkdirs());
