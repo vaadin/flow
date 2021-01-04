@@ -360,11 +360,16 @@ export class Flow {
     // Note: if flow-client is loaded, it instead handles the state transitions.
     $wnd.addEventListener('online', () => {
       if (!this.isFlowClientLoaded()) {
-        // else, send an HTTP HEAD request to verify the server being online
-        // we don't care about HTTP errors, only network failure
+        // Send an HTTP HEAD request for sw.js to verify server reachability.
+        // We do not expect sw.js to be cached, so the request goes to the
+        // server rather than being served from local cache.
+        // Require network-level failure to revert the state to CONNECTION_LOST
+        // (HTTP error code is ok since it still verifies server's presence).
         $wnd.Vaadin.connectionState.state = ConnectionState.RECONNECTING;
         const http = new XMLHttpRequest();
-        http.open('HEAD', location.pathname || '/');
+        const serverRoot = location.pathname || '/';
+        http.open('HEAD', serverRoot +
+          (serverRoot.endsWith('/') ? '' : ' /') + 'sw.js');
         http.onload = () => {
           $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
         };

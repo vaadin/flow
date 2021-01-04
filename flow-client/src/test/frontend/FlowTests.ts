@@ -712,7 +712,7 @@ suite("Flow", () => {
   });
 
   test("when no Flow client loaded, should transition to CONNECTED when receiving 'offline' and then 'online' events and connection is reestablished", async () => {
-    mock.use('HEAD', /^.*/, (req, res) => {
+    mock.use('HEAD', /^.*sw.js/, (req, res) => {
       return res.status(200);
     });
     new Flow();
