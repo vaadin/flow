@@ -64,8 +64,6 @@ public class NodeTasks implements FallibleCommand {
 
         private String webpackGeneratedTemplate = null;
 
-        private String serviceWorkerTemplate = null;
-
         private boolean enablePackagesUpdate = false;
 
         private boolean createMissingPackageJson = false;
@@ -224,7 +222,6 @@ public class NodeTasks implements FallibleCommand {
             this.resourceOutputDirectory = resourceOutputDirectory;
             this.webpackTemplate = webpackTemplate;
             this.webpackGeneratedTemplate = webpackGeneratedTemplate;
-            this.serviceWorkerTemplate = serviceWorkerTemplate;
             return this;
         }
 
@@ -584,13 +581,12 @@ public class NodeTasks implements FallibleCommand {
         }
 
         if (enableWebpackConfigUpdate) {
-            PwaConfiguration pwaConfiguration = frontendDependencies
+            PwaConfiguration pwaConfiguration = frontendDependencies // NOSONAR
                     .getPwaConfiguration();
             commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
                     builder.npmFolder, builder.webpackOutputDirectory,
                     builder.resourceOutputDirectory, builder.webpackTemplate,
                     builder.webpackGeneratedTemplate,
-                    builder.serviceWorkerTemplate,
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useDeprecatedV14Bootstrapping,
                     builder.flowResourcesFolder, pwaConfiguration));

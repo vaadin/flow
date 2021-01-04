@@ -162,9 +162,8 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
         TaskUpdateWebpack newUpdater = new TaskUpdateWebpack(frontendFolder,
                 baseDir, new File(baseDir, "baz"), new File(baseDir, "foo"),
-                WEBPACK_CONFIG, WEBPACK_GENERATED, SERVICE_WORKER_SRC,
-                new File(baseDir, "bar"), false,
-                new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
+                WEBPACK_CONFIG, WEBPACK_GENERATED, new File(baseDir, "bar"),
+                false, new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
                 pwaConfiguration);
 
         newUpdater.execute();
@@ -315,7 +314,6 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 new File(baseDir, TARGET + "classes"),
                 WEBPACK_CONFIG,
                 WEBPACK_GENERATED,
-                SERVICE_WORKER_SRC,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME),
                 useV14Bootstrapping,
                 new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),

@@ -55,7 +55,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
      */
     private final String webpackTemplate;
     private final String webpackGeneratedTemplate;
-    private final String serviceWorkerTemplate;
     private final Path webpackOutputPath;
     private final Path resourceOutputPath;
     private final Path flowImportsFilePath;
@@ -83,9 +82,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
      * @param webpackGeneratedTemplate
      *            name of the webpack resource to be used as template when
      *            creating the <code>webpack.generated.js</code> file.
-     * @param serviceWorkerTemplate
-     *            name of the service worker resource to be used as template
-     *            when creating the <code>sw.ts</code> file.
      * @param generatedFlowImports
      *            name of the JS file to update with the Flow project imports
      * @param useV14Bootstrapping
@@ -97,13 +93,11 @@ public class TaskUpdateWebpack implements FallibleCommand {
     TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
             File webpackOutputDirectory, File resourceOutputDirectory,
             String webpackTemplate, String webpackGeneratedTemplate,
-            String serviceWorkerTemplate, File generatedFlowImports,
-            boolean useV14Bootstrapping, File flowResourcesFolder,
-            PwaConfiguration pwaConfiguration) {
+            File generatedFlowImports, boolean useV14Bootstrapping,
+            File flowResourcesFolder, PwaConfiguration pwaConfiguration) {
         this.frontendDirectory = frontendDirectory.toPath();
         this.webpackTemplate = webpackTemplate;
         this.webpackGeneratedTemplate = webpackGeneratedTemplate;
-        this.serviceWorkerTemplate = serviceWorkerTemplate;
         this.webpackOutputPath = webpackOutputDirectory.toPath();
         this.resourceOutputPath = resourceOutputDirectory.toPath();
         this.flowImportsFilePath = generatedFlowImports.toPath();

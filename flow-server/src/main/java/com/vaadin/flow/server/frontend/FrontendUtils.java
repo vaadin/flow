@@ -1065,6 +1065,7 @@ public class FrontendUtils {
      * the list of request paths to handle as static resources.
      *
      * @param manifestJson
+     *            "manifest.json" file contents
      * @return list of paths, each starting with "/"
      */
     public static List<String> parseManifestPaths(String manifestJson) {

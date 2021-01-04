@@ -159,13 +159,6 @@ const serviceWorkerPlugin = new InjectManifest({
       OFFLINE_PATH: JSON.stringify(offlinePath)
     }),
   ],
-  //navigateFallback: rootUrl,
-  /*runtimeCaching: [
-    {
-      urlPattern: /.* /,
-      handler: "NetworkFirst",
-    },
-  ],*/
 });
 
 if (devMode) {
