@@ -129,12 +129,8 @@ public class IndexHtmlRequestHandlerTest {
                 .mock(VaadinServletRequest.class);
         Mockito.when(vaadinRequest.getService()).thenReturn(vaadinService);
 
-        String path;
-        if (DEFAULT_FRONTEND_DIR.endsWith(File.separator)) {
-            path = DEFAULT_FRONTEND_DIR + "index.html";
-        } else {
-            path = DEFAULT_FRONTEND_DIR + File.separatorChar + "/index.html";
-        }
+        String path = DEFAULT_FRONTEND_DIR + "index.html";
+
         String expectedError = String
                 .format("Failed to load content of '%1$s'. "
                         + "It is required to have '%1$s' file when "
