@@ -120,14 +120,8 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
             String packageFile = FileUtils
                 .readFileToString(new File(pluginTargetFile, PACKAGE_JSON),
                     StandardCharsets.UTF_8);
-            final FrontendVersion packageVersion = new FrontendVersion(
-                Json.parse(packageFile).getString("version"));
-            FrontendVersion pluginVersion = new FrontendVersion(
-                packageJson.getString("version"));
-            if (packageVersion.isEqualTo(pluginVersion)) {
-                log().debug(
-                    "Skipping install of {} for version {} already installed",
-                    pluginName, pluginVersion.getFullVersion());
+            final JsonObject targetJson = Json.parse(packageFile);
+            if(targetJson.hasKey("update") && !targetJson.getBoolean("update")) {
                 return;
             }
         }
