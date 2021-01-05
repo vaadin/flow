@@ -263,7 +263,7 @@ public class WebComponentBootstrapHandlerTest {
                                         + Constants.STATISTICS_JSON_DEFAULT));
 
         Mockito.when(provider.getClientResourceAsStream(
-                "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
+                "META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
                         + "/compile.properties"))
                 .thenAnswer(invocation -> new ByteArrayInputStream(
                         "jsFile=foo".getBytes(StandardCharsets.UTF_8)));

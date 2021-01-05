@@ -1,4 +1,6 @@
 /* tslint:disable:max-classes-per-file */
+import { ConnectionIndicator } from './ConnectionIndicator';
+import { ConnectionState } from './ConnectionState';
 
 const $wnd = window as any;
 $wnd.Vaadin = $wnd.Vaadin || {};
@@ -171,13 +173,10 @@ export interface ConnectClientOptions {
    * The `middlewares` property value.
    */
   middlewares?: Middleware[];
+
 }
 
-/**
- * An object with the call arguments and the related Request instance.
- * See also {@link ConnectClient.call | the call() method in ConnectClient}.
- */
-export interface MiddlewareContext {
+export interface EndpointCallMetaInfo {
   /**
    * The endpoint name.
    */
@@ -192,7 +191,13 @@ export interface MiddlewareContext {
    * Optional object with method call arguments.
    */
   params?: any;
+}
 
+/**
+ * An object with the call arguments and the related Request instance.
+ * See also {@link ConnectClient.call | the call() method in ConnectClient}.
+ */
+export interface MiddlewareContext extends EndpointCallMetaInfo{
   /**
    * The Fetch API Request object reflecting the other properties.
    */
@@ -265,6 +270,7 @@ export class ConnectClient {
    */
   middlewares: Middleware[] = [];
 
+
   /**
    * @param options Constructor options.
    */
@@ -276,6 +282,22 @@ export class ConnectClient {
     if (options.middlewares) {
       this.middlewares = options.middlewares;
     }
+
+    // add connection indicator to DOM
+    ConnectionIndicator.create();
+
+    // Listen to browser online/offline events and update the loading indicator accordingly.
+    // Note: if Flow.ts is loaded, it instead handles the state transitions.
+    $wnd.addEventListener('online', () => {
+      if (!this.isFlowLoaded()) {
+        $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
+      }
+    });
+    $wnd.addEventListener('offline', () => {
+      if (!this.isFlowLoaded()) {
+        $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
+      }
+    });
   }
 
   /**
@@ -317,11 +339,11 @@ export class ConnectClient {
     }
 
     const request = new Request(
-       `${this.prefix}/${endpoint}/${method}`, {
-         method: 'POST',
-         headers,
-         body: params !== undefined ? JSON.stringify(nullForUndefined(params)) : undefined
-        });
+      `${this.prefix}/${endpoint}/${method}`, {
+        method: 'POST',
+        headers,
+        body: params !== undefined ? JSON.stringify(nullForUndefined(params)) : undefined
+      });
 
     // The middleware `context`, includes the call arguments and the request
     // constructed from them
@@ -350,13 +372,18 @@ export class ConnectClient {
     // chain item for our convenience. Always having an ending of the chain
     // this way makes the folding down below more concise.
     const fetchNext: MiddlewareNext =
-      async(context: MiddlewareContext): Promise<Response> => {
-        this.loading(true);
-        try {
-          return await fetch(context.request);
-        } finally {
-          this.loading(false); 
-        }
+      async (context: MiddlewareContext): Promise<Response> => {
+        this.loadingStarted();
+        return fetch(context.request)
+          .then(response => {
+            this.loadingFinished();
+            return response;
+          })
+          .catch(error => {
+            this.loadingFinished();
+            $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
+            return Promise.reject(error);
+          });
       };
 
     // Assemble the final middlewares array from internal
@@ -370,9 +397,9 @@ export class ConnectClient {
         // invokes the current middleware with the context and the further chain
         // as the next argument
         return (context => {
-          if(typeof middleware === 'function'){
+          if (typeof middleware === 'function') {
             return middleware(context, next);
-          }else {
+          } else {
             return (middleware as MiddlewareClass).invoke(context, next);
           }
         }) as MiddlewareNext;
@@ -385,10 +412,28 @@ export class ConnectClient {
     return chain(initialContext);
   }
 
-  // Re-use flow loading indicator when fetching endpoints
-  private loading(action: boolean) {
-    if ($wnd.Vaadin.Flow?.loading) {
-      $wnd.Vaadin.Flow.loading(action);
+
+  private isFlowLoaded(): boolean {
+    return $wnd.Vaadin.Flow !== undefined;
+  }
+
+  private loadingStarted() {
+    if (this.isFlowLoaded()) {
+      // call Flow.loadingStarted to pause TestBench tests while backend
+      // requests are ongoing
+      $wnd.Vaadin.Flow.clients?.TypeScript?.loadingStarted();
+    } else {
+      $wnd.Vaadin.connectionState.loadingStarted();
+    }
+  }
+
+  private loadingFinished() {
+    if (this.isFlowLoaded()) {
+      // call Flow.loadingFinished to pause TestBench tests while backend
+      // requests are ongoing
+      $wnd.Vaadin.Flow.clients?.TypeScript?.loadingFinished();
+    } else {
+      $wnd.Vaadin.connectionState.loadingFinished();
     }
   }
 }

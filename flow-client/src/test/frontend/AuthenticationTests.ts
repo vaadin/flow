@@ -88,6 +88,20 @@ describe('Authentication', () => {
       expect(fetchMock.calls()).to.have.lengthOf(1);
       expect((window as any).Vaadin.TypeScript.csrfToken).to.equal("6a60700e-852b-420f-a126-a1c61b73d1ba");
     });
+
+    it('should clear the csrf token on failed server logout', async () => {
+      const fakeError = new Error('unable to connect');
+      fetchMock.get('/logout', () => {
+        throw fakeError;
+      });
+      try {
+        await logout();
+      } catch (err) {
+        expect(err).to.equal(fakeError);
+      }
+      expect(fetchMock.calls()).to.have.lengthOf(1);
+      expect((window as any).Vaadin.TypeScript.csrfToken).to.be.undefined
+    });
   });
 
   describe("InvalidSessionMiddleWare", ()=>{

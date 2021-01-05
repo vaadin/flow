@@ -17,7 +17,6 @@ package com.vaadin.flow.server;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletContext;
-
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -66,12 +65,11 @@ public class PwaRegistry implements Serializable {
     private static final String APPLE_STARTUP_IMAGE = "apple-touch-startup-image";
     private static final String APPLE_IMAGE_MEDIA = "(device-width: %dpx) and (device-height: %dpx) "
             + "and (-webkit-device-pixel-ratio: %d)";
-    public static final String WORKBOX_FOLDER = "VAADIN/static/server/workbox/";
     private static final String WORKBOX_CACHE_FORMAT = "{ url: '%s', revision: '%s' }";
 
     private String offlineHtml = "";
     private String manifestJson = "";
-    private String serviceWorkerJs = "";
+    private String runtimeServiceWorkerJs = "";
     private long offlineHash;
     private List<PwaIcon> icons = new ArrayList<>();
     private final PwaConfiguration pwaConfiguration;
@@ -95,7 +93,8 @@ public class PwaRegistry implements Serializable {
 
         // set basic configuration by given PWA annotation
         // fall back to defaults if unavailable
-        pwaConfiguration = new PwaConfiguration(pwa, servletContext);
+        pwaConfiguration = pwa == null ? new PwaConfiguration()
+                : new PwaConfiguration(pwa);
 
         // Build pwa elements only if they are enabled
         if (pwaConfiguration.isEnabled()) {
@@ -128,8 +127,9 @@ public class PwaRegistry implements Serializable {
             // Initialize manifest.webmanifest
             manifestJson = initializeManifest().toJson();
 
-            // Initialize sw.js
-            serviceWorkerJs = initializeServiceWorker(servletContext);
+            // Initialize sw-runtime.js
+            runtimeServiceWorkerJs = initializeRuntimeServiceWorker(
+                    servletContext);
         }
     }
 
@@ -212,7 +212,6 @@ public class PwaRegistry implements Serializable {
                 pwaConfiguration.getBackgroundColor());
         manifestData.put("theme_color", pwaConfiguration.getThemeColor());
         manifestData.put("start_url", pwaConfiguration.getStartUrl());
-        manifestData.put("scope", pwaConfiguration.getRootUrl());
 
         // Add icons
         JsonArray iconList = Json.createArray();
@@ -228,50 +227,35 @@ public class PwaRegistry implements Serializable {
         return manifestData;
     }
 
-    private String initializeServiceWorker(ServletContext servletContext) {
+    private String initializeRuntimeServiceWorker(ServletContext servletContext) {
         StringBuilder stringBuilder = new StringBuilder();
 
         // List of icons for precache
-        List<String> filesToCahe = getIcons().stream()
+        List<String> filesToCache = getIcons().stream()
                 .filter(PwaIcon::shouldBeCached).map(PwaIcon::getCacheFormat)
                 .collect(Collectors.toList());
 
-        // Add offline page to precache
-        filesToCahe.add(offlinePageCache());
-        // Add manifest to precache
-        filesToCahe.add(manifestCache());
+        // When offlinePath is in use, it is also an offline resource to
+        // precache
+        if (pwaConfiguration.isOfflinePathEnabled()) {
+            filesToCache.add(offlinePageCache());
+        }
 
-        // Add user defined resources
+        // Add manifest to precache
+        filesToCache.add(manifestCache());
+
+        // Add user defined resources. Do not serve these via Webpack, as the
+        // file system location from which a resource is served depends on
+        // the (configurable) web app logic (#8996).
         for (String resource : pwaConfiguration.getOfflineResources()) {
-            filesToCahe.add(String.format(WORKBOX_CACHE_FORMAT,
+            filesToCache.add(String.format(WORKBOX_CACHE_FORMAT,
                     resource.replaceAll("'", ""), servletContext.hashCode()));
         }
 
-        String workBoxAbsolutePath = servletContext.getContextPath() + "/"
-                + WORKBOX_FOLDER;
-        // Google Workbox import
-        stringBuilder.append("importScripts('").append(workBoxAbsolutePath)
-                .append("workbox-sw.js").append("');\n\n");
-
-        stringBuilder.append("workbox.setConfig({\n")
-                .append("  modulePathPrefix: '").append(workBoxAbsolutePath)
-                .append("'\n").append("});\n");
-
         // Precaching
-        stringBuilder.append("workbox.precaching.precacheAndRoute([\n");
-        stringBuilder.append(String.join(",\n", filesToCahe));
-        stringBuilder.append("\n]);\n");
-
-        // Offline fallback
-        stringBuilder
-                .append("self.addEventListener('fetch', function(event) {\n")
-                .append("  var request = event.request;\n")
-                .append("  if (request.mode === 'navigate') {\n")
-                .append("    event.respondWith(\n      fetch(request)\n")
-                .append("        .catch(function() {\n")
-                .append(String.format("          return caches.match('%s');%n",
-                        getPwaConfiguration().getOfflinePath()))
-                .append("        })\n    );\n  }\n });");
+        stringBuilder.append("self.additionalManifestEntries = [\n");
+        stringBuilder.append(String.join(",\n", filesToCache));
+        stringBuilder.append("\n];\n");
 
         return stringBuilder.toString();
     }
@@ -362,8 +346,7 @@ public class PwaRegistry implements Serializable {
                 .replace("%%%BACKGROUND_COLOR%%%", config.getBackgroundColor())
                 .replace("%%%LOGO_PATH%%%",
                         largest != null
-                                ? pwaConfiguration.getRootUrl()
-                                        + largest.getHref()
+                                ? largest.getHref()
                                 : "")
                 .replace("%%%META_ICONS%%%", iconHead);
 
@@ -409,21 +392,16 @@ public class PwaRegistry implements Serializable {
     }
 
     /**
-     * sw.js (service worker javascript) as String.
+     * sw-runtime.js (service worker JavaScript for precaching runtime generated
+     * resources) as a String.
      *
-     * @return contents of sw.js
+     * @return contents of sw-runtime.js
      */
-    public String getServiceWorkerJs() {
-        return serviceWorkerJs;
+    public String getRuntimeServiceWorkerJs() {
+        return runtimeServiceWorkerJs;
     }
 
-    /**
-     * Google Workbox cache resource String of offline page. example:
-     * {@code {url: 'offline.html', revision: '1234567'}}
-     *
-     * @return Google Workbox cache resource String of offline page
-     */
-    public String offlinePageCache() {
+    private String offlinePageCache() {
         return String.format(WORKBOX_CACHE_FORMAT,
                 pwaConfiguration.getOfflinePath(), offlineHash);
     }
@@ -483,7 +461,7 @@ public class PwaRegistry implements Serializable {
         // Basic icons
         icons.add(new PwaIcon(16, 16, baseName, PwaIcon.Domain.HEADER, true,
                 "shortcut icon", ""));
-        icons.add(new PwaIcon(32, 32, baseName));
+        icons.add(new PwaIcon(32, 32, baseName, PwaIcon.Domain.HEADER, true));
         icons.add(new PwaIcon(96, 96, baseName));
 
         // IOS basic icon

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2020 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -24,10 +39,10 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DI
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
-
 public class NodeTasksTest {
 
     @Rule
@@ -43,7 +58,7 @@ public class NodeTasksTest {
     }
 
     @Test
-    public void should_UseDefaultFolders()throws Exception {
+    public void should_UseDefaultFolders() throws Exception {
         Lookup mockedLookup = Mockito.mock(Lookup.class);
         Mockito.doReturn(new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
@@ -54,14 +69,45 @@ public class NodeTasksTest {
             .runNpmInstall(false)
             .withEmbeddableWebComponents(false);
 
-
-        Assert.assertEquals(new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
-                ((File)getFieldValue(builder, "frontendDirectory")).getAbsolutePath());
-        Assert.assertEquals(new File(userDir, DEFAULT_GENERATED_DIR).getAbsolutePath(),
-                ((File)getFieldValue(builder, "generatedFolder")).getAbsolutePath());
+        Assert.assertEquals(
+                new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
+                ((File) getFieldValue(builder, "frontendDirectory"))
+                        .getAbsolutePath());
+        Assert.assertEquals(
+                new File(userDir, DEFAULT_GENERATED_DIR).getAbsolutePath(),
+                ((File) getFieldValue(builder, "generatedFolder"))
+                        .getAbsolutePath());
 
         builder.build().execute();
-        Assert.assertTrue(new File(userDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME).exists());
+        Assert.assertTrue(
+                new File(userDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME)
+                        .exists());
+    }
+
+    @Test
+    public void should_generateServiceWorkerWhenPwa() throws Exception {
+        Lookup mockedLookup = Mockito.mock(Lookup.class);
+        Mockito.doReturn(new DefaultClassFinder(this.getClass().getClassLoader()))
+                .when(mockedLookup).lookup(ClassFinder.class);
+        Builder builder = new Builder(
+                mockedLookup,
+                new File(userDir)).enablePackagesUpdate(false)
+                        .enableImportsUpdate(true).runNpmInstall(false)
+                        .withEmbeddableWebComponents(false);
+
+        Assert.assertEquals(
+                new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
+                ((File) getFieldValue(builder, "frontendDirectory"))
+                        .getAbsolutePath());
+        Assert.assertEquals(
+                new File(userDir, DEFAULT_GENERATED_DIR).getAbsolutePath(),
+                ((File) getFieldValue(builder, "generatedFolder"))
+                        .getAbsolutePath());
+
+        builder.build().execute();
+        Assert.assertTrue(
+                new File(userDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME)
+                        .exists());
     }
 
     @Test
@@ -85,7 +131,9 @@ public class NodeTasksTest {
                 ((File)getFieldValue(builder, "generatedFolder")).getAbsolutePath());
 
         builder.build().execute();
-        Assert.assertTrue(new File(userDir, "my/custom/generated/folder/" + IMPORTS_NAME).exists());
+        Assert.assertTrue(
+                new File(userDir, "my/custom/generated/folder/" + IMPORTS_NAME)
+                        .exists());
     }
 
     @Test
@@ -97,8 +145,9 @@ public class NodeTasksTest {
         Builder builder = new Builder(mockedLookup,
                 new File(userDir))
                         .enablePackagesUpdate(false)
-                        .withWebpack(new File(userDir, TARGET + "classes"),
-                                WEBPACK_CONFIG, WEBPACK_GENERATED)
+                        .withWebpack(new File(userDir, TARGET + "webapp"),
+                                new File(userDir, TARGET + "classes"),
+                                WEBPACK_CONFIG, WEBPACK_GENERATED, SERVICE_WORKER_SRC)
                         .enableImportsUpdate(true).runNpmInstall(false)
                         .withEmbeddableWebComponents(false)
                         .useV14Bootstrap(false).withFlowResourcesFolder(

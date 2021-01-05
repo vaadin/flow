@@ -26,6 +26,7 @@ import java.util.Set;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -56,6 +57,8 @@ public class NodeTasks implements FallibleCommand {
         private final File frontendDirectory;
 
         private File webpackOutputDirectory = null;
+
+        private File resourceOutputDirectory = null;
 
         private String webpackTemplate = null;
 
@@ -196,18 +199,27 @@ public class NodeTasks implements FallibleCommand {
          *
          * @param webpackOutputDirectory
          *            the directory to set for webpack to output its build
-         *            results.
+         *            results, meant for serving from context root.
+         * @param resourceOutputDirectory
+         *            the directory to output generated non-served resources,
+         *            such as the "config/stats.json" stats file, and the
+         *            "config/flow-build-info.json" token file.
          * @param webpackTemplate
          *            name of the webpack resource to be used as template when
          *            creating the <code>webpack.config.js</code> file.
          * @param webpackGeneratedTemplate
          *            name of the webpack resource to be used as template when
          *            creating the <code>webpack.generated.js</code> file.
+         * @param serviceWorkerTemplate
+         *            name of the service worker resource to be used as template
+         *            when creating the <code>sw.ts</code> file.
          * @return this builder
          */
         public Builder withWebpack(File webpackOutputDirectory,
-                String webpackTemplate, String webpackGeneratedTemplate) {
+                File resourceOutputDirectory, String webpackTemplate,
+                String webpackGeneratedTemplate, String serviceWorkerTemplate) {
             this.webpackOutputDirectory = webpackOutputDirectory;
+            this.resourceOutputDirectory = resourceOutputDirectory;
             this.webpackTemplate = webpackTemplate;
             this.webpackGeneratedTemplate = webpackGeneratedTemplate;
             return this;
@@ -506,7 +518,11 @@ public class NodeTasks implements FallibleCommand {
                 builder.classFinder);
         FrontendDependenciesScanner frontendDependencies = null;
 
-        if (builder.enablePackagesUpdate || builder.enableImportsUpdate) {
+        boolean enableWebpackConfigUpdate = builder.webpackTemplate != null
+                && !builder.webpackTemplate.isEmpty();
+
+        if (builder.enablePackagesUpdate || builder.enableImportsUpdate
+                || enableWebpackConfigUpdate) {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(!builder.useByteCodeScanner, classFinder,
                             builder.generateEmbeddableWebComponents);
@@ -526,7 +542,7 @@ public class NodeTasks implements FallibleCommand {
         }
 
         if (!builder.useDeprecatedV14Bootstrapping) {
-            addBootstrapTasks(builder);
+            addBootstrapTasks(builder, frontendDependencies);
 
             if (builder.connectJavaSourceFolder != null
                     && builder.connectJavaSourceFolder.exists()
@@ -566,14 +582,16 @@ public class NodeTasks implements FallibleCommand {
             }
         }
 
-        if (builder.webpackTemplate != null
-                && !builder.webpackTemplate.isEmpty()) {
+        if (enableWebpackConfigUpdate) {
+            PwaConfiguration pwaConfiguration = frontendDependencies // NOSONAR
+                    .getPwaConfiguration();
             commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
                     builder.npmFolder, builder.webpackOutputDirectory,
-                    builder.webpackTemplate, builder.webpackGeneratedTemplate,
+                    builder.resourceOutputDirectory, builder.webpackTemplate,
+                    builder.webpackGeneratedTemplate,
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useDeprecatedV14Bootstrapping,
-                    builder.flowResourcesFolder));
+                    builder.flowResourcesFolder, pwaConfiguration));
         }
 
         if (builder.enableImportsUpdate) {
@@ -590,7 +608,7 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
-    private void addBootstrapTasks(Builder builder) {
+    private void addBootstrapTasks(Builder builder, FrontendDependenciesScanner frontendDependencies) {
         File outputDirectory = new File(builder.npmFolder,
                 FrontendUtils.TARGET);
         TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
@@ -609,6 +627,13 @@ public class NodeTasks implements FallibleCommand {
         TaskGenerateTsDefinitions taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(
                 builder.npmFolder);
         commands.add(taskGenerateTsDefinitions);
+
+        if (frontendDependencies != null) {
+            PwaConfiguration pwaConfiguration = frontendDependencies.getPwaConfiguration();
+            if (pwaConfiguration.isEnabled()) {
+                commands.add(new TaskGenerateServiceWorker(builder.frontendDirectory, outputDirectory));
+            }
+        }
     }
 
     private void addConnectServicesTasks(Builder builder) {
