@@ -226,11 +226,9 @@ public class TaskUpdateWebpack implements FallibleCommand {
     }
 
     private String getClientEntryPoint() {
-        String declaration = "const clientSideIndexEntryPoint = %s;";
-        return String.format(declaration,
-                String.format("path.resolve(__dirname, '%s', '%s', '%s');",
-                        getEscapedRelativeWebpackPath(frontendDirectory),
-                        GENERATED, BOOTSTRAP_FILE_NAME));
+        return String.format("path.resolve(__dirname, '%s', '%s', '%s');",
+                getEscapedRelativeWebpackPath(frontendDirectory), GENERATED,
+                BOOTSTRAP_FILE_NAME);
     }
 
     private String getClientServiceWorker() {
