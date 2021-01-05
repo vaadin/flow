@@ -52,7 +52,6 @@ import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -91,7 +90,8 @@ public class FrontendUtils {
     public static final String FRONTEND = "frontend/";
 
     /**
-     * Default folder for client-side generated files.
+     * Default folder for client-side generated files inside the project root
+     * frontend folder
      */
     public static final String GENERATED = "generated/";
 
@@ -172,7 +172,8 @@ public class FrontendUtils {
     public static final String IMPORTS_D_TS_NAME = "generated-flow-imports.d.ts";
 
     /**
-     * File name of the bootstrap file in client side.
+     * File name of the bootstrap file that is generated in frontend
+     * {@link #GENERATED} folder. The bootstrap file is always executed in a Vaadin app.
      */
     public static final String BOOTSTRAP_FILE_NAME = "vaadin.ts";
 

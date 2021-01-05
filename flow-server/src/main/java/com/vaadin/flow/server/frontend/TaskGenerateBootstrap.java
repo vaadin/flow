@@ -32,7 +32,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 
 /**
- * A task for generate a TS file which is always executed in a Vaadin app.
+ * A task for generating the bootstrap file
+ * {@link FrontendUtils#BOOTSTRAP_FILE_NAME} during `package` Maven goal.
  *
  * @author Vaadin Ltd
  */
@@ -46,8 +47,8 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
             File frontendDirectory) {
         this.frontDeps = frontDeps;
         this.frontendDirectory = frontendDirectory;
-        this.connectClientTsApiFolder = new File(Paths
-                .get(frontendDirectory.getPath(), GENERATED).toString());
+        this.connectClientTsApiFolder = new File(
+                Paths.get(frontendDirectory.getPath(), GENERATED).toString());
     }
 
     @Override
@@ -66,7 +67,7 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
 
     @Override
     protected boolean shouldGenerate() {
-        return frontDeps != null && connectClientTsApiFolder != null;
+        return frontDeps != null;
     }
 
     private String getIndexTsEntryPath() {
@@ -76,6 +77,12 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
                 : Paths.get(frontendDirectory.getParentFile().getPath(), TARGET,
                         INDEX_TS);
 
+        // The index.ts path must be relativized with the bootstrap file path
+        // so it can be used in `import` statement. The bootstrap file is
+        // ${project.root}/frontend/generated/vaadin.ts.
+        // The index file paths are:
+        // * project_root/frontend/index.ts => ../index.ts
+        // * project_root/target/index.ts   => ../../target/index.ts
         String relativePath = FrontendUtils
                 .getUnixRelativePath(connectClientTsApiFolder.toPath(), path);
         return relativePath.replaceFirst("\\.[tj]s$", "");
