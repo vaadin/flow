@@ -33,6 +33,7 @@
     "eslint": "^5.8.0",
     "eslint-config-vaadin": "^0.2.7",
     "fetch-mock": "^7.3.0",
+    "idb": "^5.0.6",
     "intern": "^4.4.3",
     "lit-element": "^2.3.1",
     "node-fetch": "^2.3.0",
@@ -45,6 +46,8 @@
     "typescript": "4.0.3",
     "webpack": "^4.39.1",
     "webpack-cli": "^3.3.6",
+    "workbox-core": "^5.1.4",
+    "workbox-precaching": "^5.1.4",
     "xhr-mock": "^2.5.0"
   },
   "dependencies": {

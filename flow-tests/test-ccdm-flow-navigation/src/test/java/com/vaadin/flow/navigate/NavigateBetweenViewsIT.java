@@ -61,6 +61,8 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
         getInShadowRoot(findElement(By.tagName("about-view")),
                 By.id("navigate-hello")).click();
 
+        getCommandExecutor().waitForVaadin();
+
         Assert.assertThat(getDriver().getCurrentUrl(),
                 CoreMatchers.endsWith("/hello"));
 
@@ -68,4 +70,8 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
                 $(NativeButtonElement.class).id(NAVIGATE_ABOUT).isDisplayed());
     }
 
+    @Override
+    protected String getRootURL()  {
+        return super.getRootURL() + "/context-path";
+    }
 }

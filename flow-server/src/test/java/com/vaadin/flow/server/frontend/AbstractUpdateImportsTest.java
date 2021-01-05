@@ -48,6 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.impl.SimpleLogger;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
@@ -457,7 +458,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class[] testClasses = { MainView.class,
                 NodeTestComponents.TranslatedImports.class,
                 NodeTestComponents.LocalP3Template.class,
-                NodeTestComponents.JavaScriptOrder.class };
+                NodeTestComponents.JavaScriptOrder.class,
+                UI.class};
         ClassFinder classFinder = getClassFinder(testClasses);
 
         updater = new UpdateImports(classFinder, getScanner(classFinder),
