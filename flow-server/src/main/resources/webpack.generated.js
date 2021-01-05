@@ -171,6 +171,7 @@ const themeOptions = {
   // The following matches target/flow-frontend/themes/theme-generated.js
   // and for theme in JAR that is copied to target/flow-frontend/themes/
   // and not frontend/themes
+  devMode: devMode,
   themeResourceFolder: flowFrontendThemesFolder,
   themeProjectFolders: themeProjectFolders,
   projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
