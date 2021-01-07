@@ -781,7 +781,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     chunkName = chunks.getString(key);
                 }
                 Element script = createJavaScriptElement(
-                        "./" + VAADIN_MAPPING + chunkName, false);
+                        "./" + chunkName, false);
                 head.appendChild(script.attr("type", "module")
                         .attr("data-app-id",
                                 context.getUI().getInternals().getAppId())
@@ -793,7 +793,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         /**
          * Return the list of chunk keys that should be considered by the
          * bootstrap handler.
-         * 
+         *
          * @param chunks
          *            in the stat file
          * @return
@@ -831,7 +831,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             String clientEngine = getClientEngine(resourceProvider);
             boolean resolveNow = !productionMode || clientEngine == null;
             if (resolveNow
-                    && resourceProvider.getClientResource("/META-INF/resources/"
+                    && resourceProvider.getClientResource("META-INF/resources/"
                             + CLIENT_ENGINE_NOCACHE_FILE) != null) {
                 return context.getUriResolver().resolveVaadinUri(
                         "context://" + CLIENT_ENGINE_NOCACHE_FILE);
@@ -855,7 +855,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private String getClientEngine(ResourceProvider resourceProvider) {
             // read client engine file name
             try (InputStream prop = resourceProvider
-                    .getClientResourceAsStream("/META-INF/resources/"
+                    .getClientResourceAsStream("META-INF/resources/"
                             + ApplicationConstants.CLIENT_ENGINE_PATH
                             + "/compile.properties")) {
                 // null when running SDM or tests

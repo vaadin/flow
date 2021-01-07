@@ -77,22 +77,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 
-    /**
-     * Copy the `webapp.config.js` from the specified URL if missing. Default is
-     * the template provided by this plugin. Set it to empty string to disable
-     * the feature.
-     */
-    @Parameter(defaultValue = FrontendUtils.WEBPACK_CONFIG)
-    private String webpackTemplate;
-
-    /**
-     * Copy the `webapp.generated.js` from the specified URL. Default is the
-     * template provided by this plugin. Set it to empty string to disable the
-     * feature.
-     */
-    @Parameter(defaultValue = FrontendUtils.WEBPACK_GENERATED)
-    private String webpackGeneratedTemplate;
-
     @Component
     private BuildContext buildContext; // m2eclipse integration
 
@@ -130,8 +114,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
             NodeTasks.Builder builder = new NodeTasks.Builder(
                     lookup, npmFolder, generatedFolder,
                     frontendDirectory)
-                            .withWebpack(webpackOutputDirectory,
-                                    webpackTemplate, webpackGeneratedTemplate)
                             .useV14Bootstrap(useDeprecatedV14Bootstrapping())
                             .withFlowResourcesFolder(flowResourcesFolder)
                             .createMissingPackageJson(true)
@@ -161,7 +143,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     private void propagateBuildInfo() {
         // For forked processes not accessing to System.properties we leave a
         // token file with the information about the build
-        File token = new File(webpackOutputDirectory, TOKEN_FILE);
+        File token = new File(resourceOutputDirectory, TOKEN_FILE);
         JsonObject buildInfo = Json.createObject();
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, productionMode);
         buildInfo.put(SERVLET_PARAMETER_USE_V14_BOOTSTRAP,

@@ -86,7 +86,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             indexHtmlResponse = new IndexHtmlResponse(request, response, indexDocument);
         }
 
-        addInitialFlow(initialJson, indexDocument, session);
+        addInitialFlow(initialJson, indexDocument, session, request);
 
         configureErrorDialogStyles(indexDocument);
 
@@ -162,10 +162,15 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void addInitialFlow(JsonObject initialJson, Document indexDocument,
-                                VaadinSession session) {
-        String csrfToken = session.getCsrfToken();
-        if (csrfToken != null) {
-            initialJson.put(CSRF_TOKEN, csrfToken);
+                                VaadinSession session, VaadinRequest request) {
+        // Do not add the CSRF token if the request comes from the service
+        // worker, to not have the token cached locally (#9537)
+        String referer = request.getHeader("referer");
+        if (referer == null || !referer.endsWith("/sw.js")) {
+            String csrfToken = session.getCsrfToken();
+            if (csrfToken != null) {
+                initialJson.put(CSRF_TOKEN, csrfToken);
+            }
         }
 
         Element elm = new Element("script");
@@ -229,10 +234,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         String frontendDir = FrontendUtils.getProjectFrontendDir(
                 service.getDeploymentConfiguration());
         String indexHtmlFilePath;
-        if(frontendDir.endsWith(File.separator)) {
+        if(frontendDir.endsWith("/") || frontendDir.endsWith(File.separator)) {
             indexHtmlFilePath = frontendDir + "index.html";
-        } else {
+        } else if(frontendDir.contains(File.separator)){
             indexHtmlFilePath = frontendDir + File.separatorChar + "index.html";
+        } else {
+            indexHtmlFilePath = frontendDir + "/index.html";
         }
         String message = String
                 .format("Failed to load content of '%1$s'. "

@@ -63,6 +63,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.DevModeHandlerTest.createStubWebpackTcpListener;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
@@ -129,12 +130,8 @@ public class IndexHtmlRequestHandlerTest {
                 .mock(VaadinServletRequest.class);
         Mockito.when(vaadinRequest.getService()).thenReturn(vaadinService);
 
-        String path;
-        if (DEFAULT_FRONTEND_DIR.endsWith(File.separator)) {
-            path = DEFAULT_FRONTEND_DIR + "index.html";
-        } else {
-            path = DEFAULT_FRONTEND_DIR + File.separatorChar + "/index.html";
-        }
+        String path = DEFAULT_FRONTEND_DIR + "index.html";
+
         String expectedError = String
                 .format("Failed to load content of '%1$s'. "
                         + "It is required to have '%1$s' file when "
@@ -414,6 +411,21 @@ public class IndexHtmlRequestHandlerTest {
         Assert.assertFalse(scripts.get(0).childNode(0).toString()
                 .contains("window.Vaadin = {Flow: {\"csrfToken\":"));
         Assert.assertEquals("", scripts.get(0).attr("initial"));
+    }
+
+    @Test
+    public void should_not_include_token_in_dom_when_referer_is_service_worker()
+            throws IOException {
+        Mockito.when(session.getCsrfToken()).thenReturn("foo");
+        VaadinServletRequest vaadinRequest = createVaadinRequest("/");
+        Mockito.when(((HttpServletRequest) vaadinRequest.getRequest())
+                .getHeader("referer"))
+                .thenReturn("http://somewhere.test/sw.js");
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                vaadinRequest, response);
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Assert.assertFalse(indexHtml.contains("csrfToken"));
     }
 
     @Test

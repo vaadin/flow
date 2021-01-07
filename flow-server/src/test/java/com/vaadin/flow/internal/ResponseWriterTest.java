@@ -615,7 +615,7 @@ public class ResponseWriterTest {
             }
             ClassLoader classLoader = Mockito.mock(ClassLoader.class);
             Mockito.when(servletContext.getClassLoader()).thenReturn(classLoader);
-            Mockito.when(classLoader.getResource("META-INF" + path)).thenReturn(url);
+            Mockito.when(classLoader.getResource("META-INF/VAADIN/webapp" + path)).thenReturn(url);
         }
     }
 

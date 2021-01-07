@@ -36,6 +36,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.SessionInitListener;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
@@ -72,6 +73,7 @@ public class DevModeClassFinderTest {
             Theme.class,
             NoTheme.class,
             HasErrorParameter.class,
+            PWA.class,
             AppShellConfigurator.class);
 
         for (Class<?> clz : classes) {

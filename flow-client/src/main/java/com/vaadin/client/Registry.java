@@ -21,7 +21,7 @@ import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.Poller;
 import com.vaadin.client.communication.PushConfiguration;
-import com.vaadin.client.communication.ReconnectDialogConfiguration;
+import com.vaadin.client.communication.ReconnectConfiguration;
 import com.vaadin.client.communication.RequestResponseTracker;
 import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.communication.ServerRpcQueue;
@@ -103,15 +103,6 @@ public class Registry {
      */
     public MessageHandler getMessageHandler() {
         return get(MessageHandler.class);
-    }
-
-    /**
-     * Gets the {@link LoadingIndicator} singleton.
-     *
-     * @return the {@link LoadingIndicator} singleton
-     */
-    public LoadingIndicator getLoadingIndicator() {
-        return get(LoadingIndicator.class);
     }
 
     /**
@@ -232,12 +223,12 @@ public class Registry {
     }
 
     /**
-     * Gets the {@link ReconnectDialogConfiguration} singleton.
+     * Gets the {@link ReconnectConfiguration} singleton.
      *
-     * @return the {@link ReconnectDialogConfiguration} singleton
+     * @return the {@link ReconnectConfiguration} singleton
      */
-    public ReconnectDialogConfiguration getReconnectDialogConfiguration() {
-        return get(ReconnectDialogConfiguration.class);
+    public ReconnectConfiguration getReconnectConfiguration() {
+        return get(ReconnectConfiguration.class);
     }
 
     /**

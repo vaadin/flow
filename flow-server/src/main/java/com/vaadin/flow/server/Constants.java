@@ -327,13 +327,6 @@ public final class Constants implements Serializable {
     public static final String VAADIN_MAPPING = "VAADIN/";
 
     /**
-     * The path to meta-inf/VAADIN/ where static resources are put on the
-     * servlet.
-     */
-    public static final String VAADIN_SERVLET_RESOURCES = META_INF
-            + VAADIN_MAPPING;
-
-    /**
      * The static build resources folder.
      */
     public static final String VAADIN_BUILD = "build/";
@@ -342,6 +335,24 @@ public final class Constants implements Serializable {
      * The static configuration resources folder.
      */
     public static final String VAADIN_CONFIGURATION = "config/";
+
+    /**
+     * The static resources root folder.
+     */
+    public static final String VAADIN_WEBAPP = "webapp/";
+
+    /**
+     * The path to meta-inf/VAADIN/ where static resources are put on the
+     * servlet.
+     */
+    public static final String VAADIN_SERVLET_RESOURCES = META_INF
+            + VAADIN_MAPPING;
+
+    /**
+     * The path to webapp/ public resources root.
+     */
+    public static final String VAADIN_WEBAPP_RESOURCES = VAADIN_SERVLET_RESOURCES
+            + VAADIN_WEBAPP;
 
     /**
      * The prefix used for all internal static files, relative to context root.

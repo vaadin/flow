@@ -107,6 +107,11 @@ public class GwtApplicationConnectionTest extends ClientEngineTestBase {
                         }
                     }
                 }
+            },
+            connectionState: {
+                setState: function(state) {
+                    // NOP
+                }
             }
         };
     }-*/;

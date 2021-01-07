@@ -1,11 +1,25 @@
+/*
+ * Copyright 2000-2020 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ *
+ */
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -21,6 +35,8 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -34,10 +50,9 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERV
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
 public class PrepareFrontendMojoTest {
     @Rule
@@ -48,10 +63,10 @@ public class PrepareFrontendMojoTest {
 
     private final PrepareFrontendMojo mojo = new PrepareFrontendMojo();
     private File flowResourcesFolder;
-    private String webpackConfig;
     private String packageJson;
     private File projectBase;
     private File webpackOutputDirectory;
+    private File resourceOutputDirectory;
     private File tokenFile;
     private File defaultJavaSource;
     private File generatedTsFolder;
@@ -69,23 +84,22 @@ public class PrepareFrontendMojoTest {
         Mockito.when(project.getBasedir()).thenReturn(projectBase);
 
         flowResourcesFolder = new File(projectBase, DEFAULT_FLOW_RESOURCES_FOLDER);
-        webpackConfig = new File(projectBase, WEBPACK_CONFIG).getAbsolutePath();
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
         webpackOutputDirectory = new File(projectBase,
+                VAADIN_WEBAPP_RESOURCES);
+        resourceOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
         defaultJavaSource = new File(".", "src/test/java");
         generatedTsFolder = new File(projectBase, "frontend/generated");
 
         ReflectionUtils.setVariableValueInObject(mojo, Constants.NPM_TOKEN,
                 projectBase);
-        ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate",
-                WEBPACK_CONFIG);
-        ReflectionUtils.setVariableValueInObject(mojo,
-                "webpackGeneratedTemplate", WEBPACK_GENERATED);
         ReflectionUtils.setVariableValueInObject(mojo,
                 Constants.GENERATED_TOKEN, projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
                 webpackOutputDirectory);
+        ReflectionUtils.setVariableValueInObject(mojo,
+                "resourceOutputDirectory", resourceOutputDirectory);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
                 new File(projectBase, "frontend"));
 
@@ -184,14 +198,6 @@ public class PrepareFrontendMojoTest {
         Assert.assertFalse(FileUtils.fileExists(packageJson));
         mojo.execute();
         assertPackageJsonContent();
-        Assert.assertTrue(FileUtils.fileExists(webpackConfig));
-    }
-
-    @Test
-    public void mavenGoal_when_packageWebpackConfigMissing() throws Exception {
-        Assert.assertFalse(FileUtils.fileExists(webpackConfig));
-        mojo.execute();
-        Assert.assertTrue(FileUtils.fileExists(webpackConfig));
     }
 
     @Test
