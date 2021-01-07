@@ -32,8 +32,6 @@ import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
-import com.vaadin.flow.server.Constants;
-
 /**
  * Spring boot auto-configuration class for Flow.
  *
@@ -44,7 +42,8 @@ import com.vaadin.flow.server.Constants;
 @AutoConfigureBefore(WebMvcAutoConfiguration.class)
 @ConditionalOnClass(ServletContextInitializer.class)
 @EnableConfigurationProperties(VaadinConfigurationProperties.class)
-@Import({ VaadinServletConfiguration.class })
+@Import({ VaadinApplicationConfiguration.class,
+        VaadinServletConfiguration.class })
 public class SpringBootAutoConfiguration {
 
     @Autowired

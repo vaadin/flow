@@ -31,11 +31,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -54,13 +54,13 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.NotFoundException;
@@ -76,11 +76,10 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
 import com.vaadin.flow.server.startup.DevModeInitializer;
-import com.vaadin.flow.server.startup.LookupInitializer;
+import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
 import com.vaadin.flow.server.startup.ServletDeployer;
 import com.vaadin.flow.server.startup.ServletVerifier;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializer;
@@ -221,7 +220,8 @@ public class VaadinServletContextInitializer
 
     }
 
-    private class LookupInitializerListener extends LookupInitializer
+    private class LookupInitializerListener
+            extends LookupServletContainerInitializer
             implements FailFastServletContextListener {
 
         @Override
@@ -233,9 +233,11 @@ public class VaadinServletContextInitializer
                 return;
             }
 
-            Set<Class<?>> classes = findByAnnotationOrSuperType(
-                    getLookupPackages(), appContext, Collections.emptyList(),
-                    getServiceTypes()).collect(Collectors.toSet());
+            Set<Class<?>> classes = Stream.concat(
+                    findByAnnotationOrSuperType(getLookupPackages(), appContext,
+                            Collections.emptyList(), getServiceTypes()),
+                    Stream.of(SpringLookupInitializer.class))
+                    .collect(Collectors.toSet());
             process(classes, event.getServletContext());
         }
 
@@ -245,27 +247,11 @@ public class VaadinServletContextInitializer
             // LookupInitializer doesn't have annotations at the moment
             List<Class<? extends Annotation>> annotations = Collections
                     .emptyList();
-            List<Class<?>> types = new ArrayList<>();
-            collectHandleTypes(LookupInitializer.class, annotations, types);
+            List<Class<?>> types = new LinkedList<>();
+            collectHandleTypes(LookupServletContainerInitializer.class,
+                    annotations, types);
+            types.remove(LookupInitializer.class);
             return types;
-        }
-
-        @Override
-        protected Lookup createLookup(
-                Map<Class<?>, Collection<Object>> services) {
-            Map<String, TaskExecutor> executors = appContext
-                    .getBeansOfType(TaskExecutor.class);
-            if (!executors.isEmpty()) {
-                services.put(Executor.class, Collections
-                        .singleton(executors.values().iterator().next()));
-            }
-
-            if (!services.containsKey(ApplicationConfigurationFactory.class)) {
-                services.put(ApplicationConfigurationFactory.class,
-                        Collections.singleton(
-                                new SpringApplicationConfigurationFactory()));
-            }
-            return super.createLookup(services);
         }
 
     }

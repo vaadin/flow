@@ -15,14 +15,14 @@
  */
 package com.vaadin.flow.spring;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration.Dynamic;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration.Dynamic;
 
 import org.springframework.core.env.Environment;
 import org.springframework.util.ClassUtils;
@@ -111,7 +111,8 @@ public abstract class VaadinMVCWebAppInitializer
             AnnotationConfigWebApplicationContext context) {
         Stream<Class<? extends Object>> configs = Stream.concat(
                 Stream.of(VaadinScopesConfig.class,
-                        VaadinServletConfiguration.class),
+                        VaadinServletConfiguration.class,
+                        VaadinApplicationConfiguration.class),
                 getConfigurationClasses().stream());
         context.register(configs.toArray(Class<?>[]::new));
     }

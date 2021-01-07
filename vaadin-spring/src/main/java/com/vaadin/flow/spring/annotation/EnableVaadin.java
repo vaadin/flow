@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.VaadinApplicationConfiguration;
 import com.vaadin.flow.spring.VaadinScanPackagesRegistrar;
 import com.vaadin.flow.spring.VaadinScopesConfig;
 import com.vaadin.flow.spring.VaadinServletConfiguration;
@@ -61,7 +62,8 @@ import com.vaadin.flow.spring.VaadinServletConfiguration;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Import({ VaadinScopesConfig.class, VaadinServletConfiguration.class,
-        VaadinScanPackagesRegistrar.class })
+        VaadinScanPackagesRegistrar.class,
+        VaadinApplicationConfiguration.class })
 public @interface EnableVaadin {
 
     /**
@@ -69,6 +71,7 @@ public @interface EnableVaadin {
      * <p>
      * If packages are not specified then default Spring Boot application
      * package is used.
+     * 
      * @return the base packages to scan
      */
     String[] value() default {};

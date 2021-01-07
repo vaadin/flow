@@ -27,7 +27,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
-import org.springframework.core.task.TaskExecutor;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Lookup;
@@ -63,13 +62,13 @@ public class VaadinServletContextInitializerTest {
     private DeploymentConfiguration deploymentConfiguration;
 
     @Mock
-    private TaskExecutor executor;
+    private Executor executor;
 
     @Before
     public void init() {
         MockitoAnnotations.openMocks(this);
 
-        Mockito.when(applicationContext.getBeansOfType(TaskExecutor.class))
+        Mockito.when(applicationContext.getBeansOfType(Executor.class))
                 .thenReturn(Collections.singletonMap("foo", executor));
 
         PowerMockito.mockStatic(ServletDeployer.class);
@@ -102,11 +101,6 @@ public class VaadinServletContextInitializerTest {
             theMock.verifyNoMoreInteractions();
         }
 
-        Mockito.verify(applicationContext).getBeansOfType(TaskExecutor.class);
-        Mockito.verify(servletContext).setAttribute(
-                Mockito.eq(Lookup.class.getName()), capture.capture());
-        Lookup lookup = capture.getValue();
-        Assert.assertSame(executor, lookup.lookup(Executor.class));
     }
 
     @Test

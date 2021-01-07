@@ -39,17 +39,9 @@ public class SpringApplicationConfigurationFactory
     @Override
     protected ApplicationConfigurationImpl doCreate(VaadinContext context,
             FallbackChunk chunk, Map<String, String> properties) {
-        // don't use Spring component and injection because there is no way to
-        // get the object of this class as a Spring bean (it comes from standard
-        // WAR Lookup which instantiates everything directly via default CTOR)
         VaadinServletContext servletContext = (VaadinServletContext) context;
         ApplicationContext appContext = WebApplicationContextUtils
                 .getWebApplicationContext(servletContext.getContext());
-        // sometimes for deployable WAR (couldn't find exact circumstances) the
-        // web app context is not yet available here
-        if (appContext == null) {
-            return super.doCreate(context, chunk, properties);
-        }
         Environment env = appContext.getBean(Environment.class);
         // Collect any vaadin.XZY properties from application.properties
         SpringServlet.PROPERTY_NAMES.stream()
