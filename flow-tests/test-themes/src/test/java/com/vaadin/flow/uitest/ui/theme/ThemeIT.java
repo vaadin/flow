@@ -30,8 +30,8 @@ import static com.vaadin.flow.uitest.ui.theme.ThemeView.BUTTERFLY_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.FONTAWESOME_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_LIT_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_POLYMER_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.SNOWFLAKE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.OCTOPUSS_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.SNOWFLAKE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUB_COMPONENT_ID;
 
 public class ThemeIT extends ChromeBrowserTest {
@@ -48,18 +48,23 @@ public class ThemeIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void applicationTheme_GlobalCss_isUsed() {
+    public void applicationTheme_onlyStylesCssIsApplied() {
         open();
         // No exception for bg-image should exist
         checkLogsForErrors();
 
         final WebElement body = findElement(By.tagName("body"));
         // Note themes/app-theme gets VAADIN/static from the file-loader
-        Assert.assertEquals(
-            "url(\"" + getRootURL() + "/path/VAADIN/static/themes/app-theme/img/bg.jpg\")",
+        Assert.assertEquals("body background-image should come from styles.css",
+            "url(\"" + getRootURL()
+                + "/path/VAADIN/static/themes/app-theme/img/bg.jpg\")",
             body.getCssValue("background-image"));
 
-        Assert.assertEquals("Ostrich", body.getCssValue("font-family"));
+        Assert.assertEquals("body font-family should come from styles.css",
+            "Ostrich", body.getCssValue("font-family"));
+
+        Assert.assertEquals("html color from styles.css should be applied.",
+            "rgba(0, 0, 0, 1)", body.getCssValue("color"));
 
         // Note themes/app-theme gets VAADIN/static from the file-loader
         getDriver().get(getRootURL() + "/path/VAADIN/static/themes/app-theme/img/bg.jpg");
