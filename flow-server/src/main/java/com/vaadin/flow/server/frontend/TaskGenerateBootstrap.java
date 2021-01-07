@@ -91,9 +91,8 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
     private Collection<String> getThemeLines() {
         Collection<String> lines = new ArrayList<>();
         if (shouldApplyAppTheme()) {
-            lines.add("//@ts-ignore");
             lines.add(
-                    "import {applyTheme} from '../../target/flow-frontend/themes/theme-generated.js';");
+                    "import { applyTheme } from '@vaadin/flow-frontend/themes/theme-generated';");
             lines.add("applyTheme(document);");
             lines.add("");
         }
