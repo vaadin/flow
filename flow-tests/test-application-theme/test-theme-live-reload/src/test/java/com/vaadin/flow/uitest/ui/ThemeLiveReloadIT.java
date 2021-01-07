@@ -20,13 +20,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
@@ -34,7 +34,6 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-@Ignore("https://github.com/vaadin/flow/issues/9746")
 @NotThreadSafe
 public class ThemeLiveReloadIT extends ChromeBrowserTest {
 
@@ -91,11 +90,13 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         final WebElement htmlElement = findElement(By.tagName("html"));
         Assert.assertNotEquals(RED_COLOR,
             htmlElement.getCssValue("background-color"));
-        createGlobalCssWithBackgroundColor();
+        doActionAndWaitUntilLiveReloadComplete(
+            (ignore) -> createGlobalCssWithBackgroundColor());
         waitUntilCustomBackgroundColor();
 
         // Live reload upon file deletion
-        deleteFile(globalCSSFile);
+        doActionAndWaitUntilLiveReloadComplete((ignore) ->
+            deleteFile(globalCSSFile));
         waitUntilInitialBackgroundColor();
 
         // TODO: deleting the CSS file reverts the styles, but still produce
@@ -110,7 +111,8 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
 
         FileUtils.copyFile(copyFontFrom, fontFile);
         waitUntil(driver -> fontFile.exists());
-        createGlobalCssWithFont();
+        doActionAndWaitUntilLiveReloadComplete((ignore) ->
+            createGlobalCssWithFont());
         waitUntilCustomFont();
     }
 
@@ -144,28 +146,36 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         }
     }
 
-    private void createGlobalCssWithBackgroundColor() throws IOException {
-        final String styles = "html { background-color: " + RED_COLOR + "; }";
-        FileUtils.write(globalCSSFile, styles, StandardCharsets.UTF_8.name());
+    private void createGlobalCssWithBackgroundColor() {
+        try {
+            final String styles = "html { background-color: " + RED_COLOR + "; }";
+            FileUtils.write(globalCSSFile, styles, StandardCharsets.UTF_8.name());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private void createGlobalCssWithFont() throws IOException {
-        // @formatter:off
-        final String fontStyle = 
-                "@font-face {" +
-                "    font-family: \"Ostrich\";" +
-                "    src: url(\"./fonts/" + fontFile.getName() + "\") format(\"TrueType\");" +
-                "}" + 
-                "html {" +
-                "    font-family: \"Ostrich\";" + 
-                "}";
-        // @formatter:on
-        FileUtils
-            .write(globalFontCSSFile, fontStyle, StandardCharsets.UTF_8.name());
-        FileUtils
-            .write(globalCSSFile, "@import url('" + globalFontCSSFile + "');",
-                StandardCharsets.UTF_8.name());
-        waitUntil(driver -> globalFontCSSFile.exists());
+    private void createGlobalCssWithFont() {
+        try {
+            // @formatter:off
+            final String fontStyle =
+                    "@font-face {" +
+                    "    font-family: \"Ostrich\";" +
+                    "    src: url(\"./fonts/" + fontFile.getName() + "\") format(\"TrueType\");" +
+                    "}" +
+                    "html {" +
+                    "    font-family: \"Ostrich\";" +
+                    "}";
+            // @formatter:on
+            FileUtils.write(globalFontCSSFile, fontStyle,
+                    StandardCharsets.UTF_8.name());
+            FileUtils
+                .write(globalCSSFile, "@import url('" + globalFontCSSFile + "');",
+                    StandardCharsets.UTF_8.name());
+            waitUntil(driver -> globalFontCSSFile.exists());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void deleteFile(File fileToDelete) {
@@ -173,5 +183,12 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
             .delete()) {
             Assert.fail("Unable to delete " + fileToDelete);
         }
+    }
+
+    private void doActionAndWaitUntilLiveReloadComplete(Consumer<Void> action) {
+        executeScript(
+                "window.Vaadin.Flow.clients[\"blocker\"] = {isActive: () => true};");
+        action.accept(null);
+        getCommandExecutor().waitForVaadin();
     }
 }
