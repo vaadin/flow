@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -58,8 +59,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         // when add->delete->add a file with the same name. Perhaps, webpack
         // file caching causes this.
         // https://github.com/vaadin/flow/issues/9596
-        String relativeFilePath = String.format(THEME_FOLDER + "global-%s.css",
-                UUID.randomUUID().toString());
+        String relativeFilePath = String.format(THEME_FOLDER + "styles.css");
         globalCSSFile = new File(baseDir, relativeFilePath);
 
         // TODO: use unique file name here, because webpack compilation fails
@@ -67,11 +67,11 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         // file caching causes this.
         // https://github.com/vaadin/flow/issues/9596
         relativeFilePath = String.format(THEME_FOLDER + "global-font-%s.css",
-                UUID.randomUUID().toString());
+            UUID.randomUUID().toString());
         globalFontCSSFile = new File(baseDir, relativeFilePath);
 
         String fontFileName = String.format("ostrich-sans-regular-%s.ttf",
-                UUID.randomUUID().toString());
+            UUID.randomUUID().toString());
         fontFile = new File(baseDir, THEME_FOLDER + "fonts/" + fontFileName);
     }
 
@@ -84,13 +84,13 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
 
     @Test
     public void webpackLiveReload_newCssCreatedAndDeleted_stylesUpdatedOnFly()
-            throws IOException {
+        throws IOException {
         open();
 
         // Live reload upon new global.css
         final WebElement htmlElement = findElement(By.tagName("html"));
         Assert.assertNotEquals(RED_COLOR,
-                htmlElement.getCssValue("background-color"));
+            htmlElement.getCssValue("background-color"));
         createGlobalCssWithBackgroundColor();
         waitUntilCustomBackgroundColor();
 
@@ -106,7 +106,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
 
         // Live reload upon adding a font
         File copyFontFrom = new File(baseDir,
-                "frontend/fonts/ostrich-sans-regular.ttf");
+            "frontend/fonts/ostrich-sans-regular.ttf");
 
         FileUtils.copyFile(copyFontFrom, fontFile);
         waitUntil(driver -> fontFile.exists());
@@ -127,13 +127,21 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     private boolean isCustomBackGroundColor() {
-        final WebElement html = findElement(By.tagName("html"));
-        return RED_COLOR.equals(html.getCssValue("background-color"));
+        try {
+            final WebElement html = findElement(By.tagName("html"));
+            return RED_COLOR.equals(html.getCssValue("background-color"));
+        } catch (StaleElementReferenceException e) {
+            return false;
+        }
     }
 
     private boolean isCustomFont() {
-        final WebElement body = findElement(By.tagName("html"));
-        return "Ostrich".equals(body.getCssValue("font-family"));
+        try {
+            final WebElement body = findElement(By.tagName("html"));
+            return "Ostrich".equals(body.getCssValue("font-family"));
+        } catch (StaleElementReferenceException e) {
+            return false;
+        }
     }
 
     private void createGlobalCssWithBackgroundColor() throws IOException {
@@ -152,14 +160,17 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
                 "    font-family: \"Ostrich\";" + 
                 "}";
         // @formatter:on
-        FileUtils.write(globalFontCSSFile, fontStyle,
+        FileUtils
+            .write(globalFontCSSFile, fontStyle, StandardCharsets.UTF_8.name());
+        FileUtils
+            .write(globalCSSFile, "@import url('" + globalFontCSSFile + "');",
                 StandardCharsets.UTF_8.name());
         waitUntil(driver -> globalFontCSSFile.exists());
     }
 
     private void deleteFile(File fileToDelete) {
-        if (fileToDelete != null && fileToDelete.exists()
-                && !fileToDelete.delete()) {
+        if (fileToDelete != null && fileToDelete.exists() && !fileToDelete
+            .delete()) {
             Assert.fail("Unable to delete " + fileToDelete);
         }
     }

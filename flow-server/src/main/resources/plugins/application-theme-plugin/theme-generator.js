@@ -27,7 +27,9 @@ const { checkModules } = require('./theme-copy');
 const themeComponentsFolder = 'components';
 // The contents of a global CSS file with this name in a theme is always added to
 // the document. E.g. @font-face must be in this
-const themeFileAlwaysAddToDocument = 'document.css';
+const documentCssFile = 'document.css';
+// styles.css is the only entrypoint css file with document.css. Everything else should be imported using css @import
+const stylesCssFile = 'styles.css';
 
 const headerImport = `import 'construct-style-sheets-polyfill';
 `;
@@ -46,14 +48,13 @@ export const injectGlobalCss = (css, target) => {
  *
  * @param {string} themeFolder folder of the theme
  * @param {string} themeName name of the handled theme
- * @param {JSON Object} themeProperties content of theme.json
+ * @param {JSON} themeProperties content of theme.json
+ * @param {boolean} productionMode true if making a production build.
  * @returns {string} theme file content
  */
-function generateThemeFile(themeFolder, themeName, themeProperties) {
-  const globalFiles = glob.sync('*.css', {
-    cwd: themeFolder,
-    nodir: true,
-  });
+function generateThemeFile(themeFolder, themeName, themeProperties, productionMode) {
+  const styles = path.resolve(themeFolder, stylesCssFile);
+  const document = path.resolve(themeFolder, documentCssFile);
   const componentsFiles = glob.sync('*.css', {
     cwd: path.resolve(themeFolder, themeComponentsFolder),
     nodir: true,
@@ -75,21 +76,30 @@ function generateThemeFile(themeFolder, themeName, themeProperties) {
   const globalCssCode = [];
   const componentCssCode = [];
   const parentTheme = themeProperties.parent ? 'applyBaseTheme(target);\n' : '';
-  globalFiles.forEach((global) => {
-    const filename = path.basename(global);
-    const variable = camelCase(filename);
-    imports.push(`import ${variable} from './${filename}';\n`);
-    if (filename == themeFileAlwaysAddToDocument) {
-      globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n    `);
-    } else {
-      globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n    `);
+  if (!fs.existsSync(styles)) {
+    if (productionMode) {
+      throw new Error(`styles.css file is missing and is needed for '${themeName}' in folder '${themeFolder}'`);
     }
-  });
+    fs.writeFileSync(styles, "/* Import your application global css files here or add the styles directly to this file */", "utf8");
+  }
+
+  // styles.css will always be available as we write one if it doesn't exist.
+  let filename = path.basename(styles);
+  let variable = camelCase(filename);
+  imports.push(`import ${variable} from './${filename}';\n`);
+  globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n    `);
+
+  if (fs.existsSync(document)) {
+    filename = path.basename(document);
+    variable = camelCase(filename);
+    imports.push(`import ${variable} from './${filename}';\n`);
+    globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n    `);
+  }
 
   let i = 0;
   if (themeProperties.documentCss) {
     const missingModules = checkModules(themeProperties.documentCss);
-    if(missingModules.length > 0) {
+    if (missingModules.length > 0) {
       throw Error("Missing npm modules or files '" + missingModules.join("', '")
         + "' for documentCss marked in 'theme.json'.\n" +
         "Install or update package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm i'");

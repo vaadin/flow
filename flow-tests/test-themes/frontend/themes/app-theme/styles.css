@@ -15,6 +15,7 @@
 
 html, :host {
     --lumo-primary-text-color: #008000;
+    color: rgba(0, 0, 0, 1); /* black */
 }
 
 body {
