@@ -18,6 +18,7 @@ package com.vaadin.flow.connect;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -29,6 +30,7 @@ import com.vaadin.testbench.TestBenchElement;
 /**
  * Class for testing issues in a spring-boot container.
  */
+@Ignore("Ignored because of https://github.com/vaadin/flow/issues/9751")
 public class AppViewIT extends ChromeBrowserTest {
 
     private void openTestUrl(String url) {
@@ -38,6 +40,7 @@ public class AppViewIT extends ChromeBrowserTest {
     private TestBenchElement testComponent;
     private WebElement content;
 
+    @Override
     @Before
     public void setup() throws Exception {
         super.setup();
@@ -54,13 +57,15 @@ public class AppViewIT extends ChromeBrowserTest {
      */
     @Test
     public void should_load_web_component() {
-        WebElement button = testComponent.$(TestBenchElement.class).id("button");
+        WebElement button = testComponent.$(TestBenchElement.class)
+                .id("button");
         button.click();
         verifyContent("Hello World");
     }
 
     /**
      * Just a control test that assures that webcomponents is working.
+     * 
      * @throws Exception
      */
     @Test
@@ -73,9 +78,10 @@ public class AppViewIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void should_request_packagePrivate_connect_service() throws Exception {
-        WebElement button = testComponent.$(TestBenchElement.class).id(
-                "helloFromPackagePrivate");
+    public void should_request_packagePrivate_connect_service()
+            throws Exception {
+        WebElement button = testComponent.$(TestBenchElement.class)
+                .id("helloFromPackagePrivate");
         button.click();
 
         // Wait for the server connect response
@@ -84,8 +90,8 @@ public class AppViewIT extends ChromeBrowserTest {
 
     @Test
     public void should_requestAnonymously_connect_service() throws Exception {
-        WebElement button = testComponent.$(TestBenchElement.class).id(
-                "helloAnonymous");
+        WebElement button = testComponent.$(TestBenchElement.class)
+                .id("helloAnonymous");
         button.click();
 
         // Wait for the server connect response
@@ -93,9 +99,10 @@ public class AppViewIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void should_requestAnonymously_packagePrivate_connect_service() throws Exception {
-        WebElement button = testComponent.$(TestBenchElement.class).id(
-                "helloAnonymousFromPackagePrivate");
+    public void should_requestAnonymously_packagePrivate_connect_service()
+            throws Exception {
+        WebElement button = testComponent.$(TestBenchElement.class)
+                .id("helloAnonymousFromPackagePrivate");
         button.click();
 
         // Wait for the server connect response
@@ -103,14 +110,15 @@ public class AppViewIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void should_requestAnonymously_when_CallConnectServiceFromANestedUrl() throws Exception {
+    public void should_requestAnonymously_when_CallConnectServiceFromANestedUrl()
+            throws Exception {
         openTestUrl("/more/levels/url");
 
         testComponent = $("test-component").first();
         content = testComponent.$(TestBenchElement.class).id("content");
 
-        WebElement button = testComponent.$(TestBenchElement.class).id(
-                "helloAnonymous");
+        WebElement button = testComponent.$(TestBenchElement.class)
+                .id("helloAnonymous");
         button.click();
 
         // Wait for the server connect response
@@ -119,8 +127,8 @@ public class AppViewIT extends ChromeBrowserTest {
 
     @Test
     public void should_useSendNull_when_paramterIsUndefined() {
-        WebElement button = testComponent.$(TestBenchElement.class).id(
-                "echoWithOptional");
+        WebElement button = testComponent.$(TestBenchElement.class)
+                .id("echoWithOptional");
         button.click();
 
         // Wait for the server connect response
@@ -198,6 +206,7 @@ public class AppViewIT extends ChromeBrowserTest {
         testComponent.$(TestBenchElement.class).id("checkUser").click();
         verifyCheckUser("user");
     }
+
     @Test
     public void should_checkAdminUser() {
         login("admin");
@@ -208,14 +217,15 @@ public class AppViewIT extends ChromeBrowserTest {
     @Test
     public void should_checkUserFromVaadinRequest() {
         login("user");
-        testComponent.$(TestBenchElement.class).id("checkUserFromVaadinRequest").click();
+        testComponent.$(TestBenchElement.class).id("checkUserFromVaadinRequest")
+                .click();
         verifyCheckUserFromVaadinRequest("user");
     }
 
     @Test
-    public void should_updateTitleInDOMWithInjectedService(){
-        Assert.assertEquals("titleRetrievedFromAService",
-                driver.findElement(By.tagName("title")).getAttribute("textContent"));
+    public void should_updateTitleInDOMWithInjectedService() {
+        Assert.assertEquals("titleRetrievedFromAService", driver
+                .findElement(By.tagName("title")).getAttribute("textContent"));
     }
 
     @Test
@@ -230,8 +240,8 @@ public class AppViewIT extends ChromeBrowserTest {
         Assert.assertNotEquals("CSRF token should change for the new session",
                 originalCsrfToken, csrfToken);
 
-        WebElement button = testComponent.$(TestBenchElement.class).id(
-                "helloAnonymous");
+        WebElement button = testComponent.$(TestBenchElement.class)
+                .id("helloAnonymous");
         button.click();
 
         // Wait for the server connect response
@@ -278,7 +288,8 @@ public class AppViewIT extends ChromeBrowserTest {
     }
 
     private void verifyCheckUserFromVaadinRequest(String expectedMessage) {
-        testComponent.$(TestBenchElement.class).id("checkUserFromVaadinRequest").click();
+        testComponent.$(TestBenchElement.class).id("checkUserFromVaadinRequest")
+                .click();
         verifyContent(expectedMessage);
     }
 
