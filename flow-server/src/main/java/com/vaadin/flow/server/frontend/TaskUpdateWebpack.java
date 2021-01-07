@@ -33,9 +33,9 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.PwaConfiguration;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.BOOTSTRAP_FILE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
@@ -226,19 +226,9 @@ public class TaskUpdateWebpack implements FallibleCommand {
     }
 
     private String getClientEntryPoint() {
-        boolean exists = new File(frontendDirectory.toFile(), INDEX_TS)
-                .exists()
-                || new File(frontendDirectory.toFile(), INDEX_JS).exists();
-        if (!exists) {
-            Path path = Paths.get(
-                    getEscapedRelativeWebpackPath(webpackConfigPath), TARGET,
-                    INDEX_TS);
-            return formatPathResolve(
-                    getEscapedRelativeWebpackPath(path)
-                            .replaceFirst("\\.[tj]s$", ""));
-        } else {
-            return "'./index'";
-        }
+        return String.format("path.resolve(__dirname, '%s', '%s', '%s');",
+                getEscapedRelativeWebpackPath(frontendDirectory), GENERATED,
+                BOOTSTRAP_FILE_NAME);
     }
 
     private String getClientServiceWorker() {

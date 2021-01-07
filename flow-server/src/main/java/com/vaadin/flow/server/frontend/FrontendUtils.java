@@ -55,7 +55,6 @@ import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -92,6 +91,12 @@ public class FrontendUtils {
      * Default folder used for source and generated folders.
      */
     public static final String FRONTEND = "frontend/";
+
+    /**
+     * Default folder for client-side generated files inside the project root
+     * frontend folder.
+     */
+    public static final String GENERATED = "generated/";
 
     /**
      * Path of the folder containing application frontend source files, it needs
@@ -155,7 +160,7 @@ public class FrontendUtils {
     /**
      * Default folder for copying front-end resources present in the classpath
      * jars.
-     * 
+     *
      * @deprecated This is deprecated due to a typo. Use
      *             DEFAULT_FLOW_RESOURCES_FOLDER instead.
      * @see #DEFAULT_FLOW_RESOURCES_FOLDER
@@ -181,6 +186,12 @@ public class FrontendUtils {
      * file.
      */
     public static final String IMPORTS_D_TS_NAME = "generated-flow-imports.d.ts";
+
+    /**
+     * File name of the bootstrap file that is generated in frontend
+     * {@link #GENERATED} folder. The bootstrap file is always executed in a Vaadin app.
+     */
+    public static final String BOOTSTRAP_FILE_NAME = "vaadin.ts";
 
     /**
      * File name of the index.html in client side.
@@ -217,7 +228,7 @@ public class FrontendUtils {
      * Default generated path for generated TS files.
      */
     public static final String DEFAULT_CONNECT_GENERATED_TS_DIR = DEFAULT_FRONTEND_DIR
-            + "generated/";
+            + GENERATED;
 
     /**
      * Name of the file that contains all application imports, javascript, theme

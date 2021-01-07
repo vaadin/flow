@@ -101,7 +101,7 @@ public class NodeTasks implements FallibleCommand {
         private boolean requireHomeNodeExec;
 
         /**
-         * Directory for for npm and folders and files.
+         * Directory for npm and folders and files.
          */
         public final File npmFolder;
 
@@ -549,6 +549,8 @@ public class NodeTasks implements FallibleCommand {
                     && builder.connectGeneratedOpenApiFile != null) {
                 addConnectServicesTasks(builder);
             }
+
+            commands.add(new TaskGenerateBootstrap(frontendDependencies, builder.frontendDirectory));
         }
 
         if (builder.enablePackagesUpdate) {
