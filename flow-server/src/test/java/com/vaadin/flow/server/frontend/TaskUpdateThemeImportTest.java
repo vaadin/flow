@@ -117,19 +117,9 @@ public class TaskUpdateThemeImportTest {
                 CUSTOM_THEME_NAME, DEFAULT_FRONTEND_DIR, APPLICATION_THEME_ROOT,
                 CUSTOM_THEME_NAME), customThemeDirCreatedSuccessfully);
 
-        Assert.assertFalse(
-                "\"theme-generated.js\" should not exist before"
-                        + " executing TaskUpdateThemeImport.",
-                themeImportFile.exists());
-        assertThemeGeneratedDefinitionTsNotExisted();
-
+        assertThemeGeneratedDefinitionFilesNotExisted();
         taskUpdateThemeImport.execute();
-
-        Assert.assertTrue(
-                "\"theme-generated.js\" should be created as the "
-                        + "result of executing TaskUpdateThemeImport.",
-                themeImportFile.exists());
-        assertThemeGeneratedDefinitionTsExists();
+        assertThemeGeneratedDefinitionFilesExists();
     }
 
     @Test
@@ -150,19 +140,9 @@ public class TaskUpdateThemeImportTest {
                 APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME),
                 customThemeDirCreatedSuccessfully);
 
-        Assert.assertFalse(
-                "\"theme-generated.js\" should not exist before"
-                        + " executing TaskUpdateThemeImport.",
-                themeImportFile.exists());
-        assertThemeGeneratedDefinitionTsNotExisted();
-
+        assertThemeGeneratedDefinitionFilesNotExisted();
         taskUpdateThemeImport.execute();
-
-        Assert.assertTrue(
-                "\"theme-generated.js\" should be created as the "
-                        + "result of executing TaskUpdateThemeImport.",
-                themeImportFile.exists());
-        assertThemeGeneratedDefinitionTsExists();
+        assertThemeGeneratedDefinitionFilesExists();
     }
 
     @Test
@@ -183,19 +163,9 @@ public class TaskUpdateThemeImportTest {
                 APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME),
                 customThemeDirCreatedSuccessfully);
 
-        Assert.assertFalse(
-                "\"theme-generated.js\" should not exist before"
-                        + " executing TaskUpdateThemeImport.",
-                themeImportFile.exists());
-        assertThemeGeneratedDefinitionTsNotExisted();
-
+        assertThemeGeneratedDefinitionFilesNotExisted();
         taskUpdateThemeImport.execute();
-
-        Assert.assertTrue(
-                "\"theme-generated.js\" should be created as the "
-                        + "result of executing TaskUpdateThemeImport.",
-                themeImportFile.exists());
-        assertThemeGeneratedDefinitionTsExists();
+        assertThemeGeneratedDefinitionFilesExists();
     }
 
     @Test
@@ -216,28 +186,28 @@ public class TaskUpdateThemeImportTest {
                 APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME),
                 customThemeDirCreatedSuccessfully);
 
-        Assert.assertFalse(
-                "\"theme-generated.js\" should not exist before"
-                        + " executing TaskUpdateThemeImport.",
-                themeImportFile.exists());
-        assertThemeGeneratedDefinitionTsNotExisted();
-
+        assertThemeGeneratedDefinitionFilesNotExisted();
         taskUpdateThemeImport.execute();
-
-        Assert.assertTrue(
-                "\"theme-generated.js\" should be created as the "
-                        + "result of executing TaskUpdateThemeImport.",
-                themeImportFile.exists());
-        assertThemeGeneratedDefinitionTsExists();
+        assertThemeGeneratedDefinitionFilesExists();
     }
 
-    private void assertThemeGeneratedDefinitionTsNotExisted() {
+    private void assertThemeGeneratedDefinitionFilesNotExisted() {
+        Assert.assertFalse(
+            "\"theme-generated.js\" should not exist before"
+                + " executing TaskUpdateThemeImport.",
+            themeImportFile.exists());
+
         Assert.assertFalse(
             "\"theme-generated.d.ts\" should not exist before"
                 + " executing TaskUpdateThemeImport.",
             themeImportTsFile.exists());
     }
-    private void assertThemeGeneratedDefinitionTsExists() {
+    private void assertThemeGeneratedDefinitionFilesExists() {
+        Assert.assertTrue(
+            "\"theme-generated.js\" should be created as the "
+                + "result of executing TaskUpdateThemeImport.",
+            themeImportFile.exists());
+
         Assert.assertTrue(
             "\"theme-generated.d.ts\" should be created as the "
                 + "result of executing TaskUpdateThemeImport.",
