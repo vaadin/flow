@@ -30,6 +30,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_D_TS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
 
 /**
  * Task for generating the theme-generated.js file for importing application
@@ -56,7 +57,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
                 FrontendUtils.FLOW_NPM_PACKAGE_NAME);
         this.themeImportFile = new File(
                 new File(flowFrontend, APPLICATION_THEME_ROOT),
-                "theme-generated.js");
+                THEME_IMPORTS_NAME);
         themeImportFileDefinition = new File(
             new File(flowFrontend, APPLICATION_THEME_ROOT),
             THEME_IMPORTS_D_TS_NAME);
