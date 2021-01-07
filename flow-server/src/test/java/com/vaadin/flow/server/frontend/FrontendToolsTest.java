@@ -87,7 +87,7 @@ public class FrontendToolsTest {
     @Ignore("Ignored to lessen PRs hitting the server too often")
     public void installNode_NodeIsInstalledToTargetDirectory()
             throws FrontendUtils.UnknownVersionException {
-        String nodeExecutable = tools.installNode("v12.18.3", null);
+        String nodeExecutable = tools.installNode("v14.15.4", null);
         Assert.assertNotNull(nodeExecutable);
 
         List<String> nodeVersionCommand = new ArrayList<>();
@@ -95,7 +95,7 @@ public class FrontendToolsTest {
         nodeVersionCommand.add("--version");
         FrontendVersion node = FrontendUtils.getVersion("node",
                 nodeVersionCommand);
-        Assert.assertEquals("12.18.3", node.getFullVersion());
+        Assert.assertEquals("14.15.4", node.getFullVersion());
 
         FrontendTools newTools = new FrontendTools(vaadinHomeDir, null);
         List<String> npmVersionCommand = new ArrayList<>(
@@ -158,9 +158,9 @@ public class FrontendToolsTest {
     @Test
     public void installNodeFromFileSystem_NodeIsInstalledToTargetDirectory()
             throws IOException {
-        prepareNodeDownloadableZipAt(baseDir, "v12.18.3");
+        prepareNodeDownloadableZipAt(baseDir, "v14.15.4");
 
-        String nodeExecutable = tools.installNode("v12.18.3",
+        String nodeExecutable = tools.installNode("v14.15.4",
                 new File(baseDir).toPath().toUri());
         Assert.assertNotNull(nodeExecutable);
 

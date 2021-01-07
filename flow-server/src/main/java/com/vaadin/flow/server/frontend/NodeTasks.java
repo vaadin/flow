@@ -117,7 +117,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * The node.js version to be used when node.js is installed
-         * automatically by Vaadin, for example <code>"v12.18.3"</code>.
+         * automatically by Vaadin, for example <code>"v14.15.4"</code>.
          * Defaults to {@value FrontendTools#DEFAULT_NODE_VERSION}.
          */
         private String nodeVersion = FrontendTools.DEFAULT_NODE_VERSION;
@@ -483,7 +483,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Sets the node.js version to be used when node.js is installed
-         * automatically by Vaadin, for example <code>"v12.18.3"</code>.
+         * automatically by Vaadin, for example <code>"v14.15.4"</code>.
          * Defaults to {@value FrontendTools#DEFAULT_NODE_VERSION}.
          *
          * @param nodeVersion
