@@ -19,7 +19,6 @@ import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -30,7 +29,6 @@ import com.vaadin.testbench.TestBenchElement;
 /**
  * Class for testing issues in a spring-boot container.
  */
-@Ignore("Ignored because of https://github.com/vaadin/flow/issues/9751")
 public class AppViewIT extends ChromeBrowserTest {
 
     private void openTestUrl(String url) {
