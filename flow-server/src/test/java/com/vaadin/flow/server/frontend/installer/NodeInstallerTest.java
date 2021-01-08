@@ -18,6 +18,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.vaadin.flow.server.frontend.FrontendTools;
+
 public class NodeInstallerTest {
 
     @Rule
@@ -35,14 +37,16 @@ public class NodeInstallerTest {
             throws IOException {
         Platform platform = Platform.guess();
         String nodeExec = platform.isWindows() ? "node.exe" : "node";
-        String prefix = "node-v14.15.4-" + platform.getNodeClassifier();
+        String prefix = String.format("node-%s-%s",
+                FrontendTools.DEFAULT_NODE_VERSION,
+                platform.getNodeClassifier());
 
         File targetDir = new File(baseDir + "/installation");
 
         Assert.assertFalse(
                 "Clean test should not contain a installation folder",
                 targetDir.exists());
-        File downloadDir = tmpDir.newFolder("v14.15.4");
+        File downloadDir = tmpDir.newFolder(FrontendTools.DEFAULT_NODE_VERSION);
         File archiveFile = new File(downloadDir,
                 prefix + "." + platform.getArchiveExtension());
         archiveFile.createNewFile();
@@ -86,7 +90,8 @@ public class NodeInstallerTest {
         }
 
         NodeInstaller nodeInstaller = new NodeInstaller(targetDir,
-                Collections.emptyList()).setNodeVersion("v14.15.4")
+                Collections.emptyList())
+                        .setNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .setNodeDownloadRoot(new File(baseDir).toPath().toUri());
 
         try {
