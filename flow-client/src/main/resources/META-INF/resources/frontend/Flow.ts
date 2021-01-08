@@ -149,6 +149,8 @@ export class Flow {
             // error initializing Flow: assume connection lost
             $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
             return this.offlineStubAction();
+          } else {
+            throw error;
           }
         }
       } else {
