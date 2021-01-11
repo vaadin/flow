@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -35,7 +36,6 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.BOOTSTRAP_FILE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
@@ -67,7 +67,8 @@ public class TaskGenerateBootstrapTest {
     public void should_importTargetIndexTS() throws ExecutionFailedException {
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertTrue(content.contains("import '../../target/index';\n"));
+        Assert.assertTrue(content.contains(
+                "import '../../target/index';" + System.lineSeparator()));
     }
 
     @Test
@@ -76,7 +77,8 @@ public class TaskGenerateBootstrapTest {
         new File(frontendFolder, INDEX_TS).createNewFile();
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertTrue(content.contains("import '../index';\n"));
+        Assert.assertTrue(content
+                .contains("import '../index';" + System.lineSeparator()));
     }
 
     @Test
@@ -84,11 +86,19 @@ public class TaskGenerateBootstrapTest {
         taskGenerateBootstrap = new TaskGenerateBootstrap(getThemedDependency(), frontendFolder);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertTrue(content.contains("import '../../target/index';\n" +
-            "\n" +
-            "//@ts-ignore\n" +
-            "import {applyTheme} from '../../target/flow-frontend/themes/theme-generated.js';\n" +
-            "applyTheme(document);\n"));
+        LoggerFactory.getLogger(TaskGenerateBootstrapTest.class).info(
+                "Content = {}", content);
+        //@formatter:off
+        Assert.assertTrue(content.contains("import '../../target/index';"
+                + System.lineSeparator()
+                + System.lineSeparator()
+                + "//@ts-ignore"
+                + System.lineSeparator()
+                + "import {applyTheme} from '../../target/flow-frontend/themes/theme-generated.js';"
+                + System.lineSeparator()
+                + "applyTheme(document);"
+                + System.lineSeparator()));
+        //@formatter:on
     }
 
     private FrontendDependencies getThemedDependency()

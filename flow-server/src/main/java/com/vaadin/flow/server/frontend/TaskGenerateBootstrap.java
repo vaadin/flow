@@ -54,10 +54,11 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
     @Override
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
-        lines.add(String.format("import '%s';%n", getIndexTsEntryPath()));
+        lines.add(String.format("import '%s';%s", getIndexTsEntryPath(),
+                System.lineSeparator()));
         lines.addAll(getThemeLines());
 
-        return String.join("\n", lines);
+        return String.join(System.lineSeparator(), lines);
     }
 
     @Override
