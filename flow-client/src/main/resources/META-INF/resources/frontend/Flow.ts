@@ -88,8 +88,8 @@ export class Flow {
     $wnd.Vaadin.Flow.clients = {
       TypeScript: {
         isActive: () => this.isActive,
-        loadingStarted: this.loadingStarted,
-        loadingFinished: this.loadingFinished
+        loadingStarted: () => this.loadingStarted(),
+        loadingFinished: () => this.loadingFinished()
       }
     };
 
@@ -149,6 +149,8 @@ export class Flow {
             // error initializing Flow: assume connection lost
             $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
             return this.offlineStubAction();
+          } else {
+            throw error;
           }
         }
       } else {
