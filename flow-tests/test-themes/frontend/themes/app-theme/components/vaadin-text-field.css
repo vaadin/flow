@@ -1,4 +1,4 @@
-@import url('./background-color.css');
+@import url('./shared/background-color.css');
 
 [part="input-field"] {
     border-radius: var(--lumo-border-radius);
