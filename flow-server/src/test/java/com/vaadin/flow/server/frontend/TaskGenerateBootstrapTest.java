@@ -27,7 +27,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -86,15 +85,11 @@ public class TaskGenerateBootstrapTest {
         taskGenerateBootstrap = new TaskGenerateBootstrap(getThemedDependency(), frontendFolder);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        LoggerFactory.getLogger(TaskGenerateBootstrapTest.class).info(
-                "Content = {}", content);
         //@formatter:off
         Assert.assertTrue(content.contains("import '../../target/index';"
                 + System.lineSeparator()
                 + System.lineSeparator()
-                + "//@ts-ignore"
-                + System.lineSeparator()
-                + "import {applyTheme} from '../../target/flow-frontend/themes/theme-generated.js';"
+                + "import { applyTheme } from '@vaadin/flow-frontend/themes/theme-generated';"
                 + System.lineSeparator()
                 + "applyTheme(document);"
                 + System.lineSeparator()));
