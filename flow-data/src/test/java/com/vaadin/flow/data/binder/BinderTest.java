@@ -16,6 +16,9 @@
 
 package com.vaadin.flow.data.binder;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -40,6 +43,7 @@ import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.Converter;
+import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.IntegerRangeValidator;
 import com.vaadin.flow.data.validator.NotEmptyValidator;
@@ -565,6 +569,19 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         ageField.setValue(salary.toString());
         Assert.assertEquals(11, salary.intValue());
     }
+
+    @Test
+    public void withConverter_writeBackValue() {
+        TestTextField rentField = new TestTextField();
+        rentField.setValue("");
+        binder.forField(rentField).withConverter(new EuroConverter(""))
+                .withNullRepresentation(BigDecimal.valueOf(0d))
+                .bind(Person::getRent, Person::setRent);
+        binder.setBean(item);
+        rentField.setValue("10");
+
+        assertEquals("€ 10.00", rentField.getValue());
+    }    
 
     @Test
     public void beanBinder_nullRepresentationIsNotDisabled() {
@@ -1611,5 +1628,53 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 .withConverter(new StringToIntegerConverter("Must have number"))
                 .bind(AtomicReference::get, AtomicReference::set);
         return binder;
+    }
+
+    /**
+     * A converter that adds/removes the euro sign and formats currencies with
+     * two decimal places.
+     */
+    public class EuroConverter extends StringToBigDecimalConverter {
+
+        public EuroConverter() {
+            super("defaultErrorMessage");
+        }
+
+        public EuroConverter(String errorMessage) {
+            super(errorMessage);
+        }
+
+        @Override
+        public Result<BigDecimal> convertToModel(String value,
+                ValueContext context) {
+            if (value.isEmpty()) {
+                return Result.ok(null);
+            }
+            value = value.replaceAll("[€\\s]", "").trim();
+            if (value.isEmpty()) {
+                value = "0";
+            }
+            return super.convertToModel(value, context);
+        }
+
+        @Override
+        public String convertToPresentation(BigDecimal value,
+                ValueContext context) {
+            if (value == null) {
+                return convertToPresentation(BigDecimal.ZERO, context);
+            }
+            return "€ " + super.convertToPresentation(value, context);
+        }
+
+        @Override
+        protected NumberFormat getFormat(Locale locale) {
+            // Always display currency with two decimals
+            NumberFormat format = super.getFormat(locale);
+            if (format instanceof DecimalFormat) {
+                ((DecimalFormat) format).setMaximumFractionDigits(2);
+                ((DecimalFormat) format).setMinimumFractionDigits(2);
+            }
+            return format;
+        }
     }
 }
