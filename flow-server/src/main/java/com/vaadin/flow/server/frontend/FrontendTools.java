@@ -58,11 +58,12 @@ import elemental.json.JsonObject;
  */
 public class FrontendTools {
 
-    public static final String DEFAULT_NODE_VERSION = "v12.18.3";
+    public static final String DEFAULT_NODE_VERSION = "v14.15.4";
 
     public static final String DEFAULT_PNPM_VERSION = "4.5.0";
 
-    public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm -DnodeVersion=\"v12.18.3\" ";
+    public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm "
+            + "-DnodeVersion=\"" + DEFAULT_NODE_VERSION + "\" ";
 
     private static final String MSG_PREFIX = "%n%n======================================================================================================";
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
@@ -193,7 +194,7 @@ public class FrontendTools {
      *            {@code null}
      * @param nodeVersion
      *            The node.js version to be used when node.js is installed
-     *            automatically by Vaadin, for example <code>"v12.18.3"</code>.
+     *            automatically by Vaadin, for example <code>"v14.15.4"</code>.
      *            Use {@value #DEFAULT_NODE_VERSION} by default.
      * @param nodeDownloadRoot
      *            Download node.js from this URL. Handy in heavily firewalled
