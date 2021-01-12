@@ -37,6 +37,7 @@ public class ThemeView extends Div {
     public static final String OCTOPUSS_ID = "octopuss";
     public static final String FONTAWESOME_ID = "font-awesome";
     public static final String SUB_COMPONENT_ID = "sub-component";
+    public static final String DICE_ID = "dice";
 
     public ThemeView() {
         final Span textSpan = new Span("This is the theme test view");
@@ -60,7 +61,13 @@ public class ThemeView extends Div {
         snowFlake.setHeight("1em");
         snowFlake.setId(SNOWFLAKE_ID);
 
-        add(textSpan, snowFlake, subCss, butterfly, octopuss, faText);
+        Span diceImageSpan = new Span();
+        diceImageSpan.getStyle().set("background-image",
+                "url('themes/app-theme/img/dice.jpg')");
+        diceImageSpan.setId(DICE_ID);
+
+        add(textSpan, snowFlake, subCss, butterfly, octopuss, faText,
+                diceImageSpan);
 
         add(new Div());
         add(new MyPolymerField().withId(MY_POLYMER_ID));
