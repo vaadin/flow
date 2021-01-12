@@ -128,7 +128,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
 
     /**
      * The node.js version to be used when node.js is installed automatically by
-     * Vaadin, for example `"v12.18.3"`. Defaults to null which uses the
+     * Vaadin, for example `"v14.15.4"`. Defaults to null which uses the
      * Vaadin-default node version - see {@link FrontendTools} for details.
      */
     @Parameter(property = "node.version", defaultValue = FrontendTools.DEFAULT_NODE_VERSION)
