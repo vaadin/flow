@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -66,8 +67,7 @@ public class TaskGenerateBootstrapTest {
     public void should_importTargetIndexTS() throws ExecutionFailedException {
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertTrue(content.contains(
-                "import '../../target/index';" + System.lineSeparator()));
+        Assert.assertTrue(content.contains("import '../../target/index';"));
     }
 
     @Test
@@ -76,8 +76,7 @@ public class TaskGenerateBootstrapTest {
         new File(frontendFolder, INDEX_TS).createNewFile();
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertTrue(content
-                .contains("import '../index';" + System.lineSeparator()));
+        Assert.assertTrue(content.contains("import '../index';"));
     }
 
     @Test
@@ -85,15 +84,19 @@ public class TaskGenerateBootstrapTest {
         taskGenerateBootstrap = new TaskGenerateBootstrap(getThemedDependency(), frontendFolder);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        //@formatter:off
-        Assert.assertTrue(content.contains("import '../../target/index';"
-                + System.lineSeparator()
-                + System.lineSeparator()
-                + "import { applyTheme } from '@vaadin/flow-frontend/themes/theme-generated';"
-                + System.lineSeparator()
-                + "applyTheme(document);"
-                + System.lineSeparator()));
-        //@formatter:on
+
+        final List<String> expectedContent = Arrays.asList(
+                "import '../../target/index';",
+                "import { applyTheme } from '@vaadin/flow-frontend/themes/theme-generated';",
+                "applyTheme(document);");
+
+        expectedContent.forEach(expectedLine -> Assert.assertTrue(
+                String.format(
+                        "Bootstrap 'vaadin.ts' file is supposed to contain "
+                                + "the line: [%s],\nbut actually contains the "
+                                + "following: [%s]",
+                        expectedLine, content),
+                content.contains(expectedLine)));
     }
 
     private FrontendDependencies getThemedDependency()
