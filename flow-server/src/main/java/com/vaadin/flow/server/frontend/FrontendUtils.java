@@ -187,6 +187,9 @@ public class FrontendUtils {
      */
     public static final String IMPORTS_D_TS_NAME = "generated-flow-imports.d.ts";
 
+    public static final String THEME_IMPORTS_D_TS_NAME = "theme-generated.d.ts";
+    public static final String THEME_IMPORTS_NAME = "theme-generated.js";
+
     /**
      * File name of the bootstrap file that is generated in frontend
      * {@link #GENERATED} folder. The bootstrap file is always executed in a Vaadin app.

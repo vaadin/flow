@@ -27,6 +27,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.BUTTERFLY_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.DICE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.FONTAWESOME_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_LIT_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_POLYMER_ID;
@@ -50,6 +51,22 @@ public class ThemeIT extends ChromeBrowserTest {
         Assert.assertEquals(
             "CSS was not applied as background color was not as expected.",
             "rgba(255, 165, 0, 1)", helloWorld.getCssValue("background-color"));
+    }
+
+    @Test
+    public void referenceResourcesOnJavaSideForStyling_stylesAreApplied() {
+        open();
+        final String resourceUrl = getRootURL()
+                + "/path/themes/app-theme/img/dice.jpg";
+        WebElement diceSpan = findElement(By.id(DICE_ID));
+        final String expectedImgUrl = "url(\"" + resourceUrl + "\")";
+        Assert.assertEquals(
+                "Background image has been referenced on java page and "
+                        + "expected to be applied",
+                expectedImgUrl, diceSpan.getCssValue("background-image"));
+        getDriver().get(resourceUrl);
+        Assert.assertFalse("Java-side referenced resource should be served",
+                driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
     }
 
     @Test

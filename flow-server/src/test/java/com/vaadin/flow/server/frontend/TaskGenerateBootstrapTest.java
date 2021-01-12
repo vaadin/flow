@@ -86,8 +86,7 @@ public class TaskGenerateBootstrapTest {
         String content = taskGenerateBootstrap.getFileContent();
         Assert.assertTrue(content.contains("import '../../target/index';\n" +
             "\n" +
-            "//@ts-ignore\n" +
-            "import {applyTheme} from '../../target/flow-frontend/themes/theme-generated.js';\n" +
+            "import { applyTheme } from '@vaadin/flow-frontend/themes/theme-generated';\n" +
             "applyTheme(document);\n"));
     }
 
