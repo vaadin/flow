@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -35,7 +36,6 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.BOOTSTRAP_FILE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
@@ -67,7 +67,7 @@ public class TaskGenerateBootstrapTest {
     public void should_importTargetIndexTS() throws ExecutionFailedException {
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertTrue(content.contains("import '../../target/index';\n"));
+        Assert.assertTrue(content.contains("import '../../target/index';"));
     }
 
     @Test
@@ -76,7 +76,7 @@ public class TaskGenerateBootstrapTest {
         new File(frontendFolder, INDEX_TS).createNewFile();
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertTrue(content.contains("import '../index';\n"));
+        Assert.assertTrue(content.contains("import '../index';"));
     }
 
     @Test
@@ -84,10 +84,19 @@ public class TaskGenerateBootstrapTest {
         taskGenerateBootstrap = new TaskGenerateBootstrap(getThemedDependency(), frontendFolder);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertTrue(content.contains("import '../../target/index';\n" +
-            "\n" +
-            "import { applyTheme } from '@vaadin/flow-frontend/themes/theme-generated';\n" +
-            "applyTheme(document);\n"));
+
+        final List<String> expectedContent = Arrays.asList(
+                "import '../../target/index';",
+                "import { applyTheme } from '@vaadin/flow-frontend/themes/theme-generated';",
+                "applyTheme(document);");
+
+        expectedContent.forEach(expectedLine -> Assert.assertTrue(
+                String.format(
+                        "Bootstrap 'vaadin.ts' file is supposed to contain "
+                                + "the line: [%s],\nbut actually contains the "
+                                + "following: [%s]",
+                        expectedLine, content),
+                content.contains(expectedLine)));
     }
 
     private FrontendDependencies getThemedDependency()

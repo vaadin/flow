@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import org.junit.Test;
+
 public class DivTest extends ComponentTest {
 
     // Actual test methods in super class
@@ -22,6 +24,12 @@ public class DivTest extends ComponentTest {
     @Override
     protected void addProperties() {
         // Component defines no new properties
+    }
+
+    @Test
+    @Override
+    public void testHasOrderedComponents() {
+        super.testHasOrderedComponents();
     }
 
 }
