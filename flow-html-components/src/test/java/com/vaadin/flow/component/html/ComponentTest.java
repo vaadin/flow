@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import com.vaadin.flow.component.HasOrderedComponents;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -115,6 +116,25 @@ public abstract class ComponentTest {
 
     protected Component getComponent() {
         return component;
+    }
+
+    protected void testHasOrderedComponents() {
+        if (!(component instanceof HasOrderedComponents)) {
+            Assert.fail("Component " + component.getClass() + " did not implement HasOrderedComponents anymore.");
+        }
+
+        HasOrderedComponents component = (HasOrderedComponents) this.component;
+        Assert.assertEquals(0, component.getComponentCount());
+
+        Paragraph firstChildren = new Paragraph("first children");
+        component.add(firstChildren);
+        Assert.assertEquals(firstChildren, component.getComponentAt(0));
+
+        Paragraph newFirstChildren = new Paragraph("new first children");
+        component.addComponentAtIndex(0, newFirstChildren);
+        Assert.assertEquals(newFirstChildren, component.getComponentAt(0));
+
+        Assert.assertEquals(1, component.indexOf(firstChildren));
     }
 
     @Test
