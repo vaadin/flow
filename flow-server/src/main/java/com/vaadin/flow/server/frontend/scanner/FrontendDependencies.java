@@ -445,7 +445,6 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         String backgroundColor = pwaVisitor.getValue("backgroundColor");
         String themeColor = pwaVisitor.getValue("themeColor");
         String iconPath = pwaVisitor.getValue("iconPath");
-        log().error("iconPath in {}: {}", getClass().getSimpleName(), iconPath);
         String manifestPath = pwaVisitor.getValue("manifestPath");
         String offlinePath = pwaVisitor.getValue("offlinePath");
         String display = pwaVisitor.getValue("display");
