@@ -23,11 +23,12 @@ public class NativeDetailsTest extends ComponentTest {
 
     @Override
     protected void addProperties() {
+        // Properties are whitelisted because ComponentTest
+        // expects to have PropertyDescriptor for each property.
         whitelistProperty("content");
         whitelistProperty("summary");
         whitelistProperty("summaryText");
-        addProperty("open", boolean.class, false,
-          true, false,true);
+        whitelistProperty("open");
     }
 
     @Test

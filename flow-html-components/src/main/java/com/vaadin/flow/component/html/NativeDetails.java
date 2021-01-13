@@ -15,21 +15,20 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Objects;
+
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.DomEvent;
-import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.HtmlContainer;
-import com.vaadin.flow.component.PropertyDescriptor;
-import com.vaadin.flow.component.PropertyDescriptors;
+import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.shared.Registration;
-import java.util.Objects;
 
 /**
  * Component representing a <code>&lt;details&gt;</code> element.
@@ -39,9 +38,6 @@ import java.util.Objects;
  */
 @Tag(Tag.DETAILS)
 public class NativeDetails extends HtmlComponent implements ClickNotifier<NativeDetails> {
-
-    private static final PropertyDescriptor<Boolean, Boolean> openDescriptor = PropertyDescriptors
-      .propertyWithDefault("open", false);
 
     /**
      * Component representing a <code>&lt;summary&gt;</code> element.
@@ -199,8 +195,9 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
      *
      * @return whether details are expanded or collapsed
      */
+    @Synchronize(property = "open", value = "toggle")
     public boolean isOpen() {
-        return get(openDescriptor);
+        return getElement().getProperty("open", false);
     }
 
     /**
@@ -211,7 +208,7 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
      * @param open the boolean value to set
      */
     public void setOpen(boolean open) {
-        set(openDescriptor, open);
+        getElement().setProperty("open", open);
     }
 
     /**
@@ -231,8 +228,6 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
     @DomEvent("toggle")
     public static class ToggleEvent extends ComponentEvent<NativeDetails> {
 
-        private final boolean opened;
-
         /**
          * ToggleEvent base constructor.
          *
@@ -241,14 +236,9 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
          * @param fromClient
          *            <code>true</code> if the event originated from the client
          *            side, <code>false</code> otherwise
-         * @param opened
-         *            <code>true</code> if the details was opened,
-         *            <code>false</code> otherwise
          */
-        public ToggleEvent(NativeDetails source, boolean fromClient,
-                           @EventData("event.target.open") boolean opened) {
+        public ToggleEvent(NativeDetails source, boolean fromClient) {
             super(source, fromClient);
-            this.opened = opened;
         }
 
         /**
@@ -257,21 +247,20 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
          * @return whether details are expanded or collapsed
          */
         public boolean isOpened() {
-            return opened;
+            return getSource().isOpen();
         }
     }
 
     /**
      * Adds a listener for {@code toggle} events fired by the
-     * details.
+     * details, which are dispatched to the details element
+     * whenever its state changes between open and closed.
      *
      * @param listener
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    public Registration addOpenChangedListener(
-      ComponentEventListener<ToggleEvent> listener) {
-        return ComponentUtil.addListener(this, ToggleEvent.class,
-          listener);
+    public Registration addToggleListener(ComponentEventListener<ToggleEvent> listener) {
+        return ComponentUtil.addListener(this, ToggleEvent.class, listener);
     }
 }

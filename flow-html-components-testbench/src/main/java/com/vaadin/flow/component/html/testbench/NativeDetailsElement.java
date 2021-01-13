@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html.testbench;
 
+import org.openqa.selenium.By;
+
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.elementsbase.Element;
 
@@ -26,4 +28,11 @@ import com.vaadin.testbench.elementsbase.Element;
 @Element("details")
 public class NativeDetailsElement extends TestBenchElement {
 
+    /**
+     * Dispatches a {@code toggle} event by clicking the summary
+     * of the details. Toggles the details element open state.
+     */
+    public void toggle() {
+        findElement(By.tagName("summary")).click();
+    }
 }
