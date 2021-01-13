@@ -24,7 +24,8 @@ public class NativeDetailsView extends Div implements AfterNavigationObserver {
         details = new NativeDetails("summary", new Paragraph("content"));
         details.setId("details");
         details.addToggleListener(e -> {
-            log.setText("Toggle event number '" + eventCounter.incrementAndGet() + "' is '" + e.isOpened() + "'");
+            log.setText("Toggle event number '" + eventCounter.incrementAndGet()
+                    + "' is '" + e.isOpened() + "'");
         });
 
         NativeButton button = new NativeButton("open or close summary");

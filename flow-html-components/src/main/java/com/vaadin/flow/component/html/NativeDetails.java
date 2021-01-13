@@ -37,7 +37,8 @@ import com.vaadin.flow.shared.Registration;
  * @since
  */
 @Tag(Tag.DETAILS)
-public class NativeDetails extends HtmlComponent implements ClickNotifier<NativeDetails> {
+public class NativeDetails extends HtmlComponent
+        implements ClickNotifier<NativeDetails> {
 
     /**
      * Component representing a <code>&lt;summary&gt;</code> element.
@@ -45,7 +46,8 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
      * @author Vaadin Ltd
      */
     @Tag(Tag.SUMMARY)
-    public static class Summary extends HtmlContainer implements ClickNotifier<Summary> {
+    public static class Summary extends HtmlContainer
+            implements ClickNotifier<Summary> {
 
         /**
          * Creates a new empty summary.
@@ -104,8 +106,7 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
     }
 
     /**
-     * Creates a new details using the provided summary content
-     * and content.
+     * Creates a new details using the provided summary content and content.
      *
      * @param summaryContent
      *            the summary content to set.
@@ -118,8 +119,7 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
     }
 
     /**
-     * Returns {@link Summary} component associated
-     * with this details.
+     * Returns {@link Summary} component associated with this details.
      *
      * @return the summary component
      */
@@ -138,8 +138,8 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
     }
 
     /**
-     * Sets the text of the summary.
-     * Removes previously set components of the summary.
+     * Sets the text of the summary. Removes previously set components of the
+     * summary.
      *
      * @see #getSummary()
      * @param summary
@@ -150,16 +150,16 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
     }
 
     /**
-     * Sets the components of the summary.
-     * Removes previously set text or components of the summary.
+     * Sets the components of the summary. Removes previously set text or
+     * components of the summary.
      *
      * @see #getSummary()
      * @param summaryContent
      *            the summary content to set.
      */
     public void setSummary(Component... summaryContent) {
-       this.summary.removeAll();
-       this.summary.add(summaryContent);
+        this.summary.removeAll();
+        this.summary.add(summaryContent);
     }
 
     /**
@@ -173,8 +173,7 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
     }
 
     /**
-     * Sets the details content and removes the
-     * previously set content.
+     * Sets the details content and removes the previously set content.
      *
      * @see #getContent()
      * @param content
@@ -190,8 +189,7 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
     }
 
     /**
-     * Return whether or not the details is opened and the content
-     * is displayed.
+     * Return whether or not the details is opened and the content is displayed.
      *
      * @return whether details are expanded or collapsed
      */
@@ -201,11 +199,12 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
     }
 
     /**
-     * Sets whether or not the details should be opened.
-     * {@code true} if the details should be opened and the
-     * content should be displayed, {@code false} to collapse it.
+     * Sets whether or not the details should be opened. {@code true} if the
+     * details should be opened and the content should be displayed,
+     * {@code false} to collapse it.
      *
-     * @param open the boolean value to set
+     * @param open
+     *            the boolean value to set
      */
     public void setOpen(boolean open) {
         getElement().setProperty("open", open);
@@ -214,13 +213,13 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
     /**
      * Represents the DOM event "toggle".
      *
-     * In addition to the usual events supported by HTML elements,
-     * the details element supports the toggle event, which is dispatched
-     * to the details element whenever its state changes between open and closed.
+     * In addition to the usual events supported by HTML elements, the details
+     * element supports the toggle event, which is dispatched to the details
+     * element whenever its state changes between open and closed.
      *
-     * It is sent after the state is changed, although if the state
-     * changes multiple times before the browser can dispatch the event,
-     * the events are coalesced so that only one is sent.
+     * It is sent after the state is changed, although if the state changes
+     * multiple times before the browser can dispatch the event, the events are
+     * coalesced so that only one is sent.
      *
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/details">https://developer.mozilla.org/en-US/docs/Web/HTML/Element/details</a>
@@ -252,15 +251,16 @@ public class NativeDetails extends HtmlComponent implements ClickNotifier<Native
     }
 
     /**
-     * Adds a listener for {@code toggle} events fired by the
-     * details, which are dispatched to the details element
-     * whenever its state changes between open and closed.
+     * Adds a listener for {@code toggle} events fired by the details, which are
+     * dispatched to the details element whenever its state changes between open
+     * and closed.
      *
      * @param listener
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    public Registration addToggleListener(ComponentEventListener<ToggleEvent> listener) {
+    public Registration addToggleListener(
+            ComponentEventListener<ToggleEvent> listener) {
         return ComponentUtil.addListener(this, ToggleEvent.class, listener);
     }
 }

@@ -27,7 +27,8 @@ public class NativeDetailsElementIT extends ChromeBrowserTest {
         Assert.assertEquals("Toggle event number '1' is 'true'", log.getText());
 
         details.setProperty("open", false);
-        Assert.assertEquals("Toggle event number '2' is 'false'", log.getText());
+        Assert.assertEquals("Toggle event number '2' is 'false'",
+                log.getText());
     }
 
     @Test
@@ -48,7 +49,8 @@ public class NativeDetailsElementIT extends ChromeBrowserTest {
         Assert.assertEquals("Toggle event number '1' is 'true'", log.getText());
 
         button.click();
-        Assert.assertEquals("Toggle event number '2' is 'false'", log.getText());
+        Assert.assertEquals("Toggle event number '2' is 'false'",
+                log.getText());
     }
 
     @Test
@@ -59,24 +61,28 @@ public class NativeDetailsElementIT extends ChromeBrowserTest {
         Assert.assertEquals("Toggle event number '1' is 'true'", log.getText());
 
         details.toggle();
-        Assert.assertEquals("Toggle event number '2' is 'false'", log.getText());
+        Assert.assertEquals("Toggle event number '2' is 'false'",
+                log.getText());
     }
 
     @Test
     public void openDetailsFromServerSideOnInitialRendering() {
         prepareTest(true);
 
-        // Event should be triggered once, because details was already opened on server side
+        // Event should be triggered once, because details was already opened on
+        // server side
         // triggering the toggle event.
         Assert.assertEquals("Toggle event number '1' is 'true'", log.getText());
 
         details.setProperty("open", true);
-        // Event should not be triggered again, because details was already opened.
+        // Event should not be triggered again, because details was already
+        // opened.
         Assert.assertEquals("Toggle event number '1' is 'true'", log.getText());
     }
 
     private void prepareTest(boolean detailsOpen) {
-        getDriver().get("http://localhost:8888/Details" + (detailsOpen ? "/open" : ""));
+        getDriver().get(
+                "http://localhost:8888/Details" + (detailsOpen ? "/open" : ""));
         details = $(NativeDetailsElement.class).id("details");
         log = $(DivElement.class).id("log");
         button = $(NativeButtonElement.class).id("btn");
