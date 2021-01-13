@@ -122,14 +122,28 @@ public class NodeUpdateTestUtil {
 
         serverFile.createNewFile();
         serverFile.setExecutable(true);
-        FileUtils.write(serverFile,
-                ("#!/usr/bin/env node\n" + "const fs = require('fs');\n"
-                        + "const args = String(process.argv);\n"
-                        + "fs.writeFileSync('" + WEBPACK_TEST_OUT_FILE
-                        + "', args);\n" + "console.log(args + '\\n[wps]: "
-                        + readyString + ".');\n" + "setTimeout(() => {}, "
-                        + milliSecondsToRun + ");\n"),
-                "UTF-8");
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("#!/user/bin/env node\n");
+        sb.append("const args = String(process.argv);\n");
+        sb.append("const fs = require('fs');\n");
+        sb.append("const http = require('http');\n");
+        sb.append("fs.writeFileSync('").append(WEBPACK_TEST_OUT_FILE)
+                .append("', args);\n");
+        sb.append("const port = Number.parseInt(process.argv[")
+                .append("process.argv.indexOf('--port') + 1").append("]);\n");
+        sb.append("const server = new http.Server((req, res) => {\n");
+        sb.append("  res.writeHead(200, {")
+                .append("'Content-Type': 'application/json',").append("});\n");
+        sb.append("  res.write('{}');\n");
+        sb.append("  res.end();\n");
+        sb.append("});\n");
+        sb.append("server.listen(port);\n");
+        sb.append("console.log(args);\n");
+        sb.append("console.log('[wps]: ").append(readyString).append(".');\n");
+        sb.append("setTimeout(() => server.close(), ").append(milliSecondsToRun)
+                .append(");\n");
+        FileUtils.write(serverFile, sb.toString(), "UTF-8");
     }
 
     static URL getTestResource(String resourceName) {
