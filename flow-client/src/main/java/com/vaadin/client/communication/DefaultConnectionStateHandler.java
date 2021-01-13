@@ -141,7 +141,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         int statusCode = xhr.getStatus();
         Console.warn("Heartbeat request returned " + statusCode);
 
-        if (statusCode == Response.SC_GONE) {
+        if (statusCode == Response.SC_FORBIDDEN) {
             // Session expired
             registry.getSystemErrorHandler().handleSessionExpiredError(null);
             stopApplication();
