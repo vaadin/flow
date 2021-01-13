@@ -36,7 +36,7 @@ const ignoredFileExtensions = [".css", ".js", ".json"];
 function copyThemeResources(themeFolder, projectStaticAssetsOutputFolder, logger) {
   const staticAssetsThemeFolder = path.resolve(projectStaticAssetsOutputFolder, "themes", path.basename(themeFolder));
   if (!fs.existsSync(staticAssetsThemeFolder)) {
-    require('mkdirp')(staticAssetsThemeFolder);
+    fs.mkdirSync(staticAssetsThemeFolder, {recursive: true});
   }
   copyThemeFiles(themeFolder, staticAssetsThemeFolder, logger);
 }
