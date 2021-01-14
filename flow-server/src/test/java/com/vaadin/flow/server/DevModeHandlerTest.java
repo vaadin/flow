@@ -377,7 +377,7 @@ public class DevModeHandlerTest {
     @Test(expected = ConnectException.class)
     public void should_ThrowAnException_When_WebpackNotListening()
             throws IOException {
-        createStubWebpackServer("Compiled", 100, baseDir, false);
+        createStubWebpackServer("Compiled", 3000, baseDir, false);
         HttpServletRequest request = prepareRequest("/VAADIN//foo.js");
         DevModeHandler handler = DevModeHandler.start(0, createDevModeLookup(),
                 npmFolder, CompletableFuture.completedFuture(null));
