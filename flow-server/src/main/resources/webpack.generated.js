@@ -233,7 +233,7 @@ module.exports = {
       {
         test: /\.ts$/,
         use: [
-          'ts-loader'
+          'awesome-typescript-loader'
         ]
       },
       {
