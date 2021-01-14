@@ -262,7 +262,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         // Forcing chokidar version for now until new babel version is available
         // check out https://github.com/babel/babel/issues/11488
-        defaults.put("chokidar", "^3.4.0");
+        defaults.put("chokidar", "^3.5.0");
 
         return defaults;
     }
