@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.server.VaadinContext;
 
 /**

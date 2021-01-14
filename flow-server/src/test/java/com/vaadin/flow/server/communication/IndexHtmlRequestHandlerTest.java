@@ -455,7 +455,7 @@ public class IndexHtmlRequestHandlerTest {
         File npmFolder = temporaryFolder.getRoot();
         String baseDir = npmFolder.getAbsolutePath();
         new File(baseDir, FrontendUtils.WEBPACK_CONFIG).createNewFile();
-        createStubWebpackServer("Failed to compile", 300, baseDir);
+        createStubWebpackServer("Failed to compile", 3000, baseDir);
 
         // Create a DevModeHandler
         deploymentConfiguration.setEnableDevServer(true);
@@ -492,6 +492,8 @@ public class IndexHtmlRequestHandlerTest {
                         "<div class=\"v-system-error\" onclick=\"this.parentElement.removeChild(this)\">"));
         Assert.assertTrue("Should show webpack failure error",
                 indexHtml.contains("Failed to compile"));
+
+        handler.stop();
     }
 
     @Test

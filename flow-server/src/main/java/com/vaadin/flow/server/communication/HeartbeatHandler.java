@@ -66,10 +66,10 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
             ui.getInternals()
                     .setLastHeartbeatTimestamp(System.currentTimeMillis());
             // Ensure that the browser does not cache heartbeat responses.
-            // iOS 6 Safari requires this (#10370)
+            // iOS 6 Safari requires this (https://github.com/vaadin/framework/issues/3226)
             response.setHeader("Cache-Control", "no-cache");
             // If Content-Type is not set, browsers assume text/html and may
-            // complain about the empty response body (#12182)
+            // complain about the empty response body (https://github.com/vaadin/framework/issues/4167)
             response.setHeader("Content-Type", "text/plain");
         } else {
             response.sendError(HttpServletResponse.SC_NOT_FOUND,
@@ -93,7 +93,7 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
             return false;
         }
 
-        response.sendError(HttpServletResponse.SC_GONE, "Session expired");
+        response.sendError(HttpServletResponse.SC_FORBIDDEN, "Session expired");
         return true;
     }
 }

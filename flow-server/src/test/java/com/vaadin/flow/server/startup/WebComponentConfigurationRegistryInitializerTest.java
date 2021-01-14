@@ -339,7 +339,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
 
         @Override
         public boolean matches(Object o) {
-            Throwable throwable = (Throwable) o;
+            Throwable throwable = ((Throwable) o).getCause();
 
             if (!throwableType.equals(throwable.getClass())) {
                 return false;

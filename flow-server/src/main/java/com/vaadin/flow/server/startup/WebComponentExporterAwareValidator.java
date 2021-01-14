@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
 import java.util.Arrays;
@@ -28,6 +26,7 @@ import com.googlecode.gentyref.GenericTypeReflector;
 
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.server.VaadinContext;
 
 /**
  * Checks that specific annotations are not configured wrong.
@@ -40,11 +39,10 @@ import com.vaadin.flow.component.page.Push;
 @HandlesTypes(Push.class)
 public class WebComponentExporterAwareValidator
         extends AbstractAnnotationValidator
-        implements ClassLoaderAwareServletContainerInitializer {
+        implements VaadinServletContextStartupInitializer {
 
     @Override
-    public void process(Set<Class<?>> classSet, ServletContext servletContext)
-            throws ServletException {
+    public void initialize(Set<Class<?>> classSet, VaadinContext context) {
         validateClasses(classSet);
     }
 
