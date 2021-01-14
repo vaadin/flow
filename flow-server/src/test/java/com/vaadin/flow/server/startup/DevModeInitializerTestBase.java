@@ -93,7 +93,7 @@ public class DevModeInitializerTestBase {
         mockApplicationConfiguration(appConfig, enablePnpm);
 
         createStubNode(false, true, enablePnpm, baseDir);
-        createStubWebpackServer("Compiled", 500, baseDir);
+        createStubWebpackServer("Compiled", 500, baseDir, true);
 
         servletContext = Mockito.mock(ServletContext.class);
         ServletRegistration vaadinServletRegistration = Mockito
