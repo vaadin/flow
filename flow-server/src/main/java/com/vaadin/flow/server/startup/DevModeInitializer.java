@@ -502,6 +502,8 @@ public class DevModeInitializer
                 Constants.RESOURCES_FRONTEND_DEFAULT));
         frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
                 Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT));
+        frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
+            Constants.RESOURCES_JAR_DEFAULT));
         return frontendFiles;
     }
 
