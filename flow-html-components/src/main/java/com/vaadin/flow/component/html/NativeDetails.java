@@ -227,8 +227,13 @@ public class NativeDetails extends HtmlComponent
     @DomEvent("toggle")
     public static class ToggleEvent extends ComponentEvent<NativeDetails> {
 
+        private final boolean open;
+
         /**
          * ToggleEvent base constructor.
+         * <p>
+         * Note: This event is always triggered on client side.
+         * Resulting in {@code fromClient} to be always {@code true}.
          *
          * @param source
          *            the source component
@@ -238,15 +243,18 @@ public class NativeDetails extends HtmlComponent
          */
         public ToggleEvent(NativeDetails source, boolean fromClient) {
             super(source, fromClient);
+            this.open = source.isOpen();
         }
 
         /**
          * Return whether or not the details was opened or closed in this event.
+         * <p>
+         * Delegating to the source component after the toggle event occurred.
          *
          * @return whether details are expanded or collapsed
          */
         public boolean isOpened() {
-            return getSource().isOpen();
+            return open;
         }
     }
 
@@ -254,6 +262,9 @@ public class NativeDetails extends HtmlComponent
      * Adds a listener for {@code toggle} events fired by the details, which are
      * dispatched to the details element whenever its state changes between open
      * and closed.
+     * <p>
+     * Note: This event is always triggered on client side. Resulting in
+     * {@code isFromClient()} to always return {@code true}.
      *
      * @param listener
      *            the listener
