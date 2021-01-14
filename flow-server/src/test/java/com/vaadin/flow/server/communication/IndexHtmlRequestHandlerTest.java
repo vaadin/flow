@@ -455,7 +455,7 @@ public class IndexHtmlRequestHandlerTest {
         File npmFolder = temporaryFolder.getRoot();
         String baseDir = npmFolder.getAbsolutePath();
         new File(baseDir, FrontendUtils.WEBPACK_CONFIG).createNewFile();
-        createStubWebpackServer("Failed to compile", 300, baseDir);
+        createStubWebpackServer("Failed to compile", 300, baseDir, true);
 
         // Create a DevModeHandler
         deploymentConfiguration.setEnableDevServer(true);
