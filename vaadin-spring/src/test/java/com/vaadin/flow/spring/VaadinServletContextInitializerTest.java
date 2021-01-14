@@ -7,6 +7,7 @@ import javax.servlet.ServletContextListener;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -15,7 +16,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -29,13 +29,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
@@ -83,8 +83,6 @@ public class VaadinServletContextInitializerTest {
 
         VaadinServletContextInitializer vaadinServletContextInitializer = getStubbedVaadinServletContextInitializer();
 
-        ArgumentCaptor<Lookup> capture = ArgumentCaptor.forClass(Lookup.class);
-
         // Simulate Spring context start only
         vaadinServletContextInitializer.onStartup(servletContext);
 
@@ -95,9 +93,10 @@ public class VaadinServletContextInitializerTest {
             // onStartup() call,
             // that means DevModeInitializer.initDevModeHandler() should has
             // been called exactly one time
-            DevModeInitializer.initDevModeHandler(Mockito.any(), Mockito.any());
-            theMock.verify(() -> DevModeInitializer
-                    .initDevModeHandler(Mockito.any(), Mockito.any()));
+            DevModeInitializer.initDevModeHandler(Mockito.mock(Set.class),
+                    Mockito.mock(VaadinContext.class));
+            theMock.verify(() -> DevModeInitializer.initDevModeHandler(
+                    Mockito.any(), Mockito.any(VaadinContext.class)));
             theMock.verifyNoMoreInteractions();
         }
 
@@ -123,9 +122,10 @@ public class VaadinServletContextInitializerTest {
             // onStartup() call,
             // that means DevModeInitializer.initDevModeHandler() should has
             // been called exactly one time
-            DevModeInitializer.initDevModeHandler(Mockito.any(), Mockito.any());
-            theMock.verify(() -> DevModeInitializer
-                    .initDevModeHandler(Mockito.any(), Mockito.any()));
+            DevModeInitializer.initDevModeHandler(Mockito.mock(Set.class),
+                    Mockito.mock(VaadinContext.class));
+            theMock.verify(() -> DevModeInitializer.initDevModeHandler(
+                    Mockito.any(), Mockito.any(VaadinContext.class)));
             theMock.verifyNoMoreInteractions();
         }
     }
