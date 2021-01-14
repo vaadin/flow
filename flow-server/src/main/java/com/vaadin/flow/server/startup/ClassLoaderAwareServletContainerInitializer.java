@@ -92,7 +92,7 @@ public interface ClassLoaderAwareServletContainerInitializer
                         .filter(method -> !method.isDefault()
                                 && !method.isSynthetic())
                         .findFirst().get().getName();
-                Method operation = Stream.of(initializer.getDeclaredMethods())
+                Method operation = Stream.of(initializer.getMethods())
                         .filter(method -> method.getName()
                                 .equals(processMethodName))
                         .findFirst().get();
@@ -136,7 +136,7 @@ public interface ClassLoaderAwareServletContainerInitializer
      * Implement this method instead of {@link #onStartup(Set, ServletContext)}
      * to handle classes accessible by different classloaders.
      *
-     * @param set
+     * @param classSet
      *            the Set of application classes that extend, implement, or have
      *            been annotated with the class types specified by the
      *            {@link javax.servlet.annotation.HandlesTypes HandlesTypes}
@@ -144,9 +144,9 @@ public interface ClassLoaderAwareServletContainerInitializer
      *            <tt>ServletContainerInitializer</tt> has not been annotated
      *            with <tt>HandlesTypes</tt>
      *
-     * @param ctx
+     * @param context
      *            the <tt>ServletContext</tt> of the web application that is
-     *            being started and in which the classes contained in <tt>c</tt>
+     *            being started and in which the classes contained in <tt>classSet</tt>
      *            were found
      *
      * @throws ServletException
@@ -154,5 +154,5 @@ public interface ClassLoaderAwareServletContainerInitializer
      *
      * @see #onStartup(Set, ServletContext)
      */
-    void process(Set<Class<?>> set, ServletContext ctx) throws ServletException;
+    void process(Set<Class<?>> classSet, ServletContext context) throws ServletException;
 }

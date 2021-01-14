@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -46,7 +44,6 @@ import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinServletContext;
 
 /**
  * Registry for holding navigation target components found on servlet
@@ -107,7 +104,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
      * @param context
      *            the vaadin context for which to get a route registry, not
      *            <code>null</code>
-     * @return a registry instance for the given servlet context, not
+     * @return a registry instance for the given context, not
      *         <code>null</code>
      */
     public static ApplicationRouteRegistry getInstance(VaadinContext context) {
