@@ -60,14 +60,14 @@ function findThemeFolderAndHandleTheme(themeName, options, logger) {
   for (let i = 0; i < options.themeProjectFolders.length; i++) {
     const themeProjectFolder = options.themeProjectFolders[i];
     if (fs.existsSync(themeProjectFolder)) {
-      logger.info("Searching themes folder", themeProjectFolder, "for theme", themeName);
+      logger.log("Searching themes folder '" + themeProjectFolder + "' for theme '" + themeName + "'");
       const handled = handleThemes(themeName, themeProjectFolder, options, logger);
       if (handled) {
         if (themeFound) {
           throw new Error("Found theme files in '" + themeProjectFolder + "' and '"
             + themeFound + "'. Theme should only be available in one folder");
         }
-        logger.info("Found theme files from '" + themeProjectFolder + "'");
+        logger.log("Found theme files from '" + themeProjectFolder + "'");
         themeFound = themeProjectFolder;
       }
     }
@@ -78,7 +78,7 @@ function findThemeFolderAndHandleTheme(themeName, options, logger) {
       throw new Error("Theme '" + themeName + "'should not exist inside a jar and in the project at the same time\n" +
         "Extending another theme is possible by adding { \"parent\": \"my-parent-theme\" } entry to the theme.json file inside your theme folder.");
     }
-    logger.debug("Searching theme jar resource folder ", options.themeResourceFolder, " for theme ", themeName);
+    logger.debug("Searching theme jar resource folder '" + options.themeResourceFolder + "' for theme '" + themeName + "'");
     handleThemes(themeName, options.themeResourceFolder, options, logger);
     themeFound = true;
   }

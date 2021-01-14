@@ -45,7 +45,7 @@ module.exports = function (source, map) {
       }
       return url + frontendThemeFolder + pathResolved + endString;
     } else if (options.devMode) {
-      logger.info("No rewrite for '", match, "' as the file was not found.");
+      logger.log("No rewrite for '", match, "' as the file was not found.");
     }
     return match;
   });
