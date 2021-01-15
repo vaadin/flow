@@ -82,12 +82,11 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         Assert.assertNotEquals(RED_COLOR,
             htmlElement.getCssValue("background-color"));
         doActionAndWaitUntilLiveReloadComplete(
-            () -> addBackgroundColorToStylesCSS());
+            this::addBackgroundColorToStylesCSS);
         waitUntilCustomBackgroundColor();
 
         // Live reload upon file deletion
-        doActionAndWaitUntilLiveReloadComplete(() ->
-        deleteFile(stylesCSSFile));
+        doActionAndWaitUntilLiveReloadComplete(() -> deleteFile(stylesCSSFile));
         waitUntilInitialBackgroundColor();
 
         // Live reload upon adding a font
@@ -96,8 +95,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
 
         FileUtils.copyFile(copyFontFrom, fontFile);
         waitUntil(driver -> fontFile.exists());
-        doActionAndWaitUntilLiveReloadComplete(() ->
-            createStylesCssWithFont());
+        doActionAndWaitUntilLiveReloadComplete(this::createStylesCssWithFont);
         waitUntilCustomFont();
     }
 
