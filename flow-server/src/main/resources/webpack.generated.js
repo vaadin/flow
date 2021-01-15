@@ -169,12 +169,12 @@ const flowFrontendThemesFolder = path.resolve(flowFrontendFolder, 'themes');
 const themeName = extractThemeName(flowFrontendThemesFolder);
 const themeOptions = {
   devMode: devMode,
-  // The following matches target/flow-frontend/themes/theme-generated.js
-  // and for theme in JAR that is copied to target/flow-frontend/themes/
-  // and not frontend/themes
+  // The following matches folder 'target/flow-frontend/themes/'
+  // (not 'frontend/themes') for theme in JAR that is copied there
   themeResourceFolder: flowFrontendThemesFolder,
   themeProjectFolders: themeProjectFolders,
   projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
+  projectFrontendFolder: frontendFolder
 };
 const processThemeResourcesCallback = (logger) => processThemeResources(themeOptions, logger);
 

@@ -37,7 +37,7 @@ const nameRegex = /themes\/(.*)\/\1.generated.js/;
  * @param logger application theme plugin logger
  */
 function processThemeResources(options, logger) {
-  const themeName = extractThemeName(options.themeResourceFolder);
+  const themeName = extractThemeName(options.projectFrontendFolder);
   if (themeName) {
     findThemeFolderAndHandleTheme(themeName, options, logger);
   } else {
@@ -140,22 +140,24 @@ function getThemeProperties(themeFolder) {
 }
 
 /**
- * Extracts current theme name from 'theme-generated.js' file located on a
+ * Extracts current theme name from 'generated/theme.js' file located on a
  * given folder.
- * @param themeFolder theme folder where flow generates 'theme-generated.js'
+ * @param frontendFolder folder in project containing frontend resources and
+ * theme auto-generated files
  * file and copies local and jar resource frontend files
  * @returns {string} current theme name
  */
-function extractThemeName(themeFolder) {
-  if (!themeFolder) {
-    throw new Error("Couldn't extract theme name from 'theme-generated.js'," +
+function extractThemeName(frontendFolder) {
+  if (!frontendFolder) {
+    throw new Error("Couldn't extract theme name from 'generated/theme.js'," +
       " because the path to folder containing this file is empty. Please set" +
       " the a correct folder path in ApplicationThemePlugin constructor" +
       " parameters.");
   }
-  const generatedThemeFile = path.resolve(themeFolder, "theme-generated.js");
+  const generatedThemeFile = path.resolve(frontendFolder, "generated", "theme.js");
   if (fs.existsSync(generatedThemeFile)) {
-    // read theme name from the theme-generated.js as there we always mark the used theme for webpack to handle.
+    // read theme name from the 'generated/theme.js' as there we always
+    // mark the used theme for webpack to handle.
     const themeName = nameRegex.exec(fs.readFileSync(generatedThemeFile, {encoding: 'utf8'}))[1];
     if (!themeName) {
       throw new Error("Couldn't parse theme name from '" + generatedThemeFile + "'.");

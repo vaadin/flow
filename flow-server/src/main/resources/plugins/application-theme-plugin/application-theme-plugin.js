@@ -24,6 +24,9 @@ const { processThemeResources, extractThemeName } = require('./theme-handle');
  *  themeResourceFolder             - theme folder where flow copies local and jar resource frontend files
  *  themeProjectFolders             - array of possible locations for theme folders inside the project
  *  projectStaticAssetsOutputFolder - path to where static assets should be put
+ *  projectFrontendFolder           - folder in project where frontend (flow
+ *  templates, fusion views, styles etc.) files and theme auto-generated
+ *  files are placed
  *
  *  @throws Error in constructor if required option is not received
  */
@@ -39,6 +42,9 @@ class ApplicationThemePlugin {
     }
     if (!this.options.themeProjectFolders) {
       throw new Error("Missing themeProjectFolders path array");
+    }
+    if (!this.options.projectFrontendFolder) {
+      throw new Error("Missing projectFrontendFolder path");
     }
   }
 
