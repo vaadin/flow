@@ -19,7 +19,6 @@ package com.vaadin.flow.uitest.ui;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.function.Consumer;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
@@ -59,16 +58,18 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
 
     @After
     public void cleanUp() {
-        doActionAndWaitUntilLiveReloadComplete((ignore) -> {
-            try {
-                // Cleanup the default 'styles.css' file
-                FileUtils.write(stylesCSSFile, "",
-                    StandardCharsets.UTF_8.name());
-                deleteFile(fontFile);
-            } catch (IOException e) {
-                Assert.fail("Couldn't cleanup test files: " + e.getMessage());
-            }
-        });
+        doActionAndWaitUntilLiveReloadComplete(this::removeGeneratedFiles);
+    }
+
+    private void removeGeneratedFiles() {
+        try {
+            // Cleanup the default 'styles.css' file
+            FileUtils.write(stylesCSSFile, "",
+                StandardCharsets.UTF_8.name());
+            deleteFile(fontFile);
+        } catch (IOException e) {
+            Assert.fail("Couldn't cleanup test files: " + e.getMessage());
+        }
     }
 
     @Test
@@ -81,11 +82,11 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         Assert.assertNotEquals(RED_COLOR,
             htmlElement.getCssValue("background-color"));
         doActionAndWaitUntilLiveReloadComplete(
-            (ignore) -> addBackgroundColorToStylesCSS());
+            () -> addBackgroundColorToStylesCSS());
         waitUntilCustomBackgroundColor();
 
         // Live reload upon file deletion
-        doActionAndWaitUntilLiveReloadComplete((ignore) ->
+        doActionAndWaitUntilLiveReloadComplete(() ->
         deleteFile(stylesCSSFile));
         waitUntilInitialBackgroundColor();
 
@@ -95,7 +96,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
 
         FileUtils.copyFile(copyFontFrom, fontFile);
         waitUntil(driver -> fontFile.exists());
-        doActionAndWaitUntilLiveReloadComplete((ignore) ->
+        doActionAndWaitUntilLiveReloadComplete(() ->
             createStylesCssWithFont());
         waitUntilCustomFont();
     }
@@ -167,13 +168,13 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         }
     }
 
-    private void doActionAndWaitUntilLiveReloadComplete(Consumer<Void> action) {
+    private void doActionAndWaitUntilLiveReloadComplete(Runnable action) {
         // Add a new active client with 'blocker' key and let the
         // waitForVaadin() to block until new page/document will be loaded as a
         // result of live reload.
         executeScript(
                 "window.Vaadin.Flow.clients[\"blocker\"] = {isActive: () => true};");
-        action.accept(null);
+        action.run();
         getCommandExecutor().waitForVaadin();
     }
 }
