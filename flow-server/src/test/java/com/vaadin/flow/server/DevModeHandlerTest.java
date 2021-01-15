@@ -312,6 +312,7 @@ public class DevModeHandlerTest {
         HttpServletRequest request = prepareRequest("/foo/VAADIN//foo.bar");
         DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
                 CompletableFuture.completedFuture(null));
+        handler.join();
         assertFalse(handler.isDevModeRequest(request));
     }
 
@@ -321,6 +322,7 @@ public class DevModeHandlerTest {
                 "/" + StreamRequestHandler.DYN_RES_PREFIX + "foo");
         DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
                 CompletableFuture.completedFuture(null));
+        handler.join();
         assertFalse(handler.isDevModeRequest(request));
     }
 
@@ -329,6 +331,7 @@ public class DevModeHandlerTest {
         HttpServletRequest request = prepareRequest("/VAADIN/foo.bar");
         DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
                 CompletableFuture.completedFuture(null));
+        handler.join();
         assertTrue(handler.isDevModeRequest(request));
     }
 
