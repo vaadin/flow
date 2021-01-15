@@ -433,7 +433,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         String url = request.getParameter(REQ_PARAM_URL);
         // if 'url' parameter was not available, use request url
         if (url == null) {
-            url = ((VaadinServletRequest) request).getRequestURL().toString();
+            url = getRequestUrl(request);
         }
         return url
                 // +1 is to keep the trailing slash
