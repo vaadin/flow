@@ -19,14 +19,12 @@ package com.vaadin.flow.uitest.ui;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.UUID;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
@@ -34,7 +32,6 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-@Ignore("https://github.com/vaadin/flow/issues/9746")
 @NotThreadSafe
 public class ThemeLiveReloadIT extends ChromeBrowserTest {
 
@@ -42,44 +39,37 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
     private static final String THEME_FOLDER = "frontend/themes/app-theme/";
 
     private File baseDir;
-    private File globalCSSFile;
-    private File globalFontCSSFile;
+    private File stylesCSSFile;
     private File fontFile;
 
     @Before
     public void init() {
         baseDir = new File(System.getProperty("user.dir", "."));
+        final File themeFolder = new File(baseDir, THEME_FOLDER);
 
-        File fontsDir = new File(baseDir, THEME_FOLDER + "fonts");
+        File fontsDir = new File(themeFolder, "fonts");
         if (!fontsDir.exists() && !fontsDir.mkdir()) {
             Assert.fail("Unable to create fonts folder");
         }
 
-        // TODO: use unique file name here, because webpack compilation fails
-        // when add->delete->add a file with the same name. Perhaps, webpack
-        // file caching causes this.
-        // https://github.com/vaadin/flow/issues/9596
-        String relativeFilePath = String.format(THEME_FOLDER + "styles.css");
-        globalCSSFile = new File(baseDir, relativeFilePath);
-
-        // TODO: use unique file name here, because webpack compilation fails
-        // when add->delete->add a file with the same name. Perhaps, webpack
-        // file caching causes this.
-        // https://github.com/vaadin/flow/issues/9596
-        relativeFilePath = String.format(THEME_FOLDER + "global-font-%s.css",
-            UUID.randomUUID().toString());
-        globalFontCSSFile = new File(baseDir, relativeFilePath);
-
-        String fontFileName = String.format("ostrich-sans-regular-%s.ttf",
-            UUID.randomUUID().toString());
-        fontFile = new File(baseDir, THEME_FOLDER + "fonts/" + fontFileName);
+        stylesCSSFile = new File(themeFolder, "styles.css");
+        fontFile = new File(themeFolder, "fonts/ostrich-sans-regular.ttf");
     }
 
     @After
     public void cleanUp() {
-        deleteFile(globalCSSFile);
-        deleteFile(globalFontCSSFile);
-        deleteFile(fontFile);
+        doActionAndWaitUntilLiveReloadComplete(this::removeGeneratedFiles);
+    }
+
+    private void removeGeneratedFiles() {
+        try {
+            // Cleanup the default 'styles.css' file
+            FileUtils.write(stylesCSSFile, "",
+                StandardCharsets.UTF_8.name());
+            deleteFile(fontFile);
+        } catch (IOException e) {
+            Assert.fail("Couldn't cleanup test files: " + e.getMessage());
+        }
     }
 
     @Test
@@ -87,22 +77,17 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         throws IOException {
         open();
 
-        // Live reload upon new global.css
+        // Live reload upon new styles.css
         final WebElement htmlElement = findElement(By.tagName("html"));
         Assert.assertNotEquals(RED_COLOR,
             htmlElement.getCssValue("background-color"));
-        createGlobalCssWithBackgroundColor();
+        doActionAndWaitUntilLiveReloadComplete(
+            this::addBackgroundColorToStylesCSS);
         waitUntilCustomBackgroundColor();
 
         // Live reload upon file deletion
-        deleteFile(globalCSSFile);
+        doActionAndWaitUntilLiveReloadComplete(() -> deleteFile(stylesCSSFile));
         waitUntilInitialBackgroundColor();
-
-        // TODO: deleting the CSS file reverts the styles, but still produce
-        // an intermediate compile errors in logs. Perhaps, the webpack file
-        // caching caused this.
-        // https://github.com/vaadin/flow/issues/9596
-        // checkLogsForErrors();
 
         // Live reload upon adding a font
         File copyFontFrom = new File(baseDir,
@@ -110,7 +95,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
 
         FileUtils.copyFile(copyFontFrom, fontFile);
         waitUntil(driver -> fontFile.exists());
-        createGlobalCssWithFont();
+        doActionAndWaitUntilLiveReloadComplete(this::createStylesCssWithFont);
         waitUntilCustomFont();
     }
 
@@ -144,28 +129,34 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         }
     }
 
-    private void createGlobalCssWithBackgroundColor() throws IOException {
-        final String styles = "html { background-color: " + RED_COLOR + "; }";
-        FileUtils.write(globalCSSFile, styles, StandardCharsets.UTF_8.name());
+    private void addBackgroundColorToStylesCSS() {
+        try {
+            final String styles = "html { background-color: " + RED_COLOR + "; }";
+            FileUtils.write(stylesCSSFile, styles,
+                StandardCharsets.UTF_8.name());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private void createGlobalCssWithFont() throws IOException {
-        // @formatter:off
-        final String fontStyle = 
-                "@font-face {" +
-                "    font-family: \"Ostrich\";" +
-                "    src: url(\"./fonts/" + fontFile.getName() + "\") format(\"TrueType\");" +
-                "}" + 
-                "html {" +
-                "    font-family: \"Ostrich\";" + 
-                "}";
-        // @formatter:on
-        FileUtils
-            .write(globalFontCSSFile, fontStyle, StandardCharsets.UTF_8.name());
-        FileUtils
-            .write(globalCSSFile, "@import url('" + globalFontCSSFile + "');",
+    private void createStylesCssWithFont() {
+        try {
+            // @formatter:off
+            final String fontStyle =
+                    "@font-face {" +
+                    "    font-family: \"Ostrich\";" +
+                    "    src: url(\"./fonts/" + fontFile.getName() + "\") format(\"TrueType\");" +
+                    "}" +
+                    "html {" +
+                    "    font-family: \"Ostrich\";" +
+                    "}";
+            // @formatter:on
+            FileUtils.write(stylesCSSFile, fontStyle,
                 StandardCharsets.UTF_8.name());
-        waitUntil(driver -> globalFontCSSFile.exists());
+            waitUntil(driver -> stylesCSSFile.exists());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void deleteFile(File fileToDelete) {
@@ -173,5 +164,15 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
             .delete()) {
             Assert.fail("Unable to delete " + fileToDelete);
         }
+    }
+
+    private void doActionAndWaitUntilLiveReloadComplete(Runnable action) {
+        // Add a new active client with 'blocker' key and let the
+        // waitForVaadin() to block until new page/document will be loaded as a
+        // result of live reload.
+        executeScript(
+                "window.Vaadin.Flow.clients[\"blocker\"] = {isActive: () => true};");
+        action.run();
+        getCommandExecutor().waitForVaadin();
     }
 }
