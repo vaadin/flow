@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import com.vaadin.flow.server.VaadinServletContext;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -37,6 +36,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -44,6 +44,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.RESOURCES_JAR_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -126,6 +127,12 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
+    public void loadingJars_useResourcesFolder_allFilesExist()
+            throws IOException, VaadinInitializerException {
+        loadingJars_allFilesExist(RESOURCES_JAR_DEFAULT);
+    }
+
+    @Test
     public void loadingZipProtocolJars_useModernResourcesFolder_allFilesExist()
             throws IOException, VaadinInitializerException {
         loadingZipProtocolJars_allFilesExist(RESOURCES_FRONTEND_DEFAULT);
@@ -142,6 +149,13 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws IOException, VaadinInitializerException {
         loadingFsResources_allFilesExist("/dir-with-modern-frontend/",
                 RESOURCES_FRONTEND_DEFAULT);
+    }
+
+    @Test
+    public void loadingFsResources_useResourcesFolder_allFilesExist()
+            throws IOException, VaadinInitializerException {
+        loadingFsResources_allFilesExist("/dir-with-frontend-resources/",
+                RESOURCES_JAR_DEFAULT);
     }
 
     @Test
