@@ -91,10 +91,16 @@ public enum Unit {
      * @return A Optional unit.
      */
     public static Optional<Unit> getUnit(String cssSize) {
-        if (cssSize == null) {
-             throw new IllegalArgumentException("The parameter can't be null");
+        if (cssSize == null || cssSize.isEmpty()) {
+            return Optional.empty();
         }
-        return getUnits().filter(unit -> cssSize.endsWith(unit.toString())).findFirst();
+
+        for (Unit unit : values()) {
+            if (cssSize.endsWith(unit.getSymbol())) {
+                return Optional.of(unit);
+            }
+        }
+        return Optional.empty();
     }
 
     /**
