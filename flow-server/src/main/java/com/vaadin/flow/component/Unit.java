@@ -23,17 +23,14 @@ import java.util.stream.Stream;
  */
 public enum Unit {
     /**
+     * Unit code representing in percentage of the containing element
+     * defined by terminal.
+     */
+    PERCENTAGE("%"),
+    /**
      * Unit code representing pixels.
      */
     PIXELS("px"),
-    /**
-     * Unit code representing points (1/72nd of an inch).
-     */
-    POINTS("pt"),
-    /**
-     * Unit code representing picas (12 points).
-     */
-    PICAS("pc"),
     /**
      * Unit code representing the font-size of the root font.
      */
@@ -42,6 +39,14 @@ public enum Unit {
      * Unit code representing the font-size of the relevant font.
      */
     EM("em"),
+    /**
+     * Unit code representing points (1/72nd of an inch).
+     */
+    POINTS("pt"),
+    /**
+     * Unit code representing picas (12 points).
+     */
+    PICAS("pc"),
     /**
      * Unit code representing the x-height of the relevant font.
      */
@@ -57,12 +62,7 @@ public enum Unit {
     /**
      * Unit code representing inches.
      */
-    INCH("in"),
-    /**
-     * Unit code representing in percentage of the containing element
-     * defined by terminal.
-     */
-    PERCENTAGE("%");
+    INCH("in");
 
     private final String symbol;
 
