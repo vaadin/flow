@@ -186,7 +186,7 @@ public class HasSizeTest {
         Assert.assertFalse(component.getHeightUnit().isPresent());
 
         component.setHeight("10%");
-        Assert.assertEquals(Unit.PERCENTAGE, component.getWidthUnit().get());
+        Assert.assertEquals(Unit.PERCENTAGE, component.getHeightUnit().get());
 
         component.setSizeUndefined();
         Assert.assertFalse(component.getHeightUnit().isPresent());
