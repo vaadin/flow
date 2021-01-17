@@ -40,6 +40,22 @@ public enum Unit {
      */
     EM("em"),
     /**
+     * Unit code representing the viewport's width.
+     */
+    VW("vw"),
+    /**
+     * Unit code representing the viewport's height.
+     */
+    VH("vh"),
+    /**
+     * Unit code representing the viewport's smaller dimension.
+     */
+    VMIN("vmin"),
+    /**
+     * Unit code representing the viewport's larger dimension.
+     */
+    VMAX("vmax"),
+    /**
      * Unit code representing points (1/72nd of an inch).
      */
     POINTS("pt"),
