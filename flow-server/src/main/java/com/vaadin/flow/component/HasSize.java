@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.Optional;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementConstants;
 
@@ -165,6 +167,15 @@ public interface HasSize extends HasElement {
     }
 
     /**
+     * Gets the width unit defined for the component.
+     *
+     * @return the width unit which has been set for the component
+     */
+    default Optional<Unit> getWidthUnit() {
+        return Unit.getUnit(getWidth());
+    }
+
+    /**
      * Sets the height of the component.
      * <p>
      * The height should be in a format understood by the browser, e.g. "100px"
@@ -294,6 +305,15 @@ public interface HasSize extends HasElement {
      */
     default String getMaxHeight() {
         return getElement().getStyle().get(ElementConstants.STYLE_MAX_HEIGHT);
+    }
+
+    /**
+     * Gets the height unit defined for the component.
+     *
+     * @return the height unit which has been set for the component
+     */
+    default Optional<Unit> getHeightUnit() {
+        return Unit.getUnit(getHeight());
     }
 
     /**
