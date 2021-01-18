@@ -27,6 +27,7 @@ const themePartRegex = /(\\|\/)themes\1[\s\S]*?\1/;
 //  - flow templates for classic Flow
 //  - client code with index.html and index.[ts/js] for CCDM
 const frontendFolder = '[to-be-generated-by-flow]';
+const frontendGeneratedFolder = '[to-be-generated-by-flow]';
 const fileNameOfTheFlowGeneratedMainEntryPoint = '[to-be-generated-by-flow]';
 const mavenOutputFolderForFlowBundledFiles = '[to-be-generated-by-flow]';
 const mavenOutputFolderForResourceFiles = '[to-be-generated-by-flow]';
@@ -174,7 +175,7 @@ const themeOptions = {
   themeResourceFolder: flowFrontendThemesFolder,
   themeProjectFolders: themeProjectFolders,
   projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
-  projectFrontendFolder: frontendFolder
+  frontendGeneratedFolder: frontendGeneratedFolder
 };
 const processThemeResourcesCallback = (logger) => processThemeResources(themeOptions, logger);
 

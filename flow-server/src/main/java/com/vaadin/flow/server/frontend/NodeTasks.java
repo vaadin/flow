@@ -591,7 +591,8 @@ public class NodeTasks implements FallibleCommand {
                     builder.webpackGeneratedTemplate,
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useDeprecatedV14Bootstrapping,
-                    builder.flowResourcesFolder, pwaConfiguration));
+                    builder.flowResourcesFolder, pwaConfiguration,
+                    builder.connectClientTsApiFolder));
         }
 
         if (builder.enableImportsUpdate) {
@@ -604,7 +605,8 @@ public class NodeTasks implements FallibleCommand {
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                 frontendDependencies.getThemeDefinition(),
-                    builder.frontendDirectory));
+                    builder.frontendDirectory,
+                    builder.connectClientTsApiFolder));
         }
     }
 

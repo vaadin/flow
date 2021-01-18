@@ -37,7 +37,7 @@ const nameRegex = /themes\/(.*)\/\1.generated.js/;
  * @param logger application theme plugin logger
  */
 function processThemeResources(options, logger) {
-  const themeName = extractThemeName(options.projectFrontendFolder);
+  const themeName = extractThemeName(options.frontendGeneratedFolder);
   if (themeName) {
     findThemeFolderAndHandleTheme(themeName, options, logger);
   } else {
@@ -140,21 +140,19 @@ function getThemeProperties(themeFolder) {
 }
 
 /**
- * Extracts current theme name from 'generated/theme.js' file located on a
+ * Extracts current theme name from auto-generated 'theme.js' file located on a
  * given folder.
- * @param frontendFolder folder in project containing frontend resources and
- * theme auto-generated files
- * file and copies local and jar resource frontend files
+ * @param frontendGeneratedFolder folder in project containing 'theme.js' file
  * @returns {string} current theme name
  */
-function extractThemeName(frontendFolder) {
-  if (!frontendFolder) {
-    throw new Error("Couldn't extract theme name from 'generated/theme.js'," +
+function extractThemeName(frontendGeneratedFolder) {
+  if (!frontendGeneratedFolder) {
+    throw new Error("Couldn't extract theme name from 'theme.js'," +
       " because the path to folder containing this file is empty. Please set" +
       " the a correct folder path in ApplicationThemePlugin constructor" +
       " parameters.");
   }
-  const generatedThemeFile = path.resolve(frontendFolder, "generated", "theme.js");
+  const generatedThemeFile = path.resolve(frontendGeneratedFolder, "theme.js");
   if (fs.existsSync(generatedThemeFile)) {
     // read theme name from the 'generated/theme.js' as there we always
     // mark the used theme for webpack to handle.

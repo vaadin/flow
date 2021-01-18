@@ -33,6 +33,7 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_GENERATED_TS_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -55,6 +56,7 @@ public class TaskUpdateThemeImportTest {
     private File projectRoot;
     private File npmFolder;
     private File frontendDirectory;
+    private File frontendGeneratedDirectory;
     private File themeImportFile;
     private File themeImportTsFile;
     private Class<? extends AbstractTheme> dummyThemeClass;
@@ -66,6 +68,8 @@ public class TaskUpdateThemeImportTest {
         projectRoot = temporaryFolder.getRoot();
         npmFolder = temporaryFolder.getRoot();
         frontendDirectory = new File(projectRoot, DEFAULT_FRONTEND_DIR);
+        frontendGeneratedDirectory = new File(projectRoot,
+            DEFAULT_CONNECT_GENERATED_TS_DIR);
 
         File frontendFolder = new File(npmFolder, FrontendUtils.DEFAULT_FRONTEND_DIR);
         themeImportFile = new File(
@@ -78,7 +82,7 @@ public class TaskUpdateThemeImportTest {
         customTheme = new ThemeDefinition(dummyThemeClass, CUSTOM_VARIANT_NAME,
                 CUSTOM_THEME_NAME);
         taskUpdateThemeImport = new TaskUpdateThemeImport(npmFolder,
-                customTheme, frontendDirectory);
+                customTheme, frontendDirectory, frontendGeneratedDirectory);
     }
 
     @Test
@@ -89,7 +93,7 @@ public class TaskUpdateThemeImportTest {
 
         TaskUpdateThemeImport taskUpdateThemeImportWithNonExistentThemeFolder =
                 new TaskUpdateThemeImport(npmFolder, customTheme,
-                        faultyFrontendDirectory);
+                        faultyFrontendDirectory, frontendGeneratedDirectory);
 
         ExecutionFailedException e = Assert.assertThrows(
                 ExecutionFailedException.class,
