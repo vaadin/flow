@@ -43,7 +43,6 @@ import java.nio.charset.StandardCharsets;
  * @since 1.2
  */
 @StyleSheet("context://test-files/css/allred.css")
-@NoTheme
 public abstract class DependencyLayout extends Div {
 
     public static final String RUN_PUSH_ID = "runPush";

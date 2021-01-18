@@ -61,6 +61,15 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <systemProperties>
+                        <systemProperty>
+                            <!-- Allow annotations due to push tests -->
+                            <name>vaadin.allow.appshell.annotations</name>
+                            <value>true</value>
+                        </systemProperty>
+                    </systemProperties>
+                </configuration>
             </plugin>
         </plugins>
     </build>
