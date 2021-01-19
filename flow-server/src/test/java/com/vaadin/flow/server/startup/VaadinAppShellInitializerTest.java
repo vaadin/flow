@@ -105,6 +105,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Theme(themeClass = AbstractTheme.class)
+    @Push(PushMode.AUTOMATIC)
     public static class NonOffendingExporter
         extends WebComponentExporter<WebHolder> {
         public NonOffendingExporter() {

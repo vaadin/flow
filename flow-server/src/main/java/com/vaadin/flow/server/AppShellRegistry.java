@@ -184,7 +184,9 @@ public class AppShellRegistry implements Serializable {
         validOnlyForAppShell.remove(PageTitle.class);
         if(WebComponentExporter.class.isAssignableFrom(clz)) {
             // Webcomponent exporter should have the theme annotation
+            // and Push annotation as it is not appShell configured.
             validOnlyForAppShell.remove(Theme.class);
+            validOnlyForAppShell.remove(Push.class);
         }
 
         String offending = getClassAnnotations(clz, validOnlyForAppShell);
