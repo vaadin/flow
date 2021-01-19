@@ -73,7 +73,6 @@ import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FallbackChunk;
@@ -208,18 +207,6 @@ public class DevModeInitializer
         initDevModeHandler(classes, context);
 
         setDevModeStarted(context);
-    }
-
-    private boolean isVaadinServletSubClass(String className) {
-        try {
-            return VaadinServlet.class
-                    .isAssignableFrom(Class.forName(className));
-        } catch (ClassNotFoundException exception) {// NOSONAR
-            log().debug(String.format("Servlet class name (%s) can't be found!",
-                    className));
-            return false;
-
-        }
     }
 
     private void setDevModeStarted(VaadinContext context) {
