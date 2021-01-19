@@ -49,6 +49,8 @@ public class TaskUpdateThemeImportTest {
     private static final String CUSTOM_VARIANT_NAME = "custom-variant";
     private static final String CUSTOM_THEME_PATH = String.join("/",
             APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME);
+    public static final String EMPTY_BEFORE_EXECUTION = "%s should not exist before executing TaskUpdateThemeImport.";
+    public static final String SHOULD_EXIST_AFTER_EXECUTION = "%s should be created as the result of executing TaskUpdateThemeImport.";
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -120,9 +122,9 @@ public class TaskUpdateThemeImportTest {
                 CUSTOM_THEME_NAME, DEFAULT_FRONTEND_DIR, APPLICATION_THEME_ROOT,
                 CUSTOM_THEME_NAME), customThemeDirCreatedSuccessfully);
 
-        assertThemeGeneratedDefinitionFilesNotExisted();
+        assertNoThemeGeneratedDefinitionFilesExist(EMPTY_BEFORE_EXECUTION);
         taskUpdateThemeImport.execute();
-        assertThemeGeneratedDefinitionFilesExists();
+        assertThemeGeneratedDefinitionFilesExist(SHOULD_EXIST_AFTER_EXECUTION);
     }
 
     @Test
@@ -143,9 +145,9 @@ public class TaskUpdateThemeImportTest {
                 APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME),
                 customThemeDirCreatedSuccessfully);
 
-        assertThemeGeneratedDefinitionFilesNotExisted();
+        assertNoThemeGeneratedDefinitionFilesExist(EMPTY_BEFORE_EXECUTION);
         taskUpdateThemeImport.execute();
-        assertThemeGeneratedDefinitionFilesExists();
+        assertThemeGeneratedDefinitionFilesExist(SHOULD_EXIST_AFTER_EXECUTION);
     }
 
     @Test
@@ -166,9 +168,9 @@ public class TaskUpdateThemeImportTest {
                 APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME),
                 customThemeDirCreatedSuccessfully);
 
-        assertThemeGeneratedDefinitionFilesNotExisted();
+        assertNoThemeGeneratedDefinitionFilesExist(EMPTY_BEFORE_EXECUTION);
         taskUpdateThemeImport.execute();
-        assertThemeGeneratedDefinitionFilesExists();
+        assertThemeGeneratedDefinitionFilesExist(SHOULD_EXIST_AFTER_EXECUTION);
     }
 
     @Test
@@ -189,31 +191,52 @@ public class TaskUpdateThemeImportTest {
                 APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME),
                 customThemeDirCreatedSuccessfully);
 
-        assertThemeGeneratedDefinitionFilesNotExisted();
+        assertNoThemeGeneratedDefinitionFilesExist(EMPTY_BEFORE_EXECUTION);
         taskUpdateThemeImport.execute();
-        assertThemeGeneratedDefinitionFilesExists();
+        assertThemeGeneratedDefinitionFilesExist(SHOULD_EXIST_AFTER_EXECUTION);
     }
 
-    private void assertThemeGeneratedDefinitionFilesNotExisted() {
-        Assert.assertFalse(
-            "\"theme.js\" should not exist before"
-                + " executing TaskUpdateThemeImport.",
+    @Test
+    public void runTaskWithTheme_createsThemeFile_afterRunWithoutTheme_removesThemeFile()
+        throws Exception {
+
+        File themesDir = new File(frontendDirectory, APPLICATION_THEME_ROOT);
+        File aCustomThemeDir = new File(themesDir, CUSTOM_THEME_NAME);
+
+        boolean customThemeDirCreatedSuccessfully = aCustomThemeDir.mkdirs();
+
+        Assert.assertTrue(String
+            .format("%s directory should be created at '%s%s/%s' but failed.",
+                CUSTOM_THEME_NAME, DEFAULT_FRONTEND_DIR, APPLICATION_THEME_ROOT,
+                CUSTOM_THEME_NAME), customThemeDirCreatedSuccessfully);
+
+        assertNoThemeGeneratedDefinitionFilesExist(EMPTY_BEFORE_EXECUTION);
+        taskUpdateThemeImport.execute();
+        assertThemeGeneratedDefinitionFilesExist(SHOULD_EXIST_AFTER_EXECUTION);
+
+        taskUpdateThemeImport = new TaskUpdateThemeImport(npmFolder, null,
+            frontendDirectory, frontendGeneratedDirectory);
+
+        taskUpdateThemeImport.execute();
+
+        assertNoThemeGeneratedDefinitionFilesExist(
+            "After removal of theme %s should be removed");
+    }
+
+    private void assertNoThemeGeneratedDefinitionFilesExist(
+        String errorMessage) {
+        Assert.assertFalse(String.format(errorMessage, "\"theme.js\""),
             themeImportFile.exists());
 
-        Assert.assertFalse(
-            "\"theme.d.ts\" should not exist before"
-                + " executing TaskUpdateThemeImport.",
+        Assert.assertFalse(String.format(errorMessage, "\theme.d.ts\""),
             themeImportTsFile.exists());
     }
-    private void assertThemeGeneratedDefinitionFilesExists() {
-        Assert.assertTrue(
-            "\"theme.js\" should be created as the "
-                + "result of executing TaskUpdateThemeImport.",
+
+    private void assertThemeGeneratedDefinitionFilesExist(String errorMessage) {
+        Assert.assertTrue(String.format(errorMessage, "\"theme.js\""),
             themeImportFile.exists());
 
-        Assert.assertTrue(
-            "\"theme.d.ts\" should be created as the "
-                + "result of executing TaskUpdateThemeImport.",
+        Assert.assertTrue(String.format(errorMessage, "\theme.d.ts\""),
             themeImportTsFile.exists());
     }
 
@@ -277,7 +300,7 @@ public class TaskUpdateThemeImportTest {
         ExecutionFailedException e = Assert.assertThrows(
                 ExecutionFailedException.class, taskUpdateThemeImport::execute);
 
-        Assert.assertTrue(e.getMessage()
+        Assert.assertTrue(e.getMessage(), e.getMessage()
                 .contains(String.format(
                         "Theme '%s' should not exist inside a "
                                 + "jar and in the project at the same time.",
