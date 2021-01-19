@@ -496,8 +496,8 @@ public class DevModeInitializer
 
     /*
      * This method returns all folders of jar files having files in the
-     * META-INF/resources/frontend and META-INF/resources folder. We don't use
-     * URLClassLoader because will fail in Java 9+
+     * META-INF/resources/frontend and META-INF/resources/themes folder.
+     * We don't use URLClassLoader because will fail in Java 9+
      */
     static Set<File> getFrontendLocationsFromClassloader(
             ClassLoader classLoader) throws VaadinInitializerException {
