@@ -127,9 +127,11 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
-    public void loadingJars_useResourcesFolder_allFilesExist()
+    public void loadingJars_useResourcesThemesFolder_allFilesExist()
             throws IOException, VaadinInitializerException {
-        loadingJars_allFilesExist(RESOURCES_THEME_JAR_DEFAULT);
+        loadingJarsWithProtocol_allFilesExist(RESOURCES_THEME_JAR_DEFAULT,
+            "src/test/resources/jar-with-themes-resources.jar!/META-INF/resources/themes",
+            this::jarUrlBuilder);
     }
 
     @Test
@@ -152,7 +154,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
-    public void loadingFsResources_useResourcesFolder_allFilesExist()
+    public void loadingFsResources_useResourcesThemesFolder_allFilesExist()
             throws IOException, VaadinInitializerException {
         loadingFsResources_allFilesExist("/dir-with-theme-resources/",
                 RESOURCES_THEME_JAR_DEFAULT);
@@ -509,13 +511,15 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     private void loadingJars_allFilesExist(String resourcesFolder)
             throws IOException, VaadinInitializerException {
-        loadingJarsWithProtocol_allFilesExist(resourcesFolder, s -> {
-            try {
-                return new URL("jar:" + s);
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        loadingJarsWithProtocol_allFilesExist(resourcesFolder, this::jarUrlBuilder);
+    }
+
+    private URL jarUrlBuilder(String url) {
+        try {
+            return new URL("jar:" + url);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void loadingZipProtocolJars_allFilesExist(String resourcesFolder)
@@ -541,10 +545,18 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     private void loadingJarsWithProtocol_allFilesExist(String resourcesFolder,
             Function<String, URL> urlBuilder)
             throws IOException, VaadinInitializerException {
+        loadingJarsWithProtocol_allFilesExist(resourcesFolder,
+                "src/test/resources/with%20space/jar-with-frontend-resources.jar!/META-INF/resources/frontend",
+                urlBuilder);
+    }
+
+    private void loadingJarsWithProtocol_allFilesExist(String resourcesFolder, String jarContent,
+                                                       Function<String, URL> urlBuilder)
+        throws IOException, VaadinInitializerException {
         // Create jar urls with the given urlBuilder for test
         String urlPath = this.getClass().getResource("/").toString()
-                .replace("target/test-classes/", "")
-                + "src/test/resources/with%20space/jar-with-frontend-resources.jar!/META-INF/resources/frontend";
+            .replace("target/test-classes/", "")
+            + jarContent;
         URL jar = urlBuilder.apply(urlPath);
         List<URL> urls = new ArrayList<>();
         urls.add(jar);
@@ -552,19 +564,19 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         // Create mock loader with the single jar to be found
         ClassLoader classLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(classLoader.getResources(resourcesFolder))
-                .thenReturn(Collections.enumeration(urls));
+            .thenReturn(Collections.enumeration(urls));
 
         // load jars from classloader
         List<File> jarFilesFromClassloader = new ArrayList<>(DevModeInitializer
-                .getFrontendLocationsFromClassloader(classLoader));
+            .getFrontendLocationsFromClassloader(classLoader));
 
         // Assert that jar was found and accepted
         assertEquals("One jar should have been found and added as a File", 1,
-                jarFilesFromClassloader.size());
+            jarFilesFromClassloader.size());
         // Assert that the file can be found from the filesystem by the given
         // path.
         assertTrue("File in path 'with space' doesn't load from given path",
-                jarFilesFromClassloader.get(0).exists());
+            jarFilesFromClassloader.get(0).exists());
     }
 
     private void loadingFsResources_allFilesExist(String resourcesRoot,
