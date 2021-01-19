@@ -59,7 +59,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
  */
 public class TaskUpdateImports extends NodeUpdater {
 
-    private static final String THEME_LINE_TPL = "addCssBlock('%s', true);";
+    private static final String THEME_LINE_TPL = "%saddCssBlock('%s', true);";
     private static final String THEME_VARIANT_TPL = "document.documentElement.setAttribute('%s', '%s');";
     // Trim and remove new lines.
     private static final Pattern NEW_LINE_TRIM = Pattern
@@ -133,12 +133,17 @@ public class TaskUpdateImports extends NodeUpdater {
             ThemeDefinition themeDef = getThemeDefinition();
 
             if (theme != null) {
+                boolean hasApplicationTheme = themeDef != null && !"".equals(themeDef.getName());
+                // There is no application theme in use, write theme includes here. Otherwise they are written by the theme
                 if (!theme.getHeaderInlineContents().isEmpty()) {
                     lines.add("");
+                    if (hasApplicationTheme) {
+                        lines.add("// Handled in the application theme");
+                    }
                     theme.getHeaderInlineContents()
-                            .forEach(html -> addLines(lines,
-                                    String.format(THEME_LINE_TPL, NEW_LINE_TRIM
-                                            .matcher(html).replaceAll(""))));
+                    .forEach(html -> addLines(lines,
+                    String.format(THEME_LINE_TPL, hasApplicationTheme ? "// ":"" ,NEW_LINE_TRIM
+                    .matcher(html).replaceAll(""))));
                 }
                 if (themeDef != null) {
                     theme.getHtmlAttributes(themeDef.getVariant()).forEach(
