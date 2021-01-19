@@ -59,7 +59,7 @@ public class FrontendTools {
 
     public static final String DEFAULT_NODE_VERSION = "v14.15.4";
 
-    public static final String DEFAULT_PNPM_VERSION = "4.5.0";
+    public static final String DEFAULT_PNPM_VERSION = "5.15.1";
 
     public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm "
             + "-DnodeVersion=\"" + DEFAULT_NODE_VERSION + "\" ";
@@ -113,10 +113,6 @@ public class FrontendTools {
     public static final int SUPPORTED_PNPM_MAJOR_VERSION = 4;
     public static final int SUPPORTED_PNPM_MINOR_VERSION = 4;
 
-    // Due to a regression in pnpm, see #8434
-    private static final int BREAKING_PNPM_MAJOR_VERSION = 4;
-    private static final int BREAKING_PNPM_MINOR_VERSION = 6;
-
     private static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
             SUPPORTED_NODE_MAJOR_VERSION, SUPPORTED_NODE_MINOR_VERSION);
     private static final FrontendVersion SHOULD_WORK_NODE_VERSION = new FrontendVersion(
@@ -139,10 +135,6 @@ public class FrontendTools {
 
     private static final FrontendVersion SUPPORTED_PNPM_VERSION = new FrontendVersion(
             SUPPORTED_PNPM_MAJOR_VERSION, SUPPORTED_PNPM_MINOR_VERSION);
-
-    // See #8434
-    private static final FrontendVersion BREAKING_PNPM_VERSION = new FrontendVersion(
-            BREAKING_PNPM_MAJOR_VERSION, BREAKING_PNPM_MINOR_VERSION);
 
     private final String baseDir;
     private final Supplier<String> alternativeDirGetter;
@@ -708,14 +700,12 @@ public class FrontendTools {
                 versionCmd.add("--version"); // NOSONAR
                 FrontendVersion pnpmVersion = FrontendUtils.getVersion("pnpm",
                         versionCmd);
-                if (!(FrontendUtils.isVersionAtLeast(pnpmVersion,
-                        SUPPORTED_PNPM_VERSION)
-                        && pnpmVersion.isOlderThan(BREAKING_PNPM_VERSION))) {
+                if (!FrontendUtils.isVersionAtLeast(pnpmVersion,
+                        SUPPORTED_PNPM_VERSION)) {
                     getLogger().warn(
-                            "installed pnpm ('{}', version {}) is not in the compatible versions range (>={}, <{})",
+                            "installed pnpm ('{}', version {}) is not supported (should be >={})",
                             pnpmCommandString, pnpmVersion.getFullVersion(),
-                            SUPPORTED_PNPM_VERSION.getFullVersion(),
-                            BREAKING_PNPM_VERSION.getFullVersion());
+                            SUPPORTED_PNPM_VERSION.getFullVersion());
                     pnpmCommand = Collections.emptyList();
                 }
             } catch (UnknownVersionException e) {

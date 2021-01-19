@@ -110,7 +110,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // create some package.json file so pnpm does some installation into
         // node_modules folder
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"pnpm\": \"4.5.0\"}}",
+                "{\"dependencies\": {" + "\"pnpm\": \"5.15.1\"}}",
                 StandardCharsets.UTF_8);
 
         getNodeUpdater().modified = true;

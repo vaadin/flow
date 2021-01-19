@@ -504,27 +504,18 @@ public class FrontendToolsTest {
         Assert.assertNotEquals("expected pnpm version 4.5.0 accepted", 0,
                 pnpmCommand.size());
     }
-    @Test
-    public void getSuitablePnpm_tooNewVersionInstalled_rejected() throws Exception {
-        Assume.assumeFalse(
-                tools.getNodeExecutable().isEmpty());
-        createFakePnpm("5.5.0");
-        List<String> pnpmCommand = tools.getSuitablePnpm(baseDir);
-        Assert.assertEquals("expected pnpm version 5.5.0 rejected", 0,
-                pnpmCommand.size());
-    }
 
     @Test
-    public void getSuitablePnpm_tooNewVersionInstalledAndSkipVersionCheck_accepted()
+    public void getSuitablePnpm_tooOldVersionInstalledAndSkipVersionCheck_accepted()
             throws Exception {
         tools = new FrontendTools(baseDir, () -> vaadinHomeDir,
                 "v12.10.0", new File(baseDir).toURI(), true);
         Assume.assumeFalse(
                 tools.getNodeExecutable().isEmpty());
 
-        createFakePnpm("5.5.0");
+        createFakePnpm("4.3.0");
         List<String> pnpmCommand = tools.getSuitablePnpm(baseDir);
-        Assert.assertNotEquals("expected pnpm version 5.5.0 accepted", 0,
+        Assert.assertNotEquals("expected pnpm version 4.3.0 accepted", 0,
                 pnpmCommand.size());
     }
 
