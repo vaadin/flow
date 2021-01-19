@@ -184,8 +184,9 @@ public class DevModeInitializer
             "^(?:file:0)?(.+)" + Constants.RESOURCES_FRONTEND_DEFAULT + "/?$");
 
     // allow trailing slash
-    private static final Pattern DIR_REGEX_RESOURCES_JAR_DEFAULT = Pattern.compile(
-            "^(?:file:0)?(.+)" + Constants.RESOURCES_JAR_DEFAULT + "/?$");
+    private static final Pattern DIR_REGEX_RESOURCES_JAR_DEFAULT = Pattern
+            .compile("^(?:file:0)?(.+)" + Constants.RESOURCES_THEME_JAR_DEFAULT
+                    + "/?$");
 
     // allow trailing slash
     private static final Pattern DIR_REGEX_COMPATIBILITY_FRONTEND_DEFAULT = Pattern
@@ -506,7 +507,7 @@ public class DevModeInitializer
         frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
                 Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT));
         frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
-            Constants.RESOURCES_JAR_DEFAULT));
+            Constants.RESOURCES_THEME_JAR_DEFAULT));
         return frontendFiles;
     }
 

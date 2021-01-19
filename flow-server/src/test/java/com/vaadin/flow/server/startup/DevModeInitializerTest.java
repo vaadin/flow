@@ -44,7 +44,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.RESOURCES_JAR_DEFAULT;
+import static com.vaadin.flow.server.Constants.RESOURCES_THEME_JAR_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -129,7 +129,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void loadingJars_useResourcesFolder_allFilesExist()
             throws IOException, VaadinInitializerException {
-        loadingJars_allFilesExist(RESOURCES_JAR_DEFAULT);
+        loadingJars_allFilesExist(RESOURCES_THEME_JAR_DEFAULT);
     }
 
     @Test
@@ -154,8 +154,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void loadingFsResources_useResourcesFolder_allFilesExist()
             throws IOException, VaadinInitializerException {
-        loadingFsResources_allFilesExist("/dir-with-frontend-resources/",
-                RESOURCES_JAR_DEFAULT);
+        loadingFsResources_allFilesExist("/dir-with-theme-resources/",
+                RESOURCES_THEME_JAR_DEFAULT);
     }
 
     @Test
