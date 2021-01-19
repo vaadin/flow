@@ -33,8 +33,10 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_D_TS_N
 import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
 
 /**
- * Task for generating the theme-generated.js file for importing application
- * theme.
+ * Task generating the theme definition file 'theme.js' for importing
+ * application theme into the generated frontend directory.
+ * 
+ * Default directory is ' ./frontend/generated' 
  *
  * @since
  */
@@ -51,19 +53,13 @@ public class TaskUpdateThemeImport implements FallibleCommand {
     private final File npmFolder;
 
     TaskUpdateThemeImport(File npmFolder, ThemeDefinition theme,
-            File frontendDirectory) {
-        File nodeModules = new File(npmFolder, FrontendUtils.NODE_MODULES);
-        File flowFrontend = new File(nodeModules,
-                FrontendUtils.FLOW_NPM_PACKAGE_NAME);
-        this.themeImportFile = new File(
-                new File(flowFrontend, APPLICATION_THEME_ROOT),
-                THEME_IMPORTS_NAME);
-        themeImportFileDefinition = new File(
-            new File(flowFrontend, APPLICATION_THEME_ROOT),
-            THEME_IMPORTS_D_TS_NAME);
+            File frontendDirectory, File frontendGeneratedFolder) {
         this.theme = theme;
         this.frontendDirectory = frontendDirectory;
         this.npmFolder = npmFolder;
+        themeImportFile = new File(frontendGeneratedFolder, THEME_IMPORTS_NAME);
+        themeImportFileDefinition = new File(frontendGeneratedFolder,
+                THEME_IMPORTS_D_TS_NAME);
     }
 
     @Override

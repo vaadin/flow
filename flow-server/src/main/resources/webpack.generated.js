@@ -27,6 +27,7 @@ const themePartRegex = /(\\|\/)themes\1[\s\S]*?\1/;
 //  - flow templates for classic Flow
 //  - client code with index.html and index.[ts/js] for CCDM
 const frontendFolder = '[to-be-generated-by-flow]';
+const frontendGeneratedFolder = '[to-be-generated-by-flow]';
 const fileNameOfTheFlowGeneratedMainEntryPoint = '[to-be-generated-by-flow]';
 const mavenOutputFolderForFlowBundledFiles = '[to-be-generated-by-flow]';
 const mavenOutputFolderForResourceFiles = '[to-be-generated-by-flow]';
@@ -169,12 +170,12 @@ const flowFrontendThemesFolder = path.resolve(flowFrontendFolder, 'themes');
 const themeName = extractThemeName(flowFrontendThemesFolder);
 const themeOptions = {
   devMode: devMode,
-  // The following matches target/flow-frontend/themes/theme-generated.js
-  // and for theme in JAR that is copied to target/flow-frontend/themes/
-  // and not frontend/themes
+  // The following matches folder 'target/flow-frontend/themes/'
+  // (not 'frontend/themes') for theme in JAR that is copied there
   themeResourceFolder: flowFrontendThemesFolder,
   themeProjectFolders: themeProjectFolders,
   projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
+  frontendGeneratedFolder: frontendGeneratedFolder
 };
 const processThemeResourcesCallback = (logger) => processThemeResources(themeOptions, logger);
 

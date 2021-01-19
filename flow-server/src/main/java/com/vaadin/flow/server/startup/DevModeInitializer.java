@@ -338,18 +338,12 @@ public class DevModeInitializer
                     Paths.get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE)
                             .toString());
 
-            String connectTsFolder = config.getStringProperty(
-                    CONNECT_GENERATED_TS_DIR_TOKEN,
-                    Paths.get(baseDir, DEFAULT_CONNECT_GENERATED_TS_DIR)
-                            .toString());
-
             builder.withConnectJavaSourceFolder(
                     new File(connectJavaSourceFolder))
                     .withConnectApplicationProperties(
                             new File(connectApplicationProperties))
                     .withConnectGeneratedOpenApiJson(
-                            new File(connectOpenApiJsonFile))
-                    .withConnectClientTsApiFolder(new File(connectTsFolder));
+                            new File(connectOpenApiJsonFile));
         }
 
         // If we are missing either the base or generated package json files
@@ -373,10 +367,16 @@ public class DevModeInitializer
         boolean useHomeNodeExec = config.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
 
+        String connectTsFolder = config.getStringProperty(
+                CONNECT_GENERATED_TS_DIR_TOKEN,
+                Paths.get(baseDir, DEFAULT_CONNECT_GENERATED_TS_DIR)
+                        .toString());
+
         JsonObject tokenFileData = Json.createObject();
         NodeTasks tasks = builder.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
                 .withFlowResourcesFolder(flowResourcesFolder)
+                .withConnectClientTsApiFolder(new File(connectTsFolder))
                 .copyResources(frontendLocations)
                 .copyLocalResources(new File(baseDir,
                         Constants.LOCAL_FRONTEND_RESOURCES_PATH))
