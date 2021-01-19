@@ -64,6 +64,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private final Path flowResourcesFolder;
     private final PwaConfiguration pwaConfiguration;
     private final Path resourceFolder;
+    private final Path frontendGeneratedFolder;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -88,13 +89,16 @@ public class TaskUpdateWebpack implements FallibleCommand {
      *            whether the application running with deprecated V14 bootstrapping
      * @param flowResourcesFolder
      *            relative path to `flow-frontend` package
+     * @param frontendGeneratedFolder
+     *            the folder with frontend auto-generated files
      */
     @SuppressWarnings("squid:S00107")
     TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
             File webpackOutputDirectory, File resourceOutputDirectory,
             String webpackTemplate, String webpackGeneratedTemplate,
             File generatedFlowImports, boolean useV14Bootstrapping,
-            File flowResourcesFolder, PwaConfiguration pwaConfiguration) {
+            File flowResourcesFolder, PwaConfiguration pwaConfiguration,
+            File frontendGeneratedFolder) {
         this.frontendDirectory = frontendDirectory.toPath();
         this.webpackTemplate = webpackTemplate;
         this.webpackGeneratedTemplate = webpackGeneratedTemplate;
@@ -107,6 +111,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
         this.pwaConfiguration = pwaConfiguration;
         this.resourceFolder = new File(webpackOutputDirectory,
                 VAADIN_STATIC_FILES_PATH).toPath();
+        this.frontendGeneratedFolder = frontendGeneratedFolder.toPath();
     }
 
     @Override
@@ -178,6 +183,9 @@ public class TaskUpdateWebpack implements FallibleCommand {
                 new Pair<>("const frontendFolder",
                         formatPathResolve(getEscapedRelativeWebpackPath(
                                 frontendDirectory))),
+                new Pair<>("const frontendGeneratedFolder",
+                        formatPathResolve(getEscapedRelativeWebpackPath(
+                            frontendGeneratedFolder))),
                 new Pair<>("const mavenOutputFolderForFlowBundledFiles",
                         formatPathResolve(getEscapedRelativeWebpackPath(
                                 webpackOutputPath))),

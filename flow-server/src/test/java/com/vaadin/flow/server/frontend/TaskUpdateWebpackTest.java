@@ -36,6 +36,7 @@ import org.junit.rules.TemporaryFolder;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PwaConfiguration;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_GENERATED_TS_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
@@ -64,6 +65,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     private File webpackGenerated;
     private File baseDir;
     private File frontendFolder;
+    private File frontendGeneratedFolder;
     private PwaConfiguration pwaConfiguration;
     private boolean useV14Bootstrapping = false;
 
@@ -71,6 +73,8 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     public void setup() throws Exception {
         baseDir = temporaryFolder.getRoot();
         frontendFolder = new File(baseDir, "frontend");
+        frontendGeneratedFolder = new File(baseDir,
+                DEFAULT_CONNECT_GENERATED_TS_DIR);
 
         NodeUpdateTestUtil.createStubNode(true, true, false,
                 baseDir.getAbsolutePath());
@@ -164,7 +168,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 baseDir, new File(baseDir, "baz"), new File(baseDir, "foo"),
                 WEBPACK_CONFIG, WEBPACK_GENERATED, new File(baseDir, "bar"),
                 false, new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
-                pwaConfiguration);
+                pwaConfiguration, frontendGeneratedFolder);
 
         newUpdater.execute();
 
@@ -317,7 +321,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME),
                 useV14Bootstrapping,
                 new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
-                pwaConfiguration);
+                pwaConfiguration, frontendGeneratedFolder);
     }
 
     private void assertWebpackGeneratedConfigContent(String entryPoint,

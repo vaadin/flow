@@ -160,7 +160,7 @@ public class WebComponentGenerator {
 
         if (themeName != null && !themeName.isEmpty()) {
             replacements.put("ThemeImport",
-                "import {applyTheme} from '@vaadin/flow-frontend/themes/theme-generated';\n\n");
+                "import {applyTheme} from 'generated/theme';\n\n");
             replacements.put("ApplyTheme", "applyTheme(shadow);\n    ");
         } else {
             replacements.put("ThemeImport", "");

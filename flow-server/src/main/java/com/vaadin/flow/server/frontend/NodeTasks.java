@@ -591,7 +591,8 @@ public class NodeTasks implements FallibleCommand {
                     builder.webpackGeneratedTemplate,
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useDeprecatedV14Bootstrapping,
-                    builder.flowResourcesFolder, pwaConfiguration));
+                    builder.flowResourcesFolder, pwaConfiguration,
+                    builder.connectClientTsApiFolder));
         }
 
         if (builder.enableImportsUpdate) {
@@ -603,8 +604,9 @@ public class NodeTasks implements FallibleCommand {
                             builder.tokenFileData, builder.enablePnpm));
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
-                frontendDependencies.getThemeDefinition(),
-                    builder.frontendDirectory));
+                frontendDependencies.getThemeDefinition(), // NOSONAR
+                    builder.frontendDirectory,
+                    builder.connectClientTsApiFolder));
         }
     }
 
