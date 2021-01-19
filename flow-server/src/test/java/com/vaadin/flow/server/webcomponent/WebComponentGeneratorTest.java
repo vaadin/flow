@@ -175,13 +175,15 @@ public class WebComponentGeneratorTest {
     @Test
     public void providedJSModuleContainsCorrectThemeReplacements() {
         String module = WebComponentGenerator.generateModule(
-                new DefaultWebComponentExporterFactory<MyComponent>(
+                new DefaultWebComponentExporterFactory<>(
                         MyComponentExporter.class),
                 "", false, "my-theme");
         // make sure that the test works on windows machines:
         module = module.replace("\r", "");
         MatcherAssert.assertThat(module,
-                startsWith("import {applyTheme} from '@vaadin/flow-frontend/themes/theme-generated';\n\nclass Tag extends HTMLElement {"));
+                startsWith("import {applyTheme} from '"
+                        + "generated/theme';\n\nclass Tag extends "
+                        + "HTMLElement {"));
         MatcherAssert
             .assertThat(module, containsString("style.innerHTML = `\n" //
                 + "      :host {\n" //

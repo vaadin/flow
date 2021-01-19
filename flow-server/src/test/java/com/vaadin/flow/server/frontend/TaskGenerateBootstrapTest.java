@@ -87,7 +87,7 @@ public class TaskGenerateBootstrapTest {
 
         final List<String> expectedContent = Arrays.asList(
                 "import '../../target/index';",
-                "import { applyTheme } from '@vaadin/flow-frontend/themes/theme-generated';",
+                "import { applyTheme } from './theme';",
                 "applyTheme(document);");
 
         expectedContent.forEach(expectedLine -> Assert.assertTrue(

@@ -34,6 +34,7 @@ import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_GENERATED_TS_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
@@ -151,7 +152,9 @@ public class NodeTasksTest {
                         .enableImportsUpdate(true).runNpmInstall(false)
                         .withEmbeddableWebComponents(false)
                         .useV14Bootstrap(false).withFlowResourcesFolder(
-                                new File(userDir, TARGET + "flow-frontend"));
+                                new File(userDir, TARGET + "flow-frontend"))
+                        .withConnectClientTsApiFolder(new File(userDir,
+                                DEFAULT_CONNECT_GENERATED_TS_DIR));
         builder.build().execute();
         String webpackGeneratedContent = Files
                 .lines(new File(userDir, WEBPACK_GENERATED).toPath())
