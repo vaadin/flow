@@ -36,7 +36,7 @@ import org.junit.rules.TemporaryFolder;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PwaConfiguration;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_GENERATED_TS_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
@@ -74,7 +74,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         baseDir = temporaryFolder.getRoot();
         frontendFolder = new File(baseDir, "frontend");
         frontendGeneratedFolder = new File(baseDir,
-                DEFAULT_CONNECT_GENERATED_TS_DIR);
+                DEFAULT_PROJECT_FRONTEND_GENERATED_DIR);
 
         NodeUpdateTestUtil.createStubNode(true, true, false,
                 baseDir.getAbsolutePath());
