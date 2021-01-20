@@ -8,8 +8,6 @@
 
 const fs = require('fs');
 
-const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf-8'));
-
 const versionsFile = '[to-be-generated-by-flow]';
 
 if (!fs.existsSync(versionsFile)) {
