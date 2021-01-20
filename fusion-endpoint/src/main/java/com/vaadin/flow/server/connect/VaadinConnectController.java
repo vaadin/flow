@@ -101,16 +101,14 @@ public class VaadinConnectController {
     /**
      * A qualifier to override the request and response default json mapper.
      *
-     * @see #VaadinConnectController(ObjectMapper, VaadinConnectAccessChecker,
-     *      EndpointNameChecker, ExplicitNullableTypeChecker,
-     *      ApplicationContext, ServletContext)
+     * @see #VaadinConnectController(ObjectMapper, EndpointNameChecker, 
+     *       ExplicitNullableTypeChecker, ApplicationContext)
      */
     public static final String VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER = "vaadinEndpointMapper";
 
     final Map<String, VaadinEndpointData> vaadinEndpoints = new HashMap<>();
 
     private final ObjectMapper vaadinEndpointMapper;
-    private final VaadinConnectAccessChecker accessChecker;
     private final Validator validator = Validation
             .buildDefaultValidatorFactory().getValidator();
     private final ExplicitNullableTypeChecker explicitNullableTypeChecker;
@@ -142,7 +140,6 @@ public class VaadinConnectController {
         this.vaadinEndpointMapper = vaadinEndpointMapper != null
                 ? vaadinEndpointMapper
                 : createVaadinConnectObjectMapper(context);
-        this.accessChecker = context.getBean(VaadinConnectAccessChecker.class);
         this.explicitNullableTypeChecker = explicitNullableTypeChecker;
 
         context.getBeansWithAnnotation(Endpoint.class)
@@ -227,6 +224,8 @@ public class VaadinConnectController {
      *            the current request which triggers the endpoint call
      * @param servletContext
      *            The servlet context for the controller.
+     * @param appConetext
+     *            Spring application context.
      * @return execution result as a JSON string or an error message string
      */
     @PostMapping(path = "/{endpoint}/{method}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -234,7 +233,7 @@ public class VaadinConnectController {
             @PathVariable("endpoint") String endpointName,
             @PathVariable("method") String methodName,
             @RequestBody(required = false) ObjectNode body,
-            HttpServletRequest request, ServletContext servletContext) {
+            HttpServletRequest request, ServletContext servletContext, ApplicationContext applicationContext) {
         getLogger().debug("Endpoint: {}, method: {}, request body: {}",
                 endpointName, methodName, body);
 
@@ -261,9 +260,9 @@ public class VaadinConnectController {
                     .getCurrent();
             CurrentInstance.set(VaadinRequest.class,
                     new VaadinServletRequest(request, service));
-
+            String accessCheckError = checkAccess(methodToInvoke, request, servletContext, applicationContext);
             return invokeVaadinEndpointMethod(endpointName, methodName,
-                    methodToInvoke, body, vaadinEndpointData, request, servletContext);
+                    methodToInvoke, body, vaadinEndpointData, accessCheckError);
         } catch (JsonProcessingException e) {
             String errorMessage = String.format(
                     "Failed to serialize endpoint '%s' method '%s' response. "
@@ -285,16 +284,22 @@ public class VaadinConnectController {
         }
     }
 
+    private String checkAccess(Method methodToInvoke, HttpServletRequest request, 
+                ServletContext servletContext, ApplicationContext applicationContext){
+        VaadinConnectAccessChecker accessChecker = getAccessChecker(servletContext, applicationContext);
+        String checkError = accessChecker.check(methodToInvoke, request);
+        return checkError;
+    }
+
     private ResponseEntity<String> invokeVaadinEndpointMethod(
             String endpointName, String methodName, Method methodToInvoke,
             ObjectNode body, VaadinEndpointData vaadinEndpointData,
-            HttpServletRequest request, ServletContext servletContext) throws JsonProcessingException {
-        String checkError = getConfiguredChecker(servletContext).check(methodToInvoke, request);
-        if (checkError != null) {
+            String accessCheckError) throws JsonProcessingException {
+        if (accessCheckError != null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(createResponseErrorObject(String.format(
                             "Endpoint '%s' method '%s' request cannot be accessed, reason: '%s'",
-                            endpointName, methodName, checkError)));
+                            endpointName, methodName, accessCheckError)));
         }
 
         Map<String, JsonNode> requestParameters = getRequestParameters(body);
@@ -561,12 +566,14 @@ public class VaadinConnectController {
         }
     }
 
-    private VaadinConnectAccessChecker getConfiguredChecker(
-            ServletContext servletContext) {
+    private VaadinConnectAccessChecker getAccessChecker(
+            ServletContext servletContext, ApplicationContext applicationContext) {
         VaadinServletContext vaadinServletContext = new VaadinServletContext(
                 servletContext);
         VaadinConnectAccessCheckerWrapper wrapper = vaadinServletContext
                 .getAttribute(VaadinConnectAccessCheckerWrapper.class, () -> {
+                    VaadinConnectAccessChecker accessChecker = 
+                        applicationContext.getBean(VaadinConnectAccessChecker.class);
                     ApplicationConfiguration cfg = ApplicationConfiguration
                             .get(vaadinServletContext);
                     if (cfg != null) {
