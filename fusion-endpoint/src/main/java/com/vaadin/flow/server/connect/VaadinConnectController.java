@@ -224,7 +224,7 @@ public class VaadinConnectController {
      *            the current request which triggers the endpoint call
      * @param servletContext
      *            The servlet context for the controller.
-     * @param appConetext
+     * @param applicationContext
      *            Spring application context.
      * @return execution result as a JSON string or an error message string
      */
