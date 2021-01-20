@@ -62,6 +62,9 @@ public class TaskUpdateThemeImport implements FallibleCommand {
     @Override
     public void execute() throws ExecutionFailedException {
         if (theme == null || theme.getName().isEmpty()) {
+            if(themeImportFile.exists()) {
+                themeImportFile.delete();
+            }
             return;
         }
 
