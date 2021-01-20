@@ -39,8 +39,10 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
      * (by default 'src/main/resources/META-INF/resources/frontend'). This
      * enables running jar projects locally.
      *
-     * @param npmFolder
-     *            target directory for the discovered files
+     * @param flowResourcesFolder
+     *     target directory for the discovered files
+     * @param localResourcesFolder
+     *     local folder containing resources to copy
      */
     TaskCopyLocalFrontendFiles(File flowResourcesFolder,
             File localResourcesFolder) {

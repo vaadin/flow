@@ -136,13 +136,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = FrontendUtils.WEBPACK_GENERATED)
     private String webpackGeneratedTemplate;
 
-    /**
-     * Copy the `sw.ts` from the specified URL. Default is the template provided
-     * by this plugin. Set it to empty string to disable the feature.
-     */
-    @Parameter(defaultValue = FrontendUtils.SERVICE_WORKER_SRC)
-    private String serviceWorkerTemplate;
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         updateBuildFile();
@@ -191,7 +184,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .runNpmInstall(runNpmInstall)
                         .withWebpack(webpackOutputDirectory,
                                 resourceOutputDirectory, webpackTemplate,
-                                webpackGeneratedTemplate, serviceWorkerTemplate)
+                                webpackGeneratedTemplate)
                         .useV14Bootstrap(useDeprecatedV14Bootstrapping())
                         .enablePackagesUpdate(true)
                         .useByteCodeScanner(optimizeBundle)
