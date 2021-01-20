@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,6 +66,10 @@ public class TaskUpdateThemeImport implements FallibleCommand {
     @Override
     public void execute() throws ExecutionFailedException {
         if (theme == null || theme.getName().isEmpty()) {
+            if(themeImportFile.exists()) {
+                themeImportFile.delete();
+                themeImportFileDefinition.delete();
+            }
             return;
         }
 
@@ -119,7 +124,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
             boolean themeFoundInJar = existingAppThemeDirectories
                     .stream().map(File::getPath)
                     .anyMatch(path -> path
-                            .contains(FrontendUtils.FLOW_NPM_PACKAGE_NAME));
+                            .contains(Paths.get(FrontendUtils.FLOW_NPM_PACKAGE_NAME).toString()));
 
             if (themeFoundInJar) {
                 String errorMessage = "Theme '%s' should not exist inside a "
