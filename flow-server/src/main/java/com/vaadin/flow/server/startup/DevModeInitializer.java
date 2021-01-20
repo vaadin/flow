@@ -87,7 +87,6 @@ import com.vaadin.flow.theme.Theme;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -172,6 +171,11 @@ public class DevModeInitializer
     // allow trailing slash
     private static final Pattern DIR_REGEX_FRONTEND_DEFAULT = Pattern.compile(
             "^(?:file:0)?(.+)" + Constants.RESOURCES_FRONTEND_DEFAULT + "/?$");
+
+    // allow trailing slash
+    private static final Pattern DIR_REGEX_RESOURCES_JAR_DEFAULT = Pattern
+            .compile("^(?:file:0)?(.+)" + Constants.RESOURCES_THEME_JAR_DEFAULT
+                    + "/?$");
 
     // allow trailing slash
     private static final Pattern DIR_REGEX_COMPATIBILITY_FRONTEND_DEFAULT = Pattern
@@ -407,8 +411,8 @@ public class DevModeInitializer
 
     /*
      * This method returns all folders of jar files having files in the
-     * META-INF/resources/frontend folder. We don't use URLClassLoader because
-     * will fail in Java 9+
+     * META-INF/resources/frontend and META-INF/resources/themes folder.
+     * We don't use URLClassLoader because will fail in Java 9+
      */
     static Set<File> getFrontendLocationsFromClassloader(
             ClassLoader classLoader) throws ServletException {
@@ -417,6 +421,8 @@ public class DevModeInitializer
                 Constants.RESOURCES_FRONTEND_DEFAULT));
         frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
                 Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT));
+        frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
+            Constants.RESOURCES_THEME_JAR_DEFAULT));
         return frontendFiles;
     }
 
@@ -458,6 +464,8 @@ public class DevModeInitializer
                 Matcher zipProtocolJarMatcher = ZIP_PROTOCOL_JAR_FILE_REGEX
                         .matcher(path);
                 Matcher dirMatcher = DIR_REGEX_FRONTEND_DEFAULT.matcher(path);
+                Matcher dirResourcesMatcher = DIR_REGEX_RESOURCES_JAR_DEFAULT
+                        .matcher(path);
                 Matcher dirCompatibilityMatcher = DIR_REGEX_COMPATIBILITY_FRONTEND_DEFAULT
                         .matcher(path);
                 Matcher jarVfsMatcher = VFS_FILE_REGEX.matcher(urlString);
@@ -479,6 +487,8 @@ public class DevModeInitializer
                     frontendFiles.add(new File(zipProtocolJarMatcher.group(1)));
                 } else if (dirMatcher.find()) {
                     frontendFiles.add(new File(dirMatcher.group(1)));
+                } else if (dirResourcesMatcher.find()) {
+                    frontendFiles.add(new File(dirResourcesMatcher.group(1)));
                 } else if (dirCompatibilityMatcher.find()) {
                     frontendFiles
                             .add(new File(dirCompatibilityMatcher.group(1)));
