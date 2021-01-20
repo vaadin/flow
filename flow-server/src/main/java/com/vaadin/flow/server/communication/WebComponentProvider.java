@@ -19,9 +19,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -67,7 +66,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                     + JS_EXTENSION + "|" + HTML_EXTENSION + ")$");
 
     // tag name -> generated html
-    private Map<String, String> cache = new HashMap<>();
+    private ConcurrentHashMap<String, String> cache = new ConcurrentHashMap<>();
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
@@ -182,7 +181,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
      */
     public void setCacheEnabled(boolean cacheEnabled) {
         if (cacheEnabled) {
-            cache = new HashMap<>();
+            cache = new ConcurrentHashMap<>();
         } else {
             cache = null;
         }
