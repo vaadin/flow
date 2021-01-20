@@ -232,6 +232,15 @@ public class ThemeIT extends ChromeBrowserTest {
             driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
     }
 
+    @Test
+    public void themeRulesOverrideLumo() {
+        open();
+        checkLogsForErrors();
+        Assert.assertEquals("Background should be blue, as overridden in the theme", "rgba(0, 0, 255, 1)",
+                $("html").first().getCssValue("background-color"));
+
+    }
+
     @Override
     protected String getTestPath() {
         String path = super.getTestPath();

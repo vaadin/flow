@@ -18,6 +18,18 @@ html, :host {
     color: rgba(0, 0, 0, 1); /* black */
 }
 
+
+
+/* Lumo has
+html {
+    background-color: var(--lumo-base-color);
+}
+This extact same rule with a different value should override that
+*/
+html {
+    background-color: blue;
+}
+
 body {
     background-image: url("./img/bg.jpg");
     font-family: "Ostrich";
