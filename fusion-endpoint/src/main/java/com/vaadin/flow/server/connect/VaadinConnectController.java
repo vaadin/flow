@@ -289,8 +289,7 @@ public class VaadinConnectController {
             String endpointName, String methodName, Method methodToInvoke,
             ObjectNode body, VaadinEndpointData vaadinEndpointData,
             HttpServletRequest request) throws JsonProcessingException {
-        VaadinConnectAccessChecker accessChecker = getAccessChecker(request.getServletContext(),
-                applicationContext);
+        VaadinConnectAccessChecker accessChecker = getAccessChecker(request.getServletContext());
         String checkError = accessChecker.check(methodToInvoke, request);
         if (checkError != null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -563,8 +562,7 @@ public class VaadinConnectController {
         }
     }
 
-    VaadinConnectAccessChecker getAccessChecker(
-            ServletContext servletContext, ApplicationContext applicationContext) {
+    VaadinConnectAccessChecker getAccessChecker(ServletContext servletContext) {
         VaadinServletContext vaadinServletContext = new VaadinServletContext(
                 servletContext);
         VaadinConnectAccessCheckerWrapper wrapper = vaadinServletContext

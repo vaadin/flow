@@ -22,7 +22,7 @@ public class VaadinConnectControllerMockBuilder {
                       mock(ExplicitNullableTypeChecker.class),
                       applicationContext)
         );
-        Mockito.doReturn(mock(VaadinConnectAccessChecker.class)).when(controller).getAccessChecker(Mockito.any(), Mockito.any());
+        Mockito.doReturn(mock(VaadinConnectAccessChecker.class)).when(controller).getAccessChecker(Mockito.any());
         return controller;
     }
 }

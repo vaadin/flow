@@ -287,7 +287,7 @@ public class VaadinConnectControllerTest {
         VaadinConnectController controller = new VaadinConnectController(
                 new ObjectMapper(), mock(EndpointNameChecker.class),
                 mock(ExplicitNullableTypeChecker.class), appContext);
-        controller.getAccessChecker(mockServletContext(), appContext);
+        controller.getAccessChecker(mockServletContext());
 
         verify(accessChecker).enableCsrf(Mockito.anyBoolean());
     }
@@ -728,7 +728,7 @@ public class VaadinConnectControllerTest {
                 mock(ExplicitNullableTypeChecker.class), contextMock));
         Mockito.doReturn(mock(VaadinConnectAccessChecker.class))
                 .when(vaadinConnectController)
-                .getAccessChecker(any(), any());
+                .getAccessChecker(any());
 
         int inputValue = 222;
         String expectedOutput = endpoint.testMethod(inputValue);
@@ -807,7 +807,7 @@ public class VaadinConnectControllerTest {
                 mock(ExplicitNullableTypeChecker.class), contextMock));
         Mockito.doReturn(mock(VaadinConnectAccessChecker.class))
                 .when(vaadinConnectController)
-                .getAccessChecker(any(), any());
+                .getAccessChecker(any());
         
         ResponseEntity<String> response = vaadinConnectController
                 .serveEndpoint("CustomEndpoint", "testMethod",
@@ -836,7 +836,7 @@ public class VaadinConnectControllerTest {
                 mock(ExplicitNullableTypeChecker.class), contextMock));
         Mockito.doReturn(mock(VaadinConnectAccessChecker.class))
                 .when(vaadinConnectController)
-                .getAccessChecker(any(), any());
+                .getAccessChecker(any());
 
         int input = 111;
         String expectedOutput = endpoint.testMethod(input);
@@ -1217,7 +1217,7 @@ public class VaadinConnectControllerTest {
             new VaadinConnectController(vaadinEndpointMapper, endpointNameChecker, 
                 explicitNullableTypeChecker, mockApplicationContext)
         );
-        Mockito.doReturn(accessChecker).when(connectController).getAccessChecker(any(), any());
+        Mockito.doReturn(accessChecker).when(connectController).getAccessChecker(any());
         return connectController;
     }
 
