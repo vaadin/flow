@@ -59,10 +59,9 @@ public abstract class BaseTypeConversionTest {
 
         mockMvc = MockMvcBuilders
                 .standaloneSetup(new VaadinConnectController(null,
-                        mock(VaadinConnectAccessChecker.class),
                         mock(EndpointNameChecker.class),
                         mock(ExplicitNullableTypeChecker.class),
-                        applicationContext, mockServletContext()))
+                        applicationContext))
                 .build();
         Assert.assertNotEquals(null, applicationContext);
     }
