@@ -50,12 +50,12 @@ import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
+import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
@@ -158,7 +158,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                 applicationProperties.getAbsolutePath());
         buildInfo.put(CONNECT_OPEN_API_FILE_TOKEN,
                 openApiJsonFile.getAbsolutePath());
-        buildInfo.put(CONNECT_GENERATED_TS_DIR_TOKEN,
+        buildInfo.put(PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
                 generatedTsFolder.getAbsolutePath());
 
         buildInfo.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, pnpmEnable);
