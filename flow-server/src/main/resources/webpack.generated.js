@@ -6,7 +6,6 @@
  */
 const fs = require('fs');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const { InjectManifest } = require('workbox-webpack-plugin');
 const { DefinePlugin } = require('webpack');
@@ -322,10 +321,8 @@ module.exports = {
       template: clientSideIndexHTML,
       filename: indexHtmlPath,
       inject: 'head',
+      scriptLoading: 'defer',
       chunks: ['bundle', ...(devMode ? ['devmodeGizmo'] : [])]
-    }),
-    useClientSideIndexFileForBootstrapping && new ScriptExtHtmlWebpackPlugin({
-      defaultAttribute: 'defer'
     }),
 
     // Service worker for offline

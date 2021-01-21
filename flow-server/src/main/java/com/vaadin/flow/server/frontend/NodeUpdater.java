@@ -291,8 +291,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     static Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
 
-        defaults.put("html-webpack-plugin", "3.2.0");
-        defaults.put("script-ext-html-webpack-plugin", "2.1.4");
+        defaults.put("html-webpack-plugin", "4.5.1");
         defaults.put("typescript", "4.0.3");
         defaults.put("ts-loader", "8.0.12");
 
