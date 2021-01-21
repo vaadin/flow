@@ -49,7 +49,7 @@ public final class Constants implements Serializable {
     public static final String CONNECT_JAVA_SOURCE_FOLDER_TOKEN = "connect.javaSourceFolder";
     public static final String CONNECT_APPLICATION_PROPERTIES_TOKEN = "connect.applicationProperties";
     public static final String CONNECT_OPEN_API_FILE_TOKEN = "connect.openApiFile";
-    public static final String CONNECT_GENERATED_TS_DIR_TOKEN = "connect.generated";
+    public static final String PROJECT_FRONTEND_GENERATED_DIR_TOKEN = "project.frontend.generated";
     public static final String EXTERNAL_STATS_FILE_TOKEN = "externalStatsFile";
     public static final String EXTERNAL_STATS_URL_TOKEN = "externalStatsUrl";
 
@@ -249,6 +249,11 @@ public final class Constants implements Serializable {
      * Location for the resources in jar files.
      */
     public static final String RESOURCES_JAR_DEFAULT = "META-INF/resources/";
+
+    /**
+     * Location for the theme resources in jar files.
+     */
+    public static final String RESOURCES_THEME_JAR_DEFAULT = RESOURCES_JAR_DEFAULT + APPLICATION_THEME_ROOT + "/";
 
     /**
      * @deprecated Use
