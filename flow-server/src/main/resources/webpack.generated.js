@@ -201,7 +201,10 @@ module.exports = {
       flowFrontendFolder,
       ...projectStaticAssetsFolders,
     ],
-    extensions: ['.ts', '.js'],
+    extensions: [
+      useClientSideIndexFileForBootstrapping && '.ts',
+      '.js'
+    ].filter(Boolean),
     alias: {
       Frontend: frontendFolder
     }
@@ -230,11 +233,9 @@ module.exports = {
 
   module: {
     rules: [
-      {
+      useClientSideIndexFileForBootstrapping && {
         test: /\.ts$/,
-        use: [
-          'ts-loader'
-        ]
+        loader: 'ts-loader'
       },
       {
         test: /\.css$/i,
@@ -287,7 +288,7 @@ module.exports = {
           }
         }],
       },
-    ]
+    ].filter(Boolean)
   },
   performance: {
     maxEntrypointSize: 2097152, // 2MB
