@@ -315,7 +315,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             buildInfo.remove(Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN);
             buildInfo.remove(Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
             buildInfo.remove(Constants.CONNECT_OPEN_API_FILE_TOKEN);
-            buildInfo.remove(Constants.CONNECT_GENERATED_TS_DIR_TOKEN);
+            buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
 
             buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
