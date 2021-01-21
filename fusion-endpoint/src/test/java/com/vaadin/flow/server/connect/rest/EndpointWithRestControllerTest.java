@@ -37,7 +37,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import com.vaadin.flow.server.connect.EndpointNameChecker;
 import com.vaadin.flow.server.connect.ExplicitNullableTypeChecker;
 import com.vaadin.flow.server.connect.VaadinConnectController;
-import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static org.junit.Assert.assertEquals;
@@ -69,10 +68,9 @@ public class EndpointWithRestControllerTest {
 
         mockMvcForEndpoint = MockMvcBuilders
                 .standaloneSetup(new VaadinConnectController(null,
-                        mock(VaadinConnectAccessChecker.class),
                         mock(EndpointNameChecker.class),
                         mock(ExplicitNullableTypeChecker.class),
-                        applicationContext, mockServletContext()))
+                        applicationContext))
                 .build();
         Assert.assertNotEquals(null, applicationContext);
     }
