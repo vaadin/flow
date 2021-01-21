@@ -164,19 +164,23 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runPnpmInstall_versionsJsonIsNotFound_pnpmHookFileIsNotGenerated()
+    public void runPnpmInstall_versionsJsonIsNotFound_pnpmHookFileIsGeneratedFromPackageJson()
             throws IOException, ExecutionFailedException {
         TaskRunNpmInstall task = createTask();
         getNodeUpdater().modified = true;
         task.execute();
 
         File file = new File(getNodeUpdater().npmFolder, "pnpmfile.js");
-        Assert.assertFalse(file.exists());
+        Assert.assertTrue(file.exists());
+        String content = FileUtils.readFileToString(file,
+            StandardCharsets.UTF_8);
+        Assert.assertThat(content,
+            CoreMatchers.containsString("JSON.parse(fs.readFileSync"));
     }
 
     @Test
     public void generateVersionsJson_userHasNoCustomVersions_platformIsMergedWithDevDeps()
-            throws IOException, ExecutionFailedException {
+            throws IOException {
         File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
 
@@ -218,7 +222,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     @Test
     public void generateVersionsJson_userVersionNewerThanPinned_intalledOverlayVersionIsUserVersion()
-            throws IOException, ExecutionFailedException {
+            throws IOException {
         File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
 
@@ -440,11 +444,17 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    public void generateVersionsJson_noVersions_noDevDeps_returnNull()
+    public void generateVersionsJson_noVersions_noDevDeps_versionsGeneratedFromPackageJson()
             throws IOException {
         TaskRunNpmInstall task = createTask();
 
-        Assert.assertNull(task.generateVersionsJson());
+        final String versions = task.generateVersionsJson();
+        Assert.assertNotNull(versions);
+
+        File generatedVersionsFile = new File(versions);
+        final JsonObject versionsJson = Json.parse(FileUtils
+            .readFileToString(generatedVersionsFile, StandardCharsets.UTF_8));
+        Assert.assertEquals("{}", versionsJson.toJson());
     }
 
     @Override
@@ -490,7 +500,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     private JsonObject getGeneratedVersionsContent(File versions, File devDeps)
-            throws MalformedURLException, IOException {
+            throws IOException {
         String devDepsPath = "foo";
 
         ClassFinder classFinder = getClassFinder();
@@ -507,14 +517,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         return Json.parse(FileUtils.readFileToString(generatedVersionsFile,
                 StandardCharsets.UTF_8));
 
-    }
-
-    private void verifyVersionIsNotPinned(File versions, File devDeps)
-            throws MalformedURLException, IOException {
-        Assert.assertEquals(
-                "Generated versions json should not contain anything: package.json overrides the version",
-                0,
-                getGeneratedVersionsContent(versions, devDeps).keys().length);
     }
 
 }
