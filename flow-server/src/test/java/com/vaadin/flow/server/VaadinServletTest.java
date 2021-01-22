@@ -267,6 +267,38 @@ public class VaadinServletTest {
                 .initialize(Mockito.any(VaadinContext.class));
     }
 
+    @Test
+    public void init_initIsCalledAfterDestroy_passDifferentConfigInstance_servletIsInitialized()
+            throws ServletException {
+        VaadinServlet servlet = new VaadinServlet();
+
+        ServletConfig config = mockConfig();
+
+        servlet.init(config);
+
+        Assert.assertSame(config, servlet.getServletConfig());
+
+        servlet.destroy();
+
+        ServletConfig newConfig = mockConfig();
+        servlet.init(newConfig);
+        Assert.assertSame(newConfig, servlet.getServletConfig());
+    }
+
+    @Test
+    public void destroy_servletIsInitializedBeforeDestroy_servletConfigIsNullAfterDestroy()
+            throws ServletException {
+        VaadinServlet servlet = new VaadinServlet();
+
+        ServletConfig config = mockConfig();
+
+        servlet.init(config);
+
+        servlet.destroy();
+
+        Assert.assertNull(servlet.getServletConfig());
+    }
+
     private ServletConfig mockConfig() {
         ServletConfig config = Mockito.mock(ServletConfig.class);
         ServletContext context = Mockito.mock(ServletContext.class);
