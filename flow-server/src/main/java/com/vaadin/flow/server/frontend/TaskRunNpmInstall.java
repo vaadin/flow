@@ -44,6 +44,8 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static elemental.json.impl.JsonUtil.stringify;
@@ -188,7 +190,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
             JsonObject versionsJson = getVersions(content);
             if (versionsJson == null) {
-                return null;
+                versionsJson = generateVersionsFromPackageJson();
             }
             FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
                     StandardCharsets.UTF_8);
@@ -200,6 +202,36 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 return FrontendUtils.getUnixPath(versionsPath);
             }
         }
+    }
+
+    /**
+     * If we do not have the platform versions to lock we should lock any
+     * versions in the package.json so we do not get multiple versions
+     * for defined packages.
+     *
+     * @return versions Json based on package.json
+     * @throws IOException
+     *     If reading package.json fails
+     */
+    private JsonObject generateVersionsFromPackageJson() throws IOException {
+        JsonObject versionsJson = Json.createObject();
+        // if we don't have versionsJson lock package dependency versions.
+        final JsonObject packageJson = packageUpdater.getPackageJson();
+        final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        final JsonObject devDependencies = packageJson
+            .getObject(DEV_DEPENDENCIES);
+        if (dependencies != null) {
+            for (String key : dependencies.keys()) {
+                versionsJson.put(key, dependencies.getString(key));
+            }
+        }
+        if (devDependencies != null) {
+            for (String key : devDependencies.keys()) {
+                versionsJson.put(key, devDependencies.getString(key));
+            }
+        }
+
+        return versionsJson;
     }
 
     /**
