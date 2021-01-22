@@ -190,23 +190,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
             JsonObject versionsJson = getVersions(content);
             if (versionsJson == null) {
-                versionsJson = Json.createObject();
-                // if we don't have versionsJson lock package dependency versions.
-                final JsonObject packageJson = packageUpdater.getPackageJson();
-                final JsonObject dependencies = packageJson
-                    .getObject(DEPENDENCIES);
-                final JsonObject devDependencies = packageJson
-                    .getObject(DEV_DEPENDENCIES);
-                if (dependencies != null) {
-                    for (String key : dependencies.keys()) {
-                        versionsJson.put(key, dependencies.getString(key));
-                    }
-                }
-                if (devDependencies != null) {
-                    for (String key : devDependencies.keys()) {
-                        versionsJson.put(key, devDependencies.getString(key));
-                    }
-                }
+                versionsJson = generateVersionsFormPackageJson();
             }
             FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
                     StandardCharsets.UTF_8);
@@ -218,6 +202,36 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 return FrontendUtils.getUnixPath(versionsPath);
             }
         }
+    }
+
+    /**
+     * If we do not have the platform versions to lock we should lock any
+     * versions in the package.json so we do not get multiple versions
+     * for defined packages.
+     *
+     * @return versions Json based on package.json
+     * @throws IOException
+     *     If reading package.json fails
+     */
+    private JsonObject generateVersionsFormPackageJson() throws IOException {
+        JsonObject versionsJson = Json.createObject();
+        // if we don't have versionsJson lock package dependency versions.
+        final JsonObject packageJson = packageUpdater.getPackageJson();
+        final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        final JsonObject devDependencies = packageJson
+            .getObject(DEV_DEPENDENCIES);
+        if (dependencies != null) {
+            for (String key : dependencies.keys()) {
+                versionsJson.put(key, dependencies.getString(key));
+            }
+        }
+        if (devDependencies != null) {
+            for (String key : devDependencies.keys()) {
+                versionsJson.put(key, devDependencies.getString(key));
+            }
+        }
+
+        return versionsJson;
     }
 
     /**
