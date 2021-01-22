@@ -157,8 +157,6 @@ public class BuildFrontendMojoTest {
                 WEBPACK_CONFIG);
         ReflectionUtils.setVariableValueInObject(mojo,
                 "webpackGeneratedTemplate", WEBPACK_GENERATED);
-        ReflectionUtils.setVariableValueInObject(mojo,
-                "serviceWorkerTemplate", SERVICE_WORKER_SRC);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
                 webpackOutputDirectory);
         ReflectionUtils.setVariableValueInObject(mojo,
