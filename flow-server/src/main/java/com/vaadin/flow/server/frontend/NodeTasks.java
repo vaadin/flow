@@ -581,7 +581,7 @@ public class NodeTasks implements FallibleCommand {
         }
 
         if (enableWebpackConfigUpdate) {
-            PwaConfiguration pwaConfiguration = frontendDependencies // NOSONAR
+            PwaConfiguration pwaConfiguration = frontendDependencies
                     .getPwaConfiguration();
             commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
                     builder.npmFolder, builder.webpackOutputDirectory,
@@ -602,9 +602,8 @@ public class NodeTasks implements FallibleCommand {
                             builder.tokenFileData, builder.enablePnpm));
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
-                frontendDependencies == null ? null : frontendDependencies.getThemeDefinition(),
-                    builder.frontendDirectory,
-                    builder.connectClientTsApiFolder));
+                frontendDependencies.getThemeDefinition(),
+                builder.frontendDirectory, builder.connectClientTsApiFolder));
         }
     }
 
