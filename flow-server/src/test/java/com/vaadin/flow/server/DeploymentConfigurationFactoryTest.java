@@ -20,8 +20,11 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -67,6 +70,8 @@ public class DeploymentConfigurationFactoryTest {
 
     private Map<String, String> defaultServletParams = new HashMap<>();
 
+    private static String globalUserDirValue;
+
     private static class NoSettings extends VaadinServlet {
     }
 
@@ -88,8 +93,21 @@ public class DeploymentConfigurationFactoryTest {
         defaultServletParams.put(PARAM_TOKEN_FILE, tokenFile.getPath());
     }
 
+    @After
     public void tearDown() {
         tokenFile.delete();
+    }
+
+    @BeforeClass
+    public static void setupBeforeClass() {
+        globalUserDirValue = System.getProperty("user.dir");
+    }
+
+    @AfterClass
+    public static void tearDownAfterClass() {
+        if (globalUserDirValue != null) {
+            System.setProperty("user.dir", globalUserDirValue);
+        }
     }
 
     @Test
