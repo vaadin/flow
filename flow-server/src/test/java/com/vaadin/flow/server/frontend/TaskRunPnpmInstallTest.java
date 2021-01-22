@@ -17,13 +17,9 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
-import javax.validation.constraints.AssertTrue;
-
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
@@ -33,11 +29,11 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
 public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
@@ -455,6 +451,59 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         final JsonObject versionsJson = Json.parse(FileUtils
             .readFileToString(generatedVersionsFile, StandardCharsets.UTF_8));
         Assert.assertEquals("{}", versionsJson.toJson());
+    }
+
+    @Test
+    public void generateVersionsJson_versionsGeneratedFromPackageJson_containsBothDepsAndDevDeps()
+            throws IOException {
+
+        File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
+        packageJson.createNewFile();
+
+        // Write package json file
+        // @formatter:off
+        FileUtils.write(packageJson,
+            "{"
+                + "\"vaadin\": {"
+                  + "\"dependencies\": {"
+                    + "\"lit-element\": \"2.3.1\","
+                    + "\"@vaadin/router\": \"1.7.2\","
+                    + "\"@polymer/polymer\": \"3.2.0\","
+                  + "},"
+                  + "\"devDependencies\": {"
+                    + "\"css-loader\": \"4.2.1\","
+                    + "\"file-loader\": \"6.1.0\""
+                  + "}"
+                + "},"
+                + "\"dependencies\": {"
+                  + "\"lit-element\": \"2.3.1\","
+                  + "\"@vaadin/router\": \"1.7.2\","
+                  + "\"@polymer/polymer\": \"3.2.0\","
+                + "},"
+                + "\"devDependencies\": {"
+                  + "\"css-loader\": \"4.2.1\","
+                  + "\"file-loader\": \"6.1.0\""
+                + "}"
+            + "}", StandardCharsets.UTF_8);
+        // @formatter:on
+
+        TaskRunNpmInstall task = createTask();
+
+        final String versions = task.generateVersionsJson();
+        Assert.assertNotNull(versions);
+
+        File generatedVersionsFile = new File(getNodeUpdater().npmFolder, versions);
+        final JsonObject versionsJson = Json.parse(FileUtils
+            .readFileToString(generatedVersionsFile, StandardCharsets.UTF_8));
+        Assert.assertEquals(
+            "{"
+                + "\"lit-element\":\"2.3.1\","
+                + "\"@vaadin/router\":\"1.7.2\","
+                + "\"@polymer/polymer\":\"3.2.0\","
+                + "\"css-loader\":\"4.2.1\","
+                + "\"file-loader\":\"6.1.0\""
+                + "}",
+            versionsJson.toJson());
     }
 
     @Override

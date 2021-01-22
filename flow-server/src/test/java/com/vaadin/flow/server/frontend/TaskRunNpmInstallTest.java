@@ -68,9 +68,11 @@ public class TaskRunNpmInstallTest {
     @Before
     public void setUp() throws IOException {
         npmFolder = temporaryFolder.newFolder();
+        File generatedPath = new File(npmFolder, "generated");
+        generatedPath.mkdir();
         nodeUpdater = new NodeUpdater(Mockito.mock(ClassFinder.class),
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                null, null) {
+            generatedPath, null) {
 
             @Override
             public void execute() {
