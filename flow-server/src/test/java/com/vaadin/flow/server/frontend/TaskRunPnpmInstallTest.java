@@ -35,7 +35,6 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
 public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
@@ -88,7 +87,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     @Test
     public void generateVersionsJson_userVersionNewerThanPinned_intalledOverlayVersionIsUserVersion()
-            throws IOException, ExecutionFailedException {
+            throws IOException {
         File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
 
@@ -376,11 +375,70 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    public void generateVersionsJson_noVersions_noDevDeps_returnNull()
+    public void generateVersionsJson_noVersions_noDevDeps_versionsGeneratedFromPackageJson()
             throws IOException {
         TaskRunNpmInstall task = createTask();
 
-        Assert.assertNull(task.generateVersionsJson());
+        final String versions = task.generateVersionsJson();
+        Assert.assertNotNull(versions);
+
+        File generatedVersionsFile = new File(getNodeUpdater().npmFolder, versions);
+        final JsonObject versionsJson = Json.parse(FileUtils
+            .readFileToString(generatedVersionsFile, StandardCharsets.UTF_8));
+        Assert.assertEquals("{}", versionsJson.toJson());
+    }
+
+    @Test
+    public void generateVersionsJson_versionsGeneratedFromPackageJson_containsBothDepsAndDevDeps()
+            throws IOException {
+
+        File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
+        packageJson.createNewFile();
+
+        // Write package json file
+        // @formatter:off
+        FileUtils.write(packageJson,
+            "{"
+                + "\"vaadin\": {"
+                  + "\"dependencies\": {"
+                    + "\"lit-element\": \"2.3.1\","
+                    + "\"@vaadin/router\": \"1.7.2\","
+                    + "\"@polymer/polymer\": \"3.2.0\","
+                  + "},"
+                  + "\"devDependencies\": {"
+                    + "\"css-loader\": \"4.2.1\","
+                    + "\"file-loader\": \"6.1.0\""
+                  + "}"
+                + "},"
+                + "\"dependencies\": {"
+                  + "\"lit-element\": \"2.3.1\","
+                  + "\"@vaadin/router\": \"1.7.2\","
+                  + "\"@polymer/polymer\": \"3.2.0\","
+                + "},"
+                + "\"devDependencies\": {"
+                  + "\"css-loader\": \"4.2.1\","
+                  + "\"file-loader\": \"6.1.0\""
+                + "}"
+            + "}", StandardCharsets.UTF_8);
+        // @formatter:on
+
+        TaskRunNpmInstall task = createTask();
+
+        final String versions = task.generateVersionsJson();
+        Assert.assertNotNull(versions);
+
+        File generatedVersionsFile = new File(getNodeUpdater().npmFolder, versions);
+        final JsonObject versionsJson = Json.parse(FileUtils
+            .readFileToString(generatedVersionsFile, StandardCharsets.UTF_8));
+        Assert.assertEquals(
+            "{"
+                + "\"lit-element\":\"2.3.1\","
+                + "\"@vaadin/router\":\"1.7.2\","
+                + "\"@polymer/polymer\":\"3.2.0\","
+                + "\"css-loader\":\"4.2.1\","
+                + "\"file-loader\":\"6.1.0\""
+                + "}",
+            versionsJson.toJson());
     }
 
     @Override
@@ -417,14 +475,18 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runPnpmInstall_versionsJsonIsNotFound_pnpmHookFileIsNotGenerated()
+    public void runPnpmInstall_versionsJsonIsNotFound_pnpmHookFileIsGeneratedFromPackageJson()
             throws IOException, ExecutionFailedException {
         TaskRunNpmInstall task = createTask();
         getNodeUpdater().modified = true;
         task.execute();
 
         File file = new File(getNodeUpdater().npmFolder, "pnpmfile.js");
-        Assert.assertFalse(file.exists());
+        Assert.assertTrue(file.exists());
+        String content = FileUtils.readFileToString(file,
+                StandardCharsets.UTF_8);
+        Assert.assertThat(content,
+                CoreMatchers.containsString("JSON.parse(fs.readFileSync"));
     }
 
     @Test
@@ -513,7 +575,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     private JsonObject getGeneratedVersionsContent(File versions, File devDeps)
-            throws MalformedURLException, IOException {
+            throws IOException {
         String devDepsPath = "foo";
 
         ClassFinder classFinder = getClassFinder();
