@@ -447,7 +447,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         final String versions = task.generateVersionsJson();
         Assert.assertNotNull(versions);
 
-        File generatedVersionsFile = new File(versions);
+        File generatedVersionsFile = new File(getNodeUpdater().npmFolder, versions);
         final JsonObject versionsJson = Json.parse(FileUtils
             .readFileToString(generatedVersionsFile, StandardCharsets.UTF_8));
         Assert.assertEquals("{}", versionsJson.toJson());
@@ -562,7 +562,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         String path = task.generateVersionsJson();
 
-        File generatedVersionsFile = new File(path);
+        File generatedVersionsFile = new File(getNodeUpdater().npmFolder, path);
         return Json.parse(FileUtils.readFileToString(generatedVersionsFile,
                 StandardCharsets.UTF_8));
 
