@@ -55,6 +55,8 @@ public class VaadinServlet extends HttpServlet {
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
 
+    private volatile boolean isServletInitialized;
+
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
      * is being placed into service.
@@ -89,6 +91,7 @@ public class VaadinServlet extends HttpServlet {
              */
             VaadinServletContext vaadinServletContext = null;
             if (getServletConfig() == null) {
+                isServletInitialized = true;
                 super.init(servletConfig);
 
                 vaadinServletContext = initializeContext();
@@ -127,6 +130,14 @@ public class VaadinServlet extends HttpServlet {
         } finally {
             CurrentInstance.clearAll();
         }
+    }
+
+    @Override
+    public ServletConfig getServletConfig() {
+        if (isServletInitialized) {
+            return super.getServletConfig();
+        }
+        return null;
     }
 
     /**
@@ -518,7 +529,10 @@ public class VaadinServlet extends HttpServlet {
     @Override
     public void destroy() {
         super.destroy();
-        getService().destroy();
+        isServletInitialized = false;
+        if (getService() != null) {
+            getService().destroy();
+        }
     }
 
     private VaadinServletContext initializeContext() {
