@@ -85,7 +85,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         generatedDir = new File(baseDir, DEFAULT_GENERATED_DIR);
         resourcesDir = new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER);
 
-        NodeUpdateTestUtil.createStubNode(true, true, false,
+        NodeUpdateTestUtil.createStubNode(true, true,
                 baseDir.getAbsolutePath());
 
         packageCreator = new TaskGeneratePackageJson(baseDir, generatedDir, resourcesDir);

@@ -76,7 +76,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         frontendGeneratedFolder = new File(baseDir,
                 DEFAULT_PROJECT_FRONTEND_GENERATED_DIR);
 
-        NodeUpdateTestUtil.createStubNode(true, true, false,
+        NodeUpdateTestUtil.createStubNode(true, true,
                 baseDir.getAbsolutePath());
 
         pwaConfiguration = new PwaConfiguration(
