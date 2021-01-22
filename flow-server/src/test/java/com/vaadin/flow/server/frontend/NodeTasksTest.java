@@ -104,6 +104,12 @@ public class NodeTasksTest {
         }
     }
 
+    private static void setPropertyIfPresent(String key, String value) {
+        if (value != null) {
+            System.setProperty(key, value);
+        }
+    }
+
     private Object getFieldValue(Object obj, String name) throws Exception {
         Field field = obj.getClass().getDeclaredField(name);
         field.setAccessible(true);
