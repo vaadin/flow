@@ -224,10 +224,6 @@ public class VaadinConnectController {
      *            called has parameters
      * @param request
      *            the current request which triggers the endpoint call
-     * @param servletContext
-     *            The servlet context for the controller.
-     * @param applicationContext
-     *            Spring application context.
      * @return execution result as a JSON string or an error message string
      */
     @PostMapping(path = "/{endpoint}/{method}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
