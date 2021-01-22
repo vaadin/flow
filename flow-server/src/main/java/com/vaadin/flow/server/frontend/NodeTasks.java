@@ -210,14 +210,11 @@ public class NodeTasks implements FallibleCommand {
          * @param webpackGeneratedTemplate
          *            name of the webpack resource to be used as template when
          *            creating the <code>webpack.generated.js</code> file.
-         * @param serviceWorkerTemplate
-         *            name of the service worker resource to be used as template
-         *            when creating the <code>sw.ts</code> file.
          * @return this builder
          */
         public Builder withWebpack(File webpackOutputDirectory,
                 File resourceOutputDirectory, String webpackTemplate,
-                String webpackGeneratedTemplate, String serviceWorkerTemplate) {
+                String webpackGeneratedTemplate) {
             this.webpackOutputDirectory = webpackOutputDirectory;
             this.resourceOutputDirectory = resourceOutputDirectory;
             this.webpackTemplate = webpackTemplate;
@@ -521,6 +518,13 @@ public class NodeTasks implements FallibleCommand {
         boolean enableWebpackConfigUpdate = builder.webpackTemplate != null
                 && !builder.webpackTemplate.isEmpty();
 
+        if (builder.createMissingPackageJson) {
+            TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
+                builder.npmFolder, builder.generatedFolder,
+                builder.flowResourcesFolder);
+            commands.add(packageCreator);
+        }
+
         if (builder.enablePackagesUpdate || builder.enableImportsUpdate
                 || enableWebpackConfigUpdate) {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
@@ -532,13 +536,25 @@ public class NodeTasks implements FallibleCommand {
                         classFinder);
                 generator.generateWebComponents(builder.generatedFolder, frontendDependencies.getThemeDefinition());
             }
-        }
 
-        if (builder.createMissingPackageJson) {
-            TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
-                    builder.npmFolder, builder.generatedFolder,
-                    builder.flowResourcesFolder);
-            commands.add(packageCreator);
+            TaskUpdatePackages packageUpdater = null;
+            if (builder.enablePackagesUpdate && builder.flowResourcesFolder != null) {
+                packageUpdater = new TaskUpdatePackages(classFinder,
+                    frontendDependencies, builder.npmFolder,
+                    builder.generatedFolder, builder.flowResourcesFolder,
+                    builder.cleanNpmFiles, builder.enablePnpm);
+                commands.add(packageUpdater);
+
+            }
+            if (packageUpdater != null && builder.runNpmInstall) {
+                commands.add(new TaskRunNpmInstall(classFinder, packageUpdater,
+                    builder.enablePnpm, builder.requireHomeNodeExec,
+                    builder.nodeVersion, builder.nodeDownloadRoot));
+
+                commands.add(new TaskInstallWebpackPlugins(
+                    new File(builder.npmFolder, NODE_MODULES)));
+            }
+
         }
 
         if (!builder.useDeprecatedV14Bootstrapping) {
@@ -553,37 +569,19 @@ public class NodeTasks implements FallibleCommand {
             commands.add(new TaskGenerateBootstrap(frontendDependencies, builder.frontendDirectory));
         }
 
-        if (builder.enablePackagesUpdate) {
-            TaskUpdatePackages packageUpdater = new TaskUpdatePackages(
-                    classFinder, frontendDependencies, builder.npmFolder,
-                    builder.generatedFolder, builder.flowResourcesFolder,
-                    builder.cleanNpmFiles, builder.enablePnpm);
-            commands.add(packageUpdater);
-
-            if (builder.runNpmInstall) {
-                commands.add(new TaskRunNpmInstall(
-                        classFinder, packageUpdater,
-                        builder.enablePnpm, builder.requireHomeNodeExec,
-                        builder.nodeVersion, builder.nodeDownloadRoot));
-
-                commands.add(new TaskInstallWebpackPlugins(
-                    new File(builder.npmFolder, NODE_MODULES)));
-            }
-        }
-
-        if (builder.jarFiles != null) {
+        if (builder.jarFiles != null && builder.flowResourcesFolder != null) {
             commands.add(new TaskCopyFrontendFiles(builder.flowResourcesFolder,
                     builder.jarFiles));
+        }
 
-            if (builder.localResourcesFolder != null) {
-                commands.add(new TaskCopyLocalFrontendFiles(
-                        builder.flowResourcesFolder,
-                        builder.localResourcesFolder));
-            }
+        if (builder.localResourcesFolder != null && builder.flowResourcesFolder != null) {
+            commands.add(
+                new TaskCopyLocalFrontendFiles(builder.flowResourcesFolder,
+                    builder.localResourcesFolder));
         }
 
         if (enableWebpackConfigUpdate) {
-            PwaConfiguration pwaConfiguration = frontendDependencies // NOSONAR
+            PwaConfiguration pwaConfiguration = frontendDependencies
                     .getPwaConfiguration();
             commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
                     builder.npmFolder, builder.webpackOutputDirectory,
@@ -604,9 +602,8 @@ public class NodeTasks implements FallibleCommand {
                             builder.tokenFileData, builder.enablePnpm));
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
-                frontendDependencies.getThemeDefinition(), // NOSONAR
-                    builder.frontendDirectory,
-                    builder.connectClientTsApiFolder));
+                frontendDependencies.getThemeDefinition(),
+                builder.frontendDirectory, builder.connectClientTsApiFolder));
         }
     }
 

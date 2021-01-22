@@ -311,36 +311,6 @@ public class TaskUpdateImports extends NodeUpdater {
      *            a directory with project's frontend files
      * @param tokenFile
      *            the token (flow-build-info.json) path, may be {@code null}
-     * @param disablePnpm
-     *            if {@code true} then npm is used instead of pnpm, otherwise
-     *            pnpm is used
-     */
-    TaskUpdateImports(ClassFinder finder,
-            FrontendDependenciesScanner frontendDepScanner,
-            SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
-            File npmFolder, File generatedPath, File frontendDirectory,
-            File tokenFile, boolean disablePnpm) {
-        this(finder, frontendDepScanner, fallBackScannerProvider, npmFolder,
-                generatedPath, frontendDirectory, tokenFile, null, disablePnpm);
-    }
-
-    /**
-     * Create an instance of the updater given all configurable parameters.
-     *
-     * @param finder
-     *            a reusable class finder
-     * @param frontendDepScanner
-     *            a reusable frontend dependencies scanner
-     * @param fallBackScannerProvider
-     *            fallback scanner provider, not {@code null}
-     * @param npmFolder
-     *            folder with the `package.json` file
-     * @param generatedPath
-     *            folder where flow generated files will be placed.
-     * @param frontendDirectory
-     *            a directory with project's frontend files
-     * @param tokenFile
-     *            the token (flow-build-info.json) path, may be {@code null}
      * @param tokenFileData
      *            object to fill with token file data, may be {@code null}
      * @param disablePnpm

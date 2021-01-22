@@ -148,7 +148,7 @@ public class NodeTasksTest {
                         .enablePackagesUpdate(false)
                         .withWebpack(new File(userDir, TARGET + "webapp"),
                                 new File(userDir, TARGET + "classes"),
-                                WEBPACK_CONFIG, WEBPACK_GENERATED, SERVICE_WORKER_SRC)
+                                WEBPACK_CONFIG, WEBPACK_GENERATED)
                         .enableImportsUpdate(true).runNpmInstall(false)
                         .withEmbeddableWebComponents(false)
                         .useV14Bootstrap(false).withFlowResourcesFolder(
