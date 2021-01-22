@@ -190,7 +190,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
             JsonObject versionsJson = getVersions(content);
             if (versionsJson == null) {
-                versionsJson = generateVersionsFormPackageJson();
+                versionsJson = generateVersionsFromPackageJson();
             }
             FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
                     StandardCharsets.UTF_8);
@@ -213,7 +213,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * @throws IOException
      *     If reading package.json fails
      */
-    private JsonObject generateVersionsFormPackageJson() throws IOException {
+    private JsonObject generateVersionsFromPackageJson() throws IOException {
         JsonObject versionsJson = Json.createObject();
         // if we don't have versionsJson lock package dependency versions.
         final JsonObject packageJson = packageUpdater.getPackageJson();
