@@ -35,8 +35,11 @@ import java.lang.annotation.Target;
 public @interface RoutePrefix {
 
     /**
-     * Get the route prefix defined for class.
-     * 
+     * Sets the route prefix defined for class.
+     * <p>
+     * This value accepts also parameter template segments which can be defined
+     * using following format: <code>:parameterName[?|*][(regex)]</code>.
+
      * @return route prefix to add
      */
     String value();

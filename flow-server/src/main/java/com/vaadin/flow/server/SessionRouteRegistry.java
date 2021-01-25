@@ -16,7 +16,6 @@
 package com.vaadin.flow.server;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -29,8 +28,12 @@ import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.RoutesChangedListener;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ConfiguredRoutes;
+import com.vaadin.flow.router.internal.NavigationRouteTarget;
+import com.vaadin.flow.router.internal.PathUtil;
+import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -89,10 +92,10 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         List<RouteData> registeredRoutes = getParentRegistry()
                 .getRegisteredRoutes();
         if (!registeredRoutes.isEmpty()) {
-            Set<String> collect = routes.stream().map(RouteData::getUrl)
+            Set<String> collect = routes.stream().map(RouteData::getTemplate)
                     .collect(Collectors.toSet());
             registeredRoutes.stream()
-                    .filter(data -> !collect.contains(data.getUrl()))
+                    .filter(data -> !collect.contains(data.getTemplate()))
                     .forEach(routes::add);
         }
 
@@ -120,12 +123,12 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
                     List<RouteBaseData<?>> addedVisible = event.getAddedRoutes()
                             .stream()
                             .filter(routeData -> !configuration
-                                    .hasRoute(routeData.getUrl()))
+                                    .hasTemplate(routeData.getTemplate()))
                             .collect(Collectors.toList());
                     List<RouteBaseData<?>> removedVisible = event
                             .getRemovedRoutes().stream()
                             .filter(routeData -> !configuration
-                                    .hasRoute(routeData.getUrl()))
+                                    .hasTemplate(routeData.getTemplate()))
                             .collect(Collectors.toList());
                     // Only fire an event if we have visible changes.
                     if (!(addedVisible.isEmpty() && removedVisible.isEmpty())) {
@@ -143,47 +146,101 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public Optional<Class<? extends Component>> getNavigationTarget(
-            String pathString) {
-        Objects.requireNonNull(pathString, "pathString must not be null.");
-        Optional<Class<? extends Component>> navigationTarget = getNavigationTarget(
-                pathString, Collections.emptyList());
-
-        if (navigationTarget.isPresent()) {
-            return navigationTarget;
+    public NavigationRouteTarget getNavigationRouteTarget(String url) {
+        final NavigationRouteTarget navigationRouteTarget = getConfiguration()
+                .getNavigationRouteTarget(url);
+        if (navigationRouteTarget.hasTarget()) {
+            return navigationRouteTarget;
         }
+        return getParentRegistry().getNavigationRouteTarget(url);
+    }
 
-        return getParentRegistry().getNavigationTarget(pathString);
+    @Override
+    public RouteTarget getRouteTarget(Class<? extends Component> target,
+            RouteParameters parameters) {
+        final RouteTarget routeTarget = getConfiguration()
+                .getRouteTarget(target, parameters);
+        if (routeTarget != null) {
+            return routeTarget;
+        }
+        return getParentRegistry().getRouteTarget(target, parameters);
     }
 
     @Override
     public Optional<Class<? extends Component>> getNavigationTarget(
-            String pathString, List<String> segments) {
-        Objects.requireNonNull(pathString, "pathString must not be null.");
-        if (getConfiguration().hasRoute(pathString, segments)) {
-            return getConfiguration().getRoute(pathString, segments);
+            String url) {
+        Objects.requireNonNull(url, "pathString must not be null.");
+        final Optional<Class<? extends Component>> target = getConfiguration()
+                .getTarget(url);
+        if (target.isPresent()) {
+            return target;
         }
 
-        return getParentRegistry().getNavigationTarget(pathString, segments);
+        return getParentRegistry().getNavigationTarget(url);
+    }
+
+    @Override
+    public Optional<Class<? extends Component>> getNavigationTarget(
+            String url, List<String> segments) {
+        Objects.requireNonNull(url, "url must not be null.");
+        final Optional<Class<? extends Component>> target = getConfiguration()
+                .getTarget(PathUtil.getPath(url, segments));
+        if (target.isPresent()) {
+            return target;
+        }
+
+        return getParentRegistry().getNavigationTarget(url, segments);
     }
 
     @Override
     public Optional<String> getTargetUrl(
             Class<? extends Component> navigationTarget) {
-
         Optional<String> targetUrl = super.getTargetUrl(navigationTarget);
         if (targetUrl.isPresent()) {
             return targetUrl;
         }
-
         return getParentRegistry().getTargetUrl(navigationTarget);
     }
 
     @Override
+    public Optional<String> getTargetUrl(
+            Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        Optional<String> targetUrl = super.getTargetUrl(navigationTarget,
+                parameters);
+        if (targetUrl.isPresent()) {
+            return targetUrl;
+        }
+
+        return getParentRegistry().getTargetUrl(navigationTarget, parameters);
+    }
+
+    @Override
+    public Optional<String> getTemplate(
+            Class<? extends Component> navigationTarget) {
+        final Optional<String> targetRoute = super.getTemplate(
+                navigationTarget);
+        if (targetRoute.isPresent()) {
+            return targetRoute;
+        }
+        return getParentRegistry().getTemplate(navigationTarget);
+    }
+
+    /**
+     * @deprecated instead use {@link #getNavigationRouteTarget(String)} and
+     *             retrieve the list of route layouts from the
+     *             {@link RouteTarget} contained in the
+     *             {@link NavigationRouteTarget}.
+     * @see RouteTarget#getParentLayouts()
+     */
+    @Override
+    @Deprecated
     public List<Class<? extends RouterLayout>> getRouteLayouts(String path,
             Class<? extends Component> navigationTarget) {
-        if (getConfiguration().hasRoute(path)) {
-            return super.getRouteLayouts(path, navigationTarget);
+        final NavigationRouteTarget navigationRouteTarget = getConfiguration()
+                .getNavigationRouteTarget(path);
+        if (navigationRouteTarget.hasTarget()) {
+            return navigationRouteTarget.getRouteTarget().getParentLayouts();
         }
         return getParentRegistry().getRouteLayouts(path, navigationTarget);
     }

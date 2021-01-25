@@ -40,10 +40,14 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
+import com.vaadin.flow.router.internal.NavigationRouteTarget;
+import com.vaadin.flow.router.internal.PathUtil;
+import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
@@ -336,19 +340,27 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public Optional<Class<? extends Component>> getNavigationTarget(
-            String pathString) {
-        Objects.requireNonNull(pathString, "pathString must not be null.");
-        return getNavigationTarget(pathString, Collections.emptyList());
+    public NavigationRouteTarget getNavigationRouteTarget(String url) {
+        return getConfiguration().getNavigationRouteTarget(url);
+    }
+
+    @Override
+    public RouteTarget getRouteTarget(Class<? extends Component> target,
+                                      RouteParameters parameters) {
+        return getConfiguration().getRouteTarget(target, parameters);
     }
 
     @Override
     public Optional<Class<? extends Component>> getNavigationTarget(
-            String pathString, List<String> segments) {
-        if (getConfiguration().hasRoute(pathString, segments)) {
-            return getConfiguration().getRoute(pathString, segments);
-        }
-        return Optional.empty();
+            String url) {
+        Objects.requireNonNull(url, "url must not be null.");
+        return getConfiguration().getTarget(url);
+    }
+
+    @Override
+    public Optional<Class<? extends Component>> getNavigationTarget(
+            String url, List<String> segments) {
+        return getNavigationTarget(PathUtil.getPath(url, segments));
     }
 
     /**
