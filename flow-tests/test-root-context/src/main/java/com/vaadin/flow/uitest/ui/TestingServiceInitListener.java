@@ -53,7 +53,6 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
             requestCount.incrementAndGet();
             return false;
         });
-
     }
 
     public static int getInitCount() {

@@ -18,8 +18,6 @@ package com.vaadin.flow.router;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasComponents;
@@ -29,6 +27,7 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -76,9 +75,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      */
     public RouterLink(String text,
             Class<? extends Component> navigationTarget) {
-        this();
-        setText(text);
-        setRoute(getRouter(), navigationTarget);
+        this(text, navigationTarget, RouteParameters.empty());
     }
 
     /**
@@ -98,9 +95,26 @@ public class RouterLink extends Component implements HasText, HasComponents,
      */
     public <T, C extends Component & HasUrlParameter<T>> RouterLink(String text,
             Class<? extends C> navigationTarget, T parameter) {
+        this(text, navigationTarget,
+                HasUrlParameterFormat.getParameters(parameter));
+    }
+
+    /**
+     * Creates a new router link for the given navigation target using the given
+     * text and parameters.
+     *
+     * @param text
+     *         link text
+     * @param navigationTarget
+     *         navigation target
+     * @param parameters
+     *         route parameters for navigation target
+     */
+    public RouterLink(String text, Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
         this();
         setText(text);
-        setRoute(getRouter(), navigationTarget, parameter);
+        setRoute(getRouter(), navigationTarget, parameters);
     }
 
     /**
@@ -116,9 +130,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      */
     public RouterLink(Router router, String text,
             Class<? extends Component> navigationTarget) {
-        this();
-        setText(text);
-        setRoute(router, navigationTarget);
+        this(router, text, navigationTarget, RouteParameters.empty());
     }
 
     /**
@@ -141,9 +153,29 @@ public class RouterLink extends Component implements HasText, HasComponents,
     public <T, C extends Component & HasUrlParameter<T>> RouterLink(
             Router router, String text, Class<? extends C> navigationTarget,
             T parameter) {
+        this(router, text, navigationTarget,
+                HasUrlParameterFormat.getParameters(parameter));
+    }
+
+    /**
+     * Creates a new router link for the given navigation target using the given
+     * text and parameters.
+     *
+     * @param router
+     *            router used for navigation
+     * @param text
+     *            link text
+     * @param navigationTarget
+     *            navigation target
+     * @param parameters
+     *            route parameters for navigation target
+     */
+    public RouterLink(Router router, String text,
+            Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
         this();
         setText(text);
-        setRoute(router, navigationTarget, parameter);
+        setRoute(router, navigationTarget, parameters);
     }
 
     /**
@@ -156,10 +188,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      */
     public void setRoute(Router router,
             Class<? extends Component> navigationTarget) {
-        validateRouteParameters(router, navigationTarget);
-        String url = RouteConfiguration.forRegistry(router.getRegistry())
-                .getUrl(navigationTarget);
-        updateHref(url);
+        setRoute(router, navigationTarget, RouteParameters.empty());
     }
 
     /**
@@ -178,9 +207,25 @@ public class RouterLink extends Component implements HasText, HasComponents,
      */
     public <T, C extends Component & HasUrlParameter<T>> void setRoute(
             Router router, Class<? extends C> navigationTarget, T parameter) {
-        validateRouteParameters(router, navigationTarget);
+        setRoute(router, navigationTarget, HasUrlParameterFormat.getParameters(parameter));
+    }
+
+    /**
+     * Set the navigation target for this link.
+     *
+     * @param router
+     *            router used for navigation
+     * @param navigationTarget
+     *            navigation target
+     * @param parameters
+     *            route parameters for navigation target
+     */
+    public void setRoute(Router router,
+            Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        validateRouter(router);
         String url = RouteConfiguration.forRegistry(router.getRegistry())
-                .getUrl(navigationTarget, parameter);
+                .getUrl(navigationTarget, parameters);
         updateHref(url);
     }
 
@@ -191,10 +236,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *         navigation target
      */
     public void setRoute(Class<? extends Component> navigationTarget) {
-        validateRouteParameters(getRouter(), navigationTarget);
-        String url = RouteConfiguration.forRegistry(getRouter().getRegistry())
-                .getUrl(navigationTarget);
-        updateHref(url);
+        setRoute(getRouter(), navigationTarget);
     }
 
     /**
@@ -211,22 +253,25 @@ public class RouterLink extends Component implements HasText, HasComponents,
      */
     public <T, C extends Component & HasUrlParameter<T>> void setRoute(
             Class<? extends C> navigationTarget, T parameter) {
-        validateRouteParameters(getRouter(), navigationTarget);
-        String url = RouteConfiguration.forRegistry(getRouter().getRegistry())
-                .getUrl(navigationTarget, parameter);
-        updateHref(url);
+        setRoute(getRouter(), navigationTarget, parameter);
     }
 
-    private void validateRouteParameters(Router router,
-            Class<? extends Component> navigationTarget) {
+    /**
+     * Set the navigation target for this link.
+     *
+     * @param navigationTarget
+     *            navigation target
+     * @param parameters
+     *            route parameters for navigation target
+     */
+    public void setRoute(Class<? extends Component> navigationTarget,
+                         RouteParameters parameters) {
+        setRoute(getRouter(), navigationTarget, parameters);
+    }
+
+    private void validateRouter(Router router) {
         if (router == null) {
             throw new IllegalArgumentException("Router must not be null");
-        } else if (!router.getRegistry().getTargetUrl(navigationTarget)
-                .isPresent()) {
-            LoggerFactory.getLogger(RouterLink.class)
-                    .warn("Creating link for non registered navigationTarget '"
-                            + navigationTarget.getName()
-                            + "'. If target is not registered when link is used, navigation will fail on a 404 not found.");
         }
     }
 

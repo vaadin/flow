@@ -18,7 +18,6 @@ package com.vaadin.flow.component;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import java.util.Arrays;
-import java.util.HashSet;
 
 import com.vaadin.flow.internal.CurrentInstance;
 import org.junit.After;

@@ -88,8 +88,8 @@ public final class ThemeUtil {
 
         Class<? extends RouterLayout> topParentLayout = null;
         if (Component.class.isAssignableFrom(navigationTarget)) {
-            List<Class<? extends RouterLayout>> routeLayouts = ui.getRouter()
-                    .getRegistry().getRouteLayouts(path,
+            List<Class<? extends RouterLayout>> routeLayouts = ui.getInternals()
+                    .getRouter().getRegistry().getRouteLayouts(path,
                             (Class<? extends Component>) navigationTarget);
             topParentLayout = routeLayouts.isEmpty() ? null
                     : routeLayouts.get(routeLayouts.size() - 1);

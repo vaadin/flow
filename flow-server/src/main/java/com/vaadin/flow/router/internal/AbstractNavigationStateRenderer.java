@@ -58,9 +58,9 @@ import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
-import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.JsonValue;
@@ -81,6 +81,8 @@ public abstract class AbstractNavigationStateRenderer
             .getConstantIntValues(HttpServletResponse.class);
 
     private final NavigationState navigationState;
+
+    private List<Class<? extends RouterLayout>> routeLayoutTypes;
 
     private Postpone postponed = null;
 
@@ -139,10 +141,13 @@ public abstract class AbstractNavigationStateRenderer
     public int handle(NavigationEvent event) {
         UI ui = event.getUI();
 
-        Class<? extends Component> routeTargetType = navigationState
+        final Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
-        List<Class<? extends RouterLayout>> routeLayoutTypes = getRouterLayoutTypes(
-                routeTargetType, ui.getRouter());
+        final RouteParameters parameters = navigationState.getRouteParameters();
+        final RouteTarget routeTarget = navigationState.getRouteTarget();
+
+        routeLayoutTypes = routeTarget != null ? routeTarget.getParentLayouts()
+                : getRouterLayoutTypes(routeTargetType, ui.getRouter());
 
         assert routeTargetType != null;
         assert routeLayoutTypes != null;
@@ -153,23 +158,10 @@ public abstract class AbstractNavigationStateRenderer
         final boolean eventActionsSupported = eventActionsSupported();
         if (eventActionsSupported) {
             BeforeLeaveEvent beforeNavigationDeactivating = new BeforeLeaveEvent(
-                    event, routeTargetType, routeLayoutTypes);
+                    event, routeTargetType, parameters, routeLayoutTypes);
 
-            Deque<BeforeLeaveHandler> leaveHandlers;
-            if (postponed != null) {
-                leaveHandlers = postponed.getLeaveObservers();
-                if (!leaveHandlers.isEmpty()) {
-                    postponed = null;
-                }
-            } else {
-                List<BeforeLeaveHandler> beforeLeaveHandlers = new ArrayList<>(
-                        ui.getNavigationListeners(BeforeLeaveHandler.class));
-                beforeLeaveHandlers
-                        .addAll(EventUtil.collectBeforeLeaveObservers(ui));
-                leaveHandlers = new ArrayDeque<>(beforeLeaveHandlers);
-            }
             TransitionOutcome transitionOutcome = executeBeforeLeaveNavigation(
-                    beforeNavigationDeactivating, leaveHandlers);
+                    beforeNavigationDeactivating);
 
             Optional<Integer> result = handleTransactionOutcome(
                     transitionOutcome, event, beforeNavigationDeactivating);
@@ -218,7 +210,7 @@ public abstract class AbstractNavigationStateRenderer
         }
 
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
-                event, routeTargetType, routeLayoutTypes);
+                event, routeTargetType, parameters, routeLayoutTypes);
 
         // If the navigation is postponed, using BeforeLeaveEvent#postpone,
         // pushing history state shouldn't be done. So, it's done here to make
@@ -385,18 +377,16 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     // The last element in the returned list is always a Component class
-    private List<Class<? extends HasElement>> createTypesChain(
-            NavigationEvent event) {
+    private List<Class<? extends HasElement>> getTypesChain() {
         final Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
 
-        List<Class<? extends RouterLayout>> routeLayoutTypes = new ArrayList<>(
-                getRouterLayoutTypes(routeTargetType,
-                        event.getUI().getRouter()));
-        Collections.reverse(routeLayoutTypes);
+        List<Class<? extends RouterLayout>> layoutTypes = new ArrayList<>(
+                this.routeLayoutTypes);
+        Collections.reverse(layoutTypes);
 
         final ArrayList<Class<? extends HasElement>> chain = new ArrayList<>();
-        for (Class<? extends RouterLayout> parentType : routeLayoutTypes) {
+        for (Class<? extends RouterLayout> parentType : layoutTypes) {
             chain.add(parentType);
         }
         chain.add(routeTargetType);
@@ -430,13 +420,13 @@ public abstract class AbstractNavigationStateRenderer
      *
      * @param beforeNavigation
      *            navigation event sent to observers
-     * @param leaveHandlers
-     *            handlers for before leave event
      * @return result of observer events
      */
     private TransitionOutcome executeBeforeLeaveNavigation(
-            BeforeLeaveEvent beforeNavigation,
-            Deque<BeforeLeaveHandler> leaveHandlers) {
+            BeforeLeaveEvent beforeNavigation) {
+        Deque<BeforeLeaveHandler> leaveHandlers = getBeforeLeaveHandlers(
+                beforeNavigation.getUI());
+
         while (!leaveHandlers.isEmpty()) {
             BeforeLeaveHandler listener = leaveHandlers.remove();
             listener.beforeLeave(beforeNavigation);
@@ -456,6 +446,23 @@ public abstract class AbstractNavigationStateRenderer
         }
 
         return TransitionOutcome.FINISHED;
+    }
+
+    private Deque<BeforeLeaveHandler> getBeforeLeaveHandlers(UI ui) {
+        Deque<BeforeLeaveHandler> leaveHandlers;
+        if (postponed != null) {
+            leaveHandlers = postponed.getLeaveObservers();
+            if (!leaveHandlers.isEmpty()) {
+                postponed = null;
+            }
+        } else {
+            List<BeforeLeaveHandler> beforeLeaveHandlers = new ArrayList<>(
+                    ui.getNavigationListeners(BeforeLeaveHandler.class));
+            beforeLeaveHandlers
+                    .addAll(EventUtil.collectBeforeLeaveObservers(ui));
+            leaveHandlers = new ArrayDeque<>(beforeLeaveHandlers);
+        }
+        return leaveHandlers;
     }
 
     /**
@@ -511,7 +518,7 @@ public abstract class AbstractNavigationStateRenderer
                 .getActiveRouterTargetsChain();
 
         // Create the chain components if missing.
-        List<Class<? extends HasElement>> typesChain = createTypesChain(event);
+        List<Class<? extends HasElement>> typesChain = getTypesChain();
 
         try {
             for (Class<? extends HasElement> elementType : typesChain) {
@@ -682,13 +689,13 @@ public abstract class AbstractNavigationStateRenderer
             BeforeEvent beforeEvent) {
         if (beforeEvent.hasForwardTarget()
                 && !isSameNavigationState(beforeEvent.getForwardTargetType(),
-                        beforeEvent.getForwardTargetParameters())) {
+                beforeEvent.getForwardTargetRouteParameters())) {
             return Optional.of(TransitionOutcome.FORWARDED);
         }
 
         if (beforeEvent.hasRerouteTarget()
                 && !isSameNavigationState(beforeEvent.getRerouteTargetType(),
-                        beforeEvent.getRerouteTargetParameters())) {
+                        beforeEvent.getRerouteTargetRouteParameters())) {
             return Optional.of(TransitionOutcome.REROUTED);
         }
 
@@ -696,12 +703,12 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private boolean isSameNavigationState(Class<? extends Component> targetType,
-            List<String> targetParameters) {
+                                          RouteParameters targetParameters) {
         final boolean sameTarget = navigationState.getNavigationTarget()
                 .equals(targetType);
 
         final boolean sameParameters = targetParameters.equals(navigationState
-                .getUrlParameters().orElse(Collections.emptyList()));
+                .getRouteParameters());
 
         return sameTarget && sameParameters;
     }
@@ -737,26 +744,36 @@ public abstract class AbstractNavigationStateRenderer
                     NavigationTrigger.PROGRAMMATIC, errorParameter);
         }
 
-        Class<? extends Component> targetType;
-        if (beforeNavigation.hasForwardTarget()) {
-            targetType = beforeNavigation.getForwardTargetType();
+        String url;
+        final boolean isForward = beforeNavigation.hasForwardTarget();
+        if (isForward) {
+            url = beforeNavigation.getForwardUrl();
         } else {
-            targetType = beforeNavigation.getRerouteTargetType();
+            url = beforeNavigation.getRerouteUrl();
         }
 
-        Location location = new Location(RouteConfiguration
-                .forRegistry(event.getSource().getRegistry())
-                .getUrlBase(targetType)
-                .orElseThrow(() -> new IllegalStateException(String.format(
-                        "The target component '%s' has no registered route",
-                        targetType))),
+        if (url == null) {
+            final String redirectType;
+            final Class<? extends Component> redirectTarget;
+            final RouteParameters redirectParameters;
+
+            if (isForward) {
+                redirectType = "forward";
+                redirectTarget = beforeNavigation.getForwardTargetType();
+                redirectParameters = beforeNavigation.getForwardTargetRouteParameters();
+            } else {
+                redirectType = "reroute";
+                redirectTarget = beforeNavigation.getRerouteTargetType();
+                redirectParameters = beforeNavigation.getRerouteTargetRouteParameters();
+            }
+
+            throw new IllegalStateException(String.format(
+                    "Attempting to %s to unresolved location target %s with route parameters %s",
+                    redirectType, redirectTarget, redirectParameters));
+        }
+
+        Location location = new Location(url,
                 event.getLocation().getQueryParameters());
-
-        if (beforeNavigation.hasForwardTarget()) {
-            List<String> segments = new ArrayList<>(location.getSegments());
-            segments.addAll(beforeNavigation.getForwardTargetParameters());
-            location = new Location(segments);
-        }
 
         return new NavigationEvent(event.getSource(), location, event.getUI(),
                 NavigationTrigger.PROGRAMMATIC, null, true);

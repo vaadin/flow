@@ -26,8 +26,13 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.internal.RouteUtil;
 
 /**
- * Defines the route for components that function as navigation targets in
- * routing.
+ * Defines the route template suffix for components that function as
+ * navigation targets in routing.
+ * <p>
+ * The route template of the navigation target is composed of the values of
+ * all {@link RoutePrefix} annotated on the {@link #layout()} and
+ * {@link ParentLayout} class values, starting from the root parent and joined
+ * together using slash delimiter to form a path form string.
  * <p>
  * There is also {@link RouteAlias} annotation which may be declared in addition
  * to this annotation and may be used multiple times.
@@ -47,16 +52,24 @@ public @interface Route {
     String NAMING_CONVENTION = "___NAMING_CONVENTION___";
 
     /**
-     * Gets the route path value of the annotated class.
+     * Sets the route template suffix value of the annotated class.
      *
-     * <p>If no value is provided, the path will be derived from the class
-     * name of the component. The derived name will be in lower case and
-     * trailing "View" will be removed. Also, MainView or Main names will be
-     * mapped to root (value will be "").</p>
+     * <p>
+     * If no value is provided, the path will be derived from the class name of
+     * the component. The derived name will be in lower case and trailing "View"
+     * will be removed. Also, MainView or Main names will be mapped to root
+     * (value will be "").
+     * </p>
      *
-     * <p>Note for framework developers: do not use the value directly, but
-     * use the helper method {@link RouteUtil#resolve(Class, Route)}, so that
-     * naming convention based values are dealt correctly.</p>
+     * <p>
+     * This value accepts also parameter template segments which can be defined
+     * using following format: <code>:parameterName[?|*][(regex)]</code>.</p>
+     *
+     * <p>
+     * Note for framework developers: do not use the value directly, but use the
+     * helper method {@link RouteUtil#resolve(Class, Route)}, so that naming
+     * convention based values are dealt correctly.
+     * </p>
      *
      * @return the explicit path value of this route
      */

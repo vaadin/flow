@@ -143,7 +143,7 @@ public class BootstrapHandlerDependenciesTest {
     @StyleSheet(value = "2.css", loadMode = LoadMode.LAZY)
     @HtmlImport(value = "1.html", loadMode = LoadMode.LAZY)
     @HtmlImport(value = "2.html", loadMode = LoadMode.LAZY)
-    private static class UIAnnotated_ImportOrderTest_Lazy extends TestUI {
+    private static class UIAnnotated_ImportOrderTest_Lazy extends UI {
     }
 
     @JavaScript(value = "1.js", loadMode = LoadMode.INLINE)
@@ -239,6 +239,15 @@ public class BootstrapHandlerDependenciesTest {
             getPage().addJavaScript("2.js");
             getPage().addJavaScript("1.js");
         }
+    }
+
+    private static Router createRouter() {
+        Router router = Mockito.mock(Router.class);
+        RouteRegistry registry = Mockito.mock(RouteRegistry.class);
+        Mockito.when(router.resolveNavigationTarget(Mockito.any(),
+                Mockito.any())).thenReturn(Optional.empty());
+        Mockito.when(router.getRegistry()).thenReturn(registry);
+        return router;
     }
 
     private TestVaadinServletService service;

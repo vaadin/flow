@@ -7,6 +7,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.RouteRegistry;
@@ -40,12 +41,13 @@ public class ThemeUtilTest {
     public void navigationTargetWithTheme_subclassGetsTheme() {
         RouteRegistry registry = Mockito.mock(RouteRegistry.class);
         Router router = new Router(registry);
-        UI ui = new UI() {
-            @Override
-            public Router getRouter() {
-                return router;
-            }
-        };
+
+        UIInternals uiInternals = Mockito.mock(UIInternals.class);
+        Mockito.when(uiInternals.getRouter()).thenReturn(router);
+
+        UI ui = Mockito.mock(UI.class);
+        Mockito.when(ui.getInternals()).thenReturn(uiInternals);
+
         ThemeDefinition theme = ThemeUtil.findThemeForNavigationTarget(ui,
                 ThemeSingleNavigationTargetSubclass.class, "single");
         Assert.assertNotNull(
