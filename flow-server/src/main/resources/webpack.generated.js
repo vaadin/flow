@@ -6,7 +6,6 @@
  */
 const fs = require('fs');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const { InjectManifest } = require('workbox-webpack-plugin');
 const { DefinePlugin } = require('webpack');
@@ -202,7 +201,10 @@ module.exports = {
       flowFrontendFolder,
       ...projectStaticAssetsFolders,
     ],
-    extensions: ['.ts', '.js'],
+    extensions: [
+      useClientSideIndexFileForBootstrapping && '.ts',
+      '.js'
+    ].filter(Boolean),
     alias: {
       Frontend: frontendFolder
     }
@@ -231,11 +233,9 @@ module.exports = {
 
   module: {
     rules: [
-      {
+      useClientSideIndexFileForBootstrapping && {
         test: /\.ts$/,
-        use: [
-          'awesome-typescript-loader'
-        ]
+        loader: 'ts-loader'
       },
       {
         test: /\.css$/i,
@@ -288,7 +288,7 @@ module.exports = {
           }
         }],
       },
-    ]
+    ].filter(Boolean)
   },
   performance: {
     maxEntrypointSize: 2097152, // 2MB
@@ -322,10 +322,8 @@ module.exports = {
       template: clientSideIndexHTML,
       filename: indexHtmlPath,
       inject: 'head',
+      scriptLoading: 'defer',
       chunks: ['bundle', ...(devMode ? ['devmodeGizmo'] : [])]
-    }),
-    useClientSideIndexFileForBootstrapping && new ScriptExtHtmlWebpackPlugin({
-      defaultAttribute: 'defer'
     }),
 
     // Service worker for offline
