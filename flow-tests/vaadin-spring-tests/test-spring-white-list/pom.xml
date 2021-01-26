@@ -115,6 +115,7 @@
                 <configuration>
                     <maxAttempts>100</maxAttempts>
                     <wait>2500</wait>
+                    <jmxPort>9009</jmxPort>
                 </configuration>
                 <executions>
                     <!-- start and stop application when running
