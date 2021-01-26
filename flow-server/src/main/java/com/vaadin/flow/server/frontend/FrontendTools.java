@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -117,8 +118,8 @@ public class FrontendTools {
     static final String SYSTEM_HTTPS_PROXY_PROPERTY_KEY = "HTTPS_PROXY";
     static final String SYSTEM_HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
 
-    public static final int SUPPORTED_PNPM_MAJOR_VERSION = 5;
-    public static final int SUPPORTED_PNPM_MINOR_VERSION = 0;
+    private static final int SUPPORTED_PNPM_MAJOR_VERSION = 5;
+    private static final int SUPPORTED_PNPM_MINOR_VERSION = 0;
 
     private static final FrontendVersion SUPPORTED_PNPM_VERSION = new FrontendVersion(
             SUPPORTED_PNPM_MAJOR_VERSION, SUPPORTED_PNPM_MINOR_VERSION);
@@ -282,10 +283,9 @@ public class FrontendTools {
      */
     public List<String> getPnpmExecutable() {
         List<String> pnpmCommand = getSuitablePnpm();
-        if (!pnpmCommand.isEmpty()) {
-            pnpmCommand = new ArrayList<>(pnpmCommand);
-            pnpmCommand.add("--shamefully-hoist=true");
-        }
+        assert !pnpmCommand.isEmpty();
+        pnpmCommand = new ArrayList<>(pnpmCommand);
+        pnpmCommand.add("--shamefully-hoist=true");
         return pnpmCommand;
     }
 
@@ -545,18 +545,25 @@ public class FrontendTools {
         return returnCommand;
     }
 
-    private List<String> getNpmCliToolExecutable(NpmCliTool cliTool) {
+    private List<String> getNpmCliToolExecutable(NpmCliTool cliTool,
+            String... flags) {
+        // First look for *-cli.js script in project/node_modules
         List<String> returnCommand = getNpmScriptCommand(baseDir,
                 cliTool.getScript());
         if (returnCommand.isEmpty()) {
+            // First look for *-cli.js script in ~/.vaadin/node/node_modules
             returnCommand = getNpmScriptCommand(getAlternativeDir(),
                     cliTool.getScript());
         }
         if (returnCommand.isEmpty()) {
-            // Otherwise look for regular `npm`/`npx`
+            // Otherwise look for regular `npm`/`npx` global search path
             returnCommand = Collections.singletonList(
                     getExecutable(cliTool.getCommand(), null, true)
                             .getAbsolutePath());
+        }
+        if (flags.length > 0) {
+            returnCommand = new ArrayList<>(returnCommand);
+            Collections.addAll(returnCommand, flags);
         }
         return returnCommand;
     }
@@ -576,33 +583,25 @@ public class FrontendTools {
     }
 
     List<String> getSuitablePnpm() {
-        // do NOT modify the order of flags, as it changes the behavior of npx
-        List<String> pnpmCommand = new ArrayList<>(
-                getNpmCliToolExecutable(NpmCliTool.NPX));
-        pnpmCommand.add("--yes");
-        pnpmCommand.add("--quiet");
-        pnpmCommand.add("pnpm");
-
-        // check version of default pnpm
-        if (!ignoreVersionChecks && !checkPnpmVersion(pnpmCommand)) {
-            // pass version specifier to npx
-            pnpmCommand.set(pnpmCommand.size() - 1,
-                    "pnpm@" + DEFAULT_PNPM_VERSION);
-        }
-        if (!ignoreVersionChecks && !checkPnpmVersion(pnpmCommand)) {
-            // This should not happen unless there is a too old pnpm installed
-            // locally into the project's node_modules folder overriding the
-            // package version specifier passed to npx.
-            throw new IllegalStateException(
-                    "unable to locate pnpm of supported version");
-        } else {
-            getLogger().info("using '{}' for frontend package installation",
-                    String.join(" ", pnpmCommand));
-            return pnpmCommand;
-        }
+        List<String> pnpmCommand = Stream
+                // first try default pnpm, followed by known supported version
+                .of("pnpm", "pnpm@" + DEFAULT_PNPM_VERSION)
+                // do NOT modify the order of the --yes and --quiet flags, as it
+                // changes the behavior of npx
+                .map(pnpm -> getNpmCliToolExecutable(NpmCliTool.NPX, "--yes",
+                        "--quiet", pnpm))
+                .filter(this::validatePnpmVersion)
+                .findFirst().orElseThrow(() -> new IllegalStateException(
+                        "Found too old `pnpm`. If installed into the project "
+                                + "'node_modules', upgrade 'pnpm' to at least "
+                                + SUPPORTED_PNPM_VERSION.getFullVersion()));
+        getLogger().info("using '{}' for frontend package installation",
+                String.join(" ", pnpmCommand));
+        return pnpmCommand;
     }
 
-    private boolean checkPnpmVersion(List<String> pnpmCommand) {
+    private boolean validatePnpmVersion(List<String> pnpmCommand) {
+        String commandLine = String.join(" ", pnpmCommand);
         try {
             List<String> versionCmd = new ArrayList<>(pnpmCommand);
             versionCmd.add("--version"); // NOSONAR
@@ -610,16 +609,16 @@ public class FrontendTools {
                     .getVersion("pnpm", versionCmd);
             boolean versionNewEnough = FrontendUtils
                     .isVersionAtLeast(pnpmVersion, SUPPORTED_PNPM_VERSION);
-            if (!versionNewEnough) {
+            boolean versionAccepted = ignoreVersionChecks || versionNewEnough;
+            if (!versionAccepted) {
                 getLogger()
-                        .warn("pnpm at '{}' is version {} which is not supported (expected >={})",
-                                String.join(" ", pnpmCommand),
-                                pnpmVersion.getFullVersion(),
+                        .info("pnpm '{}' is version {} which is not supported (expected >={})",
+                                commandLine, pnpmVersion.getFullVersion(),
                                 SUPPORTED_PNPM_VERSION.getFullVersion());
             }
-            return versionNewEnough;
+            return versionAccepted;
         } catch (UnknownVersionException e) {
-            getLogger().warn("error checking pnpm version", e);
+            getLogger().warn("version check '{}' failed", commandLine, e);
             return false;
         }
     }

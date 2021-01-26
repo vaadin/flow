@@ -479,8 +479,9 @@ public class FrontendToolsTest {
     @Test
     public void getSuitablePnpm_tooOldVersionInstalledAndSkipVersionCheck_accepted()
             throws Exception {
-        tools = new FrontendTools(baseDir, () -> vaadinHomeDir, "v14.15.4",
-                new File(baseDir).toURI(), true);
+        tools = new FrontendTools(baseDir, () -> vaadinHomeDir,
+                FrontendTools.DEFAULT_NODE_VERSION, new File(baseDir).toURI(),
+                true);
         Assume.assumeFalse(tools.getNodeExecutable().isEmpty());
         createStubNode(false, true, baseDir);
         createFakePnpm("4.5.0");
