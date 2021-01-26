@@ -195,7 +195,7 @@ public class HandlerHelper implements Serializable {
      * @return {@code true}, if the given path has a directory change
      *         instruction, {@code false} otherwise.
      */
-    public static boolean isPathUnsafe(String path) {
+    static boolean isPathUnsafe(String path) {
         // Check that the path does not have '/../', '\..\', %5C..%5C,
         // %2F..%2F, nor '/..', '\..', %5C.., %2F..
         try {
