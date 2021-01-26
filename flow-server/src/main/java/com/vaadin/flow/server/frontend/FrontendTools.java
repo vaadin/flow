@@ -123,6 +123,26 @@ public class FrontendTools {
     private static final FrontendVersion SUPPORTED_PNPM_VERSION = new FrontendVersion(
             SUPPORTED_PNPM_MAJOR_VERSION, SUPPORTED_PNPM_MINOR_VERSION);
 
+    private enum NpmCliTool {
+        NPM("npm", "npm-cli.js"), NPX("npx", "npx-cli.js");
+
+        private final String name;
+        private final String script;
+
+        NpmCliTool(String tool, String script) {
+            this.name = tool;
+            this.script = script;
+        }
+
+        String getCommand() {
+            return FrontendUtils.isWindows() ? name + ".cmd" : name;
+        }
+
+        String getScript() {
+            return script;
+        }
+    }
+
     private final String baseDir;
     private final Supplier<String> alternativeDirGetter;
 
@@ -509,7 +529,7 @@ public class FrontendTools {
 
     private List<String> getNpmExecutable(boolean removePnpmLock) {
         List<String> returnCommand = new ArrayList<>(
-                getNpmCliToolExecutable("npm"));
+                getNpmCliToolExecutable(NpmCliTool.NPM));
         returnCommand.add("--no-update-notifier");
         returnCommand.add("--no-audit");
         returnCommand.add("--scripts-prepend-node-path=true");
@@ -525,23 +545,20 @@ public class FrontendTools {
         return returnCommand;
     }
 
-    private List<String> getNpmCliToolExecutable(String toolName) {
-        assert "npm".equals(toolName) || "npx".equals(toolName);
-        String scriptName = toolName + "-cli.js";
-
-        List<String> returnCommand = getNpmScriptCommand(baseDir, scriptName);
-        if (!returnCommand.isEmpty()) {
-            return returnCommand;
+    private List<String> getNpmCliToolExecutable(NpmCliTool cliTool) {
+        List<String> returnCommand = getNpmScriptCommand(baseDir,
+                cliTool.getScript());
+        if (returnCommand.isEmpty()) {
+            returnCommand = getNpmScriptCommand(getAlternativeDir(),
+                    cliTool.getScript());
         }
-        returnCommand = getNpmScriptCommand(getAlternativeDir(), scriptName);
-        if (!returnCommand.isEmpty()) {
-            return returnCommand;
+        if (returnCommand.isEmpty()) {
+            // Otherwise look for regular `npm`/`npx`
+            returnCommand = Collections.singletonList(
+                    getExecutable(cliTool.getCommand(), null, true)
+                            .getAbsolutePath());
         }
-
-        // Otherwise look for regular `npm`/`npx`
-        String command = FrontendUtils.isWindows() ? toolName + ".cmd" : toolName;
-        return Collections.singletonList(
-                getExecutable(command, null, true).getAbsolutePath());
+        return returnCommand;
     }
 
     private List<String> getNpmScriptCommand(String dir, String scriptName) {
@@ -561,7 +578,7 @@ public class FrontendTools {
     List<String> getSuitablePnpm() {
         // do NOT modify the order of flags, as it changes the behavior of npx
         List<String> pnpmCommand = new ArrayList<>(
-                getNpmCliToolExecutable("npx"));
+                getNpmCliToolExecutable(NpmCliTool.NPX));
         pnpmCommand.add("--yes");
         pnpmCommand.add("--quiet");
         pnpmCommand.add("pnpm");
