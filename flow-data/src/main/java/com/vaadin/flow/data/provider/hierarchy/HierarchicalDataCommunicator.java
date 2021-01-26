@@ -18,7 +18,9 @@ package com.vaadin.flow.data.provider.hierarchy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -159,7 +161,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                     .startUpdate(getHierarchyMapper().getRootSize());
             update.enqueue("$connector.ensureHierarchy");
 
-            Collection<T> expandedItems = getHierarchyMapper().getExpandedItems();
+            Collection<T> expandedItems = getHierarchyMapperExpandedItems();
             if (!expandedItems.isEmpty()) {
                 update.enqueue("$connector.expandItems",
                         expandedItems
@@ -561,4 +563,27 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         return json;
     }
 
+    private Collection<T> getHierarchyMapperExpandedItems() {
+        HierarchyMapper<T, ?> hierarchyMapper = getHierarchyMapper();
+        if (!hierarchyMapper.hasExpandedItems()) {
+            return Collections.emptySet();
+        }
+
+        Collection<T> expandedItems = new HashSet<>();
+        getHierarchyMapper().fetchRootItems(null)
+                .forEach(root -> expandedItems.addAll(getExpandedItems(root)));
+
+        return Collections.unmodifiableCollection(expandedItems);
+    }
+
+    private Collection<T> getExpandedItems(T parent) {
+        Collection<T> expandedItems = new HashSet<>();
+        HierarchyMapper<T, ?> hierarchyMapper = getHierarchyMapper();
+        if (hierarchyMapper.isExpanded(parent)) {
+            expandedItems.add(parent);
+        }
+        hierarchyMapper.fetchChildItems(parent, null)
+                .forEach(child -> expandedItems.addAll(getExpandedItems(child)));
+        return expandedItems;
+    }
 }

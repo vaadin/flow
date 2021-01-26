@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -320,8 +321,8 @@ public class DevModeInitializer
                     .enableImportsUpdate(true).runNpmInstall(true)
                     .populateTokenFileData(tokenFileData)
                     .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
-                    .withHomeNodeExecRequired(useHomeNodeExec)
-                    .build().execute();
+                    .withHomeNodeExecRequired(useHomeNodeExec).build()
+                    .execute();
 
             FallbackChunk chunk = FrontendUtils
                     .readFallbackChunk(tokenFileData);
@@ -345,25 +346,23 @@ public class DevModeInitializer
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec).build();
 
-        CompletableFuture<Void> runNodeTasks = CompletableFuture
-                .runAsync(() -> {
-                    try {
-                        tasks.execute();
+        // Check whether executor is provided by the caller (framework)
+        Object service = config.getInitParameters().get(Executor.class);
 
-                        FallbackChunk chunk = FrontendUtils
-                                .readFallbackChunk(tokenFileData);
-                        if (chunk != null) {
-                            vaadinContext.setAttribute(chunk);
-                        }
-                    } catch (ExecutionFailedException exception) {
-                        log().debug(
-                                "Could not initialize dev mode handler. One of the node tasks failed",
-                                exception);
-                        throw new CompletionException(exception);
-                    }
-                });
+        Runnable runnable = () -> runNodeTasks(vaadinContext, tokenFileData,
+                tasks);
 
-        DevModeHandler.start(config, builder.npmFolder, runNodeTasks);
+        CompletableFuture<Void> nodeTasksFuture;
+        if (service instanceof Executor) {
+            // if there is an executor use it to run the task
+            nodeTasksFuture = CompletableFuture.runAsync(runnable,
+                    (Executor) service);
+        } else {
+            nodeTasksFuture = CompletableFuture.runAsync(runnable);
+
+        }
+
+        DevModeHandler.start(config, builder.npmFolder, nodeTasksFuture);
     }
 
     private static Logger log() {
@@ -420,6 +419,24 @@ public class DevModeInitializer
         frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
                 Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT));
         return frontendFiles;
+    }
+
+    private static void runNodeTasks(VaadinContext vaadinContext,
+            JsonObject tokenFileData, NodeTasks tasks) {
+        try {
+            tasks.execute();
+
+            FallbackChunk chunk = FrontendUtils
+                    .readFallbackChunk(tokenFileData);
+            if (chunk != null) {
+                vaadinContext.setAttribute(chunk);
+            }
+        } catch (ExecutionFailedException exception) {
+            log().debug(
+                    "Could not initialize dev mode handler. One of the node tasks failed",
+                    exception);
+            throw new CompletionException(exception);
+        }
     }
 
     private static Set<File> getFrontendLocationsFromClassloader(

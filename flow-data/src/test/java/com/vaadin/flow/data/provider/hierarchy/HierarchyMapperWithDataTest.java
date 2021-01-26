@@ -18,7 +18,9 @@ package com.vaadin.flow.data.provider.hierarchy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -250,14 +252,15 @@ public class HierarchyMapperWithDataTest {
                 dataProvider
         );
 
-        Collection<TreeNode> expandedItems = hierarchyMapper.getExpandedItems();
+        Collection<TreeNode> expandedItems =
+                getHierarchyMapperExpandedItems(hierarchyMapper);
         Assert.assertNotNull(expandedItems);
         Assert.assertEquals(0L, expandedItems.size());
 
         hierarchyMapper.expand(root);
         hierarchyMapper.expand(second2);
 
-        expandedItems = hierarchyMapper.getExpandedItems();
+        expandedItems = getHierarchyMapperExpandedItems(hierarchyMapper);
         Assert.assertNotNull(expandedItems);
         Assert.assertEquals(2L, expandedItems.size());
         Assert.assertArrayEquals(new Object[]{"root", "second-2"},
@@ -289,7 +292,8 @@ public class HierarchyMapperWithDataTest {
         hierarchyMapper.expand(root);
         hierarchyMapper.expand(second1);
 
-        Collection<TreeNode> expandedItems = hierarchyMapper.getExpandedItems();
+        Collection<TreeNode> expandedItems =
+                getHierarchyMapperExpandedItems(hierarchyMapper);
         expandedItems.add(new TreeNode("third-1"));
     }
 
@@ -345,6 +349,33 @@ public class HierarchyMapperWithDataTest {
         assertTrue("Index not in range",
                 0 <= range.getStart() && range.getStart() <= mapSize);
         mapSize += range.length();
+    }
+
+    private Collection<TreeNode> getHierarchyMapperExpandedItems(
+            HierarchyMapper<TreeNode, ?> hierarchyMapper) {
+        if (!hierarchyMapper.hasExpandedItems()) {
+            return Collections.emptySet();
+        }
+
+        Collection<TreeNode> expandedItems = new HashSet<>();
+        hierarchyMapper.fetchRootItems(null)
+                .forEach(root -> expandedItems.addAll(
+                        getExpandedItems(root, hierarchyMapper)));
+
+        return Collections.unmodifiableCollection(expandedItems);
+    }
+
+    private Collection<TreeNode> getExpandedItems(
+            TreeNode parent, HierarchyMapper<TreeNode, ?> hierarchyMapper) {
+        Collection<TreeNode> expandedItems = new HashSet<>();
+
+        if (hierarchyMapper.isExpanded(parent)) {
+            expandedItems.add(parent);
+        }
+        hierarchyMapper.fetchChildItems(parent, null)
+                .forEach(child -> expandedItems.addAll(
+                        getExpandedItems(child, hierarchyMapper)));
+        return expandedItems;
     }
 
     private static class TreeNode {

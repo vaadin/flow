@@ -3,8 +3,10 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.lang.reflect.Field;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -23,14 +25,35 @@ public class NodeTasksTest {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
-    String userDir;
+
+    private static final String USER_DIR = "user.dir";
+
+    private static String globalUserDirValue;
+    private static String globalFrontendDirValue;
+    private static String globalGeneratedDirValue;
+
+    private String userDir;
 
     @Before
     public void setup() {
         userDir = temporaryFolder.getRoot().getAbsolutePath();
-        System.setProperty("user.dir", userDir);
+        System.setProperty(USER_DIR, userDir);
         System.clearProperty(PARAM_FRONTEND_DIR);
         System.clearProperty(PARAM_GENERATED_DIR);
+    }
+
+    @BeforeClass
+    public static void setupBeforeClass() {
+        globalUserDirValue = System.getProperty(USER_DIR);
+        globalFrontendDirValue = System.getProperty(PARAM_FRONTEND_DIR);
+        globalGeneratedDirValue = System.getProperty(PARAM_GENERATED_DIR);
+    }
+
+    @AfterClass
+    public static void tearDownAfterClass() {
+        setPropertyIfPresent(USER_DIR, globalUserDirValue);
+        setPropertyIfPresent(PARAM_FRONTEND_DIR, globalFrontendDirValue);
+        setPropertyIfPresent(PARAM_GENERATED_DIR, globalGeneratedDirValue);
     }
 
     @Test
@@ -73,6 +96,12 @@ public class NodeTasksTest {
 
         builder.build().execute();
         Assert.assertTrue(new File(userDir, "my/custom/generated/folder/" + IMPORTS_NAME).exists());
+    }
+
+    private static void setPropertyIfPresent(String key, String value) {
+        if (value != null) {
+            System.setProperty(key, value);
+        }
     }
 
     private Object getFieldValue(Object obj, String name) throws Exception {

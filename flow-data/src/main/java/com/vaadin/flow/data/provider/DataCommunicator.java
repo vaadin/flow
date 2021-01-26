@@ -600,6 +600,11 @@ public class DataCommunicator<T> implements Serializable {
 
             // Pick existing items from the current list
             Range overlap = partitionWith[1].offsetBy(-activeStart);
+            if (overlap.getStart() < 0) {
+                // If getStart is negative there is no data and empty Activation
+                // needs to be returned
+                return Activation.empty();
+            }          
             newActiveKeyOrder.addAll(activeKeyOrder.subList(overlap.getStart(),
                     overlap.getEnd()));
 
