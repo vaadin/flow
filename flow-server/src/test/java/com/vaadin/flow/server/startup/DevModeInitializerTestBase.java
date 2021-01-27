@@ -71,8 +71,11 @@ public class DevModeInitializerTestBase {
         baseDir = temporaryFolder.getRoot().getPath();
         Boolean enablePnpm = Boolean.TRUE;
 
-        createStubNode(false, true, enablePnpm, baseDir);
+        createStubNode(false, true, baseDir);
         createStubWebpackServer("Compiled", 0, baseDir);
+
+        // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
+        new File(baseDir, "node_modules/.modules.yaml").createNewFile();
 
         servletContext = Mockito.mock(ServletContext.class);
         ServletRegistration vaadinServletRegistration = Mockito

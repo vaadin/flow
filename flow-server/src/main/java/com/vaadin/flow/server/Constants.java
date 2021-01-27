@@ -459,14 +459,14 @@ public final class Constants implements Serializable {
      * @deprecated this is an internal constant, don't use it
      */
     @Deprecated
-    public static final int SUPPORTED_PNPM_MAJOR_VERSION = 4;
+    public static final int SUPPORTED_PNPM_MAJOR_VERSION = 5;
     /**
      * Internal constant.
      *
      * @deprecated this is an internal constant, don't use it
      */
     @Deprecated
-    public static final int SUPPORTED_PNPM_MINOR_VERSION = 4;
+    public static final int SUPPORTED_PNPM_MINOR_VERSION = 0;
 
     /**
      * @deprecated Use {@link InitParameters#EXTERNAL_STATS_FILE} instead.

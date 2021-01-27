@@ -146,44 +146,46 @@ public class MigrationTest {
             MigrationToolsException, IOException {
         Mockito.when(configuration.isPnpmEnabled()).thenReturn(true);
         targetFolder = makeTempDirectoryStructure();
-        Path pnpmBin = Files
-                .createDirectories(Paths.get(targetFolder.getAbsolutePath(),
-                        "foo", "node_modules", "pnpm", "bin"));
-        new File(pnpmBin.toFile(), "pnpm.js").createNewFile();
 
+        File homeNodeDir = Paths
+                .get(FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
+                        "node").toFile();
         File baseDir = new File(targetFolder.getAbsolutePath(), "foo");
         FrontendTools tools = new FrontendTools(baseDir.getAbsolutePath(),
                 () -> baseDir.getAbsolutePath());
         List<String> pnpmExecutable = tools.getPnpmExecutable();
-
-        if (pnpmExecutable.get(0).contains("pnpm")) {
-            // globally installed pnpm
+        if (homeNodeDir.exists() || !pnpmExecutable.get(0).contains("npx")) {
+            // locally installed node
 
             // Expected execution calls:
-            // 1 - pnpm --shamefully-hoist=true install polymer-modulizer
+            // 1 - node node_modules/npm/bin/npx-cli.js --yes --quiet pnpm
+            //     --shamefully-hoist=true install polymer-modulizer
             // 2 - node {tempFolder} i -F --confid.interactive=false -S
-            // polymer#2.8.0
-            // 3 - pnpm --shamefully-hoist=true i
+            //     polymer#2.8.0
+            // 3 - node node_modules/npm/bin/npx-cli.js --yes --quiet pnpm
+            //     --shamefully-hoist=true i
             // 4 - node node_modules/polymer-modulizer/bin/modulizer.js --force
-            // --out , --import-style=name
-            migratePassesHappyPath(Stream.of(4, 7, 3, 6)
+            //     --out , --import-style=name
+            migratePassesHappyPath(Stream.of(8, 7, 7, 6)
                     .collect(Collectors.toCollection(LinkedList::new)));
         } else {
+            // globally installed node
+
             // Expected execution calls:
-            // 1 - node node_modules/pnpm/bin/pnpm.js --shamefully-hoist=true
-            // install polymer-modulizer
+            // 1 - npx --yes --quiet pnpm --shamefully-hoist=true install
+            //     polymer-modulizer
             // 2 - node {tempFolder} i -F --confid.interactive=false -S
-            // polymer#2.8.0
-            // 3 - node node_modules/pnpm/bin/pnpm.js --shamefully-hoist=true i
+            //     polymer#2.8.0
+            // 3 - npx --yes --quiet pnpm --shamefully-hoist=true i
             // 4 - node node_modules/polymer-modulizer/bin/modulizer.js --force
-            // --out , --import-style=name
-            migratePassesHappyPath(Stream.of(5, 7, 4, 6)
+            //     --out , --import-style=name
+            migratePassesHappyPath(Stream.of(7, 7, 6, 6)
                     .collect(Collectors.toCollection(LinkedList::new)));
         }
     }
 
     private void migratePassesHappyPath(
-            LinkedList<Integer> excecuteExpectations)
+            LinkedList<Integer> executeExpectations)
             throws MigrationFailureException, MigrationToolsException,
             IOException {
         File sourcesFolder = makeTempDirectoryStructure();
@@ -225,7 +227,7 @@ public class MigrationTest {
                     String errorMsg, String successMsg, String exceptionMsg) {
                 Assert.assertEquals(
                         "Unexpected command '" + command.toString() + "'",
-                        (int) excecuteExpectations.pop(), command.size());
+                        (int) executeExpectations.pop(), command.size());
                 // Skip actual execution of commands.
                 return true;
             }

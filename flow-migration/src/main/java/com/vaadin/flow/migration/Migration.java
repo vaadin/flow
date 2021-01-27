@@ -318,7 +318,6 @@ public class Migration {
     private List<String> getFrontendInstallToolExec() {
         List<String> executable;
         if (configuration.isPnpmEnabled()) {
-            tools.ensurePnpm();
             executable = tools.getPnpmExecutable();
         } else {
             executable = tools.getNpmExecutable();

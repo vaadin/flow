@@ -55,7 +55,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         baseDir = temporaryFolder.getRoot();
         frontendFolder = new File(baseDir, "frontend");
 
-        NodeUpdateTestUtil.createStubNode(true, true, false,
+        NodeUpdateTestUtil.createStubNode(true, true,
                 baseDir.getAbsolutePath());
 
         webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
