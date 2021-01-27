@@ -592,7 +592,7 @@ public class FrontendTools {
                         "--quiet", pnpm))
                 .filter(this::validatePnpmVersion)
                 .findFirst().orElseThrow(() -> new IllegalStateException(
-                        "Found too old `pnpm`. If installed into the project "
+                        "Found too old 'pnpm'. If installed into the project "
                                 + "'node_modules', upgrade 'pnpm' to at least "
                                 + SUPPORTED_PNPM_VERSION.getFullVersion()));
         getLogger().info("using '{}' for frontend package installation",
