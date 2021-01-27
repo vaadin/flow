@@ -15,23 +15,19 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -42,9 +38,6 @@ import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.server.frontend.installer.InstallationException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 /**
  * Provides access to frontend tools (node.js and npm, pnpm) and optionally
@@ -59,7 +52,7 @@ public class FrontendTools {
 
     public static final String DEFAULT_NODE_VERSION = "v14.15.4";
 
-    public static final String DEFAULT_PNPM_VERSION = "4.5.0";
+    public static final String DEFAULT_PNPM_VERSION = "5.15.1";
 
     public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm "
             + "-DnodeVersion=\"" + DEFAULT_NODE_VERSION + "\" ";
@@ -96,11 +89,6 @@ public class FrontendTools {
                     new FrontendVersion("6.11.1"),
                     new FrontendVersion("6.11.2"));
 
-    static final String PNPM_INSTALLED_BY_NPM_FOLDER = "node_modules/pnpm/";
-
-    static final String PNPM_INSTALLED_BY_NPM = PNPM_INSTALLED_BY_NPM_FOLDER
-            + "bin/pnpm.js";
-
     private static final int SUPPORTED_NODE_MAJOR_VERSION = 10;
     private static final int SUPPORTED_NODE_MINOR_VERSION = 0;
     private static final int SUPPORTED_NPM_MAJOR_VERSION = 5;
@@ -109,13 +97,6 @@ public class FrontendTools {
     private static final int SHOULD_WORK_NODE_MINOR_VERSION = 9;
     private static final int SHOULD_WORK_NPM_MAJOR_VERSION = 5;
     private static final int SHOULD_WORK_NPM_MINOR_VERSION = 5;
-
-    public static final int SUPPORTED_PNPM_MAJOR_VERSION = 4;
-    public static final int SUPPORTED_PNPM_MINOR_VERSION = 4;
-
-    // Due to a regression in pnpm, see #8434
-    private static final int BREAKING_PNPM_MAJOR_VERSION = 4;
-    private static final int BREAKING_PNPM_MINOR_VERSION = 6;
 
     private static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
             SUPPORTED_NODE_MAJOR_VERSION, SUPPORTED_NODE_MINOR_VERSION);
@@ -137,12 +118,31 @@ public class FrontendTools {
     static final String SYSTEM_HTTPS_PROXY_PROPERTY_KEY = "HTTPS_PROXY";
     static final String SYSTEM_HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
 
+    private static final int SUPPORTED_PNPM_MAJOR_VERSION = 5;
+    private static final int SUPPORTED_PNPM_MINOR_VERSION = 0;
+
     private static final FrontendVersion SUPPORTED_PNPM_VERSION = new FrontendVersion(
             SUPPORTED_PNPM_MAJOR_VERSION, SUPPORTED_PNPM_MINOR_VERSION);
 
-    // See #8434
-    private static final FrontendVersion BREAKING_PNPM_VERSION = new FrontendVersion(
-            BREAKING_PNPM_MAJOR_VERSION, BREAKING_PNPM_MINOR_VERSION);
+    private enum NpmCliTool {
+        NPM("npm", "npm-cli.js"), NPX("npx", "npx-cli.js");
+
+        private final String name;
+        private final String script;
+
+        NpmCliTool(String tool, String script) {
+            this.name = tool;
+            this.script = script;
+        }
+
+        String getCommand() {
+            return FrontendUtils.isWindows() ? name + ".cmd" : name;
+        }
+
+        String getScript() {
+            return script;
+        }
+    }
 
     private final String baseDir;
     private final Supplier<String> alternativeDirGetter;
@@ -280,23 +280,13 @@ public class FrontendTools {
      *
      * @return the list of all commands in sequence that need to be executed to
      *         have pnpm running
-     * @see #getPnpmExecutable(String, boolean)
      */
     public List<String> getPnpmExecutable() {
-        Supplier<List<String>> result = doEnsurePnpm();
-        List<String> pnpmCommand = result.get();
-        if (!pnpmCommand.isEmpty()) {
-            pnpmCommand.add("--shamefully-hoist=true");
-        }
+        List<String> pnpmCommand = getSuitablePnpm();
+        assert !pnpmCommand.isEmpty();
+        pnpmCommand = new ArrayList<>(pnpmCommand);
+        pnpmCommand.add("--shamefully-hoist=true");
         return pnpmCommand;
-    }
-
-    /**
-     * Ensure that pnpm tool is available and install it if it's not.
-     *
-     */
-    public void ensurePnpm() {
-        doEnsurePnpm();
     }
 
     /**
@@ -332,47 +322,6 @@ public class FrontendTools {
             getLogger().warn("Error checking if npm is new enough", e);
         }
 
-    }
-
-    /**
-     * Locate <code>pnpm</code> executable if it's possible.
-     * <p>
-     * In case the tool is not found either {@link IllegalStateException} is
-     * thrown or an empty list is returned depending on {@code failOnAbsence}
-     * value.
-     *
-     * @param dir
-     *            the directory to search local pnpm script
-     *
-     * @param failOnAbsence
-     *            if {@code true} throws IllegalStateException if tool is not
-     *            found, if {@code false} return an empty list if tool is not
-     *            found
-     *
-     * @return the list of all commands in sequence that need to be executed to
-     *         have pnpm running
-     */
-    protected List<String> getPnpmExecutable(String dir,
-            boolean failOnAbsence) {
-        // First try local pnpm JS script if it exists
-        List<String> returnCommand = new ArrayList<>();
-        Optional<File> localPnpmScript = getLocalPnpmScript(dir);
-        if (localPnpmScript.isPresent()) {
-            returnCommand.add(getNodeExecutable());
-            returnCommand.add(localPnpmScript.get().getAbsolutePath());
-        } else {
-            // Otherwise look for regular `pnpm`
-            String command = FrontendUtils.isWindows() ? "pnpm.cmd" : "pnpm";
-            if (failOnAbsence) {
-                returnCommand.add(
-                        getExecutable(command, null, false).getAbsolutePath());
-            } else {
-                returnCommand.addAll(frontendToolsLocator.tryLocateTool(command)
-                        .map(File::getPath).map(Collections::singletonList)
-                        .orElse(Collections.emptyList()));
-            }
-        }
-        return returnCommand;
     }
 
     /**
@@ -433,64 +382,6 @@ public class FrontendTools {
                     npmVersion.getFullVersion(),
                     "by updating your global npm installation with `npm install -g npm@latest`");
             throw new IllegalStateException(badNpmVersion);
-        }
-    }
-
-    private List<String> ensurePnpm(String dir) {
-        List<String> pnpm = getSuitablePnpm(dir);
-        if (pnpm.isEmpty()) {
-            // copy the current content of package.json file to a temporary
-            // location
-            File packageJson = new File(dir, "package.json");
-            File tempFile = null;
-            boolean packageJsonExists = packageJson.canRead();
-            if (packageJsonExists) {
-                try {
-                    tempFile = File.createTempFile("package", "json");
-                    FileUtils.copyFile(packageJson, tempFile);
-                } catch (IOException exception) {
-                    throw new IllegalStateException(
-                            "Couldn't make a copy of package.json file",
-                            exception);
-                }
-                packageJson.delete();
-            }
-            try {
-                JsonObject pkgJson = Json.createObject();
-                pkgJson.put("name", "temp");
-                pkgJson.put("license", "UNLICENSED");
-                pkgJson.put("repository", "npm/npm");
-                pkgJson.put("description",
-                        "Temporary package for pnpm installation");
-                FileUtils.writeLines(packageJson,
-                        Collections.singletonList(pkgJson.toJson()));
-                JsonObject lockJson = Json.createObject();
-                lockJson.put("lockfileVersion", 1);
-                FileUtils.writeLines(new File(dir, "package-lock.json"),
-                        Collections.singletonList(lockJson.toJson()));
-            } catch (IOException e) {
-                getLogger().warn("Couldn't create temporary package.json");
-            }
-            // install pnpm locally using npm
-            installPnpm(dir, getNpmExecutable(false));
-
-            // remove package-lock.json which contains pnpm as a dependency.
-            new File(dir, "package-lock.json").delete();
-
-            if (packageJsonExists && tempFile != null) {
-                // return back the original package.json
-                try {
-                    FileUtils.copyFile(tempFile, packageJson);
-                } catch (IOException exception) {
-                    throw new IllegalStateException(
-                            "Couldn't restore package.json file back",
-                            exception);
-                }
-                tempFile.delete();
-            }
-            return Collections.emptyList();
-        } else {
-            return pnpm;
         }
     }
 
@@ -636,38 +527,9 @@ public class FrontendTools {
         return null;
     }
 
-    private Supplier<List<String>> doEnsurePnpm() {
-        List<String> path = getSuitablePnpm(baseDir);
-        if (!path.isEmpty()) {
-            getLogger().trace(
-                    "Found installed pnpm (globally or inside the '{}' project dir)",
-                    baseDir);
-            return () -> path;
-        }
-        String alternativeDir = getAlternativeDir();
-        List<String> pnpm = ensurePnpm(alternativeDir);
-        if (pnpm.isEmpty()) {
-            return () -> getPnpmExecutable(alternativeDir, true);
-        } else {
-            getLogger().info(
-                    "Using pnpm command installed in the '{}' directory",
-                    alternativeDir);
-            return () -> pnpm;
-        }
-    }
-
     private List<String> getNpmExecutable(boolean removePnpmLock) {
-        List<String> returnCommand = getNpmScriptCommand(baseDir);
-        if (returnCommand.isEmpty()) {
-            returnCommand = getNpmScriptCommand(getAlternativeDir());
-        }
-
-        if (returnCommand.isEmpty()) {
-            // Otherwise look for regular `npm`
-            String command = FrontendUtils.isWindows() ? "npm.cmd" : "npm";
-            returnCommand
-                    .add(getExecutable(command, null, true).getAbsolutePath());
-        }
+        List<String> returnCommand = new ArrayList<>(
+                getNpmCliToolExecutable(NpmCliTool.NPM));
         returnCommand.add("--no-update-notifier");
         returnCommand.add("--no-audit");
         returnCommand.add("--scripts-prepend-node-path=true");
@@ -683,11 +545,34 @@ public class FrontendTools {
         return returnCommand;
     }
 
-    private List<String> getNpmScriptCommand(String dir) {
+    private List<String> getNpmCliToolExecutable(NpmCliTool cliTool,
+            String... flags) {
+        // First look for *-cli.js script in project/node_modules
+        List<String> returnCommand = getNpmScriptCommand(baseDir,
+                cliTool.getScript());
+        if (returnCommand.isEmpty()) {
+            // First look for *-cli.js script in ~/.vaadin/node/node_modules
+            returnCommand = getNpmScriptCommand(getAlternativeDir(),
+                    cliTool.getScript());
+        }
+        if (returnCommand.isEmpty()) {
+            // Otherwise look for regular `npm`/`npx` global search path
+            returnCommand = Collections.singletonList(
+                    getExecutable(cliTool.getCommand(), null, true)
+                            .getAbsolutePath());
+        }
+        if (flags.length > 0) {
+            returnCommand = new ArrayList<>(returnCommand);
+            Collections.addAll(returnCommand, flags);
+        }
+        return returnCommand;
+    }
+
+    private List<String> getNpmScriptCommand(String dir, String scriptName) {
         // If `node` is not found in PATH, `node/node_modules/npm/bin/npm` will
         // not work because it's a shell or windows script that looks for node
         // and will fail. Thus we look for the `npm-cli` node script instead
-        File file = new File(dir, "node/node_modules/npm/bin/npm-cli.js");
+        File file = new File(dir, "node/node_modules/npm/bin/" + scriptName);
         List<String> returnCommand = new ArrayList<>();
         if (file.canRead()) {
             // We return a two element list with node binary and npm-cli script
@@ -697,106 +582,45 @@ public class FrontendTools {
         return returnCommand;
     }
 
-    List<String> getSuitablePnpm(String dir) {
-        List<String> pnpmCommand = getPnpmExecutable(dir, false);
-        String pnpmCommandString = String.join(" ", pnpmCommand);
-
-        if (!ignoreVersionChecks && !pnpmCommand.isEmpty()) {
-            // check whether globally or locally installed pnpm is new enough
-            try {
-                List<String> versionCmd = new ArrayList<>(pnpmCommand);
-                versionCmd.add("--version"); // NOSONAR
-                FrontendVersion pnpmVersion = FrontendUtils.getVersion("pnpm",
-                        versionCmd);
-                if (!(FrontendUtils.isVersionAtLeast(pnpmVersion,
-                        SUPPORTED_PNPM_VERSION)
-                        && pnpmVersion.isOlderThan(BREAKING_PNPM_VERSION))) {
-                    getLogger().warn(
-                            "installed pnpm ('{}', version {}) is not in the compatible versions range (>={}, <{})",
-                            pnpmCommandString, pnpmVersion.getFullVersion(),
-                            SUPPORTED_PNPM_VERSION.getFullVersion(),
-                            BREAKING_PNPM_VERSION.getFullVersion());
-                    pnpmCommand = Collections.emptyList();
-                }
-            } catch (UnknownVersionException e) {
-                getLogger().warn("error checking pnpm version", e);
-            }
-        }
-        if (!pnpmCommand.isEmpty()) {
-            getLogger().info("using '{}' for frontend package installation",
-                    pnpmCommandString);
-        }
+    List<String> getSuitablePnpm() {
+        List<String> pnpmCommand = Stream
+                // first try default pnpm, followed by known supported version
+                .of("pnpm", "pnpm@" + DEFAULT_PNPM_VERSION)
+                // do NOT modify the order of the --yes and --quiet flags, as it
+                // changes the behavior of npx
+                .map(pnpm -> getNpmCliToolExecutable(NpmCliTool.NPX, "--yes",
+                        "--quiet", pnpm))
+                .filter(this::validatePnpmVersion)
+                .findFirst().orElseThrow(() -> new IllegalStateException(
+                        "Found too old 'pnpm'. If installed into the project "
+                                + "'node_modules', upgrade 'pnpm' to at least "
+                                + SUPPORTED_PNPM_VERSION.getFullVersion()));
+        getLogger().info("using '{}' for frontend package installation",
+                String.join(" ", pnpmCommand));
         return pnpmCommand;
     }
 
-    private void installPnpm(String dir, List<String> installCommand) {
-        getLogger().info("installing pnpm version {} locally",
-                DEFAULT_PNPM_VERSION);
-
-        List<String> command = new ArrayList<>();
-        command.addAll(installCommand);
-        command.add("install");
-        command.add("pnpm@" + DEFAULT_PNPM_VERSION);
-
-        if (getLogger().isDebugEnabled()) {
-            getLogger().debug(FrontendUtils.commandToString(dir, command));
-        }
-
-        ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
-        builder.environment().put("ADBLOCK", "1");
-        builder.directory(new File(dir));
-
-        builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
-        builder.redirectError(ProcessBuilder.Redirect.INHERIT);
-
-        Process process = null;
+    private boolean validatePnpmVersion(List<String> pnpmCommand) {
+        String commandLine = String.join(" ", pnpmCommand);
         try {
-            process = builder.start();
-            getLogger().debug("Output of `{}`:",
-                    command.stream().collect(Collectors.joining(" ")));
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream(),
-                            StandardCharsets.UTF_8))) {
-                String stdoutLine;
-                while ((stdoutLine = reader.readLine()) != null) {
-                    getLogger().debug(stdoutLine);
-                }
+            List<String> versionCmd = new ArrayList<>(pnpmCommand);
+            versionCmd.add("--version"); // NOSONAR
+            FrontendVersion pnpmVersion = FrontendUtils
+                    .getVersion("pnpm", versionCmd);
+            boolean versionNewEnough = FrontendUtils
+                    .isVersionAtLeast(pnpmVersion, SUPPORTED_PNPM_VERSION);
+            boolean versionAccepted = ignoreVersionChecks || versionNewEnough;
+            if (!versionAccepted) {
+                getLogger()
+                        .info("pnpm '{}' is version {} which is not supported (expected >={})",
+                                commandLine, pnpmVersion.getFullVersion(),
+                                SUPPORTED_PNPM_VERSION.getFullVersion());
             }
-
-            int errorCode = process.waitFor();
-            if (errorCode != 0) {
-                getLogger().error("Couldn't install 'pnpm'");
-            } else {
-                getLogger().debug("Pnpm is successfully installed");
-            }
-        } catch (InterruptedException | IOException e) {
-            getLogger().error("Error when running `npm install`", e);
-        } finally {
-            if (process != null) {
-                process.destroyForcibly();
-            }
+            return versionAccepted;
+        } catch (UnknownVersionException e) {
+            getLogger().warn("version check '{}' failed", commandLine, e);
+            return false;
         }
-    }
-
-    private Optional<File> getLocalPnpmScript(String dir) {
-        File npmInstalled = new File(dir, PNPM_INSTALLED_BY_NPM);
-        if (npmInstalled.canRead()) {
-            return Optional.of(npmInstalled);
-        }
-
-        // For version 4.3.3 check ".ignored" folders
-        File movedPnpmScript = new File(dir,
-                "node_modules/.ignored_pnpm/bin/pnpm.js");
-        if (movedPnpmScript.canRead()) {
-            return Optional.of(movedPnpmScript);
-        }
-
-        movedPnpmScript = new File(dir,
-                "node_modules/.ignored/pnpm/bin/pnpm.js");
-        if (movedPnpmScript.canRead()) {
-            return Optional.of(movedPnpmScript);
-        }
-        return Optional.empty();
     }
 
     private String buildBadVersionString(String tool, String version,

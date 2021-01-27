@@ -45,10 +45,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     public void setUp() throws IOException {
         super.setUp();
 
-        // ensure there is a valid pnpm installed in the system
-        new FrontendTools(getNodeUpdater().npmFolder.getAbsolutePath(),
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath())
-                        .ensurePnpm();
         // create an empty package.json so as pnpm can be run without error
         FileUtils.write(new File(getNodeUpdater().npmFolder, PACKAGE_JSON),
                 "{}", StandardCharsets.UTF_8);
@@ -110,7 +106,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // create some package.json file so pnpm does some installation into
         // node_modules folder
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"pnpm\": \"4.5.0\"}}",
+                "{\"dependencies\": {" + "\"pnpm\": \"5.15.1\"}}",
                 StandardCharsets.UTF_8);
 
         getNodeUpdater().modified = true;
