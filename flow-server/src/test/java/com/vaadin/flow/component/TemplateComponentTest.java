@@ -21,8 +21,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.templatemodel.TemplateModel;
