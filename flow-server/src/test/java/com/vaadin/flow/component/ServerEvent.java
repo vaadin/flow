@@ -13,12 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.vaadin.flow.component;
 
 import java.math.BigDecimal;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
 
 public class ServerEvent extends ComponentEvent<Component> {
 
