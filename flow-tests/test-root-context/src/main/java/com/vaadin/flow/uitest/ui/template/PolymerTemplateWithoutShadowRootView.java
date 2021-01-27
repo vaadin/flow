@@ -16,16 +16,18 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("template-without-shadow-root-view")
 @JsModule("./template-without-shadow-root-view.js")
+@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/template-without-shadow-root-view.html")
 @Route(value = "com.vaadin.flow.uitest.ui.template.PolymerTemplateWithoutShadowRootView")
 @PageTitle("PolymerTemplate without a shadow root")
 public class PolymerTemplateWithoutShadowRootView

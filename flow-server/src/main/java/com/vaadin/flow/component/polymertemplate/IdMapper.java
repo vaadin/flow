@@ -51,6 +51,16 @@ public class IdMapper implements Serializable {
     }
 
     /**
+     * Creates a mapper for the given template.
+     *
+     * @param template
+     *            a template instance
+     */
+    public IdMapper(AbstractTemplate<?> template) {
+        this.template = template;
+    }
+
+    /**
      * Maps an element or component to the given field.
      * <p>
      * If an element with the given id exists in the template element tree, that
