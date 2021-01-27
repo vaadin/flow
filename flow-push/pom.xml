@@ -15,7 +15,7 @@
     <dependencies>
         <!-- Atmosphere -->
         <dependency>
-            <groupId>com.vaadin.external.atmosphere</groupId>
+            <groupId>org.atmosphere</groupId>
             <artifactId>atmosphere-runtime</artifactId>
             <version>${atmosphere.runtime.version}</version>
         </dependency>
