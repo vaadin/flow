@@ -25,6 +25,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -119,7 +121,9 @@ public class StreamReceiverHandler implements Serializable {
         session.lock();
         try {
             String secKey = streamReceiver.getId();
-            if (secKey == null || !secKey.equals(securityKey)) {
+            if (secKey == null || !MessageDigest.isEqual(
+                    secKey.getBytes(StandardCharsets.UTF_8),
+                    securityKey.getBytes(StandardCharsets.UTF_8))) {
                 getLogger().warn(
                         "Received incoming stream with faulty security key.");
                 return;
