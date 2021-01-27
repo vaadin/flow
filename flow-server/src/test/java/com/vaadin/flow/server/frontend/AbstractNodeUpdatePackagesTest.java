@@ -78,7 +78,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         generatedDir = new File(baseDir, DEFAULT_GENERATED_DIR);
 
-        NodeUpdateTestUtil.createStubNode(true, true, false,
+        NodeUpdateTestUtil.createStubNode(true, true,
                 baseDir.getAbsolutePath());
 
         packageCreator = new TaskCreatePackageJson(baseDir, generatedDir);
@@ -201,6 +201,18 @@ public abstract class AbstractNodeUpdatePackagesTest
                 getScanner(classFinder), baseDir, generatedDir, false, true);
         packageUpdater.execute();
         Assert.assertFalse(packageLock.exists());
+    }
+
+    @Test
+    public void pnpmIsInUse_packageJsonModified_removePnpmLock()
+            throws IOException {
+        packageUpdater = new TaskUpdatePackages(classFinder,
+                getScanner(classFinder), baseDir, generatedDir, false, true);
+        packageCreator.execute();
+        File pnpmLock = new File(baseDir, "pnpm-lock.yaml");
+        pnpmLock.createNewFile();
+        packageUpdater.execute();
+        Assert.assertFalse(pnpmLock.exists());
     }
 
     @Test

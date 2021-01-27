@@ -46,10 +46,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     public void setUp() throws IOException {
         super.setUp();
 
-        // ensure there is a valid pnpm installed in the system
-        new FrontendTools(getNodeUpdater().npmFolder.getAbsolutePath(),
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath())
-                        .ensurePnpm();
         // create an empty package.json so as pnpm can be run without error
         FileUtils.write(new File(getNodeUpdater().npmFolder, PACKAGE_JSON),
                 "{}", StandardCharsets.UTF_8);
@@ -322,27 +318,17 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     @Test
     public void runNpmInstall_toolIsChanged_nodeModulesIsRemoved()
             throws ExecutionFailedException, IOException {
-        File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
-        packageJson.createNewFile();
-
-        // create some package.json file so pnpm does some installation into
-        // node_modules folder
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"pnpm\": \"4.5.0\"}}",
-                StandardCharsets.UTF_8);
-
-        getNodeUpdater().modified = true;
-        createTask().execute();
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
+        FileUtils.forceMkdir(nodeModules);
 
         // create a fake file in the node modules dir to check that it's removed
-        File fakeFile = new File(getNodeUpdater().nodeModulesFolder,
-                ".fake.file");
+        File fakeFile = new File(nodeModules, ".fake.file");
         fakeFile.createNewFile();
 
         getNodeUpdater().modified = true;
         createTask().execute();
 
-        Assert.assertTrue(fakeFile.exists());
+        Assert.assertFalse(fakeFile.exists());
     }
 
     @Override
@@ -355,7 +341,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // create some package.json file so pnpm does some installation into
         // node_modules folder
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"pnpm\": \"4.5.0\"}}",
+                "{\"dependencies\": {" + "\"pnpm\": \"5.15.1\"}}",
                 StandardCharsets.UTF_8);
 
         getNodeUpdater().modified = true;

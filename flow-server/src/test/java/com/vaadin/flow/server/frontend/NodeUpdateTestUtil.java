@@ -73,25 +73,17 @@ public class NodeUpdateTestUtil {
     // Creates stub versions of `node` and `npm` in the ./node folder as
     // frontend-maven-plugin does
     // Also creates a stub version of webpack-devmode-server
-    public static void createStubNode(boolean stubNode, boolean stubNpm, boolean stubPnpm,
+    public static void createStubNode(boolean stubNode, boolean stubNpm,
             String baseDir) throws IOException {
 
         if (stubNpm) {
-            File npmCli = new File(baseDir,
-                    "node/node_modules/npm/bin/npm-cli.js");
-            FileUtils.forceMkdirParent(npmCli);
-            FileUtils.writeStringToFile(npmCli,
-                    "process.argv.includes('--version') && console.log('5.6.0');",
+            File binDir = new File(baseDir, "node/node_modules/npm/bin");
+            FileUtils.forceMkdir(binDir);
+            String stub = "process.argv.includes('--version') && console.log('6.14.10');";
+            FileUtils.writeStringToFile(new File(binDir, "npm-cli.js"), stub,
                     StandardCharsets.UTF_8);
-        }
-        if(stubPnpm) {
-            File ppmCli = new File(baseDir, "node_modules/pnpm/bin/pnpm.js");
-            FileUtils.forceMkdirParent(ppmCli);
-            FileUtils.writeStringToFile(ppmCli,
-                    "process.argv.includes('--version') && console.log('4.5.0');",
+            FileUtils.writeStringToFile(new File(binDir, "npx-cli.js"), stub,
                     StandardCharsets.UTF_8);
-            File yaml = new File(baseDir, "node_modules/.modules.yaml");
-            FileUtils.writeStringToFile(yaml, "", StandardCharsets.UTF_8);
         }
         if (stubNode) {
             File node = new File(baseDir,
