@@ -20,9 +20,12 @@ import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -507,7 +510,29 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
-    private final Collection<FallibleCommand> commands = new ArrayList<>();
+    private final List<FallibleCommand> commands = new ArrayList<>();
+
+    // This list keeps the tasks in order so that they are executed
+    // without depending on when they are added.
+    private static final List<Class<? extends FallibleCommand>> commandOrder = Collections.unmodifiableList(Arrays.asList(
+        TaskGeneratePackageJson.class,
+        TaskGenerateIndexHtml.class,
+        TaskGenerateIndexTs.class,
+        TaskGenerateTsConfig.class,
+        TaskGenerateTsDefinitions.class,
+        TaskGenerateServiceWorker.class,
+        TaskGenerateOpenApi.class,
+        TaskGenerateConnect.class,
+        TaskGenerateBootstrap.class,
+        TaskUpdatePackages.class,
+        TaskRunNpmInstall.class,
+        TaskInstallWebpackPlugins.class,
+        TaskCopyFrontendFiles.class,
+        TaskCopyLocalFrontendFiles.class,
+        TaskUpdateWebpack.class,
+        TaskUpdateImports.class,
+        TaskUpdateThemeImport.class
+    ));
 
     private NodeTasks(Builder builder) {
 
@@ -517,13 +542,6 @@ public class NodeTasks implements FallibleCommand {
 
         boolean enableWebpackConfigUpdate = builder.webpackTemplate != null
                 && !builder.webpackTemplate.isEmpty();
-
-        if (builder.createMissingPackageJson) {
-            TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
-                builder.npmFolder, builder.generatedFolder,
-                builder.flowResourcesFolder);
-            commands.add(packageCreator);
-        }
 
         if (builder.enablePackagesUpdate || builder.enableImportsUpdate
                 || enableWebpackConfigUpdate) {
@@ -555,6 +573,13 @@ public class NodeTasks implements FallibleCommand {
                     new File(builder.npmFolder, NODE_MODULES)));
             }
 
+        }
+
+        if (builder.createMissingPackageJson) {
+            TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
+                    builder.npmFolder, builder.generatedFolder,
+                    builder.flowResourcesFolder);
+            commands.add(packageCreator);
         }
 
         if (!builder.useDeprecatedV14Bootstrapping) {
@@ -667,9 +692,38 @@ public class NodeTasks implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
+        sortCommands(commands);
+
         for (FallibleCommand command : commands) {
             command.execute();
         }
     }
 
+    /**
+     * Sort command list so we always execute commands in a pre-defined order.
+     *
+     * @param commandList list of FallibleCommands to sort
+     */
+    private void sortCommands(List<FallibleCommand> commandList) {
+        commandList.sort((c1, c2) -> {
+            final int indexOf1 = getIndex(c1);
+            final int indexOf2 = getIndex(c2);
+            if (indexOf1 == -1 || indexOf2 == -1) {
+                return 0;
+            }
+            return indexOf1 - indexOf2;
+        });
+    }
+
+    /**
+     * Find index of command for which it is assignable to.
+     * @param command command to find execution index for
+     * @return index of command or -1 if not available
+     */
+    private int getIndex(FallibleCommand command) {
+        return IntStream.range(0, commandOrder.size())
+                .filter(i -> commandOrder.get(i)
+                        .isAssignableFrom(command.getClass())).findFirst()
+                .orElse(-1);
+    }
 }
