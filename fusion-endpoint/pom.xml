@@ -140,10 +140,6 @@
                     <groupId>javax.mail</groupId>
                     <artifactId>mailapi</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>org.antlr</groupId>
-                    <artifactId>antlr4-runtime</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
