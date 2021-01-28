@@ -16,6 +16,10 @@
 
 package com.vaadin.flow.server;
 
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionBindingListener;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
@@ -35,10 +39,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,6 +119,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     private transient ConcurrentLinkedQueue<FutureAccess> pendingAccessQueue = new ConcurrentLinkedQueue<>();
 
+    /*
+     * This token should be handled with care since it's used to protect against
+     * cross-site attacks in addition to general identifier duty.
+     */
     private final String pushId = UUID.randomUUID().toString();
 
     private final Attributes attributes = new Attributes();
