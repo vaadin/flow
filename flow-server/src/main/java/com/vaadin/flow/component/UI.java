@@ -1185,7 +1185,7 @@ public class UI extends Component
     }
 
     /**
-     * Gets the CSRF token (aka double submit cookie) that is used to protect
+     * Gets the CSRF token (synchronizer token pattern) that is used to protect
      * against Cross Site Request Forgery attacks.
      *
      * @return the csrf token string
