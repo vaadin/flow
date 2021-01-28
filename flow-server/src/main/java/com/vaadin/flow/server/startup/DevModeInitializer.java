@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.Executor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -388,25 +387,10 @@ public class DevModeInitializer
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec).build();
 
-        /*
-         * Check whether executor is provided by the caller (framework). It
-         * doesn't matter which Executor to use: any is fine. The main reason to
-         * use managed executor is to stop the execution when the framework
-         * stops.
-         */
-        Executor service = lookup.lookupAll(Executor.class).stream().findFirst()
-                .orElse(null);
+        Runnable runnable = () -> runNodeTasks(context, tokenFileData, tasks);
 
-        Runnable runnable = () -> runNodeTasks(context, tokenFileData,
-                tasks);
-
-        CompletableFuture<Void> nodeTasksFuture;
-        if (service == null) {
-            nodeTasksFuture = CompletableFuture.runAsync(runnable);
-        } else {
-            // if there is an executor use it to run the task
-            nodeTasksFuture = CompletableFuture.runAsync(runnable, service);
-        }
+        CompletableFuture<Void> nodeTasksFuture = CompletableFuture
+                .runAsync(runnable);
 
         DevModeHandler.start(
                 Lookup.compose(lookup,
