@@ -104,7 +104,7 @@ async function cherryPickCommits(){
     try{
       let {stdout, stderr} = await exec(`git cherry-pick ${arrSHA[i]}`);
     } catch (err) {
-      await exec(`git reset`);
+      await exec(`git cherry-pick --abort`);
       await exec(`git checkout master`);
       await exec(`git branch -D ${branchName}`);
       await labelCommit(arrURL[i], `need to pick manually ${arrBranch[i]}`);
