@@ -142,7 +142,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.antlr</groupId>
-                    <artifactId>antlr-runtime</artifactId>
+                    <artifactId>antlr4-runtime</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
