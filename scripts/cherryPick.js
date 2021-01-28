@@ -86,7 +86,7 @@ function filterCommits(commits){
 }
 
 async function cherryPickCommits(){
-  for(let i=0; i<arrPR.length; i++){
+  for(let i=arrPR.length-1; i>=0; i--){
     let branchName = `cherry-pick-${arrPR[i]}-to-${arrBranch[i]}-${Date.now()}`;
     
     await exec('git checkout master');
@@ -105,11 +105,12 @@ async function cherryPickCommits(){
       let {stdout, stderr} = await exec(`git cherry-pick ${arrSHA[i]}`);
     } catch (err) {
       await exec(`git cherry-pick --abort`);
+      console.error(`Cannot Pick the Commit:${arrSHA[i]} to ${arrBranch[i]}, error :${err}`);
       await exec(`git checkout master`);
       await exec(`git branch -D ${branchName}`);
       await labelCommit(arrURL[i], `need to pick manually ${arrBranch[i]}`);
-      console.error(`Cannot Pick the Commit:${arrSHA[i]}, error :${err}`);
-      process.exit(1);
+      
+      continue;
     }
     await exec(`git push origin HEAD:${branchName}`);
     
