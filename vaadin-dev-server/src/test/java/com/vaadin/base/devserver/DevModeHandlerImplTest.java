@@ -93,6 +93,9 @@ import static org.mockito.Mockito.mock;
 @SuppressWarnings("restriction")
 public class DevModeHandlerImplTest {
 
+    public static final String COMPILE_OK_OUTPUT = "webpack 5.16.0 compiled successfully in 12300 ms";
+    public static final String COMPILE_ERROR_OUTPUT = "webpack 5.16.0 compiled with 2 errors in 27203 ms";
+
     private ApplicationConfiguration configuration;
 
     private HttpServer httpServer;
@@ -126,7 +129,7 @@ public class DevModeHandlerImplTest {
         mockApplicationConfiguration(configuration);
 
         new File(baseDir, FrontendUtils.WEBPACK_CONFIG).createNewFile();
-        createStubWebpackServer("Compiled", 100, baseDir, true);
+        createStubWebpackServer(COMPILE_OK_OUTPUT, 100, baseDir, true);
     }
 
     @After
@@ -239,7 +242,7 @@ public class DevModeHandlerImplTest {
         Mockito.when(configuration.getStringProperty(
                 SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, null))
                 .thenReturn("100");
-        createStubWebpackServer("Failed to compile", 300, baseDir, true);
+        createStubWebpackServer(COMPILE_ERROR_OUTPUT, 300, baseDir, true);
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(
                 createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
@@ -400,7 +403,7 @@ public class DevModeHandlerImplTest {
     @Test(expected = ConnectException.class)
     public void should_ThrowAnException_When_WebpackNotListening()
             throws IOException {
-        createStubWebpackServer("Compiled", 3000, baseDir, false);
+        createStubWebpackServer(COMPILE_OK_OUTPUT, 3000, baseDir, false);
         HttpServletRequest request = prepareRequest("/VAADIN//foo.js");
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(0,
                 createDevModeLookup(), npmFolder,

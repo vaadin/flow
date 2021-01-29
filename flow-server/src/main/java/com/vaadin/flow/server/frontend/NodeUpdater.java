@@ -66,6 +66,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public abstract class NodeUpdater implements FallibleCommand {
 
+    public static final String WEBPACK_VERSION = "5.51.1";
+
     /**
      * Relative paths of generated should be prefixed with this value, so they
      * can be correctly separated from {projectDir}/frontend files.
@@ -377,18 +379,18 @@ public abstract class NodeUpdater implements FallibleCommand {
     static Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
 
-        defaults.put("html-webpack-plugin", "4.5.1");
+        defaults.put("html-webpack-plugin", "5.3.2");
         defaults.put("typescript", "4.3.3");
         defaults.put("ts-loader", "8.0.12");
         defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");
 
-        defaults.put("webpack", "4.46.0");
-        defaults.put("webpack-cli", "3.3.12");
-        defaults.put("webpack-dev-server", "3.11.0");
-        defaults.put("compression-webpack-plugin", "4.0.1");
+        defaults.put("webpack", WEBPACK_VERSION);
+        defaults.put("webpack-cli", "4.8.0");
+        defaults.put("webpack-dev-server", "4.0.0");
+        defaults.put("compression-webpack-plugin", "8.0.1");
         defaults.put("extra-watch-webpack-plugin", "1.0.3");
-        defaults.put("webpack-merge", "4.2.2");
-        defaults.put("css-loader", "4.2.1");
+        defaults.put("webpack-merge", "5.8.0");
+        defaults.put("css-loader", "6.2.0");
         defaults.put("extract-loader", "5.1.0");
         defaults.put("lit-css-loader", "0.1.0");
         defaults.put("file-loader", "6.2.0");
@@ -398,7 +400,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("workbox-core", WORKBOX_VERSION);
         defaults.put("workbox-precaching", WORKBOX_VERSION);
         defaults.put("glob", "7.1.6");
-        defaults.put("webpack-manifest-plugin", "3.0.0");
+        defaults.put("webpack-manifest-plugin", "4.0.2");
         defaults.put("@types/validator", "13.1.0");
         defaults.put("validator", "13.1.17");
 

@@ -105,8 +105,13 @@ public final class DevModeHandlerImpl
     // It's not possible to know whether webpack is ready unless reading output
     // messages. When webpack finishes, it writes either a `Compiled` or a
     // `Failed` in the last line
-    private static final String DEFAULT_OUTPUT_PATTERN = ": Compiled.";
-    private static final String DEFAULT_ERROR_PATTERN = ": Failed to compile.";
+    // Webpack output can be
+    // webpack 5.51.1 compiled successfully in 27409ms
+    // webpack 5.51.1 compiled with 34 errors in 42936ms
+    // webpack 5.51.1 compiled with 2 warnings in 1233ms
+    // webpack 5.51.1 compiled with 1 error and 1 warning in 7110 ms
+    private static final String DEFAULT_OUTPUT_PATTERN = "webpack .* compiled .* in .*ms";
+    private static final String DEFAULT_ERROR_PATTERN = "webpack .* compiled with .* error.* in .* ms";
     private static final String FAILED_MSG = "\n------------------ Frontend compilation failed. ------------------\n\n";
     private static final String SUCCEED_MSG = "\n----------------- Frontend compiled successfully. -----------------\n\n";
     private static final String START = "\n------------------ Starting Frontend compilation. ------------------\n";
@@ -476,10 +481,11 @@ public final class DevModeHandlerImpl
         boolean failed = failure.matcher(line).find();
         // We found the success or failure pattern in stream
         if (succeed || failed) {
-            if (succeed) {
-                console(GREEN, SUCCEED_MSG);
-            } else {
+            // The success and failure patterns can both match. In this case there are errors
+            if (failed) {
                 console(RED, FAILED_MSG);
+            } else {
+                console(GREEN, SUCCEED_MSG);
             }
             // save output in case of failure
             failedOutput = failed ? cumulativeOutput.toString() : null;
@@ -746,7 +752,7 @@ public final class DevModeHandlerImpl
         command.add("watchDogPort=" + watchDog.get().getWatchDogPort());
         command.addAll(Arrays.asList(config
                 .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
-                        "-d --inline=false")
+                        "-d eval")
                 .split(" +")));
         return command;
     }

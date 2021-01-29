@@ -29,6 +29,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.base.devserver.DevModeHandlerImpl;
+import com.vaadin.base.devserver.DevModeHandlerImplTest;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -98,7 +99,7 @@ public class DevModeInitializerTestBase {
         mockApplicationConfiguration(appConfig, enablePnpm);
 
         createStubNode(false, true, baseDir);
-        createStubWebpackServer("Compiled", 500, baseDir, true);
+        createStubWebpackServer(DevModeHandlerImplTest.COMPILE_OK_OUTPUT, 500, baseDir, true);
 
         // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
         new File(baseDir, "node_modules/.modules.yaml").createNewFile();

@@ -213,7 +213,8 @@ module.exports = {
 
   output: {
     filename: `${VAADIN}/${build}/vaadin-[name]-[contenthash].cache.js`,
-    path: outputFolder
+    path: outputFolder,
+    publicPath: ''
   },
 
   resolve: {
@@ -234,8 +235,9 @@ module.exports = {
 
   devServer: {
     // webpack-dev-server serves ./ ,  webpack-generated,  and java webapp
-    contentBase: [outputFolder, 'src/main/webapp'],
-    after: function(app, server) {
+    static: [outputFolder, 'src/main/webapp'],
+    onAfterSetupMiddleware: function(server) {
+      const app = server.app;
       app.get(`/stats.json`, function(req, res) {
         res.json(stats);
       });
@@ -276,13 +278,22 @@ module.exports = {
             loader: "extract-loader"
           },
           {
+            // Workaround for https://github.com/peerigon/extract-loader/issues/102
+            loader: 'html-loader',
+            options: {
+              esModule: false,
+            }
+          },
+          {
             loader: 'css-loader',
             options: {
-              url: (url, resourcePath) => {
-                // Only translate files from node_modules
-                const resolve = resourcePath.match(/(\\|\/)node_modules\1/);
-                const themeResource = resourcePath.match(themePartRegex) && url.match(/^themes\/[\s\S]*?\//);
-                return resolve || themeResource;
+              url: {
+                filter: (url, resourcePath) => {
+                  // Only translate files from node_modules
+                  const resolve = resourcePath.match(/(\\|\/)node_modules\1/);
+                  const themeResource = resourcePath.match(themePartRegex) && url.match(/^themes\/[\s\S]*?\//);
+                  return resolve || themeResource;
+                }
               },
               // use theme-loader to also handle any imports in css files
               importLoaders: 1

@@ -172,7 +172,7 @@ public class NodeUpdaterTest {
                 "3.3.10");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("4.46.0", packageJson
+        Assert.assertEquals(NodeUpdater.WEBPACK_VERSION, packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
     }
 
@@ -183,10 +183,10 @@ public class NodeUpdaterTest {
         packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
         packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
-                "5.0.1");
+                "6.0.1");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("5.0.1", packageJson
+        Assert.assertEquals("6.0.1", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
     }
 

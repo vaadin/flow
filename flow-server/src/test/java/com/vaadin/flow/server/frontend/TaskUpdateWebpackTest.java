@@ -350,7 +350,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 .collect(Collectors.toList());
 
         Assert.assertTrue("No webpack-merge imported.", webpackContents
-                .contains("const merge = require('webpack-merge');"));
+                .contains("const { merge } = require('webpack-merge');"));
         Assert.assertTrue("No flowDefaults imported.", webpackContents.contains(
                 "const flowDefaults = require('./webpack.generated.js');"));
 

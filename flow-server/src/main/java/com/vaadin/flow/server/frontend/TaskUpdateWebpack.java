@@ -147,6 +147,14 @@ public class TaskUpdateWebpack implements FallibleCommand {
                                 + "in the merge or remove the file to generate a new one.",
                         configFile);
             }
+
+            // webpack-merge-plugin 5 changes the import format
+            String contents = FileUtils.readFileToString(configFile, StandardCharsets.UTF_8);
+            if (contents.contains("const merge = require('webpack-merge');")) {
+                    log().info("Updating " + configFile.getName() + " to new webpack-merge syntax");
+                    contents = contents.replace("const merge = require('webpack-merge');","const { merge } = require('webpack-merge');");
+                    FileUtils.write(configFile, contents, StandardCharsets.UTF_8);
+            }
         } else {
             URL resource = this.getClass().getClassLoader()
                     .getResource(webpackTemplate);

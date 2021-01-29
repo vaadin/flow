@@ -72,7 +72,7 @@ public class DevModeInitializerEndpointTest {
         mockApplicationConfiguration(appConfig, enablePnpm);
 
         createStubNode(false, true, baseDir);
-        createStubWebpackServer("Compiled", 500, baseDir, true);
+        createStubWebpackServer(DevModeHandlerImplTest.COMPILE_OK_OUTPUT, 500, baseDir, true);
 
         // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
         new File(baseDir, "node_modules/.modules.yaml").createNewFile();
