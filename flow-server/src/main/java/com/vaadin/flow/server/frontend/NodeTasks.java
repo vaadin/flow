@@ -443,6 +443,8 @@ public class NodeTasks implements FallibleCommand {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(!builder.useByteCodeScanner, classFinder,
                             builder.generateEmbeddableWebComponents);
+
+            commands.add(new TaskGenerateTsFiles(builder.npmFolder, frontendDependencies.getModules()));
         }
 
         if (builder.createMissingPackageJson) {

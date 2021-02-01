@@ -33,6 +33,8 @@ import org.mockito.stubbing.Answer;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.littemplate.LitTemplateParser.TemplateData;
+import com.vaadin.flow.component.polymertemplate.Id;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
@@ -125,22 +127,26 @@ public class LitTemplateParserImplTest {
     }
 
     @Test
-    public void getTypescriptTemplateContent_templateExists_getTemplateContent() {
+    public void getTypeScriptTemplateContent_localFileTemplateExists_useLocalFileContent() {
         LitTemplateParser instance = LitTemplateParserImpl.getInstance();
         TemplateData templateContent = instance.getTemplateContent(
-            MyForm.class, "my-form", service);
+                HelloTypeScriptView.class, HelloTypeScriptView.class.getAnnotation(Tag.class).value(), service);
 
         Assert.assertEquals("Parent element ID not the expected one.",
-                "my-form",
+                "hello-world-view",
                 templateContent.getTemplateElement().parent().id());
 
-        Assert.assertEquals("Expected template element to have 2 children", 2,
+        Assert.assertEquals("Expected template element to have 3 children", 2,
                 templateContent.getTemplateElement().childNodeSize());
 
         Assert.assertEquals(
-                "Template element should have contained a div element with the id 'label'",
+                "Template element should have contained a div element with the id 'name'",
                 "vaadin-text-field", templateContent.getTemplateElement()
-                        .getElementById("nameField").tag().toString());
+                        .getElementById("name").tag().toString());
+        Assert.assertEquals(
+                "Template element should have contained a div element with the id 'name'",
+                "vaadin-button", templateContent.getTemplateElement()
+                        .getElementById("sayHello").tag().toString());
     }
 
     @Test
@@ -293,8 +299,24 @@ public class LitTemplateParserImplTest {
     public class SeveralJsModuleAnnotations extends LitTemplate {
     }
 
-    @Tag("my-form")
-    @JsModule("./frontend/my-form.ts")
-    public class MyForm extends LitTemplate {
+    /**
+     * A Designer generated component for the hello-world-view template.
+     *
+     * Designer will add and remove fields with @Id mappings but does not overwrite
+     * or otherwise change this file.
+     */
+    @JsModule("./frontend/hello-world-view.ts")
+    @Tag("hello-world-view")
+    public class HelloTypeScriptView extends LitTemplate {
+
+        @Id
+        private Element name;
+
+        @Id
+        private Element sayHello;
+
+        public HelloTypeScriptView() {
+        }
     }
+
 }
