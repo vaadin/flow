@@ -88,12 +88,10 @@ public class IdCollector {
 
     private void collectedInjectedId(Field field,
             Set<String> notInjectableElementIds) {
-        Optional<Id> idAnnotation = AnnotationReader.getAnnotationFor(field,
-                Id.class);
-        if (!idAnnotation.isPresent()) {
+        String id = getId(field).orElse(null);
+        if (id == null) {
             return;
         }
-        String id = idAnnotation.get().value();
         boolean emptyValue = id.isEmpty();
         if (emptyValue) {
             id = field.getName();
@@ -115,6 +113,16 @@ public class IdCollector {
                             + "id='%s' in the template file '%s'. Cannot map it using @%s",
                     id, templateFile, Id.class.getSimpleName()));
         }
+    }
+
+    private Optional<String> getId(Field field) {
+        final Optional<Id> polymerId = AnnotationReader
+            .getAnnotationFor(field, Id.class);
+        if (polymerId.isPresent()) {
+            return polymerId.map(Id::value);
+        }
+        return AnnotationReader.getAnnotationFor(field, com.vaadin.flow.component.template.Id.class)
+            .map(com.vaadin.flow.component.template.Id::value);
     }
 
     /**
