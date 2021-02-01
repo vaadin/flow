@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.6.0" name="flow-data">
+
+    <repository>mvn:com.vaadin/flow-server/${project.version}/xml/features</repository>
+    
+    <feature name="flow-data" description="Flow data" version="${project.version}">
+        <details>Vaadin Flow Data feature</details>
+        <feature>flow-server</feature>
+    </feature>
+</features>

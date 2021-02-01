@@ -39,16 +39,17 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
-        
-        <!-- DefaultApplicationConfigurationFactory is declared as an OSGi service -->
-        
+
+        <!-- DefaultApplicationConfigurationFactory is declared as an OSGi 
+            service -->
+
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>osgi.cmpn</artifactId>
             <version>${osgi.compendium.version}</version>
             <scope>provided</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>osgi.core</artifactId>
@@ -81,7 +82,7 @@
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
             <version>1.3.3</version>
-            <!-- commons-fileupload:1.3.3 depends on commons-io:2.2, override
+            <!-- commons-fileupload:1.3.3 depends on commons-io:2.2, override 
                 it with Flow declaration -->
             <exclusions>
                 <exclusion>
@@ -262,6 +263,26 @@
                 </executions>
             </plugin>
 
+            <plugin>
+                <groupId>org.apache.karaf.tooling</groupId>
+                <artifactId>karaf-maven-plugin</artifactId>
+                <version>4.3.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <enableGeneration>true</enableGeneration>
+                    <includeProjectArtifact>true</includeProjectArtifact>
+                    <excludedArtifactIds>httpclient,httpcore</excludedArtifactIds>                    
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>generate-features-file</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>features-generate-descriptor</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
