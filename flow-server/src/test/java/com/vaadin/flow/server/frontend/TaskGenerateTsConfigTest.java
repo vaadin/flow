@@ -70,5 +70,4 @@ public class TaskGenerateTsConfigTest {
         Assert.assertTrue("The tsconfig.json should already exist",
                 taskGenerateTsConfig.getGeneratedFile().exists());
     }
-
 }
