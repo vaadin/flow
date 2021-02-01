@@ -724,6 +724,6 @@ public class NodeTasks implements FallibleCommand {
         return IntStream.range(0, commandOrder.size())
                 .filter(i -> commandOrder.get(i)
                         .isAssignableFrom(command.getClass())).findFirst()
-                .orElse(-1);
+                .orElseThrow(() -> new UnknownTaskException(command));
     }
 }

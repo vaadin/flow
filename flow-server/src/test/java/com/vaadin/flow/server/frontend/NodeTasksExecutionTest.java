@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -17,38 +18,50 @@ import com.vaadin.flow.server.ExecutionFailedException;
  */
 public class NodeTasksExecutionTest {
 
-    @Test
-    public void nodeTasks_alwaysExecutedInDefinedOrder() throws Exception {
+    private NodeTasks nodeTasks;
+    private List<FallibleCommand> commandsMock;
+    private List<Class<? extends FallibleCommand>> commandsOrder;
+    private List<Class<? extends FallibleCommand>> executionOrder;
+    private List<FallibleCommand> commands;
+
+    @Before
+    public void init() throws Exception {
+
 
         // Make a builder that doesn't add any commands.
         NodeTasks.Builder builder = new NodeTasks.Builder(
                 Mockito.mock(Lookup.class), null);
         builder.useV14Bootstrap(true);
 
-        final NodeTasks nodeTasks = builder.build();
+        nodeTasks = builder.build();
 
         // get the private list of task execution order
         final Field commandOrderField = NodeTasks.class
                 .getDeclaredField("commandOrder");
         commandOrderField.setAccessible(true);
-        final List<Class<? extends FallibleCommand>> commandsOrder = (List<Class<? extends FallibleCommand>>) commandOrderField
+        commandsOrder = (List<Class<? extends FallibleCommand>>) commandOrderField
                 .get(nodeTasks);
 
-        List<Class<? extends FallibleCommand>> executionOrder = new ArrayList<>(
+        executionOrder = new ArrayList<>(
                 commandsOrder.size());
-        List<FallibleCommand> commandsMock = mockCommandsRandomOrder(
+        commandsMock = mockCommandsRandomOrder(
                 commandsOrder, executionOrder);
 
         // get the private commands list
         final Field commandsField = NodeTasks.class
                 .getDeclaredField("commands");
         commandsField.setAccessible(true);
-        final List<FallibleCommand> commands = (List<FallibleCommand>) commandsField
+        commands = (List<FallibleCommand>) commandsField
                 .get(nodeTasks);
 
         Assert.assertEquals("No commands should be added initially, "
                         + "update mock builder so that we don't automatically add any tasks!",
                 0, commands.size());
+    }
+
+    @Test
+    public void nodeTasks_alwaysExecutedInDefinedOrder()
+            throws ExecutionFailedException {
 
         // Assemble the command list with random order
         commands.addAll(commandsMock);
@@ -59,6 +72,21 @@ public class NodeTasksExecutionTest {
                 commandsOrder.size(), executionOrder.size());
         Assert.assertEquals("Tasks were executed in an unexpected order",
                 commandsOrder, executionOrder);
+    }
+
+    @Test
+    public void nodeTasksContainsUnlistedCommand_throwsUnknownTaskException() {
+        // Assemble the command list with random order
+        commands.add(commandsMock.get(0));
+        commands.add(new NewTask());
+
+        Assert.assertThrows("NodeTasks execution should fail due to unknown task in execution list", UnknownTaskException.class, nodeTasks::execute);
+    }
+
+    private class NewTask implements FallibleCommand {
+        @Override
+        public void execute() throws ExecutionFailedException {
+        }
     }
 
     /**
