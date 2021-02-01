@@ -23,7 +23,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.littemplate.LitTemplate;
-import com.vaadin.flow.component.polymertemplate.Id;
+import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 

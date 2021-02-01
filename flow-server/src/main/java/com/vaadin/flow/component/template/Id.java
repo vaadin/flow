@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.polymertemplate;
+package com.vaadin.flow.component.template;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -25,17 +25,17 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 
 /**
- * Defines the id of an element to map to inside a {@link PolymerTemplate}.
+ * Defines the id of a component or an element to map to inside a lit template.
  * <p>
  * Use this annotation with an identifier of the element which you want to refer
- * to as a value for a field inside your {@link PolymerTemplate} class.
+ * to as a value for a field inside your {@code LitTemplate} class.
  * <p>
  * Here is a Java sample:
  *
  * <pre>
  * <code>
  * &#64;Tag("details")
- * public class Details extends PolymerTemplate&lt;EditorModel&gt;{
+ * public class Details extends LitTemplate {
  *
  *      &#64;Id("name")
  *      private Div nestedDiv;
@@ -50,13 +50,13 @@ import com.vaadin.flow.dom.Element;
  *
  * <pre>
  * <code>
- * &lt;dom-module id="details"&gt;
- *   &lt;template&gt;
+ *    render(){
+ *     return html`
  *     &lt;div id='name'&gt;
  *      &lt;label&gt;Text&lt;/label&gt;
  *     &lt;/div&gt;
  *     &lt;input type="text" id='email'&gt;&lt;/div"&gt;
- *   &lt;/template&gt;
+ *     `;
  *   ....
  * </code>
  * </pre>
@@ -74,7 +74,7 @@ import com.vaadin.flow.dom.Element;
  * element's hierarchy in the same way as for a regular element.
  *
  * @author Vaadin Ltd
- * @since 1.0
+ * @since
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
