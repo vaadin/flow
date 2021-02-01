@@ -266,8 +266,6 @@
             <plugin>
                 <groupId>org.apache.karaf.tooling</groupId>
                 <artifactId>karaf-maven-plugin</artifactId>
-                <version>4.3.0</version>
-                <extensions>true</extensions>
                 <configuration>
                     <enableGeneration>true</enableGeneration>
                     <includeProjectArtifact>true</includeProjectArtifact>
