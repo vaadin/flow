@@ -40,11 +40,13 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.CurrentInstance;
 
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
@@ -89,6 +91,12 @@ public class StaticFileServerTest implements Serializable {
             }
         });
 
+    }
+
+    @BeforeClass
+    public static void beforeClass() {
+        // must be cleared before running this class
+        CurrentInstance.clearAll();
     }
 
     @Before

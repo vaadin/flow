@@ -491,7 +491,9 @@
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
                         <trimStackTrace>false</trimStackTrace>
+                        <!--
                         <reuseForks>false</reuseForks>
+                        -->
                         <excludes>
                             <exclude>${exclude.windows.failed.tests}</exclude>
                         </excludes>

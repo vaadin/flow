@@ -81,6 +81,11 @@ public class VaadinServiceTest {
 
     @Test
     public void should_reported_routing_server() {
+
+        // this test needs a fresh empty statistics, so we need to clear
+        // them for resusing forks for unit tests
+        UsageStatistics.clearEntries();
+
         VaadinServiceInitListener initListener = event -> {
             RouteConfiguration.forApplicationScope().setRoute("test",
                     TestView.class);
