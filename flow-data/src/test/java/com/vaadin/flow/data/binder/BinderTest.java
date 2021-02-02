@@ -580,10 +580,10 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.setBean(item);
         rentField.setValue("10");
 
-        //€ 10.00
-        assertEquals("€ " + new DecimalFormat("0.00").format(10)
-                , rentField.getValue());
-    }    
+        // € 10.00
+        assertEquals("€ " + new DecimalFormat("0.00").format(10),
+                rentField.getValue());
+    } 
 
     @Test
     public void beanBinder_nullRepresentationIsNotDisabled() {
