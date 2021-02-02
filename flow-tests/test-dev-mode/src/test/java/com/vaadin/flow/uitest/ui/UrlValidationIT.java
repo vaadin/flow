@@ -21,13 +21,12 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.stream.Collectors;
-
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class UrlValidationIT extends ChromeBrowserTest {
 
