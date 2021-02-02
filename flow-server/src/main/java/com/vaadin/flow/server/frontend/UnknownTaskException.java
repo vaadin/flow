@@ -13,21 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow;
+package com.vaadin.flow.server.frontend;
 
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.WebBrowser;
+/**
+ * Exception thrown for when a node task that is not in the
+ * task list is encountered.
+ */
+public class UnknownTaskException extends RuntimeException {
 
-@Route("com.vaadin.flow.VerifyBrowserVersionView")
-public class VerifyBrowserVersionView extends Div {
-
-    public VerifyBrowserVersionView() {
-        WebBrowser browser = VaadinSession.getCurrent().getBrowser();
-        Span userAgent = new Span(browser.getBrowserApplication());
-        userAgent.setId("userAgent");
-        add(userAgent);
+    /**
+     * Exception constructor.
+     *
+     * @param command
+     *         command that was not found
+     */
+    public UnknownTaskException(FallibleCommand command) {
+        super("Could not find position for task " + command.getClass());
     }
 }
