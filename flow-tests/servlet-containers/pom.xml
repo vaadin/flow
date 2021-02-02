@@ -41,7 +41,7 @@
                         <deployables>
                             <deployable>
                                 <groupId>${project.groupId}</groupId>
-                                <artifactId>flow-test-root-context-npm</artifactId>
+                                <artifactId>flow-test-root-context</artifactId>
                                 <type>war</type>
                                 <properties>
                                     <context>/</context>
@@ -83,7 +83,7 @@
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <configuration>
                         <dependenciesToScan>
-                            <dependency>${project.groupId}:flow-test-root-context-npm</dependency>
+                            <dependency>${project.groupId}:flow-test-root-context</dependency>
                         </dependenciesToScan>
                     </configuration>
                 </plugin>
