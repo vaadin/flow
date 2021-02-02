@@ -32,18 +32,18 @@ import org.junit.Test;
 public class UrlValidationIT extends ChromeBrowserTest {
 
     @Test
-    public void devModeUriValidation_uriWithDirectoryChange_statusForbidden() throws IOException, InterruptedException {
+    public void devModeUriValidation_uriWithDirectoryChange_statusForbidden() throws Exception {
         sendRequestAndValidateResponseStatusForbidden(
                 "/VAADIN/build/%252E%252E/");
     }
 
     @Test
-    public void staticResourceUriValidation_uriWithDirectoryChange_statusForbidden() throws IOException, InterruptedException {
+    public void staticResourceUriValidation_uriWithDirectoryChange_statusForbidden() throws Exception {
         sendRequestAndValidateResponseStatusForbidden(
                 "/VAADIN/build/%252E%252E/some-resource.css");
     }
 
-    private void sendRequestAndValidateResponseStatusForbidden(String pathToResource) throws IOException, InterruptedException {
+    private void sendRequestAndValidateResponseStatusForbidden(String pathToResource) throws Exception {
         final String urlString = getRootURL() + "/view" + pathToResource;
         URL url = new URL(urlString);
 
@@ -58,19 +58,24 @@ public class UrlValidationIT extends ChromeBrowserTest {
                 "directory change", HttpURLConnection.HTTP_FORBIDDEN, responseCode);
     }
 
-    private void waitForFrontendCompilation(URL url) throws IOException, InterruptedException {
+    private void waitForFrontendCompilation(URL url) throws Exception {
         boolean frontendCompiled = false;
         int attemptsRemaining = 100;
         while (!frontendCompiled && attemptsRemaining-- > 0) {
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            HttpURLConnection connection = (HttpURLConnection) url
+                    .openConnection();
             connection.setRequestMethod("GET");
             int responseCode = connection.getResponseCode();
-            frontendCompiled =  responseCode != HttpServletResponse.SC_OK || !getResponseBody(connection)
-                    .contains("The frontend development build has not yet finished");
+            frontendCompiled = responseCode != HttpServletResponse.SC_OK
+                    || !getResponseBody(connection).contains(
+                            "The frontend development build has not yet finished");
             if (!frontendCompiled) {
-                Thread.sleep(1000);
+                Thread.sleep(200);
             }
         }
+        if (!frontendCompiled)
+            throw new Exception(
+                    "Timeout while waiting for frontend compilation");
     }
 
     private String getResponseBody(HttpURLConnection connection) throws IOException {
