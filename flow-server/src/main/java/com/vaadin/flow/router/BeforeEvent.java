@@ -602,6 +602,7 @@ public abstract class BeforeEvent extends EventObject {
      *             {@link #hasRerouteTarget()} before accessing this method.
      * @deprecated use {@link #getRerouteTargetRouteParameters()} instead.
      */
+    @Deprecated
     public List<String> getRerouteTargetParameters() {
         return rerouteTargetState.getUrlParameters()
                 .orElse(Collections.emptyList());
