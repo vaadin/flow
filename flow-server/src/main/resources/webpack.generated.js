@@ -9,7 +9,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const { InjectManifest } = require('workbox-webpack-plugin');
 const { DefinePlugin } = require('webpack');
-const ManifestPlugin = require('webpack-manifest-plugin');
+const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 
 // Flow plugins
@@ -296,7 +296,7 @@ module.exports = {
   },
   plugins: [
     // Generate manifest.json file
-    new ManifestPlugin(),
+    new WebpackManifestPlugin(),
 
     new ApplicationThemePlugin(themeOptions),
 

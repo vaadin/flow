@@ -38,6 +38,6 @@ public class DevDepsFileTest {
                 .parse(IOUtils.toString(stream, StandardCharsets.UTF_8));
         // locked versions has to contain webpack version at least
         Assert.assertTrue("Generated dev deps json doesn't contain webpack",
-                object.hasKey("webpack"));
+                object.hasKey("webpack-dev-server"));
     }
 }
