@@ -26,7 +26,8 @@
               <!-- Generic cargo plugin configuration. Define container to use in submodule. -->
                 <plugin>
                     <groupId>org.codehaus.cargo</groupId>
-                    <artifactId>cargo-maven2-plugin</artifactId>
+                    <artifactId>cargo-maven3-plugin</artifactId>
+                    <version>1.9.0</version>
                     <configuration>
                         <configuration>
                             <type>standalone</type>
