@@ -158,7 +158,7 @@ public class NpmTemplateParserTest {
             templateContent.getTemplateElement().childNodeSize());
 
         Assert.assertEquals(
-            "Template element should have contained a div element with the id 'label'",
+            "Template element should have contained a div element with the id 'nameField'",
             "vaadin-text-field", templateContent.getTemplateElement()
                 .getElementById("nameField").tag().toString());
     }

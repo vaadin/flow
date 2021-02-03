@@ -152,7 +152,7 @@ public class NpmTemplateParser implements TemplateParser {
     }
 
     /**
-     * Dependency should match the tag name  ignoring the extension of the file.
+     * Checks that the given dependency matches the given tag name, ignoring the extension of the file.
      *
      * @param dependency
      *     dependency to check
@@ -165,7 +165,6 @@ public class NpmTemplateParser implements TemplateParser {
             .toLowerCase(Locale.ENGLISH);
         return url.endsWith("/" + tag);
     }
-
 
     /**
      * Finds the JavaScript sources for given tag.

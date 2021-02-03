@@ -144,7 +144,7 @@ public class LitTemplateParserImplTest {
                 "vaadin-text-field", templateContent.getTemplateElement()
                         .getElementById("name").tag().toString());
         Assert.assertEquals(
-                "Template element should have contained a div element with the id 'name'",
+                "Template element should have contained a div element with the id 'sayHello'",
                 "vaadin-button", templateContent.getTemplateElement()
                         .getElementById("sayHello").tag().toString());
     }
