@@ -722,12 +722,22 @@ public abstract class AbstractNodeUpdatePackagesTest
         Assert.assertTrue("vaadin-checkbox is missing from the dependencies",
                 dependencies.hasKey("@vaadin/vaadin-checkbox"));
 
+        dependencies = getPackageJson(packageJson).getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES);
+        Assert.assertTrue(
+                "vaadin-checkbox is missing from vaadin.dependencies",
+                dependencies.hasKey("@vaadin/vaadin-checkbox"));
+
         // generate it one more time, this should remove the checkbox
         packageUpdater.execute();
 
         dependencies = getPackageJson(packageJson).getObject(DEPENDENCIES);
         Assert.assertFalse(
                 "vaadin-checkbox is still available in the dependencies",
+                dependencies.hasKey("@vaadin/vaadin-checkbox"));
+
+        dependencies = getPackageJson(packageJson).getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES);
+        Assert.assertFalse(
+                "vaadin-checkbox is still available in vaadin.dependencies",
                 dependencies.hasKey("@vaadin/vaadin-checkbox"));
 
     }
