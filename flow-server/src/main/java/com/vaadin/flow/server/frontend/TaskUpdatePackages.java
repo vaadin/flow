@@ -137,25 +137,29 @@ public class TaskUpdatePackages extends NodeUpdater {
                         getDefaultDependencies().entrySet().stream())
                 .map(Entry::getKey).collect(Collectors.toList());
 
-        JsonObject vaadinDependencies = packageJson.getObject(VAADIN_DEP_KEY)
-                .getObject(DEPENDENCIES);
         boolean doCleanUp = forceCleanUp;
         int removed = removeLegacyProperties(packageJson);
+        removed += cleanDependencies(dependencyCollection, packageJson,
+                DEPENDENCIES);
         if (dependencies != null) {
-            for (String key : dependencies.keys()) {
-                if (!dependencyCollection.contains(key)
-                        && vaadinDependencies.hasKey(key)) {
-                    dependencies.remove(key);
-                    log().debug("Removed \"{}\".", key);
-                    removed++;
-                }
-            }
-            doCleanUp = doCleanUp
-                    || !enablePnpm && !ensureReleaseVersion(dependencies);
+            doCleanUp = doCleanUp || !enablePnpm && !ensureReleaseVersion(
+                    dependencies);
         }
+
+
+        // Remove obsolete devDependencies
+        dependencyCollection = getDefaultDevDependencies().entrySet().stream()
+                .map(Entry::getKey).collect(Collectors.toList());
+
+        int removedDev = 0;
+        removedDev = cleanDependencies(dependencyCollection, packageJson,
+                DEV_DEPENDENCIES);
 
         if (removed > 0) {
             log().info("Removed {} dependencies", removed);
+        }
+        if(removedDev > 0) {
+            log().info("Removed {} devDependencies", removedDev);
         }
 
         if (doCleanUp) {
@@ -168,7 +172,27 @@ public class TaskUpdatePackages extends NodeUpdater {
         // update packageJson hash value, if no changes it will not be written
         packageJson.getObject(VAADIN_DEP_KEY).put(HASH_KEY, newHash);
 
-        return added > 0 || removed > 0 || !oldHash.equals(newHash);
+        return added > 0 || removed > 0 || removedDev > 0 || !oldHash.equals(newHash);
+    }
+
+    private int cleanDependencies(List<String> dependencyCollection, JsonObject packageJson, String dependencyKey) {
+        int removed = 0;
+
+        JsonObject dependencyObject = packageJson.getObject(dependencyKey);
+        JsonObject vaadinDependencyObject = packageJson.getObject(VAADIN_DEP_KEY)
+                .getObject(dependencyKey);
+        if(dependencyObject != null) {
+            for (String key : dependencyObject.keys()) {
+                if (!dependencyCollection.contains(key) && vaadinDependencyObject
+                        .hasKey(key)) {
+                    dependencyObject.remove(key);
+                    vaadinDependencyObject.remove(key);
+                    log().debug("Removed \"{}\".", key);
+                    removed++;
+                }
+            }
+        }
+        return removed;
     }
 
     private int updateFlowFrontendDependencies(JsonObject json) {
