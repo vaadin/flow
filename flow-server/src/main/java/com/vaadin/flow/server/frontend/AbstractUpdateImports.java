@@ -519,7 +519,9 @@ abstract class AbstractUpdateImports implements Runnable {
         } catch (UncheckedIOException ioe) {
             if (ioe.getCause() instanceof MalformedInputException) {
                 getLogger()
-                        .trace("Could not read import file '{}' most likely due to it being binary.",
+                        .trace("Failed to read file '{}' found from Es6 import statements. "
+                                        + "This is probably due to it being a binary file, "
+                                        + "in which case it doesn't matter as imports are only in js/ts files.",
                                 filePath.toString(), ioe);
                 return;
             }
