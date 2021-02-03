@@ -33,6 +33,8 @@ import org.mockito.stubbing.Answer;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.littemplate.LitTemplateParser.TemplateData;
+import com.vaadin.flow.component.polymertemplate.Id;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
@@ -122,6 +124,29 @@ public class LitTemplateParserImplTest {
                 "Template element should have contained a div element with the id 'label'",
                 "div", templateContent.getTemplateElement()
                         .getElementById("label").tag().toString());
+    }
+
+    @Test
+    public void getTypeScriptTemplateContent_localFileTemplateExists_useLocalFileContent() {
+        LitTemplateParser instance = LitTemplateParserImpl.getInstance();
+        TemplateData templateContent = instance.getTemplateContent(
+                HelloTypeScriptView.class, HelloTypeScriptView.class.getAnnotation(Tag.class).value(), service);
+
+        Assert.assertEquals("Parent element ID not the expected one.",
+                "hello-world-view",
+                templateContent.getTemplateElement().parent().id());
+
+        Assert.assertEquals("Expected template element to have 3 children", 2,
+                templateContent.getTemplateElement().childNodeSize());
+
+        Assert.assertEquals(
+                "Template element should have contained a div element with the id 'name'",
+                "vaadin-text-field", templateContent.getTemplateElement()
+                        .getElementById("name").tag().toString());
+        Assert.assertEquals(
+                "Template element should have contained a div element with the id 'sayHello'",
+                "vaadin-button", templateContent.getTemplateElement()
+                        .getElementById("sayHello").tag().toString());
     }
 
     @Test
@@ -272,6 +297,26 @@ public class LitTemplateParserImplTest {
     @JsModule("./frontend/MyLitElement.js")
     @JsModule("./frontend/my-lit-element-view.js")
     public class SeveralJsModuleAnnotations extends LitTemplate {
+    }
+
+    /**
+     * A Designer generated component for the hello-world-view template.
+     *
+     * Designer will add and remove fields with @Id mappings but does not overwrite
+     * or otherwise change this file.
+     */
+    @JsModule("./frontend/hello-world-view.ts")
+    @Tag("hello-world-view")
+    public class HelloTypeScriptView extends LitTemplate {
+
+        @Id
+        private Element name;
+
+        @Id
+        private Element sayHello;
+
+        public HelloTypeScriptView() {
+        }
     }
 
 }

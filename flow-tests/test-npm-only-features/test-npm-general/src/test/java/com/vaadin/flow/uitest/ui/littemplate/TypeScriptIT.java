@@ -23,29 +23,18 @@ import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-public class SimpleLitTemplateShadowRootIT extends ChromeBrowserTest {
+public class TypeScriptIT extends ChromeBrowserTest {
 
     private TestBenchElement template;
 
     protected String getTemplateTag() {
-        return "simple-lit-template-shadow-root";
-    }
-
-    protected boolean shouldHaveShadowRoot() {
-        return true;
+        return "type-script-view";
     }
 
     public void setup() throws Exception {
         super.setup();
         open();
         template = $(getTemplateTag()).first();
-    }
-
-    @Test
-    public void shadowRoot() {
-        Assert.assertEquals(shouldHaveShadowRoot(),
-                (Boolean) executeScript("return !!arguments[0].shadowRoot",
-                        template));
     }
 
     @Test
@@ -59,17 +48,5 @@ public class SimpleLitTemplateShadowRootIT extends ChromeBrowserTest {
         DivElement label = template.$(DivElement.class).id("label");
         Assert.assertEquals("Hello from server component event listener",
                 label.getText());
-    }
-
-    @Test
-    public void clientPropertyAndCallbackWorks() {
-        NativeButtonElement clientButton = template.$(NativeButtonElement.class)
-                .id("clientButton");
-
-        Assert.assertEquals("Client button", clientButton.getText());
-        clientButton.click();
-
-        DivElement label = template.$(DivElement.class).id("label");
-        Assert.assertEquals("Hello from ClientCallable", label.getText());
     }
 }

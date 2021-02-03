@@ -41,3 +41,6 @@ flow-tests/**/package-lock.json
 webpack.config.js
 **/webpack.generated.js
 flow-tests/**/pnpmfile.js
+flow-tests/**/pnpm-lock.yaml
+flow-tests/**/tsconfig.json
+flow-tests/**/types.d.ts

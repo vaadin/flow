@@ -86,6 +86,7 @@ module.exports = {
   },
 
   resolve: {
+    extensions: ['.ts', '.js'],
     alias: {
       Frontend: frontendFolder
     }
@@ -114,6 +115,10 @@ module.exports = {
 
   module: {
     rules: [
+      {
+        test: /\.tsx?$/,
+        use: ['ts-loader']
+      },
       ...(transpile ? [{ // Files that Babel has to transpile
         test: /\.js$/,
         use: [BabelMultiTargetPlugin.loader()]
