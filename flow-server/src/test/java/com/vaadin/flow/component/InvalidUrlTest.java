@@ -19,7 +19,6 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import java.util.Arrays;
 
-import com.vaadin.flow.internal.CurrentInstance;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,6 +26,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockServletConfig;
