@@ -1852,8 +1852,8 @@ public abstract class VaadinService implements Serializable {
                 .isXsrfProtectionEnabled()) {
             String sessionToken = session.getCsrfToken();
 
-            if (uiToken == null || !MessageDigest.isEqual(
-                    uiToken.getBytes(StandardCharsets.UTF_8),
+            if (sessionToken == null || !MessageDigest.isEqual(
+                sessionToken.getBytes(StandardCharsets.UTF_8),
                     requestToken.getBytes(StandardCharsets.UTF_8))) {
                 return false;
             }
