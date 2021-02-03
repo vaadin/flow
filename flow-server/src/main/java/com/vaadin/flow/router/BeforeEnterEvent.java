@@ -147,6 +147,7 @@ public class BeforeEnterEvent extends BeforeEvent {
                             Location location, Class<?> navigationTarget,
                             RouteParameters parameters, UI ui,
                             List<Class<? extends RouterLayout>> layouts) {
-        super(router, trigger, location, navigationTarget, parameters, ui, layouts);
+        super(router, trigger, location, navigationTarget, parameters, ui,
+                layouts);
     }
 }

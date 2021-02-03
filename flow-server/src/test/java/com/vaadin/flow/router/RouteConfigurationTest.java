@@ -8,17 +8,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
-import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.MockServletContext;
 import com.vaadin.flow.server.MockVaadinSession;

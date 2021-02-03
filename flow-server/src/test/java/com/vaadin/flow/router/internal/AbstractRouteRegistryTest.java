@@ -6,24 +6,24 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.OptionalParameter;
-import com.vaadin.flow.router.WildcardParameter;
-import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
+import com.vaadin.flow.router.WildcardParameter;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.shared.Registration;
-import org.junit.rules.ExpectedException;
 
 public class AbstractRouteRegistryTest {
 

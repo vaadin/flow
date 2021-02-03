@@ -21,7 +21,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,6 +43,7 @@ import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 

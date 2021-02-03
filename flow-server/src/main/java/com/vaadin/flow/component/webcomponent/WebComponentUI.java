@@ -22,6 +22,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.DomEvent;
@@ -47,7 +49,6 @@ import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.flow.theme.ThemeUtil;
 
 import elemental.json.JsonObject;
-import org.slf4j.LoggerFactory;
 
 /**
  * Custom UI for use with WebComponents served from the server.

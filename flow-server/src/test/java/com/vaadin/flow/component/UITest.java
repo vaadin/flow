@@ -8,6 +8,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.hamcrest.CoreMatchers;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.page.History;
@@ -39,10 +48,10 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouteParam;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
@@ -57,13 +66,6 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
-import org.hamcrest.CoreMatchers;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
-import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -995,6 +997,21 @@ public class UITest {
             Assert.fail("NotFoundException expected.");
         } catch (NotFoundException e) {
         }
+    }
+
+    @Test
+    public void navigate_useParameterizedTarget_noOptionalAnnotation_navigationSucceded() {
+        AtomicReference<String> loc = new AtomicReference<>();
+        UI ui = new UI() {
+            @Override
+            public void navigate(String location) {
+                loc.set(location);
+            }
+        };
+        initUI(ui, "", null);
+
+        ui.navigate(Parameterized.class, "baz");
+        Assert.assertEquals("foo-bar/baz", loc.get());
     }
 
 }
