@@ -269,7 +269,10 @@
                 <configuration>
                     <enableGeneration>true</enableGeneration>
                     <includeProjectArtifact>true</includeProjectArtifact>
-                    <excludedArtifactIds>httpclient,httpcore</excludedArtifactIds>                    
+                    <excludedArtifactIds>   
+                        <excludedArtifactId>httpclient</excludedArtifactId>
+                        <excludedArtifactId>httpcore</excludedArtifactId>
+                    </excludedArtifactIds>
                 </configuration>
             </plugin>
         </plugins>

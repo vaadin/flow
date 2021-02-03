@@ -118,7 +118,9 @@
                     <includeTransitiveDependency>false</includeTransitiveDependency>
                     <enableGeneration>true</enableGeneration>
                     <includeProjectArtifact>true</includeProjectArtifact>
-                    <excludedArtifactIds>flow-server</excludedArtifactIds>
+                    <excludedArtifactIds>
+                        <excludedArtifactId>flow-server</excludedArtifactId>
+                    </excludedArtifactIds>
                 </configuration>
             </plugin>
         </plugins>

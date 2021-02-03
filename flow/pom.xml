@@ -67,7 +67,11 @@
                 <artifactId>karaf-maven-plugin</artifactId>
                 <configuration>
                     <includeProjectArtifact>false</includeProjectArtifact>
-                    <excludedArtifactIds>flow-server,flow-data,fusion-endpoint</excludedArtifactIds>
+                    <excludedArtifactIds>
+                        <excludedArtifactId>flow-server</excludedArtifactId>
+                        <excludedArtifactId>flow-data</excludedArtifactId>
+                        <excludedArtifactId>fusion-endpoint</excludedArtifactId>
+                    </excludedArtifactIds>
                     <includeTransitiveDependency>false</includeTransitiveDependency>
                 </configuration>
             </plugin>
