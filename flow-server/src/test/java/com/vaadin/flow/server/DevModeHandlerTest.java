@@ -262,8 +262,9 @@ public class DevModeHandlerTest {
     public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
         final String manifestJsonResponse = "{}";
         int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
-        DevModeHandler handler = DevModeHandler.start(port, createDevModeLookup(),
-                npmFolder, CompletableFuture.completedFuture(null));
+        DevModeHandler handler = DevModeHandler.start(port,
+                createDevModeLookup(), npmFolder,
+                CompletableFuture.completedFuture(null));
         handler.join();
         assertFalse(new File(baseDir,
                 FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE)
@@ -346,8 +347,8 @@ public class DevModeHandlerTest {
 
     @Test
     public void should_HandleAnyAssetInManifestPaths() throws Exception {
-        final String manifestJsonResponse = "{ \"sw.js\": " +
-                "\"sw.js\", \"index.html\": \"index.html\" }";
+        final String manifestJsonResponse = "{ \"sw.js\": "
+                + "\"sw.js\", \"index.html\": \"index.html\" }";
         int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
 
         DevModeHandler devModeHandler = DevModeHandler.start(port,
@@ -361,8 +362,8 @@ public class DevModeHandlerTest {
 
     @Test
     public void shouldNot_Handle_IndexHtmlInManifestPaths() throws Exception {
-        final String manifestJsonResponse = "{ \"sw.js\": " +
-                "\"sw.js\", \"index.html\": \"index.html\" }";
+        final String manifestJsonResponse = "{ \"sw.js\": "
+                + "\"sw.js\", \"index.html\": \"index.html\" }";
         int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
 
         DevModeHandler devModeHandler = DevModeHandler.start(port,
@@ -390,8 +391,8 @@ public class DevModeHandlerTest {
             throws Exception {
         HttpServletRequest request = prepareRequest("/VAADIN//foo.js");
         HttpServletResponse response = prepareResponse();
-        final String manifestJsonResponse = "{ \"VAADIN//foo.js\": " +
-                "\"VAADIN//foo.js\" }";
+        final String manifestJsonResponse = "{ \"VAADIN//foo.js\": "
+                + "\"VAADIN//foo.js\" }";
         int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
 
         DevModeHandler devModeHandler = DevModeHandler.start(port,
@@ -421,8 +422,8 @@ public class DevModeHandlerTest {
             throws Exception {
         HttpServletRequest request = prepareRequest("/VAADIN/foo.js");
         HttpServletResponse response = prepareResponse();
-        final String manifestJsonResponse = "{ \"VAADIN/foo.js\": " +
-                "\"VAADIN/foo.js\" }";
+        final String manifestJsonResponse = "{ \"VAADIN/foo.js\": "
+                + "\"VAADIN/foo.js\" }";
         int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
 
         VaadinServlet servlet = prepareServlet(port);
@@ -509,8 +510,8 @@ public class DevModeHandlerTest {
         throwFuture.completeExceptionally(new CustomRuntimeException());
         final String manifestJsonResponse = "{}";
         int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
-        DevModeHandler handler = DevModeHandler.start(port, createDevModeLookup(),
-                npmFolder, throwFuture);
+        DevModeHandler handler = DevModeHandler.start(port,
+                createDevModeLookup(), npmFolder, throwFuture);
         try {
             handler.join();
         } catch (CompletionException ignore) {
@@ -529,6 +530,12 @@ public class DevModeHandlerTest {
         throwFuture.completeExceptionally(new CustomRuntimeException());
         DevModeHandler handler = DevModeHandler.start(0, createDevModeLookup(),
                 npmFolder, throwFuture);
+        try {
+            handler.join();
+        } catch (CompletionException ignore) {
+            // this is an expected exception thrown on join for the handler
+
+        }
         try {
             handler.handleRequest(Mockito.mock(VaadinSession.class),
                     Mockito.mock(VaadinRequest.class),
