@@ -17,11 +17,14 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,11 +33,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
+import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
@@ -88,9 +94,9 @@ public class TaskUpdatePackages extends NodeUpdater {
     @Override
     public void execute() {
         try {
-            Map<String, String> deps = frontDeps.getPackages();
             JsonObject packageJson = getPackageJson();
-            modified = updatePackageJsonDependencies(packageJson, deps);
+            modified = updatePackageJsonDependencies(packageJson,
+                    getDependenciesToAdd());
 
             if (modified) {
                 writePackageFile(packageJson);
@@ -111,6 +117,30 @@ public class TaskUpdatePackages extends NodeUpdater {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    private Map<String, String> getDependenciesToAdd() throws IOException {
+        Map<String, String> deps = new LinkedHashMap<>(frontDeps.getPackages());
+
+        // Add all platform deps as direct dependencies instead of relying on
+        // transitivity. Ensures dep available as node_modules/dep when using
+        // pnpm (see #9834).
+        URL resource = finder.getResource(Constants.VAADIN_VERSIONS_JSON);
+        if (resource != null) {
+            try (InputStream content = resource.openStream()) {
+                JsonObject versionsJson = new VersionsJsonConverter(Json.parse(
+                        IOUtils.toString(content, StandardCharsets.UTF_8)))
+                        .getConvertedJson();
+                for (String pkg : versionsJson.keys()) {
+                    deps.putIfAbsent(pkg, versionsJson.getString(pkg));
+                }
+            }
+        } else {
+            log().warn("cannot add platform dependencies to package json "
+                            + "(resource {} not found)",
+                    Constants.VAADIN_VERSIONS_JSON);
+        }
+        return deps;
     }
 
     private boolean updatePackageJsonDependencies(JsonObject packageJson,

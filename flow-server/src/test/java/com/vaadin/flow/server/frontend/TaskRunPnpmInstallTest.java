@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
@@ -66,11 +65,12 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         // Platform defines a pinned version
         TaskRunNpmInstall task = createTask(
-                "{ \"@vaadin/vaadin-overlay\":\"" + PINNED_VERSION + "\"}");
+                "{ \"dependencies\": {\"@vaadin/vaadin-overlay\":\"" + PINNED_VERSION + "\"}}");
         task.execute();
 
         File overlayPackageJson = new File(getNodeUpdater().nodeModulesFolder,
-                "@vaadin/vaadin-overlay/package.json");
+                ".pnpm/@vaadin/vaadin-overlay@" + PINNED_VERSION
+                        + "/node_modules/@vaadin/vaadin-overlay/package.json");
 
         // The resulting version should be the one specified via platform
         // versions file
@@ -447,7 +447,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         File generatedVersionsFile = new File(getNodeUpdater().npmFolder, versions);
         final JsonObject versionsJson = Json.parse(FileUtils
             .readFileToString(generatedVersionsFile, StandardCharsets.UTF_8));
-        Assert.assertEquals("{}", versionsJson.toJson());
+        Assert.assertEquals("{\"dependencies\":{},\"devDependencies\":{}}", versionsJson.toJson());
     }
 
     @Test
@@ -492,72 +492,15 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         File generatedVersionsFile = new File(getNodeUpdater().npmFolder, versions);
         final JsonObject versionsJson = Json.parse(FileUtils
             .readFileToString(generatedVersionsFile, StandardCharsets.UTF_8));
-        Assert.assertEquals(
-            "{"
-                + "\"lit-element\":\"2.3.1\","
-                + "\"@vaadin/router\":\"1.7.2\","
-                + "\"@polymer/polymer\":\"3.2.0\","
-                + "\"css-loader\":\"4.2.1\","
-                + "\"file-loader\":\"6.1.0\""
-                + "}",
+        Assert.assertEquals("{"
+                + "\"dependencies\":"
+                    + "{\"lit-element\":\"2.3.1\","
+                    + "\"@vaadin/router\":\"1.7.2\","
+                    + "\"@polymer/polymer\":\"3.2.0\"},"
+                + "\"devDependencies\":"
+                    + "{\"css-loader\":\"4.2.1\","
+                    + "\"file-loader\":\"6.1.0\"}}",
             versionsJson.toJson());
-    }
-
-    @Test
-    public void runPnpmInstall_npmRcFileNotFound_newNpmRcFileIsGenerated()
-            throws IOException, ExecutionFailedException {
-        TaskRunNpmInstall task = createTask();
-        task.execute();
-
-        File npmRcFile = new File(getNodeUpdater().npmFolder, ".npmrc");
-        Assert.assertTrue(npmRcFile.exists());
-        String content = FileUtils.readFileToString(npmRcFile,
-                StandardCharsets.UTF_8);
-        Assert.assertTrue(content.contains("shamefully-hoist"));
-    }
-
-    @Test
-    public void runPnpmInstall_npmRcFileGeneratedByVaadinFound_npmRcFileIsGenerated()
-            throws IOException, ExecutionFailedException {
-        File oldNpmRcFile = new File(getNodeUpdater().npmFolder, ".npmrc");
-        // @formatter:off
-        String originalContent = "# NOTICE: this is an auto-generated file\n"
-                + "shamefully-hoist=true\n"
-                + "symlink=true\n";
-        // @formatter:on
-        FileUtils.writeStringToFile(oldNpmRcFile, originalContent,
-                StandardCharsets.UTF_8);
-
-        TaskRunNpmInstall task = createTask();
-        task.execute();
-
-        File newNpmRcFile = new File(getNodeUpdater().npmFolder, ".npmrc");
-        Assert.assertTrue(newNpmRcFile.exists());
-        String content = FileUtils.readFileToString(newNpmRcFile,
-                StandardCharsets.UTF_8);
-        Assert.assertTrue(content.contains("shamefully-hoist"));
-        Assert.assertFalse(content.contains("symlink=true"));
-    }
-
-    @Test
-    public void runPnpmInstall_customNpmRcFileFound_npmRcFileIsNotGenerated()
-            throws IOException, ExecutionFailedException {
-        File oldNpmRcFile = new File(getNodeUpdater().npmFolder, ".npmrc");
-        // @formatter:off
-        String originalContent = "# A custom npmrc file for my project\n"
-                + "symlink=true\n";
-        // @formatter:on
-        FileUtils.writeStringToFile(oldNpmRcFile, originalContent,
-                StandardCharsets.UTF_8);
-
-        TaskRunNpmInstall task = createTask();
-        task.execute();
-
-        File newNpmRcFile = new File(getNodeUpdater().npmFolder, ".npmrc");
-        Assert.assertTrue(newNpmRcFile.exists());
-        String content = FileUtils.readFileToString(newNpmRcFile,
-                StandardCharsets.UTF_8);
-        Assert.assertEquals(originalContent, content);
     }
 
     @Override

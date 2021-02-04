@@ -312,6 +312,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("workbox-webpack-plugin", WORKBOX_VERSION);
         defaults.put("workbox-core", WORKBOX_VERSION);
         defaults.put("workbox-precaching", WORKBOX_VERSION);
+        defaults.put("workbox-routing", WORKBOX_VERSION);
+        defaults.put("workbox-strategies", WORKBOX_VERSION);
         defaults.put("glob", "7.1.6");
         defaults.put("webpack-manifest-plugin", "3.0.0");
         defaults.put("@types/validator", "13.1.0");
@@ -325,6 +327,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("chokidar", "^3.5.0");
 
         defaults.put("idb", "5.0.6");
+        defaults.put("mkdirp", "1.0.4");
 
         return defaults;
     }

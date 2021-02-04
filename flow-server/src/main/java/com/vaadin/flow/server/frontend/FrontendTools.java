@@ -282,11 +282,7 @@ public class FrontendTools {
      *         have pnpm running
      */
     public List<String> getPnpmExecutable() {
-        List<String> pnpmCommand = getSuitablePnpm();
-        assert !pnpmCommand.isEmpty();
-        pnpmCommand = new ArrayList<>(pnpmCommand);
-        pnpmCommand.add("--shamefully-hoist=true");
-        return pnpmCommand;
+        return getSuitablePnpm();
     }
 
     /**

@@ -22,12 +22,24 @@ module.exports = {
 };
 
 function readPackage(pkg) {
-  const {dependencies} = pkg;
+  const {dependencies, devDependencies} = pkg;
   
   if (dependencies) {
-    for (let k in versions) {
-      if (dependencies[k] && dependencies[k] !== versions[k]) {
-        pkg.dependencies[k] = versions[k];
+    for (let k in versions.dependencies) {
+      const packageVersion = dependencies[k];
+      const forcedVersion = versions.dependencies[k];
+      if (packageVersion && packageVersion !== forcedVersion) {
+        pkg.dependencies[k] = forcedVersion;
+      }
+    }
+  }
+
+  if (devDependencies) {
+    for (let k in versions.devDependencies) {
+      const packageVersion = devDependencies[k];
+      const forcedVersion = versions.devDependencies[k];
+      if (packageVersion && packageVersion !== forcedVersion) {
+        pkg.devDependencies[k] = forcedVersion;
       }
     }
   }

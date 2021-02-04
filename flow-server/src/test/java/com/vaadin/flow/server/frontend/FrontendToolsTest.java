@@ -226,8 +226,6 @@ public class FrontendToolsTest {
     @Test
     public void getPnpmExecutable_executableIsAvailable() {
         List<String> executable = tools.getPnpmExecutable();
-        // command line should contain --shamefully-hoist=true option
-        Assert.assertTrue(executable.contains("--shamefully-hoist=true"));
         Assert.assertTrue(
                 executable.stream().anyMatch(cmd -> cmd.contains("pnpm")));
     }

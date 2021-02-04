@@ -33,6 +33,8 @@ class VersionsJsonConverter {
     private static final String JS_VERSION = "jsVersion";
     private static final String NPM_NAME = "npmName";
     private static final String NPM_VERSION = "npmVersion";
+    private static final String VERSION_PLACEHOLDER = "{{version}}";
+
     private final JsonObject convertedObject;
 
     VersionsJsonConverter(JsonObject platformVersions) {
@@ -69,15 +71,22 @@ class VersionsJsonConverter {
     private void addDependency(JsonObject obj) {
         assert obj.hasKey(NPM_NAME);
         String npmName = obj.getString(NPM_NAME);
+        String versionsKey;
         if (obj.hasKey(NPM_VERSION)) {
-            convertedObject.put(npmName, obj.getString(NPM_VERSION));
+            versionsKey = NPM_VERSION;
         } else if (obj.hasKey(JS_VERSION)) {
-            convertedObject.put(npmName, obj.getString(JS_VERSION));
+            versionsKey = JS_VERSION;
         } else {
             throw new IllegalStateException("Vaadin code versions file "
                     + "contains unexpected data: dependency '" + npmName
                     + "' has" + " no 'npmVersion'/'jsVersion' . "
                     + "Please report a bug in https://github.com/vaadin/platform/issues/new");
+        }
+        // ignore if version is a placeholder (currently only
+        // @vaadin/vaadin-core has no version)
+        String version = obj.getString(versionsKey);
+        if (!VERSION_PLACEHOLDER.equals(version)) {
+            convertedObject.put(npmName, version);
         }
     }
 
