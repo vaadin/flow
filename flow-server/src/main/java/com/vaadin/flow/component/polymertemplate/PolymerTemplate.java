@@ -38,6 +38,9 @@ import com.vaadin.flow.templatemodel.TemplateModel;
  * that the injected element will have functional limitations on the server
  * side.
  *
+ * Recommend using {@code LitTemplate} instead of PolymerTemplate as Polymer will
+ * be deprecated in the next LTS version.
+ *
  * @param <M>
  *            a model class that will be used for template data propagation
  *
