@@ -688,8 +688,8 @@ public class MessageHandler {
     }
 
     /**
-     * Gets the token (aka double submit cookie) that the server uses to protect
-     * against Cross Site Request Forgery attacks.
+     * Gets the token (synchronizer token pattern) that the server uses to
+     * protect against CSRF (Cross Site Request Forgery) attacks.
      *
      * @return the CSRF token string
      */

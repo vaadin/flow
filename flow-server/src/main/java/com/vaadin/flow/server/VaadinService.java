@@ -1919,7 +1919,7 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Verifies that the given CSRF token (aka double submit cookie) is valid
+     * Verifies that the given CSRF token (synchronizer token pattern) is valid
      * for the given UI. This is used to protect against Cross Site Request
      * Forgery attacks.
      * <p>
