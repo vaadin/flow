@@ -329,6 +329,10 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("idb", "5.0.6");
         defaults.put("mkdirp", "1.0.4");
 
+        // Flow build needs this dependency, in
+        // src/main/resources/plugins/application-theme-plugin/theme-generator.js
+        defaults.put("@vaadin/vaadin-themable-mixin", "1.6.1");
+
         return defaults;
     }
 
