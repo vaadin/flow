@@ -16,6 +16,8 @@
 package com.vaadin.flow.plugin.base;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Set;
 
@@ -96,6 +98,13 @@ public interface PluginAdapterBase {
      * @return {@link Set} of {@link File}
      */
     Set<File> getJarFiles();
+    
+    /**
+     * indicates that it is a Jar Project
+     *
+     * @return boolean - indicates that it is a Jar Project
+     */
+   boolean isJarProject();
 
     /**
      * Whether or not we are running in legacy V14 bootstrap mode. True if
@@ -182,8 +191,9 @@ public interface PluginAdapterBase {
      * Example: <code>"https://nodejs.org/dist/"</code>.
      *
      * @return nodeDownloadRoot
+     * @throws Exception  
      */
-    String nodeDownloadRoot();
+    URI nodeDownloadRoot() throws URISyntaxException;
 
     /**
      * The node.js version to be used when node.js is installed automatically by
@@ -230,27 +240,6 @@ public interface PluginAdapterBase {
      * @return {@link Path}
      */
     Path projectBaseDirectory();
-
-    /**
-     * The folder where the is projectBuild located.
-     *
-     * @return {@link Path}
-     */
-    Path projectBuildDirectory();
-
-    /**
-     * The folder where the is projectBuildOutput located.
-     *
-     * @return {@link Path}
-     */
-    Path projectBuildOutputDirectory();
-
-    /**
-     * The folder where the is projectBuildResources located.
-     *
-     * @return {@link Path}
-     */
-    Path projectBuildResourcesDirectory();
 
     /**
      * Whether vaadin home node executable usage is forced. If it's set to

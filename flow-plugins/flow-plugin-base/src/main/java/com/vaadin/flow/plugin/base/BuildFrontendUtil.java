@@ -114,7 +114,7 @@ public class BuildFrontendUtil {
     public static void prepareFrontend(PluginAdapterBase adapter)
             throws IOException, ExecutionFailedException, URISyntaxException {
 
-        final URI nodeDownloadRootURI = new URI(adapter.nodeDownloadRoot());
+        final URI nodeDownloadRootURI = adapter.nodeDownloadRoot();
         FrontendTools tools = new FrontendTools(
                 adapter.npmFolder().getAbsolutePath(),
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
@@ -148,7 +148,7 @@ public class BuildFrontendUtil {
                                 adapter.requireHomeNodeExec());
         // If building a jar project copy jar artifact contents now as we
         // might not be able to read files from jar path.
-        if (adapter.getJarFiles() != null) {
+        if (adapter.isJarProject()) {
 
             builder.copyResources(adapter.getJarFiles());
         }
@@ -225,26 +225,6 @@ public class BuildFrontendUtil {
     }
 
     /**
-     * Reads and FullyAndClose InputStream into String.
-     *
-     * @param readErrorMessage
-     *            - in case of Exception the Message will be used.
-     * @param inputStreamSupplier
-     *            - the Inputstream that will be read.
-     * @return content of the {@link InputStream} as {@link String}
-     */
-    public static String readFullyAndClose(String readErrorMessage,
-            InputStream inputStreamSupplier) {
-
-        try {
-            return IOUtils.toString(inputStreamSupplier, StandardCharsets.UTF_8)
-                    .replaceAll("\\R", System.lineSeparator());
-        } catch (IOException e) {
-            throw new UncheckedIOException(readErrorMessage, e);
-        }
-    }
-
-    /**
      * runs the node-Updater.
      *
      * @param adapter
@@ -260,139 +240,159 @@ public class BuildFrontendUtil {
                 DEFAULT_FLOW_RESOURCES_FOLDER);
         final URI nodeDownloadRootURI;
         try {
-            nodeDownloadRootURI = new URI(adapter.nodeDownloadRoot());
+            nodeDownloadRootURI = adapter.nodeDownloadRoot();
         } catch (URISyntaxException e) {
-            throw new RuntimeException(
-                    "Failed to parse " + adapter.nodeDownloadRoot(), e);
+            throw new RuntimeException("Failed to parse nodeDownloadRoot", e);
         }
 
         ClassFinder classFinder = adapter.getClassFinder();
         Lookup lookup = adapter.createLookup(classFinder);
-    // @formatter:off
-    new NodeTasks.Builder(lookup, adapter.npmFolder(), adapter.generatedFolder(),
-        adapter.frontendDirectory())
-    .runNpmInstall(adapter.runNpmInstall())
-    .withWebpack(adapter.webpackOutputDirectory(), adapter.servletResourceOutputDirectory(),
-        adapter.webpackTemplate(), adapter.webpackGeneratedTemplate())
-    .useV14Bootstrap(adapter.isUseDeprecatedV14Bootstrapping())
-    .enablePackagesUpdate(true)
-    .useByteCodeScanner(adapter.optimizeBundle())
-    .withFlowResourcesFolder(flowResourcesFolder)
-    .copyResources(jarFiles)
-    .copyLocalResources(adapter.frontendResourcesDirectory())
-    .enableImportsUpdate(true)
-    .withEmbeddableWebComponents(adapter.generateEmbeddableWebComponents())
-    .withTokenFile(BuildFrontendUtil.getTokenFile(adapter))
-    .enablePnpm(adapter.pnpmEnable())
-    .withConnectApplicationProperties(adapter.applicationProperties())
-    .withConnectJavaSourceFolder(adapter.javaSourceFolder())
-    .withConnectGeneratedOpenApiJson(adapter.openApiJsonFile())
-    .withConnectClientTsApiFolder(adapter.generatedTsFolder())
-    .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
-    .withNodeVersion(adapter.nodeVersion())
-    .withNodeDownloadRoot(nodeDownloadRootURI)
-    .build()
-    .execute();
-  }
 
-  /**
-   * runs the Webpack
-   *
-   * @param adapter - the PluginAdapterBase.
-   * @throws RuntimeException     - while parsing nodeDownloadRoot()) to URI
-   * @throws TimeoutException     - while run webpack
-   * @throws InterruptedException - while run webpack
-   * @throws IOException          - while run webpack
-   */
-  public static void runWebpack(PluginAdapterBase adapter)
-      throws RuntimeException, IOException, InterruptedException, TimeoutException {
-
-    String webpackCommand = "webpack/bin/webpack.js";
-    File webpackExecutable = new File(adapter.npmFolder(), NODE_MODULES + webpackCommand);
-    if (!webpackExecutable.isFile()) {
-      throw new IllegalStateException(String.format(
-          "Unable to locate webpack executable by path '%s'. Double"
-              + " check that the plugin is executed correctly",
-              webpackExecutable.getAbsolutePath()));
+        new NodeTasks.Builder(lookup, adapter.npmFolder(),
+                adapter.generatedFolder(), adapter.frontendDirectory())
+                        .runNpmInstall(adapter.runNpmInstall())
+                        .withWebpack(adapter.webpackOutputDirectory(),
+                                adapter.servletResourceOutputDirectory(),
+                                adapter.webpackTemplate(),
+                                adapter.webpackGeneratedTemplate())
+                        .useV14Bootstrap(
+                                adapter.isUseDeprecatedV14Bootstrapping())
+                        .enablePackagesUpdate(true)
+                        .useByteCodeScanner(adapter.optimizeBundle())
+                        .withFlowResourcesFolder(flowResourcesFolder)
+                        .copyResources(jarFiles)
+                        .copyLocalResources(
+                                adapter.frontendResourcesDirectory())
+                        .enableImportsUpdate(true)
+                        .withEmbeddableWebComponents(
+                                adapter.generateEmbeddableWebComponents())
+                        .withTokenFile(BuildFrontendUtil.getTokenFile(adapter))
+                        .enablePnpm(adapter.pnpmEnable())
+                        .withConnectApplicationProperties(
+                                adapter.applicationProperties())
+                        .withConnectJavaSourceFolder(adapter.javaSourceFolder())
+                        .withConnectGeneratedOpenApiJson(
+                                adapter.openApiJsonFile())
+                        .withConnectClientTsApiFolder(
+                                adapter.generatedTsFolder())
+                        .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
+                        .withNodeVersion(adapter.nodeVersion())
+                        .withNodeDownloadRoot(nodeDownloadRootURI).build()
+                        .execute();
     }
 
-    final URI nodeDownloadRootURI;
-    try {
-      nodeDownloadRootURI = new URI(adapter.nodeDownloadRoot());
-    } catch (URISyntaxException e) {
-      throw new RuntimeException("Failed to parse " + adapter.nodeDownloadRoot(), e);
+    /**
+     * runs the Webpack
+     *
+     * @param adapter
+     *            - the PluginAdapterBase.
+     * @throws RuntimeException
+     *             - while parsing nodeDownloadRoot()) to URI
+     * @throws TimeoutException
+     *             - while run webpack
+     * @throws InterruptedException
+     *             - while run webpack
+     * @throws IOException
+     *             - while run webpack
+     */
+    public static void runWebpack(PluginAdapterBase adapter)
+            throws RuntimeException, IOException, InterruptedException,
+            TimeoutException {
+
+        String webpackCommand = "webpack/bin/webpack.js";
+        File webpackExecutable = new File(adapter.npmFolder(),
+                NODE_MODULES + webpackCommand);
+        if (!webpackExecutable.isFile()) {
+            throw new IllegalStateException(String.format(
+                    "Unable to locate webpack executable by path '%s'. Double"
+                            + " check that the plugin is executed correctly",
+                    webpackExecutable.getAbsolutePath()));
+        }
+
+        final URI nodeDownloadRootURI;
+        try {
+            nodeDownloadRootURI = adapter.nodeDownloadRoot();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Failed to parse nodeDownloadRoot", e);
+        }
+        String nodePath;
+        FrontendTools tools = new FrontendTools(
+                adapter.npmFolder().getAbsolutePath(),
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
+                adapter.nodeVersion(), nodeDownloadRootURI);
+        if (adapter.requireHomeNodeExec()) {
+            nodePath = tools.forceAlternativeNodeExecutable();
+        } else {
+            nodePath = tools.getNodeExecutable();
+        }
+
+        List<String> command = Arrays.asList(nodePath,
+                webpackExecutable.getAbsolutePath());
+        ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
+
+        ProcessExecutor processExecutor = new ProcessExecutor()
+                .command(builder.command()).environment(builder.environment())
+                .directory(adapter.projectBaseDirectory().toFile());
+
+        adapter.logInfo("Running webpack ...");
+        if (adapter.isDebugEnabled()) {
+            adapter.logDebug(FrontendUtils.commandToString(
+                    adapter.npmFolder().getAbsolutePath(), command));
+        }
+        try {
+            processExecutor.exitValueNormal().readOutput(true).destroyOnExit()
+                    .execute();
+        } catch (InvalidExitValueException e) {
+            throw new IllegalStateException(String.format(
+                    "Webpack process exited with non-zero exit code.%nStderr: '%s'",
+                    e.getResult().outputUTF8()), e);
+        } catch (IOException | InterruptedException e) {
+            throw new IllegalStateException(
+                    "Failed to run webpack due to an error", e);
+        }
     }
-    String nodePath;
-    FrontendTools tools = new FrontendTools(adapter.npmFolder().getAbsolutePath(),
-        () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(), adapter.nodeVersion(),
-        nodeDownloadRootURI);
-    if (adapter.requireHomeNodeExec()) {
-      nodePath = tools.forceAlternativeNodeExecutable();
-    } else {
-      nodePath = tools.getNodeExecutable();
+
+    /**
+     * Add the devMode token to build token file so we don't try to start the
+     * dev server. Remove the abstract folder paths as they should not be used
+     * for prebuilt bundles.
+     *
+     * @param adapter
+     *            - the PluginAdapterBase.
+     *
+     */
+    public static void updateBuildFile(PluginAdapterBuild adapter) {
+
+        File tokenFile = getTokenFile(adapter);
+        if (!tokenFile.exists()) {
+            adapter.logWarn(
+                    "Couldn't update devMode token due to missing token file.");
+            return;
+        }
+        try {
+            String json = FileUtils.readFileToString(tokenFile,
+                    StandardCharsets.UTF_8.name());
+            JsonObject buildInfo = JsonUtil.parse(json);
+
+            buildInfo.remove(NPM_TOKEN);
+            buildInfo.remove(GENERATED_TOKEN);
+            buildInfo.remove(FRONTEND_TOKEN);
+            buildInfo.remove(Constants.SERVLET_PARAMETER_ENABLE_PNPM);
+            buildInfo.remove(Constants.REQUIRE_HOME_NODE_EXECUTABLE);
+            buildInfo.remove(
+                    Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
+            buildInfo.remove(Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
+            buildInfo.remove(Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN);
+            buildInfo.remove(Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
+            buildInfo.remove(Constants.CONNECT_OPEN_API_FILE_TOKEN);
+            buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
+
+            buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
+            FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
+                    StandardCharsets.UTF_8.name());
+        } catch (IOException e) {
+            adapter.logWarn("Unable to read token file", e);
+        }
     }
-
-    List<String> command = Arrays.asList(nodePath, webpackExecutable.getAbsolutePath());
-    ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
-
-    ProcessExecutor processExecutor = new ProcessExecutor().command(builder.command())
-        .environment(builder.environment())
-        .directory(adapter.projectBaseDirectory().toFile());
-
-    adapter.logInfo("Running webpack ...");
-    if (adapter.isDebugEnabled()) {
-      adapter
-      .logDebug(FrontendUtils.commandToString(adapter.npmFolder().getAbsolutePath(), command));
-    }
-    try {
-      processExecutor.exitValueNormal().readOutput(true).destroyOnExit().execute();
-    } catch (InvalidExitValueException e) {
-      throw new IllegalStateException(
-          String.format("Webpack process exited with non-zero exit code.%nStderr: '%s'",
-              e.getResult().outputUTF8()),
-          e);
-    } catch (IOException | InterruptedException e) {
-      throw new IllegalStateException("Failed to run webpack due to an error", e);
-    }
-  }
-
-  /**
-   * Add the devMode token to build token file so we don't try to start the dev
-   * server. Remove the abstract folder paths as they should not be used for
-   * prebuilt bundles.
-   *
-   * @param adapter - the PluginAdapterBase.
-   *
-   */
-  public static void updateBuildFile(PluginAdapterBase adapter) {
-
-    File tokenFile = getTokenFile(adapter);
-    if (!tokenFile.exists()) {
-      adapter.logWarn("Couldn't update devMode token due to missing token file.");
-      return;
-    }
-    try {
-      String json = FileUtils.readFileToString(tokenFile, StandardCharsets.UTF_8.name());
-      JsonObject buildInfo = JsonUtil.parse(json);
-
-      buildInfo.remove(NPM_TOKEN);
-      buildInfo.remove(GENERATED_TOKEN);
-      buildInfo.remove(FRONTEND_TOKEN);
-      buildInfo.remove(Constants.SERVLET_PARAMETER_ENABLE_PNPM);
-      buildInfo.remove(Constants.REQUIRE_HOME_NODE_EXECUTABLE);
-      buildInfo.remove(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
-      buildInfo.remove(Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
-      buildInfo.remove(Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN);
-      buildInfo.remove(Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
-      buildInfo.remove(Constants.CONNECT_OPEN_API_FILE_TOKEN);
-      buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
-
-      buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
-      FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
-          StandardCharsets.UTF_8.name());
-    } catch (IOException e) {
-      adapter.logWarn("Unable to read token file", e);
-    }
-  }
 
 }

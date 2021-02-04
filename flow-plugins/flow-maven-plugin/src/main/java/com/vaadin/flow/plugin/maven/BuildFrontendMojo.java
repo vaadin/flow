@@ -19,21 +19,22 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
-import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.plugin.base.BuildFrontendUtil;
-import com.vaadin.flow.plugin.base.DefaultPluginAdapterBuild;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.theme.Theme;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.plugin.base.BuildFrontendUtil;
+import com.vaadin.flow.plugin.base.PluginAdapterBuild;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.theme.Theme;
 
 /**
  * Goal that builds the frontend bundle.
@@ -55,7 +56,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
  */
 @Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class BuildFrontendMojo extends FlowModeAbstractMojo
-        implements DefaultPluginAdapterBuild {
+        implements PluginAdapterBuild {
 
     /**
      * Whether to generate a bundle from the project frontend sources or not.
@@ -176,4 +177,5 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
 
         return webpackTemplate;
     }
+
 }

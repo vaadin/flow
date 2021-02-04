@@ -20,23 +20,26 @@ import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.plugin.base.BuildFrontendUtil;
-import com.vaadin.flow.plugin.base.DefaultPluginAdapterBase;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+
+import com.vaadin.flow.plugin.base.BuildFrontendUtil;
+import com.vaadin.flow.plugin.base.PluginAdapterBase;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
  * The base class of Flow Mojos in order to compute correctly the modes.
@@ -44,7 +47,7 @@ import org.apache.maven.project.MavenProject;
  * @since 2.0
  */
 public abstract class FlowModeAbstractMojo extends AbstractMojo
-        implements DefaultPluginAdapterBase {
+        implements PluginAdapterBase {
 
     /**
      * Additionally include compile-time-only dependencies matching the pattern.
@@ -293,9 +296,14 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
-    public String nodeDownloadRoot() {
+    public URI nodeDownloadRoot() throws URISyntaxException {
 
-        return nodeDownloadRoot;
+        try {
+            return new URI(nodeDownloadRoot);
+        } catch (URISyntaxException e) {
+            throw new URISyntaxException(nodeDownloadRoot,
+                    "Failed to parse nodeDownloadRoot uri");
+        }
     }
 
     @Override
@@ -350,5 +358,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     public File webpackOutputDirectory() {
 
         return webpackOutputDirectory;
+    }
+
+    @Override
+    public boolean isJarProject() {
+        return getJarFiles() != null;
     }
 }

@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
-        <artifactId>flow-plugin</artifactId>
+        <artifactId>flow-plugins</artifactId>
         <version>6.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-maven-plugin</artifactId>
