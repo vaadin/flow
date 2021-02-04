@@ -18,15 +18,19 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -443,6 +447,22 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertImportOrder("jsmodule/g.js", "javascript/a.js", "javascript/b.js",
                 "javascript/c.js");
+    }
+
+    @Test
+    public void importingBinaryFile_importVisitorShouldNotFail()
+            throws IOException, URISyntaxException {
+        // Add a binary image import to 'commmon-js-file.js' which should not
+        // fail the import visitor and should be ignored
+        File newFile = resolveImportFile(frontendDirectory, nodeModulesPath,
+                "./common-js-file.js");
+        Files.copy(Paths.get(
+                getClass().getClassLoader().getResource("dice.jpg").toURI()),
+                new File(newFile.getParentFile(), "dice.jpg").toPath());
+        Files.write(newFile.toPath(),
+                Collections.singleton("import './dice.jpg'"));
+
+        updater.run();
     }
 
     @Route(value = "")
