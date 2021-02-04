@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>flow-project</artifactId>
@@ -130,12 +130,12 @@
         <maven.test.skip>false</maven.test.skip>
 
         <!-- This property is needed to allow some Win-specific unit tests -->
-        <!-- to be disabled via system property in CI until they got fixed-->
+        <!-- to be disabled via system property in CI until they got fixed -->
         <exclude.windows.failed.tests></exclude.windows.failed.tests>
     </properties>
 
     <repositories>
-        <!-- The order of definitions matters. Explicitly defining central
+        <!-- The order of definitions matters. Explicitly defining central 
             here to make sure it has the highest priority. -->
         <repository>
             <id>central</id>
@@ -161,7 +161,7 @@
     </repositories>
 
     <pluginRepositories>
-        <!-- The order of definitions matters. Explicitly defining central
+        <!-- The order of definitions matters. Explicitly defining central 
             here to make sure it has the highest priority. -->
         <pluginRepository>
             <id>central</id>
@@ -434,6 +434,21 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.karaf.tooling</groupId>
+                    <artifactId>karaf-maven-plugin</artifactId>
+                    <version>4.3.0</version>
+                    <extensions>true</extensions>
+                    <executions>
+                        <execution>
+                            <id>generate-features-file</id>
+                            <phase>generate-resources</phase>
+                            <goals>
+                                <goal>features-generate-descriptor</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
                     <version>1.4.1</version>
@@ -455,7 +470,7 @@
                             <configuration>
                                 <rules>
                                     <restrictImports
-                                            implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
+                                        implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
                                         <reason>Use SLF4j for logging</reason>
                                         <bannedImport>java.util.logging.**
                                         </bannedImport>
@@ -491,7 +506,6 @@
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
                         <trimStackTrace>false</trimStackTrace>
-                        <reuseForks>false</reuseForks>
                         <excludes>
                             <exclude>${exclude.windows.failed.tests}</exclude>
                         </excludes>
@@ -508,7 +522,7 @@
                         <threadCount>2</threadCount>
                     </configuration>
                 </plugin>
-                <!--This plugin's configuration is used to store Eclipse
+                <!--This plugin's configuration is used to store Eclipse 
                     m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>

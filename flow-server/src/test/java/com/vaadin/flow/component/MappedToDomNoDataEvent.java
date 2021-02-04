@@ -13,11 +13,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.DomEvent;
+package com.vaadin.flow.component;
 
 @DomEvent("dom-event")
 public class MappedToDomNoDataEvent extends ComponentEvent<Component> {

@@ -68,7 +68,7 @@ public class UsageStatistics {
         }
     }
 
-    private static ConcurrentHashMap<String, UsageEntry> entires = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, UsageEntry> entries = new ConcurrentHashMap<>();
     static {
         String version = System.getProperty("java.version");
 
@@ -95,7 +95,7 @@ public class UsageStatistics {
     public static void markAsUsed(String name, String version) {
         assert name != null;
 
-        entires.computeIfAbsent(name, ignore -> new UsageEntry(name, version));
+        entries.computeIfAbsent(name, ignore -> new UsageEntry(name, version));
     }
 
     /**
@@ -104,7 +104,7 @@ public class UsageStatistics {
      * @return a stream of entries, not <code>null</code>
      */
     public static Stream<UsageEntry> getEntries() {
-        return entires.values().stream();
+        return entries.values().stream();
     }
 
     /**
@@ -115,6 +115,13 @@ public class UsageStatistics {
      *            want to be removed, not <code>null</code>
      */
     public static void removeEntry(String name) {
-        entires.remove(name);
+        entries.remove(name);
+    }
+
+    /**
+     * Clear the usage entries.
+     */
+    public static void clearEntries() {
+        entries.clear();
     }
 }

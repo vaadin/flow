@@ -17,7 +17,9 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URL;
+import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -508,8 +511,22 @@ abstract class AbstractUpdateImports implements Runnable {
     private void visitImportsRecursively(Path filePath, String path,
             AbstractTheme theme, Collection<String> imports,
             Set<String> visitedImports) throws IOException {
-        String content = Files.readAllLines(filePath, StandardCharsets.UTF_8)
-                .stream().collect(Collectors.joining("\n"));
+
+        String content = null;
+        try (final Stream<String> contentStream = Files
+                .lines(filePath, StandardCharsets.UTF_8)) {
+            content = contentStream.collect(Collectors.joining("\n"));
+        } catch (UncheckedIOException ioe) {
+            if (ioe.getCause() instanceof MalformedInputException) {
+                getLogger()
+                        .trace("Failed to read file '{}' found from Es6 import statements. "
+                                        + "This is probably due to it being a binary file, "
+                                        + "in which case it doesn't matter as imports are only in js/ts files.",
+                                filePath.toString(), ioe);
+                return;
+            }
+            throw ioe;
+        }
         ImportExtractor extractor = new ImportExtractor(content);
         List<String> importedPaths = extractor.getImportedPaths();
         for (String importedPath : importedPaths) {
