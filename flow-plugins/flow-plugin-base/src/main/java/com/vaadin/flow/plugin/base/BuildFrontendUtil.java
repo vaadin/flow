@@ -231,19 +231,18 @@ public class BuildFrontendUtil {
      *            - the PluginAdapterBase.
      * @throws ExecutionFailedException
      *             - a ExecutionFailedException.
+     * @throws URISyntaxException
+     *             - - Could not build an URI from nodeDownloadRoot().
      */
     public static void runNodeUpdater(PluginAdapterBuild adapter)
-            throws ExecutionFailedException {
+            throws ExecutionFailedException, URISyntaxException {
 
         Set<File> jarFiles = adapter.getJarFiles();
         File flowResourcesFolder = new File(adapter.npmFolder(),
                 DEFAULT_FLOW_RESOURCES_FOLDER);
         final URI nodeDownloadRootURI;
-        try {
-            nodeDownloadRootURI = adapter.nodeDownloadRoot();
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("Failed to parse nodeDownloadRoot", e);
-        }
+
+        nodeDownloadRootURI = adapter.nodeDownloadRoot();
 
         ClassFinder classFinder = adapter.getClassFinder();
         Lookup lookup = adapter.createLookup(classFinder);
@@ -286,18 +285,18 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            - the PluginAdapterBase.
-     * @throws RuntimeException
-     *             - while parsing nodeDownloadRoot()) to URI
      * @throws TimeoutException
      *             - while run webpack
      * @throws InterruptedException
      *             - while run webpack
      * @throws IOException
      *             - while run webpack
+     * @throws URISyntaxException
+     *             - while parsing nodeDownloadRoot()) to URI
      */
     public static void runWebpack(PluginAdapterBase adapter)
             throws RuntimeException, IOException, InterruptedException,
-            TimeoutException {
+            TimeoutException, URISyntaxException {
 
         String webpackCommand = "webpack/bin/webpack.js";
         File webpackExecutable = new File(adapter.npmFolder(),
@@ -310,11 +309,7 @@ public class BuildFrontendUtil {
         }
 
         final URI nodeDownloadRootURI;
-        try {
-            nodeDownloadRootURI = adapter.nodeDownloadRoot();
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("Failed to parse nodeDownloadRoot", e);
-        }
+        nodeDownloadRootURI = adapter.nodeDownloadRoot();
         String nodePath;
         FrontendTools tools = new FrontendTools(
                 adapter.npmFolder().getAbsolutePath(),

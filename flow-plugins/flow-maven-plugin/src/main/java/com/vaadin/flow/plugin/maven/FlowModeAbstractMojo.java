@@ -362,6 +362,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public boolean isJarProject() {
-        return getJarFiles() != null;
+        return "jar".equals(project.getPackaging());
     }
 }

@@ -191,7 +191,7 @@ public interface PluginAdapterBase {
      * Example: <code>"https://nodejs.org/dist/"</code>.
      *
      * @return nodeDownloadRoot
-     * @throws Exception  
+     * @throws URISyntaxException - Could not build an URI from nodeDownloadRoot().
      */
     URI nodeDownloadRoot() throws URISyntaxException;
 
