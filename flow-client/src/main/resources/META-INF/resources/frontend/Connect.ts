@@ -298,6 +298,18 @@ export class ConnectClient {
         $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
       }
     });
+
+    if (navigator.serviceWorker) {
+      navigator.serviceWorker.addEventListener('message', event => {
+        if(event.data.offline){
+          $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
+        }
+      });
+    
+      navigator.serviceWorker.ready.then( registration => {
+        registration?.active?.postMessage("am I offline?");
+      });
+    }
   }
 
   /**

@@ -43,6 +43,7 @@ const rewriteBaseHref = async (response: Response) => {
 const appShellPath = '.';
 const offlinePath = OFFLINE_PATH_ENABLED ? '/' + OFFLINE_PATH : appShellPath;
 const networkOnly = new NetworkOnly();
+let offline = false;
 const navigationFallback = new NavigationRoute(async (context: RouteHandlerCallbackOptions) => {
   // Use offlinePath fallback if offline was detected
   if (!self.navigator.onLine) {
@@ -55,8 +56,11 @@ const navigationFallback = new NavigationRoute(async (context: RouteHandlerCallb
   // Sometimes navigator.onLine is not reliable, use fallback to offlinePath
   // also in case of network failure
   try {
-    return await networkOnly.handle(context);
+    const response = await networkOnly.handle(context);
+    offline = false;
+    return response;
   } catch (error) {
+    offline = true;
     const precachedResponse = await matchPrecache(offlinePath);
     return precachedResponse ? await rewriteBaseHref(precachedResponse) : error;
   }
@@ -70,3 +74,7 @@ if (self.additionalManifestEntries && self.additionalManifestEntries.length) {
 }
 
 precacheAndRoute(manifestEntries);
+
+self.addEventListener('message', event => {
+  event?.source?.postMessage({offline}, []);
+});
