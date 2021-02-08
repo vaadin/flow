@@ -123,6 +123,7 @@ if (useClientSideIndexFileForBootstrapping) {
 }
 
 const appShellUrl = '.';
+let appShellManifestEntry = undefined;
 
 const swManifestTransform = (manifestEntries) => {
   const warnings = [];
@@ -137,6 +138,10 @@ const swManifestTransform = (manifestEntries) => {
   const indexEntryIdx = manifest.findIndex(entry => entry.url === 'index.html');
   if (indexEntryIdx !== -1) {
     manifest[indexEntryIdx].url = appShellUrl;
+    appShellManifestEntry = manifest[indexEntryIdx];
+  } else {
+    // Index entry is only emitted on first compilation. Make sure it is cached also for incremental builds
+    manifest.push(appShellManifestEntry);
   }
 
   return { manifest, warnings };
