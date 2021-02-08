@@ -18,7 +18,6 @@ package com.vaadin.flow.server.communication;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.net.URI;
@@ -379,10 +378,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * @param path
      *            original resource path
      * @return new resource path, relative to basePath
-     * @throws UnsupportedEncodingException
      */
-    protected String modifyPath(String basePath, String path)
-            throws UnsupportedEncodingException {
+    protected String modifyPath(String basePath, String path) {
         int vaadinIndex = path.indexOf(Constants.VAADIN_MAPPING);
         String suffix = path;
         if (vaadinIndex > 0) {
