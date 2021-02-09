@@ -69,7 +69,7 @@ public class HasUrlParameterFormat implements Serializable {
      */
     public static String getTemplate(String urlBase,
             Class<? extends Component> navigationTarget) {
-        if (hasUrlParameter(navigationTarget)) {
+        if (hasUrlParameter(navigationTarget) && !hasUrlTemplate(urlBase)) {
 
             urlBase = PathUtil.trimPath(urlBase);
 
@@ -297,6 +297,10 @@ public class HasUrlParameterFormat implements Serializable {
     static boolean hasWildcardParameter(Class<? extends Component> target) {
         return ParameterDeserializer.isAnnotatedParameter(target,
                 WildcardParameter.class);
+    }
+
+    private static boolean hasUrlTemplate(String url) {
+        return url != null && url.contains(PARAMETER);
     }
 
 }
