@@ -59,7 +59,7 @@ public class UrlValidationIT extends ChromeBrowserTest {
 
     private void waitForFrontendCompilation(URL url) throws Exception {
         boolean frontendCompiled = false;
-        int attemptsRemaining = 100;
+        int attemptsRemaining = 200;
         while (!frontendCompiled && attemptsRemaining-- > 0) {
             HttpURLConnection connection = (HttpURLConnection) url
                     .openConnection();
