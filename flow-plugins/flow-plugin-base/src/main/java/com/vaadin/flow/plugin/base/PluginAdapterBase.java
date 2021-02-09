@@ -100,7 +100,7 @@ public interface PluginAdapterBase {
     Set<File> getJarFiles();
     
     /**
-     * indicates that it is a Jar Project
+     * Indicates that it is a Jar Project.
      *
      * @return boolean - indicates that it is a Jar Project
      */
@@ -180,6 +180,16 @@ public interface PluginAdapterBase {
      *            to be logged.
      */
     void logWarn(CharSequence warningMessage, Throwable throwable);
+
+    /**
+     * Delegates a error-Message to a logger.
+     *
+     * @param errorMessage
+     *            to be logged.
+     * @param throwable
+     *            to be logged.
+     */
+    void logError(CharSequence warning, Throwable e);
 
     /**
      * Download node.js from this URL. Handy in heavily firewalled corporate
@@ -266,5 +276,6 @@ public interface PluginAdapterBase {
      * @return {@link File}
      */
     File webpackOutputDirectory();
+
 
 }

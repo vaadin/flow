@@ -32,7 +32,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -43,6 +42,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.io.FileUtils;
+import org.zeroturnaround.exec.InvalidExitValueException;
+import org.zeroturnaround.exec.ProcessExecutor;
+
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -52,13 +55,10 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.utils.FlowFileUtils;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.zeroturnaround.exec.InvalidExitValueException;
-import org.zeroturnaround.exec.ProcessExecutor;
 
 /**
  * Util class provides all methods a Plugin will need.
@@ -295,7 +295,7 @@ public class BuildFrontendUtil {
      *             - while parsing nodeDownloadRoot()) to URI
      */
     public static void runWebpack(PluginAdapterBase adapter)
-            throws RuntimeException, IOException, InterruptedException,
+            throws IOException, InterruptedException,
             TimeoutException, URISyntaxException {
 
         String webpackCommand = "webpack/bin/webpack.js";

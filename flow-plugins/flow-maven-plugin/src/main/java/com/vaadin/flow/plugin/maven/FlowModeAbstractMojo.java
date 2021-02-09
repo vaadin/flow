@@ -294,6 +294,13 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         getLog().warn(warning, e);
 
     }
+    
+    @Override
+    public void logError(CharSequence warning, Throwable e) {
+
+        getLog().error(warning, e);
+
+    }
 
     @Override
     public URI nodeDownloadRoot() throws URISyntaxException {
@@ -301,6 +308,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         try {
             return new URI(nodeDownloadRoot);
         } catch (URISyntaxException e) {
+            logError("Failed to parse nodeDownloadRoot uri", e);
             throw new URISyntaxException(nodeDownloadRoot,
                     "Failed to parse nodeDownloadRoot uri");
         }

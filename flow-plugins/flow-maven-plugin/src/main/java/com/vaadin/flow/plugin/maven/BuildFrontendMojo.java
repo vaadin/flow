@@ -17,6 +17,7 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.maven.plugin.MojoExecutionException;
@@ -117,7 +118,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
 
         try {
             BuildFrontendUtil.runNodeUpdater(this);
-        } catch (ExecutionFailedException exception) {
+        } catch (ExecutionFailedException | URISyntaxException exception) {
             throw new MojoFailureException(
                     "Could not execute build-frontend goal", exception);
         }
@@ -125,7 +126,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
         if (generateBundle()) {
             try {
                 BuildFrontendUtil.runWebpack(this);
-            } catch (RuntimeException | IOException | InterruptedException
+            } catch (URISyntaxException | IOException | InterruptedException
                     | TimeoutException exception) {
                 throw new MojoExecutionException(exception.getMessage(),
                         exception);
