@@ -329,17 +329,8 @@ suite("Flow", () => {
 
     const route = flow.serverSideRoutes[0];
 
-    $wnd.Vaadin.connectionIndicator.firstDelay = 0;
-    await $wnd.Vaadin.connectionIndicator.updateComplete;
-    const indicator = $wnd.document.querySelector('.v-loading-indicator');
-
-    let wasActive = false;
-    let wasVisible = false;
-    setTimeout(() => {
-      // Check the `isActive` flag and indicator.style at the time the action is being executed
-      wasActive = wasActive || $wnd.Vaadin.Flow.clients.TypeScript.isActive();
-      wasVisible = wasVisible || indicator.getAttribute('style') === 'display: block';
-    }, 5);
+    sinon.spy(flow, 'loadingStarted');
+    sinon.spy(flow, 'loadingFinished');
 
     return route
       .action({pathname: "Foo/Bar.baz"})
@@ -353,7 +344,6 @@ suite("Flow", () => {
         // Check that flowClient was initialized
         assert.isDefined($wnd.Vaadin.Flow.clients.foobar.resolveUri);
         assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
-        assert.equal('display: none', indicator.getAttribute('style'));
 
         // Check that pushScript is not initialized
         assert.isUndefined($wnd.vaadinPush);
@@ -362,13 +352,29 @@ suite("Flow", () => {
         assert.isDefined(flowRoot.$);
         assert.isDefined(flowRoot.$['foobar-1111111']);
 
-        // Check that `isActive` flag was active during the action
-        assert.isTrue(wasActive);
-        // Check that indicator was visible during the action
-        assert.isTrue(wasVisible);
+        // Check that `loadingStarted` and `loadingFinished` pair was called
+        sinon.assert.calledOnce(flow.loadingStarted);
+        sinon.assert.calledOnce(flow.loadingFinished);
+
         // Check that `isActive` flag is set to false after the action
         assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
       });
+  });
+
+  test("loadingStarted and loadingFinished should update isActive and connection indicator", async () => {
+    const flow = new Flow();
+    sinon.spy($wnd.Vaadin.connectionState, 'loadingStarted');
+    sinon.spy($wnd.Vaadin.connectionState, 'loadingFinished');
+
+    flow.loadingStarted();
+    assert.isTrue($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+    sinon.assert.calledOnce($wnd.Vaadin.connectionState.loadingStarted);
+    sinon.assert.notCalled($wnd.Vaadin.connectionState.loadingFinished);
+
+    flow.loadingFinished();
+    assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+    sinon.assert.calledOnce($wnd.Vaadin.connectionState.loadingStarted);
+    sinon.assert.calledOnce($wnd.Vaadin.connectionState.loadingFinished);
   });
 
   test("should remove context-path in request", () => {
