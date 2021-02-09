@@ -22,6 +22,7 @@ let arrTitle = [];
 let arrURL = [];
 let arrSHA = [];
 let arrBranch = [];
+let arrUser = [];
 
 const repo = "vaadin/flow";
 const token = process.env['GITHUB_TOKEN'];
@@ -73,12 +74,13 @@ function filterCommits(commits){
       commit.labels.forEach(label => {
         let branch = /target\/(.*)/.exec(label.name);
         if (branch){
-          console.log(commit.number, commit.url, commit.merge_commit_sha, branch[1]);
+          console.log(commit.number, commit.user.login, commit.url, commit.merge_commit_sha, branch[1]);
           arrPR.push(commit.number);
           arrSHA.push(commit.merge_commit_sha);
           arrURL.push(commit.url);
           arrBranch.push(branch[1]);
           arrTitle.push(`${commit.title} (#${commit.number}) (CP: ${branch[1]})`);
+          arrUser.push(`@${commit.user.login}`);
         }
       })
     }
@@ -109,7 +111,7 @@ async function cherryPickCommits(){
       await exec(`git checkout master`);
       await exec(`git branch -D ${branchName}`);
       await labelCommit(arrURL[i], `need to pick manually ${arrBranch[i]}`);
-      
+      await postComment(arrURL[i], arrUser[i], arrBranch[i]);
       continue;
     }
     await exec(`git push origin HEAD:${branchName}`);
@@ -132,6 +134,19 @@ async function labelCommit(url, label){
   
   await axios.post(issueURL, {"labels":[label]}, options);
 }
+
+async function postComment(url, userName, branch){
+  let issueURL = url.replace("pulls", "issues") + "/comments";
+  const options = {
+    headers:{
+      'User-Agent': 'Vaadin Cherry Pick',
+      'Authorization': `token ${token}`,
+    }
+  };
+
+  await axios.post(issueURL, {"body":`Hi ${userName} , this commit cannot be picked to ${branch} by this bot, can you take a look and pick it manually?`}, options);
+}
+
 
 async function createPR(title, head, base){
   const payload = {title, head, base};
