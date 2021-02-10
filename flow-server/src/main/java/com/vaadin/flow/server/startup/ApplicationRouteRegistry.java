@@ -120,22 +120,22 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                     .forRegistry(this);
             event.getRemovedRoutes()
                     .forEach(routeBaseData -> routeConfiguration.removeRoute(
-                            routeBaseData.getUrl(),
+                            routeBaseData.getTemplate(),
                             routeBaseData.getNavigationTarget()));
             event.getAddedRoutes()
                     .forEach(routeBaseData -> routeConfiguration.setRoute(
-                            routeBaseData.getUrl(),
+                            routeBaseData.getTemplate(),
                             routeBaseData.getNavigationTarget(),
                             routeBaseData.getParentLayouts()));
         }
 
         private void setRoutes(List<RouteData> routes) {
             routes.forEach(routeData -> {
-                setRoute(routeData.getUrl(), routeData.getNavigationTarget(),
+                setRoute(routeData.getTemplate(), routeData.getNavigationTarget(),
                         routeData.getParentLayouts());
                 routeData.getRouteAliases()
                         .forEach(routeAliasData -> setRoute(
-                                routeAliasData.getUrl(),
+                                routeAliasData.getTemplate(),
                                 routeAliasData.getNavigationTarget(),
                                 routeAliasData.getParentLayouts()));
             });

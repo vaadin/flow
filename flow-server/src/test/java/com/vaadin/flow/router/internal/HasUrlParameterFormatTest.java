@@ -18,6 +18,7 @@ package com.vaadin.flow.router.internal;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
@@ -56,21 +57,43 @@ public class HasUrlParameterFormatTest {
                 "test-view-with-mandatory-parameter/:___url_parameter(^true|false$)"));
     }
 
-    @Test
-    public void getTemplate_urlBaseWithTemplate_noExtraTemplateAdded() {
-        String template = HasUrlParameterFormat.getTemplate(
-                "test-view-with-optional-parameter/:___url_parameter?",
-                TestViewWithOptionalParameter.class);
-        MatcherAssert.assertThat(template, CoreMatchers.equalTo(
-                "test-view-with-optional-parameter/:___url_parameter?"));
+    @Test()
+    public void getTemplate_urlBaseWithTemplate_throws() {
+        Assert.assertThrows("Url base may not contain url parameter template:"
+                + " test-view-with-optional-parameter/:___url_parameter?",
+                IllegalArgumentException.class,
+                () -> HasUrlParameterFormat.getTemplate(
+                        "test-view-with-optional-parameter/:___url_parameter?",
+                        TestViewWithOptionalParameter.class));
+    }
+
+    @Test()
+    public void getTemplate_notImplementsHasUrlParameter_throws() {
+        Assert.assertThrows(
+                "Url parameter template may not be applied to navigation "
+                        + "targets which do not implement HasUrlParameter "
+                        + "interface",
+                IllegalArgumentException.class,
+                () -> HasUrlParameterFormat.getTemplate(
+                        "test-view-no-parameters",
+                        TestViewWithNoParameter.class));
     }
 
     @Test
-    public void getTemplate_urlBaseWithNoUrlParameter_noTemplateAdded() {
-        String template = HasUrlParameterFormat.getTemplate(
-                "test-view-no-parameters", TestViewWithNoParameter.class);
-        MatcherAssert.assertThat(template,
-                CoreMatchers.equalTo("test-view-no-parameters"));
+    public void hasUrlParameterTemplate_noTemplate_returnFalse() {
+        Assert.assertFalse(
+                HasUrlParameterFormat.hasUrlParameterTemplate("foo/bar"));
+    }
+
+    @Test
+    public void hasUrlParameterTemplate_emptyUrl_returnFalse() {
+        Assert.assertFalse(HasUrlParameterFormat.hasUrlParameterTemplate(null));
+    }
+
+    @Test
+    public void hasUrlParameterTemplate_hasTemplate_returnTrue() {
+        Assert.assertTrue(HasUrlParameterFormat
+                .hasUrlParameterTemplate("foo/bar/:___url_parameter"));
     }
 
     @Route("test-view-with-optional-parameter")

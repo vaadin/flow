@@ -65,29 +65,42 @@ public class HasUrlParameterFormat implements Serializable {
      *            url base.
      * @param navigationTarget
      *            {@link HasUrlParameter} navigation target.
+     * @throws IllegalArgumentException
+     *             if the given navigation target does not implement
+     *             {@link HasUrlParameter} or a given url base contains url
+     *             parameter template.
      * @return the final template.
      */
     public static String getTemplate(String urlBase,
             Class<? extends Component> navigationTarget) {
-        if (hasUrlParameter(navigationTarget) && !hasUrlTemplate(urlBase)) {
+        if (!hasUrlParameter(navigationTarget)) {
+            throw new IllegalArgumentException(
+                    "Url parameter template may not be applied to navigation "
+                            + "targets which do not implement HasUrlParameter "
+                            + "interface");
+        }
 
-            urlBase = PathUtil.trimPath(urlBase);
+        if (hasUrlParameterTemplate(urlBase)) {
+            throw new IllegalArgumentException(String.format(
+                    "Url base may not contain url parameter template: %s",
+                    urlBase));
+        }
 
-            if (hasOptionalParameter(navigationTarget)) {
-                urlBase += "/" + PARAMETER + "?";
-            } else if (hasWildcardParameter(navigationTarget)) {
-                urlBase += "/" + PARAMETER + "*";
-            } else {
-                urlBase += "/" + PARAMETER;
-            }
+        urlBase = PathUtil.trimPath(urlBase);
 
-            final Class<?> parameterType = ParameterDeserializer
-                    .getClassType(navigationTarget);
+        if (hasOptionalParameter(navigationTarget)) {
+            urlBase += "/" + PARAMETER + "?";
+        } else if (hasWildcardParameter(navigationTarget)) {
+            urlBase += "/" + PARAMETER + "*";
+        } else {
+            urlBase += "/" + PARAMETER;
+        }
 
-            if (!String.class.equals(parameterType)) {
-                urlBase += "(" + RouteParameterRegex.getRegex(parameterType)
-                        + ")";
-            }
+        final Class<?> parameterType = ParameterDeserializer
+                .getClassType(navigationTarget);
+
+        if (!String.class.equals(parameterType)) {
+            urlBase += "(" + RouteParameterRegex.getRegex(parameterType) + ")";
         }
         return urlBase;
     }
@@ -240,6 +253,19 @@ public class HasUrlParameterFormat implements Serializable {
     }
 
     /**
+     * Verifies whether the given url already have the url parameter template or
+     * not.
+     * 
+     * @param url
+     *            url to be verified
+     * @return true if the given url already contains url parameter template
+     *         {@link HasUrlParameterFormat#PARAMETER_NAME}
+     */
+    public static boolean hasUrlParameterTemplate(String url) {
+        return url != null && url.contains(PARAMETER_NAME);
+    }
+
+    /**
      * Returns whether the target argument implements {@link HasUrlParameter}.
      *
      * @param target
@@ -297,10 +323,6 @@ public class HasUrlParameterFormat implements Serializable {
     static boolean hasWildcardParameter(Class<? extends Component> target) {
         return ParameterDeserializer.isAnnotatedParameter(target,
                 WildcardParameter.class);
-    }
-
-    private static boolean hasUrlTemplate(String url) {
-        return url != null && url.contains(PARAMETER);
     }
 
 }

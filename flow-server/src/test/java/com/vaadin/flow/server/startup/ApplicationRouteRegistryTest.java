@@ -44,6 +44,34 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
     }
 
     @Test
+    public void passUrlWithParameterTemplate_urlNotChanged() {
+        getTestedRegistry().setRoute("has-url-parameter/:___url_parameter",
+                HasUrlParameterRoute.class, Collections.emptyList());
+
+        Assert.assertEquals("Expected only one route to be registered", 1,
+                getTestedRegistry().getRegisteredRoutes().size());
+
+        Assert.assertEquals(
+                "No extra url param template expected, if already added",
+                "has-url-parameter/:___url_parameter", getTestedRegistry()
+                        .getRegisteredRoutes().iterator().next().getTemplate());
+    }
+
+    @Test
+    public void passUrlWithoutParameterTemplate_templateAdded() {
+        getTestedRegistry().setRoute("has-url-parameter",
+                HasUrlParameterRoute.class, Collections.emptyList());
+
+        Assert.assertEquals("Expected only one route to be registered", 1,
+                getTestedRegistry().getRegisteredRoutes().size());
+
+        Assert.assertEquals("Expected url param template to be added",
+                "has-url-parameter/:___url_parameter",
+                getTestedRegistry().getRegisteredRoutes().iterator().next()
+                        .getTemplate());
+    }
+
+    @Test
     public void updateRoutesFromMultipleThreads_allRoutesAreRegistered()
             throws InterruptedException, ExecutionException {
 
@@ -248,7 +276,7 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
                 removed.isEmpty());
 
         Assert.assertEquals(MyRoute.class, added.get(0).getNavigationTarget());
-        Assert.assertEquals("", added.get(0).getUrl());
+        Assert.assertEquals("", added.get(0).getTemplate());
 
         getTestedRegistry().setRoute("home", Secondary.class,
                 Collections.emptyList());
@@ -262,7 +290,7 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
 
         Assert.assertEquals(Secondary.class,
                 added.get(0).getNavigationTarget());
-        Assert.assertEquals("home", added.get(0).getUrl());
+        Assert.assertEquals("home", added.get(0).getTemplate());
 
         getTestedRegistry().removeRoute("home");
 
@@ -273,7 +301,7 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
         Assert.assertEquals(Secondary.class,
                 removed.get(0).getNavigationTarget());
         Assert.assertEquals("The 'home' route should have been removed", "home",
-                removed.get(0).getUrl());
+                removed.get(0).getTemplate());
     }
 
     @Test
@@ -304,7 +332,7 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
         Assert.assertFalse("", removed.isEmpty());
 
         for (RouteBaseData data : added) {
-            if (data.getUrl().equals("")) {
+            if (data.getTemplate().equals("")) {
                 Assert.assertEquals("MyRoute should have been added",
                         MyRoute.class, data.getNavigationTarget());
                 Assert.assertEquals(
