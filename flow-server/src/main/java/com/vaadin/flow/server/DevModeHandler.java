@@ -732,6 +732,7 @@ public final class DevModeHandler implements RequestHandler {
         command.add(webpackConfig.getAbsolutePath());
         command.add("--port");
         command.add(String.valueOf(port));
+        command.add("--env");
         command.add("--watch-options-stdin"); // Tell wds to stop even if
                                               // watchDog fail
         // Workaround for issue with Node 17 webpack dev server denying
