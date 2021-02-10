@@ -244,14 +244,14 @@ public class FrontendUtilsTest {
         List<String> command = Arrays.asList("./node/node",
                 "./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
                 "--config", "./webpack.config.js", "--port 57799",
-                "--watchDogPort=57798", "-d", "--inline=false", "--progress",
+"--env watchDogPort=57798", "-d", "--inline=false", "--progress",
                 "--colors");
         String wrappedCommand = FrontendUtils.commandToString(".", command);
         Assert.assertEquals("\n" + "./node/node \\ \n"
                 + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \\ \n"
                 + "    --config ./webpack.config.js --port 57799 \\ \n"
-                + "    --watchDogPort=57798 -d --inline=false --progress \\ \n"
-                + "    --colors \n", wrappedCommand);
+                + "    --env watchDogPort=57798 -d --inline=false \\ \n"
+                + "    --progress --colors \n", wrappedCommand);
     }
 
     @Test
