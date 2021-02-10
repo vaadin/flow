@@ -220,18 +220,17 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   themeFile += imports.join('');
   themeFile += `
 window.Vaadin = window.Vaadin || {};
-window.Vaadin.Flow = window.Vaadin.Flow || {};
-window.Vaadin.Flow['${globalCssFlag}'] = window.Vaadin.Flow['${globalCssFlag}'] || [];
+window.Vaadin['${globalCssFlag}'] = window.Vaadin['${globalCssFlag}'] || [];
 `;
 
 // Don't format as the generated file formatting will get wonky!
 // If targets check that we only register the style parts once, checks exist for global css and component css
   const themeFileApply = `export const applyTheme = (target) => {
   ${parentTheme}
-  const injectGlobal = (window.Vaadin.Flow['${globalCssFlag}'].length === 0) || (!window.Vaadin.Flow['${globalCssFlag}'].includes(target) && target !== document);
+  const injectGlobal = (window.Vaadin['${globalCssFlag}'].length === 0) || (!window.Vaadin['${globalCssFlag}'].includes(target) && target !== document);
   if (injectGlobal) {
     ${globalCssCode.join('')}
-    window.Vaadin.Flow['${globalCssFlag}'].push(target);
+    window.Vaadin['${globalCssFlag}'].push(target);
   }
   if (!document['${componentCssFlag}']) {
     ${componentCssCode.join('')}
