@@ -92,7 +92,11 @@ describe('ConnectClient', () => {
     let $wnd = (window as any);
 
     const fakeServiceWorker = new EventTarget();
-    sinon.stub($wnd.navigator, 'serviceWorker').get(() => fakeServiceWorker);
+    if (navigator.serviceWorker) {
+      sinon.stub($wnd.navigator, 'serviceWorker').get(() => fakeServiceWorker);
+    } else {
+      (navigator as any).serviceWorker = fakeServiceWorker;
+    }
     const postMessage = sinon.spy();
     let fakePromise = Promise.resolve({active: {postMessage: postMessage}});
     Object.defineProperty(fakeServiceWorker, 'ready', {get: () => fakePromise} );
