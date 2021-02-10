@@ -16,70 +16,51 @@
 
 package com.vaadin.flow.uitest.ui;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.html.testbench.LabelElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class UrlValidationIT extends ChromeBrowserTest {
+    @Override
+    protected String getTestPath() {
+        return "/view/com.vaadin.flow.uitest.ui.frontend.BrowserLoggingView";
+    }
 
     @Test
     public void devModeUriValidation_uriWithDirectoryChange_statusForbidden() throws Exception {
+        // open a view and wait till the expected label is displayed
+        open();
+        waitUntil(input -> $(LabelElement.class).id("elementId").isDisplayed());
+        // check the forbidden url
         sendRequestAndValidateResponseStatusForbidden(
                 "/VAADIN/build/%252E%252E/");
     }
 
     @Test
     public void staticResourceUriValidation_uriWithDirectoryChange_statusForbidden() throws Exception {
+        // open a view and wait till the expected label is displayed
+        open();
+        waitUntil(input -> $(LabelElement.class).id("elementId").isDisplayed());
+        // check the forbidden url
         sendRequestAndValidateResponseStatusForbidden(
                 "/VAADIN/build/%252E%252E/some-resource.css");
     }
 
-    private void sendRequestAndValidateResponseStatusForbidden(String pathToResource) throws Exception {
+    private void sendRequestAndValidateResponseStatusForbidden(
+            String pathToResource) throws Exception {
         final String urlString = getRootURL() + "/view" + pathToResource;
         URL url = new URL(urlString);
-
-        // not using chromedriver, so we need to look at the response body
-        // to know if the frontend is ready
-        waitForFrontendCompilation(url);
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         int responseCode = connection.getResponseCode();
         Assert.assertEquals("HTTP 403 Forbidden expected for urls with " +
-                "directory change", HttpURLConnection.HTTP_FORBIDDEN, responseCode);
-    }
-
-    private void waitForFrontendCompilation(URL url) throws Exception {
-        boolean frontendCompiled = false;
-        int attemptsRemaining = 100;
-        while (!frontendCompiled && attemptsRemaining-- > 0) {
-            HttpURLConnection connection = (HttpURLConnection) url
-                    .openConnection();
-            connection.setRequestMethod("GET");
-            int responseCode = connection.getResponseCode();
-            frontendCompiled = responseCode != HttpServletResponse.SC_OK
-                    || !getResponseBody(connection).contains(
-                            "The frontend development build has not yet finished");
-            if (!frontendCompiled) {
-                Thread.sleep(200);
-            }
-        }
-        if (!frontendCompiled)
-            throw new Exception(
-                    "Timeout while waiting for frontend compilation");
-    }
-
-    private String getResponseBody(HttpURLConnection connection) throws IOException {
-        String body = String.join("\n", IOUtils.readLines(connection.getInputStream(), StandardCharsets.UTF_8));
-        connection.getInputStream().close();
-        return body;
+                "directory change", HttpURLConnection.HTTP_FORBIDDEN,
+                responseCode);
     }
 }
