@@ -38,6 +38,8 @@ describe('ConnectClient', () => {
       indicator.remove();
     }
     delete $wnd.Vaadin;
+
+    sinon.reset();
   });
 
   it('should be exported', () => {
@@ -84,6 +86,28 @@ describe('ConnectClient', () => {
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
     $wnd.dispatchEvent(new Event('offline'));
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
+  });
+
+  it('should transition to CONNECTION_LOST when receiving {connectionLost: true} from service worker', async() => {
+    new ConnectClient();
+    let $wnd = (window as any);
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
+    const messageEvent = new Event('message') as any;
+    messageEvent.data = { connectionLost: true };
+    $wnd.navigator.serviceWorker.dispatchEvent(messageEvent);
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
+  });
+
+  it('should send {type: "isConnectionLost"} to service worker', async() => {
+    const postMessage = sinon.spy();
+    let fakePromise = Promise.resolve({active: {postMessage: postMessage}});
+    sinon.stub(navigator.serviceWorker, 'ready').get(() => fakePromise);
+
+    new ConnectClient();
+
+    await fakePromise;
+    sinon.assert.calledOnce(postMessage);
+    sinon.assert.calledWith(postMessage, {'type': 'isConnectionLost'});
   });
 
   describe('constructor options', () => {
