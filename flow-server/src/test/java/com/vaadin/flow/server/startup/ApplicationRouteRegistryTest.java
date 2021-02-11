@@ -43,18 +43,10 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
                 getTestedRegistry().getClass());
     }
 
-    @Test
-    public void passUrlWithParameterTemplate_urlNotChanged() {
+    @Test(expected = IllegalArgumentException.class)
+    public void passUrlWithParameterTemplate_throws() {
         getTestedRegistry().setRoute("has-url-parameter/:___url_parameter",
                 HasUrlParameterRoute.class, Collections.emptyList());
-
-        Assert.assertEquals("Expected only one route to be registered", 1,
-                getTestedRegistry().getRegisteredRoutes().size());
-
-        Assert.assertEquals(
-                "No extra url param template expected, if already added",
-                "has-url-parameter/:___url_parameter", getTestedRegistry()
-                        .getRegisteredRoutes().iterator().next().getTemplate());
     }
 
     @Test

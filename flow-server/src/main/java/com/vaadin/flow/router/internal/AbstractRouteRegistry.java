@@ -349,13 +349,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     private void configureWithFullTemplate(String path,
             Class<? extends Component> navigationTarget,
             SerializableBiConsumer<ConfigureRoutes, String> templateConfiguration) {
-        if (HasUrlParameterFormat.hasUrlParameter(navigationTarget)
-                && !HasUrlParameterFormat.hasUrlParameterTemplate(path)) {
-            path = HasUrlParameterFormat.getTemplate(path, navigationTarget);
-        }
-        String finalPath = path;
         configure(configuration -> templateConfiguration.accept(configuration,
-                finalPath));
+                HasUrlParameterFormat.getTemplate(path, navigationTarget)));
     }
 
     /**

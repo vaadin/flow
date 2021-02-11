@@ -59,8 +59,10 @@ public class HasUrlParameterFormatTest {
 
     @Test()
     public void getTemplate_urlBaseWithTemplate_throws() {
-        Assert.assertThrows("Url base may not contain url parameter template:"
-                + " test-view-with-optional-parameter/:___url_parameter?",
+        Assert.assertThrows(
+                "Cannot create an url with parameter template, because the "
+                        + "given url already have that template: "
+                        + "test-view-with-optional-parameter/:___url_parameter?",
                 IllegalArgumentException.class,
                 () -> HasUrlParameterFormat.getTemplate(
                         "test-view-with-optional-parameter/:___url_parameter?",
@@ -68,15 +70,11 @@ public class HasUrlParameterFormatTest {
     }
 
     @Test()
-    public void getTemplate_notImplementsHasUrlParameter_throws() {
-        Assert.assertThrows(
-                "Url parameter template may not be applied to navigation "
-                        + "targets which do not implement HasUrlParameter "
-                        + "interface",
-                IllegalArgumentException.class,
-                () -> HasUrlParameterFormat.getTemplate(
-                        "test-view-no-parameters",
-                        TestViewWithNoParameter.class));
+    public void getTemplate_notImplementsHasUrlParameter_urlNotChanged() {
+        String template = HasUrlParameterFormat.getTemplate(
+                "test-view-no-parameters", TestViewWithNoParameter.class);
+        MatcherAssert.assertThat(template,
+                CoreMatchers.equalTo("test-view-no-parameters"));
     }
 
     @Test
