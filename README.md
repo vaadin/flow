@@ -17,16 +17,11 @@ The `master` branch is the latest version (5.0) that will at some point be relea
 | Branch | [Platform Version](https://github.com/vaadin/platform/releases) | [Flow Version](https://github.com/vaadin/flow/releases) |
 |--------|-----------------------------------------------------------------|---------------------------------------------------------|
 |  1.0   |  10 (LTS)                                                       |  1.0                                                    |
-|  1.4   |  13.0.x (end of line)                                           |  1.4                                                    |
-|  2.0   |  14.0.x                                                         |  2.0.x                                                  |
-|  2.1   |  14.1.x                                                         |  2.1.x                                                  |
-|  2.2   |  14.2.x                                                         |  2.2.x                                                  |
-|  2.3   |  14.3.x                                                         |  2.3.x                                                  |
-|  2.4   |  14.4.x                                                         |  2.4.x                                                  |
-|  2.5   |  14.5.x (upcoming)                                              |  2.5.x                                                  |
-|  3.0   |  15.0.x                                                         |  3.0.x                                                  |
-|  3.1   |  16.0.x                                                         |  3.1.x                                                  |
-|  4.0   |  17.0.x                                                         |  4.x                                                    |
+|  2.4   |  14.4.x (LTS)                                                   |  2.4.x                                                  |
+|  2.5   |  14.5.x (PRERELEASE)                                            |  2.5.x                                                  |
+|  2.6   |  14.6.x (PREPRERELEASE)                                         |  2.6.x                                                  |
+|  5.0   |  18.0.x (LATEST)                                                |  5.x                                                    |
+|  6.0   |  19.0.x (PRERELEASE until 3/3/21)                               |  6.x                                                    |
 
 
 Setting up Eclipse to Develop Flow
