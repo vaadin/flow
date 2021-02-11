@@ -963,7 +963,7 @@ public abstract class AbstractNavigationStateRenderer
         if (!configuration.isProductionMode()
                 && configuration.isDevModeLiveReloadEnabled()) {
             ui.getPage().executeJs(
-                    "Vaadin.Flow.devModeGizmo.showNotification('warning', '@PreserveOnRefresh enabled', 'When refreshing the page in the browser, the server-side Java view instance is reused rather than being recreated.', null, 'preserveOnRefreshWarning')");
+                    "Vaadin.devModeGizmo.showNotification('warning', '@PreserveOnRefresh enabled', 'When refreshing the page in the browser, the server-side Java view instance is reused rather than being recreated.', null, 'preserveOnRefreshWarning')");
         }
     }
 }

@@ -752,8 +752,8 @@ export class VaadinDevmodeGizmo extends LitElement {
     this.transitionDuration = parseInt(window.getComputedStyle(this)
         .getPropertyValue('--gizmo-transition-duration'), 10);
 
-    if ((window as any).Vaadin && (window as any).Vaadin.Flow) {
-      (window as any).Vaadin.Flow.devModeGizmo = this;
+    if ((window as any).Vaadin) {
+      (window as any).Vaadin.devModeGizmo = this;
     }
   }
 
