@@ -1,5 +1,6 @@
-import { directive, Part, PropertyPart } from 'lit-html';
-import { _fromString, AbstractModel, getBinderNode } from './Models';
+import { AttributePartInfo, directive, Directive, ElementPartInfo, PartInfo, PartType } from 'lit/directive';
+import { BinderNode } from './BinderNode';
+import { AbstractModel, getBinderNode, _fromString } from './Models';
 
 interface Field {
   required: boolean;
@@ -11,8 +12,6 @@ interface FieldState extends Field {
   name: string;
   strategy: FieldStrategy;
 }
-const fieldStateMap = new WeakMap<PropertyPart, FieldState>();
-
 export interface FieldStrategy extends Field {
   element: Element;
 }
@@ -116,80 +115,90 @@ export function getDefaultFieldStrategy(elm: any): FieldStrategy {
  * </vaadin-text-field>
  * ```
  */
-export const field = directive(<T>(model: AbstractModel<T>, effect?: (element: Element) => void) => (part: Part) => {
-  const propertyPart = part as PropertyPart;
-  if (!(part instanceof PropertyPart) || propertyPart.committer.name !== '..') {
-    throw new Error('Only supports ...="" syntax');
-  }
-  let fieldState: FieldState;
-  const element = propertyPart.committer.element as HTMLInputElement & Field;
-
-  const binderNode = getBinderNode(model);
-  const fieldStrategy = binderNode.binder.getFieldStrategy(element);
-
-  const convertFieldValue = (fieldValue: any) => {
-    const fromString = (model as any)[_fromString];
-    return typeof fieldValue === 'string' && fromString ? fromString(fieldValue) : fieldValue;
-  };
-
-  if (fieldStateMap.has(propertyPart)) {
-    fieldState = fieldStateMap.get(propertyPart)!;
-  } else {
-    fieldState = {
+export const field = directive(
+  class extends Directive {
+    fieldState: FieldState = {
       name: '',
       value: '',
       required: false,
       invalid: false,
       errorMessage: '',
-      strategy: fieldStrategy
+      // @ts-ignore
+      strategy: undefined
     };
-    fieldStateMap.set(propertyPart, fieldState);
+    partInfo: AttributePartInfo | ElementPartInfo;
+    model!: AbstractModel<any>;
+    element!: HTMLInputElement & Field;
+    elementInited = false;
+    effect: ((element: Element) => void) | undefined;
 
-    const updateValueFromElement = () => {
-      fieldState.value = fieldState.strategy.value;
-      binderNode.value = convertFieldValue(fieldState.value);
-      if (effect !== undefined) {
-        effect.call(element, element);
+    constructor(partInfo: PartInfo) {
+      super(partInfo);
+      if (partInfo.type !== PartType.PROPERTY && partInfo.type !== PartType.ELEMENT) {
+        throw new Error('Use as "<element {field(...)}" or <element ...={field(...)}"');
+      }
+      this.partInfo = partInfo;
+    }
+    convertFieldValue(fieldValue: any) {
+      const fromString = (this.model as any)[_fromString];
+      return typeof fieldValue === 'string' && fromString ? fromString(fieldValue) : fieldValue;
+    }
+    updateValueFromElement = (binderNode: BinderNode<any, any>) => {
+      this.fieldState.value = this.fieldState.strategy.value;
+      binderNode.value = this.convertFieldValue(this.fieldState.value);
+      if (this.effect !== undefined) {
+        this.effect.call(this.element, this.element);
       }
     };
 
-    element.oninput = () => {
-      updateValueFromElement();
-    };
+    render(model: AbstractModel<any>, effect?: (element: Element) => void) {
+      this.element = (this.partInfo as any).element as HTMLInputElement & Field;
+      this.model = model;
+      this.effect = effect;
+      const binderNode = getBinderNode(model);
+      this.fieldState.strategy = binderNode.binder.getFieldStrategy(this.element);
+      if (!this.elementInited) {
+        this.elementInited = true;
 
-    element.onchange = element.onblur = () => {
-      updateValueFromElement();
-      binderNode.visited = true;
-    };
+        this.element.oninput = () => {
+          this.updateValueFromElement(binderNode);
+        };
 
-    element.checkValidity = () => !fieldState.invalid;
+        this.element.onchange = this.element.onblur = () => {
+          this.updateValueFromElement(binderNode);
+          binderNode.visited = true;
+        };
+
+        this.element.checkValidity = () => !this.fieldState.invalid;
+      }
+
+      const name = binderNode.name;
+      if (name !== this.fieldState.name) {
+        this.fieldState.name = name;
+        this.element.setAttribute('name', name);
+      }
+
+      const value = binderNode.value;
+      const valueFromField = this.convertFieldValue(this.fieldState.value);
+      if (value !== valueFromField && !(Number.isNaN(value) && Number.isNaN(valueFromField))) {
+        this.fieldState.strategy.value = this.fieldState.value = value;
+      }
+
+      const required = binderNode.required;
+      if (required !== this.fieldState.required) {
+        this.fieldState.strategy.required = this.fieldState.required = required;
+      }
+
+      const firstError = binderNode.ownErrors ? binderNode.ownErrors[0] : undefined;
+      const errorMessage = (firstError && firstError.message) || '';
+      if (errorMessage !== this.fieldState.errorMessage) {
+        this.fieldState.strategy.errorMessage = this.fieldState.errorMessage = errorMessage;
+      }
+
+      const invalid = binderNode.invalid;
+      if (invalid !== this.fieldState.invalid) {
+        this.fieldState.strategy.invalid = this.fieldState.invalid = invalid;
+      }
+    }
   }
-
-  const name = binderNode.name;
-  if (name !== fieldState.name) {
-    fieldState.name = name;
-    element.setAttribute('name', name);
-  }
-
-  const value = binderNode.value;
-  const valueFromField = convertFieldValue(fieldState.value);
-  if (value !== valueFromField && !(Number.isNaN(value) && Number.isNaN(valueFromField))) {
-    fieldState.strategy.value = fieldState.value = value;
-  }
-
-  const required = binderNode.required;
-  if (required !== fieldState.required) {
-    fieldState.strategy.required = fieldState.required = required;
-  }
-
-  const firstError = binderNode.ownErrors ? binderNode.ownErrors[0] : undefined;
-  const errorMessage = (firstError && firstError.message) || '';
-  if (errorMessage !== fieldState.errorMessage) {
-    fieldState.strategy.errorMessage = fieldState.errorMessage = errorMessage;
-  }
-
-  const invalid = binderNode.invalid;
-  if (invalid !== fieldState.invalid) {
-    fieldState.strategy.invalid = fieldState.invalid = invalid;
-  }
-});
+);
