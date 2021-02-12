@@ -20,7 +20,8 @@ import {
 
 import { IdEntity, IdEntityModel,  Order, OrderModel, TestEntity, TestModel } from "./TestModels";
 
-import { css, customElement, html, LitElement, query} from 'lit-element';
+import { css, html, LitElement } from 'lit-element';
+import { customElement, query } from "lit-element/decorators";
 
 @customElement('order-view')
 class OrderView extends LitElement {

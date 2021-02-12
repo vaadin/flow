@@ -24,7 +24,8 @@ import {
 
 import {OrderModel, TestModel, TestEntity, Order} from "./TestModels";
 
-import { customElement, html, LitElement, query} from 'lit-element';
+import {  html, LitElement} from 'lit-element';
+import { customElement,query } from "lit-element/decorators";
 import { PropertyPart, AttributeCommitter } from "lit-html";
 
 suite("form/Field", () => {
