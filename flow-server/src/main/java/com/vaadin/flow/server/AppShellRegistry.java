@@ -152,19 +152,7 @@ public class AppShellRegistry implements Serializable {
      */
     public boolean isShell(Class<?> clz) {
         assert clz != null;
-        try {
-            // first try to check without loading class via the {@code clz}
-            // classloader
-            if (AppShellConfigurator.class.isAssignableFrom(clz)) {
-                return true;
-            }
-            // Use the same class-loader for the checking
-            return clz.getClassLoader()
-                    .loadClass(AppShellConfigurator.class.getName())
-                    .isAssignableFrom(clz);
-        } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException(e);
-        }
+        return AppShellConfigurator.class.isAssignableFrom(clz);
     }
 
     /**
@@ -182,7 +170,7 @@ public class AppShellRegistry implements Serializable {
         List<Class<?>> validOnlyForAppShell = (List) getValidAnnotations();
         // PageTitle can be in AppShell and Views
         validOnlyForAppShell.remove(PageTitle.class);
-        if(WebComponentExporter.class.isAssignableFrom(clz)) {
+        if (WebComponentExporter.class.isAssignableFrom(clz)) {
             // Webcomponent exporter should have the theme annotation
             // and Push annotation as it is not appShell configured.
             validOnlyForAppShell.remove(Theme.class);
