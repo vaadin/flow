@@ -20,7 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.function.Function;
@@ -615,4 +617,25 @@ public class Page implements Serializable {
                         getStringElseNull.apply("v-np")));
     }
 
+    /**
+     * This method can be used to retrieve the current url from the browser.
+     * <p>
+     * In case you need more control over the execution you can use
+     * {@link #executeJs(String, Serializable...)} by passing
+     * {@code return window.location.href}.
+     * 
+     * @param callback
+     *            to be notified when the url is resolved.
+     */
+    public void fetchCurrentURL(SerializableConsumer<URL> callback) {
+        Objects.requireNonNull(callback, "Url consumer callback should not be null.");
+        final String js = "return window.location.href";
+        executeJs(js).then(String.class, urlString -> {
+            try {
+                callback.accept(new URL(urlString));
+            } catch (MalformedURLException e) {
+                throw new IllegalStateException("Error while encoding the URL from client", e);
+            }
+        });
+    }
 }
