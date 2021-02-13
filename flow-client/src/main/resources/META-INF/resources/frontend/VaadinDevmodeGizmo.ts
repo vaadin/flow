@@ -1,5 +1,5 @@
-import {css, html, LitElement} from 'lit-element';
-import { property } from "lit-element/decorators";
+import {css, html, LitElement} from 'lit';
+import { property } from "lit/decorators";
 
 /* tslint:disable: no-console max-classes-per-file */
 

@@ -14,9 +14,9 @@
  * the License.
  */
 
-import { html, LitElement } from "lit-element";
-import { property } from "lit-element/decorators";
-import {classMap} from "lit-html/directives/class-map";
+import { html, LitElement } from "lit";
+import { property } from "lit/decorators";
+import {classMap} from "lit/directives/class-map";
 import {ConnectionState, ConnectionStateStore} from "./ConnectionState";
 
 const DEFAULT_STYLE_ID = 'css-loading-indicator';

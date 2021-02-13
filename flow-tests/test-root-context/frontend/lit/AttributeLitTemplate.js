@@ -1,5 +1,4 @@
-
-import { LitElement, html } from "lit-element";
+import { LitElement, html } from "lit";
 
 export class AttributeLitTemplate extends LitElement {
   render() {
