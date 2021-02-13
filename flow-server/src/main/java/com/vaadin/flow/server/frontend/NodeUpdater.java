@@ -324,6 +324,11 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("idb", "5.0.6");
 
+        final String BABEL_VERSION = "7.12.16";
+        // Needed by Lit 2 that is written as ES2020
+        defaults.put("@babel/core",BABEL_VERSION);
+        defaults.put("@babel/preset-env", BABEL_VERSION);
+        defaults.put("babel-loader","8.2.2");
         return defaults;
     }
 
