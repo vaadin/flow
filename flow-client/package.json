@@ -27,8 +27,11 @@
     "src/main/resources/META-INF/resources/frontend"
   ],
   "devDependencies": {
+    "@babel/core": "7.12.16",
+    "@babel/preset-env": "7.12.16",
     "@types/sinon": "^9.0.0",
     "abort-controller": "^2.0.0",
+    "babel-loader": "8.2.2",
     "chai": "^4.2.0",
     "eslint": "^5.8.0",
     "eslint-config-vaadin": "^0.2.7",

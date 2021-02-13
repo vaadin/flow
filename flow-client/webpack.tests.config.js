@@ -37,12 +37,32 @@ module.exports = {
           {
             loader: "ts-loader",
             options: {
-              transpileOnly: true
-            }
-          }
-        ]
-      }
-    ]
+              transpileOnly: true,
+            },
+          },
+        ],
+      },
+      {
+        // Lit 2 is ES2020 and needs transpilation
+        test: /\.m?js$/,
+        include: /node_modules.*(@lit|lit-.*)\/.*/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: [
+              [
+                "@babel/preset-env",
+                {
+                  targets: {
+                    esmodules: true,
+                  },
+                },
+              ],
+            ],
+          },
+        },
+      },
+    ],
   },
 
   node: {
