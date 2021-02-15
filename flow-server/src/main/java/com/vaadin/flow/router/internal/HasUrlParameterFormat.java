@@ -65,12 +65,19 @@ public class HasUrlParameterFormat implements Serializable {
      *            url base.
      * @param navigationTarget
      *            {@link HasUrlParameter} navigation target.
+     * @throws IllegalArgumentException
+     *             if the given url base contains url parameter template.
      * @return the final template.
      */
     public static String getTemplate(String urlBase,
             Class<? extends Component> navigationTarget) {
-        if (hasUrlParameter(navigationTarget)) {
+        if (hasUrlParameterTemplate(urlBase)) {
+            throw new IllegalArgumentException(String.format("Cannot create "
+                    + "an url with parameter template, because the given url "
+                    + "already have that template: %s", urlBase));
+        }
 
+        if (hasUrlParameter(navigationTarget)) {
             urlBase = PathUtil.trimPath(urlBase);
 
             if (hasOptionalParameter(navigationTarget)) {
@@ -90,6 +97,35 @@ public class HasUrlParameterFormat implements Serializable {
             }
         }
         return urlBase;
+    }
+
+    /**
+     * Gets the url base from a given url containing the url parameter template
+     * placeholder {@link HasUrlParameterFormat#PARAMETER_NAME} if it's
+     * implementing {@link HasUrlParameter}.
+     * 
+     * @param urlTemplate
+     *            url with a parameter template
+     * @param navigationTarget
+     *            {@link HasUrlParameter} navigation target.
+     * @throws IllegalArgumentException
+     *             if the given url template doesn't contain url parameter
+     *             template.
+     * @return url excluding parameter template.
+     */
+    public static String excludeTemplate(String urlTemplate,
+            Class<? extends Component> navigationTarget) {
+        if (hasUrlParameter(navigationTarget)) {
+            if (!hasUrlParameterTemplate(urlTemplate)) {
+                throw new IllegalArgumentException(String.format(
+                        "Cannot exclude the url parameter template from the url "
+                                + "without template: %s",
+                        urlTemplate));
+            }
+            urlTemplate = urlTemplate.substring(0,
+                    urlTemplate.indexOf("/" + PARAMETER));
+        }
+        return urlTemplate;
     }
 
     /**
@@ -237,6 +273,19 @@ public class HasUrlParameterFormat implements Serializable {
                     "Navigation target '%s' requires a parameter.",
                     navigationTarget.getName()));
         }
+    }
+
+    /**
+     * Verifies whether the given url already have the url parameter template or
+     * not.
+     *
+     * @param url
+     *            url to be verified
+     * @return true if the given url already contains url parameter template
+     *         {@link HasUrlParameterFormat#PARAMETER_NAME}
+     */
+    public static boolean hasUrlParameterTemplate(String url) {
+        return url != null && url.contains(PARAMETER_NAME);
     }
 
     /**

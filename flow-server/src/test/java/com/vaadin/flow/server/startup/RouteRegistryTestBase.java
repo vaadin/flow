@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.startup;
 
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -291,6 +293,16 @@ public abstract class RouteRegistryTestBase {
         public int setErrorParameter(BeforeEnterEvent event,
                 ErrorParameter<NullPointerException> parameter) {
             return 0;
+        }
+    }
+
+    @Tag("div")
+    @Route("has-url-parameter")
+    protected static class HasUrlParameterRoute extends Component
+            implements HasUrlParameter<String> {
+        @Override
+        public void setParameter(BeforeEvent event, String parameter) {
+
         }
     }
 }
