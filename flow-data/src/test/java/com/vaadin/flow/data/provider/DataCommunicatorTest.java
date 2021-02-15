@@ -1445,6 +1445,46 @@ public class DataCommunicatorTest {
                 new Item(0), listDataView.getItems().findFirst().orElse(null));
     }
 
+    @Test // for https://github.com/vaadin/flow/issues/9988
+    public void lazyLoadingFiltering_filterAppliedAfterScrolling_requestedRangeResolvedProperly() {
+        final AtomicReference<Item> filter = new AtomicReference<>(null);
+
+        final DataProvider<Item, ?> dataProvider = DataProvider.fromCallbacks(
+                query -> IntStream.range(0, 1000)
+                        .mapToObj(counter -> new Item(counter,
+                                String.valueOf(counter)))
+                        .filter(item -> filter.get() == null
+                                || filter.get().equals(item))
+                        .limit(query.getLimit()).skip(query.getOffset()),
+                query -> {
+                    Assert.fail("Count query is not expected in this test.");
+                    return 0;
+                });
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setDefinedSize(false);
+
+        // Scroll forward to populate the DC cache (active items)
+        dataCommunicator.setRequestedRange(0, 100);
+        fakeClientCommunication();
+
+        dataCommunicator.setRequestedRange(100, 150);
+        fakeClientCommunication();
+
+        // Apply the filter and force the requested range to be shifted back
+        // towards to zero. This case should be handled properly without any
+        // exception.
+        filter.set(new Item(42, "42"));
+        dataCommunicator.getDataProvider().refreshAll();
+        fakeClientCommunication();
+
+        // Check the filtered item
+        Assert.assertEquals("Expected 1 item after the filtering", 1,
+                dataCommunicator.getItemCount());
+        Assert.assertEquals("Expected the item with value 42", filter.get(),
+                dataCommunicator.getItem(0));
+    }
+
     @Tag("test-component")
     private static class TestComponent extends Component {
 
