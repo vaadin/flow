@@ -1104,14 +1104,20 @@ public class DataCommunicator<T> implements Serializable {
                 skipCountIncreaseUntilReset = true;
                 /*
                  * If the fetch query returned 0 items, it means that the user
-                 * has scrolled past the end of the exact item count. Instead of
-                 * returning 0 items to the client and letting it incrementally
-                 * request for the previous pages, we'll cancel this flush and
-                 * tweak the requested range and flush again.
+                 * has scrolled past the end of the exact item count or the
+                 * items have been changed in the backend (for example, applying
+                 * the filter). Instead of returning 0 items to the client and
+                 * letting it incrementally request for the previous pages,
+                 * we'll cancel this flush and tweak the requested range and
+                 * flush again.
                  */
                 if (assumedSize != 0 && activation.getActiveKeys().isEmpty()) {
                     int delta = requestedRange.length();
-                    requestedRange = requestedRange.offsetBy(-delta);
+                    // Request the items from a bit behind the current range
+                    // at the next call to backend, and check that the requested
+                    // range doesn't intersect the 0 point.
+                    requestedRange = requestedRange.offsetBy(-delta)
+                            .restrictTo(Range.withLength(0, assumedSize));
                     requestFlush(true); // to avoid recursiveness
                     return;
                 }
