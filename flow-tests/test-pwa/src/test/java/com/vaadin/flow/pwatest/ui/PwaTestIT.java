@@ -237,7 +237,7 @@ public class PwaTestIT extends ChromeDeviceTest {
                 .guessContentTypeFromName(url);
         String script = "const mimeType = arguments[0];"
                 + "const resolve = arguments[1];"
-                + "fetch('" + url + "', {method: 'HEAD'})"
+                + "fetch('" + url + "', {method: 'GET'})"
                 + ".then(response => resolve(response.status===200"
                 + "      && !response.redirected"
                 + "      && (mimeType===null || response.headers.get('Content-Type')===mimeType)))"
