@@ -99,6 +99,20 @@ public class HasUrlParameterFormat implements Serializable {
         return urlBase;
     }
 
+    /**
+     * Gets the url base from a given url containing the url parameter template
+     * placeholder {@link HasUrlParameterFormat#PARAMETER_NAME} if it's
+     * implementing {@link HasUrlParameter}.
+     * 
+     * @param urlTemplate
+     *            url with a parameter template
+     * @param navigationTarget
+     *            {@link HasUrlParameter} navigation target.
+     * @throws IllegalArgumentException
+     *             if the given url template doesn't contain url parameter
+     *             template.
+     * @return url excluding parameter template.
+     */
     public static String excludeTemplate(String urlTemplate,
             Class<? extends Component> navigationTarget) {
         if (hasUrlParameter(navigationTarget)) {
