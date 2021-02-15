@@ -3,8 +3,15 @@
 // This is needed for TypeScript compiler to declare and export as a TypeScript module.
 // It is recommended to commit this file to the VCS.
 // You might want to change the configurations to fit your preferences
+declare module '*.shadow.css' {
+    import { CSSResult } from 'lit-element';
+    const content: CSSResult;
+    export default content;
+}
+
 declare module '*.css' {
-    import {CSSResult} from "lit-element";
+    import { CSSResult } from 'lit-element';
+    /** @deprecated */
     const content: CSSResult;
     export default content;
 }
