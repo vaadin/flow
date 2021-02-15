@@ -63,7 +63,7 @@ public class AppViewIT extends ChromeBrowserTest {
 
     /**
      * Just a control test that assures that webcomponents is working.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -90,6 +90,16 @@ public class AppViewIT extends ChromeBrowserTest {
     public void should_requestAnonymously_connect_service() throws Exception {
         WebElement button = testComponent.$(TestBenchElement.class)
                 .id("helloAnonymous");
+        button.click();
+
+        // Wait for the server connect response
+        verifyContent("Hello, stranger!");
+    }
+
+    @Test
+    public void should_requestAnonymously_endpoint_wrapper() throws Exception {
+        WebElement button = testComponent.$(TestBenchElement.class)
+                .id("helloAnonymousWrapper");
         button.click();
 
         // Wait for the server connect response

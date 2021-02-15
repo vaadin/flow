@@ -64,6 +64,24 @@ public class AppViewIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void should_requestAnonymously_endpoint_wrapper() {
+        TestBenchElement button = mainView.$(TestBenchElement.class)
+                .id("helloAnonymousWrapper");
+        button.click();
+
+        // Wait for the server connect response
+        waitUntil(ExpectedConditions.textToBePresentInElement(
+                mainView.$(TestBenchElement.class).id("content"),
+                "Hello, stranger!"), 25);
+
+        // verify that the custom Connect client works
+        waitUntil(
+                ExpectedConditions.textMatches(By.id("log"), Pattern.compile(
+                        "\\[LOG] AppEndpoint/helloAnonymous took \\d+ ms")),
+                25);
+    }
+
+    @Test
     public void should_requestAnonymously_after_logout() throws Exception {
         String originalCsrfToken = executeScript(
                 "return self.Vaadin.TypeScript.csrfToken").toString();
