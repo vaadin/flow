@@ -19,7 +19,6 @@ import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +44,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.router.internal.RouteTarget;
@@ -120,22 +120,32 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                     .forRegistry(this);
             event.getRemovedRoutes()
                     .forEach(routeBaseData -> routeConfiguration.removeRoute(
-                            routeBaseData.getUrl(),
+                            HasUrlParameterFormat.excludeTemplate(
+                                    routeBaseData.getTemplate(),
+                                    routeBaseData.getNavigationTarget()),
                             routeBaseData.getNavigationTarget()));
             event.getAddedRoutes()
                     .forEach(routeBaseData -> routeConfiguration.setRoute(
-                            routeBaseData.getUrl(),
+                            HasUrlParameterFormat.excludeTemplate(
+                                    routeBaseData.getTemplate(),
+                                    routeBaseData.getNavigationTarget()),
                             routeBaseData.getNavigationTarget(),
                             routeBaseData.getParentLayouts()));
         }
 
         private void setRoutes(List<RouteData> routes) {
             routes.forEach(routeData -> {
-                setRoute(routeData.getUrl(), routeData.getNavigationTarget(),
+                setRoute(
+                        HasUrlParameterFormat.excludeTemplate(
+                                routeData.getTemplate(),
+                                routeData.getNavigationTarget()),
+                        routeData.getNavigationTarget(),
                         routeData.getParentLayouts());
                 routeData.getRouteAliases()
                         .forEach(routeAliasData -> setRoute(
-                                routeAliasData.getUrl(),
+                                HasUrlParameterFormat.excludeTemplate(
+                                        routeAliasData.getTemplate(),
+                                        routeAliasData.getNavigationTarget()),
                                 routeAliasData.getNavigationTarget(),
                                 routeAliasData.getParentLayouts()));
             });
