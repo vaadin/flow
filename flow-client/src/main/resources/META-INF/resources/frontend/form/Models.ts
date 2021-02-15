@@ -89,7 +89,7 @@ export class NumberModel extends PrimitiveModel<number> implements HasFromString
     ...validators: ReadonlyArray<Validator<number>>
   ) {
     // Prepend a built-in validator to indicate NaN input
-    super(parent, key, optional, new IsNumber(), ...validators);
+    super(parent, key, optional, new IsNumber(optional), ...validators);
   }
   [_fromString](str: string): number {
     return isNumeric(str) ? Number.parseFloat(str) : NaN;
