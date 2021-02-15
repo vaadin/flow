@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-spring-parent</artifactId>
-        <version>16.0-SNAPSHOT</version>
+        <version>17.0-SNAPSHOT</version>
     </parent>
     <artifactId>vaadin-spring-tests</artifactId>
     <name>Vaadin Spring tests</name>
@@ -330,7 +330,7 @@
                 <module>test-spring-war</module>
                 <!--        <module>test-spring</module>-->
                 <module>test-spring-boot-contextpath</module>
-                
+
                 <module>test-ts-services</module>
                 <module>test-ts-services-custom-client</module>
                 <module>test-mvc-without-endpoints</module>
