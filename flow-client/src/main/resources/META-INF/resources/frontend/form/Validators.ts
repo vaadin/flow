@@ -73,9 +73,15 @@ abstract class NumberValidator<T> extends AbstractValidator<T> {
   }
 }
 
-export class IsNumber extends NumberValidator<number> {
-  constructor(attrs?: ValidatorAttributes) {
+export class IsNumber extends NumberValidator<number|undefined> {
+  optional: boolean;
+  constructor(optional: boolean, attrs?: ValidatorAttributes) {
     super({message: 'must be a number', ...attrs});
+    this.optional = optional;
+  }
+
+  validate(value: number|undefined) {
+    return (this.optional && value === undefined) || super.validate(value);
   }
 }
 
