@@ -618,11 +618,18 @@ public class Page implements Serializable {
     }
 
     /**
-     * This method can be used to retrieve the current url from the browser.
+     * Retrieves the current url from the browser. The URL is fetched from the
+     * browser in another request asynchronously and passed to the callback. The
+     * URL is the full URL that the user sees in the browser (including hash #)
+     * and works even when client side routing is used or there is a reverse
+     * proxy between the client and the server.
      * <p>
      * In case you need more control over the execution you can use
      * {@link #executeJs(String, Serializable...)} by passing
      * {@code return window.location.href}.
+     * <p>
+     * <em>NOTE: </em> the URL is not escaped, use {@link URL#toURI()} to escape
+     * it.
      * 
      * @param callback
      *            to be notified when the url is resolved.
