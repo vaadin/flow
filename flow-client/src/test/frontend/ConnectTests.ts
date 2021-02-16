@@ -54,9 +54,20 @@ describe('ConnectClient', () => {
     expect((window as any).Vaadin.connectionIndicator).is.not.undefined;
   });
 
-  it('should transition to CONNECTION_LOST on offline and to CONNECTED on subsequent online if Flow not loaded', async() => {
+  it('should transition to CONNECTION_LOST on offline and to CONNECTED on subsequent online if Flow.client.TypeScript not loaded', async() => {
     new ConnectClient();
     let $wnd = (window as any);
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
+    $wnd.dispatchEvent(new Event('offline'));
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
+    $wnd.dispatchEvent(new Event('online'));
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
+  });
+
+  it('should transition to CONNECTION_LOST on offline and to CONNECTED on subsequent online if Flow is loaded but Flow.client.TypeScript not loaded', async() => {
+    new ConnectClient();
+    let $wnd = (window as any);
+    $wnd.Vaadin.Flow = {};
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
     $wnd.dispatchEvent(new Event('offline'));
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
@@ -68,6 +79,8 @@ describe('ConnectClient', () => {
     new ConnectClient();
     let $wnd = (window as any);
     $wnd.Vaadin.Flow = {};
+    $wnd.Vaadin.Flow.clients = {};
+    $wnd.Vaadin.Flow.clients.TypeScript = {};
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
     $wnd.dispatchEvent(new Event('offline'));
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
