@@ -49,7 +49,7 @@ import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.server.connect.exception.EndpointException;
 import com.vaadin.flow.server.connect.exception.EndpointValidationException;
-import com.vaadin.flow.server.connect.generator.endpoints.collectionendpoint.IterableEndpoint;
+import com.vaadin.flow.server.connect.generator.endpoints.iterableendpoint.IterableEndpoint;
 import com.vaadin.flow.server.connect.generator.endpoints.superclassmethods.PersonEndpoint;
 import com.vaadin.flow.server.connect.testendpoint.BridgeMethodTestEndpoint;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -284,7 +284,7 @@ public class VaadinConnectControllerTest {
         ApplicationContext appContext = mockApplicationContext(TEST_ENDPOINT);
         VaadinConnectAccessChecker accessChecker = mock(VaadinConnectAccessChecker.class);
         Mockito.doReturn(accessChecker).when(appContext).getBean(VaadinConnectAccessChecker.class);
-        
+
         VaadinConnectController controller = new VaadinConnectController(
                 new ObjectMapper(), mock(EndpointNameChecker.class),
                 mock(ExplicitNullableTypeChecker.class), appContext);
@@ -797,7 +797,7 @@ public class VaadinConnectControllerTest {
                         new TestClassWithCustomEndpointName()));
 
         VaadinConnectController vaadinConnectController = createVaadinControllerWithApplicationContext(contextMock);
-        
+
         ResponseEntity<String> response = vaadinConnectController
                 .serveEndpoint("CustomEndpoint", "testMethod",
                         createRequestParameters(
@@ -1137,7 +1137,7 @@ public class VaadinConnectControllerTest {
     public void should_ConvertIterableIntoArray() {
         ResponseEntity<?> response = createVaadinController(new IterableEndpoint())
             .serveEndpoint("IterableEndpoint", "getFoos", createRequestParameters("{}"), requestMock);
-        
+
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("[{\"bar\":\"bar\"},{\"bar\":\"bar\"}]", response.getBody());
     }
@@ -1206,7 +1206,7 @@ public class VaadinConnectControllerTest {
 
         ApplicationContext mockApplicationContext = mockApplicationContext(endpoint);
         VaadinConnectController connectController = Mockito.spy(
-            new VaadinConnectController(vaadinEndpointMapper, endpointNameChecker, 
+            new VaadinConnectController(vaadinEndpointMapper, endpointNameChecker,
                 explicitNullableTypeChecker, mockApplicationContext)
         );
         Mockito.doReturn(accessChecker).when(connectController).getAccessChecker(any());
@@ -1221,7 +1221,7 @@ public class VaadinConnectControllerTest {
 
     private VaadinConnectController createVaadinControllerWithApplicationContext(
             ApplicationContext applicationContext) {
-        VaadinConnectControllerMockBuilder controllerMockBuilder 
+        VaadinConnectControllerMockBuilder controllerMockBuilder
                 = new VaadinConnectControllerMockBuilder();
         VaadinConnectController vaadinConnectController = controllerMockBuilder
                 .withObjectMapper(new ObjectMapper())
