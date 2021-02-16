@@ -298,19 +298,6 @@ export class ConnectClient {
         $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
       }
     });
-
-    if (navigator.serviceWorker) {
-      // Query service worker: returns {connectionLost: true} if the most recent
-      // fetch was served from precache.
-      navigator.serviceWorker.addEventListener('message', event => {
-        if (!!event.data.connectionLost) {
-          $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
-        }
-      });
-      navigator.serviceWorker.ready.then( registration => {
-        registration?.active?.postMessage({type: 'isConnectionLost'});
-      });
-    }
   }
 
   /**

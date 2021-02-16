@@ -37,6 +37,19 @@ export class ConnectionIndicator extends LitElement {
       $wnd.Vaadin.connectionIndicator = document.createElement('vaadin-connection-indicator');
       document.body.appendChild($wnd.Vaadin.connectionIndicator);
     }
+
+    if (navigator.serviceWorker) {
+      // Query service worker: returns {connectionLost: true} if the most recent
+      // fetch was served from precache.
+      navigator.serviceWorker.addEventListener('message', event => {
+        if (!!event.data.connectionLost) {
+          $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
+        }
+      });
+      navigator.serviceWorker.ready.then( registration => {
+        registration?.active?.postMessage({type: 'isConnectionLost'});
+      });
+    }
     return $wnd.Vaadin?.connectionIndicator as ConnectionIndicator;
   }
 
