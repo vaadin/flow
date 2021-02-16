@@ -6,6 +6,16 @@ import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 class FlowComponentRenderer extends PolymerElement {
   static get template() {
     return html`
+    <style>
+      @keyframes flow-component-renderer-appear {
+        to {
+          opacity: 1;
+        }
+      }
+      :host {
+        animation: 1ms flow-component-renderer-appear;
+      }
+    </style>
     <slot></slot>
 `;
   }
@@ -86,6 +96,7 @@ class FlowComponentRenderer extends PolymerElement {
               this.firstChild.click();
           }
       });
+      this.addEventListener('animationend', this._onAnimationEnd);
   }
 
   _asyncAttachRenderedComponentIfAble() {
@@ -172,12 +183,22 @@ class FlowComponentRenderer extends PolymerElement {
   }
 
   _isFocusable(node){
-    if (node.hasAttribute && typeof node.hasAttribute === 'function' && 
+    if (node.hasAttribute && typeof node.hasAttribute === 'function' &&
             (node.hasAttribute("disabled") || node.hasAttribute("hidden"))) {
       return false;
     }
 
     return node.tabIndex === 0;
+  }
+
+  _onAnimationEnd(e) {
+    // ShadyCSS applies scoping suffixes to animation names
+    // To ensure that child is attached once element is unhidden
+    // for when it was filtered out from, eg, ComboBox
+    // https://github.com/vaadin/vaadin-flow-components/issues/437
+    if (e.animationName.indexOf('flow-component-renderer-appear') === 0) {
+      this._attachRenderedComponentIfAble();
+    }
   }
 }
 window.customElements.define(FlowComponentRenderer.is, FlowComponentRenderer);
