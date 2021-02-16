@@ -113,4 +113,31 @@ describe('ConnectionStateStore', () => {
     (expect(stateChangeListener.getCall(1)).to.be as any).calledWithExactly(
       ConnectionState.LOADING, ConnectionState.CONNECTION_LOST);
   });
+
+  it('should request offline information from from service worker', async() => {
+    let $wnd = (window as any);
+
+    const fakeServiceWorker = new EventTarget();
+    if (navigator.serviceWorker) {
+      sinon.stub($wnd.navigator, 'serviceWorker').get(() => fakeServiceWorker);
+    } else {
+      (navigator as any).serviceWorker = fakeServiceWorker;
+    }
+    const postMessage = sinon.spy();
+    let fakePromise = Promise.resolve({active: {postMessage: postMessage}});
+    Object.defineProperty(fakeServiceWorker, 'ready', {get: () => fakePromise} );
+
+    const store = new ConnectionStateStore(ConnectionState.CONNECTED);
+
+    // should send {type: "isConnectionLost"} to service worker
+    await fakePromise;
+    sinon.assert.calledOnce(postMessage);
+    sinon.assert.calledWith(postMessage, {'type': 'isConnectionLost'});
+
+    // should transition to CONNECTION_LOST when receiving {connectionLost: true}
+    const messageEvent = new Event('message') as any;
+    messageEvent.data = { connectionLost: true };
+    $wnd.navigator.serviceWorker.dispatchEvent(messageEvent);
+    assert.equal(store.state, ConnectionState.CONNECTION_LOST);
+  });
 });

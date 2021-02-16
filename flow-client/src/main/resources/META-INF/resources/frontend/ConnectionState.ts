@@ -40,6 +40,19 @@ export class ConnectionStateStore {
 
   constructor(initialState: ConnectionState) {
     this.connectionState = initialState;
+
+      if (navigator.serviceWorker) {
+        // Query service worker: returns {connectionLost: true} if the most recent
+        // fetch was served from precache.
+        navigator.serviceWorker.addEventListener('message', event => {
+          if (!!event.data.connectionLost) {
+            this.state = ConnectionState.CONNECTION_LOST;
+          }
+        });
+        navigator.serviceWorker.ready.then( registration => {
+          registration?.active?.postMessage({type: 'isConnectionLost'});
+        });
+      }
   }
 
   addStateChangeListener(listener: ConnectionStateChangeListener): void {
