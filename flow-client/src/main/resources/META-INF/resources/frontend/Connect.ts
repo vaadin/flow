@@ -414,7 +414,7 @@ export class ConnectClient {
 
 
   private isFlowLoaded(): boolean {
-    return $wnd.Vaadin.Flow !== undefined;
+    return $wnd.Vaadin.Flow?.clients?.TypeScript !== undefined;
   }
 
   private loadingStarted() {
