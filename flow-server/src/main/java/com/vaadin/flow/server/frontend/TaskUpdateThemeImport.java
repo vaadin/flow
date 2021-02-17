@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
@@ -62,7 +61,6 @@ public class TaskUpdateThemeImport implements FallibleCommand {
                     + "export const applyTheme = _applyTheme;%n",
                 theme.getName(), theme.getName()), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            System.out.println("Throwing exception " + e.getMessage());
             throw new ExecutionFailedException(
                 "Unable to write theme import file", e);
         }
