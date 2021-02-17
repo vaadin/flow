@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.page;
 
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -223,6 +224,64 @@ public class PageTest {
                 .dumpPendingJavaScriptInvocations().size();
         Assert.assertEquals(1, jsInvocations);
         Assert.assertEquals(2, callbackInvocations.get());
+    }
+
+    @Test
+    public void fetchCurrentUrl_consumerReceivesCorrectURL() {
+        // given
+        final UI mockUI = new MockUI();
+        final Page page = new Page(mockUI) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Serializable... params) {
+                super.executeJs(expression, params);
+                Assert.assertEquals(
+                        "Expected javascript for fetching location is wrong.",
+                        "return window.location.href", expression);
+
+                return new PendingJavaScriptResult() {
+
+                    @Override
+                    public boolean cancelExecution() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean isSentToBrowser() {
+                        return false;
+                    }
+
+                    @Override
+                    public void then(
+                            SerializableConsumer<JsonValue> resultHandler,
+                            SerializableConsumer<String> errorHandler) {
+                        resultHandler.accept(Json
+                                .create("http://localhost:8080/home"));
+                    }
+                };
+            }
+        };
+        final AtomicReference<URL> callbackInvocations = new AtomicReference<>();
+        final SerializableConsumer<URL> receiver = details -> {
+            callbackInvocations.compareAndSet(null, details);
+        };
+
+        // when
+        page.fetchCurrentURL(receiver);
+
+        // then
+        Assert.assertEquals("Returned URL was wrong",
+                "http://localhost:8080/home",
+                callbackInvocations.get().toString());
+    }
+
+    @Test
+    public void fetchCurrentUrl_passNullCallback_throwsNullPointerException() {
+        Assert.assertThrows(NullPointerException.class, () -> {
+            final UI mockUI = new MockUI();
+            Page page = new Page(mockUI);
+            page.fetchCurrentURL(null);
+        });
     }
 
     @Test
