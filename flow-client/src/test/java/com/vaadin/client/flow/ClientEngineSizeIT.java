@@ -21,7 +21,6 @@ public class ClientEngineSizeIT {
         }
 
         boolean cacheJsReported = false;
-        boolean cacheJsGzReported = false;
 
         for (File f : compiledModuleFolder.listFiles()) {
             if (f.getName().endsWith(".cache.js")) {
@@ -31,20 +30,10 @@ public class ClientEngineSizeIT {
                 }
                 printTeamcityStats("clientEngine", f.length());
                 cacheJsReported = true;
-            } else if (f.getName().endsWith(".cache.js.gz")) {
-                if (cacheJsGzReported) {
-                    throw new IOException(
-                            "Multiple compressed cache.js.gz files found!");
-                }
-                printTeamcityStats("clientEngineGzipped", f.length());
-                cacheJsGzReported = true;
             }
         }
         if (!cacheJsReported) {
             throw new IOException("Uncompressed cache.js file not found!");
-        }
-        if (!cacheJsGzReported) {
-            throw new IOException("Compressed cache.js.gz file not found!");
         }
     }
 
