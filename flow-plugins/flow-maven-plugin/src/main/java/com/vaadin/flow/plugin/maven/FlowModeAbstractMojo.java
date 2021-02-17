@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
-
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -40,6 +36,10 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 
 /**
  * The base class of Flow Mojos in order to compute correctly the modes.
@@ -294,7 +294,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         getLog().warn(warning, e);
 
     }
-    
+
     @Override
     public void logError(CharSequence warning, Throwable e) {
 
