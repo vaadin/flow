@@ -307,7 +307,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             if (!themeData.isNotheme()) {
                 String themeClass = themeData.getThemeClass();
                 if (!themeData.getThemeName().isEmpty() && (themeClass != null
-                && !getDefaultTheme().isAssignableFrom(getFinder().loadClass(themeClass)))) {
+                    && getDefaultTheme() != null && !getDefaultTheme()
+                    .isAssignableFrom(getFinder().loadClass(themeClass)))) {
                     throw new IllegalStateException(
                         "Theme name and theme class can not both be specified. "
                             + "Theme name uses Lumo and can not be used in combination "
