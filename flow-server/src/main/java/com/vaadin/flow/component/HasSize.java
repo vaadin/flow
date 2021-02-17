@@ -167,9 +167,10 @@ public interface HasSize extends HasElement {
     }
 
     /**
-     * Gets the width unit defined for the component.
+     * Gets the width unit of the component, if defined.
      *
-     * @return the width unit which has been set for the component
+     * @return an optional width unit for the component, or an empty
+     *         optional if no width unit has been set
      */
     default Optional<Unit> getWidthUnit() {
         return Unit.getUnit(getWidth());
@@ -308,9 +309,10 @@ public interface HasSize extends HasElement {
     }
 
     /**
-     * Gets the height unit defined for the component.
+     * Gets the height unit of the component, if defined.
      *
-     * @return the height unit which has been set for the component
+     * @return an optional height unit for the component, or an empty
+     *         optional if no height unit has been set
      */
     default Optional<Unit> getHeightUnit() {
         return Unit.getUnit(getHeight());
