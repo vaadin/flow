@@ -97,7 +97,6 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 handElement.getCssValue("color"));
     }
 
-    @Ignore("https://github.com/vaadin/flow/issues/10065")
     @Test
     public void componentThemeIsApplied_forPolymerAndLit() {
         open();
@@ -108,8 +107,9 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
         TestBenchElement myField = embeddedComponent.$(TestBenchElement.class)
             .id(MY_POLYMER_ID);
-        TestBenchElement input = myField.$(TestBenchElement.class)
-            .id("vaadin-text-field-input-0");
+        TestBenchElement input = myField.$(DivElement.class)
+                .attribute("class", "vaadin-text-field-container").first()
+                .$(DivElement.class).attribute("part", "input-field").first();
         Assert.assertEquals("Polymer text field should have red background",
             "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
 
