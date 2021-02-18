@@ -47,6 +47,9 @@ import com.vaadin.flow.router.RouterLayout;
  * <p>
  * By default {@code com.vaadin.flow.theme.lumo.Lumo} theme is used if it's in
  * the classpath. You may disable theming with {@link NoTheme} annotation.
+ * Adding an empty {@link Theme} is equal to not having a {@link Theme}
+ * annotation and will default to {@code com.vaadin.flow.theme.lumo.Lumo} if
+ * available.
  * <p>
  * {@link Theme} annotation should be added to your root navigation level,
  * {@link RouterLayout} or to the top level @{@link Route}.
