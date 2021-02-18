@@ -21,6 +21,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.ImageElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -148,8 +149,10 @@ public class ThemeIT extends ChromeBrowserTest {
                 .getCssValue("padding"));
 
         TestBenchElement myField = $(TestBenchElement.class).id(MY_POLYMER_ID);
-        TestBenchElement input = myField.$(TestBenchElement.class)
-            .id("vaadin-text-field-input-0");
+
+        TestBenchElement input = myField.$(DivElement.class)
+                .attribute("class", "vaadin-text-field-container").first()
+                .$(DivElement.class).attribute("part", "input-field").first();
         Assert.assertEquals("Polymer text field should get parent border radius",
             "0px", input.getCssValue("border-radius"));
 
@@ -161,8 +164,9 @@ public class ThemeIT extends ChromeBrowserTest {
     public void componentThemeIsApplied_forPolymerAndLit() {
         open();
         TestBenchElement myField = $(TestBenchElement.class).id(MY_POLYMER_ID);
-        TestBenchElement input = myField.$(TestBenchElement.class)
-            .id("vaadin-text-field-input-0");
+        TestBenchElement input = myField.$(DivElement.class)
+                .attribute("class", "vaadin-text-field-container").first()
+                .$(DivElement.class).attribute("part", "input-field").first();
         Assert.assertEquals("Polymer text field should have red background",
             "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
 
