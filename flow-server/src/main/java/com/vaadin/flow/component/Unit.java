@@ -72,6 +72,10 @@ public enum Unit {
      */
     MM("mm"),
     /**
+     * Unit code representing the width of the "0" (zero).
+     */
+    CH("ch"),
+    /**
      * Unit code representing centimeters.
      */
     CM("cm"),
