@@ -317,6 +317,36 @@ public abstract class AbstractNodeUpdatePackagesTest
                 json.getObject(DEV_DEPENDENCIES).hasKey(old_dependency));
     }
 
+    @Test // #10032
+    public void oldVaadinDevDependency_missmatchWithDevDependency_vaadinDependencyIsUpdated()
+            throws IOException {
+        // Generate package json in a proper format first
+        packageCreator.execute();
+
+        // Change the version
+        JsonObject json = packageUpdater.getPackageJson();
+        final String key = "webpack";
+        final String version = packageUpdater.getDefaultDevDependencies()
+                .get(key);
+        json.getObject(VAADIN_DEP_KEY).getObject(DEV_DEPENDENCIES)
+                .put(key, "4.42.0");
+        json.getObject(DEV_DEPENDENCIES).put(key, version);
+
+        Files.write(packageJson.toPath(),
+                Collections.singletonList(json.toJson()));
+
+        // run it again to see that versions are updated
+        packageCreator.execute();
+
+        json = packageUpdater.getPackageJson();
+        Assert.assertEquals("Vaadin dependency should be updated to latest DevDependency",
+                version, json.getObject(VAADIN_DEP_KEY).getObject(DEV_DEPENDENCIES)
+                        .getString(key));
+        Assert.assertEquals(
+                "DevDependency should stay the same as it was", version,
+                json.getObject(DEV_DEPENDENCIES).getString(key));
+    }
+
     @Test
     public void versions_doNotMatch_inPackageLock_cleanUp() throws IOException {
         makeNodeModulesAndPackageLock();

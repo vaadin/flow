@@ -52,9 +52,7 @@ public class TaskGeneratePackageJson extends NodeUpdater {
             modified = false;
             JsonObject mainContent = getPackageJson();
             modified = updateDefaultDependencies(mainContent);
-            if (modified) {
-                writePackageFile(mainContent);
-            }
+            writePackageFile(mainContent);
 
             if(flowResourcesFolder == null) {
                 return;
