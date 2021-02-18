@@ -44,6 +44,7 @@ import elemental.json.JsonValue;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static com.vaadin.flow.server.frontend.TaskUpdatePackages.VAADIN_FLOW_DEPS;
 import static com.vaadin.flow.server.frontend.TaskUpdatePackages.VAADIN_APP_PACKAGE_HASH;
 import static elemental.json.impl.JsonUtil.stringify;
@@ -278,6 +279,36 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageUpdater.execute();
 
         assertVersionAndCleanUp();
+    }
+
+    @Test // #10032
+    public void oldVaadinDevDependency_missmatchWithDevDependency_vaadinDependencyIsUpdated()
+            throws IOException {
+        // Generate package json in a proper format first
+        packageCreator.execute();
+
+        // Change the version
+        JsonObject json = packageUpdater.getPackageJson();
+        final String key = "webpack";
+        final String version = packageUpdater.getDefaultDevDependencies()
+                .get(key);
+        json.getObject(VAADIN_DEP_KEY).getObject(DEV_DEPENDENCIES)
+                .put(key, "4.42.0");
+        json.getObject(DEV_DEPENDENCIES).put(key, version);
+
+        Files.write(packageJson.toPath(),
+                Collections.singletonList(json.toJson()));
+
+        // run it again to see that versions are updated
+        packageCreator.execute();
+
+        json = packageUpdater.getPackageJson();
+        Assert.assertEquals("Vaadin dependency should be updated to latest DevDependency",
+                version, json.getObject(VAADIN_DEP_KEY).getObject(DEV_DEPENDENCIES)
+                        .getString(key));
+        Assert.assertEquals(
+                "DevDependency should stay the same as it was", version,
+                json.getObject(DEV_DEPENDENCIES).getString(key));
     }
 
     @Test
