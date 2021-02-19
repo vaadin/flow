@@ -129,10 +129,4 @@ public class HasSizeUnitTest {
         float size = Unit.getSize(cssSize);        	
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void getUnitException() {
-        String cssSize = null;
-        Optional<Unit> size = Unit.getUnit(cssSize);        	
-    }
-
 }
