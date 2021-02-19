@@ -67,6 +67,9 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
+        if (!hasWebComponentConfigurations(request)) {
+            return false;
+        }
         String pathInfo = request.getPathInfo();
 
         if (pathInfo == null || pathInfo.isEmpty()) {
@@ -207,6 +210,12 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 + "  uiScript.setAttribute('type','text/javascript');"
                 + "  uiScript.setAttribute('src', bootstrapAddress);"
                 + "  document.head.appendChild(uiScript);" + "}";
+    }
+
+    private boolean hasWebComponentConfigurations(VaadinRequest request) {
+        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
+                .getInstance(request.getService().getContext());
+        return registry.hasConfigurations();
     }
 
     private static String getThisScript(String tag) {

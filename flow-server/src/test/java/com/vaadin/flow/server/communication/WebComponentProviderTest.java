@@ -125,15 +125,15 @@ public class WebComponentProviderTest {
     public void nonHandledPaths_handlerInformsNotHandled() throws IOException {
         Mockito.when(request.getPathInfo()).thenReturn(null);
         Assert.assertFalse("Provider shouldn't handle null path",
-                provider.handleRequest(session, request, response));
+                provider.canHandleRequest(request));
 
         Mockito.when(request.getPathInfo()).thenReturn("");
         Assert.assertFalse("Provider shouldn't handle empty path",
-                provider.handleRequest(session, request, response));
+                provider.canHandleRequest(request));
 
         Mockito.when(request.getPathInfo()).thenReturn("/home");
         Assert.assertFalse("Provider shouldn't handle non web-component path",
-                provider.handleRequest(session, request, response));
+                provider.canHandleRequest(request));
     }
 
     @Test
@@ -142,21 +142,21 @@ public class WebComponentProviderTest {
                 .thenReturn("/web-component" + "/extensionless-component");
 
         Assert.assertFalse("Provider shouldn't handle path without extension",
-                provider.handleRequest(session, request, response));
+                provider.synchronizedHandleRequest(session, request, response));
 
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/component.js");
 
         Assert.assertFalse(
                 "Provider shouldn't handle request for non-custom element name",
-                provider.handleRequest(session, request, response));
+                provider.synchronizedHandleRequest(session, request, response));
 
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.html");
 
         Assert.assertFalse(
                 "Provider shouldn't handle html extensions in npm mode",
-                provider.handleRequest(session, request, response));
+                provider.synchronizedHandleRequest(session, request, response));
     }
 
     @Test
@@ -168,7 +168,7 @@ public class WebComponentProviderTest {
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");
         Assert.assertTrue("Provider should handle web-component request",
-                provider.handleRequest(session, request, response));
+                provider.synchronizedHandleRequest(session, request, response));
         Mockito.verify(response).sendError(HttpServletResponse.SC_NOT_FOUND,
                 "No web component for my-component");
     }
@@ -188,7 +188,7 @@ public class WebComponentProviderTest {
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");
         Assert.assertTrue("Provider should handle web-component request",
-                provider.handleRequest(session, request, response));
+                provider.synchronizedHandleRequest(session, request, response));
 
         Mockito.verify(response).getOutputStream();
         Mockito.verify(out).write(Mockito.any());
@@ -214,12 +214,12 @@ public class WebComponentProviderTest {
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");
         Assert.assertTrue("Provider should handle first web-component request",
-                provider.handleRequest(session, request, response));
+                provider.synchronizedHandleRequest(session, request, response));
 
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/other-component.js");
         Assert.assertTrue("Provider should handle second web-component request",
-                provider.handleRequest(session, request, response));
+                provider.synchronizedHandleRequest(session, request, response));
 
         Mockito.verify(response, times(2)).getOutputStream();
         Mockito.verify(out, times(2)).write(captor.capture());

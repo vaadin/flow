@@ -78,7 +78,6 @@ import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
 import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
@@ -354,18 +353,10 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new StreamRequestHandler());
         handlers.add(new PwaHandler(() -> getPwaRegistry()));
 
-        if (hasWebComponentConfigurations()) {
-            handlers.add(new WebComponentProvider());
-            handlers.add(new WebComponentBootstrapHandler());
-        }
+        handlers.add(new WebComponentProvider());
+        handlers.add(new WebComponentBootstrapHandler());
 
         return handlers;
-    }
-
-    private boolean hasWebComponentConfigurations() {
-        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                .getInstance(getContext());
-        return registry.hasConfigurations();
     }
 
     /**
