@@ -17,6 +17,7 @@ package com.vaadin.flow.server;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletContext;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -227,7 +228,8 @@ public class PwaRegistry implements Serializable {
         return manifestData;
     }
 
-    private String initializeRuntimeServiceWorker(ServletContext servletContext) {
+    private String initializeRuntimeServiceWorker(
+            ServletContext servletContext) {
         StringBuilder stringBuilder = new StringBuilder();
 
         // List of icons for precache
@@ -345,9 +347,7 @@ public class PwaRegistry implements Serializable {
         return offlinePage.replace("%%%PROJECT_NAME%%%", config.getAppName())
                 .replace("%%%BACKGROUND_COLOR%%%", config.getBackgroundColor())
                 .replace("%%%LOGO_PATH%%%",
-                        largest != null
-                                ? largest.getHref()
-                                : "")
+                        largest != null ? largest.getHref() : "")
                 .replace("%%%META_ICONS%%%", iconHead);
 
     }

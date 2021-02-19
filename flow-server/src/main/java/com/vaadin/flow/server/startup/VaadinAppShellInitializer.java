@@ -29,8 +29,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinServletContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +44,8 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 
@@ -80,8 +80,8 @@ public class VaadinAppShellInitializer
     /**
      * Initializes the {@link AppShellRegistry} for the application.
      *
-     * @deprecated Use {@link #init(Set, VaadinContext)} instead
-     *            by wrapping {@link ServletContext} with {@link VaadinServletContext}.
+     * @deprecated Use {@link #init(Set, VaadinContext)} instead by wrapping
+     *             {@link ServletContext} with {@link VaadinServletContext}.
      *
      * @param classes
      *            a set of classes that matches the {@link HandlesTypes} set in
@@ -105,8 +105,7 @@ public class VaadinAppShellInitializer
      */
     @SuppressWarnings("unchecked")
     public static void init(Set<Class<?>> classes, VaadinContext context) {
-        ApplicationConfiguration config = ApplicationConfiguration
-                .get(context);
+        ApplicationConfiguration config = ApplicationConfiguration.get(context);
 
         if (config.useV14Bootstrap()) {
             return;
@@ -115,8 +114,7 @@ public class VaadinAppShellInitializer
         boolean disregardOffendingAnnotations = config.getBooleanProperty(
                 Constants.ALLOW_APPSHELL_ANNOTATIONS, false);
 
-        AppShellRegistry registry = AppShellRegistry
-                .getInstance(context);
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
         registry.reset();
 
         if (classes == null || classes.isEmpty()) {
@@ -131,6 +129,7 @@ public class VaadinAppShellInitializer
                         : registry.isShell(b) ? 1 : 0)
                 .forEach(clz -> {
                     if (registry.isShell(clz)) {
+                        System.out.println("is shell");
                         registry.setShell(
                                 (Class<? extends AppShellConfigurator>) clz);
                         getLogger().info(

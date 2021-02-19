@@ -352,11 +352,7 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new UidlRequestHandler());
         handlers.add(new UnsupportedBrowserHandler());
         handlers.add(new StreamRequestHandler());
-        PwaRegistry pwaRegistry = getPwaRegistry();
-        if (pwaRegistry != null
-                && pwaRegistry.getPwaConfiguration().isEnabled()) {
-            handlers.add(new PwaHandler(pwaRegistry));
-        }
+        handlers.add(new PwaHandler(() -> getPwaRegistry()));
 
         if (hasWebComponentConfigurations()) {
             handlers.add(new WebComponentProvider());
@@ -1719,13 +1715,16 @@ public abstract class VaadinService implements Serializable {
                  */
 
                 // Ensure that the browser does not cache expired responses.
-                // iOS 6 Safari requires this (https://github.com/vaadin/framework/issues/3226)
+                // iOS 6 Safari requires this
+                // (https://github.com/vaadin/framework/issues/3226)
                 response.setHeader("Cache-Control", "no-cache");
                 // If Content-Type is not set, browsers assume text/html and may
-                // complain about the empty response body (https://github.com/vaadin/framework/issues/4167)
+                // complain about the empty response body
+                // (https://github.com/vaadin/framework/issues/4167)
                 response.setHeader("Content-Type", "text/plain");
 
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Session expired");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN,
+                        "Session expired");
             }
         } catch (IOException e) {
             throw new ServiceException(e);
