@@ -325,6 +325,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("chokidar", "^3.5.0");
 
         defaults.put("idb", "5.0.6");
+        defaults.put("style-loader", "2.0.0");
 
         return defaults;
     }
