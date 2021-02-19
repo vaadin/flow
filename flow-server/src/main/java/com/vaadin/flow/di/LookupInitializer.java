@@ -39,9 +39,11 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.startup.AppShellPredicate;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
 import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
@@ -239,6 +241,27 @@ public class LookupInitializer {
 
     }
 
+    /**
+     * Default implementation of {@link AppShellPredicate}.
+     * 
+     * @author Vaadin Ltd
+     * @since
+     *
+     */
+    protected static class AppShellPridicateImpl implements AppShellPredicate {
+
+        /**
+         * Creates a new instance.
+         */
+        public AppShellPridicateImpl() {
+        }
+
+        @Override
+        public boolean isShell(Class<?> clz) {
+            return AppShellConfigurator.class.isAssignableFrom(clz);
+        }
+    }
+
     private static class CachedStreamData {
 
         private final byte[] data;
@@ -285,8 +308,12 @@ public class LookupInitializer {
             Map<Class<?>, Collection<Class<?>>> services,
             VaadinApplicationInitializationBootstrap bootstrap)
             throws ServletException {
-        ensureResourceProviders(services);
-        ensureApplicationConfigurationFactories(services);
+        ensureService(services, ResourceProvider.class,
+                ResourceProviderImpl.class);
+        ensureService(services, AppShellPredicate.class,
+                AppShellPridicateImpl.class);
+        ensureService(services, ApplicationConfigurationFactory.class,
+                DefaultApplicationConfigurationFactory.class);
         bootstrap.bootstrap(createLookup(context, services));
     }
 
@@ -308,70 +335,31 @@ public class LookupInitializer {
 
     /**
      * Ensures that provided {@code services} contain implementation for
-     * {@link ResourceProvider} SPI.
+     * {@link serviceType} SPI.
      * <p>
-     * The default {@link ResourceProviderImpl} implementation will be set as
-     * the service into {@code services} if there is no other services
-     * available.
+     * The default {@code  serviceImpl} implementation will be set as the
+     * service into {@code services} if there is no other services available.
      * 
      * @param services
      *            map of internal services
      */
-    protected void ensureResourceProviders(
-            Map<Class<?>, Collection<Class<?>>> services) {
-        Collection<Class<?>> resourceProviders = services
-                .get(ResourceProvider.class);
-        if (resourceProviders == null) {
-            resourceProviders = Collections.emptyList();
+    protected <T> void ensureService(
+            Map<Class<?>, Collection<Class<?>>> services, Class<T> serviceType,
+            Class<? extends T> serviceImpl) {
+        Collection<Class<?>> impls = services.get(serviceType);
+        if (impls == null) {
+            impls = Collections.emptyList();
         }
-        resourceProviders = resourceProviders.stream()
-                .filter(clazz -> !clazz.equals(ResourceProviderImpl.class))
+        impls = impls.stream().filter(clazz -> !clazz.equals(serviceImpl))
                 .collect(Collectors.toList());
-        if (resourceProviders.isEmpty()) {
-            services.put(ResourceProvider.class,
-                    Collections.singletonList(ResourceProviderImpl.class));
-        } else if (resourceProviders.size() > 1) {
+        if (impls.isEmpty()) {
+            services.put(serviceType, Collections.singletonList(serviceImpl));
+        } else if (impls.size() > 1) {
             throw new IllegalStateException(
-                    SEVERAL_IMPLS + ResourceProvider.class.getSimpleName() + SPI
-                            + resourceProviders + ONE_IMPL_REQUIRED);
+                    SEVERAL_IMPLS + serviceType.getSimpleName() + SPI + impls
+                            + ONE_IMPL_REQUIRED);
         } else {
-            services.put(ResourceProvider.class, resourceProviders);
-        }
-    }
-
-    /**
-     * Ensures that provided {@code services} contain implementation for
-     * {@link ApplicationConfigurationFactory} SPI.
-     * <p>
-     * The default {@link DefaultApplicationConfigurationFactory} implementation
-     * will be set as the service into {@code services} if there is no other
-     * services available.
-     * 
-     * @param services
-     *            map of internal services
-     */
-    protected void ensureApplicationConfigurationFactories(
-            Map<Class<?>, Collection<Class<?>>> services) {
-        Collection<Class<?>> factories = services
-                .get(ApplicationConfigurationFactory.class);
-        if (factories == null) {
-            factories = Collections.emptyList();
-        }
-        factories = factories.stream()
-                .filter(clazz -> !clazz
-                        .equals(DefaultApplicationConfigurationFactory.class))
-                .collect(Collectors.toList());
-        if (factories.isEmpty()) {
-            services.put(ApplicationConfigurationFactory.class,
-                    Collections.singletonList(
-                            DefaultApplicationConfigurationFactory.class));
-        } else if (factories.size() > 1) {
-            throw new IllegalStateException(SEVERAL_IMPLS
-                    + DefaultApplicationConfigurationFactory.class
-                            .getSimpleName()
-                    + SPI + factories + ONE_IMPL_REQUIRED);
-        } else {
-            services.put(ApplicationConfigurationFactory.class, factories);
+            services.put(ApplicationConfigurationFactory.class, impls);
         }
     }
 
