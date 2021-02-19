@@ -47,6 +47,8 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.MockInstantiator;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
@@ -252,6 +254,41 @@ public class WebComponentProviderTest {
                 SameThemedComponentExporter.class);
         Assert.assertEquals(PushMode.AUTOMATIC, registry
                 .getEmbeddedApplicationAnnotation(Push.class).get().value());
+    }
+
+    @Test
+    public void canHandleRequest_hasNoWebComponentConfigPathIsWebComponentUI_returnsFalse() {
+        WebComponentProvider handler = new WebComponentProvider();
+
+        VaadinRequest request = mockRequest(false);
+        Assert.assertFalse(handler.canHandleRequest(request));
+    }
+
+    @Test
+    public void canHandleRequest_hasWebComponentConfigPathIsWebComponentUI_returnsTrue() {
+        WebComponentProvider handler = new WebComponentProvider();
+
+        VaadinRequest request = mockRequest(true);
+        Assert.assertTrue(handler.canHandleRequest(request));
+    }
+
+    private VaadinRequest mockRequest(boolean hasConfig) {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        Mockito.when(request.getService()).thenReturn(service);
+        Mockito.when(service.getContext()).thenReturn(context);
+
+        WebComponentConfigurationRegistry registry = Mockito
+                .mock(WebComponentConfigurationRegistry.class);
+        Mockito.when(context.getAttribute(
+                Mockito.eq(WebComponentConfigurationRegistry.class),
+                Mockito.any())).thenReturn(registry);
+        Mockito.when(registry.hasConfigurations()).thenReturn(hasConfig);
+
+        Mockito.when(request.getPathInfo()).thenReturn("/web-component/a-b.js");
+
+        return request;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

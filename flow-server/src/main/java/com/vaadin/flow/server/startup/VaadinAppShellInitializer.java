@@ -129,7 +129,6 @@ public class VaadinAppShellInitializer
                         : registry.isShell(b) ? 1 : 0)
                 .forEach(clz -> {
                     if (registry.isShell(clz)) {
-                        System.out.println("is shell");
                         registry.setShell(
                                 (Class<? extends AppShellConfigurator>) clz);
                         getLogger().info(

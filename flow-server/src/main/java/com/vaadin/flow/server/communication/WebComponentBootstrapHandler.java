@@ -120,7 +120,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        if (!canHandleRequest(request)) {
+        if (!hasWebComponentConfigurations(request)) {
             return false;
         }
         String pathInfo = request.getPathInfo();
