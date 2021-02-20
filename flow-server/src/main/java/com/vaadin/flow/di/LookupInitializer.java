@@ -335,7 +335,7 @@ public class LookupInitializer {
 
     /**
      * Ensures that provided {@code services} contain implementation for
-     * {@link serviceType} SPI.
+     * {@code serviceType} SPI.
      * <p>
      * The default {@code  serviceImpl} implementation will be set as the
      * service into {@code services} if there is no other services available.
