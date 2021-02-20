@@ -590,7 +590,9 @@ public class DevModeHandlerTest {
 
         // remove the "singleton" instance to be able to start another one
         removeDevModeHandlerInstance();
-
+        
+        // since the timeout is quite big the server port still should be
+        // available and the second instance should try to reuse it
         DevModeHandler anotherHandler = DevModeHandler.start(0,
                 createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
