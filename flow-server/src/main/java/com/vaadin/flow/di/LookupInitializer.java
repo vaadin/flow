@@ -359,7 +359,7 @@ public class LookupInitializer {
                     SEVERAL_IMPLS + serviceType.getSimpleName() + SPI + impls
                             + ONE_IMPL_REQUIRED);
         } else {
-            services.put(ApplicationConfigurationFactory.class, impls);
+            services.put(serviceType, impls);
         }
     }
 
