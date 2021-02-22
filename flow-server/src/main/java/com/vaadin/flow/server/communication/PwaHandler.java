@@ -20,8 +20,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.server.PwaIcon;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.RequestHandler;
@@ -43,7 +43,7 @@ import com.vaadin.flow.server.VaadinSession;
  */
 public class PwaHandler implements RequestHandler {
     private final Map<String, RequestHandler> requestHandlerMap = new HashMap<>();
-    private final Supplier<PwaRegistry> pwaRegistryGetter;
+    private final SerializableSupplier<PwaRegistry> pwaRegistryGetter;
 
     private boolean isInitialized;
 
@@ -54,7 +54,7 @@ public class PwaHandler implements RequestHandler {
      *            PWA registry getter
      *
      */
-    public PwaHandler(Supplier<PwaRegistry> pwaRegistryGetter) {
+    public PwaHandler(SerializableSupplier<PwaRegistry> pwaRegistryGetter) {
         this.pwaRegistryGetter = pwaRegistryGetter;
     }
 
