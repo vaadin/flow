@@ -38,8 +38,6 @@ export class ConnectionStateStore {
 
   private loadingCount: number = 0;
 
-  private stateBeforeLoading?: ConnectionState;
-
   constructor(initialState: ConnectionState) {
     this.connectionState = initialState;
   }
@@ -53,18 +51,23 @@ export class ConnectionStateStore {
   }
 
   loadingStarted(): void {
-    if (this.loadingCount === 0) {
-      this.stateBeforeLoading = this.connectionState;
-    }
     this.state = ConnectionState.LOADING;
     this.loadingCount += 1;
   }
 
   loadingFinished(): void {
+    this.decreaseLoadingCount(ConnectionState.CONNECTED);
+  }
+
+  loadingFailed(): void {
+    this.decreaseLoadingCount(ConnectionState.CONNECTION_LOST);
+  }
+
+  private decreaseLoadingCount(finalState: ConnectionState) {
     if (this.loadingCount > 0) {
       this.loadingCount -= 1;
       if (this.loadingCount === 0) {
-        this.state = this.stateBeforeLoading!;
+        this.state = finalState;
       }
     }
   }

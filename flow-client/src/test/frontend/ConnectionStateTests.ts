@@ -69,11 +69,12 @@ describe('ConnectionStateStore', () => {
     store.loadingFinished();
     store.loadingFinished();
 
-    assert.equal(stateChangeListener.callCount, 2)
-    assert.isTrue(stateChangeListener.getCall(0).calledWithExactly(
-      ConnectionState.CONNECTED, ConnectionState.LOADING))
-    assert.isTrue(stateChangeListener.getCall(1).calledWithExactly(
-      ConnectionState.LOADING, ConnectionState.CONNECTED))
+    assert.equal(stateChangeListener.callCount, 2);
+
+    (expect(stateChangeListener.getCall(0)).to.be as any).calledWithExactly(
+      ConnectionState.CONNECTED, ConnectionState.LOADING);
+    (expect(stateChangeListener.getCall(1)).to.be as any).calledWithExactly(
+      ConnectionState.LOADING, ConnectionState.CONNECTED);
   });
 
   it('loading count should reset when state forced', () => {
@@ -86,29 +87,30 @@ describe('ConnectionStateStore', () => {
     store.loadingStarted();
     store.loadingFinished();
 
-    assert.equal(stateChangeListener.callCount, 4)
-    assert.isTrue(stateChangeListener.getCall(0).calledWithExactly(
-      ConnectionState.CONNECTED, ConnectionState.LOADING))
-    assert.isTrue(stateChangeListener.getCall(1).calledWithExactly(
-      ConnectionState.LOADING, ConnectionState.CONNECTION_LOST))
-    assert.isTrue(stateChangeListener.getCall(2).calledWithExactly(
-      ConnectionState.CONNECTION_LOST, ConnectionState.LOADING))
-    assert.isTrue(stateChangeListener.getCall(3).calledWithExactly(
-      ConnectionState.LOADING, ConnectionState.CONNECTION_LOST))
+    assert.equal(stateChangeListener.callCount, 4);
+
+    (expect(stateChangeListener.getCall(0)).to.be as any).calledWithExactly(
+      ConnectionState.CONNECTED, ConnectionState.LOADING);
+    (expect(stateChangeListener.getCall(1)).to.be as any).calledWithExactly(
+      ConnectionState.LOADING, ConnectionState.CONNECTION_LOST);
+    (expect(stateChangeListener.getCall(2)).to.be as any).calledWithExactly(
+      ConnectionState.CONNECTION_LOST, ConnectionState.LOADING);
+    (expect(stateChangeListener.getCall(3)).to.be as any).calledWithExactly(
+      ConnectionState.LOADING, ConnectionState.CONNECTED);
   });
 
-  it('should return to original state after LOADING count reaches zero', () => {
+  it('loadingFailed should set state to CONNECTION_LOST', () => {
     const store = new ConnectionStateStore(ConnectionState.CONNECTION_LOST);
     const stateChangeListener = sinon.fake();
     store.addStateChangeListener(stateChangeListener);
 
     store.loadingStarted();
-    store.loadingFinished();
+    store.loadingFailed();
 
-    assert.equal(stateChangeListener.callCount, 2)
-    assert.isTrue(stateChangeListener.getCall(0).calledWithExactly(
-      ConnectionState.CONNECTION_LOST, ConnectionState.LOADING))
-    assert.isTrue(stateChangeListener.getCall(1).calledWithExactly(
-      ConnectionState.LOADING, ConnectionState.CONNECTION_LOST))
+    assert.equal(stateChangeListener.callCount, 2);
+    (expect(stateChangeListener.getCall(0)).to.be as any).calledWithExactly(
+      ConnectionState.CONNECTION_LOST, ConnectionState.LOADING);
+    (expect(stateChangeListener.getCall(1)).to.be as any).calledWithExactly(
+      ConnectionState.LOADING, ConnectionState.CONNECTION_LOST);
   });
 });
