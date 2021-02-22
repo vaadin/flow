@@ -102,8 +102,10 @@ public class PwaRegistry implements Serializable {
             URL logo = getResourceUrl(servletContext,
                     pwaConfiguration.relIconPath());
 
-            URL offlinePage = getResourceUrl(servletContext,
-                    pwaConfiguration.relOfflinePath());
+            URL offlinePage = pwaConfiguration.isOfflinePathEnabled()
+                    ? getResourceUrl(servletContext,
+                            pwaConfiguration.relOfflinePath())
+                    : null;
             // Load base logo from servlet context if available
             // fall back to local image if unavailable
             BufferedImage baseImage = getBaseImage(logo);
