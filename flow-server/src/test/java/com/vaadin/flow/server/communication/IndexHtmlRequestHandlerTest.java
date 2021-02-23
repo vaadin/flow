@@ -48,6 +48,7 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -63,7 +64,6 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.DevModeHandlerTest.createStubWebpackTcpListener;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
@@ -79,6 +79,7 @@ public class IndexHtmlRequestHandlerTest {
     private ByteArrayOutputStream responseOutput;
     private MockDeploymentConfiguration deploymentConfiguration;
     private HttpServer httpServer;
+    private VaadinContext context;
 
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -97,6 +98,7 @@ public class IndexHtmlRequestHandlerTest {
         deploymentConfiguration.setEnableDevServer(false);
         deploymentConfiguration.useDeprecatedV14Bootstrapping(false);
         indexHtmlRequestHandler = new IndexHtmlRequestHandler();
+        context = Mockito.mock(VaadinContext.class);
     }
 
     @Test
@@ -516,7 +518,7 @@ public class IndexHtmlRequestHandlerTest {
     public void should_add_metaAndPwa_Inline_Elements_when_appShellPresent()
             throws Exception {
         // Set class in context and do not call initializer
-        AppShellRegistry registry = new AppShellRegistry();
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
         registry.setShell(AppShellWithPWA.class);
         mocks.setAppShellRegistry(registry);
 
@@ -553,7 +555,7 @@ public class IndexHtmlRequestHandlerTest {
     public void should_add_elements_when_appShellWithConfigurator()
             throws Exception {
         // Set class in context and do not call initializer
-        AppShellRegistry registry = new AppShellRegistry();
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
         registry.setShell(MyAppShellWithConfigurator.class);
         mocks.setAppShellRegistry(registry);
 

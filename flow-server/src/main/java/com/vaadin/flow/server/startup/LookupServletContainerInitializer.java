@@ -49,7 +49,8 @@ import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 @HandlesTypes({ ResourceProvider.class, InstantiatorFactory.class,
         DeprecatedPolymerPublishedEventHandler.class,
         EndpointGeneratorTaskFactory.class,
-        ApplicationConfigurationFactory.class, LookupInitializer.class })
+        ApplicationConfigurationFactory.class, LookupInitializer.class,
+        AppShellPredicate.class })
 public class LookupServletContainerInitializer
         implements ClassLoaderAwareServletContainerInitializer {
 

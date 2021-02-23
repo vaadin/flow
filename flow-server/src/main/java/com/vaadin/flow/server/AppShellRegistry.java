@@ -35,7 +35,9 @@ import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.server.startup.AppShellPredicate;
 import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.getClassAnnotations;
@@ -72,6 +74,8 @@ public class AppShellRegistry implements Serializable {
 
     private Class<? extends AppShellConfigurator> appShellClass;
 
+    private final Lookup lookup;
+
     /**
      * A wrapper class for storing the {@link AppShellRegistry} instance in the
      * servlet context.
@@ -90,6 +94,10 @@ public class AppShellRegistry implements Serializable {
         }
     }
 
+    private AppShellRegistry(VaadinContext context) {
+        this.lookup = context.getAttribute(Lookup.class);
+    }
+
     /**
      * Returns the instance of the registry, or create a new one if it does not
      * exist yet.
@@ -103,7 +111,8 @@ public class AppShellRegistry implements Serializable {
             AppShellRegistryWrapper attribute = context
                     .getAttribute(AppShellRegistryWrapper.class);
             if (attribute == null) {
-                attribute = new AppShellRegistryWrapper(new AppShellRegistry());
+                attribute = new AppShellRegistryWrapper(
+                        new AppShellRegistry(context));
                 context.setAttribute(attribute);
             }
             return attribute.registry;
@@ -149,10 +158,14 @@ public class AppShellRegistry implements Serializable {
      * @param clz
      *            the class to check.
      * @return true if the class extends {@link AppShellConfigurator}.
+     * @deprecated use {@link AppShellPredicate} to test whether the class is an
+     *             {@link AppShellConfigurator} or not
      */
+    @Deprecated
     public boolean isShell(Class<?> clz) {
         assert clz != null;
-        return AppShellConfigurator.class.isAssignableFrom(clz);
+        AppShellPredicate predicate = lookup.lookup(AppShellPredicate.class);
+        return predicate.isShell(clz);
     }
 
     /**
