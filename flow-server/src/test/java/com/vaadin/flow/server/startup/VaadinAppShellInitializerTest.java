@@ -4,6 +4,7 @@ import javax.annotation.concurrent.NotThreadSafe;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
 import javax.servlet.http.HttpServletRequest;
+
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,7 +46,6 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.AppShellRegistry;
-import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
 import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitialPageSettings;
@@ -52,7 +53,6 @@ import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -107,14 +107,14 @@ public class VaadinAppShellInitializerTest {
     @Theme(themeClass = AbstractTheme.class)
     @Push(PushMode.AUTOMATIC)
     public static class NonOffendingExporter
-        extends WebComponentExporter<WebHolder> {
+            extends WebComponentExporter<WebHolder> {
         public NonOffendingExporter() {
             super("web-component");
         }
 
         @Override
         public void configureInstance(WebComponent<WebHolder> webComponent,
-            WebHolder component) {
+                WebHolder component) {
         }
     }
 
@@ -218,6 +218,12 @@ public class VaadinAppShellInitializerTest {
         servletContext = mocks.getServletContext();
 
         appConfig = mockApplicationConfiguration();
+
+        Lookup lookup = (Lookup) servletContext
+                .getAttribute(Lookup.class.getName());
+
+        Mockito.when(lookup.lookup(AppShellPredicate.class))
+                .thenReturn(AppShellConfigurator.class::isAssignableFrom);
 
         attributeMap.put(Lookup.class.getName(),
                 servletContext.getAttribute(Lookup.class.getName()));
@@ -376,19 +382,9 @@ public class VaadinAppShellInitializerTest {
     @Test
     public void should_reuseContextAppShell_when_creatingNewInstance()
             throws Exception {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
-        // Set class in context and do not call initializer
-        AppShellRegistry registry = new AppShellRegistry();
-        registry.setShell(MyAppShellWithMultipleAnnotations.class);
-        context.setAttribute(new AppShellRegistryWrapper(registry));
-
-        VaadinRequest request = createVaadinRequest("/");
-        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
-                request);
-
-        List<Element> elements = document.head().children();
-
-        assertEquals(7, elements.size());
+        Assert.assertSame(registry, AppShellRegistry.getInstance(context));
     }
 
     @Test
