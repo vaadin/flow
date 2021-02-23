@@ -40,8 +40,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.di.LookupInitializer.AppShellPredicateImpl;
 import com.vaadin.flow.di.LookupInitializer.ResourceProviderImpl;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
+import com.vaadin.flow.server.startup.AppShellPredicate;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
 import com.vaadin.flow.server.startup.testdata.AnotherTestInstantiatorFactory;
@@ -90,7 +92,8 @@ public class LookupIntializerTest {
     @Test
     public void ensureResourceProvider_defaultImplClassIsStoredAsAService() {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
-        initializer.ensureResourceProviders(map);
+        initializer.ensureService(map, ResourceProvider.class,
+                ResourceProviderImpl.class);
 
         Collection<Class<?>> collection = map.get(ResourceProvider.class);
         Assert.assertEquals(1, collection.size());
@@ -103,7 +106,8 @@ public class LookupIntializerTest {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
         map.put(ResourceProvider.class,
                 Collections.singletonList(ResourceProviderImpl.class));
-        initializer.ensureResourceProviders(map);
+        initializer.ensureService(map, ResourceProvider.class,
+                ResourceProviderImpl.class);
 
         Collection<Class<?>> collection = map.get(ResourceProvider.class);
         Assert.assertEquals(1, collection.size());
@@ -117,7 +121,8 @@ public class LookupIntializerTest {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
         map.put(ApplicationConfigurationFactory.class, Collections
                 .singletonList(DefaultApplicationConfigurationFactory.class));
-        initializer.ensureApplicationConfigurationFactories(map);
+        initializer.ensureService(map, ApplicationConfigurationFactory.class,
+                DefaultApplicationConfigurationFactory.class);
 
         Collection<Class<?>> factories = map
                 .get(ApplicationConfigurationFactory.class);
@@ -131,7 +136,8 @@ public class LookupIntializerTest {
             throws ServletException {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
         map.put(ApplicationConfigurationFactory.class, Collections.emptyList());
-        initializer.ensureApplicationConfigurationFactories(map);
+        initializer.ensureService(map, ApplicationConfigurationFactory.class,
+                DefaultApplicationConfigurationFactory.class);
 
         Collection<Class<?>> collection = map
                 .get(ApplicationConfigurationFactory.class);
@@ -217,9 +223,13 @@ public class LookupIntializerTest {
                 .mock(VaadinApplicationInitializationBootstrap.class);
         initializer.initialize(null, services, bootstrap);
 
-        Mockito.verify(initializer)
-                .ensureApplicationConfigurationFactories(services);
-        Mockito.verify(initializer).ensureResourceProviders(services);
+        Mockito.verify(initializer).ensureService(services,
+                ResourceProvider.class, ResourceProviderImpl.class);
+        Mockito.verify(initializer).ensureService(services,
+                ApplicationConfigurationFactory.class,
+                DefaultApplicationConfigurationFactory.class);
+        Mockito.verify(initializer).ensureService(services,
+                AppShellPredicate.class, AppShellPredicateImpl.class);
         Mockito.verify(bootstrap).bootstrap(Mockito.any());
     }
 

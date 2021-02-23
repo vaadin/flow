@@ -21,6 +21,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.server.PwaIcon;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.RequestHandler;
@@ -42,27 +43,22 @@ import com.vaadin.flow.server.VaadinSession;
  */
 public class PwaHandler implements RequestHandler {
     private final Map<String, RequestHandler> requestHandlerMap = new HashMap<>();
-    private final PwaRegistry pwaRegistry;
+    private final SerializableSupplier<PwaRegistry> pwaRegistryGetter;
+
+    private boolean isInitialized;
 
     /**
-     * Creates PwaHandler from {@link PwaRegistry}.
+     * Creates PwaHandler from {@link PwaRegistry} getter.
+     * 
+     * @param pwaRegistryGetter
+     *            PWA registry getter
      *
-     * Sets up handling for icons, manifest and offline page.
-     *
-     * @param pwaRegistry
-     *            registry for PWA
      */
-    public PwaHandler(PwaRegistry pwaRegistry) {
-        this.pwaRegistry = pwaRegistry;
-        init();
+    public PwaHandler(SerializableSupplier<PwaRegistry> pwaRegistryGetter) {
+        this.pwaRegistryGetter = pwaRegistryGetter;
     }
 
-    private void init() {
-        // Don't init handlers, if not enabled
-        if (!pwaRegistry.getPwaConfiguration().isEnabled()) {
-            return;
-        }
-
+    private void init(PwaRegistry pwaRegistry) {
         // Icon handling
         for (PwaIcon icon : pwaRegistry.getIcons()) {
             requestHandlerMap.put(icon.getRelHref(),
@@ -105,7 +101,8 @@ public class PwaHandler implements RequestHandler {
                     return true;
                 });
 
-        // sw-runtime.js handling (service worker import for precaching runtime generated assets)
+        // sw-runtime.js handling (service worker import for precaching runtime
+        // generated assets)
         requestHandlerMap.put(
                 // pwaRegistry.getPwaConfiguration().relServiceWorkerPath(),
                 "/sw-runtime-resources-precache.js",
@@ -121,14 +118,30 @@ public class PwaHandler implements RequestHandler {
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-        String requestUri = request.getPathInfo();
+        PwaRegistry pwaRegistry = pwaRegistryGetter.get();
+        boolean hasPwa = pwaRegistry != null
+                && pwaRegistry.getPwaConfiguration().isEnabled();
+        RequestHandler handler = null;
+        session.lock();
+        try {
+            if (isInitialized && !hasPwa) {
+                requestHandlerMap.clear();
+            } else if (!isInitialized && hasPwa) {
+                init(pwaRegistry);
+            }
 
-        if (pwaRegistry.getPwaConfiguration().isEnabled()
-                && requestHandlerMap.containsKey(requestUri)) {
-            return requestHandlerMap.get(requestUri).handleRequest(session,
-                    request, response);
+            if (hasPwa) {
+                handler = requestHandlerMap.get(request.getPathInfo());
+            }
+        } finally {
+            session.unlock();
         }
-        return false;
+
+        if (handler == null) {
+            return false;
+        } else {
+            return handler.handleRequest(session, request, response);
+        }
     }
 
 }
