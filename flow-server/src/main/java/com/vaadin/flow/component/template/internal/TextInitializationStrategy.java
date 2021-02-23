@@ -31,7 +31,9 @@ class TextInitializationStrategy
 
     @Override
     public void initialize(Element element, String name, String value) {
-        element.setText(value);
+        if (value != null && !"".equals(value)) {
+            element.setText(value);
+        }
     }
 
 }
