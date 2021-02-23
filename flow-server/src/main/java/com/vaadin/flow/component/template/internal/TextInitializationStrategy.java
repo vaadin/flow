@@ -36,13 +36,13 @@ class TextInitializationStrategy implements ElementInitializationStrategy, Seria
     public void initialize(Element element, String name, String value) {
         // Set the text only for the server side, do not send the change to the client
         // so that it does not overwrite what is in the DOM
-        ElementChildrenList children = element.getNode().getFeature(ElementChildrenList.class);
-        List<AbstractListChange<StateNode>> changeTracker = children.getChangeTracker();
-        int changesBefore = changeTracker.size();
         element.setText(value);
-        while (changeTracker.size() > changesBefore) {
-            changeTracker.remove(changeTracker.size() - 1);
-        }
+
+        // Remove the "clear" and "add child" events
+        ElementChildrenList children = element.getNode().getFeature(ElementChildrenList.class);
+        children.collectChanges(change -> {
+        });
+        children.getChangeTracker().clear();
     }
 
 }

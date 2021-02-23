@@ -18,6 +18,7 @@ package com.vaadin.flow.component.littemplate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -129,13 +130,33 @@ public class InjectableLitElementInitializerTest {
     }
 
     @Test
-    public void initializeElement_setText_textIsSet() {
+    public void initializeElement_setText_textIsSetOnlyOnServer() {
         initializer.accept(Collections.singletonMap(AbstractInjectableElementInitializer.TEXT_DATA, "foo bar"));
 
         Assert.assertEquals("foo bar", element.getText());
+
         ElementChildrenList children = element.getNode().getFeature(ElementChildrenList.class);
         Assert.assertEquals(1, children.size());
-        Assert.assertEquals(0, children.getChangeTracker().size());
+        AtomicBoolean hasChange = new AtomicBoolean(false);
+        children.collectChanges(change -> {
+            hasChange.set(true);
+        });
+        Assert.assertFalse("There should be no pending changes for element children", hasChange.get());
+    }
+
+    @Test
+    public void initializeElement_setText_emptyTextIsSetOnlyOnServer() {
+        initializer.accept(Collections.singletonMap(AbstractInjectableElementInitializer.TEXT_DATA, ""));
+
+        Assert.assertEquals("", element.getText());
+
+        ElementChildrenList children = element.getNode().getFeature(ElementChildrenList.class);
+        Assert.assertEquals(0, children.size());
+        AtomicBoolean hasChange = new AtomicBoolean(false);
+        children.collectChanges(change -> {
+            hasChange.set(true);
+        });
+        Assert.assertFalse("There should be no pending changes for element children", hasChange.get());
     }
 
     @Tag(Tag.DIV)
