@@ -134,14 +134,6 @@ public class InjectableLitElementInitializerTest {
 
         Assert.assertEquals("foo bar", element.getText());
     }
-    @Test
-    public void initializeElement_setText_emptyTextIsNotSet() {
-        element.appendChild(new Element("child"));
-        initializer.accept(Collections.singletonMap(
-                AbstractInjectableElementInitializer.TEXT_DATA, ""));
-
-        Assert.assertEquals("child", element.getChild(0).getTag());
-    }
 
     @Tag(Tag.DIV)
     public static class TestComponent extends Component implements HasStyle {
