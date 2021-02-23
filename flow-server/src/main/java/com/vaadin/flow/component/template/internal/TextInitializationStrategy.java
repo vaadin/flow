@@ -16,8 +16,12 @@
 package com.vaadin.flow.component.template.internal;
 
 import java.io.Serializable;
+import java.util.List;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.change.AbstractListChange;
+import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 
 /**
  * Initializes Element via setting a text value.
@@ -26,12 +30,19 @@ import com.vaadin.flow.dom.Element;
  * @since
  *
  */
-class TextInitializationStrategy
-        implements ElementInitializationStrategy, Serializable {
+class TextInitializationStrategy implements ElementInitializationStrategy, Serializable {
 
     @Override
     public void initialize(Element element, String name, String value) {
+        // Set the text only for the server side, do not send the change to the client
+        // so that it does not overwrite what is in the DOM
+        ElementChildrenList children = element.getNode().getFeature(ElementChildrenList.class);
+        List<AbstractListChange<StateNode>> changeTracker = children.getChangeTracker();
+        int changesBefore = changeTracker.size();
         element.setText(value);
+        while (changeTracker.size() > changesBefore) {
+            changeTracker.remove(changeTracker.size() - 1);
+        }
     }
 
 }

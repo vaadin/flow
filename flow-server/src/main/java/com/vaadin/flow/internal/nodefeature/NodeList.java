@@ -269,7 +269,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
      *
      * @return the list to track changes in
      */
-    protected List<AbstractListChange<T>> getChangeTracker() {
+    public List<AbstractListChange<T>> getChangeTracker() {
         return getNode().getChangeTracker(this, ArrayList::new);
     }
 

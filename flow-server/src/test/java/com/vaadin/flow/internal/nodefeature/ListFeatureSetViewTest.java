@@ -43,7 +43,7 @@ public class ListFeatureSetViewTest {
         }
 
         @Override
-        protected List<AbstractListChange<String>> getChangeTracker() {
+        public List<AbstractListChange<String>> getChangeTracker() {
             // Default implementation calls unmocked method in StateNode
             return changes;
         }

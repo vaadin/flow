@@ -31,6 +31,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.template.internal.AbstractInjectableElementInitializer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 
 public class InjectableLitElementInitializerTest {
 
@@ -129,10 +130,12 @@ public class InjectableLitElementInitializerTest {
 
     @Test
     public void initializeElement_setText_textIsSet() {
-        initializer.accept(Collections.singletonMap(
-                AbstractInjectableElementInitializer.TEXT_DATA, "foo bar"));
+        initializer.accept(Collections.singletonMap(AbstractInjectableElementInitializer.TEXT_DATA, "foo bar"));
 
         Assert.assertEquals("foo bar", element.getText());
+        ElementChildrenList children = element.getNode().getFeature(ElementChildrenList.class);
+        Assert.assertEquals(1, children.size());
+        Assert.assertEquals(0, children.getChangeTracker().size());
     }
 
     @Tag(Tag.DIV)
