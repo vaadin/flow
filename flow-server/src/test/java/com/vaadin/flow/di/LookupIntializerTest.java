@@ -40,7 +40,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.di.LookupInitializer.AppShellPridicateImpl;
+import com.vaadin.flow.di.LookupInitializer.AppShellPredicateImpl;
 import com.vaadin.flow.di.LookupInitializer.ResourceProviderImpl;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
 import com.vaadin.flow.server.startup.AppShellPredicate;
@@ -229,7 +229,7 @@ public class LookupIntializerTest {
                 ApplicationConfigurationFactory.class,
                 DefaultApplicationConfigurationFactory.class);
         Mockito.verify(initializer).ensureService(services,
-                AppShellPredicate.class, AppShellPridicateImpl.class);
+                AppShellPredicate.class, AppShellPredicateImpl.class);
         Mockito.verify(bootstrap).bootstrap(Mockito.any());
     }
 

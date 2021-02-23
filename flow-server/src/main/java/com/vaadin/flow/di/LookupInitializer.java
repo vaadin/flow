@@ -248,12 +248,12 @@ public class LookupInitializer {
      * @since
      *
      */
-    protected static class AppShellPridicateImpl implements AppShellPredicate {
+    protected static class AppShellPredicateImpl implements AppShellPredicate {
 
         /**
          * Creates a new instance.
          */
-        public AppShellPridicateImpl() {
+        public AppShellPredicateImpl() {
         }
 
         @Override
@@ -311,7 +311,7 @@ public class LookupInitializer {
         ensureService(services, ResourceProvider.class,
                 ResourceProviderImpl.class);
         ensureService(services, AppShellPredicate.class,
-                AppShellPridicateImpl.class);
+                AppShellPredicateImpl.class);
         ensureService(services, ApplicationConfigurationFactory.class,
                 DefaultApplicationConfigurationFactory.class);
         bootstrap.bootstrap(createLookup(context, services));
@@ -342,6 +342,10 @@ public class LookupInitializer {
      * 
      * @param services
      *            map of internal services
+     * @param serviceType
+     *            SPI type
+     * @param serviceImpl
+     *            the default SPI implementation
      */
     protected <T> void ensureService(
             Map<Class<?>, Collection<Class<?>>> services, Class<T> serviceType,
