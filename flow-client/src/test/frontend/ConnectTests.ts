@@ -202,7 +202,6 @@ describe('ConnectClient', () => {
         // expected
       } finally {
         (expect(stateChangeListener).to.be as any).calledWithExactly(ConnectionState.LOADING, ConnectionState.CONNECTION_LOST);
-        // expect((window as any).Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
       }
     });
 
