@@ -22,9 +22,10 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -217,7 +218,9 @@ public class LookupServletContainerInitializerTest {
         ArgumentCaptor<Lookup> lookupCapture = ArgumentCaptor
                 .forClass(Lookup.class);
 
-        initializer.process(new HashSet<>(Arrays.asList(classes)), context);
+        Stream<Class<? extends Object>> stream = Stream
+                .concat(Stream.of(LookupInitializer.class), Stream.of(classes));
+        initializer.process(stream.collect(Collectors.toSet()), context);
 
         Mockito.verify(context).setAttribute(Mockito.eq(Lookup.class.getName()),
                 lookupCapture.capture());
