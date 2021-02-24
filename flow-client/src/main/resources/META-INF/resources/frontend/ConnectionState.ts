@@ -39,7 +39,7 @@ export class ConnectionStateStore {
   private loadingCount: number = 0;
 
   constructor(initialState: ConnectionState) {
-      this.connectionState = initialState;
+    this.connectionState = initialState;
   }
 
   addStateChangeListener(listener: ConnectionStateChangeListener): void {
@@ -56,10 +56,18 @@ export class ConnectionStateStore {
   }
 
   loadingFinished(): void {
+    this.decreaseLoadingCount(ConnectionState.CONNECTED);
+  }
+
+  loadingFailed(): void {
+    this.decreaseLoadingCount(ConnectionState.CONNECTION_LOST);
+  }
+
+  private decreaseLoadingCount(finalState: ConnectionState) {
     if (this.loadingCount > 0) {
       this.loadingCount -= 1;
       if (this.loadingCount === 0) {
-        this.state = ConnectionState.CONNECTED;
+        this.state = finalState;
       }
     }
   }
