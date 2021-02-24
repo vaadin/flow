@@ -115,19 +115,24 @@ describe('ConnectionStateStore', () => {
   });
 
   it('should request offline information from from service worker', async() => {
-    let $wnd = (window as any);
+    const $wnd = (window as any);
 
     const fakeServiceWorker = new EventTarget();
-    if (navigator.serviceWorker) {
-      sinon.stub($wnd.navigator, 'serviceWorker').get(() => fakeServiceWorker);
-    } else {
-      (navigator as any).serviceWorker = fakeServiceWorker;
-    }
+    sinon.spy(fakeServiceWorker, 'addEventListener');
+    sinon.spy(fakeServiceWorker, 'removeEventListener');
+
+    const serviceWorkerStub = sinon.stub($wnd.navigator, 'serviceWorker')
+        .get(() => fakeServiceWorker);
+
     const postMessage = sinon.spy();
-    let fakePromise = Promise.resolve({active: {postMessage: postMessage}});
+    const fakePromise = Promise.resolve({active: {postMessage: postMessage}});
     Object.defineProperty(fakeServiceWorker, 'ready', {get: () => fakePromise} );
 
     const store = new ConnectionStateStore(ConnectionState.CONNECTED);
+    const listener = (store as any).serviceWorkerMessageListener;
+    // should add message event listener on service worker
+    sinon.assert.calledOnce(fakeServiceWorker.addEventListener)
+    sinon.assert.calledWith(fakeServiceWorker.addEventListener, 'message', listener);
 
     // should send {type: "isConnectionLost"} to service worker
     await fakePromise;
@@ -135,9 +140,16 @@ describe('ConnectionStateStore', () => {
     sinon.assert.calledWith(postMessage, {'type': 'isConnectionLost'});
 
     // should transition to CONNECTION_LOST when receiving {connectionLost: true}
-    const messageEvent = new Event('message') as any;
-    messageEvent.data = { connectionLost: true };
+    const messageEvent = new MessageEvent('message', {data: {
+      connectionLost: true
+    }}) as any;
     $wnd.navigator.serviceWorker.dispatchEvent(messageEvent);
     assert.equal(store.state, ConnectionState.CONNECTION_LOST);
+
+    // should remove message event listener on service worker
+    sinon.assert.calledOnce(fakeServiceWorker.removeEventListener);
+    sinon.assert.calledWith(fakeServiceWorker.removeEventListener, 'message', listener);
+
+    serviceWorkerStub.restore();
   });
 });
