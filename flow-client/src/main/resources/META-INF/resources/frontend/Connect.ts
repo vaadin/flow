@@ -347,15 +347,14 @@ export class ConnectClient {
     // chain item for our convenience. Always having an ending of the chain
     // this way makes the folding down below more concise.
     const fetchNext: MiddlewareNext = async (context: MiddlewareContext): Promise<Response> => {
-      this.loadingStarted();
+      $wnd.Vaadin.connectionState.loadingStarted();
       return fetch(context.request)
         .then((response) => {
-          this.loadingFinished();
+          $wnd.Vaadin.connectionState.loadingFinished();
           return response;
         })
         .catch((error) => {
-          this.loadingFinished();
-          $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
+          $wnd.Vaadin.connectionState.loadingFailed();
           return Promise.reject(error);
         });
     };
@@ -388,25 +387,5 @@ export class ConnectClient {
 
   private isFlowLoaded(): boolean {
     return $wnd.Vaadin.Flow?.clients?.TypeScript !== undefined;
-  }
-
-  private loadingStarted() {
-    if (this.isFlowLoaded()) {
-      // call Flow.loadingStarted to pause TestBench tests while backend
-      // requests are ongoing
-      $wnd.Vaadin.Flow.clients?.TypeScript?.loadingStarted();
-    } else {
-      $wnd.Vaadin.connectionState.loadingStarted();
-    }
-  }
-
-  private loadingFinished() {
-    if (this.isFlowLoaded()) {
-      // call Flow.loadingFinished to pause TestBench tests while backend
-      // requests are ongoing
-      $wnd.Vaadin.Flow.clients?.TypeScript?.loadingFinished();
-    } else {
-      $wnd.Vaadin.connectionState.loadingFinished();
-    }
   }
 }
