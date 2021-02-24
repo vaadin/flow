@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEventHandler;
+import com.vaadin.flow.di.AbstractLookupInitializer;
 import com.vaadin.flow.di.InstantiatorFactory;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.LookupInitializer;
@@ -49,7 +50,7 @@ import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 @HandlesTypes({ ResourceProvider.class, InstantiatorFactory.class,
         DeprecatedPolymerPublishedEventHandler.class,
         EndpointGeneratorTaskFactory.class,
-        ApplicationConfigurationFactory.class, LookupInitializer.class,
+        ApplicationConfigurationFactory.class, AbstractLookupInitializer.class,
         AppShellPredicate.class })
 public class LookupServletContainerInitializer
         implements ClassLoaderAwareServletContainerInitializer {
@@ -57,15 +58,26 @@ public class LookupServletContainerInitializer
     @Override
     public void process(Set<Class<?>> classSet, ServletContext servletContext)
             throws ServletException {
+        if (!classSet.contains(LookupInitializer.class)) {
+            // this is a specific case for OSGi (PAX web): at some point it may
+            // decide to apply ServletContainerInitializers for non WAR case
+            // even though it has no any sense to do it because the {@code
+            // classSet} is always empty. In normal environment if Servlet
+            // container properly supports ServletContainerInitializers then
+            // {@code classSet} has to contain at least LookupInitializer.
+            // Otherwise LookupServletContainerInitializer should not be
+            // executed at all.
+            return;
+        }
         VaadinServletContext vaadinContext = new VaadinServletContext(
                 servletContext);
         Map<Class<?>, Collection<Class<?>>> services = new HashMap<>();
 
-        collectSubclasses(LookupInitializer.class, classSet, services);
+        collectSubclasses(AbstractLookupInitializer.class, classSet, services);
 
-        LookupInitializer initializer = getLookupInitializer(services);
+        AbstractLookupInitializer initializer = getLookupInitializer(services);
 
-        services.remove(LookupInitializer.class);
+        services.remove(AbstractLookupInitializer.class);
 
         collectServiceImplementations(classSet, services);
 
@@ -149,26 +161,26 @@ public class LookupServletContainerInitializer
                         .collect(Collectors.toSet());
     }
 
-    private LookupInitializer getLookupInitializer(
+    private AbstractLookupInitializer getLookupInitializer(
             Map<Class<?>, Collection<Class<?>>> services)
             throws ServletException {
         Collection<Class<?>> initializers = services
-                .remove(LookupInitializer.class);
+                .remove(AbstractLookupInitializer.class);
         if (initializers == null) {
             initializers = Collections.emptyList();
         } else {
             initializers.remove(LookupInitializer.class);
         }
 
-        LookupInitializer initializer;
+        AbstractLookupInitializer initializer;
         if (initializers.isEmpty()) {
             initializer = new LookupInitializer();
         } else if (initializers.size() > 1) {
             throw new ServletException("Several implementation of "
-                    + LookupInitializer.class.getSimpleName()
+                    + AbstractLookupInitializer.class.getSimpleName()
                     + " are found in the claspath: " + initializers);
         } else {
-            initializer = LookupInitializer.class.cast(ReflectTools
+            initializer = AbstractLookupInitializer.class.cast(ReflectTools
                     .createInstance(initializers.iterator().next()));
         }
         return initializer;
