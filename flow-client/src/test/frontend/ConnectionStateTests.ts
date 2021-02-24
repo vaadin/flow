@@ -137,11 +137,15 @@ describe('ConnectionStateStore', () => {
     // should send {type: "isConnectionLost"} to service worker
     await fakePromise;
     sinon.assert.calledOnce(postMessage);
-    sinon.assert.calledWith(postMessage, {'type': 'isConnectionLost'});
+    sinon.assert.calledWith(postMessage, {
+      method: 'Vaadin.ServiceWorker.isConnectionLost',
+      id: 'Vaadin.ServiceWorker.isConnectionLost'
+    });
 
-    // should transition to CONNECTION_LOST when receiving {connectionLost: true}
+    // should transition to CONNECTION_LOST when receiving {result: true}
     const messageEvent = new MessageEvent('message', {data: {
-      connectionLost: true
+      id: 'Vaadin.ServiceWorker.isConnectionLost',
+      result: true
     }}) as any;
     $wnd.navigator.serviceWorker.dispatchEvent(messageEvent);
     assert.equal(store.state, ConnectionState.CONNECTION_LOST);

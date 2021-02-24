@@ -44,12 +44,16 @@ export class ConnectionStateStore {
       this.serviceWorkerMessageListener = this.serviceWorkerMessageListener.bind(this);
 
       if (navigator.serviceWorker) {
-        // Query service worker: returns {connectionLost: true} if the most recent
-        // fetch was served from precache.
+        // Query service worker if the most recent fetch was served from cache
+        // Add message listener for handling response
         navigator.serviceWorker.addEventListener('message',
             this.serviceWorkerMessageListener);
+        // Send JSON-RPC request to Vaadin service worker
         navigator.serviceWorker.ready.then( registration => {
-          registration?.active?.postMessage({type: 'isConnectionLost'});
+          registration?.active?.postMessage({
+            method: 'Vaadin.ServiceWorker.isConnectionLost',
+            id: 'Vaadin.ServiceWorker.isConnectionLost'
+          });
         });
       }
   }
@@ -109,8 +113,14 @@ export class ConnectionStateStore {
   }
 
   private serviceWorkerMessageListener(event: MessageEvent) {
-    if (!!event.data.connectionLost) {
-      this.state = ConnectionState.CONNECTION_LOST;
+    // Handle JSON-RPC response from service worker
+    if (typeof event.data === 'object'
+        && event.data.id === 'Vaadin.ServiceWorker.isConnectionLost') {
+      if (event.data.result === true) {
+        this.state = ConnectionState.CONNECTION_LOST;
+      }
+
+      // Cleanup: remove event listener upon receiving response
       navigator.serviceWorker.removeEventListener('message', this.serviceWorkerMessageListener);
     }
   }

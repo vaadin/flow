@@ -2,9 +2,9 @@
 
 importScripts('sw-runtime-resources-precache.js');
 import {
-  skipWaiting,
   clientsClaim,
-  RouteHandlerCallbackOptions
+  RouteHandlerCallbackOptions,
+  skipWaiting
 } from 'workbox-core';
 import {matchPrecache, precacheAndRoute} from 'workbox-precaching';
 import {NavigationRoute, registerRoute} from 'workbox-routing';
@@ -76,7 +76,12 @@ if (self.additionalManifestEntries && self.additionalManifestEntries.length) {
 precacheAndRoute(manifestEntries);
 
 self.addEventListener('message', event => {
-  if (event.data.type == 'isConnectionLost') {
-    event.source?.postMessage({connectionLost}, []);
+  if (typeof event.data !== 'object' || !('method' in event.data)) {
+    return;
+  }
+
+  // JSON-RPC request handler for ConnectionStateStore
+  if (event.data.method === 'Vaadin.ServiceWorker.isConnectionLost' && 'id' in event.data) {
+    event.source?.postMessage({id: event.data.id, result: connectionLost}, []);
   }
 });
