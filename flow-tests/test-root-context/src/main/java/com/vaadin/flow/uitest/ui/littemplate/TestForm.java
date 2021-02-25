@@ -27,4 +27,8 @@ public class TestForm extends LitTemplate {
 
     @Id
     private Div div;
+
+    public TestForm() {
+        div.setText("foo");
+    }
 }

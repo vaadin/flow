@@ -26,7 +26,7 @@ import com.vaadin.testbench.TestBenchElement;
 public class TestFormIT extends ChromeBrowserTest {
 
     @Test
-    public void reattachedTemplateHasItsInitialText() {
+    public void reattachedTemplateHasExplicitlySetText() {
         open();
 
         WebElement button = findElement(By.id("click"));
@@ -38,7 +38,7 @@ public class TestFormIT extends ChromeBrowserTest {
                 .id("form-template");
         TestBenchElement div = template.$(TestBenchElement.class).id("div");
 
-        Assert.assertEquals("Template text", div.getText());
+        Assert.assertEquals("foo", div.getText());
 
         // detach template
         button.click();
@@ -48,7 +48,7 @@ public class TestFormIT extends ChromeBrowserTest {
 
         template = $(TestBenchElement.class).id("form-template");
         div = template.$(TestBenchElement.class).id("div");
-        Assert.assertEquals("Template text", div.getText());
+        Assert.assertEquals("foo", div.getText());
     }
 
 }
