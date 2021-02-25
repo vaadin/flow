@@ -24,6 +24,7 @@ public class TestFormView extends Div {
 
     public TestFormView() {
         TestForm testForm = new TestForm();
+        testForm.setId("form-template");
 
         NativeButton button = new NativeButton("Click");
         button.addClickListener(ce -> {
@@ -33,6 +34,7 @@ public class TestFormView extends Div {
                 add(testForm);
             }
         });
+        button.setId("click");
         add(button);
     }
 }
