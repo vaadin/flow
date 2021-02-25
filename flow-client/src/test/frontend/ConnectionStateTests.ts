@@ -98,4 +98,51 @@ describe('ConnectionStateStore', () => {
         [ConnectionState.CONNECTION_LOST, ConnectionState.LOADING],
         [ConnectionState.LOADING, ConnectionState.CONNECTED]]);
   });
+
+  it('should request offline information from from service worker', async() => {
+    const $wnd = (window as any);
+
+    const fakeServiceWorker = new EventTarget();
+    sinon.spy(fakeServiceWorker, 'addEventListener');
+    sinon.spy(fakeServiceWorker, 'removeEventListener');
+
+    const navigatorStub = sinon.stub($wnd, 'navigator')
+        .get(() => ({serviceWorker: fakeServiceWorker}));
+
+    try {
+      const postMessage = sinon.spy();
+      const fakePromise = Promise.resolve({active: {postMessage}});
+      Object.defineProperty(fakeServiceWorker, 'ready', {get: () => fakePromise});
+
+      const store = new ConnectionStateStore(ConnectionState.CONNECTED);
+      const listener = (store as any).serviceWorkerMessageListener;
+      // should add message event listener on service worker
+      sinon.assert.calledOnce(fakeServiceWorker.addEventListener)
+      sinon.assert.calledWith(fakeServiceWorker.addEventListener, 'message', listener);
+
+      // should send {type: "isConnectionLost"} to service worker
+      await fakePromise;
+      sinon.assert.calledOnce(postMessage);
+      sinon.assert.calledWith(postMessage, {
+        method: 'Vaadin.ServiceWorker.isConnectionLost',
+        id: 'Vaadin.ServiceWorker.isConnectionLost'
+      });
+
+      // should transition to CONNECTION_LOST when receiving {result: true}
+      const messageEvent = new MessageEvent('message', {
+        data: {
+          id: 'Vaadin.ServiceWorker.isConnectionLost',
+          result: true
+        }
+      }) as any;
+      fakeServiceWorker.dispatchEvent(messageEvent);
+      assert.equal(store.state, ConnectionState.CONNECTION_LOST);
+
+      // should remove message event listener on service worker
+      sinon.assert.calledOnce(fakeServiceWorker.removeEventListener);
+      sinon.assert.calledWith(fakeServiceWorker.removeEventListener, 'message', listener);
+    } finally {
+      navigatorStub.restore();
+    }
+  });
 });
