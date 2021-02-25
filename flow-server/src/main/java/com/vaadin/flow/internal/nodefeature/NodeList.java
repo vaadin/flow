@@ -357,9 +357,8 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
     @Override
     public void generateChangesFromEmpty() {
         if (isRemoveAllCalled) {
-            // if list has "clear" change and has no any other changes then
-            // this change should be stored in the tracker otherwise it will be
-            // incorrectly postponed
+            // if list ever had "clear" change then it
+            // should be stored in the tracker
             addChange(new ListClearChange<>(this));
         }
         if (values != null) {
