@@ -2,9 +2,9 @@
 
 importScripts('sw-runtime-resources-precache.js');
 import {
-  skipWaiting,
   clientsClaim,
-  RouteHandlerCallbackOptions
+  RouteHandlerCallbackOptions,
+  skipWaiting
 } from 'workbox-core';
 import {matchPrecache, precacheAndRoute} from 'workbox-precaching';
 import {NavigationRoute, registerRoute} from 'workbox-routing';
@@ -43,6 +43,7 @@ const rewriteBaseHref = async (response: Response) => {
 const appShellPath = '.';
 const offlinePath = OFFLINE_PATH_ENABLED ? '/' + OFFLINE_PATH : appShellPath;
 const networkOnly = new NetworkOnly();
+let connectionLost = false;
 const navigationFallback = new NavigationRoute(async (context: RouteHandlerCallbackOptions) => {
   // Use offlinePath fallback if offline was detected
   if (!self.navigator.onLine) {
@@ -55,8 +56,11 @@ const navigationFallback = new NavigationRoute(async (context: RouteHandlerCallb
   // Sometimes navigator.onLine is not reliable, use fallback to offlinePath
   // also in case of network failure
   try {
-    return await networkOnly.handle(context);
+    const response = await networkOnly.handle(context);
+    connectionLost = false;
+    return response;
   } catch (error) {
+    connectionLost = true;
     const precachedResponse = await matchPrecache(offlinePath);
     return precachedResponse ? await rewriteBaseHref(precachedResponse) : error;
   }
@@ -70,3 +74,14 @@ if (self.additionalManifestEntries && self.additionalManifestEntries.length) {
 }
 
 precacheAndRoute(manifestEntries);
+
+self.addEventListener('message', event => {
+  if (typeof event.data !== 'object' || !('method' in event.data)) {
+    return;
+  }
+
+  // JSON-RPC request handler for ConnectionStateStore
+  if (event.data.method === 'Vaadin.ServiceWorker.isConnectionLost' && 'id' in event.data) {
+    event.source?.postMessage({id: event.data.id, result: connectionLost}, []);
+  }
+});
