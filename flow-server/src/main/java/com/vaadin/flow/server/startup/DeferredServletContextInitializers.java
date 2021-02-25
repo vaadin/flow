@@ -23,14 +23,13 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.server.VaadinContext;
 
 /**
  * Internal collection of initializers which may not be executed immediately but
  * requires a {@link Lookup} instance which will be set in the
  * {@link VaadinContext} ({@link ServletContext}) only when
- * {@link LookupInitializer} completed.
+ * {@link LookupServletContainerInitializer} completed.
  * 
  * @author Vaadin Ltd
  * @since
