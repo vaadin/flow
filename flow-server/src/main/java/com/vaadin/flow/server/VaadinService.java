@@ -1706,9 +1706,10 @@ public abstract class VaadinService implements Serializable {
             SystemMessages systemMessages = getSystemMessages(
                     HandlerHelper.findLocale(null, request), request);
             String sessionExpiredURL = systemMessages.getSessionExpiredURL();
+
             if (sessionExpiredURL != null
-                    && (response instanceof VaadinServletResponse)) {
-                ((VaadinServletResponse) response)
+                    && (response instanceof HttpServletResponse)) {
+                ((HttpServletResponse) response)
                         .sendRedirect(sessionExpiredURL);
             } else {
                 /*
