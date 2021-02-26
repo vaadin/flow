@@ -37,8 +37,7 @@ public final class SecurityHelper implements Serializable {
      * URLs matching these patterns should be publicly available for application
      * to work. Used for defining bypass rules in e.g. Spring Security.
      */
-    public static String[] PUBLIC_VAADIN_URLS = {
-            "/" + Constants.VAADIN_MAPPING + "/**",
+    public static final String[] PUBLIC_VAADIN_URLS = {
             "/favicon.ico",
             "/images/**",
             "/icons/**",
