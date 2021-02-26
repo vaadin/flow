@@ -17,15 +17,22 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -46,7 +53,6 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
-import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.RouteParameterRegex;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
@@ -59,12 +65,6 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.VaadinServletContext;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
 
 /**
  * Unit tests for RouteRegistryInitializer and RouteRegistry.
@@ -1401,6 +1401,52 @@ public class RouteRegistryInitializerTest {
         classes.add(OtherRouteTarget.class);
         classes.add(BaseRouteTarget.class);
         routeRegistryInitializer.process(classes, servletContext);
+    }
+
+    @Test
+    public void initialize_noPrevopusStaticRoutes_cleanIsNotCalled_removeMethodIsNotCalled()
+            throws VaadinInitializerException {
+        TestApplicationRouteRegistry registry = new TestApplicationRouteRegistry();
+        Mockito.when(servletContext
+                .getAttribute(registry.wrapper.getClass().getName()))
+                .thenReturn(registry.wrapper);
+
+        routeRegistryInitializer.initialize(
+                Collections.singleton(BaseRouteTarget.class), vaadinContext);
+        Assert.assertFalse(registry.cleanCalled);
+        Assert.assertFalse(registry.removeCalled);
+    }
+
+    private static class TestApplicationRouteRegistry
+            extends ApplicationRouteRegistry {
+
+        ApplicationRouteRegistryWrapper wrapper = new ApplicationRouteRegistryWrapper(
+                this);
+
+        boolean cleanCalled;
+
+        boolean removeCalled;
+
+        @Override
+        public void clean() {
+            cleanCalled = true;
+        }
+
+        @Override
+        public void removeRoute(Class<? extends Component> navigationTarget) {
+            removeCalled = true;
+        }
+
+        @Override
+        public void removeRoute(String path) {
+            removeCalled = true;
+        }
+
+        @Override
+        public void removeRoute(String path,
+                Class<? extends Component> navigationTarget) {
+            removeCalled = true;
+        }
     }
 
     @Tag(Tag.DIV)

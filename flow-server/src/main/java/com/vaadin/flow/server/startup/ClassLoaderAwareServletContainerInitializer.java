@@ -50,33 +50,21 @@ public interface ClassLoaderAwareServletContainerInitializer
             throws ServletException {
         // see DeferredServletContextIntializers
         DeferredServletContextInitializers.Initializer deferredInitializer = ctx -> {
-            ClassLoader webClassLoader = ctx.getClassLoader();
-            ClassLoader classLoader = getClass().getClassLoader();
-
+            WebAppClassloaderCheck check = new WebAppClassloaderCheck(context);
             /*
              * Hack is needed to make a workaround for weird behavior of WildFly
              * with skinnywar See https://github.com/vaadin/flow/issues/7805
              */
-            boolean noHack = false;
-            while (classLoader != null) {
-                if (classLoader.equals(webClassLoader)) {
-                    noHack = true;
-                    break;
-                } else {
-                    /*
-                     * The classloader which has loaded this class ({@code
-                     * classLoader}) should be either the {@code webClassLoader}
-                     * or its child: in this case it knows how to handle the
-                     * classes loaded by the {@code webClassLoader} : it either
-                     * is able to load them itself or delegate to its parent
-                     * (which is the {@code webClassLoader}): in this case hack
-                     * is not needed and the {@link #process(Set,
-                     * ServletContext)} method can be called directly.
-                     */
-                    classLoader = classLoader.getParent();
-                }
-            }
 
+            /*
+             * The classloader which has loaded this class should be either the
+             * web ClassLoader or its child: in this case it knows how to handle
+             * the classes loaded by the web ClassLoader : it either is able to
+             * load them itself or delegate to its parent (which is the web
+             * ClassLoader): in this case hack is not needed and the {@link
+             * #process(Set, ServletContext)} method can be called directly.
+             */
+            boolean noHack = check.hasParentWebClassloader();
             if (noHack) {
                 process(set, ctx);
                 return;
@@ -92,9 +80,8 @@ public interface ClassLoaderAwareServletContainerInitializer
                         .filter(method -> !method.isDefault()
                                 && !method.isSynthetic())
                         .findFirst().get().getName();
-                Method operation = Stream.of(initializer.getMethods())
-                        .filter(method -> method.getName()
-                                .equals(processMethodName))
+                Method operation = Stream.of(initializer.getMethods()).filter(
+                        method -> method.getName().equals(processMethodName))
                         .findFirst().get();
                 operation.invoke(initializer.newInstance(),
                         new Object[] { set, ctx });
@@ -146,13 +133,14 @@ public interface ClassLoaderAwareServletContainerInitializer
      *
      * @param context
      *            the <tt>ServletContext</tt> of the web application that is
-     *            being started and in which the classes contained in <tt>classSet</tt>
-     *            were found
+     *            being started and in which the classes contained in
+     *            <tt>classSet</tt> were found
      *
      * @throws ServletException
      *             if an error has occurred
      *
      * @see #onStartup(Set, ServletContext)
      */
-    void process(Set<Class<?>> classSet, ServletContext context) throws ServletException;
+    void process(Set<Class<?>> classSet, ServletContext context)
+            throws ServletException;
 }
