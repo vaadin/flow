@@ -25,10 +25,19 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class LogoutIT extends ChromeBrowserTest {
 
     @Test
-    public void setLocation_noErrorMessages() {
+    public void setLocationWithNotificationDisabled_noErrorMessages() {
+        logoutAndEnsureRedirectWithNoMessage("logout-button");
+    }
+
+    @Test
+    public void setLocationWithNotificationEnabled_noErrorMessages() {
+        logoutAndEnsureRedirectWithNoMessage("logout-with-notification-button");
+    }
+
+    private void logoutAndEnsureRedirectWithNoMessage(String buttonId) {
         open();
 
-        $(NativeButtonElement.class).first().click();
+        $(NativeButtonElement.class).id(buttonId).click();
 
         // There can be "Session Expired" message because of heartbeat
         // Strings defined in com.vaadin.flow.server.SystemMessages

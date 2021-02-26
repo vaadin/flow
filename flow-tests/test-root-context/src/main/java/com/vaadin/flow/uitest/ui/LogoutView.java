@@ -19,16 +19,38 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.CustomizedSystemMessages;
+import com.vaadin.flow.server.SystemMessagesProvider;
+import com.vaadin.flow.server.VaadinService;
 
 @Route("com.vaadin.flow.uitest.ui.LogoutView")
 public class LogoutView extends Div {
 
     public LogoutView() {
-        NativeButton button = new NativeButton("logout", ev -> {
+        NativeButton logoutButton = new NativeButton("logout", ev -> {
             UI.getCurrent().getPage().setLocation(BaseHrefView.class.getName());
             UI.getCurrent().getSession().close();
         });
-        add(button);
+        logoutButton.setId("logout-button");
+        add(logoutButton);
+
+        NativeButton notificationLogoutButton = new NativeButton(
+                "logout-with-notification", ev -> {
+                    VaadinService.getCurrent().setSystemMessagesProvider(
+                            (SystemMessagesProvider) systemMessagesInfo -> {
+                                final CustomizedSystemMessages systemMessages = new CustomizedSystemMessages();
+                                systemMessages
+                                        .setSessionExpiredNotificationEnabled(
+                                                true);
+                                return systemMessages;
+                            });
+
+                    UI.getCurrent().getPage()
+                            .setLocation(BaseHrefView.class.getName());
+                    UI.getCurrent().getSession().close();
+                });
+        notificationLogoutButton.setId("logout-with-notification-button");
+        add(notificationLogoutButton);
     }
 
 }

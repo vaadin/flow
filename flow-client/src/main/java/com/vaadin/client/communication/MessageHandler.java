@@ -415,6 +415,8 @@ public class MessageHandler {
                     + (Duration.currentTimeMillis() - processUidlStart)
                     + " ms");
 
+            Reactive.flush();
+
             ValueMap meta = valueMap.getValueMap("meta");
 
             if (meta != null) {
@@ -423,26 +425,31 @@ public class MessageHandler {
                     if (nextResponseSessionExpiredHandler != null) {
                         nextResponseSessionExpiredHandler.execute();
                     } else {
-                        registry.getSystemErrorHandler()
-                                .handleSessionExpiredError(null);
-                        registry.getUILifecycle().setState(UIState.TERMINATED);
+                        if (registry.getUILifecycle()
+                                    .getState() != UIState.TERMINATED) {
+                            registry.getSystemErrorHandler()
+                                    .handleSessionExpiredError(null);
+                            registry.getUILifecycle().setState(UIState.TERMINATED);
+                        }
                     }
                 } else if (meta.containsKey("appError")) {
-                    ValueMap error = meta.getValueMap("appError");
+                    if (registry.getUILifecycle()
+                                .getState() != UIState.TERMINATED) {
+                        ValueMap error = meta.getValueMap("appError");
 
-                    registry.getSystemErrorHandler().handleUnrecoverableError(
-                            error.getString("caption"),
-                            error.getString("message"),
-                            error.getString("details"),
-                            error.getString("url"),
-                            error.getString("querySelector"));
+                        registry.getSystemErrorHandler().handleUnrecoverableError(
+                                error.getString("caption"),
+                                error.getString("message"),
+                                error.getString("details"),
+                                error.getString("url"),
+                                error.getString("querySelector"));
 
-                    registry.getUILifecycle().setState(UIState.TERMINATED);
+                        registry.getUILifecycle().setState(UIState.TERMINATED);
+                    }
                 }
                 Profiler.leave("Error handling");
             }
             nextResponseSessionExpiredHandler = null;
-            Reactive.flush();
 
             lastProcessingTime = (int) (Duration.currentTimeMillis() - start);
             totalProcessingTime += lastProcessingTime;
