@@ -19,10 +19,10 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 
-@Route(value = "com.vaadin.flow.uitest.ui.littemplate.TestFormView")
-public class TestFormView extends Div {
+@Route(value = "com.vaadin.flow.uitest.ui.littemplate.ReattachView")
+public class ReattachView extends Div {
 
-    public TestFormView() {
+    public ReattachView() {
         TestForm testForm = new TestForm();
         testForm.setId("form-template");
 

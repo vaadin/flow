@@ -23,7 +23,7 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-public class TestFormIT extends ChromeBrowserTest {
+public class ReattachIT extends ChromeBrowserTest {
 
     @Test
     public void reattachedTemplateHasExplicitlySetText() {
