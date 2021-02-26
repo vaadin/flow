@@ -4,6 +4,7 @@ import {
   AttributePartInfo,
   directive,
   Directive,
+  ElementPartInfo,
   PartInfo,
   PartType,
 } from "lit-html/directive";
@@ -136,7 +137,7 @@ export const field = directive(
       // @ts-ignore
       strategy: undefined,
     };
-    partInfo: AttributePartInfo;
+    partInfo: AttributePartInfo | ElementPartInfo;
     model!: AbstractModel<any>;
     element!: HTMLInputElement & Field;
     elementInited = false;
@@ -144,8 +145,8 @@ export const field = directive(
 
     constructor(partInfo: PartInfo) {
       super(partInfo);
-      if (partInfo.type !== PartType.PROPERTY) {
-        throw new Error('Only supports ...="" syntax');
+      if (partInfo.type !== PartType.PROPERTY && partInfo.type !== PartType.ELEMENT) {
+        throw new Error('Use as "<element \${field(...)}" or <element ...=\${field(...)}"');
       }
       this.partInfo = partInfo;
     }
