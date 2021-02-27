@@ -23,6 +23,7 @@ import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -97,7 +98,14 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             extends BootstrapPageBuilder {
         @Override
         protected List<String> getChunkKeys(JsonObject chunks) {
-            return Collections.singletonList(EXPORT_CHUNK);
+            boolean hasExportChunk = Arrays.stream(chunks.keys())
+                    .anyMatch(s -> EXPORT_CHUNK.equals(s));
+
+            if (hasExportChunk) {
+                return Collections.singletonList(EXPORT_CHUNK);
+            } else {
+                return super.getChunkKeys(chunks);
+            }
         }
     }
 
