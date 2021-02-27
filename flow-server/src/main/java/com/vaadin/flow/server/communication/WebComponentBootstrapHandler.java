@@ -279,6 +279,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         ArrayList<com.vaadin.flow.dom.Element> elementsForShadows = new ArrayList<>();
         try (BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
+            writer.write("var hasScript = function(src) {\n"
+                    + "  var scriptTags = Array.from(document.head.querySelectorAll('script'));\n"
+                    + "  return !!scriptTags.find(script => script.src.endsWith(src))\n"
+                    + "};\n");
+
             String varName = "headElem"; // generated head element
             writer.append("var ").append(varName).append("=null;");
             for (Element element : head.children()) {
@@ -286,6 +291,22 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     getElementForShadowDom(element)
                             .ifPresent(elementsForShadows::add);
                     continue;
+                }
+                String conditionalFilename = null;
+                if ("script".equalsIgnoreCase(element.tagName())) {
+                    // Do not inject the bundle twice as it can never work.
+                    // The bundle contains web components that register
+                    // themselves and loading twice
+                    // will always cause custom element conflicts
+                    String src = element.attr("src");
+                    int index = src.indexOf("/VAADIN/");
+                    if (index != -1) {
+                        conditionalFilename = src.substring(index);
+                    }
+                }
+                if (conditionalFilename != null) {
+                    writer.append("if (!hasScript('" + conditionalFilename
+                            + "')) {\n");
                 }
                 writer.append(varName).append("=");
                 writer.append("document.createElement('")
@@ -299,6 +320,9 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 }
                 writer.append("document.head.appendChild(").append(varName)
                         .append(");");
+                if (conditionalFilename != null) {
+                    writer.append("}\n");
+                }
             }
         }
 
