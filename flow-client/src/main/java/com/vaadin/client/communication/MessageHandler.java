@@ -421,31 +421,26 @@ public class MessageHandler {
 
             if (meta != null) {
                 Profiler.enter("Error handling");
+                final UIState uiState = registry.getUILifecycle().getState();
                 if (meta.containsKey(JsonConstants.META_SESSION_EXPIRED)) {
                     if (nextResponseSessionExpiredHandler != null) {
                         nextResponseSessionExpiredHandler.execute();
-                    } else {
-                        if (registry.getUILifecycle()
-                                    .getState() != UIState.TERMINATED) {
-                            registry.getSystemErrorHandler()
-                                    .handleSessionExpiredError(null);
-                            registry.getUILifecycle().setState(UIState.TERMINATED);
-                        }
-                    }
-                } else if (meta.containsKey("appError")) {
-                    if (registry.getUILifecycle()
-                                .getState() != UIState.TERMINATED) {
-                        ValueMap error = meta.getValueMap("appError");
-
-                        registry.getSystemErrorHandler().handleUnrecoverableError(
-                                error.getString("caption"),
-                                error.getString("message"),
-                                error.getString("details"),
-                                error.getString("url"),
-                                error.getString("querySelector"));
-
+                    } else if (uiState != UIState.TERMINATED) {
+                        registry.getSystemErrorHandler()
+                                .handleSessionExpiredError(null);
                         registry.getUILifecycle().setState(UIState.TERMINATED);
                     }
+                } else if (meta.containsKey("appError")
+                        && uiState != UIState.TERMINATED) {
+                    ValueMap error = meta.getValueMap("appError");
+
+                    registry.getSystemErrorHandler().handleUnrecoverableError(
+                            error.getString("caption"),
+                            error.getString("message"),
+                            error.getString("details"), error.getString("url"),
+                            error.getString("querySelector"));
+
+                    registry.getUILifecycle().setState(UIState.TERMINATED);
                 }
                 Profiler.leave("Error handling");
             }
