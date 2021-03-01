@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.polymertemplate.Id;
@@ -23,6 +24,7 @@ import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @JsModule("test-form.js")
+@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/test-form.html")
 @Tag("test-form")
 public class TestForm extends PolymerTemplate<TemplateModel> {
 
