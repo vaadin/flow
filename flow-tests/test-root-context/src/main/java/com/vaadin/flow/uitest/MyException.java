@@ -21,4 +21,5 @@ package com.vaadin.flow.uitest;
  * @since 1.0
  */
 public class MyException extends RuntimeException {
+
 }
