@@ -282,7 +282,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
             writer.write("var hasScript = function(src) {\n"
                     + "  var scriptTags = Array.from(document.head.querySelectorAll('script'));\n"
-                    + "  return !!scriptTags.find(script => script.src.endsWith(src))\n"
+                    + "  return scriptTags.some(script => script.src.endsWith(src))\n"
                     + "};\n");
 
             String varName = "headElem"; // generated head element
@@ -293,21 +293,10 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                             .ifPresent(elementsForShadows::add);
                     continue;
                 }
-                String conditionalFilename = null;
-                if ("script".equalsIgnoreCase(element.tagName())) {
-                    // Do not inject the bundle twice as it can never work.
-                    // The bundle contains web components that register
-                    // themselves and loading twice
-                    // will always cause custom element conflicts
-                    String src = element.attr("src");
-                    int index = src.indexOf("/VAADIN/");
-                    if (index != -1) {
-                        conditionalFilename = src.substring(index);
-                    }
-                }
+                String conditionalFilename = getVaadinFilenameIfVaadinScript(element);
                 if (conditionalFilename != null) {
-                    writer.append("if (!hasScript('" + conditionalFilename
-                            + "')) {\n");
+                    writer.append("if (!hasScript(\"" + conditionalFilename
+                            + "\")) {\n");
                 }
                 writer.append(varName).append("=");
                 writer.append("document.createElement('")
@@ -332,6 +321,22 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 .setShadowDomElements(elementsForShadows);
     }
 
+    private static String getVaadinFilenameIfVaadinScript(Element element) {
+        if (!"script".equalsIgnoreCase(element.tagName())) {
+            return null;
+        }
+        // Injecting a webpack bundle twice can never work.
+        // The bundle contains web components that register
+        // themselves and loading twice will always cause
+        // custom element conflicts
+        String src = element.attr("src");
+        int index = src.indexOf("/VAADIN/");
+        if (index != -1) {
+            return src.substring(index);
+        }
+
+        return null;
+    }
     private static boolean elementShouldNotBeTransferred(Element element) {
         // we skip base href adjustment, since we are in a 3rd party
         // context, also "meta" and "style" affects the page globally and should
