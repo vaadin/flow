@@ -114,7 +114,7 @@ if (useClientSideIndexFileForBootstrapping) {
   const baseName = path.basename(fileNameOfTheFlowGeneratedMainEntryPoint, '.js');
   if (fs.readdirSync(dirName).filter(fileName => !fileName.startsWith(baseName)).length) {
     // if there are vaadin exported views, add a second entry
-    webPackEntries.export = fileNameOfTheFlowGeneratedMainEntryPoint;
+    webPackEntries.bundle = [webPackEntries.bundle, fileNameOfTheFlowGeneratedMainEntryPoint];
   }
 } else {
   webPackEntries.bundle = fileNameOfTheFlowGeneratedMainEntryPoint;

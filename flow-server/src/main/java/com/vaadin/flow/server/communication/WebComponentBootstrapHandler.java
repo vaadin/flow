@@ -53,7 +53,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -92,19 +91,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         }
     }
 
-    private static class WebComponentBootstrapPageBuilder
-            extends BootstrapPageBuilder {
-        @Override
-        protected List<String> getChunkKeys(JsonObject chunks) {
-            return Collections.singletonList(EXPORT_CHUNK);
-        }
-    }
-
     /**
      * Creates a new bootstrap handler with default page builder.
      */
     public WebComponentBootstrapHandler() {
-        super(new WebComponentBootstrapPageBuilder());
+        super();
     }
 
     /**
