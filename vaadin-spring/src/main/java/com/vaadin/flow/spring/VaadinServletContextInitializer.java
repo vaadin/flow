@@ -236,7 +236,13 @@ public class VaadinServletContextInitializer
             Set<Class<?>> classes = Stream.concat(
                     findByAnnotationOrSuperType(getLookupPackages(), appContext,
                             Collections.emptyList(), getServiceTypes()),
-                    Stream.of(SpringLookupInitializer.class))
+                    // LookupInitializer is necessary here: it allows
+                    // identify Spring boot as a regular Web container (and run
+                    // LookupServletContainerInitializer logic) even though
+                    // LookupInitializer will be ignored because there
+                    // is its subclass SpringLookupInitializer provided
+                    Stream.of(LookupInitializer.class,
+                            SpringLookupInitializer.class))
                     .collect(Collectors.toSet());
             process(classes, event.getServletContext());
         }
