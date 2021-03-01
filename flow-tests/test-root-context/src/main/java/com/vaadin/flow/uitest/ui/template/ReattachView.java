@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.littemplate;
+package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
@@ -28,7 +28,7 @@ public class ReattachView extends Div {
 
         NativeButton button = new NativeButton("Click");
         button.addClickListener(ce -> {
-            if (testForm.isAttached()) {
+            if (testForm.getElement().getNode().isAttached()) {
                 remove(testForm);
             } else {
                 add(testForm);
