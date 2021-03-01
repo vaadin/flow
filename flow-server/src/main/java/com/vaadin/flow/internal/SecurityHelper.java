@@ -17,7 +17,6 @@ package com.vaadin.flow.internal;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -29,9 +28,6 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
  *
  */
 public final class SecurityHelper implements Serializable {
-
-    private SecurityHelper() {
-    }
 
     /**
      * URLs matching these patterns should be publicly available for application
@@ -47,4 +43,6 @@ public final class SecurityHelper implements Serializable {
             "/" + PwaConfiguration.DEFAULT_OFFLINE_PATH
     };
 
+    private SecurityHelper() {
+    }
 }
