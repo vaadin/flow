@@ -1352,25 +1352,6 @@ public class BootstrapHandlerTest {
         Assert.assertFalse(bundle.hasAttr("defer"));
     }
 
-    @Test
-    public void getBootstrapPage_removesExportScript() throws ServiceException {
-        initUI(testUI);
-
-        BootstrapContext bootstrapContext = new BootstrapContext(request, null,
-                session, testUI, this::contextRootRelativePath);
-        Document page = pageBuilder.getBootstrapPage(bootstrapContext);
-
-        Elements scripts = page.head().getElementsByTag("script");
-
-        Assert.assertTrue(scripts.stream()
-                .filter(el -> el.attr("src")
-                        .equals("./VAADIN/build/vaadin-bundle-1111.cache.js"))
-                .findFirst().isPresent());
-        Assert.assertFalse(scripts.stream()
-                .filter(el -> el.attr("src")
-                        .equals("./VAADIN/build/vaadin-export-2222.cache.js"))
-                .findFirst().isPresent());
-    }
 
     @Test // #7158
     public void getBootstrapPage_assetChunksIsAnARRAY_bootstrapParsesOk()
