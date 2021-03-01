@@ -28,7 +28,7 @@ public class ReattachView extends Div {
 
         NativeButton button = new NativeButton("Click");
         button.addClickListener(ce -> {
-            if (testForm.isAttached()) {
+            if (testForm.getElement().getNode().isAttached()) {
                 remove(testForm);
             } else {
                 add(testForm);
