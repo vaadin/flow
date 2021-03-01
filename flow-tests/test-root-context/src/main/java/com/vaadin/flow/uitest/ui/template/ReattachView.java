@@ -19,7 +19,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 
-@Route(value = "com.vaadin.flow.uitest.ui.littemplate.ReattachView")
+@Route(value = "com.vaadin.flow.uitest.ui.template.ReattachView")
 public class ReattachView extends Div {
 
     public ReattachView() {
