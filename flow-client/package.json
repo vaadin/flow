@@ -9,7 +9,7 @@
     "url": "https://github.com/vaadin/flow/issues"
   },
   "scripts": {
-    "lint": "eslint --debug --ext .ts \"src/main/resources/META-INF/resources/frontend\"",
+    "lint": "eslint \"src/main/resources/META-INF/resources/frontend\"",
     "client": "node scripts/client.js",
     "version": "node scripts/version.js",
     "webpack": "webpack --config=webpack.tests.config.js",
@@ -31,12 +31,12 @@
     "abort-controller": "^2.0.0",
     "chai": "^4.2.0",
     "eslint": "^7.21.0",
-    "prettier": "^2.2.1",
     "eslint-config-vaadin": "^0.4.0",
     "fetch-mock": "^7.3.0",
     "idb": "^5.0.6",
     "intern": "^4.4.3",
     "node-fetch": "^2.3.0",
+    "prettier": "^2.2.1",
     "sinon": "^7.1.1",
     "sinon-chai": "^3.2.0",
     "ts-loader": "^6.0.4",
