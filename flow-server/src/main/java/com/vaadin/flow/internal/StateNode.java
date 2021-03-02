@@ -44,6 +44,7 @@ import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
 import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.change.NodeDetachChange;
+import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.server.Command;
@@ -343,7 +344,13 @@ public class StateNode implements Serializable {
         }
     }
 
-    private void forEachChild(Consumer<StateNode> action) {
+    /**
+     * Executes the given action for each child node of this state node.
+     *
+     * @param action
+     *            the action to execute, not {@code null}
+     */
+    public void forEachChild(Consumer<StateNode> action) {
         forEachFeature(n -> n.forEachChild(action));
     }
 
@@ -622,10 +629,10 @@ public class StateNode implements Serializable {
                 Stream<NodeFeature> initialFeatures = Stream
                         .concat(featureSet.mappings.keySet().stream()
                                 .filter(this::isReportedFeature)
-                                .map(this::getFeature), getDisalowFeatures());
+                                .map(this::getFeature), getDisallowFeatures());
                 doCollectChanges(collector, initialFeatures);
             } else {
-                doCollectChanges(collector, getDisalowFeatures());
+                doCollectChanges(collector, getDisallowFeatures());
             }
         } else {
             doCollectChanges(collector, getInitializedFeatures());
@@ -919,7 +926,7 @@ public class StateNode implements Serializable {
      * @see NodeFeature#allowsChanges()
      */
     public void updateActiveState() {
-        setInactive(getDisalowFeatures().count() != 0);
+        setInactive(getDisallowFeatures().count() != 0);
     }
 
     /**
@@ -936,7 +943,25 @@ public class StateNode implements Serializable {
         return getParent().isInactive();
     }
 
-    private Stream<NodeFeature> getDisalowFeatures() {
+    /**
+     * Returns whether or not this state node is inert and it should not receive
+     * any updates from the client side. Inert state is inherited from parent,
+     * unless explicitly set to ignore parent inert state.
+     * <p>
+     * The inert state is only updated when the changes are written to the
+     * client side, but the inert state is not sent to the client side - it is a
+     * server side feature only.
+     * 
+     * @return {@code true} if the node is inert, {@code false} if not
+     * @see InertData
+     */
+    public boolean isInert() {
+        // the node has inert data, it will resolve state properly
+        return getFeatureIfInitialized(InertData.class).map(InertData::isInert)
+                .orElse(getParent() != null && getParent().isInert());
+    }
+
+    private Stream<NodeFeature> getDisallowFeatures() {
         return getInitializedFeatures()
                 .filter(feature -> !feature.allowsChanges());
     }

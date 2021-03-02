@@ -1149,4 +1149,317 @@ public class UITest {
         }
     }
 
+    @Test
+    public void routingComponentVisible_modalComponentAdded_routingComponentInert() {
+        final TestFixture fixture = new TestFixture();
+
+        verifyInert(fixture.ui, false);
+        verifyInert(fixture.routingComponent, false);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.collectUiChanges(); // the modal add will be visible
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.ui.remove(fixture.modalComponent);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, false);
+        verifyInert(fixture.routingComponent, false);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.ui.addModal(fixture.modalComponent);
+        fixture.collectUiChanges(); // the modal add will be visible
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void routingComponentAndModalComponentVisible_modalComponentAdded_anotherModalComponentInert() {
+        final TestFixture fixture = new TestFixture();
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+
+        final AttachableComponent secondModal = new AttachableComponent();
+        fixture.ui.addModal(secondModal);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, true);
+        verifyInert(secondModal, false);
+
+        fixture.ui.remove(secondModal);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void modalComponentPresent_modalityChanged_routingComponentNotInert() {
+        final TestFixture fixture = new TestFixture();
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.ui.setChildComponentModal(fixture.modalComponent, false);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, false);
+        verifyInert(fixture.routingComponent, false);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.ui.setChildComponentModal(fixture.modalComponent, true);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void modalComponentsPresent_newComponentAdded_isInert() {
+        final TestFixture fixture = new TestFixture();
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+
+        final AttachableComponent component = new AttachableComponent();
+        fixture.ui.add(component);
+
+        // inert state inherited from UI immediately
+        verifyInert(component, true);
+
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+        verifyInert(component, true);
+    }
+
+    @Test
+    public void modalComponent_addedAndRemovedBeforeResponse_noInertChanged() {
+        final TestFixture fixture = new TestFixture();
+
+        verifyInert(fixture.ui, false);
+        verifyInert(fixture.routingComponent, false);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.ui.remove(fixture.modalComponent);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, false);
+        verifyInert(fixture.routingComponent, false);
+        verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void modalComponentsPresent_componentMoved_notModal() {
+        final TestFixture fixture = new TestFixture();
+        fixture.collectUiChanges();
+
+        fixture.ui.add(fixture.modalComponent);
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, false);
+        verifyInert(fixture.routingComponent, false);
+        verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void modalComponentPresent_sameModalAddedAgain_modeless() {
+        final TestFixture fixture = new TestFixture();
+        fixture.collectUiChanges();
+
+        fixture.ui.add(fixture.modalComponent);
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, false);
+        verifyInert(fixture.routingComponent, false);
+        verifyInert(fixture.modalComponent, false);
+    }
+
+
+    @Test
+    public void modalComponentPresent_toggleTopModalAgain_noChanges() {
+        final TestFixture fixture = new TestFixture();
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.ui.setChildComponentModal(fixture.modalComponent, true);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void modelessComponentPresent_toggleModelessAgain_noChanges() {
+        final TestFixture fixture = new TestFixture();
+        fixture.ui.setChildComponentModal(fixture.modalComponent, false);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, false);
+        verifyInert(fixture.routingComponent, false);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.ui.setChildComponentModal(fixture.modalComponent, true);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void twoModalComponents_lowerComponentModelssAndTopMostRemoved_routingComponentNotInert() {
+        final TestFixture fixture = new TestFixture();
+        final AttachableComponent secondModal = new AttachableComponent();
+        fixture.ui.addModal(secondModal);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, true);
+        verifyInert(secondModal, false);
+
+        // (not a typical use case but tested anyway)
+        // the change of modality has no effect due to another modal component
+        // on top
+        fixture.ui.setChildComponentModal(fixture.modalComponent, false);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, true);
+        verifyInert(secondModal, false);
+
+        fixture.ui.remove(secondModal);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, false);
+        verifyInert(fixture.routingComponent, false);
+        verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void twoModalComponents_topComponentMoved_modalComponentSwitches() {
+        final TestFixture fixture = new TestFixture();
+        final AttachableComponent secondModal = new AttachableComponent();
+        fixture.ui.addModal(secondModal);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, true);
+        verifyInert(secondModal, false);
+
+        fixture.ui.add(secondModal);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+        verifyInert(secondModal, true);
+    }
+
+    @Test
+    public void twoModalComponents_lowerComponentModalAgain_topComponentInert() {
+        final TestFixture fixture = new TestFixture();
+        final AttachableComponent secondModal = new AttachableComponent();
+        fixture.ui.addModal(secondModal);
+        fixture.collectUiChanges();
+
+        fixture.ui.setChildComponentModal(fixture.modalComponent, true);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+        verifyInert(secondModal, true);
+
+        fixture.ui.remove(fixture.modalComponent);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(secondModal, false);
+    }
+
+    @Test
+    public void threeModalComponents_topComponentRemoved_onlyTopMostNotInert() {
+        final TestFixture fixture = new TestFixture();
+        final AttachableComponent secondModal = new AttachableComponent();
+        final AttachableComponent thirdModal = new AttachableComponent();
+        fixture.ui.addModal(secondModal);
+        fixture.ui.addModal(thirdModal);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, true);
+        verifyInert(secondModal, true);
+        verifyInert(thirdModal, false);
+
+        fixture.ui.remove(thirdModal);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, true);
+        verifyInert(secondModal, false);
+    }
+
+    private void verifyInert(Component component, boolean inert) {
+        Assert.assertEquals("Invalid inert state", inert,
+                component.getElement().getNode().isInert());
+    }
+
+    private static class TestFixture {
+        public final UI ui;
+        public final Component routingComponent;
+        public final Component modalComponent;
+
+        public TestFixture() {
+            ui = createTestUI();
+            initUI(ui, "", null);
+            routingComponent = ui.getChildren().findFirst().get();
+
+            modalComponent = new AttachableComponent();
+            ui.addModal(modalComponent);
+        }
+
+        public void collectUiChanges() {
+            ui.getInternals().getStateTree().collectChanges(nodeChange -> {
+            });
+        }
+    }
 }

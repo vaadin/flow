@@ -44,22 +44,27 @@ public abstract class AbstractRpcInvocationHandler
         StateNode node = ui.getInternals().getStateTree()
                 .getNodeById(getNodeId(invocationJson));
         if (node == null) {
-            getLogger().warn("Got an RPC for non-existent node: {}",
+            getLogger().warn("Ignoring RPC for non-existent node: {}",
                     getNodeId(invocationJson));
             return Optional.empty();
         }
         if (!node.isAttached()) {
-            getLogger().warn("Got an RPC for detached node: {}",
+            getLogger().warn("Ignoring RPC for detached node: {}",
                     getNodeId(invocationJson));
             return Optional.empty();
         }
 
+        // ignore RPC requests from the client side for the nodes that are
+        // invisible, disabled or inert
         if (node.isInactive()) {
-            // ignore RPC requests from the client side for the nodes that are
-            // invisible or disabled
-            LoggerFactory.getLogger(AbstractRpcInvocationHandler.class).trace(
-                    "RPC request for invocation handler '{}' is recieved from "
-                            + "the client side for inactive node id='{}'",
+            getLogger().trace("Ignored RPC for invocation handler '{}' from "
+                    + "the client side for an inactive (disabled or invisible) node id='{}'",
+                    getClass().getName(), node.getId());
+            return Optional.empty();
+        } else if (node.isInert()) {
+            getLogger().trace(
+                    "Ignored RPC for invocation handler '{}' from "
+                            + "the client side for an inert node id='{}'",
                     getClass().getName(), node.getId());
             return Optional.empty();
         } else {
