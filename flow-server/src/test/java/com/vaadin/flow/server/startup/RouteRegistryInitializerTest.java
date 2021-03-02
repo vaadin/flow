@@ -20,8 +20,10 @@ import javax.servlet.ServletException;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -1439,6 +1441,89 @@ public class RouteRegistryInitializerTest {
         Assert.assertFalse(registry.removeCalled);
     }
 
+    @Test
+    public void initialize_noPredicate_hasPrevopusStaticRoutes_previousRoutesAreRemoved()
+            throws VaadinInitializerException {
+        ApplicationRouteRegistry registry = firstInitRouteRegistry();
+
+        // second time initialization
+
+        routeRegistryInitializer.initialize(
+                Collections.singleton(BaseRouteTarget.class), vaadinContext);
+        List<RouteData> routes = registry.getRegisteredRoutes();
+        Assert.assertEquals(1, routes.size());
+        RouteData data = routes.get(0);
+        Assert.assertEquals("foo", data.getTemplate());
+    }
+
+    @Test
+    public void initialize_noPredicate_hasPrevopusStaticRoutes_addRouteManually_previousRoutesAreRemoved_addedRouteIsPreserved()
+            throws VaadinInitializerException {
+        ApplicationRouteRegistry registry = firstInitRouteRegistry();
+
+        // now add a route via registry API without registry initializer
+
+        registry.setRoute("manual-route", Component.class,
+                Collections.emptyList());
+
+        // second time initialization
+
+        routeRegistryInitializer.initialize(
+                Collections.singleton(BaseRouteTarget.class), vaadinContext);
+        List<RouteData> routes = registry.getRegisteredRoutes();
+        // two routes: manually added and set during init phase
+        Assert.assertEquals(2, routes.size());
+
+        RouteData route1 = routes.get(0);
+        RouteData route2 = routes.get(1);
+
+        if (route1.getTemplate().equals("foo")) {
+            Assert.assertEquals("manual-route", route2.getTemplate());
+        } else {
+            Assert.assertEquals("manual-route", route1.getTemplate());
+            Assert.assertEquals("foo", route2.getTemplate());
+        }
+    }
+
+    private ApplicationRouteRegistry firstInitRouteRegistry()
+            throws VaadinInitializerException {
+        vaadinContext = new VaadinServletContext(servletContext) {
+
+            private Map<Class<?>, Object> map = new HashMap<>();
+
+            @Override
+            public <T> T getAttribute(Class<T> type) {
+                if (Lookup.class.equals(type)) {
+                    return type.cast(lookup);
+                } else {
+                    return type.cast(map.get(type));
+                }
+            }
+
+            @Override
+            public <T> void setAttribute(Class<T> clazz, T value) {
+                map.put(clazz, value);
+            }
+        };
+        // first time initialization
+        routeRegistryInitializer.initialize(
+                Collections.singleton(OldRouteTarget.class), vaadinContext);
+
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(vaadinContext);
+        List<RouteData> routes = registry.getRegisteredRoutes();
+        // self check
+
+        Assert.assertEquals(1, routes.size());
+        RouteData data = routes.get(0);
+        Assert.assertEquals("foo-bar", data.getTemplate());
+        List<RouteAliasData> aliases = data.getRouteAliases();
+        Assert.assertEquals(1, aliases.size());
+        RouteAliasData alias = aliases.get(0);
+        Assert.assertEquals("baz", alias.getTemplate());
+        return registry;
+    }
+
     private static class TestApplicationRouteRegistry
             extends ApplicationRouteRegistry {
 
@@ -1492,6 +1577,13 @@ public class RouteRegistryInitializerTest {
     @Tag(Tag.DIV)
     @Route("foo")
     private static class OtherRouteTarget extends Component {
+
+    }
+
+    @Tag(Tag.DIV)
+    @Route("foo-bar")
+    @RouteAlias("baz")
+    private static class OldRouteTarget extends AbstractRouteTarget {
 
     }
 }

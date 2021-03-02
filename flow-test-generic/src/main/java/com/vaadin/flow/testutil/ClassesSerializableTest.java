@@ -77,6 +77,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.di\\.ResourceProvider",
                 "com\\.vaadin\\.flow\\.di\\.AbstractLookupInitializer",
                 "com\\.vaadin\\.flow\\.di\\.LookupInitializer(\\$.*)?",
+                "com\\.vaadin\\.flow\\.di\\.OneTimeInitializerPredicate",
                 "com\\.vaadin\\.flow\\.dom\\.ElementConstants",
                 "com\\.vaadin\\.flow\\.component\\.board\\.internal\\.FunctionCaller",
                 "com\\.vaadin\\.flow\\.component\\.grid\\.ColumnGroupHelpers",
