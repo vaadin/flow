@@ -122,7 +122,7 @@ public class ThemeIT extends ChromeBrowserTest {
     protected String getTestPath() {
         String path = super.getTestPath();
         String view = "view/";
-        return  path.replace(view, "path/");
+        return path.replace(view, "path/");
     }
 
 }
