@@ -7,7 +7,7 @@ import {
   ElementPartInfo,
   PartInfo,
   PartType,
-} from "lit-html/directive";
+} from "lit/directive";
 import { BinderNode } from "./BinderNode";
 import { _fromString, AbstractModel, getBinderNode } from "./Models";
 
