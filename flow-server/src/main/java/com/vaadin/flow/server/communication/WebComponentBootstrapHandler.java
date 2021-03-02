@@ -98,10 +98,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             extends BootstrapPageBuilder {
         @Override
         protected List<String> getChunkKeys(JsonObject chunks) {
-            boolean hasExportChunk = Arrays.stream(chunks.keys())
-                    .anyMatch(s -> EXPORT_CHUNK.equals(s));
-
-            if (hasExportChunk) {
+            if (chunks.hasKey(EXPORT_CHUNK)) {
                 return Collections.singletonList(EXPORT_CHUNK);
             } else {
                 return super.getChunkKeys(chunks);
