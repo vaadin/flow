@@ -9,7 +9,7 @@
     "url": "https://github.com/vaadin/flow/issues"
   },
   "scripts": {
-    "lint": "eslint --ext .ts \"src/main/resources/META-INF/resources/frontend\"",
+    "lint": "eslint --debug --ext .ts \"src/main/resources/META-INF/resources/frontend\"",
     "client": "node scripts/client.js",
     "version": "node scripts/version.js",
     "webpack": "webpack --config=webpack.tests.config.js",
