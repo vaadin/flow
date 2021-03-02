@@ -16,9 +16,13 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.server.communication.PushRequestHandler;
 
-public class OtherImplementationsTest {
+/**
+ * Makes sure that a custom vaadin service that is not vaadin servlet service can be used in when desired.
+ *
+ */
+public class CustomVaadinServiceImplementationTest {
     @Test
-    public void StaticFileServer_Constructor_uses_VadinService()
+    public void StaticFileServer_Constructor_uses_VaadinService()
             throws NoSuchMethodException, SecurityException {
 
         Assert.assertNotNull(
@@ -26,7 +30,7 @@ public class OtherImplementationsTest {
     }
 
     @Test
-    public void VaadinServlet_uses_VadinService()
+    public void VaadinServlet_uses_VaadinService_getService()
             throws NoSuchMethodException, SecurityException {
 
         Assert.assertNotNull(VaadinServlet.class.getDeclaredMethod(
@@ -45,7 +49,7 @@ public class OtherImplementationsTest {
     }
 
     @Test
-    public void VaadinServletRequest_uses_VadinService()
+    public void VaadinServletRequest_uses_VaadinService_getService()
             throws NoSuchMethodException, SecurityException {
 
         Assert.assertNotNull(VaadinServletRequest.class
@@ -59,7 +63,7 @@ public class OtherImplementationsTest {
     }
 
     @Test
-    public void VaadinServletResponse_uses_VadinService()
+    public void VaadinServletResponse_uses_VaadinService_getService()
             throws NoSuchMethodException, SecurityException {
 
         Assert.assertNotNull(VaadinServletResponse.class.getConstructor(
@@ -72,7 +76,7 @@ public class OtherImplementationsTest {
     }
 
     @Test
-    public void PushRequestHandler_uses_VadinService()
+    public void PushRequestHandler_uses_VaadinService_createPushHandler()
             throws NoSuchMethodException, SecurityException {
 
         Method mgetService = PushRequestHandler.class
@@ -81,12 +85,12 @@ public class OtherImplementationsTest {
     }
 
     @Test
-    public void VadinService_uses_VadinService() throws NoSuchMethodException,
+    public void VaadinResponse_sendError() throws NoSuchMethodException,
             SecurityException, ServiceException, IOException {
-        VaadinService vs = new MockVadinService();
+        VaadinService vs = new MockVaadinService();
 
-        VadinHttpServletResponseI response = Mockito
-                .mock(VadinHttpServletResponseI.class);
+        VaadinHttpServletResponseI response = Mockito
+                .mock(VaadinHttpServletResponseI.class);
 
         Mockito.doThrow(new RuntimeException(
                 "Please check that you really nead more than a HttpServletResponse"))
@@ -97,7 +101,7 @@ public class OtherImplementationsTest {
 
     }
 
-    abstract class AbstractMockVadinService extends VaadinService {
+    abstract class AbstractMockVaadinService extends VaadinService {
 
         private static final long serialVersionUID = 1L;
         public static final String TEST_SESSION_EXPIRED_URL = "TestSessionExpiredURL";
@@ -177,7 +181,7 @@ public class OtherImplementationsTest {
 
     }
 
-    class MockVadinService extends AbstractMockVadinService {
+    class MockVaadinService extends AbstractMockVaadinService {
 
         private static final long serialVersionUID = 1L;
 
@@ -198,7 +202,7 @@ public class OtherImplementationsTest {
         }
     }
 
-    interface VadinHttpServletResponseI
+    interface VaadinHttpServletResponseI
             extends VaadinResponse, HttpServletResponse {
 
     }
