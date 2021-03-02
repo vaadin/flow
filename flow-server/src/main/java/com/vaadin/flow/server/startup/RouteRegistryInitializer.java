@@ -23,13 +23,14 @@ import java.util.Set;
 import com.googlecode.gentyref.GenericTypeReflector;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.OneTimeInitializerPredicate;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinServletContext;
 
 /**
  * Servlet initializer for collecting all available {@link Route}s on startup.
@@ -84,9 +85,12 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
 
     private boolean removePreviousRoutes(VaadinContext context,
             ApplicationRouteRegistry registry) {
-        WebAppClassloaderCheck check = getClassloaderCheck(context);
+        Lookup lookup = context.getAttribute(Lookup.class);
 
-        if (check.hasParentWebClassloader()) {
+        OneTimeInitializerPredicate oneTimeInitializer = lookup
+                .lookup(OneTimeInitializerPredicate.class);
+
+        if (oneTimeInitializer != null && oneTimeInitializer.runOnce()) {
             return false;
         }
         StaticRoutesApplicationRouteRegistry prevoiusRegistry = context
@@ -99,19 +103,6 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             });
         }
         return true;
-    }
-
-    private WebAppClassloaderCheck getClassloaderCheck(VaadinContext context) {
-        WebAppClassloaderCheck check = context
-                .getAttribute(WebAppClassloaderCheck.class);
-        if (check != null) {
-            return check;
-        }
-        if (!(context instanceof VaadinServletContext)) {
-            return null;
-        }
-        return new WebAppClassloaderCheck(
-                ((VaadinServletContext) context).getContext());
     }
 
     private void configureRoutes(Set<Class<? extends Component>> routes,

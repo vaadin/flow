@@ -39,6 +39,8 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.OneTimeInitializerPredicate;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -75,12 +77,16 @@ public class RouteRegistryInitializerTest {
     private ApplicationRouteRegistry registry;
     private ServletContext servletContext;
     private VaadinServletContext vaadinContext;
+    private Lookup lookup;
 
     @Before
     public void init() {
         routeRegistryInitializer = new RouteRegistryInitializer();
         registry = new TestRouteRegistry();
         servletContext = Mockito.mock(ServletContext.class);
+        lookup = Mockito.mock(Lookup.class);
+        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
+                .thenReturn(lookup);
         vaadinContext = new VaadinServletContext(servletContext);
         registry = ApplicationRouteRegistry.getInstance(vaadinContext);
 
@@ -1404,7 +1410,23 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void initialize_noPrevopusStaticRoutes_cleanIsNotCalled_removeMethodIsNotCalled()
+    public void initialize_predicateReturnsTrue_noPrevopusStaticRoutes_cleanIsNotCalled_removeMethodIsNotCalled()
+            throws VaadinInitializerException {
+        Mockito.when(lookup.lookup(OneTimeInitializerPredicate.class))
+                .thenReturn(() -> true);
+        TestApplicationRouteRegistry registry = new TestApplicationRouteRegistry();
+        Mockito.when(servletContext
+                .getAttribute(registry.wrapper.getClass().getName()))
+                .thenReturn(registry.wrapper);
+
+        routeRegistryInitializer.initialize(
+                Collections.singleton(BaseRouteTarget.class), vaadinContext);
+        Assert.assertFalse(registry.cleanCalled);
+        Assert.assertFalse(registry.removeCalled);
+    }
+
+    @Test
+    public void initialize_noPredicate_noPrevopusStaticRoutes_cleanIsNotCalled_removeMethodIsNotCalled()
             throws VaadinInitializerException {
         TestApplicationRouteRegistry registry = new TestApplicationRouteRegistry();
         Mockito.when(servletContext
