@@ -31,6 +31,7 @@
     "abort-controller": "^2.0.0",
     "chai": "^4.2.0",
     "eslint": "^7.21.0",
+    "prettier": "^2.2.1",
     "eslint-config-vaadin": "^0.4.0",
     "fetch-mock": "^7.3.0",
     "idb": "^5.0.6",
