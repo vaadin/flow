@@ -76,6 +76,9 @@ public interface HasEnabled extends HasElement {
          * XXX WARNING Do not override this method. Propagating the enabled
          * state to the element in this way is critical to fulfill generic
          * assumptions with regards to application security.
+         *
+         * Override Component::onEnabledStateChanged if you need to adjust how
+         * the disabled state is visually represented in the browser.
          */
         getElement().setEnabled(enabled);
     }
