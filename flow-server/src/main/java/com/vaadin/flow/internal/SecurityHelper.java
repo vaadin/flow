@@ -15,14 +15,18 @@
  */
 package com.vaadin.flow.internal;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
+import java.util.stream.Stream;
 
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
- * Helper methods for settigng up security contexts in Vaadin applications.
+ * Helper methods for setting up security contexts in Vaadin applications.
  *
  * @author Vaadin Ltd
  *
@@ -42,6 +46,24 @@ public final class SecurityHelper implements Serializable {
             PwaHandler.SW_RUNTIME_PRECACHE_PATH,
             "/" + PwaConfiguration.DEFAULT_OFFLINE_PATH
     };
+
+    /**
+     * Determines whether the request is internal to the Vaadin framework.
+     *
+     * @param request
+     *            a servlet request
+     * @return true iff the request is internal
+     */
+    public static boolean isInternalRequest(HttpServletRequest request) {
+        String requestType = request
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
+        String referer = request.getHeader("referer");
+        boolean serviceWorkedInitiated =
+                referer != null && referer.endsWith("/sw.js");
+        return serviceWorkedInitiated || requestType != null && Stream
+                .of(HandlerHelper.RequestType.values())
+                .anyMatch(r -> r.getIdentifier().equals(requestType));
+    }
 
     private SecurityHelper() {
     }
