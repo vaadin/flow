@@ -64,6 +64,7 @@ import com.vaadin.flow.router.RouterTest.FileNotFound;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
+import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
@@ -1450,10 +1451,9 @@ public class RouteRegistryInitializerTest {
 
         routeRegistryInitializer.initialize(
                 Collections.singleton(BaseRouteTarget.class), vaadinContext);
-        List<RouteData> routes = registry.getRegisteredRoutes();
-        Assert.assertEquals(1, routes.size());
-        RouteData data = routes.get(0);
-        Assert.assertEquals("foo", data.getTemplate());
+        Assert.assertEquals(1, registry.getRegisteredRoutes().size());
+        Assert.assertTrue(
+                registry.getTemplate(BaseRouteTarget.class).isPresent());
     }
 
     @Test
@@ -1470,19 +1470,13 @@ public class RouteRegistryInitializerTest {
 
         routeRegistryInitializer.initialize(
                 Collections.singleton(BaseRouteTarget.class), vaadinContext);
-        List<RouteData> routes = registry.getRegisteredRoutes();
         // two routes: manually added and set during init phase
-        Assert.assertEquals(2, routes.size());
 
-        RouteData route1 = routes.get(0);
-        RouteData route2 = routes.get(1);
-
-        if (route1.getTemplate().equals("foo")) {
-            Assert.assertEquals("manual-route", route2.getTemplate());
-        } else {
-            Assert.assertEquals("manual-route", route1.getTemplate());
-            Assert.assertEquals("foo", route2.getTemplate());
-        }
+        Assert.assertTrue(
+                registry.getTemplate(BaseRouteTarget.class).isPresent());
+        Assert.assertTrue(registry.getNavigationTarget(
+                PathUtil.getPath("manual-route", Collections.emptyList()))
+                .isPresent());
     }
 
     private ApplicationRouteRegistry firstInitRouteRegistry()

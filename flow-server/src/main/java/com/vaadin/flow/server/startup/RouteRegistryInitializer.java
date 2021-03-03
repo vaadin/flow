@@ -41,7 +41,7 @@ import com.vaadin.flow.server.VaadinContext;
 public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
         implements VaadinServletContextStartupInitializer {
 
-    private static class StaticRoutesApplicationRouteRegistry
+    private static class PreviouslyStoredRoutesImmutableRegistry
             extends ApplicationRouteRegistry {
 
     }
@@ -77,7 +77,7 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
 
     private void configureStaticRoutesRegistry(VaadinContext context,
             Set<Class<? extends Component>> routes) {
-        StaticRoutesApplicationRouteRegistry registry = new StaticRoutesApplicationRouteRegistry();
+        PreviouslyStoredRoutesImmutableRegistry registry = new PreviouslyStoredRoutesImmutableRegistry();
 
         configureRoutes(routes, registry);
         context.setAttribute(registry);
@@ -93,8 +93,8 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
         if (oneTimeInitializer != null && oneTimeInitializer.runOnce()) {
             return false;
         }
-        StaticRoutesApplicationRouteRegistry prevoiusRegistry = context
-                .getAttribute(StaticRoutesApplicationRouteRegistry.class);
+        PreviouslyStoredRoutesImmutableRegistry prevoiusRegistry = context
+                .getAttribute(PreviouslyStoredRoutesImmutableRegistry.class);
         if (prevoiusRegistry != null) {
             prevoiusRegistry.getRegisteredRoutes().forEach(routeData -> {
                 registry.removeRoute(routeData.getTemplate());

@@ -47,7 +47,8 @@ public interface OneTimeInitializerPredicate {
      * {@link ServletContainerInitializer#onStartup(java.util.Set, javax.servlet.ServletContext)}
      * call.
      * 
-     * @return
+     * @return {@code true} if {@link ServletContainerInitializer}s are executed
+     *         only once, {@code false} otherwise
      */
     boolean runOnce();
 }
