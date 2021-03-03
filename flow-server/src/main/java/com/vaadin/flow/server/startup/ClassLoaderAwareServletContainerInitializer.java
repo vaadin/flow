@@ -92,9 +92,8 @@ public interface ClassLoaderAwareServletContainerInitializer
                         .filter(method -> !method.isDefault()
                                 && !method.isSynthetic())
                         .findFirst().get().getName();
-                Method operation = Stream.of(initializer.getMethods())
-                        .filter(method -> method.getName()
-                                .equals(processMethodName))
+                Method operation = Stream.of(initializer.getMethods()).filter(
+                        method -> method.getName().equals(processMethodName))
                         .findFirst().get();
                 operation.invoke(initializer.newInstance(),
                         new Object[] { set, ctx });
@@ -146,13 +145,14 @@ public interface ClassLoaderAwareServletContainerInitializer
      *
      * @param context
      *            the <tt>ServletContext</tt> of the web application that is
-     *            being started and in which the classes contained in <tt>classSet</tt>
-     *            were found
+     *            being started and in which the classes contained in
+     *            <tt>classSet</tt> were found
      *
      * @throws ServletException
      *             if an error has occurred
      *
      * @see #onStartup(Set, ServletContext)
      */
-    void process(Set<Class<?>> classSet, ServletContext context) throws ServletException;
+    void process(Set<Class<?>> classSet, ServletContext context)
+            throws ServletException;
 }
