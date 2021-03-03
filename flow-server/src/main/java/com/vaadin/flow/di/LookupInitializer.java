@@ -315,7 +315,20 @@ public class LookupInitializer implements AbstractLookupInitializer {
         }
     }
 
-    private <T> T instantiate(Class<T> serviceClass, Class<?> implementation) {
+    /**
+     * Instantiates service {@code implementation} type with the given
+     * {@code serviceClass} .
+     * 
+     * @param <T>
+     *            service type
+     * @param serviceClass
+     *            service class
+     * @param implementation
+     *            service implementation class
+     * @return an instantiated service implementation object
+     */
+    protected <T> T instantiate(Class<T> serviceClass,
+            Class<?> implementation) {
         if (RegularOneTimeInitializerPredicate.class.equals(implementation)) {
             return serviceClass.cast(new RegularOneTimeInitializerPredicate());
         }
