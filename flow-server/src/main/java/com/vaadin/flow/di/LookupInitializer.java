@@ -207,6 +207,16 @@ public class LookupInitializer implements AbstractLookupInitializer {
 
     }
 
+    private static class RegularOneTimeInitializerPredicate
+            implements OneTimeInitializerPredicate {
+
+        @Override
+        public boolean runOnce() {
+            return true;
+        }
+
+    }
+
     /**
      * Default implementation of {@link AppShellPredicate}.
      * 
@@ -244,6 +254,8 @@ public class LookupInitializer implements AbstractLookupInitializer {
             Map<Class<?>, Collection<Class<?>>> services,
             VaadinApplicationInitializationBootstrap bootstrap)
             throws ServletException {
+        services.put(OneTimeInitializerPredicate.class, Collections
+                .singleton(RegularOneTimeInitializerPredicate.class));
         ensureService(services, ResourceProvider.class,
                 ResourceProviderImpl.class);
         ensureService(services, AppShellPredicate.class,
@@ -304,12 +316,10 @@ public class LookupInitializer implements AbstractLookupInitializer {
     }
 
     private <T> T instantiate(Class<T> serviceClass, Class<?> implementation) {
-        if (ResourceProviderImpl.class.equals(implementation)) {
-            return serviceClass.cast(new ResourceProviderImpl());
-        } else {
-            return serviceClass
-                    .cast(ReflectTools.createInstance(implementation));
+        if (RegularOneTimeInitializerPredicate.class.equals(implementation)) {
+            return serviceClass.cast(new RegularOneTimeInitializerPredicate());
         }
+        return serviceClass.cast(ReflectTools.createInstance(implementation));
     }
 
 }
