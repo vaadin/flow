@@ -90,6 +90,19 @@ public class LookupIntializerTest {
     }
 
     @Test
+    public void initialize_hasOneTimeInitializerPredicate_predicateReturnsTrue()
+            throws ServletException, IOException {
+        AtomicReference<Lookup> capture = new AtomicReference<>();
+        initializer.initialize(null, new HashMap<>(), capture::set);
+
+        Lookup lookup = capture.get();
+        OneTimeInitializerPredicate predicate = lookup
+                .lookup(OneTimeInitializerPredicate.class);
+        Assert.assertNotNull(predicate);
+        Assert.assertTrue(predicate.runOnce());
+    }
+
+    @Test
     public void ensureResourceProvider_defaultImplClassIsStoredAsAService() {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
         initializer.ensureService(map, ResourceProvider.class,
