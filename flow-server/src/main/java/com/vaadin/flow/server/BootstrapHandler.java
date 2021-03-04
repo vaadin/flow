@@ -37,7 +37,6 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,12 +51,13 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.client.ClientResourcesUtils;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
@@ -84,6 +84,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -132,8 +133,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String CAPTION = "caption";
     private static final String MESSAGE = "message";
     private static final String URL = "url";
-
-    static Supplier<String> clientEngineFile = () -> LazyClientEngineInit.CLIENT_ENGINE_FILE;
 
     private final PageBuilder pageBuilder;
 
@@ -581,10 +580,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return document;
         }
 
-        private String getClientEngine() {
-            return clientEngineFile.get();
-        }
-
         private void checkWebpackStatus(Document document) {
             DevModeHandler devMode = DevModeHandler.getDevModeHandler();
             if (devMode != null) {
@@ -595,12 +590,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     errorElement.attr("class", "v-system-error");
                     errorElement.attr("onclick",
                             "this.parentElement.removeChild(this)");
-                    errorElement
-                            .html("<h3 style=\"display:inline;\">Webpack Error</h3>"
+                    errorElement.html(
+                            "<h3 style=\"display:inline;\">Webpack Error</h3>"
                                     + "<h6 style=\"display:inline; padding-left:10px;\">Click to close</h6>"
                                     + "<pre>" + errorMsg + "</pre>");
-                    document.body()
-                            .appendChild(errorElement);
+                    document.body().appendChild(errorElement);
                 }
             }
         }
@@ -909,26 +903,35 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 BootstrapContext context) throws IOException {
             String content = FrontendUtils.getStatsAssetsByChunkName(service);
             if (content == null) {
-                StringBuilder message = new StringBuilder("The stats file from webpack (stats.json) was not found.\n");
-                if(service.getDeploymentConfiguration().isProductionMode()) {
+                StringBuilder message = new StringBuilder(
+                        "The stats file from webpack (stats.json) was not found.\n");
+                if (service.getDeploymentConfiguration().isProductionMode()) {
                     message.append(
                             "The application is running in production mode.");
-                    message.append("Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
-                    message.append("Or switch application to development mode.");
-                } else if(!service.getDeploymentConfiguration().enableDevServer()) {
-                    message.append("Dev server is disabled for the application.");
-                    message.append("Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
+                    message.append(
+                            "Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
+                    message.append(
+                            "Or switch application to development mode.");
+                } else if (!service.getDeploymentConfiguration()
+                        .enableDevServer()) {
+                    message.append(
+                            "Dev server is disabled for the application.");
+                    message.append(
+                            "Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
                 } else {
-                    message.append("This typically mean that you have started the application without executing the 'prepare-frontend' Maven target.\n");
-                            message.append("If you are using Spring Boot and are launching the Application class directly, ");
-                                    message.append("you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
+                    message.append(
+                            "This typically mean that you have started the application without executing the 'prepare-frontend' Maven target.\n");
+                    message.append(
+                            "If you are using Spring Boot and are launching the Application class directly, ");
+                    message.append(
+                            "you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
                 }
                 throw new IOException(message.toString());
             }
             JsonObject chunks = Json.parse(content);
             for (String key : chunks.keys()) {
                 String chunkName;
-                if(chunks.get(key).getType().equals(JsonType.ARRAY)) {
+                if (chunks.get(key).getType().equals(JsonType.ARRAY)) {
                     chunkName = getArrayChunkName(chunks, key);
                 } else {
                     chunkName = chunks.getString(key);
@@ -941,8 +944,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                                     context.getUI().getInternals().getAppId()));
                 } else {
                     Element script = createJavaScriptElement(
-                            "./" + VAADIN_MAPPING + chunkName,
-                            false);
+                            "./" + VAADIN_MAPPING + chunkName, false);
                     head.appendChild(script.attr("type", "module")
                             .attr("data-app-id",
                                     context.getUI().getInternals().getAppId())
@@ -955,9 +957,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private String getArrayChunkName(JsonObject chunks, String key) {
             JsonArray chunkArray = chunks.getArray(key);
 
-            for(int i = 0; i <chunkArray.length(); i++) {
+            for (int i = 0; i < chunkArray.length(); i++) {
                 String chunkName = chunkArray.getString(0);
-                if(chunkName.endsWith(".js")){
+                if (chunkName.endsWith(".js")) {
                     return chunkName;
                 }
             }
@@ -973,20 +975,47 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             final boolean productionMode = context.getSession()
                     .getConfiguration().isProductionMode();
 
-            boolean resolveNow = !productionMode || getClientEngine() == null;
+            ResourceProvider resourceProvider = context.getSession()
+                    .getService().getContext().getAttribute(Lookup.class)
+                    .lookup(ResourceProvider.class);
+            String clientEngine = getClientEngine(resourceProvider);
+            boolean resolveNow = !productionMode || clientEngine == null;
             if (resolveNow
-                    && ClientResourcesUtils.getResource("/META-INF/resources/"
+                    && resourceProvider.getClientResource("/META-INF/resources/"
                             + CLIENT_ENGINE_NOCACHE_FILE) != null) {
                 return context.getUriResolver().resolveVaadinUri(
                         "context://" + CLIENT_ENGINE_NOCACHE_FILE);
             }
 
-            if (getClientEngine() == null) {
+            if (clientEngine == null) {
                 throw new BootstrapException(
                         "Client engine file name has not been resolved during initialization");
             }
             return context.getUriResolver()
-                    .resolveVaadinUri("context://" + getClientEngine());
+                    .resolveVaadinUri("context://" + clientEngine);
+        }
+
+        private String getClientEngine(ResourceProvider resourceProvider) {
+            // read client engine file name
+            try (InputStream prop = resourceProvider
+                    .getClientResourceAsStream("/META-INF/resources/"
+                            + ApplicationConstants.CLIENT_ENGINE_PATH
+                            + "/compile.properties")) {
+                // null when running SDM or tests
+                if (prop != null) {
+                    Properties properties = new Properties();
+                    properties.load(prop);
+                    return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
+                            + properties.getProperty("jsFile");
+                } else {
+                    getLogger().warn(
+                            "No compile.properties available on initialization, "
+                                    + "could not read client engine file name.");
+                }
+            } catch (IOException e) {
+                throw new ExceptionInInitializerError(e);
+            }
+            return null;
         }
 
         private void inlineEs6Collections(Element head,
@@ -1019,7 +1048,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             // Basic reconnect and system error dialog styles just to make them
             // visible and outside of normal flow
-            styles.appendText(".v-reconnect-dialog, .v-system-error {" // @formatter:off
+            styles.appendText(
+                    ".v-reconnect-dialog, .v-system-error {" // @formatter:off
                     +   "position: absolute;"
                     +   "color: black;"
                     +   "background: white;"
@@ -1157,8 +1187,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             // defer makes no sense without src:
             // https://developer.mozilla.org/en/docs/Web/HTML/Element/script
             Element wrapper = createJavaScriptElement(null, false);
-            wrapper.appendChild(
-                    new DataNode(javaScriptContents));
+            wrapper.appendChild(new DataNode(javaScriptContents));
             return wrapper;
         }
 
@@ -1387,9 +1416,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         : null;
 
                 if (liveReload != null) {
-                    appConfig.put("liveReloadUrl",
-                            BootstrapHandlerHelper.getPushURL(session,
-                                    request));
+                    appConfig.put("liveReloadUrl", BootstrapHandlerHelper
+                            .getPushURL(session, request));
                     if (liveReload.getBackend() != null) {
                         appConfig.put("liveReloadBackend",
                                 liveReload.getBackend().toString());
@@ -1613,35 +1641,166 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
     }
 
-    private static class LazyClientEngineInit {
-        private static final String CLIENT_ENGINE_FILE = readClientEngine();
+    /**
+     * Generates the initial UIDL message which is included in the initial
+     * bootstrap page.
+     *
+     * @param ui
+     *            the UI for which the UIDL should be generated
+     * @return a JSON object with the initial UIDL message
+     */
+    protected static JsonObject getInitialUidl(UI ui) {
+        JsonObject json = new UidlWriter().createUidl(ui, false);
 
-        private LazyClientEngineInit() {
-            // this is a utility class, instances should not be created
+        VaadinSession session = ui.getSession();
+        if (session.getConfiguration().isXsrfProtectionEnabled()) {
+            writeSecurityKeyUIDL(json, ui);
+        }
+        writePushIdUIDL(json, session);
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug("Initial UIDL: {}", json.asString());
+        }
+        return json;
+    }
+
+    /**
+     * Writes the push id (and generates one if needed) to the given JSON
+     * object.
+     *
+     * @param response
+     *            the response JSON object to write security key into
+     * @param session
+     *            the vaadin session to which the security key belongs
+     */
+    private static void writePushIdUIDL(JsonObject response,
+            VaadinSession session) {
+        String pushId = session.getPushId();
+        response.put(ApplicationConstants.UIDL_PUSH_ID, pushId);
+    }
+
+    /**
+     * Writes the security key (and generates one if needed) to the given JSON
+     * object.
+     *
+     * @param response
+     *            the response JSON object to write security key into
+     * @param ui
+     *            the UI to which the security key belongs
+     */
+    private static void writeSecurityKeyUIDL(JsonObject response, UI ui) {
+        String seckey = ui.getCsrfToken();
+        response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
+    }
+
+    protected static String getPushScript(BootstrapContext context) {
+        VaadinRequest request = context.getRequest();
+        // Parameter appended to JS to bypass caches after version upgrade.
+        String versionQueryParam = "?v=" + Version.getFullVersion();
+        // Load client-side dependencies for push support
+        String pushJSPath = context.getRequest().getService()
+                .getContextRootRelativePath(request);
+
+        if (request.getService().getDeploymentConfiguration()
+                .isProductionMode()) {
+            pushJSPath += ApplicationConstants.VAADIN_PUSH_JS;
+        } else {
+            pushJSPath += ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
         }
 
-        private static String readClientEngine() {
-            // read client engine file name
-            try (InputStream prop = ClientResourcesUtils
-                    .getResource("/META-INF/resources/"
-                            + ApplicationConstants.CLIENT_ENGINE_PATH
-                            + "/compile.properties")) {
-                // null when running SDM or tests
-                if (prop != null) {
-                    Properties properties = new Properties();
-                    properties.load(prop);
-                    return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
-                            + properties.getProperty("jsFile");
-                } else {
-                    getLogger().warn(
-                            "No compile.properties available on initialization, "
-                                    + "could not read client engine file name.");
-                }
-            } catch (IOException e) {
-                throw new ExceptionInInitializerError(e);
+        pushJSPath += versionQueryParam;
+        return pushJSPath;
+    }
+
+    protected static void showWebpackErrors(Document document) {
+        DevModeHandler devMode = DevModeHandler.getDevModeHandler();
+        if (devMode != null) {
+            String errorMsg = devMode.getFailedOutput();
+            if (errorMsg != null) {
+                // Make error lines more prominent
+                errorMsg = errorMsg.replaceAll("(ERROR.+?\n)", "<b>$1</b>");
+
+                Element errorElement = document.createElement("div");
+                errorElement.setBaseUri("");
+                errorElement.attr("class", "v-system-error");
+                errorElement.attr("onclick",
+                        "this.parentElement.removeChild(this)");
+                errorElement
+                        .html("<h3 style=\"display:inline;\">Webpack Error</h3>"
+                                + "<h6 style=\"display:inline; padding-left:10px;\">Click to close</h6>"
+                                + "<pre>" + errorMsg + "</pre>");
+                document.body().appendChild(errorElement);
             }
-            return null;
+        }
+    }
+
+    protected static void setupErrorDialogs(Element style) {
+        // @formatter:off
+        style.appendText(
+                ".v-reconnect-dialog," +
+                ".v-system-error {" +
+                "position: absolute;" +
+                "color: black;" +
+                "background: white;" +
+                "top: 1em;" +
+                "right: 1em;" +
+                "border: 1px solid black;" +
+                "padding: 1em;" +
+                "z-index: 10000;" +
+                "max-width: calc(100vw - 4em);" +
+                "max-height: calc(100vh - 4em);" +
+                "overflow: auto;" +
+                "} .v-system-error {" +
+                "color: indianred;" +
+                "pointer-events: auto;" +
+                "} .v-system-error h3, .v-system-error b {" +
+                "color: red;" +
+                "}");
+     // @formatter:on
+    }
+
+    protected static void setupPwa(Document document, VaadinService service) {
+        setupPwa(document, service.getPwaRegistry());
+    }
+
+    private static void setupPwa(Document document, PwaRegistry registry) {
+        if (registry == null) {
+            return;
         }
 
+        PwaConfiguration config = registry.getPwaConfiguration();
+
+        if (config.isEnabled()) {
+            // Add header injections
+            Element head = document.head();
+
+            // Describe PWA capability for iOS devices
+            head.appendElement(META_TAG)
+                    .attr("name", "apple-mobile-web-app-capable")
+                    .attr(CONTENT_ATTRIBUTE, "yes");
+
+            // Theme color
+            head.appendElement(META_TAG).attr("name", "theme-color")
+                    .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
+            head.appendElement(META_TAG)
+                    .attr("name", "apple-mobile-web-app-status-bar-style")
+                    .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
+
+            // Add manifest
+            head.appendElement("link").attr("rel", "manifest").attr("href",
+                    config.getManifestPath());
+
+            // Add icons
+            for (PwaIcon icon : registry.getHeaderIcons()) {
+                head.appendChild(icon.asElement());
+            }
+
+            // Add service worker initialization
+            head.appendElement(SCRIPT_TAG)
+                    .text("if ('serviceWorker' in navigator) {\n"
+                            + "  window.addEventListener('load', function() {\n"
+                            + "    navigator.serviceWorker.register('"
+                            + config.getServiceWorkerPath() + "');\n"
+                            + "  });\n" + "}");
+        }
     }
 }
