@@ -34,7 +34,6 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
-import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 
@@ -179,10 +178,8 @@ public class SpringLookupInitializer extends LookupInitializer {
             // implementation classes found in classpath are ignored if there
             // are beans which are subclasses of these impl classes
             return null;
-        } else if (ResourceProviderImpl.class.equals(impl)) {
-            return serviceClass.cast(new ResourceProviderImpl());
         } else {
-            return serviceClass.cast(ReflectTools.createInstance(impl));
+            return instantiate(serviceClass, impl);
         }
     }
 
