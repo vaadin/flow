@@ -1,8 +1,8 @@
-import {ConnectionIndicator} from "./ConnectionIndicator";
-import {ConnectionState, ConnectionStateChangeListener, ConnectionStateStore} from './ConnectionState';
+import { ConnectionIndicator } from './ConnectionIndicator';
+import { ConnectionState, ConnectionStateChangeListener, ConnectionStateStore } from './ConnectionState';
 
 export interface FlowConfig {
-  imports ?: () => void;
+  imports?: () => void;
 }
 
 interface AppConfig {
@@ -22,18 +22,18 @@ interface Router {
 }
 
 interface HTMLRouterContainer extends HTMLElement {
-  onBeforeEnter ?: (ctx: NavigationParameters, cmd: PreventAndRedirectCommands, router: Router) => void | Promise<any>;
-  onBeforeLeave ?: (ctx: NavigationParameters, cmd: PreventCommands, router: Router) => void | Promise<any>;
-  serverConnected ?: (cancel: boolean, url?: NavigationParameters) => void;
+  onBeforeEnter?: (ctx: NavigationParameters, cmd: PreventAndRedirectCommands, router: Router) => void | Promise<any>;
+  onBeforeLeave?: (ctx: NavigationParameters, cmd: PreventCommands, router: Router) => void | Promise<any>;
+  serverConnected?: (cancel: boolean, url?: NavigationParameters) => void;
 }
 
 interface FlowRoute {
-  action : (params: NavigationParameters) => Promise<HTMLRouterContainer>;
+  action: (params: NavigationParameters) => Promise<HTMLRouterContainer>;
   path: string;
 }
 
 interface FlowRoot {
-  $: any ;
+  $: any;
   $server: any;
 }
 
@@ -54,10 +54,10 @@ export interface PreventAndRedirectCommands extends PreventCommands {
 const flowRoot: FlowRoot = window.document.body as any;
 const $wnd = (window as any) as {
   Vaadin: {
-    Flow: any,
-    TypeScript: any,
-    connectionState: ConnectionStateStore
-  }
+    Flow: any;
+    TypeScript: any;
+    connectionState: ConnectionStateStore;
+  };
 } & EventTarget;
 
 /**
@@ -69,7 +69,7 @@ export class Flow {
   pathname = '';
 
   // @ts-ignore
-  container : HTMLRouterContainer;
+  container: HTMLRouterContainer;
 
   // flag used to inform Testbench whether a server route is in progress
   private isActive = false;
@@ -95,10 +95,11 @@ export class Flow {
 
     // Regular expression used to remove the app-context
     const elm = document.head.querySelector('base');
-    this.baseRegex = new RegExp('^' +
+    this.baseRegex = new RegExp(
+      '^' +
         // IE11 does not support document.baseURI
-        (document.baseURI || elm && elm.href || '/')
-            .replace(/^https?:\/\/[^\/]+/i, ''));
+        (document.baseURI || (elm && elm.href) || '/').replace(/^https?:\/\/[^/]+/i, '')
+    );
     this.appShellTitle = document.title;
     // Put a vaadin-connection-indicator in the dom
     this.addConnectionIndicator();
@@ -114,10 +115,12 @@ export class Flow {
    * This is a specific API for its use with `vaadin-router`.
    */
   get serverSideRoutes(): [FlowRoute] {
-    return [{
-      path: '(.*)',
-      action: this.action
-    }];
+    return [
+      {
+        path: '(.*)',
+        action: this.action
+      }
+    ];
   }
 
   loadingStarted() {
@@ -144,7 +147,7 @@ export class Flow {
         // @ts-ignore
         try {
           await this.flowInit();
-        } catch(error) {
+        } catch (error) {
           if (error instanceof FlowUiInitializationError) {
             // error initializing Flow: assume connection lost
             $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
@@ -163,30 +166,29 @@ export class Flow {
       // For covering the 'server -> client' use case
       this.container.onBeforeLeave = (ctx, cmd) => this.flowLeave(ctx, cmd);
       return this.container;
-    }
+    };
   }
 
   // Send a remote call to `JavaScriptBootstrapUI` to check
   // whether navigation has to be cancelled.
   private async flowLeave(
-      // @ts-ignore
-      ctx: NavigationParameters,
-      cmd?: PreventCommands): Promise<any> {
-
+    // @ts-ignore
+    ctx: NavigationParameters,
+    cmd?: PreventCommands
+  ): Promise<any> {
     // server -> server, viewing offline stub, or browser is offline
     const connectionState = $wnd.Vaadin.connectionState;
-    if (this.pathname === ctx.pathname || !this.isFlowClientLoaded()
-      || connectionState.offline) {
+    if (this.pathname === ctx.pathname || !this.isFlowClientLoaded() || connectionState.offline) {
       return Promise.resolve({});
     }
     // 'server -> client'
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.loadingStarted();
       // The callback to run from server side to cancel navigation
       this.container.serverConnected = (cancel) => {
         resolve(cmd && cancel ? cmd.prevent() : {});
         this.loadingFinished();
-      }
+      };
 
       // Call server side to check whether we can leave the view
       flowRoot.$server.leaveNavigation(this.getFlowRoute(ctx));
@@ -197,7 +199,7 @@ export class Flow {
   // route specified by the context
   private async flowNavigate(ctx: NavigationParameters, cmd?: PreventAndRedirectCommands): Promise<HTMLElement> {
     if (this.response) {
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         this.loadingStarted();
         // The callback to run from server side once the view is ready
         this.container.serverConnected = (cancel, redirectContext?: NavigationParameters) => {
@@ -213,8 +215,12 @@ export class Flow {
         };
 
         // Call server side to navigate to the given route
-        flowRoot.$server
-            .connectClient(this.container.localName, this.container.id, this.getFlowRoute(ctx), this.appShellTitle);
+        flowRoot.$server.connectClient(
+          this.container.localName,
+          this.container.id,
+          this.getFlowRoute(ctx),
+          this.appShellTitle
+        );
       });
     } else {
       // No server response => offline or erroneous connection
@@ -230,7 +236,6 @@ export class Flow {
   private async flowInit(serverSideRouting = false): Promise<AppInitResponse> {
     // Do not start flow twice
     if (!this.isFlowClientLoaded()) {
-
       // show flow progress indicator
       this.loadingStarted();
 
@@ -240,12 +245,12 @@ export class Flow {
       // Enable or disable server side routing
       this.response.appConfig.clientRouting = !serverSideRouting;
 
-      const {pushScript, appConfig} = this.response;
+      const { pushScript, appConfig } = this.response;
 
       if (typeof pushScript === 'string') {
         await this.loadScript(pushScript);
       }
-      const {appId} = appConfig;
+      const { appId } = appConfig;
 
       // Load bootstrap script with server side parameters
       const bootstrapMod = await import('./FlowBootstrap');
@@ -303,12 +308,12 @@ export class Flow {
   private async flowInitClient(clientMod: any): Promise<void> {
     clientMod.init();
     // client init is async, we need to loop until initialized
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const intervalId = setInterval(() => {
         // client `isActive() == true` while initializing or processing
         const initializing = Object.keys($wnd.Vaadin.Flow.clients)
-            .filter(key => key !== 'TypeScript')
-            .reduce((prev, id) => prev || $wnd.Vaadin.Flow.clients[id].isActive(), false);
+          .filter((key) => key !== 'TypeScript')
+          .reduce((prev, id) => prev || $wnd.Vaadin.Flow.clients[id].isActive(), false);
         if (!initializing) {
           clearInterval(intervalId);
           resolve();
@@ -331,15 +336,19 @@ export class Flow {
       const xhr = new XMLHttpRequest();
       const httpRequest = xhr as any;
       const currentPath = location.pathname || '/';
-      const requestPath = `${currentPath}?v-r=init` +
-          (serverSideRouting ? `&location=${encodeURI(this.getFlowRoute(location))}` : '');
+      const requestPath =
+        `${currentPath}?v-r=init` + (serverSideRouting ? `&location=${encodeURI(this.getFlowRoute(location))}` : '');
 
       httpRequest.open('GET', requestPath);
 
-      httpRequest.onerror = () => reject(new FlowUiInitializationError(
-          `Invalid server response when initializing Flow UI.
+      httpRequest.onerror = () =>
+        reject(
+          new FlowUiInitializationError(
+            `Invalid server response when initializing Flow UI.
         ${httpRequest.status}
-        ${httpRequest.responseText}`));
+        ${httpRequest.responseText}`
+          )
+        );
 
       httpRequest.onload = () => {
         const contentType = httpRequest.getResponseHeader('content-type');
@@ -370,8 +379,7 @@ export class Flow {
         $wnd.Vaadin.connectionState.state = ConnectionState.RECONNECTING;
         const http = new XMLHttpRequest();
         const serverRoot = location.pathname || '/';
-        http.open('HEAD', serverRoot +
-          (serverRoot.endsWith('/') ? '' : ' /') + 'sw.js');
+        http.open('HEAD', serverRoot + (serverRoot.endsWith('/') ? '' : ' /') + 'sw.js');
         http.onload = () => {
           $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
         };
@@ -421,7 +429,6 @@ export class Flow {
   }
 }
 
-/* tslint:disable: max-classes-per-file */
 class FlowUiInitializationError extends Error {
   constructor(message: any) {
     super(message);

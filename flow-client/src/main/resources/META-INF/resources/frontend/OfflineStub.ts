@@ -1,11 +1,11 @@
-import {css, html, LitElement } from 'lit-element';
+import { css, html, LitElement } from 'lit-element';
 
 export class OfflineStub extends LitElement {
-
   static get styles() {
     return css`
       .page {
-        font-family: -apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        font-family: -apple-system, BlinkMacSystemFont, 'Roboto', 'Segoe UI', Helvetica, Arial, sans-serif,
+          'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
         font-size: 1rem;
         line-height: 1.625;
         font-weight: 300;
@@ -53,16 +53,16 @@ export class OfflineStub extends LitElement {
 
       @media (min-width: 800px) {
         .offline {
-            padding: 0 48px;
+          padding: 0 48px;
         }
 
         .offline .content .title h1,
         .offline .content .message h2 {
-            text-align: left;
+          text-align: left;
         }
 
         .offline .content .message {
-            height: auto;
+          height: auto;
         }
       }
     `;
@@ -75,7 +75,10 @@ export class OfflineStub extends LitElement {
           <div class="content">
             <section class="message">
               <h2>You are offline</h2>
-              <p>This route requires an internet connection to work. You do not seem to have access to the server right now. Check your internet connection and try reloading the page to use the application.</p>
+              <p>
+                This route requires an internet connection to work. You do not seem to have access to the server right
+                now. Check your internet connection and try reloading the page to use the application.
+              </p>
             </section>
           </div>
         </div>
