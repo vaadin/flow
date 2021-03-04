@@ -10,9 +10,29 @@ import {NetworkOnly} from 'workbox-strategies';
 skipWaiting();
 clientsClaim();
 
-const appShellPath = '/';
-// @ts-ignore: OFFLINE_PATH_ENABLED and OFFLINE_PATH are defined by webpack.generated.js
-const offlinePath = OFFLINE_PATH_ENABLED ? '/' + OFFLINE_PATH : appShellPath;
+declare var OFFLINE_PATH_ENABLED: boolean; // defined by webpack.generated.js
+declare var OFFLINE_PATH: string; // defined by webpack.generated.js
+
+/**
+ * Replaces <base href> in pre-cached response HTML with the service worker’s
+ * scope URL.
+ *
+ * @param response HTML response to modify
+ * @returns modified response
+ */
+const rewriteBaseHref = async (response: Response) => {
+  const html = await response.text();
+  return new Response(
+    html.replace(
+      /<base\s+href=[^>]*>/,
+      `<base href="${self.registration.scope}">`
+    ),
+    response
+  );
+};
+
+const appShellPath = '.';
+const offlinePath = OFFLINE_PATH_ENABLED ? OFFLINE_PATH : appShellPath;
 const networkOnly = new NetworkOnly();
 const navigationFallback = new NavigationRoute(async (params: any) => {
   // Use offlinePath fallback if offline was detected
