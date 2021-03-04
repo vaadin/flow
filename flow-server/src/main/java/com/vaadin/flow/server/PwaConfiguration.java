@@ -57,7 +57,7 @@ public class PwaConfiguration implements Serializable {
     public PwaConfiguration() {
         this(false, DEFAULT_NAME, "Flow PWA", "", DEFAULT_BACKGROUND_COLOR,
                 DEFAULT_THEME_COLOR, DEFAULT_ICON, DEFAULT_PATH,
-                DEFAULT_OFFLINE_PATH, DEFAULT_DISPLAY, "", new String[] {});
+                DEFAULT_OFFLINE_PATH, DEFAULT_DISPLAY, ".", new String[] {});
     }
 
     /**
