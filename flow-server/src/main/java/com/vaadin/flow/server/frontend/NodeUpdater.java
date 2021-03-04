@@ -326,6 +326,10 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("idb", "5.0.6");
 
+        // Used for bundling the generated custom theme
+        // to be used in Designer
+        defaults.put("@rollup/plugin-node-resolve", "11.2.0");
+        defaults.put("rollup-plugin-lit-css", "2.1.0");
         return defaults;
     }
 
