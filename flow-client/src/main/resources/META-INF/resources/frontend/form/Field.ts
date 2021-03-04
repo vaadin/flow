@@ -102,9 +102,7 @@ export function getDefaultFieldStrategy(elm: any): FieldStrategy {
         return new CheckedFieldStrategy(elm);
       }
   }
-  return elm.constructor.version
-    ? new VaadinFieldStrategy(elm)
-    : new GenericFieldStrategy(elm);
+  return elm.constructor.version ? new VaadinFieldStrategy(elm) : new GenericFieldStrategy(elm);
 }
 
 /**
@@ -158,9 +156,7 @@ export const field = directive(
       this.model = model;
       this.effect = effect;
       const binderNode = getBinderNode(model);
-      this.fieldState.strategy = binderNode.binder.getFieldStrategy(
-        this.element
-      );
+      this.fieldState.strategy = binderNode.binder.getFieldStrategy(this.element);
       if (!this.elementInited) {
         this.elementInited = true;
 
@@ -184,10 +180,7 @@ export const field = directive(
 
       const value = binderNode.value;
       const valueFromField = this.convertFieldValue(this.fieldState.value);
-      if (
-        value !== valueFromField &&
-        !(Number.isNaN(value) && Number.isNaN(valueFromField))
-      ) {
+      if (value !== valueFromField && !(Number.isNaN(value) && Number.isNaN(valueFromField))) {
         this.fieldState.strategy.value = this.fieldState.value = value;
       }
 
