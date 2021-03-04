@@ -29,6 +29,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -44,7 +46,6 @@ import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -138,7 +139,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * @return Request's url.
      */
     protected String getRequestUrl(VaadinRequest request) {
-        return ((VaadinServletRequest) request).getRequestURL().toString();
+        return ((HttpServletRequest) request).getRequestURL().toString();
     }
 
     @Override
