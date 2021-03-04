@@ -53,6 +53,8 @@ public class BrokenRouterLinkIT extends ChromeBrowserTest {
 
         getDriver().navigate().back();
 
+        waitForElementPresent(By.id(BrokenRouterLinkView.LINK_ID));
+
         long y1 = (Long) executeScript("return window.scrollY");
         Assert.assertEquals(100L, y1);
     }
