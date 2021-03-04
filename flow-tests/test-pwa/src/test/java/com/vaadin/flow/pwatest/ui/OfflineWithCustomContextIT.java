@@ -38,7 +38,7 @@ import org.openqa.selenium.mobile.NetworkConnection;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
-public class PwaTestIT extends ChromeDeviceTest {
+public class OfflineWithCustomContextIT extends ChromeDeviceTest {
 
     @Test
     public void testPwaResources() throws IOException {
