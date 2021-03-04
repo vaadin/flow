@@ -112,7 +112,8 @@ public @interface PWA {
      *
      * @return application start url
      */
-    String startPath() default "";
+    String startPath() default PwaConfiguration.DEFAULT_START_URL;
+
 
     /**
      * Name of the application.

@@ -36,6 +36,7 @@ public class PwaConfiguration implements Serializable {
     public static final String DEFAULT_BACKGROUND_COLOR = "#f2f2f2";
     public static final String DEFAULT_DISPLAY = "standalone";
     public static final String DEFAULT_OFFLINE_PATH = "offline.html";
+    public static final String DEFAULT_START_URL = ".";
 
     private final String appName;
     private final String shortName;
@@ -57,7 +58,8 @@ public class PwaConfiguration implements Serializable {
     public PwaConfiguration() {
         this(false, DEFAULT_NAME, "Flow PWA", "", DEFAULT_BACKGROUND_COLOR,
                 DEFAULT_THEME_COLOR, DEFAULT_ICON, DEFAULT_PATH,
-                DEFAULT_OFFLINE_PATH, DEFAULT_DISPLAY, ".", new String[] {});
+                DEFAULT_OFFLINE_PATH, DEFAULT_DISPLAY, DEFAULT_START_URL, 
+                new String[] {});
     }
 
     /**
