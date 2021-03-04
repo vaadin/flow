@@ -1,4 +1,4 @@
-/* tslint:disable:max-classes-per-file */
+/* eslint-disable max-classes-per-file */
 import { ConnectionIndicator } from './ConnectionIndicator';
 import { ConnectionState } from './ConnectionState';
 
@@ -18,17 +18,9 @@ interface ConnectExceptionData {
 
 const throwConnectException = (errorJson: ConnectExceptionData) => {
   if (errorJson.validationErrorData) {
-    throw new EndpointValidationError(
-      errorJson.message,
-      errorJson.validationErrorData,
-      errorJson.type
-    );
+    throw new EndpointValidationError(errorJson.message, errorJson.validationErrorData, errorJson.type);
   } else {
-    throw new EndpointError(
-      errorJson.message,
-      errorJson.type,
-      errorJson.detail
-    );
+    throw new EndpointError(errorJson.message, errorJson.type, errorJson.detail);
   }
 };
 
@@ -37,7 +29,7 @@ const throwConnectException = (errorJson: ConnectExceptionData) => {
  * @param response The response to assert.
  * @ignore
  */
-const assertResponseIsOk = async(response: Response): Promise<void> => {
+const assertResponseIsOk = async (response: Response): Promise<void> => {
   if (!response.ok) {
     const errorText = await response.text();
     let errorJson: ConnectExceptionData | null;
@@ -53,10 +45,7 @@ const assertResponseIsOk = async(response: Response): Promise<void> => {
     } else if (errorText !== null && errorText.length > 0) {
       throw new EndpointResponseError(errorText, response);
     } else {
-      throw new EndpointError(
-        'expected "200 OK" response, but got ' +
-        `${response.status} ${response.statusText}`
-      );
+      throw new EndpointError(`expected "200 OK" response, but got ${response.status} ${response.statusText}`);
     }
   }
 };
@@ -128,8 +117,7 @@ export class EndpointValidationError extends EndpointError {
    * @param validationErrorData the `validationErrorData` property value
    * @param type the `type` property value
    */
-  constructor(message: string, validationErrorData: ValidationErrorData[],
-              type?: string) {
+  constructor(message: string, validationErrorData: ValidationErrorData[], type?: string) {
     super(message, type, validationErrorData);
     this.validationErrorMessage = message;
     this.detail = null;
@@ -173,7 +161,6 @@ export interface ConnectClientOptions {
    * The `middlewares` property value.
    */
   middlewares?: Middleware[];
-
 }
 
 export interface EndpointCallMetaInfo {
@@ -197,7 +184,7 @@ export interface EndpointCallMetaInfo {
  * An object with the call arguments and the related Request instance.
  * See also {@link ConnectClient.call | the call() method in ConnectClient}.
  */
-export interface MiddlewareContext extends EndpointCallMetaInfo{
+export interface MiddlewareContext extends EndpointCallMetaInfo {
   /**
    * The Fetch API Request object reflecting the other properties.
    */
@@ -209,9 +196,7 @@ export interface MiddlewareContext extends EndpointCallMetaInfo{
  * or makes the actual request.
  * @param context The information about the call and request
  */
-export type MiddlewareNext = (context: MiddlewareContext) =>
-  Promise<Response> | Response;
-
+export type MiddlewareNext = (context: MiddlewareContext) => Promise<Response> | Response;
 
 /**
  * An interface that allows defining a middleware as a class.
@@ -228,8 +213,7 @@ export interface MiddlewareClass {
  * An async callback function that can intercept the request and response
  * of a call.
  */
-type MiddlewareFunction = (context: MiddlewareContext, next: MiddlewareNext) =>
-  Promise<Response> | Response;
+type MiddlewareFunction = (context: MiddlewareContext, next: MiddlewareNext) => Promise<Response> | Response;
 
 /**
  * An async callback that can intercept the request and response
@@ -269,7 +253,6 @@ export class ConnectClient {
    * The array of middlewares that are invoked during a call.
    */
   middlewares: Middleware[] = [];
-
 
   /**
    * @param options Constructor options.
@@ -311,21 +294,15 @@ export class ConnectClient {
    * @param options Optional client options for this call.
    * @returns {} Decoded JSON response data.
    */
-  async call(
-    endpoint: string,
-    method: string,
-    params?: any,
-  ): Promise<any> {
+  async call(endpoint: string, method: string, params?: any): Promise<any> {
     if (arguments.length < 2) {
-      throw new TypeError(
-        `2 arguments required, but got only ${arguments.length}`
-      );
+      throw new TypeError(`2 arguments required, but got only ${arguments.length}`);
     }
 
     const headers: Record<string, string> = {
-      'Accept': 'application/json',
+      Accept: 'application/json',
       'Content-Type': 'application/json',
-      'X-CSRF-Token': $wnd.Vaadin.TypeScript && $wnd.Vaadin.TypeScript.csrfToken || ''
+      'X-CSRF-Token': ($wnd.Vaadin.TypeScript && $wnd.Vaadin.TypeScript.csrfToken) || ''
     };
 
     // helper to keep the undefined value in object after JSON.stringify
@@ -336,14 +313,13 @@ export class ConnectClient {
         }
       }
       return obj;
-    }
+    };
 
-    const request = new Request(
-      `${this.prefix}/${endpoint}/${method}`, {
-        method: 'POST',
-        headers,
-        body: params !== undefined ? JSON.stringify(nullForUndefined(params)) : undefined
-      });
+    const request = new Request(`${this.prefix}/${endpoint}/${method}`, {
+      method: 'POST',
+      headers,
+      body: params !== undefined ? JSON.stringify(nullForUndefined(params)) : undefined
+    });
 
     // The middleware `context`, includes the call arguments and the request
     // constructed from them
@@ -358,33 +334,30 @@ export class ConnectClient {
     // response handling should come last after the other middlewares are done
     // with processing the response. That is why this middleware is first
     // in the final middlewares array.
-    const responseHandlerMiddleware: Middleware =
-      async(
-        context: MiddlewareContext,
-        next: MiddlewareNext
-      ): Promise<Response> => {
-        const response = await next(context);
-        await assertResponseIsOk(response);
-        return response.json();
-      };
+    const responseHandlerMiddleware: Middleware = async (
+      context: MiddlewareContext,
+      next: MiddlewareNext
+    ): Promise<Response> => {
+      const response = await next(context);
+      await assertResponseIsOk(response);
+      return response.json();
+    };
 
     // The actual fetch call itself is expressed as a middleware
     // chain item for our convenience. Always having an ending of the chain
     // this way makes the folding down below more concise.
-    const fetchNext: MiddlewareNext =
-      async (context: MiddlewareContext): Promise<Response> => {
-        this.loadingStarted();
-        return fetch(context.request)
-          .then(response => {
-            this.loadingFinished();
-            return response;
-          })
-          .catch(error => {
-            this.loadingFinished();
-            $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
-            return Promise.reject(error);
-          });
-      };
+    const fetchNext: MiddlewareNext = async (context: MiddlewareContext): Promise<Response> => {
+      $wnd.Vaadin.connectionState.loadingStarted();
+      return fetch(context.request)
+        .then((response) => {
+          $wnd.Vaadin.connectionState.loadingFinished();
+          return response;
+        })
+        .catch((error) => {
+          $wnd.Vaadin.connectionState.loadingFailed();
+          return Promise.reject(error);
+        });
+    };
 
     // Assemble the final middlewares array from internal
     // and external middlewares
@@ -396,7 +369,7 @@ export class ConnectClient {
         // Compose and return the new chain step, that takes the context and
         // invokes the current middleware with the context and the further chain
         // as the next argument
-        return (context => {
+        return ((context) => {
           if (typeof middleware === 'function') {
             return middleware(context, next);
           } else {
@@ -412,28 +385,7 @@ export class ConnectClient {
     return chain(initialContext);
   }
 
-
   private isFlowLoaded(): boolean {
-    return $wnd.Vaadin.Flow !== undefined;
-  }
-
-  private loadingStarted() {
-    if (this.isFlowLoaded()) {
-      // call Flow.loadingStarted to pause TestBench tests while backend
-      // requests are ongoing
-      $wnd.Vaadin.Flow.clients?.TypeScript?.loadingStarted();
-    } else {
-      $wnd.Vaadin.connectionState.loadingStarted();
-    }
-  }
-
-  private loadingFinished() {
-    if (this.isFlowLoaded()) {
-      // call Flow.loadingFinished to pause TestBench tests while backend
-      // requests are ongoing
-      $wnd.Vaadin.Flow.clients?.TypeScript?.loadingFinished();
-    } else {
-      $wnd.Vaadin.connectionState.loadingFinished();
-    }
+    return $wnd.Vaadin.Flow?.clients?.TypeScript !== undefined;
   }
 }

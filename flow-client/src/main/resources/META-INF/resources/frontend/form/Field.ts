@@ -1,5 +1,3 @@
-/* tslint:disable:max-classes-per-file */
-
 import {
   AttributePartInfo,
   directive,
@@ -7,9 +5,9 @@ import {
   ElementPartInfo,
   PartInfo,
   PartType,
-} from "lit/directive";
+} from 'lit/directive';
 import { BinderNode } from "./BinderNode";
-import { _fromString, AbstractModel, getBinderNode } from "./Models";
+import { _fromString, AbstractModel, getBinderNode } from './Models';
 
 interface Field {
   required: boolean;
@@ -60,10 +58,10 @@ export class VaadinFieldStrategy extends AbstractFieldStrategy {
 
 export class GenericFieldStrategy extends AbstractFieldStrategy {
   set required(value: boolean) {
-    this.setAttribute("required", value);
+    this.setAttribute('required', value);
   }
   set invalid(value: boolean) {
-    this.setAttribute("invalid", value);
+    this.setAttribute('invalid', value);
   }
 }
 
@@ -97,8 +95,8 @@ export class SelectedFieldStrategy extends GenericFieldStrategy {
 
 export function getDefaultFieldStrategy(elm: any): FieldStrategy {
   switch (elm.localName) {
-    case "vaadin-checkbox":
-    case "vaadin-radio-button":
+    case 'vaadin-checkbox':
+    case 'vaadin-radio-button':
       return new CheckedFieldStrategy(elm);
     case "vaadin-combo-box":
       return new ComboBoxFieldStrategy(elm);
@@ -106,7 +104,7 @@ export function getDefaultFieldStrategy(elm: any): FieldStrategy {
       return new SelectedFieldStrategy(elm);
     case "vaadin-rich-text-editor":
       return new GenericFieldStrategy(elm);
-    case "input":
+    case 'input':
       if (/^(checkbox|radio)$/.test(elm.type)) {
         return new CheckedFieldStrategy(elm);
       }

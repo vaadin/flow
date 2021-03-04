@@ -56,7 +56,7 @@ public class ElementUtil {
      */
     public static native Element getElementById(Node context, String id)
     /*-{
-       if (document.body.$ && document.body.$[id]) {
+       if (document.body.$ && document.body.$.hasOwnProperty && document.body.$.hasOwnProperty(id)) {
          // Exported WCs add their id to body.$ and cannot be found using a real id attribute
          return document.body.$[id];
        } else if (context.shadowRoot) {

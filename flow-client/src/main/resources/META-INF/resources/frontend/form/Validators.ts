@@ -1,5 +1,3 @@
-/* tslint:disable:max-classes-per-file */
-
 import isAfter from 'validator/es/lib/isAfter';
 import isBefore from 'validator/es/lib/isBefore';
 import isBoolean from 'validator/es/lib/isBoolean';
@@ -73,9 +71,15 @@ abstract class NumberValidator<T> extends AbstractValidator<T> {
   }
 }
 
-export class IsNumber extends NumberValidator<number> {
-  constructor(attrs?: ValidatorAttributes) {
-    super({message: 'must be a number', ...attrs});
+export class IsNumber extends NumberValidator<number | undefined> {
+  optional: boolean;
+  constructor(optional: boolean, attrs?: ValidatorAttributes) {
+    super({ message: 'must be a number', ...attrs });
+    this.optional = optional;
+  }
+
+  validate(value: number | undefined) {
+    return (this.optional && value === undefined) || super.validate(value);
   }
 }
 
@@ -174,7 +178,7 @@ export class Max extends ValueNumberValidator<any> {
 }
 
 function _inclusive(attrs: DecimalAttributes | string | number) {
-  return typeof attrs !== 'object' || attrs.inclusive !== false
+  return typeof attrs !== 'object' || attrs.inclusive !== false;
 }
 
 export class DecimalMin extends ValueNumberValidator<any> {
@@ -200,7 +204,7 @@ export class DecimalMax extends ValueNumberValidator<any> {
     this.inclusive = _inclusive(attrs);
   }
   validate(value: any) {
-    return super.validate(value) && isFloat(String(value), { [this.inclusive ? 'max' : 'lt']: this.value })
+    return super.validate(value) && isFloat(String(value), { [this.inclusive ? 'max' : 'lt']: this.value });
   }
 }
 export class Negative extends AbstractValidator<any> {
@@ -255,7 +259,7 @@ export class Size extends AbstractValidator<string> {
       this.impliesRequired = true;
     }
   }
-  validate (value: string) {
+  validate(value: string) {
     if (this.min && this.min > 0 && !new Required().validate(value)) {
       return false;
     }
@@ -275,10 +279,10 @@ export class Digits extends AbstractValidator<string> {
     this.fraction = attrs.fraction;
   }
   validate(value: any) {
-    return String(toFloat(`${value}`))
-        .replace(/(.*)\.\d+/, "$1")
-        .length === this.integer
-      && isDecimal(`${value}`, {decimal_digits: `0,${this.fraction}`})
+    return (
+      String(toFloat(`${value}`)).replace(/(.*)\.\d+/, '$1').length === this.integer &&
+      isDecimal(`${value}`, { decimal_digits: `0,${this.fraction}` })
+    );
   }
 }
 
@@ -327,9 +331,13 @@ export class Future extends AbstractValidator<any> {
 // }
 
 function _regexp(attrs: PatternAttributes | string | RegExp) {
-  return typeof attrs === 'string' ? new RegExp(attrs)
-    : attrs instanceof RegExp ? attrs
-      : typeof attrs.regexp === 'string' ? new RegExp(attrs.regexp) : attrs.regexp;
+  return typeof attrs === 'string'
+    ? new RegExp(attrs)
+    : attrs instanceof RegExp
+    ? attrs
+    : typeof attrs.regexp === 'string'
+    ? new RegExp(attrs.regexp)
+    : attrs.regexp;
 }
 
 export class Pattern extends AbstractValidator<string> {

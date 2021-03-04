@@ -323,10 +323,6 @@ suite("Flow", () => {
     assert.isDefined($wnd.Vaadin.Flow.clients.TypeScript.isActive);
     assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
 
-    // Check that loadingStarted and loadingFinished are exposed
-    assert.isDefined($wnd.Vaadin.Flow.clients.TypeScript.loadingStarted);
-    assert.isDefined($wnd.Vaadin.Flow.clients.TypeScript.loadingFinished);
-
     const route = flow.serverSideRoutes[0];
 
     sinon.spy(flow, 'loadingStarted');

@@ -16,6 +16,7 @@
 package com.vaadin.flow.webcomponent;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -106,8 +107,9 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
         TestBenchElement myField = embeddedComponent.$(TestBenchElement.class)
             .id(MY_POLYMER_ID);
-        TestBenchElement input = myField.$(TestBenchElement.class)
-            .id("vaadin-text-field-input-0");
+        TestBenchElement input = myField.$(DivElement.class)
+                .attribute("class", "vaadin-text-field-container").first()
+                .$(DivElement.class).attribute("part", "input-field").first();
         Assert.assertEquals("Polymer text field should have red background",
             "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
 

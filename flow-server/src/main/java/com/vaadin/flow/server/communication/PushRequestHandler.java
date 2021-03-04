@@ -18,6 +18,8 @@ package com.vaadin.flow.server.communication;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
@@ -43,8 +45,8 @@ import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinServletResponse;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushConstants;
@@ -74,10 +76,24 @@ public class PushRequestHandler
      */
     public PushRequestHandler(VaadinServletService service)
             throws ServiceException {
+        this(service, service.getServlet());
+    }
+        /**
+         * Creates an instance connected to the given service and servlet.
+         *
+         * @param service
+         *            the service this handler belongs to
+         * @param servlet
+         *            the servlet this handler belongs to
+         * @throws ServiceException
+         *             if initialization of Atmosphere fails
+         */
+        public PushRequestHandler(VaadinService service,VaadinServlet servlet)
+                throws ServiceException {
 
         service.addServiceDestroyListener(event -> destroy());
 
-        final ServletConfig vaadinServletConfig = service.getServlet()
+        final ServletConfig vaadinServletConfig = servlet
                 .getServletConfig();
 
         pushHandler = createPushHandler(service);
@@ -92,7 +108,7 @@ public class PushRequestHandler
             } catch (Exception e) {
                 throw new ServiceException(
                         "Failed to initialize Atmosphere for "
-                                + service.getServlet().getServletName()
+                                + servlet.getServletName()
                                 + ". Push will not work.",
                         e);
             }
@@ -127,7 +143,7 @@ public class PushRequestHandler
      *            the vaadin service
      * @return the push handler to use for this service
      */
-    protected PushHandler createPushHandler(VaadinServletService service) {
+    protected PushHandler createPushHandler(VaadinService service) {
         return new PushHandler(service);
     }
 
@@ -239,7 +255,7 @@ public class PushRequestHandler
             return false;
         }
 
-        if (request instanceof VaadinServletRequest) {
+        if (request instanceof HttpServletRequest) {
             if (atmosphere == null) {
                 response.sendError(500,
                         "Atmosphere initialization failed. No push available.");
@@ -248,16 +264,16 @@ public class PushRequestHandler
             try {
                 atmosphere.doCometSupport(
                         AtmosphereRequestImpl
-                                .wrap((VaadinServletRequest) request),
+                                .wrap((HttpServletRequest) request),
                         AtmosphereResponseImpl
-                                .wrap((VaadinServletResponse) response));
+                                .wrap((HttpServletResponse) response));
             } catch (ServletException e) {
                 // TODO PUSH decide how to handle
                 throw new RuntimeException(e);
             }
         } else {
             throw new IllegalArgumentException(
-                    "Only VaadinServletRequests are supported");
+                    "Only HttpServletRequest are supported");
         }
 
         return true;

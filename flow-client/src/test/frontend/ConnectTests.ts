@@ -54,9 +54,20 @@ describe('ConnectClient', () => {
     expect((window as any).Vaadin.connectionIndicator).is.not.undefined;
   });
 
-  it('should transition to CONNECTION_LOST on offline and to CONNECTED on subsequent online if Flow not loaded', async() => {
+  it('should transition to CONNECTION_LOST on offline and to CONNECTED on subsequent online if Flow.client.TypeScript not loaded', async() => {
     new ConnectClient();
     let $wnd = (window as any);
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
+    $wnd.dispatchEvent(new Event('offline'));
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
+    $wnd.dispatchEvent(new Event('online'));
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
+  });
+
+  it('should transition to CONNECTION_LOST on offline and to CONNECTED on subsequent online if Flow is loaded but Flow.client.TypeScript not loaded', async() => {
+    new ConnectClient();
+    let $wnd = (window as any);
+    $wnd.Vaadin.Flow = {};
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
     $wnd.dispatchEvent(new Event('offline'));
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
@@ -68,6 +79,8 @@ describe('ConnectClient', () => {
     new ConnectClient();
     let $wnd = (window as any);
     $wnd.Vaadin.Flow = {};
+    $wnd.Vaadin.Flow.clients = {};
+    $wnd.Vaadin.Flow.clients.TypeScript = {};
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
     $wnd.dispatchEvent(new Event('offline'));
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
@@ -166,40 +179,19 @@ describe('ConnectClient', () => {
       expect(fetchMock.lastOptions()).to.include({method: 'POST'});
     });
 
-    it('should set CONNECTED followed by ConnectionState.loadingFinished when Flow is not loaded', async() => {
+    it('should set connection state to LOADING followed by CONNECTED on successful fetch', async() => {
       let $wnd = (window as any);
-      let states: Array<ConnectionState> = [];
-      $wnd.Vaadin.connectionState.addStateChangeListener(
-        (_, state) => states.push(state));
+      const stateChangeListener = sinon.fake();
+      $wnd.Vaadin.connectionState.addStateChangeListener(stateChangeListener);
+
       await client.call('FooEndpoint', 'fooMethod');
-      expect(states).to.deep.equal([ConnectionState.LOADING, ConnectionState.CONNECTED]);
+      (expect(stateChangeListener).to.be as any).calledWithExactly(ConnectionState.LOADING, ConnectionState.CONNECTED);
     });
 
-    it('should call Flow.loadingStarted followed by Flow.loadingFinished when Flow is loaded', async() => {
-      let calls: Array<boolean> = [];
-      (window as any).Vaadin.Flow = {
-        clients: {
-          TypeScript: {
-            loadingStarted: () => calls.push(true),
-            loadingFinished: () => calls.push(false)
-          }
-        }
-      };
-      await client.call('FooEndpoint', 'fooMethod');
-      expect(calls).to.deep.equal([true, false]);
-    });
-
-    it('should call Flow.loadingFinished and transition to CONNECTION_LOST upon network failure', async() => {
-      let calls: Array<boolean> = [];
-      (window as any).Vaadin.Flow = {
-        clients: {
-          TypeScript: {
-            loadingStarted: () => calls.push(true),
-            loadingFinished: () => calls.push(false)
-          }
-        }
-      };
-
+    it('should set connection state to CONNECTION_LOST on network failure', async() => {
+      let $wnd = (window as any);
+      const stateChangeListener = sinon.fake();
+      $wnd.Vaadin.connectionState.addStateChangeListener(stateChangeListener);
       fetchMock.post(
         base + '/connect/FooEndpoint/reject',
         Promise.reject(new TypeError('Network failure'))
@@ -209,12 +201,12 @@ describe('ConnectClient', () => {
       } catch (error) {
         // expected
       } finally {
-        expect(calls).to.deep.equal([true, false]);
-        expect((window as any).Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
+        (expect(stateChangeListener).to.be as any).calledWithExactly(ConnectionState.LOADING, ConnectionState.CONNECTION_LOST);
       }
     });
 
-    it('should call Flow.loadingFinished upon server error', async() => {
+    it('should  set connection state to CONNECTED upon server error', async() => {
+      let $wnd = (window as any);
       const body = 'Unexpected error';
       const errorResponse = new Response(
         body,
@@ -225,21 +217,12 @@ describe('ConnectClient', () => {
       );
       fetchMock.post(base + '/connect/FooEndpoint/vaadinConnectResponse', errorResponse);
 
-      let calls: Array<boolean> = [];
-      (window as any).Vaadin.Flow = {
-        clients: {
-          TypeScript: {
-            loadingStarted: () => calls.push(true),
-            loadingFinished: () => calls.push(false)
-          }
-        }
-      };
       try {
         await client.call('FooEndpoint', 'vaadinConnectResponse');
       } catch (error) {
         // expected
       } finally {
-        expect(calls).to.deep.equal([true, false]);
+        expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
       }
     });
 

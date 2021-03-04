@@ -306,7 +306,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("lit-css-loader", "0.0.4");
         defaults.put("file-loader", "6.2.0");
         defaults.put("loader-utils", "2.0.0");
-        final String WORKBOX_VERSION = "5.1.4";
+        final String WORKBOX_VERSION = "6.1.0";
         defaults.put("workbox-webpack-plugin", WORKBOX_VERSION);
         defaults.put("workbox-core", WORKBOX_VERSION);
         defaults.put("workbox-precaching", WORKBOX_VERSION);
@@ -316,13 +316,14 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("validator", "13.1.17");
         // Constructable style sheets is only implemented for chrome,
         // polyfill needed for FireFox et.al. at the moment
-        defaults.put("construct-style-sheets-polyfill", "2.4.6");
+        defaults.put("construct-style-sheets-polyfill", "2.4.16");
 
         // Forcing chokidar version for now until new babel version is available
         // check out https://github.com/babel/babel/issues/11488
         defaults.put("chokidar", "^3.5.0");
 
         defaults.put("idb", "5.0.6");
+        defaults.put("style-loader", "2.0.0");
 
         final String BABEL_VERSION = "7.12.16";
         // Needed by Lit 2 that is written as ES2020

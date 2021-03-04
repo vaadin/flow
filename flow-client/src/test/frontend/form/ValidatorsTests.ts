@@ -122,7 +122,7 @@ suite("form/Validators", () => {
   });
 
   test('IsNumber', () => {
-    const validator = new IsNumber();
+    let validator = new IsNumber(false);
     assert.isNotTrue(validator.impliesRequired);
     assert.isTrue(validator.validate(0));
     assert.isTrue(validator.validate(1));
@@ -131,6 +131,10 @@ suite("form/Validators", () => {
     assert.isFalse(validator.validate(Infinity));
     assert.isFalse(validator.validate(-Infinity));
     assert.isFalse(validator.validate(NaN));
+    assert.isFalse(validator.validate(undefined));
+
+    validator = new IsNumber(true);
+    assert.isTrue(validator.validate(undefined));
   });
 
   test("Min", () => {

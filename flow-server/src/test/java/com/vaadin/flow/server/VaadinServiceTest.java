@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,7 +45,10 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
+import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
+import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
+import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -77,6 +81,15 @@ public class VaadinServiceTest {
             String details, String url) {
         return VaadinService.createCriticalNotificationJSON(caption, message,
                 details, url);
+    }
+
+    private static abstract class TestVaadinService extends VaadinService {
+
+        @Override
+        protected List<RequestHandler> createRequestHandlers()
+                throws ServiceException {
+            return super.createRequestHandlers();
+        }
     }
 
     @Test
@@ -382,6 +395,20 @@ public class VaadinServiceTest {
                 .thenReturn(Arrays.asList(factory1, factory2));
 
         service.loadInstantiators();
+    }
+
+    @Test
+    public void createRequestHandlers_pwaHandlerIsInList_webComponentHandlersAreInList()
+            throws ServiceException {
+        TestVaadinService service = Mockito.mock(TestVaadinService.class);
+        Mockito.doCallRealMethod().when(service).createRequestHandlers();
+
+        List<RequestHandler> handlers = service.createRequestHandlers();
+        Set<?> set = handlers.stream().map(Object::getClass)
+                .collect(Collectors.toSet());
+        Assert.assertTrue(set.contains(PwaHandler.class));
+        Assert.assertTrue(set.contains(WebComponentProvider.class));
+        Assert.assertTrue(set.contains(WebComponentBootstrapHandler.class));
     }
 
     private InstantiatorFactory createInstantiatorFactory(Lookup lookup) {

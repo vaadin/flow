@@ -17,11 +17,14 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.annotation.HandlesTypes;
 
+import java.util.Collections;
 import java.util.Set;
 
 import com.googlecode.gentyref.GenericTypeReflector;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.OneTimeInitializerPredicate;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -38,27 +41,31 @@ import com.vaadin.flow.server.VaadinContext;
 public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
         implements VaadinServletContextStartupInitializer {
 
+    private static class PreviouslyStoredRoutesRegistry
+            extends ApplicationRouteRegistry {
+
+    }
+
     @Override
     public void initialize(Set<Class<?>> classSet, VaadinContext context)
             throws VaadinInitializerException {
         try {
-            if (classSet == null) {
-                ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
-                        .getInstance(context);
-                routeRegistry.clean();
-                return;
-            }
-
-            Set<Class<? extends Component>> routes = validateRouteClasses(
-                    classSet.stream());
-
+            Set<Class<?>> routesSet = classSet == null ? Collections.emptySet()
+                    : classSet;
             ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
                     .getInstance(context);
 
-            RouteConfiguration routeConfiguration = RouteConfiguration
-                    .forRegistry(routeRegistry);
-            routeConfiguration.update(
-                    () -> setAnnotatedRoutes(routeConfiguration, routes));
+            boolean needStaticRoutesRegistry = removePreviousRoutes(context,
+                    routeRegistry);
+
+            Set<Class<? extends Component>> routes = validateRouteClasses(
+                    routesSet.stream());
+
+            if (needStaticRoutesRegistry) {
+                configureStaticRoutesRegistry(context, routes);
+            }
+
+            configureRoutes(routes, routeRegistry);
             routeRegistry.setPwaConfigurationClass(validatePwaClass(
                     routes.stream().map(clazz -> (Class<?>) clazz)));
         } catch (InvalidRouteConfigurationException irce) {
@@ -68,9 +75,46 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
         }
     }
 
+    private void configureStaticRoutesRegistry(VaadinContext context,
+            Set<Class<? extends Component>> routes) {
+        PreviouslyStoredRoutesRegistry registry = new PreviouslyStoredRoutesRegistry();
+
+        configureRoutes(routes, registry);
+        context.setAttribute(registry);
+    }
+
+    private boolean removePreviousRoutes(VaadinContext context,
+            ApplicationRouteRegistry registry) {
+        Lookup lookup = context.getAttribute(Lookup.class);
+
+        OneTimeInitializerPredicate oneTimeInitializer = lookup
+                .lookup(OneTimeInitializerPredicate.class);
+
+        if (oneTimeInitializer != null && oneTimeInitializer.runOnce()) {
+            return false;
+        }
+        PreviouslyStoredRoutesRegistry prevoiusRegistry = context
+                .getAttribute(PreviouslyStoredRoutesRegistry.class);
+        if (prevoiusRegistry != null) {
+            prevoiusRegistry.getRegisteredRoutes().forEach(routeData -> {
+                registry.removeRoute(routeData.getTemplate());
+                routeData.getRouteAliases().forEach(
+                        alias -> registry.removeRoute(alias.getTemplate()));
+            });
+        }
+        return true;
+    }
+
+    private void configureRoutes(Set<Class<? extends Component>> routes,
+            ApplicationRouteRegistry routeRegistry) {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(routeRegistry);
+        routeConfiguration
+                .update(() -> setAnnotatedRoutes(routeConfiguration, routes));
+    }
+
     private void setAnnotatedRoutes(RouteConfiguration routeConfiguration,
             Set<Class<? extends Component>> routes) {
-        routeConfiguration.getHandledRegistry().clean();
         for (Class<? extends Component> navigationTarget : routes) {
             try {
                 routeConfiguration.setAnnotatedRoute(navigationTarget);
