@@ -41,7 +41,7 @@ const rewriteBaseHref = async (response: Response) => {
 };
 
 const appShellPath = '.';
-const offlinePath = OFFLINE_PATH_ENABLED ? '/' + OFFLINE_PATH : appShellPath;
+const offlinePath = OFFLINE_PATH_ENABLED ? OFFLINE_PATH : appShellPath;
 const networkOnly = new NetworkOnly();
 let connectionLost = false;
 const navigationFallback = new NavigationRoute(async (context: RouteHandlerCallbackOptions) => {
