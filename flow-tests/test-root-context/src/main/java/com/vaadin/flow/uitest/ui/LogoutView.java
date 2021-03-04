@@ -38,7 +38,8 @@ public class LogoutView extends Div {
                 "logout-with-notification", ev -> {
                     VaadinService.getCurrent().setSystemMessagesProvider(
                             (SystemMessagesProvider) systemMessagesInfo -> {
-                                final CustomizedSystemMessages systemMessages = new CustomizedSystemMessages();
+                                final CustomizedSystemMessages systemMessages = 
+                                                new CustomizedSystemMessages();
                                 systemMessages
                                         .setSessionExpiredNotificationEnabled(
                                                 true);
