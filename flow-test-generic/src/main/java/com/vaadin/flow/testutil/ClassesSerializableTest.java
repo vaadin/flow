@@ -68,6 +68,9 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 ".*\\.demo\\..*", "com\\.vaadin\\..*Util(s)?(\\$\\w+)?$",
 
                 "com\\.vaadin\\.flow\\.data\\.provider\\.InMemoryDataProviderHelpers",
+                "com\\.vaadin\\.flow\\.di\\.InstantiatorFactory",
+                "com\\.vaadin\\.flow\\.di\\.Lookup",
+                "com\\.vaadin\\.flow\\.di\\.ResourceProvider",
                 "com\\.vaadin\\.flow\\.dom\\.ElementConstants",
                 "com\\.vaadin\\.flow\\.component\\.board\\.internal\\.FunctionCaller",
                 "com\\.vaadin\\.flow\\.component\\.grid\\.ColumnGroupHelpers",
@@ -109,6 +112,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ServletDeployer\\$StubServletConfig",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ServletContextListeners",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.DevModeInitializer(\\$.*)?",
+                "com\\.vaadin\\.flow\\.server\\.startup\\.LookupInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.communication.JSR356WebsocketInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.BootstrapHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.BootstrapPageResponse",

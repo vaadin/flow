@@ -40,6 +40,8 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
@@ -51,9 +53,9 @@ import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -499,8 +501,18 @@ public class FrontendUtils {
                         VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
                 // Remove absolute
                 .replaceFirst("^/", "");
-        InputStream stream = service.getClassLoader()
-                .getResourceAsStream(stats);
+        ResourceProvider resourceProvider = service.getContext()
+                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+        URL statsUrl = resourceProvider.getResource(service, stats);
+        InputStream stream = null;
+        try {
+            stream = statsUrl.openStream();
+        } catch (Exception IOException) {
+            getLogger().warn(
+                    "Couldn't read content of stats file {} via OSGi bundle",
+                    stats);
+            stream = null;
+        }
         if (stream == null) {
             getLogger().error(
                     "Cannot get the 'stats.json' from the classpath '{}'",
