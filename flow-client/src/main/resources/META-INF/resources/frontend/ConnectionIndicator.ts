@@ -258,7 +258,7 @@ export class ConnectionIndicator extends LitElement {
     }
   }
 
-  private getDefaultStyle():string {
+  private getDefaultStyle(): string {
     return `
       @keyframes v-progress-start {
         0% {

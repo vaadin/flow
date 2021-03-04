@@ -1,12 +1,5 @@
-import {
-  AttributePartInfo,
-  directive,
-  Directive,
-  ElementPartInfo,
-  PartInfo,
-  PartType,
-} from 'lit/directive';
-import { BinderNode } from "./BinderNode";
+import { AttributePartInfo, directive, Directive, ElementPartInfo, PartInfo, PartType } from 'lit/directive';
+import { BinderNode } from './BinderNode';
 import { _fromString, AbstractModel, getBinderNode } from './Models';
 
 interface Field {
@@ -37,7 +30,7 @@ export abstract class AbstractFieldStrategy implements FieldStrategy {
   set errorMessage(_: string) {}
   setAttribute(key: string, val: any) {
     if (val) {
-      this.element.setAttribute(key, "");
+      this.element.setAttribute(key, '');
     } else {
       this.element.removeAttribute(key);
     }
@@ -98,11 +91,11 @@ export function getDefaultFieldStrategy(elm: any): FieldStrategy {
     case 'vaadin-checkbox':
     case 'vaadin-radio-button':
       return new CheckedFieldStrategy(elm);
-    case "vaadin-combo-box":
+    case 'vaadin-combo-box':
       return new ComboBoxFieldStrategy(elm);
-    case "vaadin-list-box":
+    case 'vaadin-list-box':
       return new SelectedFieldStrategy(elm);
-    case "vaadin-rich-text-editor":
+    case 'vaadin-rich-text-editor':
       return new GenericFieldStrategy(elm);
     case 'input':
       if (/^(checkbox|radio)$/.test(elm.type)) {
@@ -127,13 +120,13 @@ export function getDefaultFieldStrategy(elm: any): FieldStrategy {
 export const field = directive(
   class extends Directive {
     fieldState: FieldState = {
-      name: "",
-      value: "",
+      name: '',
+      value: '',
       required: false,
       invalid: false,
-      errorMessage: "",
+      errorMessage: '',
       // @ts-ignore
-      strategy: undefined,
+      strategy: undefined
     };
     partInfo: AttributePartInfo | ElementPartInfo;
     model!: AbstractModel<any>;
@@ -144,15 +137,13 @@ export const field = directive(
     constructor(partInfo: PartInfo) {
       super(partInfo);
       if (partInfo.type !== PartType.PROPERTY && partInfo.type !== PartType.ELEMENT) {
-        throw new Error('Use as "<element \${field(...)}" or <element ...=\${field(...)}"');
+        throw new Error(`Use as "<element \${field(...)}" or <element ...=\${field(...)}"`);
       }
       this.partInfo = partInfo;
     }
     convertFieldValue(fieldValue: any) {
       const fromString = (this.model as any)[_fromString];
-      return typeof fieldValue === "string" && fromString
-        ? fromString(fieldValue)
-        : fieldValue;
+      return typeof fieldValue === 'string' && fromString ? fromString(fieldValue) : fieldValue;
     }
     updateValueFromElement = (binderNode: BinderNode<any, any>) => {
       this.fieldState.value = this.fieldState.strategy.value;
@@ -188,7 +179,7 @@ export const field = directive(
       const name = binderNode.name;
       if (name !== this.fieldState.name) {
         this.fieldState.name = name;
-        this.element.setAttribute("name", name);
+        this.element.setAttribute('name', name);
       }
 
       const value = binderNode.value;
@@ -205,10 +196,8 @@ export const field = directive(
         this.fieldState.strategy.required = this.fieldState.required = required;
       }
 
-      const firstError = binderNode.ownErrors
-        ? binderNode.ownErrors[0]
-        : undefined;
-      const errorMessage = (firstError && firstError.message) || "";
+      const firstError = binderNode.ownErrors ? binderNode.ownErrors[0] : undefined;
+      const errorMessage = (firstError && firstError.message) || '';
       if (errorMessage !== this.fieldState.errorMessage) {
         this.fieldState.strategy.errorMessage = this.fieldState.errorMessage = errorMessage;
       }
