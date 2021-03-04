@@ -8,9 +8,11 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinSession;
 
 public class ThemeUtilTest {
 
@@ -28,7 +30,7 @@ public class ThemeUtilTest {
     }
 
     public static class ThemeSingleNavigationTargetSubclass
-            extends ThemeSingleNavigationTarget {
+        extends ThemeSingleNavigationTarget {
     }
 
     @Route("single")
@@ -37,16 +39,15 @@ public class ThemeUtilTest {
     public static class ThemeSingleNavigationTarget extends Component {
     }
 
+    @Route("")
+    @Tag(Tag.DIV)
+    @Theme(themeFolder = "my-theme")
+    public static class ImprovedThemeSupport extends Component {
+    }
+
     @Test
     public void navigationTargetWithTheme_subclassGetsTheme() {
-        RouteRegistry registry = Mockito.mock(RouteRegistry.class);
-        Router router = new Router(registry);
-
-        UIInternals uiInternals = Mockito.mock(UIInternals.class);
-        Mockito.when(uiInternals.getRouter()).thenReturn(router);
-
-        UI ui = Mockito.mock(UI.class);
-        Mockito.when(ui.getInternals()).thenReturn(uiInternals);
+        UI ui = mockUI(false);
 
         ThemeDefinition theme = ThemeUtil.findThemeForNavigationTarget(ui,
                 ThemeSingleNavigationTargetSubclass.class, "single");
@@ -56,4 +57,49 @@ public class ThemeUtilTest {
                 "Subclass should have the same theme as its superclass",
                 MyTheme.class, theme.getTheme());
     }
+
+    @Test
+    public void navigationTargetWithImprovedThemeInCompatibilityMode_throwsException() {
+        UI ui = mockUI(true);
+
+        Assert.assertThrows(
+            "themeFolder value in compatibilityMode should throw.",
+            IllegalStateException.class, () -> ThemeUtil
+                .findThemeForNavigationTarget(ui, ImprovedThemeSupport.class,
+                    ""));
+    }
+
+    @Test
+    public void navigationTargetWithImprovedThemeInNpmMode_getsTheme() {
+        UI ui = mockUI(false);
+
+        ThemeDefinition theme = ThemeUtil
+            .findThemeForNavigationTarget(ui, ImprovedThemeSupport.class, "");
+
+        Assert.assertNotNull(
+            "Theme should be gotten in npm mode", theme);
+    }
+
+    private UI mockUI(final boolean compatibilityMode) {
+        RouteRegistry registry = Mockito.mock(RouteRegistry.class);
+        Router router = new Router(registry);
+
+        UIInternals uiInternals = Mockito.mock(UIInternals.class);
+        Mockito.when(uiInternals.getRouter()).thenReturn(router);
+
+        UI ui = Mockito.mock(UI.class);
+        Mockito.when(ui.getInternals()).thenReturn(uiInternals);
+
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        Mockito.when(ui.getSession()).thenReturn(session);
+
+        DeploymentConfiguration configuration = Mockito
+            .mock(DeploymentConfiguration.class);
+        Mockito.when(session.getConfiguration()).thenReturn(configuration);
+        Mockito.when(configuration.isCompatibilityMode())
+            .thenReturn(compatibilityMode);
+
+        return ui;
+    }
+
 }
