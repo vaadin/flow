@@ -261,7 +261,7 @@ public class WebComponentBootstrapHandlerTest {
         Mockito.when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(provider);
 
-        Mockito.when(provider.getApplicationResource(service,
+        Mockito.when(provider.getApplicationResource(context,
                 VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                 .thenReturn(WebComponentBootstrapHandlerTest.class
                         .getClassLoader().getResource(VAADIN_SERVLET_RESOURCES

@@ -254,24 +254,28 @@ public class FrontendUtilsTest {
     public void getStatsContent_getStatsFromClassPath_delegateToGetApplicationResource()
             throws IOException {
         VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        Mockito.when(service.getContext()).thenReturn(context);
 
         ResourceProvider provider = mockResourceProvider(service);
 
         FrontendUtils.getStatsContent(service);
 
-        Mockito.verify(provider).getApplicationResource(service, "foo");
+        Mockito.verify(provider).getApplicationResource(context, "foo");
     }
 
     @Test
     public void getStatsAssetsByChunkName_getStatsFromClassPath_delegateToGetApplicationResource()
             throws IOException {
         VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        Mockito.when(service.getContext()).thenReturn(context);
 
         ResourceProvider provider = mockResourceProvider(service);
 
         FrontendUtils.getStatsAssetsByChunkName(service);
 
-        Mockito.verify(provider).getApplicationResource(service, "foo");
+        Mockito.verify(provider).getApplicationResource(context, "foo");
     }
 
     private ResourceProvider mockResourceProvider(VaadinService service) {
@@ -328,7 +332,7 @@ public class FrontendUtilsTest {
                     tmpFile)) {
                 IOUtils.write(content, outputStream, StandardCharsets.UTF_8);
             }
-            Mockito.when(provider.getApplicationResource(service,
+            Mockito.when(provider.getApplicationResource(context,
                     VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                     .thenReturn(tmpFile.toURI().toURL());
         }

@@ -569,9 +569,6 @@ public class DeploymentConfigurationFactoryTest {
         DeploymentConfigurationFactory.createInitParameters(
                 DeploymentConfigurationFactoryTest.class, config);
 
-        Mockito.verify(resourceProvider).getApplicationResources(
-                DeploymentConfigurationFactoryTest.class,
-                VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
         Mockito.verify(resourceProvider).getApplicationResources(context,
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
     }
@@ -599,25 +596,18 @@ public class DeploymentConfigurationFactoryTest {
         };
         URL url = new URL("file", "", -1, "foo.jar!/" + path, handler);
 
-        Mockito.when(resourceProvider.getApplicationResources(
-                DeploymentConfigurationFactoryTest.class, path))
+        Mockito.when(resourceProvider.getApplicationResources(context, path))
                 .thenReturn(Collections.singletonList(url));
 
-        Mockito.when(resourceProvider.getApplicationResource(
-                DeploymentConfigurationFactoryTest.class,
+        Mockito.when(resourceProvider.getApplicationResource(context,
                 FrontendUtils.WEBPACK_GENERATED))
                 .thenReturn(tmpFile.toURI().toURL());
 
         DeploymentConfigurationFactory.createInitParameters(
                 DeploymentConfigurationFactoryTest.class, config);
 
-        Mockito.verify(resourceProvider).getApplicationResource(
-                DeploymentConfigurationFactoryTest.class,
-                FrontendUtils.WEBPACK_GENERATED);
-
         Mockito.verify(resourceProvider).getApplicationResource(context,
                 FrontendUtils.WEBPACK_GENERATED);
-
     }
 
     @Test
@@ -718,11 +708,7 @@ public class DeploymentConfigurationFactoryTest {
             }
         };
 
-        expect(provider.getApplicationResources(VaadinServlet.class,
-                VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
-                        .andAnswer(() -> Collections.emptyList()).anyTimes();
-
-        expect(provider.getApplicationResources(anyObject(Object.class),
+        expect(provider.getApplicationResources(anyObject(VaadinContext.class),
                 anyObject())).andAnswer(() -> Collections.emptyList())
                         .anyTimes();
 

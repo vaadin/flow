@@ -50,6 +50,7 @@ import org.osgi.framework.ServiceReference;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -85,6 +86,8 @@ public final class OSGiAccess {
             ? new ConcurrentHashMap<>()
             : null;
 
+    private static final ResourceProvider RESOURCE_PROVIDER = new OSGiResourceProvider();
+
     private OSGiAccess() {
         // The class is a singleton. Avoid instantiation outside of the class.
     }
@@ -93,6 +96,9 @@ public final class OSGiAccess {
 
         @Override
         public <T> T lookup(Class<T> serviceClass) {
+            if (ResourceProvider.class.equals(serviceClass)) {
+                return serviceClass.cast(serviceClass);
+            }
             Bundle bundle = FrameworkUtil.getBundle(OSGiAccess.class);
             ServiceReference<T> reference = bundle.getBundleContext()
                     .getServiceReference(serviceClass);

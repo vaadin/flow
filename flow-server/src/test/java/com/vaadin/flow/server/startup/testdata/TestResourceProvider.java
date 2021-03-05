@@ -21,28 +21,18 @@ import java.net.URL;
 import java.util.List;
 
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.server.VaadinContext;
 
 public class TestResourceProvider implements ResourceProvider {
 
     @Override
-    public URL getApplicationResource(Class<?> contextClass, String path) {
-        return null;
-    }
-
-    @Override
-    public List<URL> getApplicationResources(Class<?> contextClass, String path)
+    public List<URL> getApplicationResources(VaadinContext context, String path)
             throws IOException {
         return null;
     }
 
     @Override
-    public List<URL> getApplicationResources(Object context, String path)
-            throws IOException {
-        return null;
-    }
-
-    @Override
-    public URL getApplicationResource(Object context, String path) {
+    public URL getApplicationResource(VaadinContext context, String path) {
         return null;
     }
 
