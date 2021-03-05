@@ -237,20 +237,15 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
      * the context.
      *
      * @param context
-     *            <<<<<<< HEAD the vaadin context for which to get a route
-     *            registry, not <code>null</code>
+     *            the vaadin context for which to get a route registry, not
+     *            <code>null</code>
      * @return a registry instance for the given servlet context, not
      *         <code>null</code>
      * @deprecated this is deprecated in favor of
      *             {@code getInstance(VaadinContext)} and will be removed in a
-     *             future release ======= the vaadin context for which to get a
-     *             route registry, not <code>null</code>
+     *             future release
      * @return a registry instance for the given servlet context, not
      *         <code>null</code>
-     * @deprecated this is deprecated in favor of
-     *             {@code getInstance(VaadinContext)} and will be removed in a
-     *             future release >>>>>>> f372558d37... Correct unit tests after
-     *             refactoring: make them compiling
      */
     @Deprecated
     public static ApplicationRouteRegistry getInstance(ServletContext context) {
