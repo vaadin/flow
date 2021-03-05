@@ -49,8 +49,7 @@ public class VaadinServletServiceTest {
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
 
-        servlet = new VaadinServlet();
-        servlet.init(new MockServletConfig());
+        servlet = mocks.getServlet();
     }
 
     @After

@@ -440,14 +440,22 @@ public abstract class VaadinService implements Serializable {
     protected Optional<Instantiator> loadInstantiators()
             throws ServiceException {
         Lookup lookup = getContext().getAttribute(Lookup.class);
-        Collection<InstantiatorFactory> factories = lookup
-                .lookupAll(InstantiatorFactory.class);
-        List<Instantiator> instantiators = new ArrayList<>(factories.size());
-        for (InstantiatorFactory factory : factories) {
-            Instantiator instantiator = factory.createInstantitor(this);
-            if (instantiator != null && instantiator.init(this)) {
-                instantiators.add(instantiator);
+        List<Instantiator> instantiators = null;
+        if (lookup != null) {
+            // lookup may be null in tests
+            Collection<InstantiatorFactory> factories = lookup
+                    .lookupAll(InstantiatorFactory.class);
+            instantiators = new ArrayList<>(factories.size());
+            for (InstantiatorFactory factory : factories) {
+                Instantiator instantiator = factory.createInstantitor(this);
+                if (instantiator != null && instantiator.init(this)) {
+                    instantiators.add(instantiator);
+                }
             }
+        }
+
+        if (instantiators == null) {
+            instantiators = new ArrayList<>();
         }
 
         // the code to support previous way of loading instantiators

@@ -18,6 +18,7 @@ package com.vaadin.flow.di;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 
 /**
  * Static "classpath" resources provider.
@@ -38,6 +39,13 @@ public interface ResourceProvider {
      * @return
      */
     URL getResource(Class<?> clazz, String path);
+
+    /**
+     * @param clazz
+     * @param path
+     * @return
+     */
+    List<URL> getResources(Class<?> clazz, String path) throws IOException;
 
     /**
      * @param context
