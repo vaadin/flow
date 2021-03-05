@@ -499,10 +499,8 @@ public class VaadinServlet extends HttpServlet {
      *            non-escaped string
      * @return a safe string to be added inside an html tag
      *
-     * @deprecated As of 1.0. Will be removed in 3.0. Use <<<<<<< HEAD
+     * @deprecated As of 1.0. Will be removed in 3.0. Use
      *             {@link org.jsoup.nodes.Entities#escape(String)} instead.
-     *             ======= {@link org.jsoup.nodes.Entities#escape(String)}
-     *             instead. >>>>>>> d5b1480a62... Fix OSGi Lookup related issues
      */
     @Deprecated
     public static String safeEscapeForHtml(String unsafe) {
