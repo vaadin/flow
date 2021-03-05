@@ -48,8 +48,8 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.ServiceInitEvent;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.spring.SpringInstantiator;
 import com.vaadin.flow.spring.SpringServlet;
@@ -159,13 +159,13 @@ public class SpringInstantiatorTest {
         Assert.assertNotEquals(component, anotherComponent);
     }
 
-    public static VaadinServletService getService(ApplicationContext context,
+    public static VaadinService getService(ApplicationContext context,
             Properties configProperties) throws ServletException {
         return getService(context, configProperties, false);
     }
 
-    public static VaadinServletService getService(ApplicationContext context,
-            Properties configProperties, boolean rootMapping)
+    public static VaadinService getService(ApplicationContext context,
+                                           Properties configProperties, boolean rootMapping)
             throws ServletException {
         SpringServlet servlet = new SpringServlet(context, rootMapping) {
             @Override
