@@ -1,7 +1,5 @@
 package com.vaadin.flow.component;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -56,13 +54,12 @@ import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.MockServletConfig;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
@@ -119,7 +116,6 @@ public class UITest {
         }
 
     }
-
 
     private static class AttachableComponent extends Component {
         public AttachableComponent() {
@@ -184,7 +180,7 @@ public class UITest {
     }
 
     private static void initUI(UI ui, String initialLocation,
-                               ArgumentCaptor<Integer> statusCodeCaptor)
+            ArgumentCaptor<Integer> statusCodeCaptor)
             throws InvalidRouteConfigurationException {
         try {
             VaadinServletRequest request = Mockito
@@ -200,10 +196,8 @@ public class UITest {
             }
             Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
 
-            ServletConfig servletConfig = new MockServletConfig();
-            VaadinServlet servlet = new VaadinServlet();
-            servlet.init(servletConfig);
-            VaadinService service = servlet.getService();
+            VaadinService service = new MockVaadinServletService();
+            service.init();
             service.setCurrentInstances(request, response);
 
             MockVaadinSession session = new AlwaysLockedVaadinSession(service);
@@ -236,7 +230,7 @@ public class UITest {
             if (statusCodeCaptor != null) {
                 Mockito.verify(response).setStatus(statusCodeCaptor.capture());
             }
-        } catch (ServletException e) {
+        } catch (ServiceException e) {
             throw new RuntimeException(e);
         }
     }
@@ -318,7 +312,6 @@ public class UITest {
         Assert.assertThat(chain.get(1), CoreMatchers
                 .instanceOf(FooBarParamParentNavigationTarget.class));
     }
-
 
     @Test
     public void localeSet_directionUpdated() {
@@ -938,7 +931,8 @@ public class UITest {
         }
 
         try {
-            ui.navigate(Parameterized.class, new RouteParameters("some", "value"));
+            ui.navigate(Parameterized.class,
+                    new RouteParameters("some", "value"));
             Assert.fail("IllegalArgumentException expected.");
         } catch (IllegalArgumentException e) {
             Assert.assertTrue(e.getMessage().endsWith("requires a parameter."));
@@ -961,8 +955,7 @@ public class UITest {
             ui.navigate((String) null, QueryParameters.empty());
             Assert.fail("NullPointerException expected.");
         } catch (NullPointerException e) {
-            Assert.assertEquals("Location must not be null",
-                    e.getMessage());
+            Assert.assertEquals("Location must not be null", e.getMessage());
         }
 
         try {

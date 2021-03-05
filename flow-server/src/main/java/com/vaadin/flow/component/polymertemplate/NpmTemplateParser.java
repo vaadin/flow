@@ -67,8 +67,9 @@ public class NpmTemplateParser implements TemplateParser {
     private JsonObject jsonStats;
 
     /**
-     * The default constructor. Protected in order to prevent direct instantiation,
-     * but not private in order to allow mocking/overrides for testing purposes.
+     * The default constructor. Protected in order to prevent direct
+     * instantiation, but not private in order to allow mocking/overrides for
+     * testing purposes.
      */
     protected NpmTemplateParser() {
     }
@@ -152,27 +153,32 @@ public class NpmTemplateParser implements TemplateParser {
     }
 
     /**
-     * Checks that the given dependency matches the given tag name, ignoring the extension of the file.
+     * Checks that the given dependency matches the given tag name, ignoring the
+     * extension of the file.
      *
      * @param dependency
-     *     dependency to check
+     *            dependency to check
      * @param tag
-     *     tag name for element
+     *            tag name for element
      * @return true if dependency file matches the tag name.
      */
     private boolean dependencyHasTagName(Dependency dependency, String tag) {
         String url = FilenameUtils.removeExtension(dependency.getUrl())
-            .toLowerCase(Locale.ENGLISH);
+                .toLowerCase(Locale.ENGLISH);
         return url.endsWith("/" + tag);
     }
 
     /**
      * Finds the JavaScript sources for given tag.
      *
-     * @param tag the value of the {@link com.vaadin.flow.component.Tag} annotation,
-     *            e.g. `my-component`
-     * @param url the URL resolved according to the {@link com.vaadin.flow.component.dependency.JsModule}
-     *            spec, for example {@code ./view/my-view.js} or {@code @vaadin/vaadin-button.js}.
+     * @param tag
+     *            the value of the {@link com.vaadin.flow.component.Tag}
+     *            annotation, e.g. `my-component`
+     * @param url
+     *            the URL resolved according to the
+     *            {@link com.vaadin.flow.component.dependency.JsModule} spec,
+     *            for example {@code ./view/my-view.js} or
+     *            {@code @vaadin/vaadin-button.js}.
      * @return the .js source which declares given custom element, or null if no
      *         such source can be found.
      */

@@ -45,7 +45,6 @@ import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.FrameworkUtil;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.AnnotationReader;
@@ -304,14 +303,6 @@ public final class OSGiAccess {
                 // may be there not because of OSGi container but plain WAR with
                 // jar which contains the class
                 if (method.invoke(null, OSGiAccess.class) == null) {
-                    return false;
-                }
-
-                Bundle bundle = FrameworkUtil.getBundle(OSGiAccess.class);
-                // even though the FrameworkUtil class is in the classpath it
-                // may be there not because of OSGi container but plain WAR with
-                // jar which contains the class
-                if (bundle == null) {
                     return false;
                 }
                 UsageStatistics.markAsUsed("flow/osgi", getOSGiVersion());

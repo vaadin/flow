@@ -2,8 +2,10 @@ package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,10 +23,13 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServlet;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 import static org.hamcrest.CoreMatchers.both;
@@ -92,8 +97,7 @@ public class BootstrapHandlerDependenciesTest {
     private static class UIAnnotated_BothLazyAndInlineTest extends UI {
     }
 
-    private static class UIWithMethods_BothBothLazyAndInlineTest
-            extends UI {
+    private static class UIWithMethods_BothBothLazyAndInlineTest extends UI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("new.js", LoadMode.LAZY);
@@ -106,8 +110,7 @@ public class BootstrapHandlerDependenciesTest {
     private static class UIAnnotated_BothInlineAndEagerTest extends UI {
     }
 
-    private static class UIWithMethods_BothBothInlineAndEagerTest
-            extends UI {
+    private static class UIWithMethods_BothBothInlineAndEagerTest extends UI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("new.js", LoadMode.INLINE);
@@ -184,8 +187,7 @@ public class BootstrapHandlerDependenciesTest {
     private static class UIAnnotated_DuplicateDependencies_Lazy extends UI {
     }
 
-    private static class UIWithMethods_DuplicateDependencies_Lazy
-            extends UI {
+    private static class UIWithMethods_DuplicateDependencies_Lazy extends UI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("1.js", LoadMode.LAZY);
@@ -197,12 +199,20 @@ public class BootstrapHandlerDependenciesTest {
     @JavaScript(value = "1.js", loadMode = LoadMode.INLINE)
     @JavaScript(value = "2.js", loadMode = LoadMode.INLINE)
     @JavaScript(value = "1.js", loadMode = LoadMode.INLINE)
-    private static class UIAnnotated_DuplicateDependencies_Inline
-            extends UI {
+    private static class UIAnnotated_DuplicateDependencies_Inline extends UI {
+
+        private static class UIWithMethods_DuplicateDependencies_Inline
+                extends UI {
+            @Override
+            protected void init(VaadinRequest request) {
+                getPage().addJavaScript("1.js", LoadMode.INLINE);
+                getPage().addJavaScript("2.js", LoadMode.INLINE);
+                getPage().addJavaScript("1.js", LoadMode.INLINE);
+            }
+        }
     }
 
-    private static class UIWithMethods_DuplicateDependencies_Inline
-            extends UI {
+    private static class UIWithMethods_DuplicateDependencies_Inline extends UI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("1.js", LoadMode.INLINE);
@@ -214,12 +224,16 @@ public class BootstrapHandlerDependenciesTest {
     @JavaScript("1.js")
     @JavaScript("2.js")
     @JavaScript("1.js")
-    private static class UIAnnotated_DuplicateDependencies_Eager
-            extends UI {
+    private static class UIAnnotated_DuplicateDependencies_Eager extends UI {
+        @Override
+        protected void init(VaadinRequest request) {
+            getPage().addJavaScript("1.js");
+            getPage().addJavaScript("2.js");
+            getPage().addJavaScript("1.js");
+        }
     }
 
-    private static class UIWithMethods_DuplicateDependencies_Eager
-            extends UI {
+    private static class UIWithMethods_DuplicateDependencies_Eager extends UI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("1.js");
@@ -231,8 +245,9 @@ public class BootstrapHandlerDependenciesTest {
     private static Router createRouter() {
         Router router = Mockito.mock(Router.class);
         RouteRegistry registry = Mockito.mock(RouteRegistry.class);
-        Mockito.when(router.resolveNavigationTarget(Mockito.any(),
-                Mockito.any())).thenReturn(Optional.empty());
+        Mockito.when(
+                router.resolveNavigationTarget(Mockito.any(), Mockito.any()))
+                .thenReturn(Optional.empty());
         Mockito.when(router.getRegistry()).thenReturn(registry);
         return router;
     }
@@ -240,9 +255,10 @@ public class BootstrapHandlerDependenciesTest {
     private TestVaadinServletService service;
     private MockServletServiceSessionSetup mocks;
 
+    private String clientEngine;
+
     @Before
     public void setup() throws Exception {
-        BootstrapHandler.clientEngineFile = () -> "foobar";
 
         mocks = new MockServletServiceSessionSetup();
         mocks.getDeploymentConfiguration().setCompatibilityMode(true);
@@ -259,6 +275,18 @@ public class BootstrapHandlerDependenciesTest {
                     "/frontend/2." + type);
         }
         servlet.addServletContextResource("/frontend/new.js");
+
+        ResourceProvider resourceProvider = service.getContext()
+                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+        InputStream stream = resourceProvider.getClientResourceAsStream(
+                "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
+                        + "/compile.properties");
+        Properties properties = new Properties();
+        properties.load(stream);
+        clientEngine = ApplicationConstants.CLIENT_ENGINE_PATH + "/"
+                + properties.getProperty("jsFile");
+
+        stream.close();
     }
 
     @After
@@ -340,7 +368,8 @@ public class BootstrapHandlerDependenciesTest {
             Elements jsElements = page.getElementsByTag("script");
             Elements deferElements = page.getElementsByAttribute("defer");
 
-            // Ignore polyfills that should be loaded immediately and scripts
+            // Ignore polyfills that should be loaded immediately and
+            // scripts
             // without src (separate test)
             jsElements.removeIf(element -> {
                 String jsUrl = element.attr("src");
@@ -492,7 +521,8 @@ public class BootstrapHandlerDependenciesTest {
                                     .or(containsString("inline")));
                 } else {
                     flowDependencyMaxIndex = i;
-                    // skip element with uidl that contains lazy dependencies
+                    // skip element with uidl that contains lazy
+                    // dependencies
                     if (!elementString.contains(BOOTSTRAP_SCRIPT_CONTENTS)) {
                         assertThat(
                                 "Flow dependencies should not contain user dependencies",
@@ -500,10 +530,11 @@ public class BootstrapHandlerDependenciesTest {
                                 both(not(containsString("eager")))
                                         .and(not(containsString("lazy")))
                                         .and(not(containsString("inline"))));
-                        if (elementString.contains(
-                                BootstrapHandler.clientEngineFile.get())) {
+
+                        if (elementString.contains(clientEngine)) {
                             foundClientEngine = true;
                         }
+
                     } else {
                         assertThat(
                                 "uidl should not contain eager and inline dependencies",

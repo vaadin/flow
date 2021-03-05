@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSessionBindingEvent;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -28,13 +29,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
@@ -54,7 +55,6 @@ import static org.junit.Assert.assertEquals;
  * @author Vaadin Ltd
  * @since 1.0
  */
-@NotThreadSafe
 public class VaadinServiceTest {
 
     @Tag("div")
@@ -79,7 +79,8 @@ public class VaadinServiceTest {
     }
 
     @Test
-    public void testFireSessionDestroy() throws ServletException {
+    public void testFireSessionDestroy()
+            throws ServletException, ServiceException {
         VaadinService service = createService();
 
         TestSessionDestroyListener listener = new TestSessionDestroyListener();
@@ -172,7 +173,13 @@ public class VaadinServiceTest {
     public void serviceContainsStreamRequestHandler()
             throws ServiceException, ServletException {
         ServletConfig servletConfig = new MockServletConfig();
-        VaadinServlet servlet = new VaadinServlet();
+        VaadinServlet servlet = new VaadinServlet() {
+            @Override
+            protected DeploymentConfiguration createDeploymentConfiguration()
+                    throws ServletException {
+                return new MockDeploymentConfiguration();
+            }
+        };
         servlet.init(servletConfig);
         VaadinService service = servlet.getService();
         Assert.assertTrue(service.createRequestHandlers().stream()
@@ -181,7 +188,8 @@ public class VaadinServiceTest {
     }
 
     @Test
-    public void currentInstancesAfterPendingAccessTasks() {
+    public void currentInstancesAfterPendingAccessTasks()
+            throws ServiceException {
         VaadinService service = createService();
 
         MockVaadinSession session = new MockVaadinSession(service);
@@ -278,6 +286,7 @@ public class VaadinServiceTest {
             public boolean useCompiledFrontendResources() {
                 return true;
             }
+
             @Override
             public boolean isCompatibilityMode() {
                 return true;
@@ -327,15 +336,9 @@ public class VaadinServiceTest {
                 filters.get(2).getClass());
     }
 
-    private static VaadinService createService() {
-        ServletConfig servletConfig = new MockServletConfig();
-        VaadinServlet servlet = new VaadinServlet();
-        try {
-            servlet.init(servletConfig);
-        } catch (ServletException e) {
-            throw new RuntimeException(e);
-        }
-        VaadinService service = servlet.getService();
+    private static VaadinService createService() throws ServiceException {
+        VaadinService service = new MockVaadinServletService();
+        service.init();
         return service;
     }
 }

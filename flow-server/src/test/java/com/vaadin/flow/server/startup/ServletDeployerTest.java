@@ -27,6 +27,8 @@ import org.junit.Test;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.InitParameters;
@@ -193,13 +195,15 @@ public class ServletDeployerTest {
     public void frontendServletIsRegisteredWhenAtLeastOneServletHasDevelopmentAndCompatibilityMode()
             throws Exception {
         Map<String, String> productionMode = new HashMap<>();
-        productionMode.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
+        productionMode.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
+                "true");
         productionMode.put(InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
                 "true");
 
         Map<String, String> devMode = new HashMap<>();
         devMode.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, "false");
-        devMode.put(InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE, "true");
+        devMode.put(InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                "true");
 
         dynamicMockCheck = registration -> EasyMock
                 .expect(registration.setInitParameters(Collections.singletonMap(
@@ -222,7 +226,8 @@ public class ServletDeployerTest {
             throws Exception {
         Map<String, String> params = new HashMap<>();
         params.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, "false");
-        params.put(InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE, "false");
+        params.put(InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                "false");
         deployer.contextInitialized(getContextEvent(
                 true, true,
                 getServletRegistration("testServlet1", TestVaadinServlet.class,
@@ -335,6 +340,22 @@ public class ServletDeployerTest {
                 .andReturn(Collections.emptySet()).anyTimes();
 
         ServletContext contextMock = mock(ServletContext.class);
+
+        Lookup lookup = mock(Lookup.class);
+        expect(contextMock.getAttribute(Lookup.class.getName()))
+                .andReturn(lookup).anyTimes();
+
+        ResourceProvider resourceProvider = mock(ResourceProvider.class);
+
+        expect(resourceProvider.getResources(anyObject(), anyObject()))
+                .andReturn(Collections.emptyList()).anyTimes();
+
+        replay(resourceProvider);
+
+        expect(lookup.lookup(ResourceProvider.class))
+                .andReturn(resourceProvider).anyTimes();
+
+        replay(lookup);
 
         expect(contextMock.getContextPath()).andReturn("").once();
         expect(contextMock.getClassLoader())

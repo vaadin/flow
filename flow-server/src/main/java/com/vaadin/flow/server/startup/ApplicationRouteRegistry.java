@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
+
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -44,7 +45,6 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
-import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.router.internal.RouteTarget;
@@ -120,32 +120,22 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                     .forRegistry(this);
             event.getRemovedRoutes()
                     .forEach(routeBaseData -> routeConfiguration.removeRoute(
-                            HasUrlParameterFormat.excludeTemplate(
-                                    routeBaseData.getTemplate(),
-                                    routeBaseData.getNavigationTarget()),
+                            routeBaseData.getUrl(),
                             routeBaseData.getNavigationTarget()));
             event.getAddedRoutes()
                     .forEach(routeBaseData -> routeConfiguration.setRoute(
-                            HasUrlParameterFormat.excludeTemplate(
-                                    routeBaseData.getTemplate(),
-                                    routeBaseData.getNavigationTarget()),
+                            routeBaseData.getUrl(),
                             routeBaseData.getNavigationTarget(),
                             routeBaseData.getParentLayouts()));
         }
 
         private void setRoutes(List<RouteData> routes) {
             routes.forEach(routeData -> {
-                setRoute(
-                        HasUrlParameterFormat.excludeTemplate(
-                                routeData.getTemplate(),
-                                routeData.getNavigationTarget()),
-                        routeData.getNavigationTarget(),
+                setRoute(routeData.getUrl(), routeData.getNavigationTarget(),
                         routeData.getParentLayouts());
                 routeData.getRouteAliases()
                         .forEach(routeAliasData -> setRoute(
-                                HasUrlParameterFormat.excludeTemplate(
-                                        routeAliasData.getTemplate(),
-                                        routeAliasData.getNavigationTarget()),
+                                routeAliasData.getUrl(),
                                 routeAliasData.getNavigationTarget(),
                                 routeAliasData.getParentLayouts()));
             });
@@ -215,12 +205,20 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
      * the context.
      *
      * @param context
-     *         the vaadin context for which to get a route registry, not
-     *         <code>null</code>
+     *            <<<<<<< HEAD the vaadin context for which to get a route
+     *            registry, not <code>null</code>
      * @return a registry instance for the given servlet context, not
-     * <code>null</code>
-     * @deprecated this is deprecated in favor of {@code getInstance(VaadinContext)}
-     * and will be removed in a future release
+     *         <code>null</code>
+     * @deprecated this is deprecated in favor of
+     *             {@code getInstance(VaadinContext)} and will be removed in a
+     *             future release ======= the vaadin context for which to get a
+     *             route registry, not <code>null</code>
+     * @return a registry instance for the given servlet context, not
+     *         <code>null</code>
+     * @deprecated this is deprecated in favor of
+     *             {@code getInstance(VaadinContext)} and will be removed in a
+     *             future release >>>>>>> f372558d37... Correct unit tests after
+     *             refactoring: make them compiling
      */
     @Deprecated
     public static ApplicationRouteRegistry getInstance(ServletContext context) {
@@ -238,7 +236,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
          * Create a application route registry wrapper.
          *
          * @param registry
-         *         application route registry to wrap
+         *            application route registry to wrap
          */
         public ApplicationRouteRegistryWrapper(
                 ApplicationRouteRegistry registry) {
@@ -261,10 +259,10 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
      * the context.
      *
      * @param context
-     *         the vaadin context for which to get a route registry, not
-     *         <code>null</code>
+     *            the vaadin context for which to get a route registry, not
+     *            <code>null</code>
      * @return a registry instance for the given servlet context, not
-     * <code>null</code>
+     *         <code>null</code>
      */
     public static ApplicationRouteRegistry getInstance(VaadinContext context) {
         assert context != null;
@@ -356,7 +354,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
     @Override
     public RouteTarget getRouteTarget(Class<? extends Component> target,
-                                      RouteParameters parameters) {
+            RouteParameters parameters) {
         return getConfiguration().getRouteTarget(target, parameters);
     }
 
@@ -368,8 +366,8 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public Optional<Class<? extends Component>> getNavigationTarget(
-            String url, List<String> segments) {
+    public Optional<Class<? extends Component>> getNavigationTarget(String url,
+            List<String> segments) {
         return getNavigationTarget(PathUtil.getPath(url, segments));
     }
 
@@ -429,8 +427,9 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
     private static ApplicationRouteRegistry createRegistry(
             VaadinContext context) {
-        if (context != null && ((VaadinServletContext)context).getContext() == OSGiAccess.getInstance()
-                .getOsgiServletContext()) {
+        if (context != null
+                && ((VaadinServletContext) context).getContext() == OSGiAccess
+                        .getInstance().getOsgiServletContext()) {
             return new OSGiDataCollector();
         } else if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
             return new ApplicationRouteRegistry();

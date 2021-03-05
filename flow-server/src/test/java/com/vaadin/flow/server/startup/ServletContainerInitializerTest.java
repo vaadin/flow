@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContainerInitializer;
-
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -25,6 +23,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.ServletContainerInitializer;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -90,7 +90,8 @@ public class ServletContainerInitializerTest extends ClassFinder {
     }
 
     private Stream<String> getExcludedPatterns() {
-        return Stream.of("com\\.vaadin\\.flow\\..*osgi\\..*");
+        return Stream.of("com\\.vaadin\\.flow\\..*osgi\\..*",
+                "com\\.vaadin\\.flow\\.server\\.startup\\.LookupInitializer\\$OsgiLookupImpl");
     }
 
     private boolean isBadSubType(Class<?> clazz) {

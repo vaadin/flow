@@ -15,15 +15,13 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
@@ -36,10 +34,14 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static org.junit.Assert.assertFalse;
@@ -132,7 +134,8 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void assetsByChunkIsCorrectlyParsedFromStats() throws IOException {
+    public void assetsByChunkIsCorrectlyParsedFromStats()
+            throws IOException, ServiceException {
         VaadinService service = setupStatsAssetMocks("ValidStats.json");
 
         String statsAssetsByChunkName = FrontendUtils
@@ -145,7 +148,7 @@ public class FrontendUtilsTest {
 
     @Test
     public void formattingError_assetsByChunkIsCorrectlyParsedFromStats()
-            throws IOException {
+            throws IOException, ServiceException {
         VaadinService service = setupStatsAssetMocks("MissFormatStats.json");
 
         String statsAssetsByChunkName = FrontendUtils
@@ -157,7 +160,8 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void noStatsFile_assetsByChunkReturnsNull() throws IOException {
+    public void noStatsFile_assetsByChunkReturnsNull()
+            throws IOException, ServiceException {
         VaadinService service = getServiceWithResource(null);
 
         String statsAssetsByChunkName = FrontendUtils
@@ -165,9 +169,10 @@ public class FrontendUtilsTest {
 
         Assert.assertNull(statsAssetsByChunkName);
     }
-    
+
     @Test
-    public void faultyStatsFileReturnsNull() throws IOException {
+    public void faultyStatsFileReturnsNull()
+            throws IOException, ServiceException {
         VaadinService service = setupStatsAssetMocks("InvalidStats.json");
 
         String statsAssetsByChunkName = FrontendUtils
@@ -244,30 +249,41 @@ public class FrontendUtilsTest {
     }
 
     private VaadinService setupStatsAssetMocks(String statsFile)
-            throws IOException {
+            throws IOException, ServiceException {
         String stats = IOUtils.toString(FrontendUtilsTest.class.getClassLoader()
                 .getResourceAsStream(statsFile), StandardCharsets.UTF_8);
 
-        return getServiceWithResource(
-                new ByteArrayInputStream(stats.getBytes()));
+        return getServiceWithResource(stats);
     }
 
-    private VaadinService getServiceWithResource(InputStream stats) {
-        VaadinService service = Mockito.mock(VaadinService.class);
-        ClassLoader classLoader = Mockito.mock(ClassLoader.class);
-        DeploymentConfiguration deploymentConfiguration = Mockito
-                .mock(DeploymentConfiguration.class);
+    private VaadinService getServiceWithResource(String content)
+            throws ServiceException, IOException {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setProductionMode(true);
+        VaadinService service = new MockVaadinServletService(configuration);
+        service.init();
 
-        Mockito.when(service.getClassLoader()).thenReturn(classLoader);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(deploymentConfiguration);
-        Mockito.when(deploymentConfiguration.getStringProperty(
-                SERVLET_PARAMETER_STATISTICS_JSON,
-                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
-                .thenReturn(VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT);
-        Mockito.when(classLoader.getResourceAsStream(
-                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
-                .thenReturn(stats);
+        VaadinContext context = service.getContext();
+
+        Lookup lookup = Mockito.mock(Lookup.class);
+        context.setAttribute(Lookup.class, lookup);
+
+        ResourceProvider provider = Mockito.mock(ResourceProvider.class);
+
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(provider);
+
+        if (content != null) {
+            File tmpFile = tmpDir.newFile();
+            try (FileOutputStream outputStream = new FileOutputStream(
+                    tmpFile)) {
+                IOUtils.write(content, outputStream, StandardCharsets.UTF_8);
+            }
+            Mockito.when(provider.getResource(service,
+                    VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
+                    .thenReturn(tmpFile.toURI().toURL());
+        }
+
         return service;
     }
 

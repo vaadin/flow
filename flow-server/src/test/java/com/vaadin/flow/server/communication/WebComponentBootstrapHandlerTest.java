@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.communication;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -25,11 +26,13 @@ import org.hamcrest.MatcherAssert;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.internal.BrowserLiveReloadAccess;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.PwaConfiguration;
@@ -44,12 +47,18 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
+import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 
 public class WebComponentBootstrapHandlerTest {
+
+    @Rule
+    public final TemporaryFolder tmpDir = new TemporaryFolder();
 
     private static class TestWebComponentBootstrapHandler
             extends WebComponentBootstrapHandler {
@@ -169,6 +178,9 @@ public class WebComponentBootstrapHandlerTest {
             };
         };
         service.init();
+
+        initLookup(service);
+
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
         session.setConfiguration(service.getDeploymentConfiguration());
@@ -196,11 +208,12 @@ public class WebComponentBootstrapHandlerTest {
     }
 
     @Test
-    public void writeBootstrapPage_devmodeGizmoIsDisabled()
-            throws IOException {
+    public void writeBootstrapPage_devmodeGizmoIsDisabled() throws IOException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         MockVaadinServletService service = new MockVaadinServletService();
         service.init();
+
+        initLookup(service);
 
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
@@ -238,6 +251,29 @@ public class WebComponentBootstrapHandlerTest {
         String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
     }
 
+    private void initLookup(VaadinServletService service) throws IOException {
+        VaadinContext context = service.getContext();
+        Lookup lookup = Mockito.mock(Lookup.class);
+        context.setAttribute(Lookup.class, lookup);
+
+        ResourceProvider provider = Mockito.mock(ResourceProvider.class);
+
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(provider);
+
+        Mockito.when(provider.getResource(service,
+                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
+                .thenReturn(WebComponentBootstrapHandlerTest.class
+                        .getClassLoader().getResource(VAADIN_SERVLET_RESOURCES
+                                + STATISTICS_JSON_DEFAULT));
+
+        Mockito.when(provider.getClientResourceAsStream(
+                "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
+                        + "/compile.properties"))
+                .thenAnswer(invocation -> new ByteArrayInputStream(
+                        "jsFile=foo".getBytes(StandardCharsets.UTF_8)));
+    }
+
     private VaadinResponse getMockResponse(ByteArrayOutputStream stream)
             throws IOException {
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
@@ -248,7 +284,7 @@ public class WebComponentBootstrapHandlerTest {
         Mockito.when(service.getContext()).thenReturn(context);
         Mockito.when(context.getAttribute(
                 eq(WebComponentConfigurationRegistry.class), any())).thenReturn(
-                Mockito.mock(WebComponentConfigurationRegistry.class));
+                        Mockito.mock(WebComponentConfigurationRegistry.class));
         return response;
     }
 

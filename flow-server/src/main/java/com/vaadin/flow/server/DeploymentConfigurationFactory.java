@@ -24,7 +24,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
@@ -321,12 +320,16 @@ public final class DeploymentConfigurationFactory implements Serializable {
         return json;
     }
 
-    private static String getResourceFromClassloader() throws IOException {
-        String json = null;
-        // token file is in the class-path of the application
+    private static String getTokenFileFromClassloader(Class<?> contextClass,
+            VaadinContext context) throws IOException {
         String tokenResource = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
-        List<URL> resources = Collections.list(DeploymentConfiguration.class
-                .getClassLoader().getResources(tokenResource));
+
+        Lookup lookup = context.getAttribute(Lookup.class);
+        ResourceProvider resourceProvider = lookup
+                .lookup(ResourceProvider.class);
+        List<URL> resources = resourceProvider.getResources(contextClass,
+                tokenResource);
+
         // Accept resource that doesn't contain
         // 'jar!/META-INF/Vaadin/config/flow-build-info.json'
         URL resource = resources.stream()
@@ -334,45 +337,14 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 .findFirst().orElse(null);
         if (resource == null && !resources.isEmpty()) {
             // For no non jar build info, in production mode check for
-            // webpack.generated.json if it's in a jar in a jar then accept
+            // webpack.generated.json if it's in a jar then accept
             // single jar flow-build-info.
-            json = getPossibleJarResource(resources);
-        } else if (resource != null) {
-            json = FrontendUtils.streamToString(resource.openStream());
-        }
-        return json;
-    }
-
-    private static String getTokenFileFromClassloader(
-            Class<?> systemPropertyBaseClass, VaadinContext context)
-            throws IOException {
-        // token file is in the class-path of the application
-        String tokenResource = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
-
-        Lookup lookup = context.getAttribute(Lookup.class);
-        ResourceProvider resourceProvider = lookup
-                .lookup(ResourceProvider.class);
-        URL resource = resourceProvider.getResource(systemPropertyBaseClass,
-                tokenResource);
-
-        if (resource == null) {
-            // token file is in the class-path of the application
-            List<URL> resources = Collections.list(DeploymentConfiguration.class
-                    .getClassLoader().getResources(tokenResource));
-            // Accept resource that doesn't contain
-            // 'jar!/META-INF/Vaadin/config/flow-build-info.json'
-            resource = resources.stream().filter(
-                    url -> !url.getPath().endsWith("jar!/" + tokenResource))
-                    .findFirst().orElse(null);
-            if (resource == null && !resources.isEmpty()) {
-                // For no non jar build info, in production mode check for
-                // webpack.generated.json if it's in a jar in a jar then accept
-                // single jar flow-build-info.
-                return getPossibleJarResource(resources);
-            }
+            return getPossibleJarResource(resourceProvider, contextClass,
+                    resources);
         }
         return resource == null ? null
                 : FrontendUtils.streamToString(resource.openStream());
+
     }
 
     /**
@@ -389,13 +361,13 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @throws IOException
      *             exception reading stream
      */
-    private static String getPossibleJarResource(List<URL> resources)
-            throws IOException {
+    private static String getPossibleJarResource(ResourceProvider provider,
+            Class<?> contextClass, List<URL> resources) throws IOException {
         Objects.requireNonNull(resources);
         assert !resources
                 .isEmpty() : "Possible jar resource requires resources to be available.";
-        URL webpackGenerated = DeploymentConfiguration.class.getClassLoader()
-                .getResource(FrontendUtils.WEBPACK_GENERATED);
+        URL webpackGenerated = provider.getResource(contextClass,
+                FrontendUtils.WEBPACK_GENERATED);
         // If jar!/ exists 2 times for webpack.generated.json then we are
         // running from a jar
         if (countInstances(webpackGenerated.getPath(), "jar!/") >= 2) {

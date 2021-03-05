@@ -1,13 +1,14 @@
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
+import static com.vaadin.flow.server.communication.StreamRequestHandler.DYN_RES_PREFIX;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import net.jcip.annotations.NotThreadSafe;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -17,18 +18,18 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.MockServletConfig;
+import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
-import static com.vaadin.flow.server.communication.StreamRequestHandler.DYN_RES_PREFIX;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class StreamRequestHandlerTest {
@@ -41,11 +42,9 @@ public class StreamRequestHandlerTest {
     private UI ui;
 
     @Before
-    public void setUp() throws ServletException {
-        ServletConfig servletConfig = new MockServletConfig();
-        VaadinServlet servlet = new VaadinServlet();
-        servlet.init(servletConfig);
-        VaadinService service = servlet.getService();
+    public void setUp() throws ServletException, ServiceException {
+        VaadinService service = new MockVaadinServletService();
+        service.init();
 
         session = new AlwaysLockedVaadinSession(service) {
             @Override
@@ -149,8 +148,8 @@ public class StreamRequestHandlerTest {
         ServletOutputStream outputStream = Mockito
                 .mock(ServletOutputStream.class);
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(request.getPathInfo()).thenReturn(
-                String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
+        Mockito.when(request.getPathInfo())
+                .thenReturn(String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
                         ui.getId().orElse("-1"), res.getId(), res.getName()));
 
         handler.handleRequest(session, request, response);
@@ -158,8 +157,8 @@ public class StreamRequestHandlerTest {
         Mockito.verify(response).getOutputStream();
 
         ArgumentCaptor<byte[]> argument = ArgumentCaptor.forClass(byte[].class);
-        Mockito.verify(outputStream)
-                .write(argument.capture(), Mockito.anyInt(), Mockito.anyInt());
+        Mockito.verify(outputStream).write(argument.capture(), Mockito.anyInt(),
+                Mockito.anyInt());
 
         byte[] buf = new byte[1024];
         for (int i = 0; i < testBytes.length; i++) {
@@ -183,8 +182,8 @@ public class StreamRequestHandlerTest {
         ServletOutputStream outputStream = Mockito
                 .mock(ServletOutputStream.class);
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(request.getPathInfo()).thenReturn(
-                String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
+        Mockito.when(request.getPathInfo())
+                .thenReturn(String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
                         ui.getId().orElse("-1"), res.getId(), res.getName()));
 
         handler.handleRequest(session, request, response);
