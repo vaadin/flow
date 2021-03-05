@@ -15,30 +15,18 @@
  */
 package com.vaadin.flow.contexttest.ui;
 
-import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
+import java.io.IOException;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
+import com.vaadin.flow.testutil.ChromeDeviceTest;
+
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.mobile.NetworkConnection;
 
-import com.vaadin.flow.testutil.ChromeDeviceTest;
-
-public class PwaTestIT extends ChromeDeviceTest {
+public class OfflineWithCustomContextIT extends ChromeDeviceTest {
 
     @Test
     // for https://github.com/vaadin/flow/issues/10177
