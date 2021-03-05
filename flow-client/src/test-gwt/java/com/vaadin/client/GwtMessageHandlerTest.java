@@ -287,13 +287,10 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         doAssert(() -> assertTrue(getResyncState()), 300);
     }
 
-    public void testHandleJSON_pageRedirectJavaScriptAdded_sessionExpiredMessageNotShown() {
+    public void testHandleJSON_uiTerminated_sessionExpiredMessageNotShown() {
         resetInternalEvents();
 
-        getUILifecycle().setState(UILifecycle.UIState.RUNNING);
-
-        // when: payload message from server contains session expired flag and
-        // page redirect JS command
+        // when: payload message from server contains session expired flag
         JavaScriptObject messagePayloadJS = JavaScriptObject.createObject();
         JsonObject messagePayload = messagePayloadJS.cast();
 
@@ -301,13 +298,10 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         meta.put(JsonConstants.META_SESSION_EXPIRED, true);
         messagePayload.put("meta", meta);
 
-        JsonArray jsCommandsArray = Json.createArray();
-        messagePayload.put(JsonConstants.UIDL_KEY_EXECUTE, jsCommandsArray);
-
-        JsonArray redirectCommand = Json.createArray();
-        redirectCommand.set(0,
-                "this.stopApplication(); window.open(window.location.href, '_self')");
-        jsCommandsArray.set(0, redirectCommand);
+        // when: UI has been terminated (for instance, as a result of redirect
+        // JS caused by Page::setLocation)
+        getUILifecycle().setState(UILifecycle.UIState.RUNNING);
+        getUILifecycle().setState(UILifecycle.UIState.TERMINATED);
 
         // when: payload message is handled by message handler on client side
         handler.handleJSON(messagePayloadJS.cast());
@@ -325,13 +319,10 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         });
     }
 
-    public void testHandleJSON_pageRedirectJavaScriptAdded_unrecoverableErrorMessageNotShown() {
+    public void testHandleJSON_uiTerminated_unrecoverableErrorMessageNotShown() {
         resetInternalEvents();
 
-        getUILifecycle().setState(UILifecycle.UIState.RUNNING);
-
-        // when: payload message from server contains error message flag and
-        // page redirect JS command
+        // when: payload message from server contains error message flag
         JavaScriptObject messagePayloadJS = JavaScriptObject.createObject();
         JsonObject messagePayload = messagePayloadJS.cast();
 
@@ -339,13 +330,10 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         meta.put("appError", true);
         messagePayload.put("meta", meta);
 
-        JsonArray jsCommandsArray = Json.createArray();
-        messagePayload.put(JsonConstants.UIDL_KEY_EXECUTE, jsCommandsArray);
-
-        JsonArray redirectCommand = Json.createArray();
-        redirectCommand.set(0,
-                "this.stopApplication(); window.open(window.location.href, '_self')");
-        jsCommandsArray.set(0, redirectCommand);
+        // when: UI has been terminated (for instance, as a result of redirect
+        // JS caused by Page::setLocation)
+        getUILifecycle().setState(UILifecycle.UIState.RUNNING);
+        getUILifecycle().setState(UILifecycle.UIState.TERMINATED);
 
         // when: payload message is handled by message handler on client side
         handler.handleJSON(messagePayloadJS.cast());
@@ -363,9 +351,10 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         });
     }
 
-    public void testHandleJSON_sessionExpiredNoRedirect_sessionExpiredMessageShown() {
+    public void testHandleJSON_sessionExpiredAndUIRunning_sessionExpiredMessageShown() {
         resetInternalEvents();
 
+        // when: UI is running
         getUILifecycle().setState(UILifecycle.UIState.RUNNING);
 
         // when: payload message from server contains session expired flag
@@ -390,9 +379,10 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         });
     }
 
-    public void testHandleJSON_unrecoverableErrorNoRedirect_unrecoverableErrorMessageShown() {
+    public void testHandleJSON_unrecoverableErrorAndUIRunning_unrecoverableErrorMessageShown() {
         resetInternalEvents();
 
+        // when: UI is running
         getUILifecycle().setState(UILifecycle.UIState.RUNNING);
 
         // when: payload message from server contains error message flag
