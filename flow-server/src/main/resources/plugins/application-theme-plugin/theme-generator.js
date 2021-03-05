@@ -85,7 +85,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties) {
   let i = 0;
   if (themeProperties.importCss) {
     const missingModules = checkModules(themeProperties.importCss);
-    if(missingModules.length > 0) {
+    if (missingModules.length > 0) {
       throw Error("Missing npm modules or files '" + missingModules.join("', '")
         + "' for importCss marked in 'theme.json'.\n" +
         "Install or update package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm i'");
