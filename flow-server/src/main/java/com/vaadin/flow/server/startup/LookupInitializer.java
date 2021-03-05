@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.HandlesTypes;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -33,16 +37,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.HandlesTypes;
-
 import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.di.InstantiatorFactory;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.osgi.OSGiAccess;
@@ -141,14 +142,8 @@ public class LookupInitializer
         private Map<String, CachedStreamData> cache = new ConcurrentHashMap<>();
 
         @Override
-        public URL getApplicationResource(Class<?> clazz, String path) {
-            return Objects.requireNonNull(clazz).getClassLoader()
-                    .getResource(path);
-        }
-
-        @Override
-        public List<URL> getApplicationResources(Object context, String path)
-                throws IOException {
+        public List<URL> getApplicationResources(VaadinContext context,
+                String path) throws IOException {
             if (context instanceof VaadinService) {
                 return Collections.list(((VaadinService) context)
                         .getClassLoader().getResources(path));
@@ -158,25 +153,19 @@ public class LookupInitializer
         }
 
         @Override
-        public List<URL> getApplicationResources(Class<?> clazz, String path)
-                throws IOException {
-            return Collections.list(Objects.requireNonNull(clazz)
-                    .getClassLoader().getResources(path));
-        }
-
-        @Override
-        public URL getApplicationResource(Object context, String path) {
+        public URL getApplicationResource(VaadinContext context, String path) {
             Objects.requireNonNull(context);
-            if (context instanceof VaadinService) {
-                return ((VaadinService) context).getClassLoader()
-                        .getResource(path);
+            if (context instanceof VaadinServletContext) {
+                return ((VaadinServletContext) context).getContext()
+                        .getClassLoader().getResource(path);
             }
-            return getApplicationResource(context.getClass(), path);
+            return null;
         }
 
         @Override
         public URL getClientResource(String path) {
-            return getApplicationResource(ResourceProviderImpl.class, path);
+            return ResourceProviderImpl.class.getClassLoader()
+                    .getResource(path);
         }
 
         @Override

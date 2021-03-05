@@ -32,6 +32,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
@@ -350,9 +351,9 @@ public class ServletDeployerTest {
         expect(resourceProvider.getApplicationResources(anyObject(),
                 anyObject())).andReturn(Collections.emptyList()).anyTimes();
 
-        expect(resourceProvider.getApplicationResources(anyObject(Object.class),
-                anyObject())).andAnswer(() -> Collections.emptyList())
-                        .anyTimes();
+        expect(resourceProvider.getApplicationResources(
+                anyObject(VaadinContext.class), anyObject()))
+                        .andAnswer(() -> Collections.emptyList()).anyTimes();
 
         replay(resourceProvider);
 
