@@ -23,11 +23,11 @@ import org.openqa.selenium.By;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class LogoutRedirectIT extends ChromeBrowserTest {
+public class LogoutWithNotificationIT extends ChromeBrowserTest {
 
     @Override
     protected String getTestPath() {
-        return "/logout-redirect-test/logout-redirect-view";
+        return "/logout-with-notification/logout-with-notification-view";
     }
 
     @Test

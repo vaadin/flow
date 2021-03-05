@@ -28,10 +28,10 @@ import com.vaadin.flow.server.CustomizedSystemMessages;
 import com.vaadin.flow.server.SystemMessagesProvider;
 import com.vaadin.flow.server.VaadinServlet;
 
-@WebServlet("/logout-redirect-test/*")
-public class LogoutRedirectTestServlet extends VaadinServlet {
+@WebServlet("/logout-with-notification/*")
+public class LogoutWithNotificationServlet extends VaadinServlet {
 
-    @Route("logout-redirect-view")
+    @Route("logout-with-notification-view")
     public static class LogoutRedirectView extends Div {
         public LogoutRedirectView() {
             NativeButton logoutButton = new NativeButton("logout", ev -> {
