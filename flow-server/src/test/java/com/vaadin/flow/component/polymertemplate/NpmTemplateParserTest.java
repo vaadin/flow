@@ -50,6 +50,8 @@ public class NpmTemplateParserTest {
     @Mock
     private DeploymentConfiguration configuration;
 
+    private ResourceProvider resourceProvider;
+
     @Before
     public void init() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -72,12 +74,13 @@ public class NpmTemplateParserTest {
         service = new MockVaadinServletService(configuration);
         service.init(instantiator);
 
-        ResourceProvider resourceProvider = service.getContext()
-                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
-        Mockito.when(resourceProvider.getApplicationResource(service,
-                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
-                .thenReturn(NpmTemplateParser.class.getResource(
-                        "/" + VAADIN_SERVLET_RESOURCES + "config/stats.json"));
+        resourceProvider = service.getContext().getAttribute(Lookup.class)
+                .lookup(ResourceProvider.class);
+        Mockito.when(resourceProvider.getApplicationResource(
+                Mockito.eq(service), Mockito.anyString()))
+                .thenAnswer(invocation -> NpmTemplateParserTest.class
+                        .getResource('/'
+                                + invocation.getArgumentAt(1, String.class)));
     }
 
     @Test
