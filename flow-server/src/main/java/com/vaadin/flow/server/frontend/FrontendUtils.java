@@ -15,11 +15,9 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -32,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.Collectors;
@@ -47,7 +46,6 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
@@ -453,15 +451,22 @@ public class FrontendUtils {
     public static String getStatsContent(VaadinService service)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
-        InputStream content = null;
 
-        if (!config.isProductionMode() && config.enableDevServer()) {
+        if (config.isProductionMode()) {
+            return getOrCreateStatsCache(service).statsJson;
+        }
+
+        InputStream content = null;
+        if (config.enableDevServer()) {
             content = getStatsFromWebpack();
         }
 
         if (config.isStatsExternal()) {
-            content = getStatsFromExternalUrl(config.getExternalStatsUrl(),
-                    service.getContext());
+            StatsCache externalCache = getStatsFromExternalUrl(
+                    config.getExternalStatsUrl(), null);
+            if (externalCache != null) {
+                return externalCache.statsJson;
+            }
         }
 
         if (content == null) {
@@ -470,6 +475,39 @@ public class FrontendUtils {
         return content != null
                 ? IOUtils.toString(content, StandardCharsets.UTF_8)
                 : null;
+    }
+
+    private static StatsCache getOrCreateStatsCache(VaadinService service)
+            throws IOException {
+        DeploymentConfiguration config = service.getDeploymentConfiguration();
+        StatsCache currentCache = service.getContext()
+                .getAttribute(StatsCache.class);
+
+        // External stats file have higher priority because
+        // we have to check the lastModified header to
+        // return the correct cache
+        if (config.isStatsExternal()) {
+            StatsCache externalCache = getStatsFromExternalUrl(
+                    config.getExternalStatsUrl(), currentCache);
+            // Refresh current cache if external cache could be created
+            if (externalCache != null) {
+                service.getContext().setAttribute(externalCache);
+                currentCache = externalCache;
+            }
+        }
+
+        if (currentCache != null) {
+            return currentCache;
+        }
+
+        InputStream statsJson = getStatsFromClassPath(service);
+        if (statsJson == null) {
+            return StatsCache.NOT_CACHEABLE;
+        }
+
+        currentCache = new StatsCache(statsJson);
+        service.getContext().setAttribute(currentCache);
+        return currentCache;
     }
 
     /**
@@ -493,8 +531,7 @@ public class FrontendUtils {
         return getFileContent(service, INDEX_HTML);
     }
 
-    private static String getFileContent(VaadinService service,
-            String path)
+    private static String getFileContent(VaadinService service, String path)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         InputStream content = null;
@@ -568,8 +605,8 @@ public class FrontendUtils {
         return statsConnection.getInputStream();
     }
 
-    private static InputStream getStatsFromExternalUrl(String externalStatsUrl,
-            VaadinContext context) {
+    private static StatsCache getStatsFromExternalUrl(String externalStatsUrl,
+            StatsCache currentCache) {
         String url;
         // If url is relative try to get host from request
         // else fallback on 127.0.0.1:8080
@@ -588,23 +625,22 @@ public class FrontendUtils {
             connection.setReadTimeout(60000);
             connection.setConnectTimeout(60000);
             String lastModified = connection.getHeaderField("last-modified");
-            if (lastModified != null) {
-                LocalDateTime modified = ZonedDateTime
-                        .parse(lastModified,
-                                DateTimeFormatter.RFC_1123_DATE_TIME)
-                        .toLocalDateTime();
-                Stats statistics = context.getAttribute(Stats.class);
-                if (statistics == null
-                        || modified.isAfter(statistics.getLastModified())) {
-                    statistics = new Stats(
-                            streamToString(connection.getInputStream()),
-                            lastModified);
-                    context.setAttribute(statistics);
-                }
-                return new ByteArrayInputStream(
-                        statistics.statsJson.getBytes(StandardCharsets.UTF_8));
+
+            if (lastModified == null && currentCache != null) {
+                // HttpURLConnection did not receive a last-modified
+                // header - current cache can be reused!
+                return currentCache;
             }
-            return connection.getInputStream();
+
+            if (currentCache == null
+                    || !currentCache.isCacheStillValid(lastModified)) {
+                // No Cache or cache invalid? Create a new cache and store the
+                // last-modified header (if available) for later
+                return new StatsCache(connection.getInputStream(),
+                        lastModified);
+            }
+
+            return currentCache;
         } catch (IOException e) {
             getLogger().error("Failed to retrieve stats.json from the url {}.",
                     url, e);
@@ -672,22 +708,36 @@ public class FrontendUtils {
     public static String getStatsAssetsByChunkName(VaadinService service)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
+
+        if (config.isProductionMode()) {
+            return getOrCreateStatsCache(service).assetChunks;
+        }
+
         if (!config.isProductionMode() && config.enableDevServer()) {
             return streamToString(getResourceFromWebpack("/assetsByChunkName",
                     "getting assets by chunk name."));
         }
-        InputStream resourceAsStream;
+
         if (config.isStatsExternal()) {
-            resourceAsStream = getStatsFromExternalUrl(
-                    config.getExternalStatsUrl(), service.getContext());
-        } else {
-            resourceAsStream = getStatsFromClassPath(service);
+            StatsCache externalCache = getStatsFromExternalUrl(
+                    config.getExternalStatsUrl(), null);
+            // Refresh current cache if external cache could be created
+            if (externalCache != null) {
+                return externalCache.assetChunks;
+            }
         }
+
+        InputStream resourceAsStream = getStatsFromClassPath(service);
         if (resourceAsStream == null) {
             return null;
         }
-        try (Scanner scan = new Scanner(resourceAsStream,
-                StandardCharsets.UTF_8.name())) {
+
+        return getStatsAssetsByChunkName(
+                new Scanner(resourceAsStream, StandardCharsets.UTF_8.name()));
+    }
+
+    private static String getStatsAssetsByChunkName(Scanner scan) {
+        try {
             StringBuilder assets = new StringBuilder();
             assets.append("{");
             // Scan until we reach the assetsByChunkName object line
@@ -711,8 +761,10 @@ public class FrontendUtils {
             }
             getLogger()
                     .error("Could not parse assetsByChunkName from stats.json");
+            return null;
+        } finally {
+            scan.close();
         }
-        return null;
     }
 
     /**
@@ -1014,39 +1066,6 @@ public class FrontendUtils {
     }
 
     /**
-     * Container class for caching the external stats.json contents.
-     */
-    private static class Stats implements Serializable {
-        private final String lastModified;
-        protected final String statsJson;
-
-        /**
-         * Create a new container for stats.json caching.
-         *
-         * @param statsJson
-         *            the gotten stats.json as a string
-         * @param lastModified
-         *            last modification timestamp for stats.json in RFC-1123
-         *            date-time format, such as 'Tue, 3 Jun 2008 11:05:30 GMT'
-         */
-        public Stats(String statsJson, String lastModified) {
-            this.statsJson = statsJson;
-            this.lastModified = lastModified;
-        }
-
-        /**
-         * Return last modified timestamp for contained stats.json.
-         *
-         * @return timestamp as LocalDateTime
-         */
-        public LocalDateTime getLastModified() {
-            return ZonedDateTime
-                    .parse(lastModified, DateTimeFormatter.RFC_1123_DATE_TIME)
-                    .toLocalDateTime();
-        }
-    }
-
-    /**
      * Pretty prints a command line order. It split in lines adapting to 80
      * columns, and allowing copy and paste in console. It also removes the
      * current directory to avoid security issues in log files.
@@ -1107,4 +1126,88 @@ public class FrontendUtils {
         System.out.print(format(format, message));
     }
 
+    /**
+     * Container class for caching the stats.json content in production mode.
+     *
+     * Note: This automatically creates the assetChunks from the statsJson for
+     * later use.
+     */
+    // package private for direct unit testing
+    static class StatsCache {
+
+        static final StatsCache NOT_CACHEABLE = new StatsCache();
+
+        protected final String statsJson;
+        protected final String assetChunks;
+        protected final LocalDateTime lastModified;
+
+        StatsCache() {
+            this.statsJson = null;
+            this.assetChunks = null;
+            this.lastModified = null;
+        }
+
+        public StatsCache(InputStream statsJson) throws IOException {
+            this(statsJson, null);
+        }
+
+        /**
+         * Create a new container for stats.json caching.
+         *
+         * @param statsJson
+         *            the gotten stats.json as a {@link InputStream}, not
+         *            {@code null}.
+         * @param lastModified
+         *            optional last modification timestamp for external
+         *            stats.json in RFC-1123 date-time format, such as 'Tue, 3
+         *            Jun 2008 11:05:30 GMT'
+         */
+        public StatsCache(InputStream statsJson, String lastModified)
+                throws IOException {
+            Objects.requireNonNull(statsJson,
+                    "stats.json stream can't be null");
+            this.statsJson = IOUtils.toString(statsJson,
+                    StandardCharsets.UTF_8);
+            this.assetChunks = getStatsAssetsByChunkName(
+                    new Scanner(this.statsJson));
+            this.lastModified = parseLastModified(lastModified);
+        }
+
+        /**
+         * Validates the current cache instance and returns it validity against
+         * the given {@code lastModifiedHeader}.
+         *
+         * @param lastModifiedHeader
+         *            optional last modification timestamp for external
+         *            stats.json in RFC-1123 date-time format, such as 'Tue, 3
+         *            Jun 2008 11:05:30 GMT' to validate against.
+         * @return
+         */
+        public boolean isCacheStillValid(String lastModifiedHeader) {
+            if (statsJson == null || lastModified == null) {
+                return false;
+            }
+            if (lastModifiedHeader == null) {
+                return true;
+            }
+
+            return lastModified.isAfter(parseLastModified(lastModifiedHeader));
+        }
+
+        /**
+         * Parses and returns a last modified timestamp from an timestamp in
+         * RFC-1123 date-time format, such as 'Tue, 3 Jun 2008 11:05:30 GMT'.
+         *
+         * @return timestamp as LocalDateTime or {@code null} if the given
+         *         timestamp was {@code null}.
+         */
+        static LocalDateTime parseLastModified(String lastModified) {
+            if (null == lastModified) {
+                return null;
+            }
+            return ZonedDateTime
+                    .parse(lastModified, DateTimeFormatter.RFC_1123_DATE_TIME)
+                    .toLocalDateTime();
+        }
+    }
 }

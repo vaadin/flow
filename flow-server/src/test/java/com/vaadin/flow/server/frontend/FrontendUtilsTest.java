@@ -277,11 +277,11 @@ public class FrontendUtilsTest {
 
     @Test
     public void parseManifestJson_returnsValidPaths() {
-        String manifestJson = "{\"index.html\": \"index.html\", \"sw.js\": " +
-                "\"sw.js\", \"favicon.ico\": \"favicon.ico\", \"index.ts\": " +
-                "\"VAADIN/build/vaadin-bundle-index.js\"}";
-        List<String> manifestPaths =
-                FrontendUtils.parseManifestPaths(manifestJson);
+        String manifestJson = "{\"index.html\": \"index.html\", \"sw.js\": "
+                + "\"sw.js\", \"favicon.ico\": \"favicon.ico\", \"index.ts\": "
+                + "\"VAADIN/build/vaadin-bundle-index.js\"}";
+        List<String> manifestPaths = FrontendUtils
+                .parseManifestPaths(manifestJson);
         Assert.assertTrue("Should list bundle path",
                 manifestPaths.contains("/VAADIN/build/vaadin-bundle-index.js"));
         Assert.assertTrue("Should list /sw.js",
