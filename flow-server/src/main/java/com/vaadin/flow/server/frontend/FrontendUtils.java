@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -481,8 +482,7 @@ public class FrontendUtils {
                 : null;
     }
 
-    // package private for direct testing
-    static StatsCache getOrCreateStatsCache(VaadinContext context,
+    private static StatsCache getOrCreateStatsCache(VaadinContext context,
             DeploymentConfiguration config) throws IOException {
         StatsCache currentCache = context.getAttribute(StatsCache.class);
 
@@ -627,28 +627,34 @@ public class FrontendUtils {
             // one minute timeout should be enough
             connection.setReadTimeout(60000);
             connection.setConnectTimeout(60000);
-            String lastModified = connection.getHeaderField("last-modified");
 
-            if (lastModified == null && currentCache != null) {
-                // HttpURLConnection did not receive a last-modified
-                // header - current cache can be reused!
-                return currentCache;
-            }
-
-            if (currentCache == null
-                    || !currentCache.isCacheStillValid(lastModified)) {
-                // No Cache or cache invalid? Create a new cache and store the
-                // last-modified header (if available) for later
-                return new StatsCache(connection.getInputStream(),
-                        lastModified);
-            }
-
-            return currentCache;
+            return createCacheFromHttpURLConnection(currentCache, connection);
         } catch (IOException e) {
             getLogger().error("Failed to retrieve stats.json from the url {}.",
                     url, e);
         }
         return null;
+    }
+
+    // package private for direct unit testing
+    static StatsCache createCacheFromHttpURLConnection(StatsCache currentCache,
+            HttpURLConnection connection) throws IOException {
+        String lastModified = connection.getHeaderField("last-modified");
+
+        if (lastModified == null && currentCache != null) {
+            // HttpURLConnection did not receive a last-modified
+            // header - current cache can be reused!
+            return currentCache;
+        }
+
+        if (currentCache == null
+                || !currentCache.isCacheStillValid(lastModified)) {
+            // No Cache or cache invalid? Create a new cache and store the
+            // last-modified header (if available) for later
+            return new StatsCache(connection.getInputStream(), lastModified);
+        }
+
+        return currentCache;
     }
 
     private static String getHostString(VaadinRequest request) {
@@ -1139,7 +1145,7 @@ public class FrontendUtils {
      * later use.
      */
     // package private for direct unit testing
-    static class StatsCache {
+    static class StatsCache implements Serializable {
 
         static final StatsCache NOT_CACHEABLE = new StatsCache();
 

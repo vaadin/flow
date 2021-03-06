@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import com.vaadin.flow.server.frontend.FrontendUtils.StatsCache;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.format.DateTimeParseException;
@@ -41,6 +41,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.frontend.FrontendUtils.StatsCache;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinContext;
@@ -52,7 +53,9 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
@@ -420,6 +423,73 @@ public class FrontendUtilsTest {
     }
 
     @Test
+    public void createCacheFromHttpURLConnection_CacheReturnDependingOnLastModifyHeader()
+            throws IOException {
+        StatsCache currentCache = new StatsCache(
+                getStatsContentAsStream("ValidStats.json"),
+                "Tue, 3 Jun 2008 11:05:30 GMT");
+
+        MockHttpURLConnection connection = new MockHttpURLConnection(null,
+                "ValidStats.json");
+        assertEquals(
+                "HttpURLConnection has no last-modify header - returning cache",
+                FrontendUtils.createCacheFromHttpURLConnection(currentCache,
+                        connection),
+                currentCache);
+
+        connection = new MockHttpURLConnection("Sun, 1 Jun 2008 11:05:30 GMT",
+                "ValidStats.json");
+        assertEquals(
+                "HttpURLConnection has OLDER last-modify header - returning cache",
+                FrontendUtils.createCacheFromHttpURLConnection(currentCache,
+                        connection),
+                currentCache);
+
+        connection = new MockHttpURLConnection("Tue, 3 Jun 2008 11:05:30 GMT",
+                "ValidStats.json");
+        assertEquals(
+                "HttpURLConnection has OLDER last-modify header - returning cache",
+                FrontendUtils.createCacheFromHttpURLConnection(currentCache,
+                        connection),
+                currentCache);
+
+        connection = new MockHttpURLConnection("Thu, 5 Jun 2008 11:05:30 GMT",
+                "ValidStats.json");
+        assertNotEquals(
+                "HttpURLConnection has NEWER last-modify header - don't return cache",
+                FrontendUtils.createCacheFromHttpURLConnection(currentCache,
+                        connection),
+                currentCache);
+
+        currentCache = new StatsCache(
+                getStatsContentAsStream("ValidStats.json"), null);
+        connection = new MockHttpURLConnection("Thu, 5 Jun 2008 11:05:30 GMT",
+                "ValidStats.json");
+        assertNotEquals("Cache has no lastModify - don't return cache",
+                FrontendUtils.createCacheFromHttpURLConnection(currentCache,
+                        connection),
+                currentCache);
+    }
+
+    @Test
+    public void createCacheFromHttpURLConnection_NoCacheReturnsConnectionValue()
+            throws IOException {
+        MockHttpURLConnection connection = new MockHttpURLConnection(null,
+                "ValidStats.json");
+        StatsCache cache = FrontendUtils.createCacheFromHttpURLConnection(null,
+                connection);
+        assertTrue(cache.statsJson.contains("64bb80639ef116681818"));
+        assertNull(cache.lastModified);
+
+        connection = new MockHttpURLConnection("Tue, 3 Jun 2008 11:05:30 GMT",
+                "ValidStats.json");
+        cache = FrontendUtils.createCacheFromHttpURLConnection(null,
+                connection);
+        assertTrue(cache.statsJson.contains("64bb80639ef116681818"));
+        assertNotNull(cache.lastModified);
+    }
+
+    @Test
     public void StatsCache_createCacheFromInputstream() throws IOException {
         StatsCache statsCache = new StatsCache(
                 getStatsContentAsStream("ValidStats.json"));
@@ -548,7 +618,7 @@ public class FrontendUtilsTest {
         return provider;
     }
 
-    private InputStream getStatsContentAsStream(String statsFile) {
+    private static InputStream getStatsContentAsStream(String statsFile) {
         return FrontendUtilsTest.class.getClassLoader()
                 .getResourceAsStream(statsFile);
     }
@@ -599,4 +669,40 @@ public class FrontendUtilsTest {
         return service;
     }
 
+    private static class MockHttpURLConnection extends HttpURLConnection {
+
+        private final String lastModified;
+        private final String statsFile;
+
+        public MockHttpURLConnection(String lastModified, String statsFile) {
+            super(null);
+            this.lastModified = lastModified;
+            this.statsFile = statsFile;
+        }
+
+        @Override
+        public String getHeaderField(String name) {
+            return lastModified;
+        }
+
+        @Override
+        public InputStream getInputStream() throws IOException {
+            return getStatsContentAsStream(statsFile);
+        }
+
+        @Override
+        public void disconnect() {
+
+        }
+
+        @Override
+        public boolean usingProxy() {
+            return false;
+        }
+
+        @Override
+        public void connect() throws IOException {
+
+        }
+    }
 }
