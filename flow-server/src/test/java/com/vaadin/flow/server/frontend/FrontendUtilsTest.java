@@ -15,14 +15,17 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import com.vaadin.flow.server.frontend.FrontendUtils.StatsCache;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -50,6 +53,9 @@ import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class FrontendUtilsTest {
@@ -102,7 +108,7 @@ public class FrontendUtilsTest {
             String logged = out.toString("utf-8")
                     // fix for windows
                     .replace("\r", "");
-            Assert.assertTrue(logged.contains(
+            assertTrue(logged.contains(
                     "Your installed 'test' version (9.0.0) is not supported but should still work. Supported versions are 10.0+\n"));
         } finally {
             System.setErr(orgErr);
@@ -117,7 +123,7 @@ public class FrontendUtilsTest {
                     new FrontendVersion(8, 0));
             Assert.fail("No exception was thrown for old version");
         } catch (IllegalStateException e) {
-            Assert.assertTrue(e.getMessage().contains(
+            assertTrue(e.getMessage().contains(
                     "Your installed 'test' version (7.5.0) is too old. Supported versions are 10.0+"));
         }
     }
@@ -141,7 +147,10 @@ public class FrontendUtilsTest {
     @Test
     public void assetsByChunkIsCorrectlyParsedFromStats()
             throws IOException, ServiceException {
-        VaadinService service = setupStatsAssetMocks("ValidStats.json");
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setProductionMode(true);
+        VaadinService service = setupStatsAssetMocks(configuration,
+                "ValidStats.json");
 
         String statsAssetsByChunkName = FrontendUtils
                 .getStatsAssetsByChunkName(service);
@@ -154,7 +163,10 @@ public class FrontendUtilsTest {
     @Test
     public void formattingError_assetsByChunkIsCorrectlyParsedFromStats()
             throws IOException, ServiceException {
-        VaadinService service = setupStatsAssetMocks("MissFormatStats.json");
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setProductionMode(true);
+        VaadinService service = setupStatsAssetMocks(configuration,
+                "MissFormatStats.json");
 
         String statsAssetsByChunkName = FrontendUtils
                 .getStatsAssetsByChunkName(service);
@@ -167,12 +179,14 @@ public class FrontendUtilsTest {
     @Test
     public void noStatsFile_assetsByChunkReturnsNull()
             throws IOException, ServiceException {
-        VaadinService service = getServiceWithResource(null);
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setProductionMode(true);
+        VaadinService service = getServiceWithResource(configuration, null);
 
         String statsAssetsByChunkName = FrontendUtils
                 .getStatsAssetsByChunkName(service);
 
-        Assert.assertNull(statsAssetsByChunkName);
+        assertNull(statsAssetsByChunkName);
     }
 
     @Test
@@ -201,12 +215,15 @@ public class FrontendUtilsTest {
     @Test
     public void faultyStatsFileReturnsNull()
             throws IOException, ServiceException {
-        VaadinService service = setupStatsAssetMocks("InvalidStats.json");
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setProductionMode(true);
+        VaadinService service = setupStatsAssetMocks(configuration,
+                "InvalidStats.json");
 
         String statsAssetsByChunkName = FrontendUtils
                 .getStatsAssetsByChunkName(service);
 
-        Assert.assertNull(statsAssetsByChunkName);
+        assertNull(statsAssetsByChunkName);
     }
 
     @Test
@@ -221,8 +238,8 @@ public class FrontendUtilsTest {
                 FileUtils.deleteDirectory(vaadinDir);
             }
             File vaadinHomeDirectory = FrontendUtils.getVaadinHomeDirectory();
-            Assert.assertTrue(vaadinHomeDirectory.exists());
-            Assert.assertTrue(vaadinHomeDirectory.isDirectory());
+            assertTrue(vaadinHomeDirectory.exists());
+            assertTrue(vaadinHomeDirectory.isDirectory());
 
             // access it one more time
             vaadinHomeDirectory = FrontendUtils.getVaadinHomeDirectory();
@@ -282,16 +299,16 @@ public class FrontendUtilsTest {
                 + "\"VAADIN/build/vaadin-bundle-index.js\"}";
         List<String> manifestPaths = FrontendUtils
                 .parseManifestPaths(manifestJson);
-        Assert.assertTrue("Should list bundle path",
+        assertTrue("Should list bundle path",
                 manifestPaths.contains("/VAADIN/build/vaadin-bundle-index.js"));
-        Assert.assertTrue("Should list /sw.js",
-                manifestPaths.contains("/sw.js"));
-        Assert.assertTrue("Should list /favicon.ico",
+        assertTrue("Should list /sw.js", manifestPaths.contains("/sw.js"));
+        assertTrue("Should list /favicon.ico",
                 manifestPaths.contains("/favicon.ico"));
-        Assert.assertFalse("Should not list /index.html",
+        assertFalse("Should not list /index.html",
                 manifestPaths.contains("/index.html"));
     }
 
+    @Test
     public void getStatsContent_getStatsFromClassPath_delegateToGetApplicationResource()
             throws IOException {
         VaadinServletService service = mockServletService();
@@ -319,6 +336,195 @@ public class FrontendUtilsTest {
         Mockito.verify(provider).getApplicationResource("foo");
     }
 
+    @Test
+    public void getStatsContent_StatsCachedInProductionMode()
+            throws IOException, ServiceException {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setProductionMode(true);
+        configuration.setStatsExternal(false);
+        VaadinService service = setupStatsAssetMocks(configuration,
+                "ValidStats.json");
+
+        assertTrue("getStatsContent in production mode returns stats.json",
+                FrontendUtils.getStatsContent(service)
+                        .contains("64bb80639ef116681818"));
+        StatsCache cache = service.getContext().getAttribute(StatsCache.class);
+        assertNotNull("getStatsContent in production mode populates cache",
+                cache);
+        assertNotNull(
+                "getStatsContent in production mode populates cache with value",
+                cache.statsJson);
+    }
+
+    @Test
+    public void getStatsContent_StatsNotCachedInDevelopmentMode()
+            throws IOException, ServiceException {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setProductionMode(false);
+        configuration.setStatsExternal(false);
+        configuration.setEnableDevServer(false); // has to be false, there is no
+                                                 // webpack server
+        VaadinService service = setupStatsAssetMocks(configuration,
+                "ValidStats.json");
+
+        assertTrue("getStatsContent in production mode returns stats.json",
+                FrontendUtils.getStatsContent(service)
+                        .contains("64bb80639ef116681818"));
+        StatsCache cache = service.getContext().getAttribute(StatsCache.class);
+        assertNull(
+                "getStatsContent in development mode does not populate cache",
+                cache);
+    }
+
+    @Test
+    public void getStatsAssetsByChunkName_AssetChunksCachedInProductionMode()
+            throws IOException, ServiceException {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setProductionMode(true);
+        configuration.setStatsExternal(false);
+        VaadinService service = setupStatsAssetMocks(configuration,
+                "ValidStats.json");
+
+        assertTrue(
+                "getStatsAssetsByChunkName in production mode returns asset chunks",
+                FrontendUtils.getStatsAssetsByChunkName(service)
+                        .contains("vaadin-bundle-1111.cache.js"));
+        StatsCache cache = service.getContext().getAttribute(StatsCache.class);
+        assertNotNull(
+                "getStatsAssetsByChunkName in production mode populates cache",
+                cache);
+        assertNotNull(
+                "getStatsAssetsByChunkName in production mode populates cache with value",
+                cache.statsJson);
+    }
+
+    @Test
+    public void getStatsAssetsByChunkName_AssetChunksNotCachedInDevelopmentMode()
+            throws IOException, ServiceException {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setProductionMode(false);
+        configuration.setStatsExternal(false);
+        configuration.setEnableDevServer(false); // has to be false, there is no
+                                                 // webpack server
+        VaadinService service = setupStatsAssetMocks(configuration,
+                "ValidStats.json");
+
+        assertTrue(
+                "getStatsAssetsByChunkName in production mode returns asset chunks",
+                FrontendUtils.getStatsAssetsByChunkName(service)
+                        .contains("vaadin-bundle-1111.cache.js"));
+        StatsCache cache = service.getContext().getAttribute(StatsCache.class);
+        assertNull(
+                "getStatsAssetsByChunkName in development mode does not populate cache",
+                cache);
+    }
+
+    @Test
+    public void StatsCache_createCacheFromInputstream() throws IOException {
+        StatsCache statsCache = new StatsCache(
+                getStatsContentAsStream("ValidStats.json"));
+        assertNotNull("ValidStats.json should be stored", statsCache.statsJson);
+        assertNotNull("Asset Chunks should be stored", statsCache.assetChunks);
+        assertNull("Last Modified isn't set with internal files",
+                statsCache.lastModified);
+
+        statsCache = new StatsCache(getStatsContentAsStream("ValidStats.json"),
+                "Tue, 3 Jun 2008 11:05:30 GMT");
+        assertNotNull("ValidStats.json should be stored", statsCache.statsJson);
+        assertNotNull("Asset Chunks should be stored", statsCache.assetChunks);
+        assertNotNull("Last Modified is set with external files",
+                statsCache.lastModified);
+
+        statsCache = new StatsCache(getStatsContentAsStream("ValidStats.json"),
+                null);
+        assertNotNull("ValidStats.json should be stored", statsCache.statsJson);
+        assertNotNull("Asset Chunks should be stored", statsCache.assetChunks);
+        assertNull(
+                "Last Modified is NOT set with external files without last modified",
+                statsCache.lastModified);
+
+        statsCache = new StatsCache(getStatsContentAsStream("ValidStats.json"),
+                "Tue, 3 Jun 2008 11:05:30 GMT");
+        assertNotNull("ValidStats.json should be stored", statsCache.statsJson);
+        assertNotNull("Asset Chunks should be stored", statsCache.assetChunks);
+        assertNotNull("Last Modified is set with external files",
+                statsCache.lastModified);
+
+        statsCache = new StatsCache(
+                getStatsContentAsStream("InvalidStats.json"));
+        assertNotNull("InvalidStats.json should be stored",
+                statsCache.statsJson);
+        assertNull("Invalid Asset Chunks should NOT be stored",
+                statsCache.assetChunks);
+        assertNull("Last Modified isn't set with internal files",
+                statsCache.lastModified);
+
+        statsCache = new StatsCache(
+                getStatsContentAsStream("InvalidStats.json"),
+                "Tue, 3 Jun 2008 11:05:30 GMT");
+        assertNotNull("InvalidStats.json should be stored",
+                statsCache.statsJson);
+        assertNull("Invalid Asset Chunks should NOT be stored",
+                statsCache.assetChunks);
+        assertNotNull("Last Modified is set with external files",
+                statsCache.lastModified);
+
+        assertThrows("Creating StatsCache without Inputstream throws NPE",
+                NullPointerException.class, () -> new StatsCache(null));
+        assertThrows("Creating StatsCache without Inputstream throws NPE",
+                NullPointerException.class,
+                () -> new StatsCache(null, "Tue, 3 Jun 2008 11:05:30 GMT"));
+    }
+
+    @Test
+    public void StatsCache_isCacheStillValid() throws IOException {
+        assertFalse("NOT_CACHEABLE is always invalid",
+                StatsCache.NOT_CACHEABLE.isCacheStillValid(null));
+        assertFalse("NOT_CACHEABLE is always invalid", StatsCache.NOT_CACHEABLE
+                .isCacheStillValid("Tue, 3 Jun 2008 11:05:30 GMT"));
+
+        StatsCache internalCache = new StatsCache(
+                getStatsContentAsStream("ValidStats.json"));
+        // External files always have precedence over internal cache
+        assertFalse(
+                "Cached internal stats.json is NOT valid when external Stats.json has NO last modified header",
+                internalCache.isCacheStillValid(null));
+        assertFalse(
+                "Cached internal stats.json is NOT valid when external Stats.json has a last modified header",
+                internalCache
+                        .isCacheStillValid("Tue, 3 Jun 2008 11:05:30 GMT"));
+
+        StatsCache externalCache = new StatsCache(
+                getStatsContentAsStream("ValidStats.json"),
+                "Tue, 3 Jun 2008 11:05:30 GMT");
+        assertTrue(
+                "Cached external stats.json is valid when new external Stats.json has NO last modified header",
+                externalCache.isCacheStillValid(null));
+        assertTrue(
+                "Cached external stats.json is valid when new external Stats.json has the SAME last modified header",
+                externalCache
+                        .isCacheStillValid("Tue, 3 Jun 2008 11:05:30 GMT"));
+        assertTrue(
+                "Cached external stats.json is valid when new external Stats.json has the OLDER last modified header",
+                externalCache
+                        .isCacheStillValid("Sun, 1 Jun 2008 11:05:30 GMT"));
+        assertFalse(
+                "Cached external stats.json is NOT valid when new external Stats.json has the NEWER last modified header",
+                externalCache
+                        .isCacheStillValid("Thu, 5 Jun 2008 11:05:30 GMT"));
+    }
+
+    @Test
+    public void StatsCache_parseLastModified() {
+        assertNull("Parsing null results in null.",
+                StatsCache.parseLastModified(null));
+        assertNotNull("Parsing valid date returns object.",
+                StatsCache.parseLastModified("Tue, 3 Jun 2008 11:05:30 GMT"));
+        assertThrows("Parsing invalid string throws exception",
+                DateTimeParseException.class,
+                () -> StatsCache.parseLastModified("invalid"));
+    }
+
     private ResourceProvider mockResourceProvider(VaadinService service) {
         DeploymentConfiguration config = Mockito
                 .mock(DeploymentConfiguration.class);
@@ -342,20 +548,23 @@ public class FrontendUtilsTest {
         return provider;
     }
 
-    private VaadinService setupStatsAssetMocks(String statsFile)
-            throws IOException, ServiceException {
-        String stats = IOUtils.toString(FrontendUtilsTest.class.getClassLoader()
-                .getResourceAsStream(statsFile), StandardCharsets.UTF_8);
-
-        return getServiceWithResource(stats);
+    private InputStream getStatsContentAsStream(String statsFile) {
+        return FrontendUtilsTest.class.getClassLoader()
+                .getResourceAsStream(statsFile);
     }
 
-    private VaadinService getServiceWithResource(String content)
+    private VaadinService setupStatsAssetMocks(
+            MockDeploymentConfiguration config, String statsFile)
+            throws IOException, ServiceException {
+        String stats = IOUtils.toString(getStatsContentAsStream(statsFile),
+                StandardCharsets.UTF_8);
+        return getServiceWithResource(config, stats);
+    }
+
+    private VaadinService getServiceWithResource(
+            MockDeploymentConfiguration config, String content)
             throws ServiceException, IOException {
-        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
-        configuration.setProductionMode(true);
-        MockVaadinServletService service = new MockVaadinServletService(
-                configuration);
+        MockVaadinServletService service = new MockVaadinServletService(config);
 
         VaadinContext context = service.getContext();
 

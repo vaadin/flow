@@ -7,6 +7,7 @@ import java.util.Properties;
 import java.util.function.Function;
 
 import com.vaadin.flow.server.AbstractDeploymentConfiguration;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.shared.communication.PushMode;
 
 public class MockDeploymentConfiguration
@@ -30,6 +31,8 @@ public class MockDeploymentConfiguration
     private boolean brotli = false;
     private boolean eagerServerLoad = false;
     private boolean devModeLiveReloadEnabled = false;
+    private boolean statsExternal = false;
+    private String externalStatsUrl = Constants.DEFAULT_EXTERNAL_STATS_URL;
 
     public MockDeploymentConfiguration() {
         super(Collections.emptyMap());
@@ -195,5 +198,23 @@ public class MockDeploymentConfiguration
 
     public void setDevModeLiveReloadEnabled(boolean devModeLiveReloadEnabled) {
         this.devModeLiveReloadEnabled = devModeLiveReloadEnabled;
+    }
+
+    @Override
+    public boolean isStatsExternal() {
+        return statsExternal;
+    }
+
+    public void setStatsExternal(boolean statsExternal) {
+        this.statsExternal = statsExternal;
+    }
+
+    @Override
+    public String getExternalStatsUrl() {
+        return externalStatsUrl;
+    }
+
+    public void setExternalStatsUrl(String externalStatsUrl) {
+        this.externalStatsUrl = externalStatsUrl;
     }
 }

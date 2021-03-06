@@ -46,6 +46,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
@@ -190,7 +191,8 @@ public class FrontendUtils {
 
     /**
      * File name of the bootstrap file that is generated in frontend
-     * {@link #GENERATED} folder. The bootstrap file is always executed in a Vaadin app.
+     * {@link #GENERATED} folder. The bootstrap file is always executed in a
+     * Vaadin app.
      */
     public static final String BOOTSTRAP_FILE_NAME = "vaadin.ts";
 
@@ -228,8 +230,8 @@ public class FrontendUtils {
     /**
      * Default generated path for generated frontend files.
      */
-    public static final String DEFAULT_PROJECT_FRONTEND_GENERATED_DIR =
-        DEFAULT_FRONTEND_DIR + GENERATED;
+    public static final String DEFAULT_PROJECT_FRONTEND_GENERATED_DIR = DEFAULT_FRONTEND_DIR
+            + GENERATED;
 
     /**
      * Name of the file that contains all application imports, javascript, theme
@@ -450,10 +452,11 @@ public class FrontendUtils {
      */
     public static String getStatsContent(VaadinService service)
             throws IOException {
+        VaadinContext context = service.getContext();
         DeploymentConfiguration config = service.getDeploymentConfiguration();
 
         if (config.isProductionMode()) {
-            return getOrCreateStatsCache(service).statsJson;
+            return getOrCreateStatsCache(context, config).statsJson;
         }
 
         InputStream content = null;
@@ -462,26 +465,26 @@ public class FrontendUtils {
         }
 
         if (config.isStatsExternal()) {
-            StatsCache externalCache = getStatsFromExternalUrl(
+            // This isn't cached because production mode isn't enabled
+            StatsCache externalStats = getStatsFromExternalUrl(
                     config.getExternalStatsUrl(), null);
-            if (externalCache != null) {
-                return externalCache.statsJson;
+            if (externalStats != null) {
+                return externalStats.statsJson;
             }
         }
 
         if (content == null) {
-            content = getStatsFromClassPath(service);
+            content = getStatsFromClassPath(context, config);
         }
         return content != null
                 ? IOUtils.toString(content, StandardCharsets.UTF_8)
                 : null;
     }
 
-    private static StatsCache getOrCreateStatsCache(VaadinService service)
-            throws IOException {
-        DeploymentConfiguration config = service.getDeploymentConfiguration();
-        StatsCache currentCache = service.getContext()
-                .getAttribute(StatsCache.class);
+    // package private for direct testing
+    static StatsCache getOrCreateStatsCache(VaadinContext context,
+            DeploymentConfiguration config) throws IOException {
+        StatsCache currentCache = context.getAttribute(StatsCache.class);
 
         // External stats file have higher priority because
         // we have to check the lastModified header to
@@ -491,7 +494,7 @@ public class FrontendUtils {
                     config.getExternalStatsUrl(), currentCache);
             // Refresh current cache if external cache could be created
             if (externalCache != null) {
-                service.getContext().setAttribute(externalCache);
+                context.setAttribute(externalCache);
                 currentCache = externalCache;
             }
         }
@@ -500,13 +503,13 @@ public class FrontendUtils {
             return currentCache;
         }
 
-        InputStream statsJson = getStatsFromClassPath(service);
+        InputStream statsJson = getStatsFromClassPath(context, config);
         if (statsJson == null) {
             return StatsCache.NOT_CACHEABLE;
         }
 
         currentCache = new StatsCache(statsJson);
-        service.getContext().setAttribute(currentCache);
+        context.setAttribute(currentCache);
         return currentCache;
     }
 
@@ -662,14 +665,15 @@ public class FrontendUtils {
         return host;
     }
 
-    private static InputStream getStatsFromClassPath(VaadinService service) {
-        String stats = service.getDeploymentConfiguration()
+    private static InputStream getStatsFromClassPath(VaadinContext context,
+            DeploymentConfiguration config) {
+        String stats = config
                 .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
                         VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
                 // Remove absolute
                 .replaceFirst("^/", "");
-        ResourceProvider resourceProvider = service.getContext()
-                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+        ResourceProvider resourceProvider = context.getAttribute(Lookup.class)
+                .lookup(ResourceProvider.class);
         URL statsUrl = resourceProvider.getApplicationResource(stats);
         InputStream stream = null;
         try {
@@ -690,7 +694,8 @@ public class FrontendUtils {
     private static InputStream getFileFromWebpack(String filePath)
             throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        return handler.prepareConnection("/" + filePath, "GET").getInputStream();
+        return handler.prepareConnection("/" + filePath, "GET")
+                .getInputStream();
     }
 
     /**
@@ -707,13 +712,14 @@ public class FrontendUtils {
      */
     public static String getStatsAssetsByChunkName(VaadinService service)
             throws IOException {
+        VaadinContext context = service.getContext();
         DeploymentConfiguration config = service.getDeploymentConfiguration();
 
         if (config.isProductionMode()) {
-            return getOrCreateStatsCache(service).assetChunks;
+            return getOrCreateStatsCache(context, config).assetChunks;
         }
 
-        if (!config.isProductionMode() && config.enableDevServer()) {
+        if (config.enableDevServer()) {
             return streamToString(getResourceFromWebpack("/assetsByChunkName",
                     "getting assets by chunk name."));
         }
@@ -727,7 +733,7 @@ public class FrontendUtils {
             }
         }
 
-        InputStream resourceAsStream = getStatsFromClassPath(service);
+        InputStream resourceAsStream = getStatsFromClassPath(context, config);
         if (resourceAsStream == null) {
             return null;
         }
@@ -1094,8 +1100,8 @@ public class FrontendUtils {
     }
 
     /**
-     * Parse "manifest.json" file contents obtained from webpack and extract
-     * the list of request paths to handle as static resources.
+     * Parse "manifest.json" file contents obtained from webpack and extract the
+     * list of request paths to handle as static resources.
      *
      * @param manifestJson
      *            "manifest.json" file contents
@@ -1141,18 +1147,25 @@ public class FrontendUtils {
         protected final String assetChunks;
         protected final LocalDateTime lastModified;
 
-        StatsCache() {
+        private StatsCache() {
             this.statsJson = null;
             this.assetChunks = null;
             this.lastModified = null;
         }
 
-        public StatsCache(InputStream statsJson) throws IOException {
+        /**
+         * Create a new container for internal stats.json caching.
+         *
+         * @param statsJson
+         *            the gotten stats.json as a {@link InputStream}, not
+         *            {@code null}.
+         */
+        StatsCache(InputStream statsJson) throws IOException {
             this(statsJson, null);
         }
 
         /**
-         * Create a new container for stats.json caching.
+         * Create a new container for external stats.json caching.
          *
          * @param statsJson
          *            the gotten stats.json as a {@link InputStream}, not
@@ -1162,7 +1175,7 @@ public class FrontendUtils {
          *            stats.json in RFC-1123 date-time format, such as 'Tue, 3
          *            Jun 2008 11:05:30 GMT'
          */
-        public StatsCache(InputStream statsJson, String lastModified)
+        StatsCache(InputStream statsJson, String lastModified)
                 throws IOException {
             Objects.requireNonNull(statsJson,
                     "stats.json stream can't be null");
@@ -1181,21 +1194,28 @@ public class FrontendUtils {
          *            optional last modification timestamp for external
          *            stats.json in RFC-1123 date-time format, such as 'Tue, 3
          *            Jun 2008 11:05:30 GMT' to validate against.
-         * @return
+         * @return whether or not the cache is still valid
          */
-        public boolean isCacheStillValid(String lastModifiedHeader) {
-            if (statsJson == null || lastModified == null) {
+        boolean isCacheStillValid(String lastModifiedHeader) {
+            if (lastModified == null) {
+                // Cache without lastModified is always invalid
+                // when validity of external stats.json is checked
                 return false;
             }
             if (lastModifiedHeader == null) {
+                // HttpUrlConnection has no last-modified header?
+                // Current cache stays valid.
                 return true;
             }
 
-            return lastModified.isAfter(parseLastModified(lastModifiedHeader));
+            LocalDateTime newModifiedHeader = parseLastModified(
+                    lastModifiedHeader);
+            return lastModified.isAfter(newModifiedHeader)
+                    || lastModified.isEqual(newModifiedHeader);
         }
 
         /**
-         * Parses and returns a last modified timestamp from an timestamp in
+         * Parses and returns a last modified timestamp from a timestamp in
          * RFC-1123 date-time format, such as 'Tue, 3 Jun 2008 11:05:30 GMT'.
          *
          * @return timestamp as LocalDateTime or {@code null} if the given
