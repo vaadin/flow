@@ -15,12 +15,17 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+
 import java.util.Collections;
 import java.util.List;
 
-import javax.servlet.ServletException;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Router;
@@ -37,7 +42,10 @@ public class MockVaadinServletService extends VaadinServletService {
 
     private Router router;
 
-    private ResourceProvider resourceProvider;
+    private ResourceProvider resourceProvider = Mockito
+            .mock(ResourceProvider.class);
+
+    private Lookup lookup = Mockito.mock(Lookup.class);
 
     private static class MockVaadinServlet extends VaadinServlet {
 
@@ -108,7 +116,17 @@ public class MockVaadinServletService extends VaadinServletService {
         try {
             MockVaadinServlet servlet = (MockVaadinServlet) getServlet();
             servlet.service = this;
-            getServlet().init(new MockServletConfig());
+            if (getServlet().getServletConfig() == null) {
+                ServletConfig config = Mockito.mock(ServletConfig.class);
+                ServletContext context = Mockito.mock(ServletContext.class);
+                Mockito.when(config.getServletContext()).thenReturn(context);
+
+                Mockito.when(lookup.lookup(ResourceProvider.class))
+                        .thenReturn(resourceProvider);
+                Mockito.when(context.getAttribute(Lookup.class.getName()))
+                        .thenReturn(lookup);
+                getServlet().init(config);
+            }
             super.init();
         } catch (ServiceException | ServletException e) {
             throw new RuntimeException(e);
