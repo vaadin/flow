@@ -402,26 +402,29 @@ public class MessageHandler {
                     + (Duration.currentTimeMillis() - processUidlStart)
                     + " ms");
 
+            Reactive.flush();
+
             ValueMap meta = valueMap.getValueMap("meta");
 
             if (meta != null) {
                 Profiler.enter("Error handling");
+                final UIState uiState = registry.getUILifecycle().getState();
                 if (meta.containsKey(JsonConstants.META_SESSION_EXPIRED)) {
                     if (nextResponseSessionExpiredHandler != null) {
                         nextResponseSessionExpiredHandler.execute();
-                    } else {
+                    } else if (uiState != UIState.TERMINATED) {
                         registry.getSystemErrorHandler()
                                 .handleSessionExpiredError(null);
                         registry.getUILifecycle().setState(UIState.TERMINATED);
                     }
-                } else if (meta.containsKey("appError")) {
+                } else if (meta.containsKey("appError")
+                        && uiState != UIState.TERMINATED) {
                     ValueMap error = meta.getValueMap("appError");
 
                     registry.getSystemErrorHandler().handleUnrecoverableError(
                             error.getString("caption"),
                             error.getString("message"),
-                            error.getString("details"),
-                            error.getString("url"),
+                            error.getString("details"), error.getString("url"),
                             error.getString("querySelector"));
 
                     registry.getUILifecycle().setState(UIState.TERMINATED);
@@ -429,7 +432,6 @@ public class MessageHandler {
                 Profiler.leave("Error handling");
             }
             nextResponseSessionExpiredHandler = null;
-            Reactive.flush();
 
             lastProcessingTime = (int) (Duration.currentTimeMillis() - start);
             totalProcessingTime += lastProcessingTime;
