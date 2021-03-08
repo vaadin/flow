@@ -13,9 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.theme.material;
+package com.vaadin.flow.theme;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,18 +24,21 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.theme.AbstractTheme;
 
 /**
- * Material component theme class implementation.
+ * Lumo component theme class implementation.
  *
- * @since 1.2
+ * @since 1.0
  */
-@NpmPackage(value = "@vaadin/vaadin-material-styles", version = "1.3.2")
-@JsModule("@vaadin/vaadin-material-styles/color.js")
-@JsModule("@vaadin/vaadin-material-styles/typography.js")
-public class Material implements AbstractTheme {
-    public static final String LIGHT = "light";
+@NpmPackage(value = "@vaadin/vaadin-lumo-styles", version = "1.6.1")
+@JsModule("@vaadin/vaadin-lumo-styles/color.js")
+@JsModule("@vaadin/vaadin-lumo-styles/typography.js")
+@JsModule("@vaadin/vaadin-lumo-styles/sizing.js")
+@JsModule("@vaadin/vaadin-lumo-styles/spacing.js")
+@JsModule("@vaadin/vaadin-lumo-styles/style.js")
+@JsModule("@vaadin/vaadin-lumo-styles/icons.js")
+public class CustomLumo implements AbstractTheme {
+
     public static final String DARK = "dark";
 
     @Override
@@ -44,30 +48,31 @@ public class Material implements AbstractTheme {
 
     @Override
     public String getThemeUrl() {
-        return "theme/material/";
+        return "theme/lumo/";
     }
 
     @Override
     public List<String> getHeaderInlineContents() {
         return Collections.singletonList("<custom-style>\n"
-                + "    <style include=\"material-color-light material-typography\"></style>\n"
+                + "    <style include=\"lumo-color lumo-typography\"></style>\n"
                 + "</custom-style>");
     }
 
     @Override
     public Map<String, String> getHtmlAttributes(String variant) {
-        switch (variant) {
-        case LIGHT:
-            return Collections.singletonMap("theme", LIGHT);
-        case DARK:
-            return Collections.singletonMap("theme", DARK);
-        default:
-            if (!variant.isEmpty()) {
-                LoggerFactory.getLogger(getClass().getName()).warn(
-                        "Material theme variant not recognized: '{}'. Using no variant.",
-                        variant);
-            }
+        if (variant.isEmpty()) {
             return Collections.emptyMap();
         }
+        Map<String, String> attributes = new HashMap<>(1);
+        switch (variant) {
+        case DARK:
+            attributes.put("theme", DARK);
+            break;
+        default:
+            LoggerFactory.getLogger(CustomLumo.class.getName()).warn(
+                    "Lumo theme variant not recognized: '{}'. Using no variant.",
+                    variant);
+        }
+        return attributes;
     }
 }

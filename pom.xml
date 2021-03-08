@@ -25,7 +25,6 @@
         <module>flow-client</module>
         <module>flow-html-components</module>
         <module>flow-html-components-testbench</module>
-        <module>flow-theme-integrations</module>
         <module>flow-dnd</module>
         <module>flow-test-util</module>
         <module>flow-tests</module>
