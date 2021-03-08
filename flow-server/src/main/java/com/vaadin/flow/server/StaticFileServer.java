@@ -17,6 +17,7 @@ package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -63,7 +64,7 @@ public class StaticFileServer implements StaticFileHandler {
 
     // Matcher to match string starting with '/themes/[theme-name]/'
     protected static final Pattern APP_THEME_PATTERN = Pattern
-        .compile("^\\/themes\\/[\\s\\S]+?\\/");
+            .compile("^\\/themes\\/[\\s\\S]+?\\/");
 
     /**
      * Constructs a file server.
@@ -80,8 +81,6 @@ public class StaticFileServer implements StaticFileHandler {
 
     @Override
     public boolean isStaticResourceRequest(HttpServletRequest request) {
-        URL resource;
-
         String requestFilename = getRequestFilename(request);
         if (requestFilename.endsWith("/")) {
             // Directories are not static resources although
@@ -90,9 +89,9 @@ public class StaticFileServer implements StaticFileHandler {
             return false;
         }
 
-        if (APP_THEME_PATTERN.matcher(requestFilename).find() || requestFilename
-            .startsWith("/" + VAADIN_STATIC_FILES_PATH) || requestFilename
-            .startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
+        if (APP_THEME_PATTERN.matcher(requestFilename).find()
+                || requestFilename.startsWith("/" + VAADIN_STATIC_FILES_PATH)
+                || requestFilename.startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
             // The path is reserved for internal resources only
             // We rather serve 404 than let it fall through
             return true;
@@ -103,16 +102,8 @@ public class StaticFileServer implements StaticFileHandler {
             // resource as well.
             return true;
         }
-        resource = vaadinService.getStaticResource(requestFilename);
 
-
-        if (resource == null && shouldFixIncorrectWebjarPaths()
-                && isIncorrectWebjarPath(requestFilename)) {
-            // Flow issue #4601
-            return true;
-        }
-
-        return resource != null;
+        return false;
     }
 
     @Override
@@ -130,26 +121,21 @@ public class StaticFileServer implements StaticFileHandler {
         URL resourceUrl = null;
         if (isAllowedVAADINBuildOrStaticUrl(filenameWithPath)
                 || manifestPaths.contains(filenameWithPath)) {
-            if(APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
+            if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
                 resourceUrl = vaadinService.getClassLoader()
-                    .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/" 
-                            + filenameWithPath.replaceFirst("^/", ""));
-                    
+                        .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
+                                + filenameWithPath.replaceFirst("^/", ""));
+
             } else {
                 resourceUrl = vaadinService.getClassLoader()
-                    .getResource(VAADIN_WEBAPP_RESOURCES
-                            + filenameWithPath.replaceFirst("^/", ""));
+                        .getResource(VAADIN_WEBAPP_RESOURCES
+                                + filenameWithPath.replaceFirst("^/", ""));
 
             }
-        }
-        if (resourceUrl == null) {
-            resourceUrl = vaadinService.getStaticResource(filenameWithPath);
-        }
-        if (resourceUrl == null && shouldFixIncorrectWebjarPaths()
-                && isIncorrectWebjarPath(filenameWithPath)) {
-            // Flow issue #4601
-            resourceUrl = vaadinService.getStaticResource(
-                    fixIncorrectWebjarPath(filenameWithPath));
+
+            if (resourceUrl == null) {
+                resourceUrl = vaadinService.getStaticResource(filenameWithPath);
+            }
         }
 
         if (resourceUrl == null) {
@@ -176,42 +162,6 @@ public class StaticFileServer implements StaticFileHandler {
         return true;
     }
 
-    // When referring to webjar resources from application stylesheets (loaded
-    // using @StyleSheet) using relative paths, the paths will be different in
-    // development mode and in production mode. The reason is that in production
-    // mode, the CSS is incorporated into the bundle and when this happens,
-    // the relative paths are changed so that they end up pointing to paths like
-    // 'frontend-es6/webjars' instead of just 'webjars'.
-
-    // There is a similar problem when referring to webjar resources from
-    // application stylesheets inside HTML custom styles (loaded using
-    // @HtmlImport). In this case, the paths will also be changed in production.
-    // For example, if the HTML file resides in 'frontend/styles' and refers to
-    // 'webjars/foo', the path will be changed to refer to
-    // 'frontend/styles/webjars/foo', which is incorrect. You could add '../../'
-    // to the path in the HTML file but then it would not work in development
-    // mode.
-
-    // These paths are changed deep inside the Polymer build chain. It was
-    // easier to fix the StaticFileServer to take the incorrect path names
-    // into account than fixing the Polymer build chain to generate correct
-    // paths. Hence, these methods:
-
-    private boolean shouldFixIncorrectWebjarPaths() {
-        return deploymentConfiguration.isProductionMode()
-                && deploymentConfiguration.getBooleanProperty(
-                        PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false);
-    }
-
-    private boolean isIncorrectWebjarPath(String requestFilename) {
-        return INCORRECT_WEBJAR_PATH_REGEX.matcher(requestFilename).lookingAt();
-    }
-
-    private String fixIncorrectWebjarPath(String requestFilename) {
-        return INCORRECT_WEBJAR_PATH_REGEX.matcher(requestFilename)
-                .replaceAll("/webjars/");
-    }
-
     /**
      * Check if it is ok to serve the requested file from the classpath.
      * <p>
@@ -225,8 +175,8 @@ public class StaticFileServer implements StaticFileHandler {
     private boolean isAllowedVAADINBuildOrStaticUrl(String filenameWithPath) {
         // Check that we target VAADIN/build | VAADIN/static | themes/theme-name
         return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-            || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH)
-            || APP_THEME_PATTERN.matcher(filenameWithPath).find();
+                || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH)
+                || APP_THEME_PATTERN.matcher(filenameWithPath).find();
     }
 
     /**
@@ -318,7 +268,7 @@ public class StaticFileServer implements StaticFileHandler {
         if (request.getPathInfo() == null) {
             return request.getServletPath();
         } else if (request.getPathInfo().startsWith("/" + VAADIN_MAPPING)
-            || APP_THEME_PATTERN.matcher(request.getPathInfo()).find()) {
+                || APP_THEME_PATTERN.matcher(request.getPathInfo()).find()) {
             return request.getPathInfo();
         }
         return request.getServletPath() + request.getPathInfo();
@@ -411,8 +361,7 @@ public class StaticFileServer implements StaticFileHandler {
      */
     private List<String> getManifestPathsFromJson() {
         InputStream stream = vaadinService.getClassLoader()
-                .getResourceAsStream(
-                        VAADIN_WEBAPP_RESOURCES + "manifest.json");
+                .getResourceAsStream(VAADIN_WEBAPP_RESOURCES + "manifest.json");
         if (stream == null) {
             // manifest.json resource does not exist, probably dev mode
             return new ArrayList<>();
