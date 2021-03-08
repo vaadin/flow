@@ -1,5 +1,6 @@
 module.exports = {
 	"singleQuote": true,
 	"printWidth": 120,
-	"trailingComma": "none"
+	"trailingComma": "none",
+	"endOfLine": "auto"
 }
