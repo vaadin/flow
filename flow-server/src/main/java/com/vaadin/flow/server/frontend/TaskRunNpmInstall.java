@@ -107,6 +107,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
         this.classFinder = classFinder;
         this.packageUpdater = packageUpdater;
         this.enablePnpm = enablePnpm;
+        packageUpdater.log().info("in CTOR: this.enablePnpm = "+enablePnpm);
         this.requireHomeNodeExec = requireHomeNodeExec;
         this.nodeVersion = Objects.requireNonNull(nodeVersion);
         this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
@@ -401,6 +402,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
         builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
         builder.redirectError(ProcessBuilder.Redirect.INHERIT);
 
+        packageUpdater.log().info("in TEST: this.enablePnpm = " + enablePnpm);
         String toolName = enablePnpm ? "pnpm" : "npm";
 
         String commandString = command.stream()
