@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
@@ -117,14 +116,12 @@ public class MockVaadinServletService extends VaadinServletService {
             MockVaadinServlet servlet = (MockVaadinServlet) getServlet();
             servlet.service = this;
             if (getServlet().getServletConfig() == null) {
-                ServletConfig config = Mockito.mock(ServletConfig.class);
-                ServletContext context = Mockito.mock(ServletContext.class);
-                Mockito.when(config.getServletContext()).thenReturn(context);
+                MockServletConfig config = new MockServletConfig();
+                ServletContext context = config.getServletContext();
 
                 Mockito.when(lookup.lookup(ResourceProvider.class))
                         .thenReturn(resourceProvider);
-                Mockito.when(context.getAttribute(Lookup.class.getName()))
-                        .thenReturn(lookup);
+                context.setAttribute(Lookup.class.getName(), lookup);
                 getServlet().init(config);
             }
             super.init();

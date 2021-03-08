@@ -257,7 +257,7 @@ public class FrontendUtilsTest {
         VaadinContext context = Mockito.mock(VaadinContext.class);
         Mockito.when(service.getContext()).thenReturn(context);
 
-        ResourceProvider provider = mockResourceProvider(service);
+        ResourceProvider provider = mockResourceProvider(service, context);
 
         FrontendUtils.getStatsContent(service);
 
@@ -271,18 +271,18 @@ public class FrontendUtilsTest {
         VaadinContext context = Mockito.mock(VaadinContext.class);
         Mockito.when(service.getContext()).thenReturn(context);
 
-        ResourceProvider provider = mockResourceProvider(service);
+        ResourceProvider provider = mockResourceProvider(service, context);
 
         FrontendUtils.getStatsAssetsByChunkName(service);
 
         Mockito.verify(provider).getApplicationResource(context, "foo");
     }
 
-    private ResourceProvider mockResourceProvider(VaadinService service) {
+    private ResourceProvider mockResourceProvider(VaadinService service,
+            VaadinContext context) {
         DeploymentConfiguration config = Mockito
                 .mock(DeploymentConfiguration.class);
 
-        VaadinContext context = Mockito.mock(VaadinContext.class);
         Lookup lookup = Mockito.mock(Lookup.class);
         Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
 
