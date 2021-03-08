@@ -317,14 +317,8 @@ public class FrontendUtilsTest {
         service.init();
 
         VaadinContext context = service.getContext();
-
-        Lookup lookup = Mockito.mock(Lookup.class);
-        context.setAttribute(Lookup.class, lookup);
-
-        ResourceProvider provider = Mockito.mock(ResourceProvider.class);
-
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(provider);
+        Lookup lookup = context.getAttribute(Lookup.class);
+        ResourceProvider provider = lookup.lookup(ResourceProvider.class);
 
         if (content != null) {
             File tmpFile = tmpDir.newFile();
