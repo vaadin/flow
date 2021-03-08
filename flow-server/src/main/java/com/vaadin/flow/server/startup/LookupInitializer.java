@@ -44,7 +44,6 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.osgi.OSGiAccess;
 import com.vaadin.flow.server.osgi.OSGiResourceProvider;
@@ -144,9 +143,9 @@ public class LookupInitializer
         @Override
         public List<URL> getApplicationResources(VaadinContext context,
                 String path) throws IOException {
-            if (context instanceof VaadinService) {
-                return Collections.list(((VaadinService) context)
-                        .getClassLoader().getResources(path));
+            if (context instanceof VaadinServletContext) {
+                return Collections.list(((VaadinServletContext) context)
+                        .getContext().getClassLoader().getResources(path));
             }
             return Collections.list(
                     context.getClass().getClassLoader().getResources(path));
