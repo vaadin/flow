@@ -38,6 +38,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -192,6 +193,17 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 initParameters.put(FALLBACK_CHUNK, fallbackChunk);
             }
         }
+
+        try {
+            boolean hasWebPackConfig = hasWebpackConfig(initParameters);
+            boolean hasTokenFile = json != null;
+            SerializableConsumer<CompatibilityModeStatus> strategy = value -> verifyMode(
+                    value, hasTokenFile, hasWebPackConfig);
+            initParameters.put(DEV_MODE_ENABLE_STRATEGY, strategy);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+
     }
 
     private static void setInitParametersUsingTokenData(
