@@ -24,12 +24,6 @@
             <artifactId>flow-server-production-mode</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-lumo-theme</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 
     <build>

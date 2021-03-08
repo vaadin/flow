@@ -33,7 +33,7 @@
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-lumo-theme</artifactId>
+            <artifactId>flow-test-common</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
