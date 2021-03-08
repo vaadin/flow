@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.server;
 
-import java.util.Properties;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+
+import java.util.Properties;
 
 import org.easymock.EasyMock;
 import org.junit.Assert;
@@ -37,6 +37,10 @@ public class VaadinServletConfigurationTest {
     @Test
     public void testEnclosingUIClass() throws Exception {
         Properties servletInitParams = new Properties();
+        servletInitParams.setProperty(
+                InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.TRUE.toString());
+
         ServletInUI servlet = new MockUIContainingServlet.ServletInUI();
         servlet.init(createServletConfig(servletInitParams));
 
@@ -50,7 +54,8 @@ public class VaadinServletConfigurationTest {
     @Test
     public void testValuesFromAnnotation() throws ServletException {
         Properties servletInitParams = new Properties();
-        servletInitParams.setProperty(InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES,
+        servletInitParams.setProperty(
+                InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES,
                 Boolean.TRUE.toString());
         servletInitParams.setProperty(
                 InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
@@ -85,7 +90,8 @@ public class VaadinServletConfigurationTest {
         servletInitParams.setProperty(
                 InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(expectedInt));
-        servletInitParams.setProperty(InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES,
+        servletInitParams.setProperty(
+                InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES,
                 Boolean.TRUE.toString());
         servletInitParams.setProperty(
                 InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
