@@ -299,6 +299,30 @@ public class VaadinServletTest {
         Assert.assertNull(servlet.getServletConfig());
     }
 
+    @Test
+    public void createStaticFileHandler_delegateToStaticFileHandlerFactory() {
+        VaadinServlet servlet = new VaadinServlet();
+        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        Mockito.when(service.getContext()).thenReturn(context);
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+
+        StaticFileHandlerFactory factory = Mockito
+                .mock(StaticFileHandlerFactory.class);
+
+        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
+                .thenReturn(factory);
+
+        StaticFileHandler handler = Mockito.mock(StaticFileHandler.class);
+        Mockito.when(factory.createHandler(service)).thenReturn(handler);
+
+        StaticFileHandler result = servlet.createStaticFileHandler(service);
+
+        Mockito.verify(factory).createHandler(service);
+        Assert.assertSame(handler, result);
+    }
+
     private ServletConfig mockConfig() {
         ServletConfig config = Mockito.mock(ServletConfig.class);
         ServletContext context = Mockito.mock(ServletContext.class);
