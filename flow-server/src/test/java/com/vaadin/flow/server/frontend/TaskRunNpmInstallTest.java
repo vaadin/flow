@@ -88,6 +88,7 @@ public class TaskRunNpmInstallTest {
     }
 
     protected TaskRunNpmInstall createTask() {
+        nodeUpdater.log().debug("createing TaskRunNpmInstall for TaskRunNpmInstallTest, pnpmEnable is set to false");
         return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), false,
                 false, FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
