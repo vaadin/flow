@@ -61,8 +61,12 @@ function generateThemeFile(themeFolder, themeName, themeProperties) {
 
   let themeFile = headerImport;
 
-  if(componentsFiles.length > 0){
-    themeFile += 'import { css, unsafeCSS, registerStyles } from \'@vaadin/vaadin-themable-mixin/register-styles\';';
+  if (componentsFiles.length > 0) {
+    themeFile += 'import { css, unsafeCSS, registerStyles } from \'@vaadin/vaadin-themable-mixin/register-styles\';\n';
+  }
+
+  if (themeProperties.parent) {
+    themeFile += `import {applyTheme as applyBaseTheme} from 'themes/${themeProperties.parent}/${themeProperties.parent}.generated.js';`;
   }
 
   themeFile += injectGlobalCssMethod;
@@ -70,7 +74,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties) {
   const imports = [];
   const globalCssCode = [];
   const componentCssCode = [];
-
+  const parentTheme = themeProperties.parent ? 'applyBaseTheme(target);\n' : '';
   globalFiles.forEach((global) => {
     const filename = path.basename(global);
     const variable = camelCase(filename);
@@ -149,6 +153,7 @@ window.Vaadin.Flow['${globalCssFlag}'] = window.Vaadin.Flow['${globalCssFlag}'] 
 // Don't format as the generated file formatting will get wonky!
 // If targets check that we only register the style parts once, checks exist for global css and component css
   const themeFileApply = `export const applyTheme = (target) => {
+  ${parentTheme}
   const injectGlobal = (window.Vaadin.Flow['${globalCssFlag}'].length === 0) || (!window.Vaadin.Flow['${globalCssFlag}'].includes(target) && target !== document);
   if (injectGlobal) {
     ${globalCssCode.join('')}
@@ -173,7 +178,7 @@ window.Vaadin.Flow['${globalCssFlag}'] = window.Vaadin.Flow['${globalCssFlag}'] 
  * @returns {string} camelCased version
  */
 function camelCase(str) {
-  return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function(word, index) {
+  return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function (word, index) {
     return index === 0 ? word.toLowerCase() : word.toUpperCase();
   }).replace(/\s+/g, '').replace(/\.|\-/g, '');
 }
