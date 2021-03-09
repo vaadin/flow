@@ -50,6 +50,7 @@ import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class FrontendUtilsTest {
@@ -292,6 +293,7 @@ public class FrontendUtilsTest {
                 manifestPaths.contains("/index.html"));
     }
 
+    @Test
     public void getStatsContent_getStatsFromClassPath_delegateToGetApplicationResource()
             throws IOException {
         VaadinServletService service = mockServletService();
@@ -317,6 +319,30 @@ public class FrontendUtilsTest {
         VaadinServlet servlet = service.getServlet();
 
         Mockito.verify(provider).getApplicationResource("foo");
+    }
+
+    @Test
+    public void getStatsContent_getStatsFromClassPath_populatesStatsCache()
+      throws IOException, ClassNotFoundException, ServiceException {
+        VaadinService service = setupStatsAssetMocks("ValidStats.json");
+
+        FrontendUtils.getStatsContent(service);
+
+        assertNotNull("Stats cache should be created", service.getContext().getAttribute(
+          Class.forName("com.vaadin.flow.server.frontend.FrontendUtils$Stats")
+        ));
+    }
+
+    @Test
+    public void getStatsAssetsByChunkName_getStatsFromClassPath_populatesStatsCache()
+      throws IOException, ClassNotFoundException, ServiceException {
+        VaadinService service = setupStatsAssetMocks("ValidStats.json");
+
+        FrontendUtils.getStatsAssetsByChunkName(service);
+
+        assertNotNull("Stats cache should be created", service.getContext().getAttribute(
+          Class.forName("com.vaadin.flow.server.frontend.FrontendUtils$Stats")
+        ));
     }
 
     private ResourceProvider mockResourceProvider(VaadinService service) {

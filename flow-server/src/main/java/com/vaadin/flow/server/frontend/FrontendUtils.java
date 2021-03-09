@@ -595,6 +595,7 @@ public class FrontendUtils {
                         .toLocalDateTime();
                 Stats statistics = context.getAttribute(Stats.class);
                 if (statistics == null
+                        || statistics.getLastModified() == null
                         || modified.isAfter(statistics.getLastModified())) {
                     statistics = new Stats(
                             streamToString(connection.getInputStream()),
@@ -627,6 +628,13 @@ public class FrontendUtils {
     }
 
     private static InputStream getStatsFromClassPath(VaadinService service) {
+        Stats statistics = service.getContext().getAttribute(Stats.class);
+
+        if (statistics != null) {
+            return new ByteArrayInputStream(
+              statistics.statsJson.getBytes(StandardCharsets.UTF_8));
+        }
+
         String stats = service.getDeploymentConfiguration()
                 .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
                         VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
@@ -638,6 +646,12 @@ public class FrontendUtils {
         InputStream stream = null;
         try {
             stream = statsUrl == null ? null : statsUrl.openStream();
+            if (stream != null) {
+                statistics = new Stats(streamToString(stream), null);
+                service.getContext().setAttribute(statistics);
+                stream = new ByteArrayInputStream(
+                  statistics.statsJson.getBytes(StandardCharsets.UTF_8));
+            }
         } catch (IOException exception) {
             getLogger().warn("Couldn't read content of stats file {}", stats,
                     exception);
@@ -1040,6 +1054,9 @@ public class FrontendUtils {
          * @return timestamp as LocalDateTime
          */
         public LocalDateTime getLastModified() {
+            if (lastModified == null) {
+                return null;
+            }
             return ZonedDateTime
                     .parse(lastModified, DateTimeFormatter.RFC_1123_DATE_TIME)
                     .toLocalDateTime();
