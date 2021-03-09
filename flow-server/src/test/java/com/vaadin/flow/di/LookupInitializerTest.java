@@ -32,6 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -326,8 +327,7 @@ public class LookupInitializerTest {
     @Test(expected = IllegalStateException.class)
     public void ensureService_severalServicesProvided_throws() {
         Map<Class<?>, Collection<Class<?>>> services = new HashMap<>();
-        services.put(List.class,
-                Arrays.asList(ArrayList.class, LinkedList.class));
+        services.put(List.class, Arrays.asList(Vector.class, LinkedList.class));
         initializer.ensureService(services, List.class, ArrayList.class);
     }
 

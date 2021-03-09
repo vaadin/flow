@@ -316,13 +316,14 @@ public class LookupInitializer implements AbstractLookupInitializer {
         if (impls == null) {
             impls = Collections.emptyList();
         }
-        if (impls.size() > 1) {
+        impls = impls.stream().filter(clazz -> !clazz.equals(serviceImpl))
+                .collect(Collectors.toList());
+        if (impls.isEmpty()) {
+            services.put(serviceType, Collections.singletonList(serviceImpl));
+        } else if (impls.size() > 1) {
             throw new IllegalStateException(
                     SEVERAL_IMPLS + serviceType.getSimpleName() + SPI + impls
                             + ONE_IMPL_REQUIRED);
-        }
-        if (impls.isEmpty()) {
-            services.put(serviceType, Collections.singletonList(serviceImpl));
         } else {
             services.put(serviceType, impls);
         }
