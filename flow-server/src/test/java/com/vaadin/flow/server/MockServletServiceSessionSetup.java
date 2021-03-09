@@ -281,6 +281,8 @@ public class MockServletServiceSessionSetup {
     private TestVaadinServlet servlet;
     private TestVaadinServletService service;
     private MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
+    @Mock
+    private StaticFileHandlerFactory staticFileHandlerFactory;
 
     public MockServletServiceSessionSetup() throws Exception {
         this(true);
@@ -303,6 +305,8 @@ public class MockServletServiceSessionSetup {
                 .thenReturn(lookup);
         Mockito.when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
+        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
+                .thenReturn(staticFileHandlerFactory);
 
         Mockito.when(resourceProvider.getClientResourceAsStream(
                 "META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH

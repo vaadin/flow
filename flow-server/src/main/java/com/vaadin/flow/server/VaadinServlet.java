@@ -108,8 +108,8 @@ public class VaadinServlet extends HttpServlet {
                         getServletConfig().getServletContext());
             }
 
-            if (vaadinService != null || vaadinContext
-                    .getAttribute(Lookup.class) == null) {
+            if (vaadinService != null
+                    || vaadinContext.getAttribute(Lookup.class) == null) {
                 return;
             }
 
@@ -142,16 +142,18 @@ public class VaadinServlet extends HttpServlet {
 
     /**
      * Creates a new instance of {@link StaticFileHandler}, that is responsible
-     * to find and serve static resources. By default it returns a
-     * {@link StaticFileServer} instance.
-     *
+     * to find and serve static resources.
+     * 
      * @param vaadinService
      *            the vaadinService created at {@link #createServletService()}
-     * @return the file server to be used by this servlet, not <code>null</code>
+     * @return the file handler to be used by this servlet, not
+     *         <code>null</code>
      */
     protected StaticFileHandler createStaticFileHandler(
             VaadinService vaadinService) {
-        return new StaticFileServer(vaadinService);
+        Lookup lookup = vaadinService.getContext().getAttribute(Lookup.class);
+        return lookup.lookup(StaticFileHandlerFactory.class)
+                .createHandler(vaadinService);
     }
 
     protected void servletInitialized() throws ServletException {
@@ -419,8 +421,7 @@ public class VaadinServlet extends HttpServlet {
         }
     }
 
-    private VaadinResponse createVaadinResponse(
-            HttpServletResponse response) {
+    private VaadinResponse createVaadinResponse(HttpServletResponse response) {
         return new VaadinServletResponse(response, getService());
     }
 
@@ -463,7 +464,9 @@ public class VaadinServlet extends HttpServlet {
             // In all other but the first UIDL request a cookie should be
             // returned by the browser.
             // This can be removed if cookieless mode (#3228) is supported
-            if (request instanceof HttpServletRequest && ((HttpServletRequest) request).getRequestedSessionId() == null) {
+            if (request instanceof HttpServletRequest
+                    && ((HttpServletRequest) request)
+                            .getRequestedSessionId() == null) {
                 // User has cookies disabled
                 SystemMessages systemMessages = getService().getSystemMessages(
                         HandlerHelper.findLocale(null, request), request);
