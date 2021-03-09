@@ -187,30 +187,6 @@ exports = {
   confFolder: `${confFolder}`
 };
 
-const baseCssLoaders = [
-  {
-    loader: 'css-loader',
-    options: {
-      url: (url, resourcePath) => {
-        // Only translate files from node_modules
-        const resolve = resourcePath.match(/(\\|\/)node_modules\1/);
-        const themeResource = resourcePath.match(themePartRegex) && url.match(/^themes\/[\s\S]*?\//);
-        return resolve || themeResource;
-      },
-      // use theme-loader to also handle any imports in css files
-      importLoaders: 1
-    },
-  },
-  {
-    // theme-loader will change any url starting with './' to start with 'VAADIN/static' instead
-    // NOTE! this loader should be here so it's run before css-loader as loaders are applied Right-To-Left
-    loader: '@vaadin/theme-loader',
-    options: {
-      devMode: devMode
-    }
-  }
-];
-
 module.exports = {
   mode: 'production',
   context: frontendFolder,
@@ -266,24 +242,34 @@ module.exports = {
       },
       {
         test: /\.css$/i,
-        exclude: /\.global\.css$/i,
         use: [
           {
-            loader: 'lit-css-loader'
+            loader: "lit-css-loader"
           },
           {
-            loader: 'extract-loader'
+            loader: "extract-loader"
           },
-          ...baseCssLoaders
-        ],
-      },
-      {
-        test: /\.global\.css$/i,
-        use: [
           {
-            loader: 'style-loader'
+            loader: 'css-loader',
+            options: {
+              url: (url, resourcePath) => {
+                // Only translate files from node_modules
+                const resolve = resourcePath.match(/(\\|\/)node_modules\1/);
+                const themeResource = resourcePath.match(themePartRegex) && url.match(/^themes\/[\s\S]*?\//);
+                return resolve || themeResource;
+              },
+              // use theme-loader to also handle any imports in css files
+              importLoaders: 1
+            },
           },
-          ...baseCssLoaders
+          {
+            // theme-loader will change any url starting with './' to start with 'VAADIN/static' instead
+            // NOTE! this loader should be here so it's run before css-loader as loaders are applied Right-To-Left
+            loader: '@vaadin/theme-loader',
+            options: {
+              devMode: devMode
+            }
+          }
         ],
       },
       {
