@@ -42,7 +42,11 @@
             <artifactId>flow-html-components-testbench</artifactId>
             <version>${project.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-lumo</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

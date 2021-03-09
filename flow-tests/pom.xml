@@ -292,6 +292,7 @@
     <modules>
         <module>test-resources</module>
         <module>test-common</module>
+        <module>test-lumo</module>
     </modules>
 
     <profiles>
