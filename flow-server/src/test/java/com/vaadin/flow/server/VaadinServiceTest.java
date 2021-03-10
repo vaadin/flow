@@ -230,8 +230,13 @@ public class VaadinServiceTest {
     public void serviceContainsStreamRequestHandler()
             throws ServiceException, ServletException {
         ServletConfig servletConfig = new MockServletConfig();
+        Lookup lookup = Mockito.mock(Lookup.class);
         servletConfig.getServletContext().setAttribute(Lookup.class.getName(),
-                Mockito.mock(Lookup.class));
+                lookup);
+        StaticFileHandlerFactory factory = Mockito
+                .mock(StaticFileHandlerFactory.class);
+        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
+                .thenReturn(factory);
         VaadinServlet servlet = new VaadinServlet() {
             @Override
             protected DeploymentConfiguration createDeploymentConfiguration()

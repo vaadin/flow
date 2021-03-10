@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,13 +13,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.contexttest.ui;
+package com.vaadin.flow.server;
 
-import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.theme.NoTheme;
+/**
+ * A factory to create a {@link StaticFileHandler}.
+ * 
+ * @author Vaadin Ltd
+ * @since
+ *
+ */
+public interface StaticFileHandlerFactory {
 
-@NoTheme
-@PWA(name = "test-router-custom-context", shortName = "custom-context", offlinePath = "offline.html")
-public class AppShell implements AppShellConfigurator {
+    /**
+     * Creates a new instance of {@link StaticFileHandler} for the given
+     * {@code service}.
+     * 
+     * @param service
+     *            a {@link VaadinServletService} instance
+     * @return a new {@link StaticFileHandler} instance for the {@code service}
+     */
+    StaticFileHandler createHandler(VaadinService service);
 }

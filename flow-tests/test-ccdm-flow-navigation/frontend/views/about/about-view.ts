@@ -1,8 +1,7 @@
-import { LitElement, html, css } from 'lit';
-import { customElement } from 'lit/decorators';
-import './about-view.global.css';
+import { LitElement, html, css } from "lit";
+import { customElement } from "lit/decorators";
 
-@customElement('about-view')
+@customElement("about-view")
 export class AboutView extends LitElement {
   static get styles() {
     return css`
@@ -15,7 +14,6 @@ export class AboutView extends LitElement {
 
   render() {
     return html`
-      <div>hello view</div>
       <a href="hello" tabindex="-1" id="navigate-hello">Hello Flow</a>
     `;
   }

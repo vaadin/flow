@@ -323,7 +323,6 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("chokidar", "^3.5.0");
 
         defaults.put("idb", "5.0.6");
-        defaults.put("style-loader", "2.0.0");
 
         final String BABEL_VERSION = "7.12.16";
         // Needed by Lit 2 that is written as ES2020
