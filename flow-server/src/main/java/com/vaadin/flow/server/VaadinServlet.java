@@ -151,7 +151,9 @@ public class VaadinServlet extends HttpServlet {
      */
     protected StaticFileHandler createStaticFileHandler(
             VaadinServletService servletService) {
-        return new StaticFileServer(servletService);
+        Lookup lookup = servletService.getContext().getAttribute(Lookup.class);
+        return lookup.lookup(StaticFileHandlerFactory.class)
+                .createHandler(servletService);
     }
 
     protected void servletInitialized() throws ServletException {

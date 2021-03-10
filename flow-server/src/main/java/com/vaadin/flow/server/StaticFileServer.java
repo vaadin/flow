@@ -15,8 +15,10 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -63,7 +65,7 @@ public class StaticFileServer implements StaticFileHandler {
 
     // Matcher to match string starting with '/themes/[theme-name]/'
     protected static final Pattern APP_THEME_PATTERN = Pattern
-        .compile("^\\/themes\\/[\\s\\S]+?\\/");
+            .compile("^\\/themes\\/[\\s\\S]+?\\/");
 
     /**
      * Constructs a file server.
@@ -90,9 +92,9 @@ public class StaticFileServer implements StaticFileHandler {
             return false;
         }
 
-        if (APP_THEME_PATTERN.matcher(requestFilename).find() || requestFilename
-            .startsWith("/" + VAADIN_STATIC_FILES_PATH) || requestFilename
-            .startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
+        if (APP_THEME_PATTERN.matcher(requestFilename).find()
+                || requestFilename.startsWith("/" + VAADIN_STATIC_FILES_PATH)
+                || requestFilename.startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
             // The path is reserved for internal resources only
             // We rather serve 404 than let it fall through
             return true;
@@ -104,7 +106,7 @@ public class StaticFileServer implements StaticFileHandler {
             return true;
         }
 
-        resource = servletService.getStaticResource(requestFilename);
+        resource = getStaticResource(requestFilename);
 
         if (resource == null && shouldFixIncorrectWebjarPaths()
                 && isIncorrectWebjarPath(requestFilename)) {
@@ -130,24 +132,24 @@ public class StaticFileServer implements StaticFileHandler {
         URL resourceUrl = null;
         if (isAllowedVAADINBuildOrStaticUrl(filenameWithPath)
                 || manifestPaths.contains(filenameWithPath)) {
-            if(APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
+            if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
                 resourceUrl = servletService.getClassLoader()
-                    .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/" 
-                            + filenameWithPath.replaceFirst("^/", ""));
-                    
+                        .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
+                                + filenameWithPath.replaceFirst("^/", ""));
+
             } else {
                 resourceUrl = servletService.getClassLoader()
-                    .getResource(VAADIN_WEBAPP_RESOURCES
-                            + filenameWithPath.replaceFirst("^/", ""));
+                        .getResource(VAADIN_WEBAPP_RESOURCES
+                                + filenameWithPath.replaceFirst("^/", ""));
             }
         }
         if (resourceUrl == null) {
-            resourceUrl = servletService.getStaticResource(filenameWithPath);
+            resourceUrl = getStaticResource(filenameWithPath);
         }
         if (resourceUrl == null && shouldFixIncorrectWebjarPaths()
                 && isIncorrectWebjarPath(filenameWithPath)) {
             // Flow issue #4601
-            resourceUrl = servletService.getStaticResource(
+            resourceUrl = getStaticResource(
                     fixIncorrectWebjarPath(filenameWithPath));
         }
 
@@ -173,6 +175,27 @@ public class StaticFileServer implements StaticFileHandler {
         responseWriter.writeResponseContents(filenameWithPath, resourceUrl,
                 request, response);
         return true;
+    }
+
+    /**
+     * Returns a URL to the static Web resource at the given URI or null if no
+     * file found.
+     * <p>
+     * The resource will be exposed via HTTP (available as a static web
+     * resource). The {@code null} return value means that the resource won't be
+     * exposed as a Web resource even if it's a resource available via
+     * {@link ServletContext}.
+     * 
+     * @param path
+     *            the path for the resource
+     * @return the resource located at the named path to expose it via Web, or
+     *         {@code null} if there is no resource at that path or it should
+     *         not be exposed
+     * 
+     * @see VaadinService#getStaticResource(String)
+     */
+    protected URL getStaticResource(String path) {
+        return servletService.getStaticResource(path);
     }
 
     // When referring to webjar resources from application stylesheets (loaded
@@ -224,8 +247,8 @@ public class StaticFileServer implements StaticFileHandler {
     private boolean isAllowedVAADINBuildOrStaticUrl(String filenameWithPath) {
         // Check that we target VAADIN/build | VAADIN/static | themes/theme-name
         return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-            || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH)
-            || APP_THEME_PATTERN.matcher(filenameWithPath).find();
+                || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH)
+                || APP_THEME_PATTERN.matcher(filenameWithPath).find();
     }
 
     /**
@@ -317,7 +340,7 @@ public class StaticFileServer implements StaticFileHandler {
         if (request.getPathInfo() == null) {
             return request.getServletPath();
         } else if (request.getPathInfo().startsWith("/" + VAADIN_MAPPING)
-            || APP_THEME_PATTERN.matcher(request.getPathInfo()).find()) {
+                || APP_THEME_PATTERN.matcher(request.getPathInfo()).find()) {
             return request.getPathInfo();
         }
         return request.getServletPath() + request.getPathInfo();
@@ -410,8 +433,7 @@ public class StaticFileServer implements StaticFileHandler {
      */
     private List<String> getManifestPathsFromJson() {
         InputStream stream = servletService.getClassLoader()
-                .getResourceAsStream(
-                        VAADIN_WEBAPP_RESOURCES + "manifest.json");
+                .getResourceAsStream(VAADIN_WEBAPP_RESOURCES + "manifest.json");
         if (stream == null) {
             // manifest.json resource does not exist, probably dev mode
             return new ArrayList<>();

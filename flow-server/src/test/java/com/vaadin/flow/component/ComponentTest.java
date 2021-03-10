@@ -55,9 +55,7 @@ import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
-import net.jcip.annotations.NotThreadSafe;
 
-@NotThreadSafe
 public class ComponentTest {
 
     private UI ui;
