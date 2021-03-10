@@ -1,6 +1,6 @@
 import '@vaadin/vaadin-text-field';
-import { html, LitElement } from 'lit';
-import { customElement } from 'lit/decorators';
+import { css, html, LitElement, unsafeCSS } from 'lit';
+import { customElement } from 'lit/decorators';
 import styles from './hello-world-view.css';
 
 
@@ -8,7 +8,7 @@ import styles from './hello-world-view.css';
 export class HelloWorldView extends LitElement {
   name: string = '';
 
-  static styles = [styles];
+  static styles = [css`${unsafeCSS(styles)}`];
 
   render() {
     return html`
