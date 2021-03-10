@@ -46,6 +46,7 @@ import com.vaadin.flow.server.StaticFileHandlerFactory;
 import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.startup.AppShellPredicate;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
@@ -225,7 +226,10 @@ public class LookupInitializer implements AbstractLookupInitializer {
             implements StaticFileHandlerFactory {
         @Override
         public StaticFileHandler createHandler(VaadinService service) {
-            return new StaticFileServer(service);
+            if (service instanceof VaadinServletService) {
+                return new StaticFileServer((VaadinServletService) service);
+            }
+            return null;
         }
     }
 
