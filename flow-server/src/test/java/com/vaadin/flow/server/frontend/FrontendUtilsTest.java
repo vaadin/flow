@@ -58,6 +58,16 @@ public class FrontendUtilsTest {
 
     private static final String USER_HOME = "user.home";
 
+    private static Class<?> CACHE_KEY;
+
+    static {
+        try {
+            CACHE_KEY = Class.forName("com.vaadin.flow.server.frontend.FrontendUtils$Stats");
+        } catch (ClassNotFoundException e) {
+            System.err.println("Could not access cache key for stats.json!");
+        }
+    }
+
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
@@ -324,46 +334,41 @@ public class FrontendUtilsTest {
 
     @Test
     public void getStatsContent_getStatsFromClassPath_populatesStatsCache()
-      throws IOException, ClassNotFoundException, ServiceException {
+      throws IOException, ServiceException {
         VaadinService service = setupStatsAssetMocks("ValidStats.json");
 
-        assertNull("Stats cache should not be present", service.getContext().getAttribute(
-          Class.forName("com.vaadin.flow.server.frontend.FrontendUtils$Stats")
-        ));
+        assertNull("Stats cache should not be present",
+          service.getContext().getAttribute(CACHE_KEY));
 
         // Populates cache
         FrontendUtils.getStatsContent(service);
 
-        assertNotNull("Stats cache should be created", service.getContext().getAttribute(
-          Class.forName("com.vaadin.flow.server.frontend.FrontendUtils$Stats")
-        ));
+        assertNotNull("Stats cache should be created",
+          service.getContext().getAttribute(CACHE_KEY));
     }
 
     @Test
     public void getStatsAssetsByChunkName_getStatsFromClassPath_populatesStatsCache()
-      throws IOException, ClassNotFoundException, ServiceException {
+      throws IOException, ServiceException {
         VaadinService service = setupStatsAssetMocks("ValidStats.json");
 
-        assertNull("Stats cache should not be present", service.getContext().getAttribute(
-          Class.forName("com.vaadin.flow.server.frontend.FrontendUtils$Stats")
-        ));
+        assertNull("Stats cache should not be present",
+          service.getContext().getAttribute(CACHE_KEY));
 
         // Populates cache
         FrontendUtils.getStatsAssetsByChunkName(service);
 
-        assertNotNull("Stats cache should be created", service.getContext().getAttribute(
-          Class.forName("com.vaadin.flow.server.frontend.FrontendUtils$Stats")
-        ));
+        assertNotNull("Stats cache should be created",
+          service.getContext().getAttribute(CACHE_KEY));
     }
 
     @Test
     public void clearCachedStatsContent_clearsCache()
-      throws IOException, ClassNotFoundException, ServiceException {
+      throws IOException, ServiceException {
         VaadinService service = setupStatsAssetMocks("ValidStats.json");
 
-        assertNull("Stats cache should not be present", service.getContext().getAttribute(
-          Class.forName("com.vaadin.flow.server.frontend.FrontendUtils$Stats")
-        ));
+        assertNull("Stats cache should not be present",
+          service.getContext().getAttribute(CACHE_KEY));
         // Can be invoked without cache - throws no exception
         FrontendUtils.clearCachedStatsContent(service);
 
@@ -373,10 +378,10 @@ public class FrontendUtilsTest {
         // Clears cache
         FrontendUtils.clearCachedStatsContent(service);
 
-        assertNull("Stats cache should not be present", service.getContext().getAttribute(
-          Class.forName("com.vaadin.flow.server.frontend.FrontendUtils$Stats")
-        ));
+        assertNull("Stats cache should not be present",
+          service.getContext().getAttribute(CACHE_KEY));
     }
+
     private ResourceProvider mockResourceProvider(VaadinService service) {
         DeploymentConfiguration config = Mockito
                 .mock(DeploymentConfiguration.class);

@@ -609,8 +609,7 @@ public class FrontendUtils {
                         .toLocalDateTime();
                 Stats statistics = context.getAttribute(Stats.class);
                 if (statistics == null
-                        || statistics.getLastModified() == null
-                        || modified.isAfter(statistics.getLastModified())) {
+                  || modified.isAfter(statistics.getLastModified().orElse(LocalDateTime.MIN))) {
                     statistics = new Stats(
                             streamToString(connection.getInputStream()),
                             lastModified);
@@ -1071,13 +1070,13 @@ public class FrontendUtils {
          *
          * @return timestamp as LocalDateTime
          */
-        public LocalDateTime getLastModified() {
+        public Optional<LocalDateTime> getLastModified() {
             if (lastModified == null) {
-                return null;
+                return Optional.empty();
             }
-            return ZonedDateTime
+            return Optional.of(ZonedDateTime
                     .parse(lastModified, DateTimeFormatter.RFC_1123_DATE_TIME)
-                    .toLocalDateTime();
+                    .toLocalDateTime());
         }
     }
 
