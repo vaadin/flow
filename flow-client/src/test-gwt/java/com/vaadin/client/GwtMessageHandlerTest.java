@@ -148,10 +148,6 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
                         new ApplicationConfiguration());
                 set(EventsOrder.class, new EventsOrder());
                 set(MessageSender.class, new TestMessageSender(this));
-                set(SystemErrorHandler.class, new TestSystemErrorHandler(this));
-                set(ExecuteJavaScriptProcessor.class,
-                        new TestExecuteJavaScriptProcessor(this));
-                set(UILifecycle.class, new TestUILifecycle());
             }
         };
         handler = new TestMessageHandler(registry);
