@@ -64,7 +64,7 @@ public class FrontendUtilsTest {
         try {
             CACHE_KEY = Class.forName("com.vaadin.flow.server.frontend.FrontendUtils$Stats");
         } catch (ClassNotFoundException e) {
-            System.err.println("Could not access cache key for stats.json!");
+            Assert.fail("Could not access cache key for stats.json!");
         }
     }
 
