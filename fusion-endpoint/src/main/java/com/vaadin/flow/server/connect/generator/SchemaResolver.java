@@ -168,7 +168,7 @@ class SchemaResolver {
         if (isTypeOf(type, Collection.class)) {
             return true;
         }
-        if (Iterable.class.getName().equals(type.asReferenceType().getQualifiedName())) {
+        if (isType(type, Iterable.class)) {
             return true;
         }
         return false;
@@ -194,6 +194,16 @@ class SchemaResolver {
         }
     }
 
+    /**
+     * Checks if the given type is an instance of the given class
+     */
+    private boolean isType(ResolvedType type, Class clazz) {
+        return clazz.getName().equals(type.asReferenceType().getQualifiedName());
+    }
+
+    /**
+     * Checks if the given type can be cast to one of the given classes
+     */
     private boolean isTypeOf(ResolvedType type, Class... clazz) {
         if (!type.isReferenceType()) {
             return false;
