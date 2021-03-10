@@ -49,7 +49,7 @@ import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
 import com.vaadin.flow.server.StaticFileHandler;
 import com.vaadin.flow.server.StaticFileHandlerFactory;
 import com.vaadin.flow.server.StaticFileServer;
-import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.startup.AppShellPredicate;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
@@ -106,7 +106,7 @@ public class LookupInitializerTest {
         StaticFileHandlerFactory factory = lookup
                 .lookup(StaticFileHandlerFactory.class);
 
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinServletService service = Mockito.mock(VaadinServletService.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
         Mockito.when(service.getDeploymentConfiguration())

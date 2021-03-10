@@ -302,7 +302,7 @@ public class VaadinServletTest {
     @Test
     public void createStaticFileHandler_delegateToStaticFileHandlerFactory() {
         VaadinServlet servlet = new VaadinServlet();
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinServletService service = Mockito.mock(VaadinServletService.class);
         VaadinContext context = Mockito.mock(VaadinContext.class);
         Mockito.when(service.getContext()).thenReturn(context);
         Lookup lookup = Mockito.mock(Lookup.class);
