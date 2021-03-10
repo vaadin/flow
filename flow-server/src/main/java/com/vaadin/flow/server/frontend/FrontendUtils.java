@@ -444,6 +444,10 @@ public class FrontendUtils {
     /**
      * Gets the content of the <code>stats.json</code> file produced by webpack.
      *
+     * Note: Caches the <code>stats.json</code> when external stats is enabled or
+     * <code>stats.json</code> is provided from the class path. To clear the
+     * cache use {@link #clearCachedStatsContent(VaadinService)}.
+     *
      * @param service
      *            the vaadin service.
      * @return the content of the file as a string, null if not found.
@@ -470,6 +474,16 @@ public class FrontendUtils {
         return content != null
                 ? IOUtils.toString(content, StandardCharsets.UTF_8)
                 : null;
+    }
+
+    /**
+     * Clears the <code>stats.json</code> cache within this {@link VaadinContext}.
+     *
+     * @param service
+     *            the vaadin service.
+     */
+    public static void clearCachedStatsContent(VaadinService service) {
+        service.getContext().removeAttribute(Stats.class);
     }
 
     /**
@@ -672,9 +686,13 @@ public class FrontendUtils {
     }
 
     /**
-     * Load the asset chunks from stats.json. We will only read the file until
-     * we have reached the assetsByChunkName json and return that as a json
-     * object string.
+     * Load the asset chunks from <code>stats.json</code>. We will only read the
+     * file until we have reached the assetsByChunkName json and return that as
+     * a json object string.
+     *
+     * Note: The <code>stats.json</code> is cached when external stats is enabled
+     * or <code>stats.json</code> is provided from the class path. To clear the
+     * cache use {@link #clearCachedStatsContent(VaadinService)}.
      *
      * @param service
      *            the Vaadin service.
