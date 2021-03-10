@@ -161,7 +161,17 @@ class SchemaResolver {
     }
 
     private boolean isCollectionType(ResolvedType type) {
-        return !type.isPrimitive() && (isTypeOf(type, Collection.class) || isTypeOf(type, Iterable.class));
+        if (type.isPrimitive()) {
+            return false;
+        }
+
+        if (isTypeOf(type, Collection.class)) {
+            return true;
+        }
+        if (Iterable.class.getName().equals(type.asReferenceType().getQualifiedName())) {
+            return true;
+        }
+        return false;
     }
 
     private boolean isMapType(ResolvedType type) {
