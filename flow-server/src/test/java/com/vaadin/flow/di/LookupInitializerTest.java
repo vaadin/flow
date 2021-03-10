@@ -32,6 +32,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -42,7 +44,12 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.LookupInitializer.AppShellPredicateImpl;
 import com.vaadin.flow.di.LookupInitializer.ResourceProviderImpl;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
+import com.vaadin.flow.server.StaticFileHandler;
+import com.vaadin.flow.server.StaticFileHandlerFactory;
+import com.vaadin.flow.server.StaticFileServer;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.startup.AppShellPredicate;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
@@ -54,7 +61,7 @@ import com.vaadin.flow.server.startup.testdata.TestResourceProvider;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-public class LookupIntializerTest {
+public class LookupInitializerTest {
 
     private LookupInitializer initializer = new LookupInitializer();
 
@@ -87,6 +94,54 @@ public class LookupIntializerTest {
 
         Lookup lookup = capture.get();
         assertResourceProvider(lookup.lookup(ResourceProvider.class));
+    }
+
+    @Test
+    public void initialize_noStaticFileHandlerFactory_defaultStaticFileHandlerFactoryCreated()
+            throws ServletException {
+        AtomicReference<Lookup> capture = new AtomicReference<>();
+        initializer.initialize(null, new HashMap<>(), capture::set);
+
+        Lookup lookup = capture.get();
+        StaticFileHandlerFactory factory = lookup
+                .lookup(StaticFileHandlerFactory.class);
+
+        VaadinServletService service = Mockito.mock(VaadinServletService.class);
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+        ClassLoader loader = Mockito.mock(ClassLoader.class);
+        Mockito.when(service.getClassLoader()).thenReturn(loader);
+
+        StaticFileHandler handler = factory.createHandler(service);
+        Assert.assertNotNull(handler);
+        Assert.assertEquals(StaticFileServer.class, handler.getClass());
+    }
+
+    @Test
+    public void initialize_StaticFileHandlerFactoryIdDelegatedToEnsureService()
+            throws ServletException {
+        Map mock = Mockito.mock(Map.class);
+        AtomicBoolean factoryIsPassed = new AtomicBoolean();
+        initializer = new LookupInitializer() {
+
+            @Override
+            protected <T> void ensureService(
+                    Map<Class<?>, Collection<Class<?>>> services,
+                    Class<T> serviceType, Class<? extends T> serviceImpl) {
+                Assert.assertSame(mock, services);
+                if (StaticFileHandlerFactory.class.equals(serviceType)) {
+                    factoryIsPassed.set(true);
+                }
+            }
+        };
+
+        AtomicReference<Lookup> capture = new AtomicReference<>();
+
+        initializer.initialize(null, mock, capture::set);
+
+        Assert.assertTrue(factoryIsPassed.get());
     }
 
     @Test
@@ -244,6 +299,36 @@ public class LookupIntializerTest {
         Mockito.verify(initializer).ensureService(services,
                 AppShellPredicate.class, AppShellPredicateImpl.class);
         Mockito.verify(bootstrap).bootstrap(Mockito.any());
+    }
+
+    @Test
+    public void ensureService_noServiceProvided_defaultIsUsed() {
+        Map<Class<?>, Collection<Class<?>>> services = new HashMap<>();
+        initializer.ensureService(services, List.class, ArrayList.class);
+
+        Assert.assertEquals(1, services.size());
+        Collection<Class<?>> collection = services.get(List.class);
+        Assert.assertEquals(1, collection.size());
+        Assert.assertEquals(ArrayList.class, collection.iterator().next());
+    }
+
+    @Test
+    public void ensureService_defaultServiceProvided_defaultIsUsed() {
+        Map<Class<?>, Collection<Class<?>>> services = new HashMap<>();
+        services.put(List.class, Collections.singleton(ArrayList.class));
+        initializer.ensureService(services, List.class, ArrayList.class);
+
+        Assert.assertEquals(1, services.size());
+        Collection<Class<?>> collection = services.get(List.class);
+        Assert.assertEquals(1, collection.size());
+        Assert.assertEquals(ArrayList.class, collection.iterator().next());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void ensureService_severalServicesProvided_throws() {
+        Map<Class<?>, Collection<Class<?>>> services = new HashMap<>();
+        services.put(List.class, Arrays.asList(Vector.class, LinkedList.class));
+        initializer.ensureService(services, List.class, ArrayList.class);
     }
 
     private void assertResourceProvider(ResourceProvider resourceProvider)

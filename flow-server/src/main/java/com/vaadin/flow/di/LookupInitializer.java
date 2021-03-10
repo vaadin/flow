@@ -41,7 +41,12 @@ import org.apache.commons.io.IOUtils;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.server.StaticFileHandler;
+import com.vaadin.flow.server.StaticFileHandlerFactory;
+import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.startup.AppShellPredicate;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
@@ -217,6 +222,17 @@ public class LookupInitializer implements AbstractLookupInitializer {
 
     }
 
+    private static class StaticFileHandlerFactoryImpl
+            implements StaticFileHandlerFactory {
+        @Override
+        public StaticFileHandler createHandler(VaadinService service) {
+            if (service instanceof VaadinServletService) {
+                return new StaticFileServer((VaadinServletService) service);
+            }
+            return null;
+        }
+    }
+
     /**
      * Default implementation of {@link AppShellPredicate}.
      * 
@@ -262,6 +278,8 @@ public class LookupInitializer implements AbstractLookupInitializer {
                 AppShellPredicateImpl.class);
         ensureService(services, ApplicationConfigurationFactory.class,
                 DefaultApplicationConfigurationFactory.class);
+        ensureService(services, StaticFileHandlerFactory.class,
+                StaticFileHandlerFactoryImpl.class);
         bootstrap.bootstrap(createLookup(context, services));
     }
 
@@ -331,6 +349,8 @@ public class LookupInitializer implements AbstractLookupInitializer {
             Class<?> implementation) {
         if (RegularOneTimeInitializerPredicate.class.equals(implementation)) {
             return serviceClass.cast(new RegularOneTimeInitializerPredicate());
+        } else if (StaticFileHandlerFactoryImpl.class.equals(implementation)) {
+            return serviceClass.cast(new StaticFileHandlerFactoryImpl());
         }
         return serviceClass.cast(ReflectTools.createInstance(implementation));
     }

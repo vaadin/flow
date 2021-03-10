@@ -120,6 +120,11 @@ public class MockVaadinServletService extends VaadinServletService {
 
                 Mockito.when(lookup.lookup(ResourceProvider.class))
                         .thenReturn(resourceProvider);
+                StaticFileHandlerFactory factory = Mockito
+                        .mock(StaticFileHandlerFactory.class);
+                Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
+                        .thenReturn(factory);
+
                 Mockito.when(context.getAttribute(Lookup.class.getName()))
                         .thenReturn(lookup);
                 getServlet().init(config);
