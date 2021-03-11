@@ -25,10 +25,9 @@
             <artifactId>fusion-endpoint</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-lumo-theme</artifactId>
+            <artifactId>flow-test-lumo</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
