@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend.scanner;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,8 +38,11 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
@@ -58,6 +62,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
+    private PwaConfiguration pwaConfiguration;
     private Set<String> classes = new HashSet<>();
     private Map<String, String> packages;
     private Set<String> scripts = new LinkedHashSet<>();
@@ -109,18 +114,21 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                 (clazz, module) -> handleModule(clazz, module, regularModules,
                         themeModules),
                 JsModule.class,
-                module -> invokeAnnotationMethodAsString(module, VALUE));
+                module -> getAnnotationValueAsString(module, VALUE));
 
         collectAnnotationValues((clazz, script) -> {
             classes.add(clazz.getName());
             scripts.add(script);
         }, JavaScript.class,
-                module -> invokeAnnotationMethodAsString(module, VALUE));
+                module -> getAnnotationValueAsString(module, VALUE));
         cssData = discoverCss();
 
         discoverTheme();
 
         modules = calculateModules(regularModules, themeModules);
+
+        pwaConfiguration = discoverPwa();
+
         getLogger().info("Visited {} classes. Took {} ms.", getClasses().size(),
                 System.currentTimeMillis() - start);
     }
@@ -156,6 +164,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     @Override
+    public PwaConfiguration getPwaConfiguration() {
+        return pwaConfiguration;
+    }
+
+    @Override
     public Set<String> getClasses() {
         return Collections.unmodifiableSet(classes);
     }
@@ -170,7 +183,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     private String adaptCssValue(Annotation cssImport, String method) {
-        String value = invokeAnnotationMethodAsString(cssImport, method);
+        String value = getAnnotationValueAsString(cssImport, method);
         if (value == null) {
             return value;
         }
@@ -190,8 +203,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                 List<? extends Annotation> packageAnnotations = annotationFinder
                         .apply(clazz, loadedAnnotation);
                 packageAnnotations.forEach(pckg -> {
-                    String value = invokeAnnotationMethodAsString(pckg, VALUE);
-                    String vers = invokeAnnotationMethodAsString(pckg,
+                    String value = getAnnotationValueAsString(pckg, VALUE);
+                    String vers = getAnnotationValueAsString(pckg,
                             "version");
                     logs.add(value + " " + vers + " " + clazz.getName());
                     result.put(value, vers);
@@ -264,7 +277,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         ThemeData data = verifyTheme();
 
         if (data == null) {
-            setupTheme(getLumoTheme(), "");
+            setupTheme(getLumoTheme(), "", "");
             return;
         }
 
@@ -274,18 +287,19 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
         try {
             Class<? extends AbstractTheme> theme = getFinder()
-                    .loadClass(data.name);
-            setupTheme(theme, data.variant);
+                    .loadClass(data.getThemeClass());
+            setupTheme(theme, data.getVariant(), data.getThemeName());
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
-                    "Could not load theme class " + data.name, exception);
+                "Could not load theme class " + data.getThemeClass(),
+                exception);
         }
     }
 
     private void setupTheme(Class<? extends AbstractTheme> theme,
-            String variant) {
+            String variant, String name) {
         if (theme != null) {
-            themeDefinition = new ThemeDefinition(theme, variant);
+            themeDefinition = new ThemeDefinition(theme, variant, name);
             try {
                 themeInstance = new ThemeWrapper(theme);
             } catch (InstantiationException | IllegalAccessException e) {
@@ -306,9 +320,10 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                     .flatMap(clazz -> annotationFinder
                             .apply(clazz, loadedThemeAnnotation).stream())
                     .map(theme -> new ThemeData(
-                            ((Class<?>) invokeAnnotationMethod(theme, VALUE))
+                            ((Class<?>) getAnnotationValue(theme, "themeClass"))
                                     .getName(),
-                            invokeAnnotationMethodAsString(theme, "variant")))
+                            getAnnotationValueAsString(theme, "variant"),
+                            getAnnotationValueAsString(theme, VALUE)))
                     .collect(Collectors.toSet());
 
             Class<? extends Annotation> loadedNoThemeAnnotation = getFinder()
@@ -342,9 +357,10 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     private String getThemesList(Collection<ThemeData> themes) {
-        return themes
-                .stream().map(theme -> "name = '" + theme.getName()
-                        + "' and variant = '" + theme.getVariant() + "'")
+        return themes.stream()
+                .map(theme -> "themeClass = '" + theme.getThemeClass()
+                        + "' and variant = '" + theme.getVariant()
+                        + "' and name = '" + theme.getThemeName() + "'")
                 .collect(Collectors.joining(", "));
     }
 
@@ -380,17 +396,23 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         return result;
     }
 
-    private String invokeAnnotationMethodAsString(Annotation target,
+    private String getAnnotationValueAsString(Annotation target,
             String methodName) {
-        Object result = invokeAnnotationMethod(target, methodName);
+        Object result = getAnnotationValue(target, methodName);
         return result == null ? null : result.toString();
     }
 
-    private Object invokeAnnotationMethod(Annotation target,
+    private Object getAnnotationValue(Annotation target,
             String methodName) {
         try {
-            return target.getClass().getDeclaredMethod(methodName)
+            Object value = target.getClass().getDeclaredMethod(methodName)
                     .invoke(target);
+            if (value == null) {
+                // Fallback to using declared default value from the annotation
+                value = target.getClass().getDeclaredMethod(methodName)
+                        .getDefaultValue();
+            }
+            return value;
         } catch (IllegalAccessException e) {
             throw new UnsupportedOperationException(String.format(
                     "Failed to access method '%s' in annotation interface '%s', should not be happening due to JLS definition of annotation interface",
@@ -404,6 +426,61 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                     String.format("Annotation '%s' has no method named `%s",
                             target, methodName),
                     e);
+        }
+    }
+
+    private PwaConfiguration discoverPwa() {
+        try {
+            Class<? extends Annotation> loadedPWAAnnotation = getFinder()
+                    .loadClass(PWA.class.getName());
+
+            Set<Class<?>> annotatedClasses = getFinder()
+                    .getAnnotatedClasses(loadedPWAAnnotation);
+            if (annotatedClasses.isEmpty()) {
+                return new PwaConfiguration();
+            } else if (annotatedClasses.size() != 1) {
+                throw new IllegalStateException(
+                        ERROR_INVALID_PWA_ANNOTATION);
+            }
+
+            Class<?> hopefullyAppShellClass =
+                    annotatedClasses.iterator().next();
+            if (!Arrays.stream(hopefullyAppShellClass.getInterfaces())
+                    .map(Class::getName).collect(Collectors.toList())
+                    .contains(AppShellConfigurator.class.getName())) {
+                throw new IllegalStateException(
+                        ERROR_INVALID_PWA_ANNOTATION);
+            }
+
+            Annotation pwa = annotationFinder
+                    .apply(hopefullyAppShellClass, loadedPWAAnnotation).get(0);
+
+            String name = getAnnotationValueAsString(pwa, "name");
+            String shortName = getAnnotationValueAsString(pwa, "shortName");
+            String description = getAnnotationValueAsString(pwa,
+                    "description");
+            String backgroundColor = getAnnotationValueAsString(pwa,
+                    "backgroundColor");
+            String themeColor = getAnnotationValueAsString(pwa,
+                    "themeColor");
+            String iconPath = getAnnotationValueAsString(pwa, "iconPath");
+            String manifestPath = getAnnotationValueAsString(pwa,
+                    "manifestPath");
+            String offlinePath = getAnnotationValueAsString(pwa,
+                    "offlinePath");
+            String display = getAnnotationValueAsString(pwa, "display");
+            String startPath = getAnnotationValueAsString(pwa, "startPath");
+            String[] offlineResources = (String[]) getAnnotationValue(pwa,
+                    "offlineResources");
+
+            assert shortName != null; // required in @PWA annotation
+
+            return new PwaConfiguration(true, name, shortName, description,
+                    backgroundColor, themeColor, iconPath, manifestPath,
+                    offlinePath, display, startPath, offlineResources);
+        } catch (ClassNotFoundException exception) {
+            throw new IllegalStateException(
+                    "Could not load PWA annotation class", exception);
         }
     }
 

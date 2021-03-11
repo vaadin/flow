@@ -1,21 +1,15 @@
-/* tslint:disable:max-classes-per-file */
-
-import { directive, Part, PropertyPart } from "lit-html";
-import {
-  _fromString,
-  AbstractModel,
-  getBinderNode
-} from "./Models";
+import { directive, Part, PropertyPart } from 'lit-html';
+import { _fromString, AbstractModel, getBinderNode } from './Models';
 
 interface Field {
-  required: boolean,
-  invalid: boolean,
-  errorMessage: string
-  value: any,
+  required: boolean;
+  invalid: boolean;
+  errorMessage: string;
+  value: any;
 }
 interface FieldState extends Field {
-  name: string,
-  strategy: FieldStrategy
+  name: string;
+  strategy: FieldStrategy;
 }
 const fieldStateMap = new WeakMap<PropertyPart, FieldState>();
 
@@ -28,9 +22,13 @@ export abstract class AbstractFieldStrategy implements FieldStrategy {
   abstract invalid: boolean;
   constructor(public element: Element & Field) {}
   validate = async () => [];
-  get value() {return this.element.value}
-  set value(value) {this.element.value = value}
-  set errorMessage(_: string) { }
+  get value() {
+    return this.element.value;
+  }
+  set value(value) {
+    this.element.value = value;
+  }
+  set errorMessage(_: string) {}
   setAttribute(key: string, val: any) {
     if (val) {
       this.element.setAttribute(key, '');
@@ -41,14 +39,24 @@ export abstract class AbstractFieldStrategy implements FieldStrategy {
 }
 
 export class VaadinFieldStrategy extends AbstractFieldStrategy {
-  set required(value: boolean) { this.element.required = value }
-  set invalid(value: boolean) { this.element.invalid = value }
-  set errorMessage(value: string) { this.element.errorMessage = value }
+  set required(value: boolean) {
+    this.element.required = value;
+  }
+  set invalid(value: boolean) {
+    this.element.invalid = value;
+  }
+  set errorMessage(value: string) {
+    this.element.errorMessage = value;
+  }
 }
 
 export class GenericFieldStrategy extends AbstractFieldStrategy {
-  set required(value: boolean) { this.setAttribute('required', value) }
-  set invalid(value: boolean) { this.setAttribute('invalid', value) }
+  set required(value: boolean) {
+    this.setAttribute('required', value);
+  }
+  set invalid(value: boolean) {
+    this.setAttribute('invalid', value);
+  }
 }
 
 export class CheckedFieldStrategy extends GenericFieldStrategy {
@@ -80,8 +88,9 @@ export class SelectedFieldStrategy extends GenericFieldStrategy {
 }
 
 export function getDefaultFieldStrategy(elm: any): FieldStrategy {
-  switch(elm.localName) {
-    case 'vaadin-checkbox': case 'vaadin-radio-button':
+  switch (elm.localName) {
+    case 'vaadin-checkbox':
+    case 'vaadin-radio-button':
       return new CheckedFieldStrategy(elm);
     case 'vaadin-combo-box':
       return new ComboBoxFieldStrategy(elm);
@@ -89,9 +98,10 @@ export function getDefaultFieldStrategy(elm: any): FieldStrategy {
       return new SelectedFieldStrategy(elm);
     case 'vaadin-rich-text-editor':
       return new GenericFieldStrategy(elm);
-    case 'input': if (/^(checkbox|radio)$/.test(elm.type)) {
-      return new CheckedFieldStrategy(elm);
-    }
+    case 'input':
+      if (/^(checkbox|radio)$/.test(elm.type)) {
+        return new CheckedFieldStrategy(elm);
+      }
   }
   return elm.constructor.version ? new VaadinFieldStrategy(elm) : new GenericFieldStrategy(elm);
 }
@@ -106,10 +116,7 @@ export function getDefaultFieldStrategy(elm: any): FieldStrategy {
  * </vaadin-text-field>
  * ```
  */
-export const field = directive(<T>(
-  model: AbstractModel<T>,
-  effect?: (element: Element) => void
-) => (part: Part) => {
+export const field = directive(<T>(model: AbstractModel<T>, effect?: (element: Element) => void) => (part: Part) => {
   const propertyPart = part as PropertyPart;
   if (!(part instanceof PropertyPart) || propertyPart.committer.name !== '..') {
     throw new Error('Only supports ...="" syntax');
@@ -119,6 +126,11 @@ export const field = directive(<T>(
 
   const binderNode = getBinderNode(model);
   const fieldStrategy = binderNode.binder.getFieldStrategy(element);
+
+  const convertFieldValue = (fieldValue: any) => {
+    const fromString = (model as any)[_fromString];
+    return typeof fieldValue === 'string' && fromString ? fromString(fieldValue) : fieldValue;
+  };
 
   if (fieldStateMap.has(propertyPart)) {
     fieldState = fieldStateMap.get(propertyPart)!;
@@ -135,8 +147,7 @@ export const field = directive(<T>(
 
     const updateValueFromElement = () => {
       fieldState.value = fieldState.strategy.value;
-      const convert = typeof fieldState.value === 'string' && (model as any)[_fromString];
-      binderNode.value = convert ? convert(fieldState.value) : fieldState.value;
+      binderNode.value = convertFieldValue(fieldState.value);
       if (effect !== undefined) {
         effect.call(element, element);
       }
@@ -161,7 +172,8 @@ export const field = directive(<T>(
   }
 
   const value = binderNode.value;
-  if (value !== fieldState.value) {
+  const valueFromField = convertFieldValue(fieldState.value);
+  if (value !== valueFromField && !(Number.isNaN(value) && Number.isNaN(valueFromField))) {
     fieldState.strategy.value = fieldState.value = value;
   }
 
@@ -171,7 +183,7 @@ export const field = directive(<T>(
   }
 
   const firstError = binderNode.ownErrors ? binderNode.ownErrors[0] : undefined;
-  const errorMessage = firstError && firstError.message || '';
+  const errorMessage = (firstError && firstError.message) || '';
   if (errorMessage !== fieldState.errorMessage) {
     fieldState.strategy.errorMessage = fieldState.errorMessage = errorMessage;
   }

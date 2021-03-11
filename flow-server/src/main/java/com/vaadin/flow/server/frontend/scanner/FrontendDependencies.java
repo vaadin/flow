@@ -21,6 +21,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,9 +40,12 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -63,6 +67,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private AbstractTheme themeInstance;
     private final HashMap<String, String> packages = new HashMap<>();
     private final Set<String> visited = new HashSet<>();
+    private PwaConfiguration pwaConfiguration;
 
     /**
      * Default Constructor.
@@ -100,6 +105,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             }
             computeApplicationTheme();
             computePackages();
+            computePwaConfiguration();
             long ms = (System.nanoTime() - start) / 1000000;
             log().info("Visited {} classes. Took {} ms.", visited.size(), ms);
         } catch (ClassNotFoundException | InstantiationException
@@ -117,6 +123,16 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     @Override
     public Map<String, String> getPackages() {
         return packages;
+    }
+
+    /**
+     * Get the PWA configuration of the application.
+     *
+     * @return the PWA configuration
+     */
+    @Override
+    public PwaConfiguration getPwaConfiguration() {
+        return this.pwaConfiguration;
     }
 
     /**
@@ -236,6 +252,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             collectEndpoints(initListener);
         }
 
+        for (Class<?> appShell : getFinder().getSubTypesOf(
+                getFinder().loadClass(AppShellConfigurator.class.getName()))) {
+            collectEndpoints(appShell);
+        }
+
         for (Class<?> errorParameters : getFinder().getSubTypesOf(
                 getFinder().loadClass(HasErrorParameter.class.getName()))) {
             collectEndpoints(errorParameters);
@@ -267,13 +288,14 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 visitClass(endPoint.getLayout(), endPoint, false);
             }
             if (endPoint.getTheme() != null) {
-                visitClass(endPoint.getTheme().getName(), endPoint, true);
+                visitClass(endPoint.getTheme().getThemeClass(), endPoint, true);
             }
         }
 
         Set<ThemeData> themes = endPoints.values().stream()
                 // consider only endPoints with theme information
-                .filter(data -> data.getTheme().getName() != null
+                .filter(data -> data.getTheme().getThemeClass() != null ||
+                    (data.getTheme().getThemeName() != null && !data.getTheme().getThemeName().isEmpty())
                         || data.getTheme().isNotheme())
                 .map(EndPointData::getTheme)
                 // Remove duplicates by returning a set
@@ -281,12 +303,13 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         if (themes.size() > 1) {
             String names = endPoints.values().stream()
-                    .filter(data -> data.getTheme().getName() != null
+                    .filter(data -> data.getTheme().getThemeClass() != null ||
+                        data.getTheme().getThemeName() != null
                             || data.getTheme().isNotheme())
                     .map(data -> "found '"
                             + (data.getTheme().isNotheme()
                                     ? NoTheme.class.getName()
-                                    : data.getTheme().getName())
+                                    : data.getTheme().getThemeName())
                             + "' in '" + data.getName() + "'")
                     .collect(Collectors.joining("\n      "));
             throw new IllegalStateException(
@@ -296,21 +319,36 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         Class<? extends AbstractTheme> theme = null;
         String variant = "";
+        String themeName = "";
         if (themes.isEmpty()) {
             theme = getDefaultTheme();
         } else {
             // we have a proper theme or no-theme for the app
             ThemeData themeData = themes.iterator().next();
             if (!themeData.isNotheme()) {
+                String themeClass = themeData.getThemeClass();
+                if (!themeData.getThemeName().isEmpty() && themeClass != null) {
+                    throw new IllegalStateException(
+                        "Theme name and theme class can not both be specified. "
+                            + "Theme name uses Lumo and can not be used in combination with custom theme class.");
+                }
                 variant = themeData.getVariant();
-                theme = getFinder().loadClass(themeData.getName());
+                if (themeClass != null) {
+                    theme = getFinder().loadClass(themeClass);
+                } else {
+                    theme = getDefaultTheme();
+                    if (theme == null) {
+                        throw new IllegalStateException(
+                            "Lumo dependency needs to be available on the classpath when using a theme name.");
+                    }
+                }
+                themeName = themeData.getThemeName();
             }
-
         }
 
         // theme could be null when lumo is not found or when a NoTheme found
         if (theme != null) {
-            themeDefinition = new ThemeDefinition(theme, variant);
+            themeDefinition = new ThemeDefinition(theme, variant, themeName);
             themeInstance = new ThemeWrapper(theme);
         }
     }
@@ -368,6 +406,55 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             }
             packages.put(dependency, version);
         }
+    }
+
+    /**
+     * Find the class with a {@link com.vaadin.flow.server.PWA} annotation and
+     * read it into a {@link com.vaadin.flow.server.PwaConfiguration} object.
+     *
+     * @throws ClassNotFoundException
+     */
+    private void computePwaConfiguration() throws ClassNotFoundException {
+        FrontendAnnotatedClassVisitor pwaVisitor = new FrontendAnnotatedClassVisitor(
+                getFinder(), PWA.class.getName());
+        Class<?> appShellConfiguratorClass = getFinder().loadClass(
+                AppShellConfigurator.class.getName());
+
+        for (Class<?> hopefullyAppShellClass :
+                getFinder().getAnnotatedClasses(PWA.class.getName())) {
+                    if (!Arrays.asList(hopefullyAppShellClass.getInterfaces())
+                            .contains(appShellConfiguratorClass)) {
+                        throw new IllegalStateException(
+                                ERROR_INVALID_PWA_ANNOTATION);
+                    }
+                    pwaVisitor.visitClass(hopefullyAppShellClass.getName());
+        }
+
+        Set<String> dependencies = pwaVisitor.getValues("name");
+        if (dependencies.size() > 1) {
+            throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
+        }
+        if (dependencies.isEmpty()) {
+            this.pwaConfiguration = new PwaConfiguration();
+            return;
+        }
+
+        String name = pwaVisitor.getValue("name");
+        String shortName = pwaVisitor.getValue("shortName");
+        String description = pwaVisitor.getValue("description");
+        String backgroundColor = pwaVisitor.getValue("backgroundColor");
+        String themeColor = pwaVisitor.getValue("themeColor");
+        String iconPath = pwaVisitor.getValue("iconPath");
+        String manifestPath = pwaVisitor.getValue("manifestPath");
+        String offlinePath = pwaVisitor.getValue("offlinePath");
+        String display = pwaVisitor.getValue("display");
+        String startPath = pwaVisitor.getValue("startPath");
+        List<String> offlineResources = pwaVisitor.getValue("offlineResources");
+
+        this.pwaConfiguration = new PwaConfiguration(true, name, shortName,
+                description, backgroundColor, themeColor, iconPath,
+                manifestPath, offlinePath, display, startPath,
+                offlineResources.toArray(new String[] {}));
     }
 
     private Logger log() {

@@ -138,7 +138,7 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
             @Override
             public ThemeDefinition getThemeDefinition() {
-                return new ThemeDefinition(MyTheme.class, "");
+                return new ThemeDefinition(MyTheme.class, "", "");
             }
         };
         updater = new TaskUpdateImports(finder, deps, cf -> null, tmpRoot,

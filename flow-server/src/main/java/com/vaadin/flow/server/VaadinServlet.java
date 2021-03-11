@@ -16,19 +16,25 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.ApplicationClassLoaderAccess;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -46,8 +52,10 @@ import com.vaadin.flow.shared.JsonConstants;
  * @since 1.0
  */
 public class VaadinServlet extends HttpServlet {
-    private VaadinServletService servletService;
+    private VaadinService vaadinService;
     private StaticFileHandler staticFileHandler;
+
+    private volatile boolean isServletInitialized;
 
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
@@ -63,36 +71,89 @@ public class VaadinServlet extends HttpServlet {
     @Override
     public void init(ServletConfig servletConfig) throws ServletException {
         CurrentInstance.clearAll();
-        super.init(servletConfig);
+
         try {
-            servletService = createServletService();
-        } catch (ServiceException e) {
-            throw new ServletException("Could not initialize VaadinServlet", e);
+            /*
+             * There are plenty of reasons why the check should be done. The
+             * main reason is: init method is public which means that everyone
+             * may call this method at any time (including an app developer).
+             * But it's not supposed to be called any times any time.
+             * 
+             * This code protects weak API from being called several times so
+             * that config is reset after the very first initialization.
+             * 
+             * Normally "init" method is called only once by the servlet
+             * container. But in a specific OSGi case {@code
+             * ServletContextListener} may be called after the servlet
+             * initialized. To be able to initialize the VaadinServlet properly
+             * its "init" method is called from the {@code
+             * ServletContextListener} with the same ServletConfig instance.
+             */
+            VaadinContext vaadinContext = null;
+            if (getServletConfig() == null) {
+                isServletInitialized = true;
+                super.init(servletConfig);
+
+                vaadinContext = initializeContext();
+            }
+
+            if (getServletConfig() != servletConfig) {
+                throw new IllegalArgumentException(
+                        "Servlet config instance may not differ from the "
+                                + "instance which has been used for the initial method call");
+            }
+
+            if (vaadinContext == null) {
+                vaadinContext = new VaadinServletContext(
+                        getServletConfig().getServletContext());
+            }
+
+            if (vaadinService != null
+                    || vaadinContext.getAttribute(Lookup.class) == null) {
+                return;
+            }
+
+            try {
+                vaadinService = createServletService();
+            } catch (ServiceException e) {
+                throw new ServletException("Could not initialize VaadinServlet",
+                        e);
+            }
+
+            // Sets current service as it is needed in static file server even
+            // though there are no request and response.
+            vaadinService.setCurrentInstances(null, null);
+
+            staticFileHandler = createStaticFileHandler(vaadinService);
+
+            servletInitialized();
+        } finally {
+            CurrentInstance.clearAll();
         }
+    }
 
-        // Sets current service as it is needed in static file server even
-        // though there are no request and response.
-        servletService.setCurrentInstances(null, null);
-
-        staticFileHandler = createStaticFileHandler(servletService);
-
-        servletInitialized();
-        CurrentInstance.clearAll();
-
+    @Override
+    public ServletConfig getServletConfig() {
+        if (isServletInitialized) {
+            return super.getServletConfig();
+        }
+        return null;
     }
 
     /**
      * Creates a new instance of {@link StaticFileHandler}, that is responsible
-     * to find and serve static resources. By default it returns a
-     * {@link StaticFileServer} instance.
-     *
-     * @param servletService
-     *            the servlet service created at {@link #createServletService()}
-     * @return the file server to be used by this servlet, not <code>null</code>
+     * to find and serve static resources.
+     * 
+     * @param vaadinService
+     *            the vaadinService created at {@link #createServletService()}
+     * @return the file handler to be used by this servlet, not
+     *         <code>null</code>
      */
     protected StaticFileHandler createStaticFileHandler(
-            VaadinServletService servletService) {
-        return new StaticFileServer(servletService);
+            VaadinService vaadinService) {
+        Lookup lookup = vaadinService.getContext().getAttribute(Lookup.class);
+        return lookup.lookup(StaticFileHandlerFactory.class)
+                .createHandler(vaadinService);
     }
 
     protected void servletInitialized() throws ServletException {
@@ -133,14 +194,10 @@ public class VaadinServlet extends HttpServlet {
      */
     protected DeploymentConfiguration createDeploymentConfiguration()
             throws ServletException {
-        try {
-            return createDeploymentConfiguration(DeploymentConfigurationFactory
-                    .createInitParameters(getClass(),
-                            new VaadinServletConfig(getServletConfig())));
-        } catch (VaadinConfigurationException e) {
-            throw new ServletException(
-                    "Failed to construct DeploymentConfiguration.", e);
-        }
+        return createDeploymentConfiguration(
+                new DeploymentConfigurationFactory().createInitParameters(
+                        getClass(),
+                        new VaadinServletConfig(getServletConfig())));
     }
 
     /**
@@ -154,7 +211,11 @@ public class VaadinServlet extends HttpServlet {
      */
     protected DeploymentConfiguration createDeploymentConfiguration(
             Properties initParameters) {
-        return new DefaultDeploymentConfiguration(getClass(), initParameters);
+        VaadinServletContext context = new VaadinServletContext(
+                getServletContext());
+        return new DefaultDeploymentConfiguration(
+                ApplicationConfiguration.get(context), getClass(),
+                initParameters);
     }
 
     /**
@@ -228,8 +289,8 @@ public class VaadinServlet extends HttpServlet {
 
         CurrentInstance.clearAll();
 
-        VaadinServletRequest vaadinRequest = createVaadinRequest(request);
-        VaadinServletResponse vaadinResponse = createVaadinResponse(response);
+        VaadinRequest vaadinRequest = createVaadinRequest(request);
+        VaadinResponse vaadinResponse = createVaadinResponse(response);
         if (!ensureCookiesEnabled(vaadinRequest, vaadinResponse)) {
             return;
         }
@@ -360,8 +421,7 @@ public class VaadinServlet extends HttpServlet {
         }
     }
 
-    private VaadinServletResponse createVaadinResponse(
-            HttpServletResponse response) {
+    private VaadinResponse createVaadinResponse(HttpServletResponse response) {
         return new VaadinServletResponse(response, getService());
     }
 
@@ -383,8 +443,8 @@ public class VaadinServlet extends HttpServlet {
      *
      * @return the Vaadin service
      */
-    public VaadinServletService getService() {
-        return servletService;
+    public VaadinService getService() {
+        return vaadinService;
     }
 
     /**
@@ -398,13 +458,15 @@ public class VaadinServlet extends HttpServlet {
      * @return false if cookies are disabled, true otherwise
      * @throws IOException
      */
-    private boolean ensureCookiesEnabled(VaadinServletRequest request,
-            VaadinServletResponse response) throws IOException {
+    private boolean ensureCookiesEnabled(VaadinRequest request,
+            VaadinResponse response) throws IOException {
         if (HandlerHelper.isRequestType(request, RequestType.UIDL)) {
             // In all other but the first UIDL request a cookie should be
             // returned by the browser.
             // This can be removed if cookieless mode (#3228) is supported
-            if (request.getRequestedSessionId() == null) {
+            if (request instanceof HttpServletRequest
+                    && ((HttpServletRequest) request)
+                            .getRequestedSessionId() == null) {
                 // User has cookies disabled
                 SystemMessages systemMessages = getService().getSystemMessages(
                         HandlerHelper.findLocale(null, request), request);
@@ -470,6 +532,28 @@ public class VaadinServlet extends HttpServlet {
     @Override
     public void destroy() {
         super.destroy();
-        getService().destroy();
+        isServletInitialized = false;
+        if (getService() != null) {
+            getService().destroy();
+        }
     }
+
+    private VaadinContext initializeContext() {
+        ServletContext servletContext = getServletConfig().getServletContext();
+        VaadinServletContext vaadinServletContext = new VaadinServletContext(
+                servletContext);
+        // ensure the web application classloader is available via context
+        ApplicationClassLoaderAccess access = () -> servletContext
+                .getClassLoader();
+        vaadinServletContext.getAttribute(ApplicationClassLoaderAccess.class,
+                () -> access);
+
+        VaadinContextInitializer initializer = vaadinServletContext
+                .getAttribute(VaadinContextInitializer.class);
+        if (initializer != null) {
+            initializer.initialize(vaadinServletContext);
+        }
+        return vaadinServletContext;
+    }
+
 }

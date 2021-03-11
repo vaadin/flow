@@ -15,7 +15,8 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
+import com.vaadin.flow.server.VaadinContext;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -29,11 +30,16 @@ import java.util.Set;
  *
  * @since 1.0
  */
-public class ServletVerifier implements ClassLoaderAwareServletContainerInitializer {
+public class ServletVerifier implements VaadinServletContextStartupInitializer {
+
     @Override
-    public void process(Set<Class<?>> c, ServletContext ctx)
-            throws ServletException {
-        verifyServletVersion();
+    public void initialize(Set<Class<?>> classSet, VaadinContext context)
+            throws VaadinInitializerException {
+        try {
+            verifyServletVersion();
+        } catch (ServletException e) {
+            throw new VaadinInitializerException(e.getMessage(), e);
+        }
     }
 
     /**

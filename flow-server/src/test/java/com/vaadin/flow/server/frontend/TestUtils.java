@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.server.frontend;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -25,6 +23,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Shared code to use in the unit tests.
@@ -68,7 +68,7 @@ public final class TestUtils {
      */
     public static File getTestFolder(String name) {
         File folder = new File(getTestResource(name).getFile());
-        assert(folder.isDirectory());
+        assert (folder.isDirectory());
         return folder;
     }
 

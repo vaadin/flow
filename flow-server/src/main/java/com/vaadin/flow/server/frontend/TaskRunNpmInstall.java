@@ -44,6 +44,8 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static elemental.json.impl.JsonUtil.stringify;
@@ -91,7 +93,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      *            whether vaadin home node executable has to be used
      * @param nodeVersion
      *            The node.js version to be used when node.js is installed
-     *            automatically by Vaadin, for example <code>"v12.18.3"</code>.
+     *            automatically by Vaadin, for example <code>"v14.15.4"</code>.
      *            Use {@value FrontendTools#DEFAULT_NODE_VERSION} by default.
      * @param nodeDownloadRoot
      *            Download node.js from this URL. Handy in heavily firewalled
@@ -188,7 +190,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
             JsonObject versionsJson = getVersions(content);
             if (versionsJson == null) {
-                return null;
+                versionsJson = generateVersionsFromPackageJson();
             }
             FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
                     StandardCharsets.UTF_8);
@@ -200,6 +202,36 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 return FrontendUtils.getUnixPath(versionsPath);
             }
         }
+    }
+
+    /**
+     * If we do not have the platform versions to lock we should lock any
+     * versions in the package.json so we do not get multiple versions
+     * for defined packages.
+     *
+     * @return versions Json based on package.json
+     * @throws IOException
+     *     If reading package.json fails
+     */
+    private JsonObject generateVersionsFromPackageJson() throws IOException {
+        JsonObject versionsJson = Json.createObject();
+        // if we don't have versionsJson lock package dependency versions.
+        final JsonObject packageJson = packageUpdater.getPackageJson();
+        final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        final JsonObject devDependencies = packageJson
+            .getObject(DEV_DEPENDENCIES);
+        if (dependencies != null) {
+            for (String key : dependencies.keys()) {
+                versionsJson.put(key, dependencies.getString(key));
+            }
+        }
+        if (devDependencies != null) {
+            for (String key : devDependencies.keys()) {
+                versionsJson.put(key, devDependencies.getString(key));
+            }
+        }
+
+        return versionsJson;
     }
 
     /**
@@ -229,7 +261,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         String genDevDependenciesPath = getDevDependenciesFilePath();
         if (genDevDependenciesPath == null) {
-            packageUpdater.log().error(
+            // #9345 - locking dev dependencies doesn't work for now
+            packageUpdater.log().debug(
                     "Couldn't find dev dependencies file path from proeprties file. "
                             + "Dev dependencies won't be locked");
             return versionsJson;
@@ -254,7 +287,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
             throws IOException {
         URL resource = classFinder.getResource(path);
         if (resource == null) {
-            packageUpdater.log().warn("Couldn't find  dev dependencies file. "
+            // #9345 - locking dev dependencies doesn't work for now
+            packageUpdater.log().debug("Couldn't find  dev dependencies file. "
                     + "Dev dependencies won't be locked");
             return null;
         }
@@ -325,6 +359,13 @@ public class TaskRunNpmInstall implements FallibleCommand {
                                 + "Please report an issue, as a workaround try running project "
                                 + "with npm by setting system variable -Dvaadin.pnpm.enable=false",
                         exception);
+            }
+            try {
+                createNpmRcFile();
+            } catch (IOException exception) {
+                packageUpdater.log().warn(".npmrc generation failed; pnpm "
+                        + "package installation may require manaually passing "
+                        + "the --shamefully-hoist flag", exception);
             }
         }
 
@@ -445,6 +486,47 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
             FileUtils.writeLines(pnpmFile,
                     modifyPnpmFile(pnpmFile, versionsPath));
+        }
+    }
+
+    /*
+     * Create an .npmrc file the project directory if there is none.
+     */
+    private void createNpmRcFile() throws IOException {
+        File npmrcFile = new File(packageUpdater.npmFolder.getAbsolutePath(),
+                ".npmrc");
+        boolean shouldWrite;
+        if (npmrcFile.exists()) {
+            List<String> lines = FileUtils.readLines(npmrcFile,
+                    StandardCharsets.UTF_8);
+            if (lines.stream().anyMatch(line -> line
+                    .contains("NOTICE: this is an auto-generated file"))) {
+                shouldWrite = true;
+            } else {
+                // Looks like this file was not generated by Vaadin
+                if (lines.stream()
+                        .noneMatch(line -> line.contains("shamefully-hoist"))) {
+                    String message = "Custom .npmrc file ({}) found in "
+                            + "project; pnpm package installation may "
+                            + "require passing the --shamefully-hoist flag";
+                    packageUpdater.log().info(message, npmrcFile);
+                }
+                shouldWrite = false;
+            }
+        } else {
+            shouldWrite = true;
+        }
+        if (shouldWrite) {
+            try (InputStream content = TaskRunNpmInstall.class
+                    .getResourceAsStream("/npmrc")) {
+                if (content == null) {
+                    throw new IOException(
+                            "Couldn't find template npmrc in the classpath");
+                }
+                FileUtils.copyInputStreamToFile(content, npmrcFile);
+                packageUpdater.log()
+                        .info("Generated pnpm configuration: '{}'", npmrcFile);
+            }
         }
     }
 

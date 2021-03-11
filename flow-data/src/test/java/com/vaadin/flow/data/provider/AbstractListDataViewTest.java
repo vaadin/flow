@@ -23,11 +23,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.google.common.primitives.Chars;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.function.SerializableComparator;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.tests.data.bean.Item;
 import org.junit.Assert;
@@ -130,13 +133,15 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void setFilter_filterReset_allItemsObtained() {
+    public void setFilter_resetFilterWithDataView_dataProviderFilterNotAffected() {
         dataProvider.setFilter(item -> item.equals("first"));
         dataView.setFilter(null);
-        Assert.assertEquals("Filter reset was not applied to data size",
-                items.size(), dataView.getItemCount());
-        Assert.assertArrayEquals("Filter reset was not applied to data set",
-                items.toArray(), dataView.getItems().toArray());
+        Assert.assertEquals(
+                "Filter reset in data view impacts the data provider filter", 1,
+                dataView.getItemCount());
+        Assert.assertArrayEquals(
+                "Filter reset in data view impacts the data provider filter",
+                new String[] { "first" }, dataView.getItems().toArray());
     }
 
     @Test
@@ -148,11 +153,13 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void setSortComparator_sortingReset_sortingResetToInitial() {
+    public void setSortComparator_resetSortingWithDataView_dataProviderSortingNotAffected() {
         dataProvider.setSortComparator(String::compareTo);
         dataView.setSortComparator(null);
-        Assert.assertArrayEquals("Sorting reset was not applied to data set",
-                items.toArray(), dataView.getItems().toArray());
+        Assert.assertArrayEquals(
+                "Sorting reset in data view impacts the sorting in data provider",
+                new String[] { "first", "last", "middle" },
+                dataView.getItems().toArray());
     }
 
     @Test
@@ -160,12 +167,12 @@ public class AbstractListDataViewTest {
         dataProvider = DataProvider.ofItems("b3", "a2", "a1");
         dataView = new ListDataViewImpl(() -> dataProvider, component);
         dataView.addSortComparator(
-                (s1, s2) -> Chars.compare(s1.charAt(0), s2.charAt(0)));
+                (s1, s2) -> Character.valueOf(s1.charAt(0)).compareTo(Character.valueOf(s2.charAt(0))));
         Assert.assertEquals("Unexpected data set order (comparator 1)",
                 "a2,a1,b3",
                 dataView.getItems().collect(Collectors.joining(",")));
         dataView.addSortComparator(
-                (s1, s2) -> Chars.compare(s1.charAt(1), s2.charAt(1)));
+                (s1, s2) -> Character.valueOf(s1.charAt(1)).compareTo(Character.valueOf(s2.charAt(1))));
         Assert.assertEquals("Unexpected data set order (comparator 2)",
                 "a1,a2,b3",
                 dataView.getItems().collect(Collectors.joining(",")));
@@ -182,7 +189,7 @@ public class AbstractListDataViewTest {
     @Test
     public void addSortOrder_twoOrdersAdded_itemsSortedByCompositeOrders() {
         dataProvider = DataProvider.ofItems("b3", "a1", "a2");
-        dataView = new ListDataViewImpl(() -> dataProvider, null);
+        dataView = new ListDataViewImpl(() -> dataProvider, new TestComponent());
         dataView.addSortOrder((item) -> item.charAt(0),
                 SortDirection.DESCENDING);
         Assert.assertEquals("Unexpected data set order (order 1)", "b3,a1,a2",
@@ -894,12 +901,355 @@ public class AbstractListDataViewTest {
         dataView.getItem(items.size());
     }
 
+    @Test
+    public void dataViewCreatedAndAPIUsed_beforeSettingDataProvider_verificationPassed() {
+        // Data provider verification should pass even if the developer
+        // hasn't setup any data provider to a component. In the example
+        // below, we just create a data communicator instance but don't call
+        // 'setDataProvider' method.
+        DataCommunicator<String> dataCommunicator =
+                new DataCommunicator<>((item, jsonObject) -> {
+        }, null, null, component.getElement().getNode());
+
+        AbstractListDataView<String> dataView = new AbstractListDataView<String>(
+                dataCommunicator::getDataProvider, component,
+                (filter, sorting) -> {
+                }) {
+        };
+
+        // Check that we can add a listener even if not data provider set by
+        // user
+        dataView.addItemCountChangeListener(event -> {});
+
+        // Check that the verification is still passed during data view API
+        // usage, because the default data provider is an in-memory one
+        dataView.addItem("foo");
+    }
+
+    @Test
+    public void createListDataProviderFromArrayOfItems_addingOneItem_itemCountShouldBeIncreasedByOne() {
+        ListDataProvider<Item> localListDataProvider = DataProvider.ofItems(
+                new Item(1L, "First"), new Item(2L, "Second")
+        );
+
+        ListDataView<Item, AbstractListDataView<Item>> listDataView =
+                new ItemListDataView(() -> localListDataProvider, component);
+
+        long itemCount = listDataView.getItemCount();
+
+        listDataView.addItem(new Item(3L, "Third"));
+        Assert.assertEquals(itemCount + 1, listDataView.getItemCount());
+    }
+
+    @Test
+    public void createListDataProviderFromArrayOfItems_removingOneItem_itemCountShouldBeDecreasedByOne() {
+        Item first = new Item(1L, "First");
+        Item second = new Item(2L, "Second");
+        ListDataProvider<Item> localListDataProvider = DataProvider.ofItems(
+                first, second);
+
+        ListDataView<Item, AbstractListDataView<Item>> listDataView =
+                new ItemListDataView(() -> localListDataProvider, component);
+
+        long itemCount = listDataView.getItemCount();
+
+        listDataView.removeItem(first);
+        Assert.assertEquals(itemCount - 1, listDataView.getItemCount());
+    }
+
+    @Test
+    public void setFilter_twoComponentsHasSameDataProvider_onlyTargetComponentImpacted() {
+        TestComponent component1 = new TestComponent();
+        TestComponent component2 = new TestComponent();
+
+        ListDataViewImpl listDataView1 = new ListDataViewImpl(
+                () -> dataProvider, component1);
+
+        ListDataViewImpl listDataView2 = new ListDataViewImpl(
+                () -> dataProvider, component2);
+
+        Assert.assertEquals("Unexpected initial items count for component #1",
+                3, listDataView1.getItemCount());
+
+        Assert.assertEquals("Unexpected initial items count for component #2",
+                3, listDataView2.getItemCount());
+
+        listDataView1.setFilter(
+                item -> "middle".equals(item) || "last".equals(item));
+
+        Assert.assertNull("Unexpected delegation of filtering to data provider",
+                dataProvider.getFilter());
+
+        Assert.assertEquals(
+                "Unexpected component #1 items count after filter apply", 2,
+                listDataView1.getItemCount());
+
+        Assert.assertEquals(
+                "Unexpected component #2 items count after filter apply to component #1",
+                3, listDataView2.getItemCount());
+
+        Assert.assertArrayEquals("Unexpected items after filter apply",
+                new String[] { "middle", "last" },
+                listDataView1.getItems().toArray());
+
+        Assert.assertArrayEquals("Unexpected items after filter apply",
+                new String[] { "first", "middle", "last" },
+                listDataView2.getItems().toArray());
+
+        listDataView1.addFilter("middle"::equals);
+
+        Assert.assertEquals(
+                "Unexpected component #1 items count after filter apply", 1,
+                listDataView1.getItemCount());
+
+        Assert.assertEquals(
+                "Unexpected component #2 items count after filter apply to component #1",
+                3, listDataView2.getItemCount());
+
+        Assert.assertArrayEquals("Unexpected items after filter apply",
+                new String[] { "middle" }, listDataView1.getItems().toArray());
+
+        Assert.assertArrayEquals("Unexpected items after filter apply",
+                new String[] { "first", "middle", "last" },
+                listDataView2.getItems().toArray());
+
+        listDataView1.removeFilters();
+
+        Assert.assertEquals(
+                "Unexpected component #1 items count after filter remove", 3,
+                listDataView1.getItemCount());
+
+        Assert.assertEquals(
+                "Unexpected component #2 items count after filter remove in component #1",
+                3, listDataView2.getItemCount());
+
+        Assert.assertArrayEquals("Unexpected items after filter remove",
+                new String[] { "first", "middle", "last" },
+                listDataView1.getItems().toArray());
+
+        Assert.assertArrayEquals("Unexpected items after filter remove",
+                new String[] { "first", "middle", "last" },
+                listDataView2.getItems().toArray());
+    }
+
+    @Test
+    public void setFilter_setDataProviderFilter_bothDataViewAndDataProviderFilterAreApplied() {
+        TestComponent component = new TestComponent();
+
+        ListDataViewImpl listDataView = new ListDataViewImpl(() -> dataProvider,
+                component);
+
+        listDataView.setFilter(
+                item -> "middle".equals(item) || "last".equals(item));
+
+        dataProvider.setFilter("middle"::equals);
+
+        Assert.assertArrayEquals(
+                "Unexpected items after applying filter to both component"
+                        + " and data provider",
+                new String[] { "middle" }, listDataView.getItems().toArray());
+
+        dataProvider.clearFilters();
+
+        Assert.assertArrayEquals(
+                "Unexpected items after clearing data " + "provider's filter",
+                new String[] { "middle", "last" },
+                listDataView.getItems().toArray());
+    }
+
+    @Test
+    public void setSortComparator_twoComponentsHasSameDataProvider_onlyTargetComponentImpacted() {
+        TestComponent component1 = new TestComponent();
+        TestComponent component2 = new TestComponent();
+
+        ListDataProvider<Item> dataProvider = DataProvider.ofItems(
+                new Item(1L, "baz"), new Item(2L, "foo"), new Item(1L, "bar"));
+
+        ItemListDataView listDataView1 = new ItemListDataView(
+                () -> dataProvider, component1);
+
+        ItemListDataView listDataView2 = new ItemListDataView(
+                () -> dataProvider, component2);
+
+        listDataView1.setSortComparator(
+                (item1, item2) -> Long.compare(item1.getId(), item2.getId()));
+
+        Assert.assertNull("Unexpected delegation of sorting to data provider",
+                dataProvider.getSortComparator());
+
+        Assert.assertArrayEquals("Unexpected items sorting for component #1",
+                new Long[] { 1L, 1L, 2L },
+                listDataView1.getItems().map(Item::getId).toArray());
+
+        Assert.assertArrayEquals("Unexpected items sorting for component #2",
+                new Long[] { 1L, 2L, 1L },
+                listDataView2.getItems().map(Item::getId).toArray());
+
+        listDataView1.addSortComparator((item1, item2) -> item1.getValue()
+                .compareToIgnoreCase(item2.getValue()));
+
+        Assert.assertArrayEquals("Unexpected items sorting for component #1",
+                new String[] { "bar", "baz", "foo" },
+                listDataView1.getItems().map(Item::getValue).toArray());
+
+        Assert.assertArrayEquals("Unexpected items sorting for component #2",
+                new String[] { "baz", "foo", "bar" },
+                listDataView2.getItems().map(Item::getValue).toArray());
+
+        listDataView1.removeSorting();
+
+        Assert.assertArrayEquals("Unexpected items sorting for component #1",
+                new Item[] { new Item(1L, "baz"), new Item(2L, "foo"),
+                        new Item(1L, "bar") },
+                listDataView1.getItems().toArray());
+
+        Assert.assertArrayEquals("Unexpected items sorting for component #2",
+                new Item[] { new Item(1L, "baz"), new Item(2L, "foo"),
+                        new Item(1L, "bar") },
+                listDataView2.getItems().toArray());
+    }
+
+    @Test
+    public void setSortOrder_twoComponentsHasSameDataProvider_onlyTargetComponentImpacted() {
+        TestComponent component1 = new TestComponent();
+        TestComponent component2 = new TestComponent();
+
+        ListDataProvider<Item> dataProvider = DataProvider.ofItems(
+                new Item(1L, "baz"), new Item(2L, "foo"), new Item(1L, "bar"));
+
+        ItemListDataView listDataView1 = new ItemListDataView(
+                () -> dataProvider, component1);
+
+        ItemListDataView listDataView2 = new ItemListDataView(
+                () -> dataProvider, component2);
+
+        listDataView1.setSortOrder(Item::getId, SortDirection.ASCENDING);
+
+        Assert.assertArrayEquals("Unexpected items sorting for component #1",
+                new Long[] { 1L, 1L, 2L },
+                listDataView1.getItems().map(Item::getId).toArray());
+
+        Assert.assertArrayEquals("Unexpected items sorting for component #2",
+                new Long[] { 1L, 2L, 1L },
+                listDataView2.getItems().map(Item::getId).toArray());
+
+        listDataView1.addSortOrder(Item::getValue, SortDirection.ASCENDING);
+
+        Assert.assertArrayEquals("Unexpected items sorting for component #1",
+                new String[] { "bar", "baz", "foo" },
+                listDataView1.getItems().map(Item::getValue).toArray());
+
+        Assert.assertArrayEquals("Unexpected items sorting for component #2",
+                new String[] { "baz", "foo", "bar" },
+                listDataView2.getItems().map(Item::getValue).toArray());
+
+        listDataView1.removeSorting();
+
+        Assert.assertArrayEquals("Unexpected items sorting for component #1",
+                new Item[] { new Item(1L, "baz"), new Item(2L, "foo"),
+                        new Item(1L, "bar") },
+                listDataView1.getItems().toArray());
+
+        Assert.assertArrayEquals("Unexpected items sorting for component #2",
+                new Item[] { new Item(1L, "baz"), new Item(2L, "foo"),
+                        new Item(1L, "bar") },
+                listDataView2.getItems().toArray());
+    }
+
+    @Test
+    public void setSortComparator_setDataProviderSorting_bothDataViewAndDataProviderSortingAreApplied() {
+        TestComponent component = new TestComponent();
+
+        ListDataProvider<Item> dataProvider = DataProvider.ofItems(
+                new Item(2L, "bar"), new Item(3L, "foo"), new Item(1L, "bar"));
+
+        ItemListDataView listDataView = new ItemListDataView(
+                () -> dataProvider, component);
+
+        listDataView.setSortOrder(Item::getValue, SortDirection.ASCENDING);
+
+        Assert.assertArrayEquals(
+                "Unexpected items after applying filter to both component"
+                        + " and data provider",
+                new Item[] { new Item(2L, "bar"), new Item(1L, "bar"),
+                        new Item(3L, "foo") },
+                listDataView.getItems().toArray());
+
+        dataProvider.setSortOrder(Item::getId, SortDirection.ASCENDING);
+
+        Assert.assertArrayEquals(
+                "Unexpected items after applying filter to both component"
+                        + " and data provider",
+                new Item[] { new Item(1L, "bar"), new Item(2L, "bar"),
+                        new Item(3L, "foo") },
+                listDataView.getItems().toArray());
+
+        dataProvider.setSortComparator(null);
+
+        Assert.assertArrayEquals(
+                "Unexpected items after applying filter to both component"
+                        + " and data provider",
+                new Item[] { new Item(2L, "bar"), new Item(1L, "bar"),
+                        new Item(3L, "foo") },
+                listDataView.getItems().toArray());
+    }
+
+    @Test
+    public void setFilterOrSorting_filterOrSortingUpdated_filterOrSortingChangedCallbackInvoked() {
+        Collection<String> items = Arrays.asList("foo", "bar", "baz");
+
+        AtomicReference<SerializablePredicate<String>> filtering =
+                new AtomicReference<>();
+        AtomicReference<SerializableComparator<String>> sorting =
+                new AtomicReference<>();
+
+        ListDataViewImpl listDataView = new ListDataViewImpl(() -> dataProvider, component,
+                (filter, sort) -> {
+                    filtering.set(filter);
+                    sorting.set(sort);
+                });
+
+        listDataView.setFilter("bar"::equals);
+
+        Assert.assertNotNull(filtering.get());
+        Assert.assertArrayEquals(new String [] {"bar"},
+                items.stream().filter(filtering.get()).toArray());
+        Assert.assertNull(sorting.get());
+
+        listDataView.removeFilters();
+        listDataView.setSortOrder(String::toLowerCase, SortDirection.ASCENDING);
+        Assert.assertNotNull(sorting.get());
+        Assert.assertNull(filtering.get());
+        Assert.assertArrayEquals(new String [] {"bar", "baz", "foo"},
+                items.stream().sorted(sorting.get()).toArray());
+
+        listDataView.setSortComparator(null);
+        Assert.assertNull(sorting.get());
+    }
+
+    @Test
+    public void filterOrSortingChangedCallback_emptyCallbackProvided_throws() {
+        exceptionRule.expect(NullPointerException.class);
+        exceptionRule.expectMessage("Filter or Sorting Change Callback cannot be empty");
+        new ListDataViewImpl(() -> dataProvider, component, null);
+    }
+
     private static class ListDataViewImpl extends AbstractListDataView<String> {
 
         public ListDataViewImpl(
-                SerializableSupplier<DataProvider<String, ?>> dataProviderSupplier,
+                SerializableSupplier<? extends DataProvider<String, ?>> dataProviderSupplier,
                 Component component) {
-            super(dataProviderSupplier, component);
+            this(dataProviderSupplier, component, (filter, sorting) -> {
+                // no-op for test purposes
+            });
+        }
+
+        public ListDataViewImpl(
+                SerializableSupplier<? extends DataProvider<String, ?>> dataProviderSupplier,
+                Component component,
+                SerializableBiConsumer<SerializablePredicate<String>,
+                        SerializableComparator<String>> filterOrSortingChangedCallback) {
+            super(dataProviderSupplier, component, filterOrSortingChangedCallback);
         }
     }
 
@@ -908,7 +1258,16 @@ public class AbstractListDataViewTest {
         public ItemListDataView(
                 SerializableSupplier<DataProvider<Item, ?>> dataProviderSupplier,
                 Component component) {
-            super(dataProviderSupplier, component);
+            super(dataProviderSupplier, component, (filter, sorting) -> {
+                // no-op for test purposes
+            });
+        }
+
+        public ItemListDataView(
+                SerializableSupplier<? extends DataProvider<Item, ?>> dataProviderSupplier,
+                Component component,
+                SerializableBiConsumer<SerializablePredicate<Item>, SerializableComparator<Item>> filterOrSortingChangedCallback) {
+            super(dataProviderSupplier, component, filterOrSortingChangedCallback);
         }
     }
 

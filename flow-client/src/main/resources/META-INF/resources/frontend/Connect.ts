@@ -1,4 +1,6 @@
-/* tslint:disable:max-classes-per-file */
+/* eslint-disable max-classes-per-file */
+import { ConnectionIndicator } from './ConnectionIndicator';
+import { ConnectionState } from './ConnectionState';
 
 const $wnd = window as any;
 $wnd.Vaadin = $wnd.Vaadin || {};
@@ -16,17 +18,9 @@ interface ConnectExceptionData {
 
 const throwConnectException = (errorJson: ConnectExceptionData) => {
   if (errorJson.validationErrorData) {
-    throw new EndpointValidationError(
-      errorJson.message,
-      errorJson.validationErrorData,
-      errorJson.type
-    );
+    throw new EndpointValidationError(errorJson.message, errorJson.validationErrorData, errorJson.type);
   } else {
-    throw new EndpointError(
-      errorJson.message,
-      errorJson.type,
-      errorJson.detail
-    );
+    throw new EndpointError(errorJson.message, errorJson.type, errorJson.detail);
   }
 };
 
@@ -35,7 +29,7 @@ const throwConnectException = (errorJson: ConnectExceptionData) => {
  * @param response The response to assert.
  * @ignore
  */
-const assertResponseIsOk = async(response: Response): Promise<void> => {
+const assertResponseIsOk = async (response: Response): Promise<void> => {
   if (!response.ok) {
     const errorText = await response.text();
     let errorJson: ConnectExceptionData | null;
@@ -51,10 +45,7 @@ const assertResponseIsOk = async(response: Response): Promise<void> => {
     } else if (errorText !== null && errorText.length > 0) {
       throw new EndpointResponseError(errorText, response);
     } else {
-      throw new EndpointError(
-        'expected "200 OK" response, but got ' +
-        `${response.status} ${response.statusText}`
-      );
+      throw new EndpointError(`expected "200 OK" response, but got ${response.status} ${response.statusText}`);
     }
   }
 };
@@ -79,7 +70,7 @@ export class EndpointResponseError extends Error {
 }
 
 /**
- * An exception that gets thrown when the Vaadin Connect backend responds
+ * An exception that gets thrown when the Vaadin backend responds
  * with not ok status.
  */
 export class EndpointError extends Error {
@@ -107,7 +98,7 @@ export class EndpointError extends Error {
 }
 
 /**
- * An exception that gets thrown if Vaadin Connect backend responds
+ * An exception that gets thrown if Vaadin endpoint responds
  * with non-ok status and provides additional info
  * on the validation errors occurred.
  */
@@ -126,8 +117,7 @@ export class EndpointValidationError extends EndpointError {
    * @param validationErrorData the `validationErrorData` property value
    * @param type the `type` property value
    */
-  constructor(message: string, validationErrorData: ValidationErrorData[],
-              type?: string) {
+  constructor(message: string, validationErrorData: ValidationErrorData[], type?: string) {
     super(message, type, validationErrorData);
     this.validationErrorMessage = message;
     this.detail = null;
@@ -173,11 +163,7 @@ export interface ConnectClientOptions {
   middlewares?: Middleware[];
 }
 
-/**
- * An object with the call arguments and the related Request instance.
- * See also {@link ConnectClient.call | the call() method in ConnectClient}.
- */
-export interface MiddlewareContext {
+export interface EndpointCallMetaInfo {
   /**
    * The endpoint name.
    */
@@ -192,7 +178,13 @@ export interface MiddlewareContext {
    * Optional object with method call arguments.
    */
   params?: any;
+}
 
+/**
+ * An object with the call arguments and the related Request instance.
+ * See also {@link ConnectClient.call | the call() method in ConnectClient}.
+ */
+export interface MiddlewareContext extends EndpointCallMetaInfo {
   /**
    * The Fetch API Request object reflecting the other properties.
    */
@@ -204,9 +196,7 @@ export interface MiddlewareContext {
  * or makes the actual request.
  * @param context The information about the call and request
  */
-export type MiddlewareNext = (context: MiddlewareContext) =>
-  Promise<Response> | Response;
-
+export type MiddlewareNext = (context: MiddlewareContext) => Promise<Response> | Response;
 
 /**
  * An interface that allows defining a middleware as a class.
@@ -223,8 +213,7 @@ export interface MiddlewareClass {
  * An async callback function that can intercept the request and response
  * of a call.
  */
-type MiddlewareFunction = (context: MiddlewareContext, next: MiddlewareNext) =>
-  Promise<Response> | Response;
+type MiddlewareFunction = (context: MiddlewareContext, next: MiddlewareNext) => Promise<Response> | Response;
 
 /**
  * An async callback that can intercept the request and response
@@ -235,7 +224,7 @@ export type Middleware = MiddlewareClass | MiddlewareFunction;
 /**
  * Vaadin Connect client class is a low-level network calling utility. It stores
  * a prefix and facilitates remote calls to endpoint class methods
- * on the Vaadin Connect backend.
+ * on the Vaadin backend.
  *
  * Example usage:
  *
@@ -256,7 +245,7 @@ export type Middleware = MiddlewareClass | MiddlewareFunction;
  */
 export class ConnectClient {
   /**
-   * The Vaadin Connect backend prefix
+   * The Vaadin endpoint prefix
    */
   prefix: string = '/connect';
 
@@ -276,6 +265,22 @@ export class ConnectClient {
     if (options.middlewares) {
       this.middlewares = options.middlewares;
     }
+
+    // add connection indicator to DOM
+    ConnectionIndicator.create();
+
+    // Listen to browser online/offline events and update the loading indicator accordingly.
+    // Note: if Flow.ts is loaded, it instead handles the state transitions.
+    $wnd.addEventListener('online', () => {
+      if (!this.isFlowLoaded()) {
+        $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
+      }
+    });
+    $wnd.addEventListener('offline', () => {
+      if (!this.isFlowLoaded()) {
+        $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
+      }
+    });
   }
 
   /**
@@ -289,21 +294,15 @@ export class ConnectClient {
    * @param options Optional client options for this call.
    * @returns {} Decoded JSON response data.
    */
-  async call(
-    endpoint: string,
-    method: string,
-    params?: any,
-  ): Promise<any> {
+  async call(endpoint: string, method: string, params?: any): Promise<any> {
     if (arguments.length < 2) {
-      throw new TypeError(
-        `2 arguments required, but got only ${arguments.length}`
-      );
+      throw new TypeError(`2 arguments required, but got only ${arguments.length}`);
     }
 
     const headers: Record<string, string> = {
-      'Accept': 'application/json',
+      Accept: 'application/json',
       'Content-Type': 'application/json',
-      'X-CSRF-Token': $wnd.Vaadin.TypeScript && $wnd.Vaadin.TypeScript.csrfToken || ''
+      'X-CSRF-Token': ($wnd.Vaadin.TypeScript && $wnd.Vaadin.TypeScript.csrfToken) || ''
     };
 
     // helper to keep the undefined value in object after JSON.stringify
@@ -314,14 +313,13 @@ export class ConnectClient {
         }
       }
       return obj;
-    }
+    };
 
-    const request = new Request(
-       `${this.prefix}/${endpoint}/${method}`, {
-         method: 'POST',
-         headers,
-         body: params !== undefined ? JSON.stringify(nullForUndefined(params)) : undefined
-        });
+    const request = new Request(`${this.prefix}/${endpoint}/${method}`, {
+      method: 'POST',
+      headers,
+      body: params !== undefined ? JSON.stringify(nullForUndefined(params)) : undefined
+    });
 
     // The middleware `context`, includes the call arguments and the request
     // constructed from them
@@ -336,27 +334,30 @@ export class ConnectClient {
     // response handling should come last after the other middlewares are done
     // with processing the response. That is why this middleware is first
     // in the final middlewares array.
-    const responseHandlerMiddleware: Middleware =
-      async(
-        context: MiddlewareContext,
-        next: MiddlewareNext
-      ): Promise<Response> => {
-        const response = await next(context);
-        await assertResponseIsOk(response);
-        return response.json();
-      };
+    const responseHandlerMiddleware: Middleware = async (
+      context: MiddlewareContext,
+      next: MiddlewareNext
+    ): Promise<Response> => {
+      const response = await next(context);
+      await assertResponseIsOk(response);
+      return response.json();
+    };
 
     // The actual fetch call itself is expressed as a middleware
     // chain item for our convenience. Always having an ending of the chain
     // this way makes the folding down below more concise.
-    const fetchNext: MiddlewareNext =
-      async(context: MiddlewareContext): Promise<Response> => {
-        this.loading(true);
-        return fetch(context.request).then(response => {
-          this.loading(false);
+    const fetchNext: MiddlewareNext = async (context: MiddlewareContext): Promise<Response> => {
+      $wnd.Vaadin.connectionState.loadingStarted();
+      return fetch(context.request)
+        .then((response) => {
+          $wnd.Vaadin.connectionState.loadingFinished();
           return response;
+        })
+        .catch((error) => {
+          $wnd.Vaadin.connectionState.loadingFailed();
+          return Promise.reject(error);
         });
-      };
+    };
 
     // Assemble the final middlewares array from internal
     // and external middlewares
@@ -368,10 +369,10 @@ export class ConnectClient {
         // Compose and return the new chain step, that takes the context and
         // invokes the current middleware with the context and the further chain
         // as the next argument
-        return (context => {
-          if(typeof middleware === 'function'){
+        return ((context) => {
+          if (typeof middleware === 'function') {
             return middleware(context, next);
-          }else {
+          } else {
             return (middleware as MiddlewareClass).invoke(context, next);
           }
         }) as MiddlewareNext;
@@ -384,137 +385,7 @@ export class ConnectClient {
     return chain(initialContext);
   }
 
-  // Re-use flow loading indicator when fetching endpoints
-  private loading(action: boolean) {
-    if ($wnd.Vaadin.Flow?.loading) {
-      $wnd.Vaadin.Flow.loading(action);
-    }
-  }
-}
-
-export interface LoginResult {
-  token?: string;
-  error: boolean;
-  errorTitle: string;
-  errorMessage: string;
-}
-
-export interface LoginOptions{
-  loginProcessingUrl?: string;
-  failureUrl?: string;
-  defaultSuccessUrl?: string;
-}
-
-export interface LogoutOptions{
-  logoutUrl?: string;
-}
-
-/**
- * A helper method for Spring Security based form login.
- * @param username 
- * @param password 
- * @param options defines additional options, e.g, the loginProcessingUrl, failureUrl, defaultSuccessUrl etc.
- */
-export async function login(username: string, password: string, options?: LoginOptions): Promise<LoginResult> {
-  let result;
-  try {
-    const data = new FormData();
-    data.append('username', username);
-    data.append('password', password);
-
-    const loginProcessingUrl = options && options.loginProcessingUrl ? options.loginProcessingUrl : '/login'; 
-    const response = await fetch(loginProcessingUrl, {method: 'POST', body: data});
-
-    const failureUrl = options && options.failureUrl ? options.failureUrl : '/login?error'; 
-    const defaultSuccessUrl = options && options.defaultSuccessUrl ? options.defaultSuccessUrl : '/'
-    // this assumes the default Spring Security form login configuration (handler URL and responses)
-    if (response.ok && response.redirected && response.url.endsWith(failureUrl)) {
-      result = {
-        error: true,
-        errorTitle: 'Incorrect username or password.',
-        errorMessage: 'Check that you have entered the correct username and password and try again.'
-      };
-    } else if (response.ok && response.redirected && response.url.endsWith(defaultSuccessUrl)) {
-      // TODO: find a more efficient way to get a new CSRF token
-      // parsing the full response body just to get a token may be wasteful
-      const token = getCsrfTokenFromResponseBody(await response.text());
-      if (token) {
-        (window as any).Vaadin.TypeScript = (window as any).Vaadin.TypeScript || {};
-        (window as any).Vaadin.TypeScript.csrfToken = token;
-        result = {
-          error: false,
-          errorTitle: '',
-          errorMessage: '',
-          token
-        };
-      }
-    }
-  } catch (e) {
-    result = {
-      error: true,
-      errorTitle: e.name,
-      errorMessage: e.message
-    }
-  }
-
-  return result || {
-    error: true,
-    errorTitle: 'Error',
-    errorMessage: 'Something went wrong when trying to login.',
-  };
-}
-
-/**
- * A helper method for Spring Security based form logout
- * @param options defines additional options, e.g, the logoutUrl.
- */
-export async function logout(options?: LogoutOptions) {
-  // this assumes the default Spring Security logout configuration (handler URL)
-  const logoutUrl = options && options.logoutUrl ? options.logoutUrl : '/logout';
-  const response = await fetch(logoutUrl);
-
-  // TODO: find a more efficient way to get a new CSRF token
-  // parsing the full response body just to get a token may be wasteful
-  const token = getCsrfTokenFromResponseBody(await response.text());
-  (window as any).Vaadin.TypeScript.csrfToken = token;
-}
-
-const getCsrfTokenFromResponseBody = (body: string): string | undefined => {
-  const match = body.match(/window\.Vaadin = \{TypeScript: \{"csrfToken":"([0-9a-zA-Z\-]{36})"}};/i);
-  return match ? match[1] : undefined;
-}
-
-type EndpointCallContinue = (token: string) => void;
-
-/**
- * It defines what to do when it detects a session is invalid. E.g., 
- * show a login view.
- * It takes an <code>EndpointCallContinue</code> parameter, which can be 
- * used to continue the endpoint call.  
- */
-export type OnInvalidSessionCallback = (continueFunc: EndpointCallContinue) => void;
-
-/**
- * A helper class for handling invalid sessions during an endpoint call.
- * E.g., you can use this to show user a login page when the session has expired.
- */
-export class InvalidSessionMiddleware implements MiddlewareClass {
-  constructor(private onInvalidSessionCallback: OnInvalidSessionCallback) {}
-
-  async invoke(context: MiddlewareContext, next: MiddlewareNext): Promise<Response> {
-    const clonedContext = { ...context };
-    clonedContext.request = context.request.clone();
-    const response = await next(context);
-    if (response.status === 401) {
-      return new Promise(async resolve => {
-        const continueFunc = (token: string) => {
-          clonedContext.request.headers.set('X-CSRF-Token', token);
-          resolve(next(clonedContext));
-        }
-        this.onInvalidSessionCallback(continueFunc);
-      });
-    } else {
-      return response;
-    }
+  private isFlowLoaded(): boolean {
+    return $wnd.Vaadin.Flow?.clients?.TypeScript !== undefined;
   }
 }

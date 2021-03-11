@@ -25,10 +25,14 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
 import javax.servlet.ServletContext;
@@ -37,6 +41,7 @@ import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.MultipartStream;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -342,6 +347,183 @@ public class ResponseWriterTest {
         assertResponse(fileJsContents);
     }
 
+    @Test
+    public void writeByteRangeFromStart() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "bytes=0-1"));
+
+        assertResponse(Arrays.copyOfRange(fileJsContents, 0, 2));
+        assertResponseHeaders(
+                new Pair<>("Accept-Ranges", "bytes"),
+                new Pair<>("Content-Range",
+                        "bytes 0-1/" + fileJsContents.length));
+        Assert.assertEquals(2L, responseContentLength.get());
+        assertStatus(206);
+    }
+
+    @Test
+    public void writeByteRangeSubset() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "bytes=10-11"));
+        assertResponse(Arrays.copyOfRange(fileJsContents, 10, 12));
+        assertResponseHeaders(
+                new Pair<>("Accept-Ranges", "bytes"),
+                new Pair<>("Content-Range",
+                        "bytes 10-11/" + fileJsContents.length));
+        Assert.assertEquals(2L, responseContentLength.get());
+        assertStatus(206);
+    }
+
+    @Test
+    public void writeByteRangeStartOmitted() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "bytes=-10"));
+        assertResponse(
+                Arrays.copyOfRange(fileJsContents, 0, 11));
+        assertResponseHeaders(
+                new Pair<>("Accept-Ranges", "bytes"),
+                new Pair<>("Content-Range",
+                        "bytes 0-10/" + fileJsContents.length));
+        Assert.assertEquals(11L, responseContentLength.get());
+        assertStatus(206);
+    }
+
+    @Test
+    public void writeByteRangeEndOmitted() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "bytes=10-"));
+        assertResponse(
+                Arrays.copyOfRange(fileJsContents, 10, fileJsContents.length));
+        assertResponseHeaders(
+                new Pair<>("Accept-Ranges", "bytes"),
+                new Pair<>("Content-Range",
+                        "bytes 10-15/" + fileJsContents.length));
+        Assert.assertEquals(6L, responseContentLength.get());
+        assertStatus(206);
+    }
+
+    @Test
+    public void writeByteRangePastFileSize() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "bytes=10-100000"));
+        assertResponse(
+                Arrays.copyOfRange(fileJsContents, 10, fileJsContents.length));
+        assertResponseHeaders(
+                new Pair<>("Accept-Ranges", "bytes"),
+                new Pair<>("Content-Range",
+                        "bytes 10-15/" + fileJsContents.length));
+        Assert.assertEquals(6L, responseContentLength.get());
+        assertStatus(206);
+    }
+
+    @Test
+    public void writeByteRangeEmpty() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "bytes=10-9"));
+        assertResponse(new byte[] {});
+        assertStatus(416);
+    }
+
+    @Test
+    public void writeByteRangeMalformed() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "f-d-d___"));
+        assertResponse(new byte[] {});
+        assertStatus(416);
+    }
+
+    @Test
+    public void writeByteRangeBothEndsOpen() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "-"));
+        assertResponse(new byte[] {});
+        assertStatus(416);
+    }
+
+    @Test
+    public void writeByteRangeMultiPartSequential() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "bytes=1-4, 5-6, 10-12"));
+        // "File.js contents"
+        // ^0123456789ABCDEF^
+        assertMultipartResponse(PATH_JS, Arrays.asList(
+                new Pair<>(new String[] {"Content-Range: bytes 1-4/16"},
+                        "ile.".getBytes()),
+                new Pair<>(new String[] {"Content-Range: bytes 5-6/16"},
+                        "js".getBytes()),
+                new Pair<>(new String[] {"Content-Range: bytes 10-12/16"},
+                        "nte".getBytes())));
+        assertStatus(206);
+    }
+
+    @Test
+    public void writeByteRangeMultiPartNonSequential() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "bytes=10-12, 1-4, 5-6"));
+        // "File.js contents"
+        // ^0123456789ABCDEF^
+        assertMultipartResponse(PATH_JS, Arrays.asList(
+                new Pair<>(new String[] {"Content-Range: bytes 10-12/16"},
+                        "nte".getBytes()),
+                new Pair<>(new String[] {"Content-Range: bytes 1-4/16"},
+                        "ile.".getBytes()),
+                new Pair<>(new String[] {"Content-Range: bytes 5-6/16"},
+                        "js".getBytes())));
+        assertStatus(206);
+    }
+
+    @Test
+    public void writeByteRangeMultiPartOverlapping() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "bytes=0-15, 1-4"));
+        // "File.js contents"
+        // ^0123456789ABCDEF^
+        assertMultipartResponse(PATH_JS, Arrays.asList(
+                new Pair<>(new String[] {"Content-Range: bytes 0-15/16"},
+                        "File.js contents".getBytes()),
+                new Pair<>(new String[] {"Content-Range: bytes 1-4/16"},
+                        "ile.".getBytes())));
+        assertStatus(206);
+    }
+
+    @Test
+    public void writeByteRangeMultiPartTooManyRequested() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "bytes=0-0, 0-0, 1-1, 2-2, 3-3, 4-4, 5-5, 6-6, 7-7, 8-8, 9-9, 10-10, 11-11, 12-12, 13-13, 14-14, 15-15, 16-16"));
+        // "File.js contents"
+        // ^0123456789ABCDEF^
+        assertMultipartResponse(PATH_JS, Arrays.asList(
+                new Pair<>(new String[]{"Content-Range: bytes 0-0/16"}, "F".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 0-0/16"}, "F".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 1-1/16"}, "i".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 2-2/16"}, "l".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 3-3/16"}, "e".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 4-4/16"}, ".".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 5-5/16"}, "j".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 6-6/16"}, "s".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 7-7/16"}, " ".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 8-8/16"}, "c".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 9-9/16"}, "o".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 10-10/16"}, "n".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 11-11/16"}, "t".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 12-12/16"}, "e".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 13-13/16"}, "n".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 14-14/16"}, "t".getBytes())));
+        assertStatus(206);
+    }
+
+    @Test
+    public void writeByteRangeMultiPartTooManyOverlappingRequested() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "bytes=2-4, 0-4, 3-14"));
+        // "File.js contents"
+        // ^0123456789ABCDEF^
+        assertMultipartResponse(PATH_JS, Arrays.asList(
+                new Pair<>(new String[]{"Content-Range: bytes 2-4/16"}, "le.".getBytes()),
+                new Pair<>(new String[]{"Content-Range: bytes 0-4/16"}, "File.".getBytes())));
+        assertStatus(206);
+    }
+
     private void assertResponse(byte[] expectedResponse) throws IOException {
         assertResponse(PATH_JS, expectedResponse);
     }
@@ -355,6 +537,64 @@ public class ResponseWriterTest {
         Assert.assertArrayEquals(expectedResponse, out.getOutput());
         Assert.assertEquals(expectedResponse.length,
                 responseContentLength.get());
+    }
+
+    private void assertMultipartResponse(String path,
+            List<Pair<String[], byte[]>> expectedHeadersAndBytes)
+            throws IOException {
+        CapturingServletOutputStream out = new CapturingServletOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(out);
+
+        AtomicReference<String> contentType = new AtomicReference<>(null);
+        Mockito.doAnswer(invocation -> {
+            contentType.set((String) invocation.getArguments()[0]);
+            return null;
+        }).when(response).setContentType(Matchers.anyString());
+
+        responseWriter.writeResponseContents(path, pathToUrl.get(path),
+                request, response);
+        final byte[] output = out.getOutput();
+
+        Assert.assertNotNull(contentType.get());
+        Assert.assertTrue(contentType.get()
+                .startsWith("multipart/byteranges; boundary="));
+
+        String boundary = contentType.get()
+                .substring(contentType.get().indexOf("=") + 1);
+
+        @SuppressWarnings("deprecation")
+        MultipartStream mps = new MultipartStream(
+                new ByteArrayInputStream(output), boundary.getBytes());
+        for (Pair<String[], byte[]> expected : expectedHeadersAndBytes) {
+            String[] expectedHeaders = expected.getFirst();
+            String actualHeaders = mps.readHeaders();
+            for (String expectedHeader : expectedHeaders) {
+                Assert.assertTrue(
+                        String.format("Headers:\n%s\ndid not contain:\n%s",
+                                actualHeaders, expectedHeader),
+                        actualHeaders.contains(expectedHeader));
+            }
+            byte[] expectedBytes = expected.getSecond();
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            mps.readBodyData(outputStream);
+            byte[] bytes = outputStream.toByteArray();
+            Assert.assertArrayEquals(expectedBytes, bytes);
+        }
+
+        // check that there are no excess parts
+        try {
+            mps.readHeaders();
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            mps.readBodyData(outputStream);
+            Assert.assertTrue("excess bytes in multipart response",
+                    outputStream.toByteArray().length == 0);
+        } catch (IOException ioe) {
+            // all is well, stream ended
+        }
+    }
+
+    private void assertStatus(int status) {
+        Mockito.verify(response).setStatus(status);
     }
 
     private void makePathsAvailable(String... paths)
@@ -375,8 +615,30 @@ public class ResponseWriterTest {
             }
             ClassLoader classLoader = Mockito.mock(ClassLoader.class);
             Mockito.when(servletContext.getClassLoader()).thenReturn(classLoader);
-            Mockito.when(classLoader.getResource("META-INF" + path)).thenReturn(url);
+            Mockito.when(classLoader.getResource("META-INF/VAADIN/webapp" + path)).thenReturn(url);
         }
+    }
+
+    @SafeVarargs
+    private final void assertResponseHeaders(Pair<String, String>... headers) {
+        for (Pair<String, String> header : headers) {
+            Mockito.verify(response).setHeader(header.getFirst(),
+                    header.getSecond());
+        }
+    }
+
+    @SafeVarargs
+    private final void mockRequestHeaders(Pair<String, String>... headers) {
+        for (Pair<String, String> header : headers) {
+            Mockito.when(request.getHeader(header.getFirst()))
+                    .thenReturn(header.getSecond());
+            Mockito.when(request.getHeaders(header.getFirst()))
+                    .thenReturn(Collections.enumeration(
+                            Collections.singleton(header.getSecond())));
+        }
+        Mockito.when(request.getHeaderNames())
+                .thenReturn(Collections.enumeration(Arrays.stream(headers)
+                        .map(Pair::getFirst).collect(Collectors.toList())));
     }
 
     private static byte[] gzip(byte[] input) {

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>flow-project</artifactId>
     <name>Flow</name>
     <packaging>pom</packaging>
-    <version>5.0-SNAPSHOT</version>
+    <version>7.0-SNAPSHOT</version>
 
     <parent>
         <groupId>com.vaadin</groupId>
@@ -18,6 +18,8 @@
     <modules>
         <module>flow</module>
         <module>flow-server</module>
+        <module>flow-polymer-template</module>
+        <module>flow-lit-template</module>
         <module>flow-push</module>
         <module>flow-data</module>
         <module>flow-client</module>
@@ -29,9 +31,10 @@
         <module>flow-tests</module>
         <module>flow-server-production-mode</module>
         <module>flow-component-demo-helpers</module>
-        <module>flow-maven-plugin</module>
+        <module>flow-plugins</module>
         <module>flow-test-generic</module>
         <module>flow-bom</module>
+        <module>fusion-endpoint</module>
         <module>build-tools</module>
     </modules>
 
@@ -121,18 +124,18 @@
             ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}
         </osgi.bundle.version>
         <bnd.version>3.3.0</bnd.version>
-        <osgi.core.version>6.0.0</osgi.core.version>
-        <osgi.compendium.version>6.0.0</osgi.compendium.version>
+        <osgi.core.version>7.0.0</osgi.core.version>
+        <osgi.compendium.version>7.0.0</osgi.compendium.version>
 
         <maven.test.skip>false</maven.test.skip>
 
         <!-- This property is needed to allow some Win-specific unit tests -->
-        <!-- to be disabled via system property in CI until they got fixed-->
+        <!-- to be disabled via system property in CI until they got fixed -->
         <exclude.windows.failed.tests></exclude.windows.failed.tests>
     </properties>
 
     <repositories>
-        <!-- The order of definitions matters. Explicitly defining central
+        <!-- The order of definitions matters. Explicitly defining central 
             here to make sure it has the highest priority. -->
         <repository>
             <id>central</id>
@@ -158,7 +161,7 @@
     </repositories>
 
     <pluginRepositories>
-        <!-- The order of definitions matters. Explicitly defining central
+        <!-- The order of definitions matters. Explicitly defining central 
             here to make sure it has the highest priority. -->
         <pluginRepository>
             <id>central</id>
@@ -223,7 +226,7 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.10.9</version>
+                <version>1.10.21</version>
             </dependency>
 
 
@@ -236,7 +239,7 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.12</version>
+                <version>4.13.1</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
@@ -431,6 +434,21 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.karaf.tooling</groupId>
+                    <artifactId>karaf-maven-plugin</artifactId>
+                    <version>4.3.0</version>
+                    <extensions>true</extensions>
+                    <executions>
+                        <execution>
+                            <id>generate-features-file</id>
+                            <phase>generate-resources</phase>
+                            <goals>
+                                <goal>features-generate-descriptor</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
                     <version>1.4.1</version>
@@ -452,7 +470,7 @@
                             <configuration>
                                 <rules>
                                     <restrictImports
-                                            implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
+                                        implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
                                         <reason>Use SLF4j for logging</reason>
                                         <bannedImport>java.util.logging.**
                                         </bannedImport>
@@ -488,7 +506,6 @@
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
                         <trimStackTrace>false</trimStackTrace>
-                        <reuseForks>false</reuseForks>
                         <excludes>
                             <exclude>${exclude.windows.failed.tests}</exclude>
                         </excludes>
@@ -505,7 +522,7 @@
                         <threadCount>2</threadCount>
                     </configuration>
                 </plugin>
-                <!--This plugin's configuration is used to store Eclipse
+                <!--This plugin's configuration is used to store Eclipse 
                     m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>

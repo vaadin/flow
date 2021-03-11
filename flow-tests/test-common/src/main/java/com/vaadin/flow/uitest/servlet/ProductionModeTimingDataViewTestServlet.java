@@ -18,11 +18,10 @@ package com.vaadin.flow.uitest.servlet;
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.flow.server.VaadinServletConfiguration;
-
 @WebServlet(asyncSupported = true, urlPatterns = {
-        "/view-production-timing/*" }, initParams = @WebInitParam(name = "requestTiming", value = "true"))
-@VaadinServletConfiguration(productionMode = true)
+        "/view-production-timing/*" }, initParams = {
+                @WebInitParam(name = "requestTiming", value = "true"),
+                @WebInitParam(name = "productionMode", value = "true") })
 public class ProductionModeTimingDataViewTestServlet extends ViewTestServlet {
 
 }

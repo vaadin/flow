@@ -17,13 +17,10 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
-import javax.validation.constraints.AssertTrue;
-
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
@@ -33,11 +30,11 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
 public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
@@ -49,10 +46,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     public void setUp() throws IOException {
         super.setUp();
 
-        // ensure there is a valid pnpm installed in the system
-        new FrontendTools(getNodeUpdater().npmFolder.getAbsolutePath(),
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath())
-                        .ensurePnpm();
         // create an empty package.json so as pnpm can be run without error
         FileUtils.write(new File(getNodeUpdater().npmFolder, PACKAGE_JSON),
                 "{}", StandardCharsets.UTF_8);
@@ -114,7 +107,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // create some package.json file so pnpm does some installation into
         // node_modules folder
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"pnpm\": \"4.5.0\"}}",
+                "{\"dependencies\": {" + "\"pnpm\": \"5.15.1\"}}",
                 StandardCharsets.UTF_8);
 
         getNodeUpdater().modified = true;
@@ -164,19 +157,23 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runPnpmInstall_versionsJsonIsNotFound_pnpmHookFileIsNotGenerated()
+    public void runPnpmInstall_versionsJsonIsNotFound_pnpmHookFileIsGeneratedFromPackageJson()
             throws IOException, ExecutionFailedException {
         TaskRunNpmInstall task = createTask();
         getNodeUpdater().modified = true;
         task.execute();
 
         File file = new File(getNodeUpdater().npmFolder, "pnpmfile.js");
-        Assert.assertFalse(file.exists());
+        Assert.assertTrue(file.exists());
+        String content = FileUtils.readFileToString(file,
+            StandardCharsets.UTF_8);
+        Assert.assertThat(content,
+            CoreMatchers.containsString("JSON.parse(fs.readFileSync"));
     }
 
     @Test
     public void generateVersionsJson_userHasNoCustomVersions_platformIsMergedWithDevDeps()
-            throws IOException, ExecutionFailedException {
+            throws IOException {
         File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
 
@@ -218,7 +215,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     @Test
     public void generateVersionsJson_userVersionNewerThanPinned_intalledOverlayVersionIsUserVersion()
-            throws IOException, ExecutionFailedException {
+            throws IOException {
         File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
 
@@ -440,11 +437,127 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    public void generateVersionsJson_noVersions_noDevDeps_returnNull()
+    public void generateVersionsJson_noVersions_noDevDeps_versionsGeneratedFromPackageJson()
             throws IOException {
         TaskRunNpmInstall task = createTask();
 
-        Assert.assertNull(task.generateVersionsJson());
+        final String versions = task.generateVersionsJson();
+        Assert.assertNotNull(versions);
+
+        File generatedVersionsFile = new File(getNodeUpdater().npmFolder, versions);
+        final JsonObject versionsJson = Json.parse(FileUtils
+            .readFileToString(generatedVersionsFile, StandardCharsets.UTF_8));
+        Assert.assertEquals("{}", versionsJson.toJson());
+    }
+
+    @Test
+    public void generateVersionsJson_versionsGeneratedFromPackageJson_containsBothDepsAndDevDeps()
+            throws IOException {
+
+        File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
+        packageJson.createNewFile();
+
+        // Write package json file
+        // @formatter:off
+        FileUtils.write(packageJson,
+            "{"
+                + "\"vaadin\": {"
+                  + "\"dependencies\": {"
+                    + "\"lit-element\": \"2.3.1\","
+                    + "\"@vaadin/router\": \"1.7.2\","
+                    + "\"@polymer/polymer\": \"3.2.0\","
+                  + "},"
+                  + "\"devDependencies\": {"
+                    + "\"css-loader\": \"4.2.1\","
+                    + "\"file-loader\": \"6.1.0\""
+                  + "}"
+                + "},"
+                + "\"dependencies\": {"
+                  + "\"lit-element\": \"2.3.1\","
+                  + "\"@vaadin/router\": \"1.7.2\","
+                  + "\"@polymer/polymer\": \"3.2.0\","
+                + "},"
+                + "\"devDependencies\": {"
+                  + "\"css-loader\": \"4.2.1\","
+                  + "\"file-loader\": \"6.1.0\""
+                + "}"
+            + "}", StandardCharsets.UTF_8);
+        // @formatter:on
+
+        TaskRunNpmInstall task = createTask();
+
+        final String versions = task.generateVersionsJson();
+        Assert.assertNotNull(versions);
+
+        File generatedVersionsFile = new File(getNodeUpdater().npmFolder, versions);
+        final JsonObject versionsJson = Json.parse(FileUtils
+            .readFileToString(generatedVersionsFile, StandardCharsets.UTF_8));
+        Assert.assertEquals(
+            "{"
+                + "\"lit-element\":\"2.3.1\","
+                + "\"@vaadin/router\":\"1.7.2\","
+                + "\"@polymer/polymer\":\"3.2.0\","
+                + "\"css-loader\":\"4.2.1\","
+                + "\"file-loader\":\"6.1.0\""
+                + "}",
+            versionsJson.toJson());
+    }
+
+    @Test
+    public void runPnpmInstall_npmRcFileNotFound_newNpmRcFileIsGenerated()
+            throws IOException, ExecutionFailedException {
+        TaskRunNpmInstall task = createTask();
+        task.execute();
+
+        File npmRcFile = new File(getNodeUpdater().npmFolder, ".npmrc");
+        Assert.assertTrue(npmRcFile.exists());
+        String content = FileUtils.readFileToString(npmRcFile,
+                StandardCharsets.UTF_8);
+        Assert.assertTrue(content.contains("shamefully-hoist"));
+    }
+
+    @Test
+    public void runPnpmInstall_npmRcFileGeneratedByVaadinFound_npmRcFileIsGenerated()
+            throws IOException, ExecutionFailedException {
+        File oldNpmRcFile = new File(getNodeUpdater().npmFolder, ".npmrc");
+        // @formatter:off
+        String originalContent = "# NOTICE: this is an auto-generated file\n"
+                + "shamefully-hoist=true\n"
+                + "symlink=true\n";
+        // @formatter:on
+        FileUtils.writeStringToFile(oldNpmRcFile, originalContent,
+                StandardCharsets.UTF_8);
+
+        TaskRunNpmInstall task = createTask();
+        task.execute();
+
+        File newNpmRcFile = new File(getNodeUpdater().npmFolder, ".npmrc");
+        Assert.assertTrue(newNpmRcFile.exists());
+        String content = FileUtils.readFileToString(newNpmRcFile,
+                StandardCharsets.UTF_8);
+        Assert.assertTrue(content.contains("shamefully-hoist"));
+        Assert.assertFalse(content.contains("symlink=true"));
+    }
+
+    @Test
+    public void runPnpmInstall_customNpmRcFileFound_npmRcFileIsNotGenerated()
+            throws IOException, ExecutionFailedException {
+        File oldNpmRcFile = new File(getNodeUpdater().npmFolder, ".npmrc");
+        // @formatter:off
+        String originalContent = "# A custom npmrc file for my project\n"
+                + "symlink=true\n";
+        // @formatter:on
+        FileUtils.writeStringToFile(oldNpmRcFile, originalContent,
+                StandardCharsets.UTF_8);
+
+        TaskRunNpmInstall task = createTask();
+        task.execute();
+
+        File newNpmRcFile = new File(getNodeUpdater().npmFolder, ".npmrc");
+        Assert.assertTrue(newNpmRcFile.exists());
+        String content = FileUtils.readFileToString(newNpmRcFile,
+                StandardCharsets.UTF_8);
+        Assert.assertEquals(originalContent, content);
     }
 
     @Override
@@ -490,7 +603,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     private JsonObject getGeneratedVersionsContent(File versions, File devDeps)
-            throws MalformedURLException, IOException {
+            throws IOException {
         String devDepsPath = "foo";
 
         ClassFinder classFinder = getClassFinder();
@@ -503,18 +616,10 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         String path = task.generateVersionsJson();
 
-        File generatedVersionsFile = new File(path);
+        File generatedVersionsFile = new File(getNodeUpdater().npmFolder, path);
         return Json.parse(FileUtils.readFileToString(generatedVersionsFile,
                 StandardCharsets.UTF_8));
 
-    }
-
-    private void verifyVersionIsNotPinned(File versions, File devDeps)
-            throws MalformedURLException, IOException {
-        Assert.assertEquals(
-                "Generated versions json should not contain anything: package.json overrides the version",
-                0,
-                getGeneratedVersionsContent(versions, devDeps).keys().length);
     }
 
 }

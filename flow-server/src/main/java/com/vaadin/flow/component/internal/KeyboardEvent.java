@@ -142,8 +142,8 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
     }
 
     /**
-     * Gets the code of the event. If the event did not contain a valid code, a
-     * <code>null</code> value will be given instead.
+     * Gets the code of the event. If the event did not contain a valid code, an
+     * empty Optional will be given.
      * @return the optional code of the event as a {@link Key}
      */
     public Optional<Key> getCode() { return Optional.ofNullable(code); }

@@ -19,12 +19,15 @@ const fs = require('fs');
 // maven-resources-plugin writes the project version into this file
 // when it copies resources from `src/main/resources` into `target/classes`
 const versionFile = 'target/classes/version.txt';
-const replaceVersionInFile = 'src/main/resources/META-INF/resources/frontend/form/index.ts';
+const replaceVersionInFiles = [
+  'src/main/resources/META-INF/resources/frontend/form/index.ts'
+];
 
 const version = fs.readFileSync(versionFile, 'utf8');
 
-const sources = fs.readFileSync(replaceVersionInFile, 'utf8')
-  .replace(/\/\* updated-by-script \*\/ '(\w|[\-${}.])+'/,
-    `/* updated-by-script */ '${version}'`);
-
-fs.writeFileSync(replaceVersionInFile, sources, 'utf8');
+replaceVersionInFiles.forEach(file => {
+  const sources = fs.readFileSync(file, 'utf8')
+    .replace(/\/\* updated-by-script \*\/ '(\w|[\-${}.])+'/,
+      `/* updated-by-script */ '${version}'`);
+  fs.writeFileSync(file, sources, 'utf8');
+});

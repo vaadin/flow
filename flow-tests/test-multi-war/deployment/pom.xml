@@ -5,7 +5,7 @@
     <parent>
         <artifactId>flow-test-multi-war</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>5.0-SNAPSHOT</version>
+        <version>7.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-multi-war-bundle</artifactId>
     <name>Bundle testing multiple war deployment</name>
@@ -33,11 +33,11 @@
                     </webApp>
                     <contextHandlers>
                         <contextHandler implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
-                            <war>${project.basedir}/../test-war1/target/flow-test-multi-war1.war</war>
+                            <war>${project.basedir}${file.separator}..${file.separator}test-war1${file.separator}target${file.separator}flow-test-multi-war1.war</war>
                             <contextPath>/test-war1</contextPath>
                         </contextHandler>
                         <contextHandler implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
-                            <war>${project.basedir}/../test-war2/target/flow-test-multi-war2.war</war>
+                            <war>${project.basedir}${file.separator}..${file.separator}test-war2${file.separator}target${file.separator}flow-test-multi-war2.war</war>
                             <contextPath>/test-war2</contextPath>
                         </contextHandler>
                     </contextHandlers>

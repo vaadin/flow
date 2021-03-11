@@ -38,6 +38,7 @@ import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.Range;
@@ -62,10 +63,21 @@ import elemental.json.JsonValue;
  */
 public class DataCommunicator<T> implements Serializable {
     public static final int DEFAULT_PAGE_INCREASE_COUNT = 4;
+
+    private static final int DEFAULT_PAGE_SIZE = 50;
+
     private final DataGenerator<T> dataGenerator;
     private final ArrayUpdater arrayUpdater;
     private final SerializableConsumer<JsonArray> dataUpdater;
     private final StateNode stateNode;
+
+    // Keys that can be discarded once some specific update id gets confirmed
+    private final HashMap<Integer, Set<String>> passivatedByUpdate = new HashMap<>();
+
+    // Update ids that have been confirmed since the last flush
+    private final HashSet<Integer> confirmedUpdates = new HashSet<>();
+
+    private final ArrayList<QuerySortOrder> backEndSorting = new ArrayList<>();
 
     private DataKeyMapper<T> keyMapper = new KeyMapper<>();
 
@@ -87,19 +99,10 @@ public class DataCommunicator<T> implements Serializable {
 
     private int nextUpdateId = 0;
 
-    // Keys that can be discarded once some specific update id gets confirmed
-    private final HashMap<Integer, Set<String>> passivatedByUpdate = new HashMap<>();
+    private DataProvider<T, ?> dataProvider = new EmptyDataProvider<>();
 
-    // Update ids that have been confirmed since the last flush
-    private final HashSet<Integer> confirmedUpdates = new HashSet<>();
-
-    private DataProvider<T, ?> dataProvider = DataProvider.ofItems();
-
-    // Serializability of filter is up to the application
-    private Object filter;
+    private Filter<?> filter;
     private SerializableComparator<T> inMemorySorting;
-
-    private final ArrayList<QuerySortOrder> backEndSorting = new ArrayList<>();
 
     private Registration dataProviderUpdateRegistration;
     private HashSet<T> updatedData = new HashSet<>();
@@ -113,10 +116,116 @@ public class DataCommunicator<T> implements Serializable {
     private boolean definedSize = true;
     private boolean skipCountIncreaseUntilReset;
     private boolean sizeReset;
-    private int pageSize;
+    private int pageSize = DEFAULT_PAGE_SIZE;
 
     // Paged queries are enabled by default
     private boolean pagingEnabled = true;
+
+    private boolean fetchEnabled;
+
+    /**
+     * In-memory data provider with no items.
+     * <p>
+     * Data Communicator is initialised with this data provider by default
+     * until a new data provider is assigned with
+     * {@link #setDataProvider(DataProvider, Object)}.
+     *
+     * @param <T1> item type
+     *
+     * @see AbstractDataView#AbstractDataView(SerializableSupplier, Component)
+     */
+    public static final class EmptyDataProvider<T1> extends ListDataProvider<T1> {
+        /**
+         * Create in-memory data provider instance with no items in the
+         * backed collection.
+         */
+        public EmptyDataProvider() {
+            super(new ArrayList<>(0));
+        }
+    }
+
+    /**
+     * Wraps the component's filter object with the meta information whether
+     * this filter changing should trigger the item count change event.
+     *
+     * @param <F>
+     *            filter's type
+     */
+    public static final class Filter<F> implements Serializable {
+
+        // Serializability of filter is up to the application
+        private F filterObject;
+
+        private boolean notifyOnChange;
+
+        /**
+         * Creates the filter object and sets it notify item count change
+         * listeners by default.
+         *
+         * @param filterObject
+         *            filter object of a component
+         */
+        public Filter(F filterObject) {
+            this.filterObject = filterObject;
+            this.notifyOnChange = true;
+        }
+
+        /**
+         * Creates the filter object and sets its lifespan.
+         *
+         * @param filterObject
+         *            filter object of a component
+         * @param notifyOnChange
+         *            if {@code true}, then the data communicator will fire the
+         *            item count change event as soon as filter change modifies
+         *            the item count. If {@code false}, the item count change
+         *            event won't be fired, even if the item count will be
+         *            changed as a result of filtering.
+         */
+        public Filter(F filterObject, boolean notifyOnChange) {
+            this.filterObject = filterObject;
+            this.notifyOnChange = notifyOnChange;
+        }
+
+        /**
+         * Returns a filter object for this component.
+         *
+         * @return filter object
+         */
+        public F getFilterObject() {
+            return filterObject;
+        }
+
+        /**
+         * Returns whether to fire the item change event or not upon filter
+         * changing.
+         *
+         * @return {@code true}, then the data communicator will fire the item
+         *         count change event as soon as filter change modifies the item
+         *         count. Returns {@code false}, the item count change event
+         *         won't be fired, even if the item count will be changed as a
+         *         result of filtering.
+         */
+        public boolean isNotifyOnChange() {
+            return notifyOnChange;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+            Filter<?> filter1 = (Filter<?>) o;
+            return notifyOnChange == filter1.notifyOnChange
+                    && Objects.equals(filterObject, filter1.filterObject);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(filterObject, notifyOnChange);
+        }
+    }
 
     private static class SizeVerifier<T> implements Consumer<T>, Serializable {
 
@@ -156,10 +265,40 @@ public class DataCommunicator<T> implements Serializable {
     public DataCommunicator(DataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater,
             SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode) {
+        this(dataGenerator, arrayUpdater, dataUpdater, stateNode, true);
+    }
+
+    /**
+     * Creates a new instance.
+     * <p>
+     * Allows to setup whether the data communicator will ignore fetch and size
+     * queries to data provider until further configuration. This mode is useful
+     * when the component needs to postpone the calls to data provider until
+     * some event, i.e. dropdown open event of the combo box, but needs to
+     * configure the data communicator preliminary.
+     *
+     * @param dataGenerator
+     *            the data generator function
+     * @param arrayUpdater
+     *            array updater strategy
+     * @param dataUpdater
+     *            data updater strategy
+     * @param stateNode
+     *            the state node used to communicate for
+     * @param fetchEnabled
+     *            if {@code fetchEnabled} is {@code true} then the data
+     *            provider will be called to fetch the items and/or to get the
+     *            items count until it's set to {@code false}
+     */
+    public DataCommunicator(DataGenerator<T> dataGenerator,
+            ArrayUpdater arrayUpdater,
+            SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode,
+            boolean fetchEnabled) {
         this.dataGenerator = dataGenerator;
         this.arrayUpdater = arrayUpdater;
         this.dataUpdater = dataUpdater;
         this.stateNode = stateNode;
+        this.fetchEnabled = fetchEnabled;
 
         stateNode.addAttachListener(this::handleAttach);
         stateNode.addDetachListener(this::handleDetach);
@@ -219,9 +358,8 @@ public class DataCommunicator<T> implements Serializable {
     public void confirmUpdate(int updateId) {
         confirmedUpdates.add(Integer.valueOf(updateId));
 
-        // Not absolutely necessary, but doing it right away to release memory
-        // earlier
-        requestFlush();
+        // Release the memory for confirmed updates
+        unregisterPassivatedKeys();
     }
 
     /**
@@ -243,22 +381,38 @@ public class DataCommunicator<T> implements Serializable {
      * This method also sets the data communicator to defined size - meaning
      * that the given data provider is queried for size and previous size
      * estimates are discarded.
+     * <p>
+     * This method allows to define whether the data communicator notifies about
+     * changing of item count when it changes due to filtering.
      *
      * @param dataProvider
      *            the data provider to set, not <code>null</code>
      * @param initialFilter
      *            the initial filter value to use, or <code>null</code> to not
      *            use any initial filter value
+     * @param notifiesOnChange
+     *            if {@code true}, then the data communicator will fire the item
+     *            count change event as soon as filter change modifies the item
+     *            count. If {@code false}, the item count change event won't be
+     *            fired, even if the item count will be changed as a result of
+     *            filtering.
      *
      * @param <F>
      *            the filter type
      *
      * @return a consumer that accepts a new filter value to use
      */
-    public <F> SerializableConsumer<F> setDataProvider(
-            DataProvider<T, F> dataProvider, F initialFilter) {
+    public <F> SerializableConsumer<Filter<F>> setDataProvider(
+            DataProvider<T, F> dataProvider, F initialFilter,
+            boolean notifiesOnChange) {
         Objects.requireNonNull(dataProvider, "data provider cannot be null");
-        filter = initialFilter;
+
+        removeFilteringAndSorting();
+
+        filter = initialFilter != null
+                ? new Filter<>(initialFilter, notifiesOnChange)
+                : null;
+
         countCallback = null;
         definedSize = true;
         sizeReset = true;
@@ -285,6 +439,34 @@ public class DataCommunicator<T> implements Serializable {
                 reset();
             }
         };
+    }
+
+    /**
+     * Sets the current data provider for this DataCommunicator.
+     * <p>
+     * The returned consumer can be used to set some other filter value that
+     * should be included in queries sent to the data provider. It is only valid
+     * until another data provider is set.
+     * <p>
+     * This method also sets the data communicator to defined size - meaning
+     * that the given data provider is queried for size and previous size
+     * estimates are discarded.
+     *
+     * @param dataProvider
+     *            the data provider to set, not <code>null</code>
+     * @param initialFilter
+     *            the initial filter value to use, or <code>null</code> to not
+     *            use any initial filter value
+     * @param <F>
+     *            the filter type
+     *
+     * @return a consumer that accepts a new filter value to use
+     */
+    public <F> SerializableConsumer<F> setDataProvider(
+            DataProvider<T, F> dataProvider, F initialFilter) {
+        SerializableConsumer<Filter<F>> filterConsumer = setDataProvider(
+                dataProvider, initialFilter, true);
+        return newFilter -> filterConsumer.accept(new Filter<>(newFilter));
     }
 
     /**
@@ -495,7 +677,7 @@ public class DataCommunicator<T> implements Serializable {
                     "itemCountEstimateIncrease cannot be less than 1");
         }
         this.itemCountEstimateIncrease = itemCountEstimateIncrease;
-        this.countCallback = null;
+        countCallback = null;
         definedSize = false;
     }
 
@@ -541,7 +723,7 @@ public class DataCommunicator<T> implements Serializable {
              * estimated size. If there was a previous defined size used, then
              * that is kept until a reset occurs.
              */
-            if (requestedRange.contains(assumedSize)) {
+            if (requestedRange.contains(assumedSize - 1)) {
                 requestFlush();
             }
         }
@@ -649,14 +831,49 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Getter method for determining the item count of the data. Can be
-     * overridden by a subclass that uses a specific type of DataProvider and/or
-     * query.
+     * Returns whether the data communicator will call Data Provider for
+     * fetching the items and/or getting the items count, or ignore such a
+     * calls.
+     *
+     * @return {@code true} if the calls to data provider are enabled,
+     *         {@code false} otherwise
+     */
+    public boolean isFetchEnabled() {
+        return fetchEnabled;
+    }
+
+    /**
+     * Sets whether the data communicator will call Data Provider for fetching
+     * the items and/or getting the items count, or ignore such a calls.
+     * <p>
+     * One may need to disable the data provider calls in order to configure the
+     * data communicator and to postpone these calls until some event, i.e.
+     * dropdown open event of the combo box.
+     * <p>
+     * This sets to {@code true} by default.
+     *
+     * @param fetchEnabled
+     *            if {@code true} then the calls to data provider are enabled,
+     *            otherwise the data provider won't be called to fetch the
+     *            items.
+     */
+    public void setFetchEnabled(boolean fetchEnabled) {
+        this.fetchEnabled = fetchEnabled;
+    }
+
+    /**
+     * Getter method for determining the item count of the data.
+     * <p>
+     * This method should be used only with defined size, i.e. when
+     * {@link #isDefinedSize()} returns {@code true}.
+     * <p>
+     * Can be overridden by a subclass that uses a specific type of DataProvider
+     * and/or query.
      *
      * @return the size of data provider with current filter
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    protected int getDataProviderSize() {
+    public int getDataProviderSize() {
         assert definedSize : "This method should never be called when using undefined size";
         if (countCallback != null) {
             return countCallback.count(new Query(getFilter()));
@@ -686,7 +903,7 @@ public class DataCommunicator<T> implements Serializable {
      * @return the filter object of this data communicator
      */
     protected Object getFilter() {
-        return filter;
+        return filter != null ? filter.getFilterObject() : null;
     }
 
     /**
@@ -765,7 +982,7 @@ public class DataCommunicator<T> implements Serializable {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private Stream<T> doFetchFromDataProvider(int offset, int limitedTo) {
         QueryTrace query = new QueryTrace(offset, limitedTo, backEndSorting,
-                inMemorySorting, filter);
+                inMemorySorting, getFilter());
         Stream<T> stream = getDataProvider().fetch(query);
         verifyQueryContract(query);
         return stream;
@@ -825,7 +1042,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void requestFlush(boolean forced) {
-        if (flushRequest == null || forced) {
+        if ((flushRequest == null || forced) && fetchEnabled) {
             flushRequest = context -> {
                 if (!context.isClientSideInitialized()) {
                     reset();
@@ -887,14 +1104,20 @@ public class DataCommunicator<T> implements Serializable {
                 skipCountIncreaseUntilReset = true;
                 /*
                  * If the fetch query returned 0 items, it means that the user
-                 * has scrolled past the end of the exact item count. Instead of
-                 * returning 0 items to the client and letting it incrementally
-                 * request for the previous pages, we'll cancel this flush and
-                 * tweak the requested range and flush again.
+                 * has scrolled past the end of the exact item count or the
+                 * items have been changed in the backend (for example, applying
+                 * the filter). Instead of returning 0 items to the client and
+                 * letting it incrementally request for the previous pages,
+                 * we'll cancel this flush and tweak the requested range and
+                 * flush again.
                  */
                 if (assumedSize != 0 && activation.getActiveKeys().isEmpty()) {
                     int delta = requestedRange.length();
-                    requestedRange = requestedRange.offsetBy(-delta);
+                    // Request the items from a bit behind the current range
+                    // at the next call to backend, and check that the requested
+                    // range doesn't intersect the 0 point.
+                    requestedRange = requestedRange.offsetBy(-delta)
+                            .restrictTo(Range.withLength(0, assumedSize));
                     requestFlush(true); // to avoid recursiveness
                     return;
                 }
@@ -925,22 +1148,29 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Fire an item count change event if the last event was fired for a
-     * different count from the last sent one.
+     * Notifies the component about item count changes.
+     * <p>
+     * {@link ItemCountChangeEvent} is fired if:
+     * <ul>
+     * <li>the passed item count differs from the item count passed on the
+     * previous call of this method</li>
+     * <li>Current component's filter set up to fire the event upon filtering
+     * changes</li>
+     * </ul>
      *
      * @param itemCount
      *            item count to send
      */
     private void fireItemCountEvent(int itemCount) {
-        if (lastSent != itemCount) {
+        final boolean notify = filter == null || filter.isNotifyOnChange();
+
+        if (lastSent != itemCount && notify) {
             final Optional<Component> component = Element.get(stateNode)
                     .getComponent();
-            if (component.isPresent()) {
-                ComponentUtil.fireEvent(component.get(),
-                        new ItemCountChangeEvent<>(component.get(), itemCount,
-                                !(isDefinedSize()
-                                        || skipCountIncreaseUntilReset)));
-            }
+            component.ifPresent(value -> ComponentUtil.fireEvent(value,
+                    new ItemCountChangeEvent<>(value, itemCount,
+                            !(isDefinedSize()
+                                    || skipCountIncreaseUntilReset))));
             lastSent = itemCount;
         }
     }
@@ -1058,6 +1288,11 @@ public class DataCommunicator<T> implements Serializable {
 
             // Pick existing items from the current list
             Range overlap = partitionWith[1].offsetBy(-activeStart);
+            if (overlap.getStart() < 0) {
+                // If getStart is negative there is no data and empty Activation
+                // needs to be returned
+                return Activation.empty();
+            }          
             newActiveKeyOrder.addAll(activeKeyOrder.subList(overlap.getStart(),
                     overlap.getEnd()));
 
@@ -1117,6 +1352,11 @@ public class DataCommunicator<T> implements Serializable {
         json.put("key", getKeyMapper().key(item));
         dataGenerator.generateData(item, json);
         return json;
+    }
+
+    private void removeFilteringAndSorting() {
+        Element.get(stateNode).getComponent().ifPresent(
+                DataViewUtils::removeComponentFilterAndSortComparator);
     }
 
     private static class Activation implements Serializable {

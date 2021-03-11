@@ -20,25 +20,35 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpSessionBindingEvent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.internal.UsageStatistics;
-import net.jcip.annotations.NotThreadSafe;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.di.InstantiatorFactory;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
+import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
+import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
+import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -50,7 +60,6 @@ import static org.junit.Assert.assertEquals;
  * @author Vaadin Ltd
  * @since 1.0
  */
-@NotThreadSafe
 public class VaadinServiceTest {
 
     @Tag("div")
@@ -74,8 +83,22 @@ public class VaadinServiceTest {
                 details, url);
     }
 
+    private static abstract class TestVaadinService extends VaadinService {
+
+        @Override
+        protected List<RequestHandler> createRequestHandlers()
+                throws ServiceException {
+            return super.createRequestHandlers();
+        }
+    }
+
     @Test
     public void should_reported_routing_server() {
+
+        // this test needs a fresh empty statistics, so we need to clear
+        // them for resusing forks for unit tests
+        UsageStatistics.clearEntries();
+
         VaadinServiceInitListener initListener = event -> {
             RouteConfiguration.forApplicationScope().setRoute("test",
                     TestView.class);
@@ -96,7 +119,8 @@ public class VaadinServiceTest {
             RouteConfiguration.forApplicationScope().setRoute("test",
                     TestView.class);
         };
-        UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_CLIENT, Version.getFullVersion());
+        UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_CLIENT,
+                Version.getFullVersion());
         MockInstantiator instantiator = new MockInstantiator(initListener);
 
         MockVaadinServletService service = new MockVaadinServletService();
@@ -112,7 +136,8 @@ public class VaadinServiceTest {
     }
 
     @Test
-    public void testFireSessionDestroy() throws ServletException {
+    public void testFireSessionDestroy()
+            throws ServletException, ServiceException {
         VaadinService service = createService();
 
         TestSessionDestroyListener listener = new TestSessionDestroyListener();
@@ -205,7 +230,20 @@ public class VaadinServiceTest {
     public void serviceContainsStreamRequestHandler()
             throws ServiceException, ServletException {
         ServletConfig servletConfig = new MockServletConfig();
-        VaadinServlet servlet = new VaadinServlet();
+        Lookup lookup = Mockito.mock(Lookup.class);
+        servletConfig.getServletContext().setAttribute(Lookup.class.getName(),
+                lookup);
+        StaticFileHandlerFactory factory = Mockito
+                .mock(StaticFileHandlerFactory.class);
+        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
+                .thenReturn(factory);
+        VaadinServlet servlet = new VaadinServlet() {
+            @Override
+            protected DeploymentConfiguration createDeploymentConfiguration()
+                    throws ServletException {
+                return new MockDeploymentConfiguration();
+            }
+        };
         servlet.init(servletConfig);
         VaadinService service = servlet.getService();
         Assert.assertTrue(service.createRequestHandlers().stream()
@@ -214,7 +252,8 @@ public class VaadinServiceTest {
     }
 
     @Test
-    public void currentInstancesAfterPendingAccessTasks() {
+    public void currentInstancesAfterPendingAccessTasks()
+            throws ServiceException {
         VaadinService service = createService();
 
         MockVaadinSession session = new MockVaadinSession(service);
@@ -324,15 +363,72 @@ public class VaadinServiceTest {
         Assert.assertSame(applicationFilter, filters.get(0));
     }
 
-    private static VaadinService createService() {
-        ServletConfig servletConfig = new MockServletConfig();
-        VaadinServlet servlet = new VaadinServlet();
-        try {
-            servlet.init(servletConfig);
-        } catch (ServletException e) {
-            throw new RuntimeException(e);
-        }
-        VaadinService service = servlet.getService();
+    @Test
+    public void loadInstantiators_instantiatorIsLoadedUsingFactoryFromLookup()
+            throws ServiceException {
+        VaadinService service = createService();
+
+        Lookup lookup = Mockito.mock(Lookup.class);
+
+        service.getContext().setAttribute(Lookup.class, lookup);
+
+        InstantiatorFactory factory = createInstantiatorFactory(lookup);
+
+        Mockito.when(lookup.lookupAll(InstantiatorFactory.class))
+                .thenReturn(Collections.singletonList(factory));
+
+        Optional<Instantiator> loadedInstantiator = service.loadInstantiators();
+
+        Instantiator instantiator = factory.createInstantitor(null);
+
+        Assert.assertSame(instantiator, loadedInstantiator.get());
+    }
+
+    @Test(expected = ServiceException.class)
+    public void loadInstantiators_twoFactoriesInLookup_throws()
+            throws ServiceException {
+        VaadinService service = createService();
+
+        Lookup lookup = Mockito.mock(Lookup.class);
+
+        service.getContext().setAttribute(Lookup.class, lookup);
+
+        InstantiatorFactory factory1 = createInstantiatorFactory(lookup);
+        InstantiatorFactory factory2 = createInstantiatorFactory(lookup);
+
+        Mockito.when(lookup.lookupAll(InstantiatorFactory.class))
+                .thenReturn(Arrays.asList(factory1, factory2));
+
+        service.loadInstantiators();
+    }
+
+    @Test
+    public void createRequestHandlers_pwaHandlerIsInList_webComponentHandlersAreInList()
+            throws ServiceException {
+        TestVaadinService service = Mockito.mock(TestVaadinService.class);
+        Mockito.doCallRealMethod().when(service).createRequestHandlers();
+
+        List<RequestHandler> handlers = service.createRequestHandlers();
+        Set<?> set = handlers.stream().map(Object::getClass)
+                .collect(Collectors.toSet());
+        Assert.assertTrue(set.contains(PwaHandler.class));
+        Assert.assertTrue(set.contains(WebComponentProvider.class));
+        Assert.assertTrue(set.contains(WebComponentBootstrapHandler.class));
+    }
+
+    private InstantiatorFactory createInstantiatorFactory(Lookup lookup) {
+        InstantiatorFactory factory = Mockito.mock(InstantiatorFactory.class);
+
+        Instantiator instantiator = Mockito.mock(Instantiator.class);
+        Mockito.when((factory.createInstantitor(Mockito.any())))
+                .thenReturn(instantiator);
+
+        Mockito.when(instantiator.init(Mockito.any())).thenReturn(true);
+        return factory;
+    }
+
+    private static VaadinService createService() throws ServiceException {
+        VaadinService service = new MockVaadinServletService();
         return service;
     }
 }

@@ -15,54 +15,10 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.Objects;
-
-import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.connect.Endpoint;
-import com.vaadin.flow.server.connect.generator.OpenApiSpecGenerator;
 
 /**
- * Generate OpenAPI json file for Connect Endpoints.
+ * Generate OpenAPI json file for Vaadin Endpoints.
  */
-public class TaskGenerateOpenApi extends AbstractTaskConnectGenerator {
+public interface TaskGenerateOpenApi extends FallibleCommand {
 
-    private final File javaSourceFolder;
-    private final transient ClassLoader classLoader;
-    private final File output;
-
-    /**
-     * Create a task for generating OpenAPI spec.
-     *
-     * @param javaSourceFolder
-     *            source paths of the project containing {@link Endpoint}
-     * @param classLoader
-     *            The class loader which should be used to resolved types in the
-     *            source paths.
-     * @param output
-     *            the output path of the generated json file.
-     */
-    TaskGenerateOpenApi(File properties, File javaSourceFolder,
-            ClassLoader classLoader, File output) {
-        super(properties);
-        Objects.requireNonNull(javaSourceFolder,
-                "Source paths should not be null.");
-        Objects.requireNonNull(output,
-                "OpenAPI output file should not be null.");
-        Objects.requireNonNull(classLoader,
-                "ClassLoader should not be null.");
-        this.javaSourceFolder = javaSourceFolder;
-        this.classLoader = classLoader;
-        this.output = output;
-    }
-
-    @Override
-    public void execute() throws ExecutionFailedException {
-        OpenApiSpecGenerator openApiSpecGenerator = new OpenApiSpecGenerator(
-                readApplicationProperties());
-        openApiSpecGenerator.generateOpenApiSpec(
-                Collections.singletonList(javaSourceFolder.toPath()),
-                classLoader, output.toPath());
-    }
 }

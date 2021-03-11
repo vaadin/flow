@@ -38,6 +38,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
@@ -45,19 +46,21 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
+import static com.vaadin.flow.server.StaticFileServer.APP_THEME_PATTERN;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
 import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
@@ -130,37 +133,49 @@ public final class DevModeHandler implements RequestHandler {
     private final AtomicReference<DevServerWatchDog> watchDog = new AtomicReference<>();
     private final File devServerPortFile;
 
+    /**
+     * The list of static resource paths from webpack manifest.
+     */
+    private volatile List<String> manifestPaths = new ArrayList<>();
+
     private StringBuilder cumulativeOutput = new StringBuilder();
 
     private final CompletableFuture<Void> devServerStartFuture;
+
+    private final File npmFolder;
 
     private boolean useSnowpack = false;
     private boolean useSnowpackBuildWatch = false;
     private final ResponseWriter responseWriter;
     private final File snowpackBuildRoot;
 
-    private DevModeHandler(DeploymentConfiguration config, int runningPort,
-            File npmFolder, CompletableFuture<Void> waitFor) {
+    private DevModeHandler(Lookup lookup, int runningPort, File npmFolder,
+            CompletableFuture<Void> waitFor) {
 
+        this.npmFolder = npmFolder;
         port = runningPort;
+        ApplicationConfiguration config = lookup
+                .lookup(ApplicationConfiguration.class);
         reuseDevServer = config.reuseDevServer();
         devServerPortFile = getDevServerPortFile(npmFolder);
         responseWriter = new ResponseWriter(config);
         snowpackBuildRoot = new File(npmFolder, "build");
-        devServerStartFuture = waitFor.whenCompleteAsync((value, exception) -> {
+
+        dBiConsumer<Void, ? super Throwable> action = (value, exception) -> {
             // this will throw an exception if an exception has been thrown by
             // the waitFor task
             waitFor.getNow(null);
-            runOnFutureComplete(config, npmFolder);
-        });
+            runOnFutureComplete(config);
+        };
 
+        devServerStartFuture = waitFor.whenCompleteAsync(action);
     }
 
     /**
      * Start the dev mode handler if none has been started yet.
      *
-     * @param configuration
-     *            deployment configuration
+     * @param lookup
+     *            the provided lookup to get required data
      * @param npmFolder
      *            folder with npm configuration files
      * @param waitFor
@@ -169,9 +184,9 @@ public final class DevModeHandler implements RequestHandler {
      *
      * @return the instance in case everything is alright, null otherwise
      */
-    public static DevModeHandler start(DeploymentConfiguration configuration,
-            File npmFolder, CompletableFuture<Void> waitFor) {
-        return start(0, configuration, npmFolder, waitFor);
+    public static DevModeHandler start(Lookup lookup, File npmFolder,
+            CompletableFuture<Void> waitFor) {
+        return start(0, lookup, npmFolder, waitFor);
     }
 
     /**
@@ -179,8 +194,8 @@ public final class DevModeHandler implements RequestHandler {
      *
      * @param runningPort
      *            port on which Webpack is listening.
-     * @param configuration
-     *            deployment configuration
+     * @param lookup
+     *            the provided lookup to get required data
      * @param npmFolder
      *            folder with npm configuration files
      * @param waitFor
@@ -189,15 +204,18 @@ public final class DevModeHandler implements RequestHandler {
      *
      * @return the instance in case everything is alright, null otherwise
      */
-    public static DevModeHandler start(int runningPort,
-            DeploymentConfiguration configuration, File npmFolder,
-            CompletableFuture<Void> waitFor) {
+    public static DevModeHandler start(int runningPort, Lookup lookup,
+            File npmFolder, CompletableFuture<Void> waitFor) {
+        ApplicationConfiguration configuration = lookup
+                .lookup(ApplicationConfiguration.class);
         if (configuration.isProductionMode()
                 || !configuration.enableDevServer()) {
             return null;
         }
-        atomicHandler.compareAndSet(null,
-                createInstance(runningPort, configuration, npmFolder, waitFor));
+        if (atomicHandler.get() == null) {
+            atomicHandler.compareAndSet(null,
+                    createInstance(runningPort, lookup, npmFolder, waitFor));
+        }
         return getDevModeHandler();
     }
 
@@ -244,6 +262,7 @@ public final class DevModeHandler implements RequestHandler {
             InputStream inputStream = DevModeHandler.class
                     .getResourceAsStream("dev-mode-not-ready.html");
             IOUtils.copy(inputStream, response.getOutputStream());
+            response.setContentType("text/html;charset=utf-8");
             return true;
         }
     }
@@ -258,16 +277,9 @@ public final class DevModeHandler implements RequestHandler {
         }
     }
 
-    private static DevModeHandler createInstance(int runningPort,
-            DeploymentConfiguration configuration, File npmFolder,
-            CompletableFuture<Void> waitFor) {
-
-        if (runningPort == 0) {
-            runningPort = getRunningDevServerPort(npmFolder);
-        }
-
-        return new DevModeHandler(configuration, runningPort, npmFolder,
-                waitFor);
+    private static DevModeHandler createInstance(int runningPort, Lookup lookup,
+            File npmFolder, CompletableFuture<Void> waitFor) {
+        return new DevModeHandler(lookup, runningPort, npmFolder, waitFor);
     }
 
     /**
@@ -279,9 +291,15 @@ public final class DevModeHandler implements RequestHandler {
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
         String pathInfo = request.getPathInfo();
-        return pathInfo != null && pathInfo.startsWith("/" + VAADIN_MAPPING)
-                && !pathInfo
-                        .startsWith("/" + StreamRequestHandler.DYN_RES_PREFIX);
+        if (pathInfo != null
+                && (pathInfo.startsWith("/" + VAADIN_MAPPING)
+                        || APP_THEME_PATTERN.matcher(pathInfo).find())
+                && !pathInfo.startsWith(
+                        "/" + StreamRequestHandler.DYN_RES_PREFIX)) {
+            return true;
+        }
+
+        return manifestPaths.contains(pathInfo);
     }
 
     /**
@@ -323,6 +341,18 @@ public final class DevModeHandler implements RequestHandler {
         // Since we have 'publicPath=/VAADIN/' in webpack config,
         // a valid request for webpack-dev-server should start with '/VAADIN/'
         String requestFilename = request.getPathInfo();
+
+        if (HandlerHelper.isPathUnsafe(requestFilename)) {
+            getLogger().info(HandlerHelper.UNSAFE_PATH_ERROR_MESSAGE_PATTERN,
+                    requestFilename);
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return true;
+        }
+
+        // Redirect theme source request
+        if (APP_THEME_PATTERN.matcher(requestFilename).find()) {
+            requestFilename = "/VAADIN/static" + requestFilename;
+        }
 
         HttpURLConnection connection = prepareConnection(requestFilename,
                 request.getMethod());
@@ -416,7 +446,7 @@ public final class DevModeHandler implements RequestHandler {
 
     private boolean checkWebpackConnection() {
         try {
-            prepareConnection("/", "GET").getResponseCode();
+            readManifestPaths();
             return true;
         } catch (IOException e) {
             getLogger().debug("Error checking webpack dev server connection",
@@ -532,6 +562,14 @@ public final class DevModeHandler implements RequestHandler {
             // reset cumulative buffer for the next compilation
             cumulativeOutput = new StringBuilder();
 
+            // Read webpack asset manifest json
+            try {
+                readManifestPaths();
+            } catch (IOException e) {
+                getLogger().error("Error when reading manifest.json " +
+                        "from webpack-dev-server", e);
+            }
+
             // Notify DevModeHandler to continue
             doNotify();
 
@@ -573,13 +611,42 @@ public final class DevModeHandler implements RequestHandler {
         FileUtils.deleteQuietly(devServerPortFile);
     }
 
-    private void runOnFutureComplete(DeploymentConfiguration config,
-            File npmFolder) {
+    private void runOnFutureComplete(ApplicationConfiguration config) {
         try {
-            doStartDevModeServer(config, npmFolder);
+            doStartDevModeServer(config);
         } catch (ExecutionFailedException exception) {
             getLogger().error(null, exception);
             throw new CompletionException(exception);
+        }
+    }
+
+    /**
+     * Get and parse /manifest.json from webpack-dev-server, extracting
+     * paths to all resources in the webpack output.
+     *
+     * Those paths do not necessarily start with /VAADIN, as some resources
+     * must be served from the root directory, e. g., service worker JS.
+     *
+     * @throws IOException
+     */
+    private void readManifestPaths() throws IOException {
+        getLogger().debug("Reading manifest.json from webpack");
+        HttpURLConnection connection = prepareConnection("/manifest.json",
+                "GET");
+        int responseCode = connection.getResponseCode();
+        if (responseCode != HTTP_OK) {
+            getLogger().error("Unable to get manifest.json from " +
+                    "webpack-dev-server, got {} {}", responseCode,
+                    connection.getResponseMessage());
+            return;
+        }
+
+        String manifestJson = FrontendUtils
+                .streamToString(connection.getInputStream());
+        manifestPaths = FrontendUtils.parseManifestPaths(manifestJson);
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug("Got asset paths from webpack manifest.json: \n    {}"
+                    , String.join("\n    ", manifestPaths));
         }
     }
 
@@ -592,25 +659,48 @@ public final class DevModeHandler implements RequestHandler {
         }
     }
 
-    private void doStartDevModeServer(DeploymentConfiguration config,
-            File npmFolder) throws ExecutionFailedException {
+    private boolean checkPort() {
+        if (checkWebpackConnection()) {
+            getLogger().info("Reusing webpack-dev-server running at {}:{}",
+                    WEBPACK_HOST, port);
+
+            // Save running port for next usage
+            saveRunningDevServerPort();
+            watchDog.set(null);
+            return false;
+        }
+        throw new IllegalStateException(format(
+                "%s webpack-dev-server port '%d' is defined but it's not working properly",
+                START_FAILURE, port));
+
+    }
+
+    private void doStartDevModeServer(ApplicationConfiguration config)
+            throws ExecutionFailedException {
         useSnowpack = config.useSnowpack();
         useSnowpackBuildWatch = config.useSnowpackBuildWatch();
 
         // If port is defined, means that webpack is already running
         if (port > 0) {
-            if (checkWebpackConnection()) {
-                getLogger().info("Reusing webpack-dev-server running at {}:{}",
-                        WEBPACK_HOST, port);
-
-                // Save running port for next usage
-                saveRunningDevServerPort();
-                watchDog.set(null);
-                return;
+            if (!checkWebpackConnection()) {
+                throw new IllegalStateException(format(
+                        "%s webpack-dev-server port '%d' is defined but it's not working properly",
+                        START_FAILURE, port));
             }
-            throw new IllegalStateException(format(
-                    "%s webpack-dev-server port '%d' is defined but it's not working properly",
-                    START_FAILURE, port));
+            reuseExistingPort(port);
+            return;
+        }
+        port = getRunningDevServerPort(npmFolder);
+        if (port > 0) {
+            if (checkWebpackConnection()) {
+                reuseExistingPort(port);
+                return;
+            } else {
+                getLogger().warn(
+                        "webpack-dev-server port '%d' is defined but it's not working properly. Using a new free port...",
+                        port);
+                port = 0;
+            }
         }
         // here the port == 0
         Pair<File, File> webPackFiles = validateFiles(config, npmFolder);
@@ -625,6 +715,22 @@ public final class DevModeHandler implements RequestHandler {
         if (!useSnowpack || !useSnowpackBuildWatch) {
             port = getFreePort();
         }
+        // save the port immediately before start a webpack server, see #8981
+        saveRunningDevServerPort();
+        boolean success = false;
+
+        try {
+            success = doStartWebpack(config, webPackFiles, start);
+        } finally {
+            if (!success) {
+                removeRunningDevServerPort();
+            }
+        }
+    }
+
+    private boolean doStartWebpack(ApplicationConfiguration config,
+            Pair<File, File> webPackFiles, long start) {
+        String displayName = useSnowpack ? "snowpack" : "webpack";
 
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
@@ -653,6 +759,7 @@ public final class DevModeHandler implements RequestHandler {
         }
 
         processBuilder.command(command);
+
         try {
             webpackProcess.set(
                     processBuilder.redirectError(ProcessBuilder.Redirect.PIPE)
@@ -702,13 +809,25 @@ public final class DevModeHandler implements RequestHandler {
 
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info(LOG_END, ms);
-            saveRunningDevServerPort();
-        } catch (IOException | InterruptedException e) {
-            getLogger().error("Failed to start {}", displayName, e);
+            return true;
+        } catch (IOException e) {
+            getLogger().error("Failed to start the {} process", displayName, e);
+        } catch (InterruptedException e) {
+            getLogger().debug("{} process start has been interrupted", displayName, e);
         }
+        return false;
     }
 
-    private List<String> makeCommands(DeploymentConfiguration config,
+    private void reuseExistingPort(int port) {
+        getLogger().info("Reusing webpack-dev-server running at {}:{}",
+                WEBPACK_HOST, port);
+
+        // Save running port for next usage
+        saveRunningDevServerPort();
+        watchDog.set(null);
+    }
+
+    private List<String> makeCommands(ApplicationConfiguration config,
             File webpack, File webpackConfig, String nodeExec) {
         if (useSnowpack) {
             if (useSnowpackBuildWatch) {
@@ -734,7 +853,8 @@ public final class DevModeHandler implements RequestHandler {
             command.add(webpackConfig.getAbsolutePath());
             command.add("--port");
             command.add(String.valueOf(port));
-            command.add("--watchDogPort=" + watchDog.get().getWatchDogPort());
+            command.add("--env");
+            command.add("watchDogPort=" + watchDog.get().getWatchDogPort());
             command.addAll(Arrays.asList(config
                     .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
                             "-d --inline=false")

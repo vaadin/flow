@@ -22,9 +22,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteParameters;
@@ -91,6 +93,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @since 1.0
  */
+@JsModule("@vaadin/flow-frontend/ConnectionIndicator.js")
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 
@@ -117,6 +120,14 @@ public class UI extends Component
     private final UIInternals internals;
 
     private final Page page = new Page(this);
+
+    /*
+     * Despite section 6 of RFC 4122, this particular use of UUID *is* adequate
+     * for security capabilities. Type 4 UUIDs contain 122 bits of random data,
+     * and UUID.randomUUID() is defined to use a cryptographically secure random
+     * generator.
+     */
+    private final String csrfToken = UUID.randomUUID().toString();
 
     /**
      * Creates a new empty UI.
@@ -888,7 +899,7 @@ public class UI extends Component
                 .forRegistry(getInternals().getRouter().getRegistry());
         navigate(configuration.getUrl(navigationTarget, parameters));
     }
-    
+
     /**
      * Updates this UI to show the view corresponding to the given location. The
      * location must be a relative path without any ".." segments.
@@ -1049,7 +1060,7 @@ public class UI extends Component
      * {@link com.vaadin.flow.component.page.Page#setLocation(URI)}, typing a
      * URL into the address bar, or closing the browser), listeners are not
      * called.
-     * 
+     *
      * @param listener
      *            the before leave listener
      * @return handler to remove the event listener
@@ -1174,14 +1185,14 @@ public class UI extends Component
     }
 
     /**
-     * Gets the CSRF token (aka double submit cookie) that is used to protect
+     * Gets the CSRF token (synchronizer token pattern) that is used to protect
      * against Cross Site Request Forgery attacks.
      *
      * @return the csrf token string
      * @since 2.0
      */
     public String getCsrfToken() {
-        return getSession().getCsrfToken();
+        return csrfToken;
     }
 
 }

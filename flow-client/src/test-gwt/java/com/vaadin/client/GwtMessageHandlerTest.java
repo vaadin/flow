@@ -250,7 +250,7 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         obj2.put("syncId", 3);
         handler.handleJSON(object2.cast());
 
-        // then a resync message is sent within 300 ms
+        // then a re-sync message is sent within 300 ms
         delayTestFinish(500);
         new Timer() {
             @Override

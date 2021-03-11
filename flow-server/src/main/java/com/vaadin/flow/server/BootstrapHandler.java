@@ -38,7 +38,6 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -53,12 +52,13 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.client.ClientResourcesUtils;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
@@ -82,6 +82,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -118,8 +119,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String CAPTION = "caption";
     private static final String MESSAGE = "message";
     private static final String URL = "url";
-
-    static Supplier<String> clientEngineFile = () -> LazyClientEngineInit.CLIENT_ENGINE_FILE;
 
     private final PageBuilder pageBuilder;
 
@@ -531,10 +530,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return document;
         }
 
-        private String getClientEngine() {
-            return clientEngineFile.get();
-        }
-
         private Element createDependencyElement(BootstrapContext context,
                 JsonObject dependencyJson) {
             String type = dependencyJson.getString(Dependency.KEY_TYPE);
@@ -786,7 +781,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     chunkName = chunks.getString(key);
                 }
                 Element script = createJavaScriptElement(
-                        "./" + VAADIN_MAPPING + chunkName, false);
+                        "./" + chunkName, false);
                 head.appendChild(script.attr("type", "module")
                         .attr("data-app-id",
                                 context.getUI().getInternals().getAppId())
@@ -798,7 +793,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         /**
          * Return the list of chunk keys that should be considered by the
          * bootstrap handler.
-         * 
+         *
          * @param chunks
          *            in the stat file
          * @return
@@ -832,20 +827,52 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             final boolean productionMode = context.getSession()
                     .getConfiguration().isProductionMode();
 
-            boolean resolveNow = !productionMode || getClientEngine() == null;
+            ResourceProvider resourceProvider = getResourceProvider(context);
+            String clientEngine = getClientEngine(resourceProvider);
+            boolean resolveNow = !productionMode || clientEngine == null;
             if (resolveNow
-                    && ClientResourcesUtils.getResource("/META-INF/resources/"
+                    && resourceProvider.getClientResource("META-INF/resources/"
                             + CLIENT_ENGINE_NOCACHE_FILE) != null) {
                 return context.getUriResolver().resolveVaadinUri(
                         "context://" + CLIENT_ENGINE_NOCACHE_FILE);
             }
 
-            if (getClientEngine() == null) {
+            if (clientEngine == null) {
                 throw new BootstrapException(
                         "Client engine file name has not been resolved during initialization");
             }
             return context.getUriResolver()
-                    .resolveVaadinUri("context://" + getClientEngine());
+                    .resolveVaadinUri("context://" + clientEngine);
+        }
+
+        private ResourceProvider getResourceProvider(BootstrapContext context) {
+            ResourceProvider resourceProvider = context.getSession()
+                    .getService().getContext().getAttribute(Lookup.class)
+                    .lookup(ResourceProvider.class);
+            return resourceProvider;
+        }
+
+        private String getClientEngine(ResourceProvider resourceProvider) {
+            // read client engine file name
+            try (InputStream prop = resourceProvider
+                    .getClientResourceAsStream("META-INF/resources/"
+                            + ApplicationConstants.CLIENT_ENGINE_PATH
+                            + "/compile.properties")) {
+                // null when running SDM or tests
+                if (prop != null) {
+                    Properties properties = new Properties();
+                    properties.load(prop);
+                    return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
+                            + properties.getProperty("jsFile");
+                } else {
+                    getLogger().warn(
+                            "No compile.properties available on initialization, "
+                                    + "could not read client engine file name.");
+                }
+            } catch (IOException e) {
+                throw new ExceptionInInitializerError(e);
+            }
+            return null;
         }
 
         private void setupCss(Element head, BootstrapContext context) {
@@ -899,8 +926,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             // defer makes no sense without src:
             // https://developer.mozilla.org/en/docs/Web/HTML/Element/script
             Element wrapper = createJavaScriptElement(null, false);
-            wrapper.appendChild(
-                    new DataNode(javaScriptContents));
+            wrapper.appendChild(new DataNode(javaScriptContents));
             return wrapper;
         }
 
@@ -1088,9 +1114,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 // With V15+ bootstrap, gizmo is added to generated index.html
                 if (liveReload != null
                         && deploymentConfiguration.useV14Bootstrap()) {
-                    appConfig.put("liveReloadUrl",
-                            BootstrapHandlerHelper.getPushURL(session,
-                                    request));
+                    appConfig.put("liveReloadUrl", BootstrapHandlerHelper
+                            .getPushURL(session, request));
                     if (liveReload.getBackend() != null) {
                         appConfig.put("liveReloadBackend",
                                 liveReload.getBackend().toString());
@@ -1303,38 +1328,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         } catch (IOException e) {
             throw new ExceptionInInitializerError(e);
         }
-    }
-
-    private static class LazyClientEngineInit {
-        private static final String CLIENT_ENGINE_FILE = readClientEngine();
-
-        private LazyClientEngineInit() {
-            // this is a utility class, instances should not be created
-        }
-
-        private static String readClientEngine() {
-            // read client engine file name
-            try (InputStream prop = ClientResourcesUtils
-                    .getResource("/META-INF/resources/"
-                            + ApplicationConstants.CLIENT_ENGINE_PATH
-                            + "/compile.properties")) {
-                // null when running SDM or tests
-                if (prop != null) {
-                    Properties properties = new Properties();
-                    properties.load(prop);
-                    return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
-                            + properties.getProperty("jsFile");
-                } else {
-                    getLogger().warn(
-                            "No compile.properties available on initialization, "
-                                    + "could not read client engine file name.");
-                }
-            } catch (IOException e) {
-                throw new ExceptionInInitializerError(e);
-            }
-            return null;
-        }
-
     }
 
     /**

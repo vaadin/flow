@@ -35,10 +35,6 @@ public class ReconnectDialogConfigurationMap extends NodeMap
     public static final int RECONNECT_ATTEMPTS_DEFAULT = 10000;
     public static final String RECONNECT_INTERVAL_KEY = "reconnectInterval";
     public static final int RECONNECT_INTERVAL_DEFAULT = 5000;
-    public static final String DIALOG_GRACE_PERIOD_KEY = "dialogGracePeriod";
-    public static final int DIALOG_GRACE_PERIOD_DEFAULT = 400;
-    public static final String DIALOG_MODAL_KEY = "dialogModal";
-    public static final boolean DIALOG_MODAL_DEFAULT = false;
 
     /**
      * Creates a new map for the given node.
@@ -91,26 +87,4 @@ public class ReconnectDialogConfigurationMap extends NodeMap
     public void setReconnectInterval(int reconnectInterval) {
         put(RECONNECT_INTERVAL_KEY, reconnectInterval);
     }
-
-    @Override
-    public int getDialogGracePeriod() {
-        return getOrDefault(DIALOG_GRACE_PERIOD_KEY,
-                DIALOG_GRACE_PERIOD_DEFAULT);
-    }
-
-    @Override
-    public void setDialogGracePeriod(int dialogGracePeriod) {
-        put(DIALOG_GRACE_PERIOD_KEY, dialogGracePeriod);
-    }
-
-    @Override
-    public boolean isDialogModal() {
-        return getOrDefault(DIALOG_MODAL_KEY, DIALOG_MODAL_DEFAULT);
-    }
-
-    @Override
-    public void setDialogModal(boolean dialogModal) {
-        put(DIALOG_MODAL_KEY, dialogModal);
-    }
-
 }

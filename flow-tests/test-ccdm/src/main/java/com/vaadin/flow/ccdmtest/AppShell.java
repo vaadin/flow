@@ -9,12 +9,14 @@ import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.theme.Theme;
 
 @Meta(name = "foo", content = "bar")
 @PWA(name = "My App", shortName = "app")
 @Viewport(Viewport.DEVICE_DIMENSIONS)
 @BodySize(height = "50vh", width = "50vw")
 @Push(PushMode.AUTOMATIC)
+@Theme("my-theme")
 public class AppShell implements AppShellConfigurator {
     private final String url;
 
@@ -25,5 +27,6 @@ public class AppShell implements AppShellConfigurator {
     @Override
     public void configurePage(AppShellSettings settings) {
         settings.addMetaTag("test-resource-url", url);
+        settings.setPageTitle("app-shell-title");
     }
 }

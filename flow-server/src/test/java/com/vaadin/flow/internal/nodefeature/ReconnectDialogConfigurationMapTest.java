@@ -42,12 +42,6 @@ public class ReconnectDialogConfigurationMapTest
         Assert.assertEquals(
                 ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT,
                 map.getReconnectInterval());
-        Assert.assertEquals(
-                ReconnectDialogConfigurationMap.DIALOG_GRACE_PERIOD_DEFAULT,
-                map.getDialogGracePeriod());
-        Assert.assertEquals(
-                ReconnectDialogConfigurationMap.DIALOG_MODAL_DEFAULT,
-                map.isDialogModal());
     }
 
     @Test
@@ -73,19 +67,4 @@ public class ReconnectDialogConfigurationMapTest
         testInt(map, ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY,
                 map::setReconnectInterval, map::getReconnectInterval);
     }
-
-    @Test
-    public void setGetDialogGracePeriod() {
-        testInt(map, ReconnectDialogConfigurationMap.DIALOG_GRACE_PERIOD_KEY,
-                map::setDialogGracePeriod, map::getDialogGracePeriod);
-
-    }
-
-    @Test
-    public void setGetDialogModal() {
-        testBoolean(map, ReconnectDialogConfigurationMap.DIALOG_MODAL_KEY,
-                map::setDialogModal, map::isDialogModal);
-
-    }
-
 }

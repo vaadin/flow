@@ -1,9 +1,18 @@
+/* tslint:disable: no-unused-expression */
+import object from "intern/lib/interfaces/object";
+
 const {describe, it, beforeEach, afterEach, after} = intern.getPlugin('interface.bdd');
 const {expect} = intern.getPlugin('chai');
 const {fetchMock} = intern.getPlugin('fetchMock');
 const {sinon} = intern.getPlugin('sinon');
 
-import { ConnectClient, EndpointCallContinue, EndpointError, EndpointResponseError, EndpointValidationError, InvalidSessionMiddleware, login, logout } from "../../main/resources/META-INF/resources/frontend/Connect";
+import {
+  ConnectClient,
+  EndpointError,
+  EndpointResponseError,
+  EndpointValidationError,
+} from "../../main/resources/META-INF/resources/frontend/Connect";
+import {ConnectionState, ConnectionStateStore} from "../../main/resources/META-INF/resources/frontend/ConnectionState";
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
@@ -16,11 +25,19 @@ describe('ConnectClient', () => {
     return next(ctx);
   }
 
-  beforeEach(() => localStorage.clear());
+  beforeEach(() => {
+    const connectionStateStore = new ConnectionStateStore(ConnectionState.CONNECTED);
+    (window as any).Vaadin = { connectionState: connectionStateStore };
+    localStorage.clear();
+  });
 
-  after(() => {
-    // @ts-ignore
-    delete window.Vaadin;
+  afterEach(() => {
+    const $wnd = window as any;
+    const indicator = $wnd.document.body.querySelector('vaadin-connection-indicator');
+    if (indicator) {
+      indicator.remove();
+    }
+    delete $wnd.Vaadin;
   });
 
   it('should be exported', () => {
@@ -30,6 +47,43 @@ describe('ConnectClient', () => {
   it('should instantiate without arguments', () => {
     const client = new ConnectClient();
     expect(client).to.be.instanceOf(ConnectClient);
+  });
+
+  it('should add a global connection indicator', () => {
+    new ConnectClient();
+    expect((window as any).Vaadin.connectionIndicator).is.not.undefined;
+  });
+
+  it('should transition to CONNECTION_LOST on offline and to CONNECTED on subsequent online if Flow.client.TypeScript not loaded', async() => {
+    new ConnectClient();
+    let $wnd = (window as any);
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
+    $wnd.dispatchEvent(new Event('offline'));
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
+    $wnd.dispatchEvent(new Event('online'));
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
+  });
+
+  it('should transition to CONNECTION_LOST on offline and to CONNECTED on subsequent online if Flow is loaded but Flow.client.TypeScript not loaded', async() => {
+    new ConnectClient();
+    let $wnd = (window as any);
+    $wnd.Vaadin.Flow = {};
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
+    $wnd.dispatchEvent(new Event('offline'));
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
+    $wnd.dispatchEvent(new Event('online'));
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
+  });
+
+  it('should not transition connection state if Flow loaded', async() => {
+    new ConnectClient();
+    let $wnd = (window as any);
+    $wnd.Vaadin.Flow = {};
+    $wnd.Vaadin.Flow.clients = {};
+    $wnd.Vaadin.Flow.clients.TypeScript = {};
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
+    $wnd.dispatchEvent(new Event('offline'));
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
   });
 
   describe('constructor options', () => {
@@ -102,6 +156,7 @@ describe('ConnectClient', () => {
         expect(err).to.be.instanceOf(TypeError)
           .and.have.property('message').that.has.string('2 arguments required');
       }
+
     });
 
     it('should fetch endpoint and method from default prefix', async() => {
@@ -124,11 +179,51 @@ describe('ConnectClient', () => {
       expect(fetchMock.lastOptions()).to.include({method: 'POST'});
     });
 
-    it('should call Flow.loading indicator', async() => {
-      let calls = '';
-      (window as any).Vaadin.Flow = {loading: (action: boolean) => calls += action};
+    it('should set connection state to LOADING followed by CONNECTED on successful fetch', async() => {
+      let $wnd = (window as any);
+      const stateChangeListener = sinon.fake();
+      $wnd.Vaadin.connectionState.addStateChangeListener(stateChangeListener);
+
       await client.call('FooEndpoint', 'fooMethod');
-      expect(calls).to.equal('truefalse');
+      (expect(stateChangeListener).to.be as any).calledWithExactly(ConnectionState.LOADING, ConnectionState.CONNECTED);
+    });
+
+    it('should set connection state to CONNECTION_LOST on network failure', async() => {
+      let $wnd = (window as any);
+      const stateChangeListener = sinon.fake();
+      $wnd.Vaadin.connectionState.addStateChangeListener(stateChangeListener);
+      fetchMock.post(
+        base + '/connect/FooEndpoint/reject',
+        Promise.reject(new TypeError('Network failure'))
+      );
+      try {
+        await client.call('FooEndpoint', 'reject');
+      } catch (error) {
+        // expected
+      } finally {
+        (expect(stateChangeListener).to.be as any).calledWithExactly(ConnectionState.LOADING, ConnectionState.CONNECTION_LOST);
+      }
+    });
+
+    it('should  set connection state to CONNECTED upon server error', async() => {
+      let $wnd = (window as any);
+      const body = 'Unexpected error';
+      const errorResponse = new Response(
+        body,
+        {
+          status: 500,
+          statusText: 'Internal Server Error'
+        }
+      );
+      fetchMock.post(base + '/connect/FooEndpoint/vaadinConnectResponse', errorResponse);
+
+      try {
+        await client.call('FooEndpoint', 'vaadinConnectResponse');
+      } catch (error) {
+        // expected
+      } finally {
+        expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
+      }
     });
 
     it('should use JSON request headers', async() => {
@@ -154,7 +249,10 @@ describe('ConnectClient', () => {
       // @ts-ignore
       const OriginalVaadin = window.Vaadin;
       // @ts-ignore
-      window.Vaadin = {TypeScript: {csrfToken: 'foo'}};
+      window.Vaadin = {
+        TypeScript: {csrfToken: 'foo'},
+        connectionState: (window as any).Vaadin.connectionState
+      };
 
       await client.call('FooEndpoint', 'fooMethod');
 
@@ -318,7 +416,7 @@ describe('ConnectClient', () => {
             myUrl,
             {
               method: 'POST',
-              headers: {...context.request.headers, 
+              headers: {...context.request.headers,
                 'X-Foo': 'Bar'},
               body: '{"baz": "qux"}'
             }
@@ -336,7 +434,7 @@ describe('ConnectClient', () => {
       });
 
       it('should allow modified response', async() => {
-        const myMiddleware = async(context: any, next?: any) => {
+        const myMiddleware = async(_context: any, _next?: any) => {
           return new Response('{"baz": "qux"}');
         };
 
@@ -376,7 +474,7 @@ describe('ConnectClient', () => {
         const myResponse = new Response('{}');
         const myContext = {foo: 'bar', request: myRequest};
 
-        const firstMiddleware = async(context?: any, next?: any) => {
+        const firstMiddleware = async(_context?: any, next?: any) => {
           // Pass modified context
           const response = await next(myContext);
           // Expect modified response
@@ -384,7 +482,7 @@ describe('ConnectClient', () => {
           return response;
         };
 
-        const secondMiddleware = async(context: any, next?: any) => {
+        const secondMiddleware = async(context: any, _next?: any) => {
           // Expect modified context
           expect(context).to.equal(myContext);
           // Pass modified response
@@ -395,111 +493,5 @@ describe('ConnectClient', () => {
         await client.call('FooEndpoint', 'fooMethod', {fooParam: 'foo'});
       });
     });
-
-    describe('login', () => {
-      afterEach(() => fetchMock.restore());
-
-      it('should return an error on invalid credentials', async () => {
-        fetchMock.post('/login', { redirectUrl: '/login?error' });
-        const result = await login('invalid-username', 'invalid-password');
-        const expectedResult = {
-          error: true,
-          errorTitle: 'Incorrect username or password.',
-          errorMessage: 'Check that you have entered the correct username and password and try again.'
-        };
-
-        expect(fetchMock.calls()).to.have.lengthOf(1);
-        expect(result).to.deep.equal(expectedResult);
-      })
-
-      it('should return a CSRF token on valid credentials', async () => {
-        fetchMock.post('/login', {
-          body: 'window.Vaadin = {TypeScript: {"csrfToken":"6a60700e-852b-420f-a126-a1c61b73d1ba"}};',
-          redirectUrl: '/'
-        });
-        const result = await login('valid-username', 'valid-password');
-        const expectedResult = {
-          error: false,
-          errorTitle: '',
-          errorMessage: '',
-          token: '6a60700e-852b-420f-a126-a1c61b73d1ba'
-        };
-
-        expect(fetchMock.calls()).to.have.lengthOf(1);
-        expect(result).to.deep.equal(expectedResult);
-      })
-
-      it('should return an error on other unexpected responses', async () => {
-        const body = 'Unexpected error';
-        const errorResponse = new Response(
-          body,
-          {
-            status: 500,
-            statusText: 'Internal Server Error'
-          }
-        );
-        fetchMock.post('/login', errorResponse);
-        const result = await login('valid-username', 'valid-password');
-        const expectedResult = {
-          error: true,
-          errorTitle: 'Error',
-          errorMessage: 'Something went wrong when trying to login.'
-        };
-
-        expect(fetchMock.calls()).to.have.lengthOf(1);
-        expect(result).to.deep.equal(expectedResult);
-      })
-    })
-  });
-
-  describe("logout", () => {
-    it('should set the csrf token on logout', async () => {
-      fetchMock.get('/logout', {
-        body: 'window.Vaadin = {TypeScript: {"csrfToken":"6a60700e-852b-420f-a126-a1c61b73d1ba"}};',
-        redirectUrl: '/logout?login'
-      });
-      await logout();
-      expect(fetchMock.calls()).to.have.lengthOf(1);
-      expect((window as any).Vaadin.TypeScript.csrfToken).to.equal("6a60700e-852b-420f-a126-a1c61b73d1ba");
-    });
-  });
-
-  describe("InvalidSessionMiddleWare", ()=>{
-    afterEach(() => fetchMock.restore());
-
-    it("should invoke the onInvalidSession callback on 401 response", async ()=>{
-      fetchMock.post(base + '/connect/FooEndpoint/fooMethod', 401)
-      
-      const invalidSessionCallback = sinon.spy((continueFunc: EndpointCallContinue)=>{
-        // mock to pass authentication
-        fetchMock.restore();
-        fetchMock.post(base + '/connect/FooEndpoint/fooMethod', {fooData: 'foo'})
-        continueFunc("csrf-token");
-      });
-      const middleware = new InvalidSessionMiddleware(invalidSessionCallback);
-      
-      const client = new ConnectClient({middlewares:[middleware]});
-        
-      await client.call('FooEndpoint','fooMethod');
-      
-      expect(invalidSessionCallback.calledOnce).to.be.true;
-
-      const headers = fetchMock.lastOptions().headers;
-      expect(headers).to.deep.include({
-        'x-csrf-token': 'csrf-token'
-      });
-    })
-
-    it("should not invoke the onInvalidSession callback on 200 response", async ()=>{
-      fetchMock.post(base + '/connect/FooEndpoint/fooMethod', {fooData: 'foo'})
-      
-      const invalidSessionCallback = sinon.spy();
-      const middleware = new InvalidSessionMiddleware(invalidSessionCallback);
-      
-      const client = new ConnectClient({middlewares:[middleware]});
-      await client.call('FooEndpoint', 'fooMethod');
-      
-      expect(invalidSessionCallback.called).to.be.false;
-    })
   });
 });

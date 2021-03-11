@@ -18,6 +18,7 @@ package com.vaadin.flow.server.webcomponent;
 
 import java.util.Map;
 
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -49,7 +50,7 @@ public class WebComponentGeneratorTest {
                 .getReplacementsMap("my-component",
                         new WebComponentExporter.WebComponentConfigurationFactory()
                                 .create(exporter).getPropertyDataSet(),
-                        "/foo", generateUi);
+                        "/foo", generateUi, null);
 
         Assert.assertTrue("Missing dashed tag name",
                 replacementsMap.containsKey("TagDash"));
@@ -82,53 +83,53 @@ public class WebComponentGeneratorTest {
         }
 
         String attributeChange = replacementsMap.get("AttributeChange");
-        Assert.assertThat(attributeChange,
+        MatcherAssert.assertThat(attributeChange,
                 containsString(String.format("if (attribute === 'message') {%n"
                         + "  this['message'] = this._deserializeValue(value, "
                         + "String);")));
-        Assert.assertThat(attributeChange, containsString(
+        MatcherAssert.assertThat(attributeChange, containsString(
                 String.format("if (attribute === 'integer-value') {%n"
                         + "  this['integer-value'] = this._deserializeValue"
                         + "(value, Number);")));
-        Assert.assertThat(attributeChange, containsString(
+        MatcherAssert.assertThat(attributeChange, containsString(
                 String.format("if (attribute === 'camel-case-value') {%n"
                         + "  this['camelCaseValue'] = this._deserializeValue"
                         + "(value, Number);")));
-        Assert.assertThat(attributeChange,
+        MatcherAssert.assertThat(attributeChange,
                 containsString(String.format("if (attribute === 'response') {%n"
                         + "  this['response'] = this._deserializeValue(value,"
                         + " String);")));
 
         String propertyMethods = replacementsMap.get("PropertyMethods");
-        Assert.assertThat(propertyMethods,
+        MatcherAssert.assertThat(propertyMethods,
                 containsString("get ['message']() {"));
-        Assert.assertThat(propertyMethods,
+        MatcherAssert.assertThat(propertyMethods,
                 containsString("set ['message'](value) {"));
-        Assert.assertThat(propertyMethods,
+        MatcherAssert.assertThat(propertyMethods,
                 containsString("this._sync('message',"));
-        Assert.assertThat(propertyMethods,
+        MatcherAssert.assertThat(propertyMethods,
                 containsString("set ['integer-value'](value) {"));
-        Assert.assertThat(propertyMethods,
+        MatcherAssert.assertThat(propertyMethods,
                 containsString("this._sync('integer-value',"));
-        Assert.assertThat(propertyMethods,
+        MatcherAssert.assertThat(propertyMethods,
                 containsString("set ['response'](value) {"));
-        Assert.assertThat(propertyMethods,
+        MatcherAssert.assertThat(propertyMethods,
                 containsString("this._sync('response',"));
 
         String propertyValues = replacementsMap.get("PropertyValues");
-        Assert.assertThat(propertyValues,
+        MatcherAssert.assertThat(propertyValues,
                 containsString("'message': this['message']"));
-        Assert.assertThat(propertyValues,
+        MatcherAssert.assertThat(propertyValues,
                 containsString("'integer-value': this['integer-value']"));
-        Assert.assertThat(propertyValues,
+        MatcherAssert.assertThat(propertyValues,
                 containsString("'response': this['response']"));
 
         String propertyDefaults = replacementsMap.get("PropertyDefaults");
-        Assert.assertThat(propertyDefaults,
+        MatcherAssert.assertThat(propertyDefaults,
                 containsString("this['_message'] = ''"));
-        Assert.assertThat(propertyDefaults,
+        MatcherAssert.assertThat(propertyDefaults,
                 containsString("this['_integer-value'] = 0"));
-        Assert.assertThat(propertyDefaults,
+        MatcherAssert.assertThat(propertyDefaults,
                 containsString("this['_response'] = 'hello'"));
     }
 
@@ -137,15 +138,15 @@ public class WebComponentGeneratorTest {
         String module = WebComponentGenerator.generateModule(
                 new DefaultWebComponentExporterFactory<MyComponent>(
                         MyComponentExporter.class),
-                "", true);
+                "", true, null);
         // make sure that the test works on windows machines:
         module = module.replace("\r", "");
-        Assert.assertThat(module, startsWith(
+        MatcherAssert.assertThat(module, startsWith(
                 "\n" + "<script>\n" + "  class Tag extends HTMLElement {\n"));
         // this part is from the
         // com.vaadin.flow.webcomponent-script-template
         // .js to verify successful import
-        Assert.assertThat(module,
+        MatcherAssert.assertThat(module,
                 containsString("customElements.define('tag', Tag);\n"));
     }
 
@@ -154,19 +155,45 @@ public class WebComponentGeneratorTest {
         String module = WebComponentGenerator.generateModule(
                 new DefaultWebComponentExporterFactory<MyComponent>(
                         MyComponentExporter.class),
-                "", false);
+                "", false, null);
         // make sure that the test works on windows machines:
         module = module.replace("\r", "");
-        Assert.assertThat(module,
+        MatcherAssert.assertThat(module,
                 startsWith("class Tag extends HTMLElement {"));
-        Assert.assertThat(module, containsString("style.innerHTML = `\n" //
+        MatcherAssert
+            .assertThat(module, containsString("style.innerHTML = `\n" //
                 + "      :host {\n" //
                 + "        position: relative;\n" //
                 + "        display: inline-block;\n" //
                 + "      }\n" //
                 + "    `;\n"));
 
-        Assert.assertThat(module,
+        MatcherAssert.assertThat(module,
+                containsString("customElements.define('tag', Tag);\n"));
+    }
+
+    @Test
+    public void providedJSModuleContainsCorrectThemeReplacements() {
+        String module = WebComponentGenerator.generateModule(
+                new DefaultWebComponentExporterFactory<>(
+                        MyComponentExporter.class),
+                "", false, "my-theme");
+        // make sure that the test works on windows machines:
+        module = module.replace("\r", "");
+        MatcherAssert.assertThat(module,
+                startsWith("import {applyTheme} from '"
+                        + "generated/theme';\n\nclass Tag extends "
+                        + "HTMLElement {"));
+        MatcherAssert
+            .assertThat(module, containsString("style.innerHTML = `\n" //
+                + "      :host {\n" //
+                + "        position: relative;\n" //
+                + "        display: inline-block;\n" //
+                + "      }\n" //
+                + "    `;\n"));
+
+        MatcherAssert.assertThat(module, containsString("applyTheme(shadow);\n    shadow.appendChild(style);"));
+        MatcherAssert.assertThat(module,
                 containsString("customElements.define('tag', Tag);\n"));
     }
 

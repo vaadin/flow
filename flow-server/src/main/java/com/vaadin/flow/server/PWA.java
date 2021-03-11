@@ -66,14 +66,15 @@ public @interface PWA {
     /**
      * Path to the static offline html file.
      *
-     * Defaults to (relative) {@literal offline.html} with default configuration
-     * that is {@literal webapp/offline.html}
+     * Defaults to empty value, meaning that the application shell (`index
+     * .html` file) is used offline.
      *
-     * If offline file is not found, falls back to default offline page.
+     * If offline file is not found, the browser’s default “unreachable site”
+     * message is shown.
      *
      * @return path to the static offline html file
      */
-    String offlinePath() default PwaConfiguration.DEFAULT_OFFLINE_PATH;
+    String offlinePath() default "";
 
     /**
      * Path to the manifest file.
@@ -111,7 +112,8 @@ public @interface PWA {
      *
      * @return application start url
      */
-    String startPath() default "";
+    String startPath() default PwaConfiguration.DEFAULT_START_URL;
+
 
     /**
      * Name of the application.
@@ -169,5 +171,4 @@ public @interface PWA {
      * @return offline resources to be cached
      */
     String[] offlineResources() default {};
-
 }

@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -32,17 +31,17 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
-import com.vaadin.flow.component.littemplate.LitTemplate;
-import com.vaadin.flow.component.polymertemplate.EventHandler;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEventHandler;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ClientCallableHandlers;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.flow.templatemodel.ModelType;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -54,17 +53,10 @@ import elemental.json.JsonValue;
  * RPC handler for events triggered through <code>element.$server</code> or
  * simply <code>$server</code> in template event handlers.
  *
- * @see JsonConstants#RPC_PUBLISHED_SERVER_EVENT_HANDLER
- *
  * @author Vaadin Ltd
+ * @see JsonConstants#RPC_PUBLISHED_SERVER_EVENT_HANDLER
  * @since 1.0
- *
- * @deprecated Polymer template support is deprecated - we recommend you to use
- *             {@link LitTemplate} instead. Read more details from <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
  */
-@Deprecated
 public class PublishedServerEventHandlerRpcHandler
         extends AbstractRpcInvocationHandler {
 
@@ -157,8 +149,7 @@ public class PublishedServerEventHandlerRpcHandler
             Class<?> clazz, String methodName) {
         List<Method> methods = Stream.of(clazz.getDeclaredMethods())
                 .filter(method -> methodName.equals(method.getName()))
-                .filter(method -> method.isAnnotationPresent(EventHandler.class)
-                        || method.isAnnotationPresent(ClientCallable.class))
+                .filter(method -> hasMethodAnnotation(method))
                 .collect(Collectors.toList());
         if (methods.size() > 1) {
             String msg = String.format("Class '%s' contains "
@@ -172,6 +163,14 @@ public class PublishedServerEventHandlerRpcHandler
         } else {
             return Optional.empty();
         }
+    }
+
+    private static boolean hasMethodAnnotation(Method method) {
+        // Check for polymer event handler annotation.
+        final boolean hasEventHandler = ReflectTools.hasAnnotation(method,
+                "com.vaadin.flow.component.polymertemplate.EventHandler");
+        return hasEventHandler
+                || method.isAnnotationPresent(ClientCallable.class);
     }
 
     private static void invokeMethod(Component instance, Method method,
@@ -298,10 +297,23 @@ public class PublishedServerEventHandlerRpcHandler
         } else {
             Class<?> convertedType = ReflectTools.convertPrimitiveType(type);
 
-            if (isTemplateModelValue(instance, argValue, convertedType)) {
-                return getTemplateItem((PolymerTemplate<?>) instance,
-                        (JsonObject) argValue,
-                        method.getGenericParameterTypes()[index]);
+            if (instance != null) {
+                Optional<UI> ui = instance.getUI();
+                if (!ui.isPresent()) {
+                    throw new IllegalStateException(
+                            "Rpc handler may not be called for a detached component");
+                }
+                VaadinContext context = ui.get().getSession().getService()
+                        .getContext();
+                DeprecatedPolymerPublishedEventHandler handler = context
+                        .getAttribute(Lookup.class)
+                        .lookup(DeprecatedPolymerPublishedEventHandler.class);
+                if (handler != null && handler.isTemplateModelValue(instance,
+                        argValue, convertedType)) {
+                    return handler.getTemplateItem(instance,
+                            (JsonObject) argValue,
+                            method.getGenericParameterTypes()[index]);
+                }
             }
 
             Optional<RpcDecoder> decoder = getDecoder(argValue, convertedType);
@@ -318,6 +330,7 @@ public class PublishedServerEventHandlerRpcHandler
                     index, type.getName());
             throw new IllegalArgumentException(msg);
         }
+
     }
 
     private static Optional<RpcDecoder> getDecoder(JsonValue value,
@@ -325,25 +338,6 @@ public class PublishedServerEventHandlerRpcHandler
         return DECODERS.stream()
                 .filter(decoder -> decoder.isApplicable(value, type))
                 .findFirst();
-    }
-
-    private static boolean isTemplateModelValue(Component instance,
-            JsonValue argValue, Class<?> convertedType) {
-        return instance instanceof PolymerTemplate
-                && argValue instanceof JsonObject
-                && ((PolymerTemplate<?>) instance)
-                        .isSupportedClass(convertedType)
-                && ((JsonObject) argValue).hasKey("nodeId");
-    }
-
-    private static Object getTemplateItem(PolymerTemplate<?> template,
-            JsonObject argValue, Type convertedType) {
-        StateNode node = template.getUI().get().getInternals().getStateTree()
-                .getNodeById((int) argValue.getNumber("nodeId"));
-
-        ModelType propertyType = template.getModelType(convertedType);
-
-        return propertyType.modelToApplication(node);
     }
 
     private static Object decodeArray(Method method, Class<?> type, int index,

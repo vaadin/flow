@@ -13,10 +13,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
+package com.vaadin.flow.component;
 
 public class ServerNoDataEvent extends ComponentEvent<Component> {
 

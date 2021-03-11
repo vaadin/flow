@@ -75,23 +75,16 @@ public class NodeUpdateTestUtil {
     // frontend-maven-plugin does
     // Also creates a stub version of webpack-devmode-server
     public static void createStubNode(boolean stubNode, boolean stubNpm,
-            boolean stubPnpm, String baseDir) throws IOException {
+            String baseDir) throws IOException {
 
         if (stubNpm) {
-            File npmCli = new File(baseDir,
-                    "node/node_modules/npm/bin/npm-cli.js");
-            FileUtils.forceMkdirParent(npmCli);
-            FileUtils.writeStringToFile(npmCli,
-                    "process.argv.includes('--version') && console.log('5.6.0');",
+            File binDir = new File(baseDir, "node/node_modules/npm/bin");
+            FileUtils.forceMkdir(binDir);
+            String stub = "process.argv.includes('--version') && console.log('6.14.10');";
+            FileUtils.writeStringToFile(new File(binDir, "npm-cli.js"), stub,
                     StandardCharsets.UTF_8);
-        }
-        if (stubPnpm) {
-            File ppmCli = new File(baseDir, "node_modules/pnpm/bin/pnpm.js");
-            FileUtils.forceMkdirParent(ppmCli);
-            FileUtils.writeStringToFile(ppmCli,
-                    "process.argv.includes('--version') && console.log('4.5.0');",
+            FileUtils.writeStringToFile(new File(binDir, "npx-cli.js"), stub,
                     StandardCharsets.UTF_8);
-            new File(baseDir, "node_modules/.modules.yaml").createNewFile();
         }
         if (stubNode) {
             File node = new File(baseDir,
@@ -116,20 +109,42 @@ public class NodeUpdateTestUtil {
     // for a while and output arguments passed to a file, so as tests can check
     // it
     public static void createStubWebpackServer(String readyString,
-            int milliSecondsToRun, String baseDir) throws IOException {
+            int milliSecondsToRun, String baseDir, boolean enableListening) throws IOException {
         File serverFile = new File(baseDir, WEBPACK_SERVER);
         FileUtils.forceMkdirParent(serverFile);
 
         serverFile.createNewFile();
         serverFile.setExecutable(true);
-        FileUtils.write(serverFile,
-                ("#!/usr/bin/env node\n" + "const fs = require('fs');\n"
-                        + "const args = String(process.argv);\n"
-                        + "fs.writeFileSync('" + WEBPACK_TEST_OUT_FILE
-                        + "', args);\n" + "console.log(args + '\\n[wps]: "
-                        + readyString + ".');\n" + "setTimeout(() => {}, "
-                        + milliSecondsToRun + ");\n"),
-                "UTF-8");
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("#!/user/bin/env node\n");
+        sb.append("const args = String(process.argv);\n");
+        sb.append("const fs = require('fs');\n");
+        sb.append("const http = require('http');\n");
+        sb.append("fs.writeFileSync('").append(WEBPACK_TEST_OUT_FILE)
+                .append("', args);\n");
+        if (enableListening) {
+            sb.append("const port = Number.parseInt(process.argv[")
+                    .append("process.argv.indexOf('--port') + 1").append("]);\n");
+            sb.append("const server = new http.Server((req, res) => {\n");
+            sb.append("  res.writeHead(200, {")
+                    .append("'Content-Type': 'application/json',").append("});\n");
+            sb.append("  res.write('{}');\n");
+            sb.append("  res.end();\n");
+            sb.append("});\n");
+            sb.append("server.listen(port);\n");
+            sb.append("setTimeout(() => server.close(), ").append(milliSecondsToRun).append(");\n");
+        } else {
+            sb.append("setTimeout(() => {}, ").append(milliSecondsToRun).append(");\n");
+        }
+        sb.append("console.log(args);\n");
+        sb.append("console.log('[wps]: ").append(readyString).append(".');\n");
+        FileUtils.write(serverFile, sb.toString(), "UTF-8");
+    }
+
+    public static void createStubWebpackServer(String readyString,
+            int milliSecondsToRun, String baseDir) throws IOException {
+        createStubWebpackServer(readyString, milliSecondsToRun, baseDir, false);
     }
 
     static URL getTestResource(String resourceName) {

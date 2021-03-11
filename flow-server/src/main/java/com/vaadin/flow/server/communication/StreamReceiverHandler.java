@@ -25,6 +25,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -119,7 +121,9 @@ public class StreamReceiverHandler implements Serializable {
         session.lock();
         try {
             String secKey = streamReceiver.getId();
-            if (secKey == null || !secKey.equals(securityKey)) {
+            if (secKey == null || !MessageDigest.isEqual(
+                    secKey.getBytes(StandardCharsets.UTF_8),
+                    securityKey.getBytes(StandardCharsets.UTF_8))) {
                 getLogger().warn(
                         "Received incoming stream with faulty security key.");
                 return;
@@ -326,7 +330,29 @@ public class StreamReceiverHandler implements Serializable {
         sendUploadResponse(response, success);
     }
 
-    private boolean handleFileUploadValidationAndData(VaadinSession session,
+    /**
+     * Validate that stream target is in a valid state for receiving data
+     * and send stream to receiver. Handles cleanup and error in reading stream
+     *
+     * @param session
+     *         The session containing the stream variable
+     * @param inputStream
+     *         the request content input stream
+     * @param streamReceiver
+     *         the receiver containing the destination stream variable
+     * @param filename
+     *         name of the streamed file
+     * @param mimeType
+     *         file mime type
+     * @param contentLength
+     *         The length of the request content
+     * @param node
+     *         The owner of the stream
+     * @return true if upload successful, else false
+     * @throws UploadException
+     *         Thrown for illegal target node state
+     */
+    protected boolean handleFileUploadValidationAndData(VaadinSession session,
             InputStream inputStream, StreamReceiver streamReceiver,
             String filename, String mimeType, long contentLength,
             StateNode node) throws UploadException {
@@ -396,7 +422,7 @@ public class StreamReceiverHandler implements Serializable {
      * @throws IOException
      *             exception when writing to stream
      */
-    private void sendUploadResponse(VaadinResponse response, boolean success)
+    protected void sendUploadResponse(VaadinResponse response, boolean success)
             throws IOException {
         response.setContentType(
                 ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
@@ -541,8 +567,9 @@ public class StreamReceiverHandler implements Serializable {
             } finally {
                 session.unlock();
             }
+            return now;
         }
-        return now;
+        return lastStreamingEvent;
     }
 
     /**

@@ -93,7 +93,6 @@ public class AbstractLazyDataViewTest {
         }, arrayUpdater, null, component.getElement().getNode());
         // need to set a lazy data provider to communicator or type check fails
         dataCommunicator.setDataProvider(dataProvider, null);
-        dataCommunicator.setPageSize(50);
         dataView = new AbstractLazyDataView<String>(dataCommunicator,
                 component) {
         };
@@ -125,15 +124,40 @@ public class AbstractLazyDataViewTest {
         Assert.assertFalse(dataView.getDataCommunicator().isDefinedSize());
     }
 
-    // TODO https://github.com/vaadin/flow/issues/8583
-    @Test(expected = IllegalStateException.class)
-    public void dataViewCreated_beforeSettingDataProvider_throws() {
-        // data communicator has by default an empty list data provider ->
-        // utilizing lazy data view fails
+    @Test
+    public void dataViewCreated_beforeSettingDataProvider_verificationPassed() {
+        // Data provider verification should pass even if the developer
+        // hasn't setup any data provider to a component. In the example
+        // below, we just create a data communicator instance but don't call
+        // 'setDataProvider' method.
         new AbstractLazyDataView<String>(
                 new DataCommunicator<>((item, jsonObject) -> {
                 }, null, null, component.getElement().getNode()), component) {
         };
+    }
+
+    @Test
+    public void addItemCountListener_beforeSettingDataProvider_verificationPassed() {
+        AbstractLazyDataView<String> dataView = new AbstractLazyDataView<String>(
+                new DataCommunicator<>((item, jsonObject) -> {
+                }, null, null, component.getElement().getNode()), component) {
+        };
+
+        // Check that we can add a listener even if no data provider set by
+        // user
+        dataView.addItemCountChangeListener(event -> {});
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void dataViewAPIUsed_beforeSettingDataProvider_throws() {
+        AbstractLazyDataView<String> dataView = new AbstractLazyDataView<String>(
+                new DataCommunicator<>((item, jsonObject) -> {
+                }, null, null, component.getElement().getNode()), component) {
+        };
+
+        // Check that the verification not passed for any 'lazy load'
+        // specific method
+        dataView.setItemCountUnknown();
     }
 
     @Test(expected = IllegalStateException.class)
@@ -374,15 +398,15 @@ public class AbstractLazyDataViewTest {
          Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(item2);
          Mockito.verify(dataCommunicator, Mockito.times(0)).refresh(item2);
      }
-     
+
      @Test
      public void paged_access_methods_in_query_object() {
     	 Query<Item, Void> query;
-    	 
+
     	 query = new Query<>(0, 20, null, null, null);
     	 Assert.assertEquals(0L, query.getPage());
     	 Assert.assertEquals(20, query.getPageSize());
-    	 
+
     	 query = new Query<>(20, 20, null, null, null);
     	 Assert.assertEquals(1L, query.getPage());
     	 Assert.assertEquals(20, query.getPageSize());
@@ -390,7 +414,7 @@ public class AbstractLazyDataViewTest {
     	 query = new Query<>(200, 40, null, null, null);
     	 Assert.assertEquals(5L, query.getPage());
     	 Assert.assertEquals(40, query.getPageSize());
-    	 
+
      }
 
     private void fakeClientCommunication() {

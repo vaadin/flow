@@ -32,6 +32,7 @@ class OrderView extends LitElement {
   @query('#add') add!: Element;
   @query('#description0') description!: HTMLInputElement;
   @query('#price0') price!: HTMLInputElement;
+  @query('#priceError0') priceError!: HTMLOutputElement;
 
   static get styles() {
     return css`input[invalid] {border: 2px solid red;}`;
@@ -46,6 +47,9 @@ class OrderView extends LitElement {
     ${repeat(products, ({model: {description, price}}, index) => html`<div>
         <input id="description${index}" ...="${field(description)}" />
         <input id="price${index}" ...="${field(price)}">
+        <output id="priceError${index}">
+          ${this.binder.for(price).errors.map(error => error.message).join('\n')}
+        </output>
       </div>`)}
     <div id="submitting">${this.binder.submitting}</div>
     `;
@@ -118,13 +122,19 @@ suite("form/Validation", () => {
 
   suite('submitTo', () => {
     test("should be able to call submit() if onSubmit is pre configured", async () => {
-      const binder = new Binder(view, OrderModel, {
+      const binder = new Binder(view, TestModel, {
         onSubmit: async () => {}
       });
       const binderSubmitToSpy = sinon.spy(binder, 'submitTo');
       await binder.submit();
       sinon.assert.calledOnce(binderSubmitToSpy);
     });
+
+    test("should return the result of the endpoint call when calling submit()", async () => {
+      const binder = new Binder(view, TestModel, {onSubmit: async (testEntity) => testEntity});
+      const result = await binder.submit();
+      assert.deepEqual(result, binder.value);
+    })
 
     test("should throw on validation failure", async () => {
       try {
@@ -356,7 +366,7 @@ suite("form/Validation", () => {
       orderView = document.createElement('order-view') as OrderView;
       binder = orderView.binder;
       document.body.appendChild(orderView);
-      return sleep(10);
+      await orderView.updateComplete;
     });
 
     afterEach(async () => {
@@ -435,6 +445,8 @@ suite("form/Validation", () => {
 
       expect(orderView.description.hasAttribute('invalid')).to.be.true;
       expect(orderView.price.hasAttribute('invalid')).to.be.true;
+      expect(String(orderView.priceError.textContent).trim())
+        .to.equal('must be greater than 0');
     });
 
     test(`should validate fields of arrays on submit`, async () => {
@@ -553,12 +565,21 @@ suite("form/Validation", () => {
 
       orderView.notes.value = 'foo';
       await fireEvent(orderView.notes, 'change');
-      
       const numberOfValidatorsOnNotesField = binder.for(binder.model.notes).validators.length;
 
       if(errorsOnSubmit>=1){
         assert.equal(errorsOnSubmit-numberOfValidatorsOnNotesField, binder.errors.length);
       }
+    });
+
+    test('should display error for NaN in number field', async () => {
+      await fireEvent(orderView.add, 'click');
+
+      orderView.price.value = 'not a number';
+      await fireEvent(orderView.price, 'change');
+
+      expect(String(orderView.priceError.textContent))
+        .to.contain('must be a number')
     });
   });
 

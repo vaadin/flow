@@ -1,4 +1,4 @@
-class _TagCamel_ extends HTMLElement {
+_ThemeImport_class _TagCamel_ extends HTMLElement {
   constructor() {
     super();
     this._propertyUpdatedFromServer = {};
@@ -12,7 +12,7 @@ class _TagCamel_ extends HTMLElement {
         display: inline-block;
       }
     `;
-    shadow.appendChild(style);
+    _ApplyTheme_shadow.appendChild(style);
     shadow.appendChild(document.createElement("slot"));
 
     var self = this;
@@ -125,7 +125,7 @@ class _TagCamel_ extends HTMLElement {
   disconnectedCallback() {
     this.$server.disconnected();
 
-    console.log("disconnected", this);
+    console.debug("disconnected", this);
   }
 
   serverConnected() {

@@ -76,8 +76,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     protected static final String DEP_NAME_FLOW_JARS = "@vaadin/flow-frontend";
     protected static final String DEP_NAME_FORM_JARS = "@vaadin/form";
     private static final String FORM_FOLDER = "form";
-    private static final String DEP_MAIN_FLOW_JARS = "Flow";
-    private static final String DEP_MAIN_FORM_JARS = "index";
+    private static final String DEP_MAIN_VALUE = "index";
     private static final String DEP_VERSION_KEY = "version";
     private static final String DEP_VERSION_DEFAULT = "1.0.0";
     private static final String ROUTER_VERSION = "1.7.2";
@@ -220,7 +219,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             packageJson = Json.createObject();
             packageJson.put(DEP_NAME_KEY, DEP_NAME_FLOW_JARS);
             packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
-            packageJson.put(DEP_MAIN_KEY, DEP_MAIN_FLOW_JARS);
+            packageJson.put(DEP_MAIN_KEY, DEP_MAIN_VALUE);
             packageJson.put(DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
         }
         return packageJson;
@@ -233,7 +232,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             packageJson = Json.createObject();
             packageJson.put(DEP_NAME_KEY, DEP_NAME_FORM_JARS);
             packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
-            packageJson.put(DEP_MAIN_KEY, DEP_MAIN_FORM_JARS);
+            packageJson.put(DEP_MAIN_KEY, DEP_MAIN_VALUE);
             packageJson.put(DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
             packageJson.put("sideEffects", false);
         }
@@ -292,30 +291,42 @@ public abstract class NodeUpdater implements FallibleCommand {
     static Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
 
-        defaults.put("html-webpack-plugin", "3.2.0");
-        defaults.put("script-ext-html-webpack-plugin", "2.1.4");
-        defaults.put("typescript", "3.8.3");
-        defaults.put("awesome-typescript-loader", "5.2.1");
+        defaults.put("html-webpack-plugin", "4.5.1");
+        defaults.put("typescript", "4.1.5");
+        defaults.put("ts-loader", "8.0.12");
 
-        defaults.put("webpack", "4.42.0");
+        defaults.put("webpack", "4.46.0");
         defaults.put("webpack-cli", "3.3.11");
-        defaults.put("webpack-dev-server", "3.10.3");
-        defaults.put("copy-webpack-plugin", "5.1.1");
+        defaults.put("webpack-dev-server", "3.11.0");
         defaults.put("compression-webpack-plugin", "4.0.1");
+        defaults.put("extra-watch-webpack-plugin", "1.0.3");
         defaults.put("webpack-merge", "4.2.2");
         defaults.put("css-loader", "4.2.1");
         defaults.put("extract-loader", "5.1.0");
         defaults.put("lit-css-loader", "0.0.4");
-        defaults.put("lit-element", "2.3.1");
-        defaults.put("lit-html", "1.2.1");
-        defaults.put("@types/validator", "10.11.3");
-        defaults.put("validator", "12.0.0");
+        defaults.put("file-loader", "6.2.0");
+        defaults.put("loader-utils", "2.0.0");
+        defaults.put("lit-element", "2.4.0");
+        defaults.put("lit-html", "1.3.0");
+        final String WORKBOX_VERSION = "6.1.0";
+        defaults.put("workbox-webpack-plugin", WORKBOX_VERSION);
+        defaults.put("workbox-core", WORKBOX_VERSION);
+        defaults.put("workbox-precaching", WORKBOX_VERSION);
+        defaults.put("glob", "7.1.6");
+        defaults.put("webpack-manifest-plugin", "3.0.0");
+        defaults.put("@types/validator", "13.1.0");
+        defaults.put("validator", "13.1.17");
+        // Constructable style sheets is only implemented for chrome,
+        // polyfill needed for FireFox et.al. at the moment
+        defaults.put("construct-style-sheets-polyfill", "2.4.16");
 
         defaults.put("snowpack", "3.0.13");
 
         // Forcing chokidar version for now until new babel version is available
         // check out https://github.com/babel/babel/issues/11488
-        defaults.put("chokidar", "^3.4.0");
+        defaults.put("chokidar", "^3.5.0");
+
+        defaults.put("idb", "5.0.6");
 
         return defaults;
     }

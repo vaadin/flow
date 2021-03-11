@@ -29,6 +29,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -44,7 +46,6 @@ import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -119,6 +120,9 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
+        if (!hasWebComponentConfigurations(request)) {
+            return false;
+        }
         String pathInfo = request.getPathInfo();
         if (pathInfo == null || pathInfo.isEmpty()) {
             return false;
@@ -135,7 +139,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * @return Request's url.
      */
     protected String getRequestUrl(VaadinRequest request) {
-        return ((VaadinServletRequest) request).getRequestURL().toString();
+        return ((HttpServletRequest) request).getRequestURL().toString();
     }
 
     @Override
@@ -356,7 +360,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 if ("src".equals(attribute.getKey())) {
                     path = modifyPath(basePath, path);
                 }
-                writer.append("'").append(path).append("'");
+                writer.append("\"").append(path).append("\"");
             }
             writer.append(");");
         }
@@ -381,13 +385,28 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      */
     protected String modifyPath(String basePath, String path) {
         int vaadinIndex = path.indexOf(Constants.VAADIN_MAPPING);
+        String suffix = path;
         if (vaadinIndex > 0) {
-            String subPath = path.substring(vaadinIndex);
-            return URI.create(basePath + subPath).toString();
-        } else {
-            return URI.create(basePath + path).toString();
-
+            suffix = suffix.substring(vaadinIndex);
         }
+        return URI.create(checkURL(basePath + suffix)).toString();
+    }
+
+    private String checkURL(String url) {
+        if (url == null) {
+            return null;
+        }
+        if (url.contains("\"")) {
+            throw new IllegalStateException(
+                    "URL '" + url + "' may not contain double quotes");
+        }
+        return url;
+    }
+
+    private boolean hasWebComponentConfigurations(VaadinRequest request) {
+        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
+                .getInstance(request.getService().getContext());
+        return registry.hasConfigurations();
     }
 
     private static String inlineHTML(String html) {
@@ -422,7 +441,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         String url = request.getParameter(REQ_PARAM_URL);
         // if 'url' parameter was not available, use request url
         if (url == null) {
-            url = ((VaadinServletRequest) request).getRequestURL().toString();
+            url = getRequestUrl(request);
         }
         return url
                 // +1 is to keep the trailing slash

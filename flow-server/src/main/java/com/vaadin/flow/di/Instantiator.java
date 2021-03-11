@@ -22,8 +22,6 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.polymertemplate.NpmTemplateParser;
-import com.vaadin.flow.component.polymertemplate.TemplateParser;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.server.BootstrapListener;
@@ -65,7 +63,12 @@ public interface Instantiator extends Serializable {
      * @return <code>true</code> if this instance should be considered as a
      *         candidate for usage for the provided service; <code>false</code>
      *         to opt-out from the selection process
+     * @deprecated The {@link Instantiator} instance should be created by an
+     *             {@link InstantiatorFactory} which should just return
+     *             {@code null} if the provided {@code service} can't be handled
+     *             by it
      */
+    @Deprecated
     boolean init(VaadinService service);
 
     /**
@@ -228,12 +231,4 @@ public interface Instantiator extends Serializable {
         return getOrCreate(I18NProvider.class);
     }
 
-    /**
-     * Returns {@link TemplateParser} for this service.
-     *
-     * @return A non-null template parser.
-     */
-    default TemplateParser getTemplateParser() {
-        return NpmTemplateParser.getInstance();
-    }
 }

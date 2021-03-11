@@ -21,6 +21,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -41,6 +42,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -54,14 +58,14 @@ import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.SystemMessagesProvider;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.uitest.servlet.CustomDeploymentConfiguration.Conf;
-import elemental.json.JsonValue;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import elemental.json.JsonValue;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/*" })
 public class ApplicationRunnerServlet extends VaadinServlet {
@@ -153,11 +157,11 @@ public class ApplicationRunnerServlet extends VaadinServlet {
         @Override
         public Object invoke(Object proxy, Method method, Object[] args)
                 throws Throwable {
-            if (method.getDeclaringClass() == DeploymentConfiguration.class) {
+            if (method.getDeclaringClass()
+                    .isAssignableFrom(DeploymentConfiguration.class)) {
                 // Find the configuration instance to delegate to
                 DeploymentConfiguration configuration = findDeploymentConfiguration(
                         originalConfiguration);
-
                 return method.invoke(configuration, args);
             } else {
                 return method.invoke(proxy, args);
@@ -243,6 +247,8 @@ public class ApplicationRunnerServlet extends VaadinServlet {
             Properties initParameters) {
         // Get the original configuration from the super class
         final DeploymentConfiguration originalConfiguration = new DefaultDeploymentConfiguration(
+                ApplicationConfiguration
+                        .get(new VaadinServletContext(getServletContext())),
                 getClass(), initParameters) {
             @Override
             public String getUIClassName() {
@@ -397,6 +403,8 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                                     getApplicationRunnerApplicationClassName(
                                             request.get()));
                             configuration = new DefaultDeploymentConfiguration(
+                                    ApplicationConfiguration
+                                            .get(getService().getContext()),
                                     servlet.getClass(), initParameters);
                         } else {
                             configuration = originalConfiguration;

@@ -23,17 +23,14 @@ import java.util.stream.Stream;
  */
 public enum Unit {
     /**
+     * Unit code representing in percentage of the containing element
+     * defined by terminal.
+     */
+    PERCENTAGE("%"),
+    /**
      * Unit code representing pixels.
      */
     PIXELS("px"),
-    /**
-     * Unit code representing points (1/72nd of an inch).
-     */
-    POINTS("pt"),
-    /**
-     * Unit code representing picas (12 points).
-     */
-    PICAS("pc"),
     /**
      * Unit code representing the font-size of the root font.
      */
@@ -43,6 +40,30 @@ public enum Unit {
      */
     EM("em"),
     /**
+     * Unit code representing the viewport's width.
+     */
+    VW("vw"),
+    /**
+     * Unit code representing the viewport's height.
+     */
+    VH("vh"),
+    /**
+     * Unit code representing the viewport's smaller dimension.
+     */
+    VMIN("vmin"),
+    /**
+     * Unit code representing the viewport's larger dimension.
+     */
+    VMAX("vmax"),
+    /**
+     * Unit code representing points (1/72nd of an inch).
+     */
+    POINTS("pt"),
+    /**
+     * Unit code representing picas (12 points).
+     */
+    PICAS("pc"),
+    /**
      * Unit code representing the x-height of the relevant font.
      */
     EX("ex"),
@@ -51,18 +72,17 @@ public enum Unit {
      */
     MM("mm"),
     /**
+     * Unit code representing the width of the "0" (zero).
+     */
+    CH("ch"),
+    /**
      * Unit code representing centimeters.
      */
     CM("cm"),
     /**
      * Unit code representing inches.
      */
-    INCH("in"),
-    /**
-     * Unit code representing in percentage of the containing element
-     * defined by terminal.
-     */
-    PERCENTAGE("%");
+    INCH("in");
 
     private final String symbol;
 
@@ -91,10 +111,16 @@ public enum Unit {
      * @return A Optional unit.
      */
     public static Optional<Unit> getUnit(String cssSize) {
-        if (cssSize == null) {
-             throw new IllegalArgumentException("The parameter can't be null");
+        if (cssSize == null || cssSize.isEmpty()) {
+            return Optional.empty();
         }
-        return getUnits().filter(unit -> cssSize.endsWith(unit.toString())).findFirst();
+
+        for (Unit unit : values()) {
+            if (cssSize.endsWith(unit.getSymbol())) {
+                return Optional.of(unit);
+            }
+        }
+        return Optional.empty();
     }
 
     /**

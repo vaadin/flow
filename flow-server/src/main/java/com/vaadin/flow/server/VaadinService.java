@@ -29,7 +29,10 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +57,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.di.InstantiatorFactory;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -73,7 +78,6 @@ import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
 import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
@@ -264,9 +268,9 @@ public abstract class VaadinService implements Serializable {
 
             requestHandlers = Collections.unmodifiableCollection(handlers);
 
-            dependencyFilters = instantiator
+            dependencyFilters = Collections.unmodifiableCollection(instantiator
                     .getDependencyFilters(event.getAddedDependencyFilters())
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toList()));
             bootstrapListeners = instantiator
                     .getBootstrapListeners(event.getAddedBootstrapListeners())
                     .collect(Collectors.toList());
@@ -280,28 +284,31 @@ public abstract class VaadinService implements Serializable {
         if (!configuration.isProductionMode()) {
             Logger logger = getLogger();
             logger.debug("The application has the following routes: ");
-            List<RouteData> routeDataList = getRouteRegistry().getRegisteredRoutes();
-            if(!routeDataList.isEmpty()) {
+            List<RouteData> routeDataList = getRouteRegistry()
+                    .getRegisteredRoutes();
+            if (!routeDataList.isEmpty()) {
                 addRouterUsageStatistics();
             }
-            routeDataList.stream()
-                    .map(Object::toString).forEach(logger::debug);
+            routeDataList.stream().map(Object::toString).forEach(logger::debug);
         }
         if (getDeploymentConfiguration().isPnpmEnabled()) {
-            UsageStatistics.markAsUsed("flow/pnpm",null);
+            UsageStatistics.markAsUsed("flow/pnpm", null);
         }
 
         initialized = true;
     }
 
     private void addRouterUsageStatistics() {
-        if(UsageStatistics.getEntries().anyMatch(
+        if (UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName()))) {
             UsageStatistics.removeEntry(Constants.STATISTIC_ROUTING_CLIENT);
-            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_HYBRID, Version.getFullVersion());
-        } else if(UsageStatistics.getEntries().noneMatch(
-                e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER.equals(e.getName()))) {
-            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_SERVER, Version.getFullVersion());
+            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_HYBRID,
+                    Version.getFullVersion());
+        } else if (UsageStatistics.getEntries()
+                .noneMatch(e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER
+                        .equals(e.getName()))) {
+            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_SERVER,
+                    Version.getFullVersion());
         }
     }
 
@@ -344,24 +351,12 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new UidlRequestHandler());
         handlers.add(new UnsupportedBrowserHandler());
         handlers.add(new StreamRequestHandler());
-        PwaRegistry pwaRegistry = getPwaRegistry();
-        if (pwaRegistry != null
-                && pwaRegistry.getPwaConfiguration().isEnabled()) {
-            handlers.add(new PwaHandler(pwaRegistry));
-        }
+        handlers.add(new PwaHandler(() -> getPwaRegistry()));
 
-        if (hasWebComponentConfigurations()) {
-            handlers.add(new WebComponentProvider());
-            handlers.add(new WebComponentBootstrapHandler());
-        }
+        handlers.add(new WebComponentProvider());
+        handlers.add(new WebComponentBootstrapHandler());
 
         return handlers;
-    }
-
-    private boolean hasWebComponentConfigurations() {
-        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                .getInstance(getContext());
-        return registry.hasConfigurations();
     }
 
     /**
@@ -407,11 +402,33 @@ public abstract class VaadinService implements Serializable {
      */
     protected Optional<Instantiator> loadInstantiators()
             throws ServiceException {
-        List<Instantiator> instantiators = StreamSupport
+        Lookup lookup = getContext().getAttribute(Lookup.class);
+        List<Instantiator> instantiators = null;
+        if (lookup != null) {
+            // lookup may be null in tests
+            Collection<InstantiatorFactory> factories = lookup
+                    .lookupAll(InstantiatorFactory.class);
+            instantiators = new ArrayList<>(factories.size());
+            for (InstantiatorFactory factory : factories) {
+                Instantiator instantiator = factory.createInstantitor(this);
+                // if the existing instantiator is converted to new API then
+                // let's respect its deprecated method
+                if (instantiator != null && instantiator.init(this)) {
+                    instantiators.add(instantiator);
+                }
+            }
+        }
+
+        if (instantiators == null) {
+            instantiators = new ArrayList<>();
+        }
+
+        // the code to support previous way of loading instantiators
+        StreamSupport
                 .stream(ServiceLoader.load(Instantiator.class, getClassLoader())
                         .spliterator(), false)
                 .filter(iterator -> iterator.init(this))
-                .collect(Collectors.toList());
+                .forEach(instantiators::add);
         if (instantiators.size() > 1) {
             throw new ServiceException(
                     "Cannot init VaadinService because there are multiple eligible instantiator implementations: "
@@ -925,7 +942,7 @@ public abstract class VaadinService implements Serializable {
         storeSession(session, request.getWrappedSession());
 
         // Initial WebBrowser data comes from the request
-        session.getBrowser().updateRequestDetails(request);
+        session.setBrowser(new WebBrowser(request));
 
         session.setConfiguration(getDeploymentConfiguration());
 
@@ -1676,9 +1693,15 @@ public abstract class VaadinService implements Serializable {
             SystemMessages systemMessages = getSystemMessages(
                     HandlerHelper.findLocale(null, request), request);
             String sessionExpiredURL = systemMessages.getSessionExpiredURL();
+
+            
             if (sessionExpiredURL != null
                     && (response instanceof VaadinServletResponse)) {
                 ((VaadinServletResponse) response)
+                        .sendRedirect(sessionExpiredURL);
+            } else if (sessionExpiredURL != null
+                    && (response instanceof HttpServletResponse)) {
+                ((HttpServletResponse) response)
                         .sendRedirect(sessionExpiredURL);
             } else {
                 /*
@@ -1687,7 +1710,17 @@ public abstract class VaadinService implements Serializable {
                  * endless loop. This can at least happen if refreshing a
                  * resource when the session has expired.
                  */
-                response.sendError(HttpServletResponse.SC_GONE,
+
+                // Ensure that the browser does not cache expired responses.
+                // iOS 6 Safari requires this
+                // (https://github.com/vaadin/framework/issues/3226)
+                response.setHeader("Cache-Control", "no-cache");
+                // If Content-Type is not set, browsers assume text/html and may
+                // complain about the empty response body
+                // (https://github.com/vaadin/framework/issues/4167)
+                response.setHeader("Content-Type", "text/plain");
+
+                response.sendError(HttpServletResponse.SC_FORBIDDEN,
                         "Session expired");
             }
         } catch (IOException e) {
@@ -1903,7 +1936,7 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Verifies that the given CSRF token (aka double submit cookie) is valid
+     * Verifies that the given CSRF token (synchronizer token pattern) is valid
      * for the given UI. This is used to protect against Cross Site Request
      * Forgery attacks.
      * <p>
@@ -1927,7 +1960,9 @@ public abstract class VaadinService implements Serializable {
                 .isXsrfProtectionEnabled()) {
             String uiToken = ui.getCsrfToken();
 
-            if (uiToken == null || !uiToken.equals(requestToken)) {
+            if (uiToken == null || !MessageDigest.isEqual(
+                    uiToken.getBytes(StandardCharsets.UTF_8),
+                    requestToken.getBytes(StandardCharsets.UTF_8))) {
                 return false;
             }
         }
@@ -2100,7 +2135,8 @@ public abstract class VaadinService implements Serializable {
             WrappedSession wrappedSession) {
         assert VaadinSession.hasLock(this, wrappedSession);
         writeToHttpSession(wrappedSession, session);
-        wrappedSession.setAttribute(getCsrfTokenAttributeName(), session.getCsrfToken());
+        wrappedSession.setAttribute(getCsrfTokenAttributeName(),
+                session.getCsrfToken());
         session.refreshTransients(wrappedSession, this);
     }
 
@@ -2366,6 +2402,7 @@ public abstract class VaadinService implements Serializable {
      * @return the attribute name string
      */
     public static String getCsrfTokenAttributeName() {
-        return VaadinSession.class.getName() + "." + ApplicationConstants.CSRF_TOKEN;
+        return VaadinSession.class.getName() + "."
+                + ApplicationConstants.CSRF_TOKEN;
     }
 }

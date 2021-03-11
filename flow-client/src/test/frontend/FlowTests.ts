@@ -1,8 +1,12 @@
-const { suite, test, beforeEach, afterEach } = intern.getInterface("tdd");
+import {SinonStatic} from "sinon";
+
+const { suite, test, after, before, beforeEach, afterEach } = intern.getInterface("tdd");
 const { assert } = intern.getPlugin("chai");
+const { sinon } = intern.getPlugin("sinon") as { sinon: SinonStatic };
 
 // API to test
 import {Flow, NavigationParameters} from "../../main/resources/META-INF/resources/frontend/Flow";
+import {ConnectionState, ConnectionStateStore} from "../../main/resources/META-INF/resources/frontend/ConnectionState";
 // Intern does not serve webpack chunks, adding deps here in order to
 // produce one chunk, because dynamic imports in Flow.ts  will not work.
 import "../../main/resources/META-INF/resources/frontend/FlowBootstrap";
@@ -14,6 +18,8 @@ const $wnd = window as any;
 const flowRoot = window.document.body as any;
 
 const stubVaadinPushSrc = '/src/test/frontend/stubVaadinPush.js';
+
+const OFFLINE_STUB_NAME = 'vaadin-offline-stub';
 
 // A `changes` array that adds a div with 'Foo' text to body
 const changesResponse = `[
@@ -95,31 +101,57 @@ function createInitResponse(appId: string, changes = '[]', pushScript?: string):
 
 suite("Flow", () => {
 
+  before( () => {
+    // keep track of all event listeners added by Flow client to window for removal between tests
+    $wnd.originalAddEventListener = $wnd.addEventListener;
+  });
+
+  after( () => {
+    $wnd.addEventListener = $wnd.originalAddEventListener;
+  });
+
+  let listeners = [];
+
   beforeEach(() => {
     delete $wnd.Vaadin;
-    mock.setup();
-    const indicator = $wnd.document.body.querySelector('.v-loading-indicator');
+    $wnd.Vaadin = {
+      connectionState: new ConnectionStateStore(ConnectionState.CONNECTED)
+    };
+    const indicator = $wnd.document.body.querySelector('vaadin-connection-indicator');
     if (indicator) {
-      $wnd.document.body.removeChild(indicator);
+      indicator.remove();
     }
+
+    $wnd.addEventListener = (type, listener) => {
+      listeners.push({type: type, listener: listener});
+      $wnd.originalAddEventListener(type, listener);
+    };
+
+    mock.setup();
   });
 
   afterEach(() => {
     mock.teardown();
     delete $wnd.Vaadin;
     delete flowRoot.$;
-    delete flowRoot.$server;
+    if (flowRoot.$server) {
+      // clear timers started in stubServerRemoteFunction
+      flowRoot.$server.timers.forEach(clearTimeout);
+      delete flowRoot.$server;
+    }
+    listeners.forEach( recorded => {
+      $wnd.removeEventListener(recorded.type, recorded.listener);
+    });
+    listeners = [];
   });
 
   test("should accept a configuration object", () => {
-    assert.isUndefined($wnd.Vaadin);
     const flow = new Flow({imports: () => {}});
     assert.isDefined(flow.config);
     assert.isDefined(flow.config.imports);
   });
 
   test("should initialize window.Flow object", () => {
-    assert.isUndefined($wnd.Vaadin);
     new Flow({imports: () => {}});
 
     assert.isDefined($wnd.Vaadin);
@@ -128,34 +160,47 @@ suite("Flow", () => {
 
   test("should initialize a flow loading indicator", async () => {
     new Flow({imports: () => {}});
+    $wnd.Vaadin.connectionIndicator.firstDelay = 100;
+    $wnd.Vaadin.connectionIndicator.secondDelay = 200;
+    $wnd.Vaadin.connectionIndicator.thirdDelay = 400;
+    await $wnd.Vaadin.connectionIndicator.updateComplete;
     const indicator = $wnd.document.querySelector('.v-loading-indicator') as HTMLElement;
     const styles = $wnd.document.querySelector('style#css-loading-indicator') as HTMLElement;
     assert.isNotNull(indicator);
     assert.isNotNull(styles);
 
-    assert.isFunction($wnd.Vaadin.Flow.loading);
-    assert.equal('none', indicator.getAttribute('style'));
+    assert.equal(indicator.getAttribute('style'), 'display: none');
 
-    $wnd.Vaadin.Flow.loading(true);
-    assert.isNull(indicator.getAttribute('style'));
+    $wnd.Vaadin.connectionState.state = ConnectionState.LOADING;
+    await $wnd.Vaadin.connectionIndicator.updateComplete;
+
+    await new Promise(resolve => setTimeout(resolve, 150));
+    assert.equal(indicator.getAttribute('style'), 'display: block');
+    assert.isTrue(indicator.classList.contains('first'));
     assert.isFalse(indicator.classList.contains('second'));
     assert.isFalse(indicator.classList.contains('third'));
 
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 150));
+    assert.equal(indicator.getAttribute('style'), 'display: block');
+    assert.isFalse(indicator.classList.contains('first'));
     assert.isTrue(indicator.classList.contains('second'));
+    assert.isFalse(indicator.classList.contains('third'));
 
-    await new Promise(resolve => setTimeout(resolve, 3500));
+    await new Promise(resolve => setTimeout(resolve, 150));
+    assert.isFalse(indicator.classList.contains('first'));
+    assert.isFalse(indicator.classList.contains('second'));
     assert.isTrue(indicator.classList.contains('third'));
 
-    $wnd.Vaadin.Flow.loading(false);
-    assert.equal('none', indicator.getAttribute('style'));
+    $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
+    await $wnd.Vaadin.connectionIndicator.updateComplete;
+
+    assert.equal(indicator.getAttribute('style'), 'display: none');
+    assert.isFalse(indicator.classList.contains('first'));
     assert.isFalse(indicator.classList.contains('second'));
     assert.isFalse(indicator.classList.contains('third'));
   });
 
   test("should initialize Flow server navigation when calling flowInit(true)", () => {
-    assert.isUndefined($wnd.Vaadin);
-
     stubServerRemoteFunction('FooBar-12345');
     mockInitResponse('FooBar-12345', changesResponse);
 
@@ -184,10 +229,8 @@ suite("Flow", () => {
   });
 
   test("should initialize UI when calling flowInit(true)", () => {
-    assert.isUndefined($wnd.Vaadin);
-
     const initial = createInitResponse('FooBar-12345');
-    $wnd.Vaadin = {TypeScript: {initial: JSON.parse(initial)}};
+    $wnd.Vaadin.TypeScript = {initial: JSON.parse(initial)};
 
     const flow = new Flow();
     return (flow as any).flowInit(true)
@@ -218,10 +261,8 @@ suite("Flow", () => {
   });
 
   test("should inject appId script when calling flowInit(true) with custom config.imports", () => {
-    assert.isUndefined($wnd.Vaadin);
-
     const initial = createInitResponse('FooBar-12345');
-    $wnd.Vaadin = {TypeScript: {initial: JSON.parse(initial)}};
+    $wnd.Vaadin.TypeScript = {initial: JSON.parse(initial)};
 
     const flow = new Flow({
       imports: () => {}
@@ -273,7 +314,7 @@ suite("Flow", () => {
       });
   });
 
-  test("should connect client and server on route action", () => {
+  test("should connect client and server on route action", async () => {
     stubServerRemoteFunction('foobar-1111111');
     mockInitResponse('foobar-1111111');
 
@@ -283,15 +324,9 @@ suite("Flow", () => {
     assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
 
     const route = flow.serverSideRoutes[0];
-    const indicator = $wnd.document.querySelector('.v-loading-indicator');
 
-    let wasActive = false;
-    let style = '';
-    setTimeout(() => {
-    // Check the `isActive` flag and indicator.style at the time the action is being executed
-    wasActive = $wnd.Vaadin.Flow.clients.TypeScript.isActive();
-      style = indicator.getAttribute('style');
-    }, 5);
+    sinon.spy(flow, 'loadingStarted');
+    sinon.spy(flow, 'loadingFinished');
 
     return route
       .action({pathname: "Foo/Bar.baz"})
@@ -305,7 +340,6 @@ suite("Flow", () => {
         // Check that flowClient was initialized
         assert.isDefined($wnd.Vaadin.Flow.clients.foobar.resolveUri);
         assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
-        assert.equal('none', indicator.getAttribute('style'));
 
         // Check that pushScript is not initialized
         assert.isUndefined($wnd.vaadinPush);
@@ -314,13 +348,29 @@ suite("Flow", () => {
         assert.isDefined(flowRoot.$);
         assert.isDefined(flowRoot.$['foobar-1111111']);
 
-        // Check that `isActive` flag was active during the action
-        assert.isTrue(wasActive);
-        // Check that indicator was visible during the action
-        assert.isNull(style);
+        // Check that `loadingStarted` and `loadingFinished` pair was called
+        sinon.assert.calledOnce(flow.loadingStarted);
+        sinon.assert.calledOnce(flow.loadingFinished);
+
         // Check that `isActive` flag is set to false after the action
         assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
       });
+  });
+
+  test("loadingStarted and loadingFinished should update isActive and connection indicator", async () => {
+    const flow = new Flow();
+    sinon.spy($wnd.Vaadin.connectionState, 'loadingStarted');
+    sinon.spy($wnd.Vaadin.connectionState, 'loadingFinished');
+
+    flow.loadingStarted();
+    assert.isTrue($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+    sinon.assert.calledOnce($wnd.Vaadin.connectionState.loadingStarted);
+    sinon.assert.notCalled($wnd.Vaadin.connectionState.loadingFinished);
+
+    flow.loadingFinished();
+    assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+    sinon.assert.calledOnce($wnd.Vaadin.connectionState.loadingStarted);
+    sinon.assert.calledOnce($wnd.Vaadin.connectionState.loadingFinished);
   });
 
   test("should remove context-path in request", () => {
@@ -401,9 +451,9 @@ suite("Flow", () => {
         // after action TB isActive flag should be false
         assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
 
-        // Store `isAcive` flag when the onBeforeEnter is being executed
+        // Store `isActive` flag when the onBeforeEnter is being executed
         let wasActive = false;
-        setTimeout(() => wasActive = $wnd.Vaadin.Flow.clients.TypeScript.isActive(), 5);
+        setTimeout(() => wasActive = wasActive || $wnd.Vaadin.Flow.clients.TypeScript.isActive(), 5);
         // @ts-ignore
         await elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {});
         // TB should be informed when the server call was in progress and when it is finished
@@ -444,7 +494,6 @@ suite("Flow", () => {
             return {cancel: true};
           }})
           .then(obj => assert.isTrue(obj.cancel));
-
       });
   });
 
@@ -546,7 +595,7 @@ suite("Flow", () => {
 
   test("should load pushScript on flowInit(true) with initial response", async() => {
     const initial = createInitResponse('FooBar-12345');
-    $wnd.Vaadin = {TypeScript: {initial: JSON.parse(initial)}};
+    $wnd.Vaadin.TypeScript = {initial: JSON.parse(initial)};
     $wnd.Vaadin.TypeScript.initial.pushScript = stubVaadinPushSrc;
 
     const flow = new Flow();
@@ -595,6 +644,112 @@ suite("Flow", () => {
     const route = flow.serverSideRoutes[0];
     await route.action({pathname: "Foo/Bar.baz", search:""});
   });
+
+  test("should show stub when navigating to server view offline", async () => {
+    stubServerRemoteFunction('foobar-123');
+    $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
+    const flow = new Flow();
+    const route = flow.serverSideRoutes[0];
+    const params: NavigationParameters = {
+      pathname: 'Foo/Bar.baz',
+      search: ''
+    };
+    const view = await route.action(params);
+    assert.equal(view.localName, OFFLINE_STUB_NAME);
+
+    // @ts-ignore
+    let onBeforeEnterReturns = view.onBeforeEnter(params, {});
+    assert.equal(onBeforeEnterReturns, undefined);
+
+    // @ts-ignore
+    let onBeforeLeaveReturns = view.onBeforeLeave(params, {});
+    assert.equal(onBeforeLeaveReturns, undefined);
+  });
+
+  test("should show stub when navigating to server view and Flow initialization fails due to network error", async () => {
+    mock.get(/^.*\?v-r=init.*/, () => {
+      throw new Error("unable to connect");
+    });
+    const flow = new Flow();
+    const route = flow.serverSideRoutes[0];
+    const params: NavigationParameters = {
+      pathname: 'Foo/Bar.baz',
+      search: ''
+    };
+
+    await $wnd.Vaadin.connectionIndicator.updateComplete;
+    const indicator = $wnd.document.querySelector('.v-loading-indicator');
+
+    const view = await route.action(params);
+    assert.isNotNull(view);
+    assert.equal(view.localName, OFFLINE_STUB_NAME);
+
+    assert.equal(indicator.getAttribute('style'), 'display: none');
+
+    // @ts-ignore
+    let onBeforeEnterReturns = view.onBeforeEnter(params, {});
+    assert.equal(onBeforeEnterReturns, undefined);
+
+    // @ts-ignore
+    let onBeforeLeaveReturns = view.onBeforeLeave(params, {});
+    assert.deepEqual(onBeforeLeaveReturns, undefined);
+  });
+
+  test("should retry navigation when back online", async() => {
+    stubServerRemoteFunction('foobar-123');
+    $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
+    const flow = new Flow();
+    const route = flow.serverSideRoutes[0];
+    const params: NavigationParameters = {
+      pathname: 'Foo/Bar.baz',
+      search: ''
+    };
+    const clientSideRouter = {render: sinon.spy()};
+    const view = await route.action(params);
+    await view.onBeforeEnter(params, {}, clientSideRouter);
+
+    $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
+    sinon.assert.calledOnce(clientSideRouter.render);
+    sinon.assert.calledWithExactly(clientSideRouter.render.getCall(0), params, false);
+  });
+
+  test("when no Flow client loaded, should transition to CONNECTED when receiving 'offline' and then 'online' events and connection is reestablished", async () => {
+    mock.use('HEAD', /^.*sw.js/, (req, res) => {
+      return res.status(200);
+    });
+    new Flow();
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTED);
+    $wnd.dispatchEvent(new Event('offline')); // caught by Flow.ts
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTION_LOST);
+    $wnd.dispatchEvent(new Event('online')); // caught by Flow.ts
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.RECONNECTING);
+    await new Promise(resolve => setTimeout(resolve, 100));
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTED);
+  });
+
+  test("when no Flow client loaded, should transition to CONNECTION_LOST when receiving 'offline' and then 'online' events and connection is not reestablished", async () => {
+    new Flow();
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTED);
+    $wnd.dispatchEvent(new Event('offline')); // caught by Flow.ts
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTION_LOST);
+    $wnd.dispatchEvent(new Event('online')); // caught by Flow.ts
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.RECONNECTING);
+    await new Promise(resolve => setTimeout(resolve, 100));
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTION_LOST);
+  });
+
+  test("when Flow client loaded, should transition to RECONNECTING on receiving 'offline' and then 'online' events", async () => {
+    stubServerRemoteFunction('FooBar-12345');
+    mockInitResponse('FooBar-12345', undefined, stubVaadinPushSrc);
+    const flow = new Flow();
+    await (flow as any).flowInit(true);
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTED);
+    $wnd.dispatchEvent(new Event('offline')); // caught by DefaultConnectionStateHandler
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTION_LOST);
+    $wnd.dispatchEvent(new Event('online')); // caught by DefaultConnectionStateHandler
+    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.RECONNECTING);
+  });
+
 });
 
 function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRegex?: RegExp,
@@ -603,6 +758,8 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRege
 
   // Stub remote function exported in JavaScriptBootstrapUI.
   flowRoot.$server = {
+    timers: [],
+
     connectClient: (localName: string, elemId: string, route: string) => {
 
       assert.isDefined(localName);
@@ -627,15 +784,17 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRege
       container.appendChild(document.createElement('div'));
 
       // asynchronously resolve the remote server call
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         container.serverConnected(cancel, url);
         // container should be visible when not cancelled or not has redirect server-client
         assert.equal(cancel || url ? 'none' : '', container.style.display);
       }, 10);
+      flowRoot.$server.timers.push(timer);
     },
     leaveNavigation: () => {
       // asynchronously resolve the promise
-      setTimeout(() => container.serverConnected(cancel, url), 10);
+      const timer = setTimeout(() => container.serverConnected(cancel, url), 10);
+      flowRoot.$server.timers.push(timer);
     }
   };
 }

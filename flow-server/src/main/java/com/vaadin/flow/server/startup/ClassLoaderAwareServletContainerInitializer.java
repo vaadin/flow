@@ -24,6 +24,9 @@ import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.VaadinServletContext;
+
 /**
  * Allows to load the implementation class by one classloader but accepts
  * classes in {@link #onStartup(Set, ServletContext)} method loaded by another
@@ -43,68 +46,96 @@ public interface ClassLoaderAwareServletContainerInitializer
      * {@inheritDoc}
      */
     @Override
-    default void onStartup(Set<Class<?>> set, ServletContext ctx)
+    default void onStartup(Set<Class<?>> set, ServletContext context)
             throws ServletException {
-        ClassLoader webClassLoader = ctx.getClassLoader();
-        ClassLoader classLoader = getClass().getClassLoader();
+        // see DeferredServletContextIntializers
+        DeferredServletContextInitializers.Initializer deferredInitializer = ctx -> {
+            ClassLoader webClassLoader = ctx.getClassLoader();
+            ClassLoader classLoader = getClass().getClassLoader();
 
-        /*
-         * Hack is needed to make a workaround for weird behavior of WildFly
-         * with skinnywar See https://github.com/vaadin/flow/issues/7805
-         */
-        boolean noHack = false;
-        while (classLoader != null) {
-            if (classLoader.equals(webClassLoader)) {
-                noHack = true;
-                break;
-            } else {
-                /*
-                 * The classloader which has loaded this class ({@code
-                 * classLoader}) should be either the {@code webClassLoader} or
-                 * its child: in this case it knows how to handle the classes
-                 * loaded by the {@code webClassLoader} : it either is able to
-                 * load them itself or delegate to its parent (which is the
-                 * {@code webClassLoader}): in this case hack is not needed and
-                 * the {@link #process(Set, ServletContext)} method can be
-                 * called directly.
-                 */
-                classLoader = classLoader.getParent();
+            /*
+             * Hack is needed to make a workaround for weird behavior of WildFly
+             * with skinnywar See https://github.com/vaadin/flow/issues/7805
+             */
+            boolean noHack = false;
+            while (classLoader != null) {
+                if (classLoader.equals(webClassLoader)) {
+                    noHack = true;
+                    break;
+                } else {
+                    /*
+                     * The classloader which has loaded this class ({@code
+                     * classLoader}) should be either the {@code webClassLoader}
+                     * or its child: in this case it knows how to handle the
+                     * classes loaded by the {@code webClassLoader} : it either
+                     * is able to load them itself or delegate to its parent
+                     * (which is the {@code webClassLoader}): in this case hack
+                     * is not needed and the {@link #process(Set,
+                     * ServletContext)} method can be called directly.
+                     */
+                    classLoader = classLoader.getParent();
+                }
+            }
+
+            if (noHack) {
+                process(set, ctx);
+                return;
+            }
+
+            try {
+                Class<?> initializer = ctx.getClassLoader()
+                        .loadClass(getClass().getName());
+
+                String processMethodName = Stream
+                        .of(ClassLoaderAwareServletContainerInitializer.class
+                                .getDeclaredMethods())
+                        .filter(method -> !method.isDefault()
+                                && !method.isSynthetic())
+                        .findFirst().get().getName();
+                Method operation = Stream.of(initializer.getMethods()).filter(
+                        method -> method.getName().equals(processMethodName))
+                        .findFirst().get();
+                operation.invoke(initializer.newInstance(),
+                        new Object[] { set, ctx });
+            } catch (ClassNotFoundException | IllegalAccessException
+                    | IllegalArgumentException | InvocationTargetException
+                    | InstantiationException e) {
+                throw new ServletException(e);
+            }
+        };
+
+        if (requiresLookup()) {
+            VaadinServletContext vaadinContext = new VaadinServletContext(
+                    context);
+            synchronized (context) {
+                if (vaadinContext.getAttribute(Lookup.class) == null) {
+                    DeferredServletContextInitializers initializers = vaadinContext
+                            .getAttribute(
+                                    DeferredServletContextInitializers.class,
+                                    () -> new DeferredServletContextInitializers());
+                    initializers.addInitializer(
+                            ctx -> deferredInitializer.init(ctx));
+                    return;
+                }
             }
         }
+        deferredInitializer.init(context);
+    }
 
-        if (noHack) {
-            process(set, ctx);
-            return;
-        }
-
-        try {
-            Class<?> initializer = ctx.getClassLoader()
-                    .loadClass(getClass().getName());
-
-            String processMethodName = Stream
-                    .of(ClassLoaderAwareServletContainerInitializer.class
-                            .getDeclaredMethods())
-                    .filter(method -> !method.isDefault()
-                            && !method.isSynthetic())
-                    .findFirst().get().getName();
-            Method operation = Stream.of(initializer.getDeclaredMethods())
-                    .filter(method -> method.getName()
-                            .equals(processMethodName))
-                    .findFirst().get();
-            operation.invoke(initializer.newInstance(),
-                    new Object[] { set, ctx });
-        } catch (ClassNotFoundException | IllegalAccessException
-                | IllegalArgumentException | InvocationTargetException
-                | InstantiationException e) {
-            throw new ServletException(e);
-        }
+    /**
+     * Whether this initializer requires lookup or not.
+     * 
+     * @return whether this initializer requires lookup
+     */
+    default boolean requiresLookup() {
+        return true;
     }
 
     /**
      * Implement this method instead of {@link #onStartup(Set, ServletContext)}
      * to handle classes accessible by different classloaders.
      *
-     * @param set
+     * @param classSet
      *            the Set of application classes that extend, implement, or have
      *            been annotated with the class types specified by the
      *            {@link javax.servlet.annotation.HandlesTypes HandlesTypes}
@@ -112,15 +143,16 @@ public interface ClassLoaderAwareServletContainerInitializer
      *            <tt>ServletContainerInitializer</tt> has not been annotated
      *            with <tt>HandlesTypes</tt>
      *
-     * @param ctx
+     * @param context
      *            the <tt>ServletContext</tt> of the web application that is
-     *            being started and in which the classes contained in <tt>c</tt>
-     *            were found
+     *            being started and in which the classes contained in
+     *            <tt>classSet</tt> were found
      *
      * @throws ServletException
      *             if an error has occurred
      *
      * @see #onStartup(Set, ServletContext)
      */
-    void process(Set<Class<?>> set, ServletContext ctx) throws ServletException;
+    void process(Set<Class<?>> classSet, ServletContext context)
+            throws ServletException;
 }

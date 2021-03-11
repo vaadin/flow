@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>5.0-SNAPSHOT</version>
+        <version>7.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-data</artifactId>
     <name>Flow Data</name>
@@ -35,7 +35,7 @@
 
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
+            <artifactId>osgi.core</artifactId>
             <version>${osgi.core.version}</version>
             <scope>provided</scope>
         </dependency>
@@ -110,6 +110,18 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.karaf.tooling</groupId>
+                <artifactId>karaf-maven-plugin</artifactId>
+                <configuration>
+                    <includeTransitiveDependency>false</includeTransitiveDependency>
+                    <enableGeneration>true</enableGeneration>
+                    <includeProjectArtifact>true</includeProjectArtifact>
+                    <excludedArtifactIds>
+                        <excludedArtifactId>flow-server</excludedArtifactId>
+                    </excludedArtifactIds>
+                </configuration>
             </plugin>
         </plugins>
     </build>

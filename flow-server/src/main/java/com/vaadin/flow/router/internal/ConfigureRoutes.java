@@ -130,8 +130,10 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * Clear all maps from this configuration.
      */
     public void clear() {
+        getRouteModel().clear();
         getRoutesMap().clear();
         getTargetRoutes().clear();
+        getTargetRouteModelMap().clear();
     }
 
     /**

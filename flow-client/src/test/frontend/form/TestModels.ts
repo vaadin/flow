@@ -136,6 +136,7 @@ export class TestModel<T extends TestEntity = TestEntity> extends ObjectModel<T>
 export interface Employee extends IdEntity {
   fullName: string;
   supervisor?: Employee;
+  colleagues?: Employee[]
 }
 export class EmployeeModel<T extends Employee = Employee> extends IdEntityModel<T> {
   static createEmptyValue: () => Employee;
@@ -146,5 +147,9 @@ export class EmployeeModel<T extends Employee = Employee> extends IdEntityModel<
 
   get supervisor(): EmployeeModel {
     return this[_getPropertyModel]('supervisor', EmployeeModel, [true]);
+  }
+
+  get colleagues() {
+    return this[_getPropertyModel]('colleagues', ArrayModel, [true, EmployeeModel, [false]]);
   }
 }

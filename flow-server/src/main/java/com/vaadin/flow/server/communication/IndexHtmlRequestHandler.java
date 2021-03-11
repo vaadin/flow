@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.communication;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
@@ -46,8 +47,6 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
-import java.io.File;
-
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
 import static com.vaadin.flow.shared.ApplicationConstants.CSRF_TOKEN;
@@ -60,12 +59,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
-    private transient IndexHtmlResponse indexHtmlResponse;
-
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
         DeploymentConfiguration config = session.getConfiguration();
+        IndexHtmlResponse indexHtmlResponse;
 
         Document indexDocument = config.isProductionMode()
                 ? getCachedIndexHtmlDocument(request.getService())
@@ -88,7 +86,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             indexHtmlResponse = new IndexHtmlResponse(request, response, indexDocument);
         }
 
-        addInitialFlow(initialJson, indexDocument, session);
+        addInitialFlow(initialJson, indexDocument, session, request);
 
         configureErrorDialogStyles(indexDocument);
 
@@ -109,6 +107,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // modify the page based on the @Meta, @ViewPort, @BodySize and @Inline annotations
         // and on the AppShellConfigurator
         registry.modifyIndexHtml(indexDocument, request);
+
+        // the bootstrap page title could be used as a fallback title to
+        // a server-side route that doesn't have a title
+        storeAppShellTitleToUI(indexDocument);
 
         // modify the page based on registered IndexHtmlRequestListener:s
         request.getService().modifyIndexHtmlResponse(indexHtmlResponse);
@@ -141,6 +143,16 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         return true;
     }
 
+    private void storeAppShellTitleToUI(Document indexDocument) {
+        if (UI.getCurrent() != null) {
+            Element elm = indexDocument.head().selectFirst("title");
+            if (elm != null) {
+                String appShellTitle = elm.text().isEmpty() ? elm.data() : elm.text();
+                UI.getCurrent().getInternals().setAppShellTitle(appShellTitle);
+            }
+        }
+    }
+
     private void addDevmodeGizmo(Document indexDocument, VaadinSession session,
             VaadinRequest request) {
         VaadinService service = session.getService();
@@ -165,10 +177,15 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void addInitialFlow(JsonObject initialJson, Document indexDocument,
-                                VaadinSession session) {
-        String csrfToken = session.getCsrfToken();
-        if (csrfToken != null) {
-            initialJson.put(CSRF_TOKEN, csrfToken);
+                                VaadinSession session, VaadinRequest request) {
+        // Do not add the CSRF token if the request comes from the service
+        // worker, to not have the token cached locally (#9537)
+        String referer = request.getHeader("referer");
+        if (referer == null || !referer.endsWith("/sw.js")) {
+            String csrfToken = session.getCsrfToken();
+            if (csrfToken != null) {
+                initialJson.put(CSRF_TOKEN, csrfToken);
+            }
         }
 
         Element elm = new Element("script");
@@ -232,10 +249,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         String frontendDir = FrontendUtils.getProjectFrontendDir(
                 service.getDeploymentConfiguration());
         String indexHtmlFilePath;
-        if(frontendDir.endsWith(File.separator)) {
+        if(frontendDir.endsWith("/") || frontendDir.endsWith(File.separator)) {
             indexHtmlFilePath = frontendDir + "index.html";
-        } else {
+        } else if(frontendDir.contains(File.separator)){
             indexHtmlFilePath = frontendDir + File.separatorChar + "index.html";
+        } else {
+            indexHtmlFilePath = frontendDir + "/index.html";
         }
         String message = String
                 .format("Failed to load content of '%1$s'. "
@@ -273,7 +292,4 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         return LoggerFactory.getLogger(IndexHtmlRequestHandler.class);
     }
 
-    protected IndexHtmlResponse getIndexHtmlResponse() {
-        return this.indexHtmlResponse;
-    }
 }

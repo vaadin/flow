@@ -31,6 +31,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
@@ -44,6 +45,8 @@ import com.vaadin.flow.server.frontend.scanner.samples.RouteComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponentWithLayout;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponentWithMethodReference;
 import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 import static org.hamcrest.CoreMatchers.is;
 
@@ -73,22 +76,25 @@ public class FrontendDependenciesTest {
         Mockito.when(classFinder.loadClass(FrontendDependencies.LUMO))
                 .thenReturn((Class) FakeLumo.class);
 
-        Mockito.doAnswer(invocation -> {
-            return FrontendDependenciesTest.class.getClassLoader()
-                    .getResource(invocation.getArgumentAt(0, String.class));
-        }).when(classFinder).getResource(Mockito.anyString());
+        Mockito
+            .when(classFinder.loadClass(AppShellConfigurator.class.getName()))
+            .thenReturn((Class) AppShellConfigurator.class);
+
+        Mockito.doAnswer(invocation ->
+            FrontendDependenciesTest.class.getClassLoader()
+                    .getResource(invocation.getArgumentAt(0, String.class))
+        ).when(classFinder).getResource(Mockito.anyString());
     }
 
     @Test
-    public void routedComponent_endpointsAreCollected()
-            throws ClassNotFoundException {
+    public void routedComponent_endpointsAreCollected() {
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(RouteComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
         List<String> modules = dependencies.getModules();
-        Assert.assertEquals(1, modules.size());
-        Assert.assertEquals("foo.js", modules.get(0));
+        Assert.assertTrue(1 <= modules.size());
+        Assert.assertTrue(modules.contains("foo.js"));
 
         Set<String> scripts = dependencies.getScripts();
         Assert.assertEquals(1, scripts.size());
@@ -96,15 +102,84 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void hasErrorParameterComponent_endpointIsCollected()
-            throws ClassNotFoundException {
+    public void appShellConfigurator_collectedAsEndpoint()
+        throws ClassNotFoundException {
+        Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
+            .thenReturn(Collections.singleton(MyAppShell.class));
+        Mockito.when(classFinder.loadClass(FakeLumo.class.getName()))
+            .thenReturn((Class) FakeLumo.class);
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+            classFinder, false);
+
+        Assert.assertEquals(1, dependencies.getEndPoints().size());
+
+        AbstractTheme theme = dependencies.getTheme();
+        Assert.assertNotNull("Theme not found in endpoint", theme);
+
+        ThemeDefinition themeDefinition = dependencies.getThemeDefinition();
+        Assert.assertNotNull("ThemeDefinition is not filled", themeDefinition);
+        Assert.assertEquals(FakeLumo.class,
+            themeDefinition.getTheme());
+    }
+
+    @Test
+    public void themeDefiningClassAndName_throwsException()
+        throws ClassNotFoundException {
+        Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
+            .thenReturn(Collections.singleton(FaultyThemeAnnotation.class));
+        Mockito.when(classFinder.loadClass(FakeLumo.class.getName()))
+            .thenReturn((Class) FakeLumo.class);
+
+        IllegalStateException exception = Assert
+            .assertThrows(IllegalStateException.class,
+                () -> new FrontendDependencies(classFinder, false));
+
+        Assert.assertEquals("Unexpected message for the thrown exception",
+            "Theme name and theme class can not both be specified. "
+                + "Theme name uses Lumo and can not be used in combination with custom theme class.",
+            exception.getMessage());
+    }
+
+    @Test
+    public void noDefaultThemeAvailable_throwsException()
+        throws ClassNotFoundException {
+        Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
+            .thenReturn(Collections.singleton(MyAppThemeShell.class));
+        Mockito.when(classFinder.loadClass(FrontendDependencies.LUMO))
+            .thenThrow(ClassNotFoundException.class);
+
+        IllegalStateException exception = Assert
+            .assertThrows(IllegalStateException.class,
+                () -> new FrontendDependencies(classFinder, false));
+
+        Assert.assertEquals("Thrown exception didn't contain correct message",
+            "Lumo dependency needs to be available on the classpath when using a theme name.",
+            exception.getMessage());
+    }
+
+    @Test
+    public void appThemeDefined_getsLumoAsTheme() {
+        Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
+            .thenReturn(Collections.singleton(MyAppThemeShell.class));
+
+        FrontendDependencies dependencies = new FrontendDependencies(classFinder, false);
+
+        Assert.assertEquals("Faulty default theme received",
+            FakeLumo.class, dependencies.getThemeDefinition().getTheme());
+
+
+    }
+
+    @Test
+    public void hasErrorParameterComponent_endpointIsCollected() {
         Mockito.when(classFinder.getSubTypesOf(HasErrorParameter.class))
                 .thenReturn(Collections.singleton(ErrorComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
         List<String> modules = dependencies.getModules();
-        Assert.assertEquals(1, modules.size());
-        Assert.assertEquals("./src/bar.js", modules.get(0));
+        Assert.assertTrue(1 <= modules.size());
+        Assert.assertTrue(modules.contains("./src/bar.js"));
 
         Set<String> scripts = dependencies.getScripts();
         Assert.assertEquals(1, scripts.size());
@@ -112,15 +187,14 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void componentInsideUiInitListener_endpointsAreCollected()
-            throws ClassNotFoundException {
+    public void componentInsideUiInitListener_endpointsAreCollected() {
         Mockito.when(classFinder.getSubTypesOf(UIInitListener.class))
                 .thenReturn(Collections.singleton(MyUIInitListener.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
         List<String> modules = dependencies.getModules();
-        Assert.assertEquals(1, modules.size());
-        Assert.assertEquals("baz.js", modules.get(0));
+        Assert.assertTrue(1 <= modules.size());
+        Assert.assertTrue(modules.contains("baz.js"));
 
         Set<String> scripts = dependencies.getScripts();
         Assert.assertEquals(1, scripts.size());
@@ -128,15 +202,14 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void componentInsideUiInitListenerInsideServiceInitListener_endpointsAreCollected()
-            throws ClassNotFoundException {
+    public void componentInsideUiInitListenerInsideServiceInitListener_endpointsAreCollected() {
         Mockito.when(classFinder.getSubTypesOf(VaadinServiceInitListener.class))
                 .thenReturn(Collections.singleton(MyServiceListener.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
         List<String> modules = dependencies.getModules();
-        Assert.assertEquals(1, modules.size());
-        Assert.assertEquals("baz.js", modules.get(0));
+        Assert.assertTrue(1 <= modules.size());
+        Assert.assertTrue(modules.contains("baz.js"));
 
         Set<String> scripts = dependencies.getScripts();
         Assert.assertEquals(1, scripts.size());
@@ -144,7 +217,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void jsScriptOrderIsPreserved() throws ClassNotFoundException {
+    public void jsScriptOrderIsPreserved() {
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(JsOrderComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -165,9 +238,9 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
 
-        List<String> expectedOrder = Arrays.asList("theme-foo.js", "foo.js");
-        Assert.assertThat("Theme's annotations should come first",
-                dependencies.getModules(), is(expectedOrder));
+        List<String> modules = dependencies.getModules();
+        Assert.assertEquals("Theme's annotations should come first",
+                "theme-foo.js", modules.get(0));
     }
 
     // flow #6524
@@ -180,7 +253,7 @@ public class FrontendDependenciesTest {
                 classFinder, false);
 
         List<String> modules = dependencies.getModules();
-        Assert.assertEquals(3, modules.size());
+        Assert.assertTrue(3 <= modules.size());
         Assert.assertTrue(modules.contains("foo.js"));
         Assert.assertTrue(modules.contains("bar.js"));
         Assert.assertTrue(modules.contains("baz.js"));
@@ -227,5 +300,18 @@ public class FrontendDependenciesTest {
         public String getThemeUrl() {
             return null;
         }
+    }
+
+    @Theme(themeClass = FakeLumo.class)
+    public static class MyAppShell implements AppShellConfigurator {
+    }
+
+    @Theme("my-theme")
+    public static class MyAppThemeShell implements AppShellConfigurator {
+    }
+
+
+    @Theme(value = "my-theme", themeClass = FakeLumo.class)
+    public static class FaultyThemeAnnotation implements AppShellConfigurator {
     }
 }

@@ -121,6 +121,11 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
+        public void refreshAll() {
+
+        }
+
+        @Override
         public TestListDataView addItems(Collection<String> items) {
             return null;
         }

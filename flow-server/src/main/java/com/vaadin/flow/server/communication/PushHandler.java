@@ -18,6 +18,8 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Collection;
 
 import org.atmosphere.cpr.AtmosphereRequest;
@@ -39,7 +41,6 @@ import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -146,7 +147,7 @@ public class PushHandler {
         }
     };
 
-    private VaadinServletService service;
+    private VaadinService service;
 
     /**
      * Creates an instance connected to the given service.
@@ -154,7 +155,7 @@ public class PushHandler {
      * @param service
      *            the service this handler belongs to
      */
-    public PushHandler(VaadinServletService service) {
+    public PushHandler(VaadinService service) {
         this.service = service;
     }
 
@@ -277,12 +278,22 @@ public class PushHandler {
     }
 
     void connectionLost(AtmosphereResourceEvent event) {
-        VaadinSession session = null;
+        /*
+         * There are two ways being called here: one is from
+         * VaadinService:handleRequest (via several interim calls), another is
+         * directly from Atmosphere (PushAtmosphereHandler,
+         * AtmosphereResourceListener::onDisconnect).
+         * 
+         * In the first case everything will be cleaned up out of the box. In
+         * the second case "clear" should be done here otherwise instances will
+         * stay in the threads.
+         */
+        boolean needsClear = VaadinSession.getCurrent() == null;
         try {
-            session = handleConnectionLost(event);
+            handleConnectionLost(event);
         } finally {
-            if (session != null) {
-                session.access(CurrentInstance::clearAll);
+            if (needsClear) {
+                CurrentInstance.clearAll();
             }
         }
     }
@@ -470,7 +481,9 @@ public class PushHandler {
     }
 
     /**
-     * Checks whether a given push id matches the session's push id.
+     * Checks whether a given push id matches the session's push id. The
+     * comparison is done using a time-constant method since the push id is used
+     * to protect against cross-site attacks.
      *
      * @param session
      *            the vaadin session for which the check should be done
@@ -482,7 +495,9 @@ public class PushHandler {
             String requestPushId) {
 
         String sessionPushId = session.getPushId();
-        if (requestPushId == null || !requestPushId.equals(sessionPushId)) {
+        if (requestPushId == null || !MessageDigest.isEqual(
+                requestPushId.getBytes(StandardCharsets.UTF_8),
+                sessionPushId.getBytes(StandardCharsets.UTF_8))) {
             return false;
         }
         return true;

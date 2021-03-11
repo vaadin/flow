@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -32,7 +33,9 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.Range;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -142,8 +145,7 @@ public class DataCommunicatorTest {
         dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
                 data -> {
                 }, element.getNode());
-        pageSize = 50;
-        dataCommunicator.setPageSize(pageSize);
+        pageSize = dataCommunicator.getPageSize();
     }
 
     @Test
@@ -980,8 +982,6 @@ public class DataCommunicatorTest {
         dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
                 data -> {
                 }, component.getElement().getNode());
-        pageSize = 50;
-        dataCommunicator.setPageSize(pageSize);
         AtomicReference<ItemCountChangeEvent<?>> cachedEvent = new AtomicReference<>();
         ComponentUtil.addListener(component, ItemCountChangeEvent.class,
                 ((ComponentEventListener) event -> {
@@ -1026,8 +1026,6 @@ public class DataCommunicatorTest {
         dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
                 data -> {
                 }, component.getElement().getNode());
-        pageSize = 50;
-        dataCommunicator.setPageSize(pageSize);
         AtomicReference<ItemCountChangeEvent<?>> cachedEvent = new AtomicReference<>();
         ComponentUtil.addListener(component, ItemCountChangeEvent.class,
                 ((ComponentEventListener) event -> {
@@ -1070,6 +1068,46 @@ public class DataCommunicatorTest {
         Assert.assertEquals("Invalid count provided", 500,
                 event.getItemCount());
         Assert.assertFalse(event.isItemCountEstimated());
+    }
+
+    @Test
+    public void setDefinedSize_rangeEndEqualsAssumedSize_flushRequested() {
+        // trigger client communication in order to initialise it and avoid
+        // infinite loop inside 'requestFlush()'
+        fakeClientCommunication();
+
+        StateNode stateNode = Mockito.spy(element.getNode());
+        DataCommunicator<Item> dataCommunicator = new DataCommunicator<>(
+                dataGenerator, arrayUpdater, data -> {}, stateNode);
+
+        // the items size returned by this data provider will be 100
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+
+        // Trigger flush() to set the assumedSize
+        fakeClientCommunication();
+
+        dataCommunicator.setRequestedRange(0, 100);
+        // clean flushRequest
+        fakeClientCommunication();
+
+        Mockito.reset(stateNode);
+        dataCommunicator.setDefinedSize(false);
+        fakeClientCommunication();
+
+        // Verify that requestFlush has been invoked
+        Mockito.verify(stateNode).runWhenAttached(Mockito.anyObject());
+
+        // Verify the estimated count is now 100 + 4 * pageSize = 300
+        Assert.assertEquals(300, dataCommunicator.getItemCount());
+    }
+
+    @Test
+    public void pageSize_defaultPageSizeUsed_returnsItemNormally() {
+        dataCommunicator.setDataProvider(DataProvider.ofItems(new Item(0)),
+                null);
+        Stream<Item> itemStream = dataCommunicator.fetchFromProvider(0, 100);
+        Assert.assertNotNull(itemStream);
+        Assert.assertEquals(1, itemStream.count());
     }
 
     @Test
@@ -1243,8 +1281,225 @@ public class DataCommunicatorTest {
                 .fetch(Mockito.any(Query.class));
     }
 
+    @Test
+    public void fetchEnabled_getItemCount_stillReturnsItemsCount() {
+        dataCommunicator.setFetchEnabled(false);
+        Assert.assertEquals(0, dataCommunicator.getItemCount());
+
+        // data provider stores 100 items
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        Assert.assertEquals(100, dataCommunicator.getItemCount());
+    }
+
+    @Test
+    public void fetchEnabled_getItem_stillReturnsItem() {
+        dataCommunicator.setFetchEnabled(false);
+
+        // data provider stores 100 items
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        Assert.assertNotNull(dataCommunicator.getItem(42));
+    }
+
+    @Test
+    public void fetchEnabled_requestRange_fetchIgnored() {
+        DataCommunicator<Item> dataCommunicator = new DataCommunicator<>(
+                dataGenerator, arrayUpdater, data -> {
+                }, element.getNode(), false);
+
+        DataProvider<Item, ?> dataProvider = Mockito
+                .spy(DataProvider.ofItems(new Item(0)));
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setRequestedRange(0, 0);
+
+        fakeClientCommunication();
+
+        Mockito.verify(dataProvider, Mockito.times(0))
+                .fetch(Mockito.any(Query.class));
+        Mockito.verify(dataProvider, Mockito.times(0))
+                .size(Mockito.any(Query.class));
+
+        // Switch back to normal mode
+        dataCommunicator.setFetchEnabled(true);
+        dataCommunicator.setRequestedRange(0, 10);
+
+        fakeClientCommunication();
+
+        Mockito.verify(dataProvider)
+                .fetch(Mockito.any(Query.class));
+        Mockito.verify(dataProvider)
+                .size(Mockito.any(Query.class));
+    }
+
+    @Test
+    public void setPageSize_setIncorrectPageSize_throws() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException
+                .expectMessage("Page size cannot be less than 1, got 0");
+        dataCommunicator.setPageSize(0);
+    }
+
+    @Test
+    public void filter_setFilterThroughFilterConsumer_shouldRetainFilterBetweenRequests() {
+        SerializableConsumer<SerializablePredicate<Item>> filterConsumer = dataCommunicator
+                .setDataProvider(DataProvider.ofItems(new Item(1), new Item(2),
+                        new Item(3)), item -> item.id > 1);
+
+        Assert.assertNotNull("Expected initial filter to be set",
+                dataCommunicator.getFilter());
+
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        Assert.assertNotNull(
+                "Filter should be retained after data request",
+                dataCommunicator.getFilter());
+
+        Assert.assertEquals("Unexpected items count", 2,
+                dataCommunicator.getItemCount());
+
+        // Check that the filter change works properly
+        filterConsumer.accept(item -> item.id > 2);
+
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        Assert.assertNotNull(
+                "Filter should be retained after data request",
+                dataCommunicator.getFilter());
+
+        Assert.assertEquals("Unexpected items count", 1,
+                dataCommunicator.getItemCount());
+    }
+
+    @Test
+    public void filter_setNotifyOnFilterChange_firesItemChangeEvent() {
+        TestComponent testComponent = new TestComponent(element);
+
+        AtomicBoolean eventTriggered = new AtomicBoolean(false);
+
+        testComponent.addItemChangeListener(event -> {
+            eventTriggered.set(true);
+            Assert.assertEquals("Unexpected item count", 2,
+                    event.getItemCount());
+        });
+
+        dataCommunicator.setDataProvider(
+                DataProvider.ofItems(new Item(1), new Item(2), new Item(3)),
+                item -> item.id > 1);
+
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        Assert.assertTrue("Expected event to be triggered",
+                eventTriggered.get());
+    }
+
+    @Test
+    public void filter_skipNotifyOnFilterChange_doesNotFireItemChangeEvent() {
+        TestComponent testComponent = new TestComponent(element);
+
+        testComponent.addItemChangeListener(event -> Assert
+                .fail("Event triggering not expected"));
+
+        dataCommunicator.setDataProvider(
+                DataProvider.ofItems(new Item(1), new Item(2), new Item(3)),
+                item -> item.id > 1, false);
+
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+    }
+
+    @Test
+    public void setDataProvider_setNewDataProvider_filteringAndSortingRemoved() {
+        dataCommunicator.setDataProvider(
+                DataProvider.ofItems(new Item(0), new Item(1), new Item(2)),
+                null);
+
+        ListDataView<Item, ?> listDataView = new AbstractListDataView<Item>(
+                dataCommunicator::getDataProvider, new TestComponent(element),
+                (filter, sorting) -> {
+                }) {
+        };
+
+        Assert.assertEquals("Unexpected items count before filter", 3,
+                listDataView.getItems().count());
+        Assert.assertEquals("Unexpected items order before sorting",
+                new Item(0), listDataView.getItems().findFirst().orElse(null));
+
+        listDataView.setFilter(item -> item.id < 2);
+        listDataView.setSortOrder(item -> item.id, SortDirection.DESCENDING);
+
+        Assert.assertEquals("Unexpected items count after filter", 2,
+                listDataView.getItems().count());
+        Assert.assertEquals("Unexpected items order after sorting", new Item(1),
+                listDataView.getItems().findFirst().orElse(null));
+
+        dataCommunicator.setDataProvider(
+                DataProvider.ofItems(new Item(0), new Item(1), new Item(2)),
+                null);
+
+        Assert.assertEquals("Unexpected items count after data provider reset",
+                3, listDataView.getItems().count());
+        Assert.assertEquals("Unexpected items order after data provider reset",
+                new Item(0), listDataView.getItems().findFirst().orElse(null));
+    }
+
+    @Test // for https://github.com/vaadin/flow/issues/9988
+    public void lazyLoadingFiltering_filterAppliedAfterScrolling_requestedRangeResolvedProperly() {
+        final AtomicReference<Item> filter = new AtomicReference<>(null);
+
+        final DataProvider<Item, ?> dataProvider = DataProvider.fromCallbacks(
+                query -> IntStream.range(0, 1000)
+                        .mapToObj(counter -> new Item(counter,
+                                String.valueOf(counter)))
+                        .filter(item -> filter.get() == null
+                                || filter.get().equals(item))
+                        .limit(query.getLimit()).skip(query.getOffset()),
+                query -> {
+                    Assert.fail("Count query is not expected in this test.");
+                    return 0;
+                });
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setDefinedSize(false);
+
+        // Scroll forward to populate the DC cache (active items)
+        dataCommunicator.setRequestedRange(0, 100);
+        fakeClientCommunication();
+
+        dataCommunicator.setRequestedRange(100, 150);
+        fakeClientCommunication();
+
+        // Apply the filter and force the requested range to be shifted back
+        // towards to zero. This case should be handled properly without any
+        // exception.
+        filter.set(new Item(42, "42"));
+        dataCommunicator.getDataProvider().refreshAll();
+        fakeClientCommunication();
+
+        // Check the filtered item
+        Assert.assertEquals("Expected 1 item after the filtering", 1,
+                dataCommunicator.getItemCount());
+        Assert.assertEquals("Expected the item with value 42", filter.get(),
+                dataCommunicator.getItem(0));
+    }
+
     @Tag("test-component")
     private static class TestComponent extends Component {
+
+        public TestComponent() {
+        }
+
+        public TestComponent(Element element) {
+            super(element);
+        }
+
+        void addItemChangeListener(
+                ComponentEventListener<ItemCountChangeEvent<?>> listener) {
+            ComponentUtil.addListener(this, ItemCountChangeEvent.class,
+                    (ComponentEventListener) listener);
+        }
     }
 
     private int getPageSizeIncrease() {

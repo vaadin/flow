@@ -520,7 +520,7 @@ public class ComponentUtil {
     }
 
     /**
-     * Stores a an instance of a specific type for the given component.
+     * Stores an instance of a specific type for the given component.
      *
      * @see #setData(Component, String, Object)
      * @see #getData(Component, Class)
