@@ -9,6 +9,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 
+import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -66,7 +67,7 @@ public class PageIT extends ChromeBrowserTest {
         InputTextElement input = $(InputTextElement.class).id("input");
         input.setValue("foo");
         Assert.assertEquals("foo", input.getPropertyString("value"));
-        findElement(By.id("reload")).click();
+        $(DivElement.class).id("reload").click();
         input = $(InputTextElement.class).id("input");
         Assert.assertEquals("", input.getValue());
     }

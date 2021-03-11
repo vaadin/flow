@@ -36,12 +36,12 @@
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-lumo-theme</artifactId>
+            <artifactId>flow-html-components-testbench</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-html-components-testbench</artifactId>
+            <artifactId>flow-test-lumo</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

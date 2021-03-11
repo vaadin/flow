@@ -18,9 +18,8 @@ package com.vaadin.flow.webcomponent;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.lumo.Lumo;
 
-@Theme(themeClass = Lumo.class, variant = Lumo.DARK)
+@Theme(themeClass = VariantTheme.class, variant = VariantTheme.DARK)
 public class ThemedVariantComponentExporter
         extends WebComponentExporter<ThemedVariantComponent> {
     public ThemedVariantComponentExporter() {

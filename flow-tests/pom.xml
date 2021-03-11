@@ -292,6 +292,7 @@
     <modules>
         <module>test-resources</module>
         <module>test-common</module>
+        <module>test-lumo</module>
     </modules>
 
     <profiles>
@@ -331,8 +332,6 @@
                 <module>test-servlet</module>
                 <module>test-application-theme</module>
                 <module>test-themes</module>
-                <module>test-lumo-theme</module>
-                <module>test-material-theme</module>
                 <module>servlet-containers</module>
 
                 <!-- web component embedding -->

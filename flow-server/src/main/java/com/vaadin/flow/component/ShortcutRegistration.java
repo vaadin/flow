@@ -46,6 +46,18 @@ import com.vaadin.flow.shared.Registration;
 public class ShortcutRegistration implements Registration, Serializable {
     static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_CONTAIN_NULL = "listenOnComponents should not contain null!";
     static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_HAVE_DUPLICATE_ENTRIES = "listenOnComponents should not have duplicate entries!";
+    static final String ELEMENT_LOCATOR_JS = //@formatter:off
+            "const listenOn=this;" // this is the listenOn component's element
+            + "const delegate=%1$s;" // the output of the JsLocator
+            + "if (delegate) {"
+            + "delegate.addEventListener('keydown', function(event) {"
+            + "const new_event = new event.constructor(event.type, event);"
+            + "listenOn.dispatchEvent(new_event);"
+            + "event.preventDefault();" // the propagation and default actions are left for the new event
+            + "event.stopPropagation();});"
+            + "} else {"
+            + "throw \"Shortcut listenOn element not found with JS locator string '%1$s'\""
+            + "}";//@formatter:on
     private boolean allowDefaultBehavior = false;
     private boolean allowEventPropagation = false;
 
@@ -522,7 +534,6 @@ public class ShortcutRegistration implements Registration, Serializable {
         if (shortcutListenerRegistrations[listenOnIndex] == null) {
             if (component.getUI().isPresent()) {
                 shortcutListenerRegistrations[listenOnIndex] = new CompoundRegistration();
-
                 Registration keyDownRegistration = ComponentUtil
                         .addListener(component, KeyDownEvent.class, e -> {
                             if (lifecycleOwner.isVisible() && lifecycleOwner
@@ -536,6 +547,7 @@ public class ShortcutRegistration implements Registration, Serializable {
                         });
                 shortcutListenerRegistrations[listenOnIndex]
                         .addRegistration(keyDownRegistration);
+                setupKeydownEventDelegateIfNeeded(component);
             }
         } else {
             configureHandlerListenerRegistration(listenOnIndex);
@@ -705,6 +717,21 @@ public class ShortcutRegistration implements Registration, Serializable {
                 .collect(Collectors.joining(",")) + "]";
         return "(" + keyList + ".indexOf(event.code) !== -1 || " + keyList
                 + ".indexOf(event.key) !== -1)";
+    }
+
+    /*
+     * #7799, vaadin/vaadin-dialog#229 This could be changed to use a generic
+     * feature for DOM events by either using existing DOM event handling or by
+     * using the JS execution return channel feature.
+     */
+    private void setupKeydownEventDelegateIfNeeded(Component listenOn) {
+        final String elementLocatorJs = (String) ComponentUtil.getData(listenOn,
+                Shortcuts.ELEMENT_LOCATOR_JS_KEY);
+        if (elementLocatorJs != null) {
+            final String jsExpression = String.format(ELEMENT_LOCATOR_JS,
+                    elementLocatorJs);
+            listenOn.getElement().executeJs(jsExpression);
+        }
     }
 
     /**
