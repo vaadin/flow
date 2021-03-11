@@ -17,6 +17,7 @@
 package com.vaadin.flow.component;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.Assert;
@@ -27,11 +28,13 @@ import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMapUtil;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -274,7 +277,7 @@ public class ShortcutRegistrationTest {
         }, Key.KEY_A);
 
         UI newUI = Mockito.spy(UI.class);
-        // close the prevopus UI
+        // close the previous UI
         ui.close();
         components[0] = newUI;
 
@@ -361,6 +364,56 @@ public class ShortcutRegistrationTest {
         clientResponse();
 
         assertTrue(registration.isShortcutActive());
+    }
+
+    @Test
+    public void listenOnComponentHasElementLocatorJs_jsExecutionScheduled() {
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        Mockito.when(session.hasLock()).thenReturn(true);
+        UI ui = Mockito.spy(UI.class);
+        ui.getInternals().setSession(session);
+
+        Component owner = new FakeComponent();
+        Component initialComponentToListenOn = new FakeComponent();
+
+        Component[] components = new Component[] { initialComponentToListenOn };
+
+        ui.add(owner);
+        ui.add(initialComponentToListenOn);
+
+        final String elementLocatorJs = "foobar";
+        final Registration registration = Shortcuts
+                .setShortcutListenOnElement(elementLocatorJs,
+                        initialComponentToListenOn);
+
+        new ShortcutRegistration(owner, () -> components, event -> {
+        }, Key.KEY_A);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pendingJavaScriptInvocations = ui
+                .getInternals().dumpPendingJavaScriptInvocations();
+        Assert.assertEquals(1, pendingJavaScriptInvocations.size());
+
+        final PendingJavaScriptInvocation js = pendingJavaScriptInvocations
+                .get(0);
+        final String expectedExecutionString = "return (function() { "
+                + String.format(ShortcutRegistration.ELEMENT_LOCATOR_JS,
+                        elementLocatorJs)
+                + "}).apply($0)";
+        Assert.assertEquals(expectedExecutionString,
+                js.getInvocation().getExpression());
+
+        registration.remove();
+
+        new ShortcutRegistration(owner, () -> components, event -> {
+        }, Key.KEY_A);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        pendingJavaScriptInvocations = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        Assert.assertEquals(0, pendingJavaScriptInvocations.size());
     }
 
     /**
