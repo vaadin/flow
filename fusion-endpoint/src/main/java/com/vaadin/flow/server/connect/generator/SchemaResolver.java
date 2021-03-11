@@ -197,14 +197,17 @@ class SchemaResolver {
     /**
      * Checks if the given type is an instance of the given class
      */
-    private boolean isType(ResolvedType type, Class clazz) {
+    private boolean isType(ResolvedType type, Class<?> clazz) {
+        if (!type.isReferenceType()) {
+            return false;
+        }
         return clazz.getName().equals(type.asReferenceType().getQualifiedName());
     }
 
     /**
      * Checks if the given type can be cast to one of the given classes
      */
-    private boolean isTypeOf(ResolvedType type, Class... clazz) {
+    private boolean isTypeOf(ResolvedType type, Class<?>... clazz) {
         if (!type.isReferenceType()) {
             return false;
         }
