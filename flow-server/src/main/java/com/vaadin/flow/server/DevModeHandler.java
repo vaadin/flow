@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.ResponseWriter;
@@ -154,14 +155,14 @@ public final class DevModeHandler implements RequestHandler {
 
         this.npmFolder = npmFolder;
         port = runningPort;
-        ApplicationConfiguration config = lookup
-                .lookup(ApplicationConfiguration.class);
+        DeploymentConfiguration config = lookup
+                .lookup(DeploymentConfiguration.class);
         reuseDevServer = config.reuseDevServer();
         devServerPortFile = getDevServerPortFile(npmFolder);
         responseWriter = new ResponseWriter(config);
         snowpackBuildRoot = new File(npmFolder, "build");
 
-        dBiConsumer<Void, ? super Throwable> action = (value, exception) -> {
+        BiConsumer<Void, ? super Throwable> action = (value, exception) -> {
             // this will throw an exception if an exception has been thrown by
             // the waitFor task
             waitFor.getNow(null);
@@ -611,7 +612,7 @@ public final class DevModeHandler implements RequestHandler {
         FileUtils.deleteQuietly(devServerPortFile);
     }
 
-    private void runOnFutureComplete(ApplicationConfiguration config) {
+    private void runOnFutureComplete(DeploymentConfiguration config) {
         try {
             doStartDevModeServer(config);
         } catch (ExecutionFailedException exception) {
@@ -675,7 +676,7 @@ public final class DevModeHandler implements RequestHandler {
 
     }
 
-    private void doStartDevModeServer(ApplicationConfiguration config)
+    private void doStartDevModeServer(DeploymentConfiguration config)
             throws ExecutionFailedException {
         useSnowpack = config.useSnowpack();
         useSnowpackBuildWatch = config.useSnowpackBuildWatch();
@@ -728,7 +729,7 @@ public final class DevModeHandler implements RequestHandler {
         }
     }
 
-    private boolean doStartWebpack(ApplicationConfiguration config,
+    private boolean doStartWebpack(DeploymentConfiguration config,
             Pair<File, File> webPackFiles, long start) {
         String displayName = useSnowpack ? "snowpack" : "webpack";
 
@@ -827,7 +828,7 @@ public final class DevModeHandler implements RequestHandler {
         watchDog.set(null);
     }
 
-    private List<String> makeCommands(ApplicationConfiguration config,
+    private List<String> makeCommands(DeploymentConfiguration config,
             File webpack, File webpackConfig, String nodeExec) {
         if (useSnowpack) {
             if (useSnowpackBuildWatch) {

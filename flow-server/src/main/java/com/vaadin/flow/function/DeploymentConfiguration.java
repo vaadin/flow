@@ -41,16 +41,6 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_POLYFILLS;
  */
 public interface DeploymentConfiguration
         extends AbstractConfiguration, Serializable {
-
-    default boolean useSnowpack() {
-        return getBooleanProperty(InitParameters.USE_SNOWPACK, false);
-    }
-
-    default boolean useSnowpackBuildWatch() {
-        return getBooleanProperty(InitParameters.USE_SNOWPACK_BUILD_WATCH, false);
-
-    }
-
     /**
      * Returns whether the server provides timing info to the client.
      *
