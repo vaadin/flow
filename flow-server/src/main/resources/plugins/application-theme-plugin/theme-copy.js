@@ -59,7 +59,7 @@ function copyThemeResources(themeFolder, projectStaticAssetsOutputFolder, logger
 
 /**
  * Collect all folders with copyable files and all files to be copied.
- * Foled will not be added if no files in folder or subfolders.
+ * Folder will not be added if no files in folder or subfolders.
  *
  * Files will not contain files with ignored extensions and folders only containing ignored files will not be added.
  *
