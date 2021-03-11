@@ -27,3 +27,4 @@ import com.vaadin.testbench.elementsbase.Element;
 public class NativeButtonElement extends TestBenchElement {
 
 }
+
