@@ -22,16 +22,16 @@ import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.DynamicType.Builder;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import org.apache.commons.io.IOUtils;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
 
 import com.vaadin.flow.server.VaadinServlet;
-
-import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.dynamic.DynamicType.Builder;
-import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 public class EnableOSGiRunner extends BlockJUnit4ClassRunner {
 
@@ -54,6 +54,10 @@ public class EnableOSGiRunner extends BlockJUnit4ClassRunner {
                     .getName();
             vaadinPackagePrefix = vaadinPackagePrefix.substring(0,
                     vaadinPackagePrefix.lastIndexOf('.'));
+
+            String testUtilsPrefix = MockDeploymentConfiguration.class
+                    .getPackage().getName();
+
             if (name.equals("org.osgi.framework.FrameworkUtil")) {
                 Builder<Object> builder = new ByteBuddy()
                         .subclass(Object.class);
@@ -62,7 +66,8 @@ public class EnableOSGiRunner extends BlockJUnit4ClassRunner {
                         .load(this, ClassLoadingStrategy.Default.WRAPPER)
                         .getLoaded();
                 return fwUtil;
-            } else if (name.startsWith(vaadinPackagePrefix)) {
+            } else if (name.startsWith(vaadinPackagePrefix)
+                    || name.startsWith(testUtilsPrefix)) {
                 String path = name.replace('.', '/').concat(".class");
                 URL resource = Thread.currentThread().getContextClassLoader()
                         .getResource(path);
