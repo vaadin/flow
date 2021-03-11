@@ -19,24 +19,38 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import org.junit.Assert;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+
 public class ServletContextResourceIT extends ChromeBrowserTest {
+
+    @Override
+    protected String getTestPath() {
+        return "/view/" + getPath();
+    }
 
     @Test
     public void classResourceIsNotAvailable() throws IOException {
-        URL url = new URL(getRootURL() + getPath());
+        URL url = new URL(getRootURL() + "/view/" + getPath());
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        Assert.assertEquals(HttpURLConnection.HTTP_NOT_FOUND,
-                connection.getResponseCode());
+        if (HttpURLConnection.HTTP_NOT_FOUND != connection.getResponseCode()) {
+            open();
+
+            WebElement body = findElement(By.tagName("body"));
+            assertThat(body.getText().trim(), CoreMatchers
+                    .startsWith("Could not navigate to '" + getPath() + "'"));
+        }
     }
 
     private String getPath() {
         Class<?> clazz = BaseHrefView.class;
-        return "/view/" + clazz.getPackage().getName().replace('.', '/') + "/"
+        return clazz.getPackage().getName().replace('.', '/') + "/"
                 + clazz.getSimpleName() + ".class";
     }
 
