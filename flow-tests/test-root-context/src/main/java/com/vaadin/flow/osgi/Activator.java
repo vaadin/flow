@@ -15,11 +15,12 @@
  */
 package com.vaadin.flow.osgi;
 
-import java.util.Dictionary;
-import java.util.Hashtable;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+
+import java.net.URL;
+import java.util.Dictionary;
+import java.util.Hashtable;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -29,17 +30,38 @@ import org.osgi.service.http.NamespaceException;
 import org.osgi.util.tracker.ServiceTracker;
 
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.StaticFileHandler;
+import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinServletConfiguration;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.uitest.servlet.Es6UrlViewTestServlet;
 import com.vaadin.flow.uitest.servlet.ProductionModeTimingDataViewTestServlet;
 import com.vaadin.flow.uitest.servlet.ProductionModeViewTestServlet;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet;
 import com.vaadin.flow.uitest.servlet.ViewTestServlet;
-import com.vaadin.flow.uitest.servlet.WebJarsServlet;
 
 public class Activator implements BundleActivator {
 
     private ServiceTracker<HttpService, HttpService> httpTracker;
+
+    private static class ItStaticFileServer extends StaticFileServer {
+
+        private final VaadinServletService servletService;
+
+        private ItStaticFileServer(VaadinServletService servletService) {
+            super(servletService);
+            this.servletService = servletService;
+        }
+
+        @Override
+        protected URL getStaticResource(String path) {
+            if (path.endsWith(".class")) {
+                return null;
+            }
+            return servletService.getStaticResource(path);
+        }
+
+    }
 
     @VaadinServletConfiguration(productionMode = false)
     private static class FixedViewServlet extends ViewTestServlet {
@@ -48,6 +70,12 @@ public class Activator implements BundleActivator {
             super.init(servletConfig);
 
             getService().setClassLoader(getClass().getClassLoader());
+        }
+
+        @Override
+        protected StaticFileHandler createStaticFileHandler(
+                VaadinServletService servletService) {
+            return new ItStaticFileServer(servletService);
         }
     }
 
@@ -58,6 +86,12 @@ public class Activator implements BundleActivator {
             super.init(servletConfig);
 
             getService().setClassLoader(getClass().getClassLoader());
+        }
+
+        @Override
+        protected StaticFileHandler createStaticFileHandler(
+                VaadinServletService servletService) {
+            return new ItStaticFileServer(servletService);
         }
     }
 
@@ -71,6 +105,12 @@ public class Activator implements BundleActivator {
 
             getService().setClassLoader(getClass().getClassLoader());
         }
+
+        @Override
+        protected StaticFileHandler createStaticFileHandler(
+                VaadinServletService servletService) {
+            return new ItStaticFileServer(servletService);
+        }
     }
 
     @VaadinServletConfiguration(productionMode = true)
@@ -82,6 +122,12 @@ public class Activator implements BundleActivator {
 
             getService().setClassLoader(getClass().getClassLoader());
         }
+
+        @Override
+        protected StaticFileHandler createStaticFileHandler(
+                VaadinServletService servletService) {
+            return new ItStaticFileServer(servletService);
+        }
     }
 
     @VaadinServletConfiguration(productionMode = true)
@@ -91,6 +137,12 @@ public class Activator implements BundleActivator {
             super.init(servletConfig);
 
             getService().setClassLoader(getClass().getClassLoader());
+        }
+
+        @Override
+        protected StaticFileHandler createStaticFileHandler(
+                VaadinServletService servletService) {
+            return new ItStaticFileServer(servletService);
         }
 
     }
@@ -128,7 +180,7 @@ public class Activator implements BundleActivator {
                     httpService.registerServlet("/context/*",
                             new FixedViewServlet(), dictionary, null);
                     httpService.registerServlet("/frontend/*",
-                            new WebJarsServlet(), dictionary, null);
+                            new FixedViewServlet(), dictionary, null);
                     httpService.registerServlet("/new-router-session/*",
                             new FixedRouterServlet(), dictionary, null);
                     httpService.registerServlet("/view-production/*",
