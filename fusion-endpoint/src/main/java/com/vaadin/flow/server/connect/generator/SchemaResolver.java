@@ -161,17 +161,7 @@ class SchemaResolver {
     }
 
     private boolean isCollectionType(ResolvedType type) {
-        if (type.isPrimitive()) {
-            return false;
-        }
-
-        if (isTypeOf(type, Collection.class)) {
-            return true;
-        }
-        if (isType(type, Iterable.class)) {
-            return true;
-        }
-        return false;
+        return !type.isPrimitive() && (isTypeOf(type, Collection.class) || isType(type, Iterable.class));
     }
 
     private boolean isMapType(ResolvedType type) {
@@ -195,7 +185,13 @@ class SchemaResolver {
     }
 
     /**
-     * Checks if the given type is an instance of the given class
+     * Checks if the given type refers to the given class.
+     *
+     * @param type
+     *            type type to check
+     * @param clazz
+     *            the class to match with
+     * @return true if the type is referring to the given class, false otherwise
      */
     private boolean isType(ResolvedType type, Class<?> clazz) {
         if (!type.isReferenceType()) {
@@ -205,7 +201,13 @@ class SchemaResolver {
     }
 
     /**
-     * Checks if the given type can be cast to one of the given classes
+     * Checks if the given type can be cast to one of the given classes.
+     *
+     * @param type
+     *            type type to check
+     * @param clazz
+     *            the classes to match with
+     * @return true if the type can be cast to one of the given classes, false otherwise
      */
     private boolean isTypeOf(ResolvedType type, Class<?>... clazz) {
         if (!type.isReferenceType()) {
