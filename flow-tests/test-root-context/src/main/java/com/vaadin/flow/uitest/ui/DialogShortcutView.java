@@ -175,14 +175,10 @@ public class DialogShortcutView extends Div {
     }
 
     public void open(Dialog dialog) {
-        // final UI ui = DialogShortcutView.this.getUI().get();
-        // ui.add(this);
         add(dialog);
     }
 
     public void close(Dialog dialog) {
-        // final UI ui = DialogShortcutView.this.getUI().get();
-        // ui.remove(this);
         remove(dialog);
     }
 }
