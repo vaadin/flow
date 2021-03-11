@@ -25,7 +25,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class LogoutIT extends ChromeBrowserTest {
 
     @Test
-    public void setLocationWithNotificationDisabled_noErrorMessages() {
+    public void setLocation_noErrorMessages() {
         open();
 
         $(NativeButtonElement.class).first().click();
