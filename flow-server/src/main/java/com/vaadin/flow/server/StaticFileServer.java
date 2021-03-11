@@ -179,7 +179,7 @@ public class StaticFileServer implements StaticFileHandler {
      * @see VaadinService#getStaticResource(String)
      */
     protected URL getStaticResource(String path) {
-        if (OSGiAccess.getInstance() == null) {
+        if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
             return servletService.getStaticResource(path);
         } else {
             return null;

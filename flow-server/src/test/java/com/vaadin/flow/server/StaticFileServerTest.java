@@ -20,6 +20,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -47,9 +48,9 @@ import org.mockito.Mockito;
 import com.vaadin.flow.function.DeploymentConfiguration;
 
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 
 public class StaticFileServerTest implements Serializable {
 
@@ -125,6 +126,11 @@ public class StaticFileServerTest implements Serializable {
                 return overrideCacheTime;
             }
             return super.getCacheTime(filenameWithPath);
+        }
+
+        @Override
+        protected URL getStaticResource(String path) {
+            return super.getStaticResource(path);
         }
     }
 
@@ -518,16 +524,14 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void ServletPath_serveStaticFileResource()
-            throws IOException {
+    public void ServletPath_serveStaticFileResource() throws IOException {
         String pathInfo = "/VAADIN/static/img/bg.jpg";
         setupRequestURI("", "/servlet", pathInfo);
         assertBundleBuildResource(pathInfo);
     }
 
     @Test
-    public void contextPath_serveStaticFileResource()
-            throws IOException {
+    public void contextPath_serveStaticFileResource() throws IOException {
         String pathInfo = "/VAADIN/static/img/bg.jpg";
         setupRequestURI("/context", "", pathInfo);
         assertBundleBuildResource(pathInfo);
