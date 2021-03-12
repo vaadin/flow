@@ -72,8 +72,9 @@ public class LitTemplateParserImplTest {
 
         ResourceProvider resourceProvider = service.getContext()
                 .getAttribute(Lookup.class).lookup(ResourceProvider.class);
-        Mockito.when(resourceProvider.getApplicationResource(service,
-                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
+        Mockito.when(
+                resourceProvider.getApplicationResource(service.getContext(),
+                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                 .thenReturn(LitTemplateParserImplTest.class.getResource(
                         "/" + VAADIN_SERVLET_RESOURCES + "config/stats.json"));
     }
