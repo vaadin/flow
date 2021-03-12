@@ -15,8 +15,10 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -28,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ResponseWriter;
+import com.vaadin.flow.server.osgi.OSGiAccess;
 
 import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
@@ -86,7 +89,7 @@ public class StaticFileServer implements StaticFileHandler {
             // We rather serve 404 than let it fall through
             return true;
         }
-        resource = servletService.getStaticResource(requestFilename);
+        resource = getStaticResource(requestFilename);
 
         if (resource == null && shouldFixIncorrectWebjarPaths()
                 && isIncorrectWebjarPath(requestFilename)) {
@@ -115,12 +118,12 @@ public class StaticFileServer implements StaticFileHandler {
                     .getResource("META-INF" + filenameWithPath);
         }
         if (resourceUrl == null) {
-            resourceUrl = servletService.getStaticResource(filenameWithPath);
+            resourceUrl = getStaticResource(filenameWithPath);
         }
         if (resourceUrl == null && shouldFixIncorrectWebjarPaths()
                 && isIncorrectWebjarPath(filenameWithPath)) {
             // Flow issue #4601
-            resourceUrl = servletService.getStaticResource(
+            resourceUrl = getStaticResource(
                     fixIncorrectWebjarPath(filenameWithPath));
         }
 
@@ -146,6 +149,31 @@ public class StaticFileServer implements StaticFileHandler {
         responseWriter.writeResponseContents(filenameWithPath, resourceUrl,
                 request, response);
         return true;
+    }
+
+    /**
+     * Returns a URL to the static Web resource at the given URI or null if no
+     * file found.
+     * <p>
+     * The resource will be exposed via HTTP (available as a static web
+     * resource). The {@code null} return value means that the resource won't be
+     * exposed as a Web resource even if it's a resource available via
+     * {@link ServletContext}.
+     * 
+     * @param path
+     *            the path for the resource
+     * @return the resource located at the named path to expose it via Web, or
+     *         {@code null} if there is no resource at that path or it should
+     *         not be exposed
+     * 
+     * @see VaadinService#getStaticResource(String)
+     */
+    protected URL getStaticResource(String path) {
+        if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
+            return servletService.getStaticResource(path);
+        } else {
+            return null;
+        }
     }
 
     // When referring to webjar resources from application stylesheets (loaded
