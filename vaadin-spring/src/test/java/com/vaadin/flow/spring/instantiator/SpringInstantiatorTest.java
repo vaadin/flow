@@ -48,8 +48,11 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.ServiceInitEvent;
+import com.vaadin.flow.server.StaticFileServer;
+import com.vaadin.flow.server.StaticFileHandlerFactory;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.spring.SpringInstantiator;
 import com.vaadin.flow.spring.SpringServlet;
@@ -195,6 +198,13 @@ public class SpringInstantiatorTest {
         ResourceProvider provider = Mockito.mock(ResourceProvider.class);
         Mockito.when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(provider);
+
+        StaticFileHandlerFactory staticFileHandlerFactory =
+                vaadinService -> new StaticFileServer(
+                        (VaadinServletService) vaadinService);
+        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
+                .thenReturn(staticFileHandlerFactory);
+
         Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
 
