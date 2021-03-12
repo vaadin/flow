@@ -1649,7 +1649,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *            the UI for which the UIDL should be generated
      * @return a JSON object with the initial UIDL message
      */
-    protected static JsonObject getInitialUidl(UI ui) {
+    protected JsonObject getInitialUidl(UI ui) {
         JsonObject json = new UidlWriter().createUidl(ui, false);
 
         VaadinSession session = ui.getSession();
@@ -1672,8 +1672,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * @param session
      *            the vaadin session to which the security key belongs
      */
-    private static void writePushIdUIDL(JsonObject response,
-            VaadinSession session) {
+    private void writePushIdUIDL(JsonObject response, VaadinSession session) {
         String pushId = session.getPushId();
         response.put(ApplicationConstants.UIDL_PUSH_ID, pushId);
     }
@@ -1687,120 +1686,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * @param ui
      *            the UI to which the security key belongs
      */
-    private static void writeSecurityKeyUIDL(JsonObject response, UI ui) {
+    private void writeSecurityKeyUIDL(JsonObject response, UI ui) {
         String seckey = ui.getCsrfToken();
         response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
     }
 
-    protected static String getPushScript(BootstrapContext context) {
-        VaadinRequest request = context.getRequest();
-        // Parameter appended to JS to bypass caches after version upgrade.
-        String versionQueryParam = "?v=" + Version.getFullVersion();
-        // Load client-side dependencies for push support
-        String pushJSPath = context.getRequest().getService()
-                .getContextRootRelativePath(request);
-
-        if (request.getService().getDeploymentConfiguration()
-                .isProductionMode()) {
-            pushJSPath += ApplicationConstants.VAADIN_PUSH_JS;
-        } else {
-            pushJSPath += ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
-        }
-
-        pushJSPath += versionQueryParam;
-        return pushJSPath;
-    }
-
-    protected static void showWebpackErrors(Document document) {
-        DevModeHandler devMode = DevModeHandler.getDevModeHandler();
-        if (devMode != null) {
-            String errorMsg = devMode.getFailedOutput();
-            if (errorMsg != null) {
-                // Make error lines more prominent
-                errorMsg = errorMsg.replaceAll("(ERROR.+?\n)", "<b>$1</b>");
-
-                Element errorElement = document.createElement("div");
-                errorElement.setBaseUri("");
-                errorElement.attr("class", "v-system-error");
-                errorElement.attr("onclick",
-                        "this.parentElement.removeChild(this)");
-                errorElement
-                        .html("<h3 style=\"display:inline;\">Webpack Error</h3>"
-                                + "<h6 style=\"display:inline; padding-left:10px;\">Click to close</h6>"
-                                + "<pre>" + errorMsg + "</pre>");
-                document.body().appendChild(errorElement);
-            }
-        }
-    }
-
-    protected static void setupErrorDialogs(Element style) {
-        // @formatter:off
-        style.appendText(
-                ".v-reconnect-dialog," +
-                ".v-system-error {" +
-                "position: absolute;" +
-                "color: black;" +
-                "background: white;" +
-                "top: 1em;" +
-                "right: 1em;" +
-                "border: 1px solid black;" +
-                "padding: 1em;" +
-                "z-index: 10000;" +
-                "max-width: calc(100vw - 4em);" +
-                "max-height: calc(100vh - 4em);" +
-                "overflow: auto;" +
-                "} .v-system-error {" +
-                "color: indianred;" +
-                "pointer-events: auto;" +
-                "} .v-system-error h3, .v-system-error b {" +
-                "color: red;" +
-                "}");
-     // @formatter:on
-    }
-
-    protected static void setupPwa(Document document, VaadinService service) {
-        setupPwa(document, service.getPwaRegistry());
-    }
-
-    private static void setupPwa(Document document, PwaRegistry registry) {
-        if (registry == null) {
-            return;
-        }
-
-        PwaConfiguration config = registry.getPwaConfiguration();
-
-        if (config.isEnabled()) {
-            // Add header injections
-            Element head = document.head();
-
-            // Describe PWA capability for iOS devices
-            head.appendElement(META_TAG)
-                    .attr("name", "apple-mobile-web-app-capable")
-                    .attr(CONTENT_ATTRIBUTE, "yes");
-
-            // Theme color
-            head.appendElement(META_TAG).attr("name", "theme-color")
-                    .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
-            head.appendElement(META_TAG)
-                    .attr("name", "apple-mobile-web-app-status-bar-style")
-                    .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
-
-            // Add manifest
-            head.appendElement("link").attr("rel", "manifest").attr("href",
-                    config.getManifestPath());
-
-            // Add icons
-            for (PwaIcon icon : registry.getHeaderIcons()) {
-                head.appendChild(icon.asElement());
-            }
-
-            // Add service worker initialization
-            head.appendElement(SCRIPT_TAG)
-                    .text("if ('serviceWorker' in navigator) {\n"
-                            + "  window.addEventListener('load', function() {\n"
-                            + "    navigator.serviceWorker.register('"
-                            + config.getServiceWorkerPath() + "');\n"
-                            + "  });\n" + "}");
-        }
-    }
 }
