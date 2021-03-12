@@ -47,6 +47,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.router.internal.RouteTarget;
@@ -122,14 +123,20 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                     .forRegistry(this);
             Exception caught = null;
             for (RouteBaseData<?> data : event.getRemovedRoutes()) {
-                caught = modifyRoute(() -> routeConfiguration
-                        .removeRoute(data.getUrl(), data.getNavigationTarget()),
-                        caught != null);
+                caught = modifyRoute(() -> routeConfiguration.removeRoute(
+                        HasUrlParameterFormat.excludeTemplate(
+                                data.getTemplate(), data.getNavigationTarget()),
+                        data.getNavigationTarget()), caught != null);
             }
             for (RouteBaseData<?> data : event.getAddedRoutes()) {
-                caught = modifyRoute(() -> routeConfiguration.setRoute(
-                        data.getUrl(), data.getNavigationTarget(),
-                        data.getParentLayouts()), caught != null);
+                caught = modifyRoute(
+                        () -> routeConfiguration.setRoute(
+                                HasUrlParameterFormat
+                                        .excludeTemplate(data.getTemplate(),
+                                                data.getNavigationTarget()),
+                                data.getNavigationTarget(),
+                                data.getParentLayouts()),
+                        caught != null);
             }
             handleCaughtException(caught);
         }
@@ -137,11 +144,14 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         private void setRoutes(List<RouteData> routes) {
             Exception caught = null;
             for (RouteData data : routes) {
-                caught = modifyRoute(() -> setRoute(data.getUrl(),
+                caught = modifyRoute(() -> setRoute(data.getTemplate(),
                         data.getNavigationTarget(), data.getParentLayouts()),
                         caught != null);
                 for (RouteAliasData alias : data.getRouteAliases()) {
-                    caught = modifyRoute(() -> setRoute(alias.getUrl(),
+                    caught = modifyRoute(() -> setRoute(
+                            HasUrlParameterFormat.excludeTemplate(
+                                    alias.getTemplate(),
+                                    alias.getNavigationTarget()),
                             alias.getNavigationTarget(),
                             alias.getParentLayouts()), caught != null);
                 }
