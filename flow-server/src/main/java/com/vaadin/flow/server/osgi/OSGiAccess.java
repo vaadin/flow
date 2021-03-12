@@ -97,7 +97,7 @@ public final class OSGiAccess {
         @Override
         public <T> T lookup(Class<T> serviceClass) {
             if (ResourceProvider.class.equals(serviceClass)) {
-                return serviceClass.cast(serviceClass);
+                return serviceClass.cast(RESOURCE_PROVIDER);
             }
             Bundle bundle = FrameworkUtil.getBundle(OSGiAccess.class);
             ServiceReference<T> reference = bundle.getBundleContext()
