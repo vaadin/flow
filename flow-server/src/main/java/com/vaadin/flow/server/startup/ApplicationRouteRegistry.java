@@ -144,8 +144,11 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         private void setRoutes(List<RouteData> routes) {
             Exception caught = null;
             for (RouteData data : routes) {
-                caught = modifyRoute(() -> setRoute(data.getTemplate(),
-                        data.getNavigationTarget(), data.getParentLayouts()),
+                caught = modifyRoute(
+                        () -> setRoute(HasUrlParameterFormat.excludeTemplate(
+                                data.getTemplate(), data.getNavigationTarget()),
+                                data.getNavigationTarget(),
+                                data.getParentLayouts()),
                         caught != null);
                 for (RouteAliasData alias : data.getRouteAliases()) {
                     caught = modifyRoute(() -> setRoute(
