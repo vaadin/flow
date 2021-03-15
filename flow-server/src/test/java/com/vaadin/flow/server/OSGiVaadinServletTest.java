@@ -34,7 +34,7 @@ import com.vaadin.flow.server.startup.EnableOSGiRunner;
 public class OSGiVaadinServletTest {
 
     @Test
-    public void init_attributesFromFakeOSGiContextAreSetFromServletContext()
+    public void init_onlyLookupAttributeFromFakeOSGiContextAreSetFromServletContext()
             throws ServletException {
         ServletContext context = OSGiAccess.getInstance()
                 .getOsgiServletContext();
@@ -70,6 +70,7 @@ public class OSGiVaadinServletTest {
 
         Mockito.verify(servletContext).setAttribute(Lookup.class.getName(),
                 context.getAttribute(Lookup.class.getName()));
-        Mockito.verify(servletContext).setAttribute("foo", "bar");
+        Mockito.verify(servletContext, Mockito.times(0)).setAttribute("foo",
+                "bar");
     }
 }
