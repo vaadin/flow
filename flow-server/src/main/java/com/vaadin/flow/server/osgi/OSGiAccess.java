@@ -166,7 +166,12 @@ public final class OSGiAccess {
 
         @Override
         public Enumeration<String> getAttributeNames() {
-            return Collections.enumeration(attributes.keySet());
+            // Attributes are transfered from a fake context to the real context
+            // using this method, only Lookup may be transfered since fake
+            // context contains global data like registry which would have been
+            // shared between all the contexts being transfered
+            return Collections.enumeration(
+                    Collections.singletonList(Lookup.class.getName()));
         }
 
         @Override
