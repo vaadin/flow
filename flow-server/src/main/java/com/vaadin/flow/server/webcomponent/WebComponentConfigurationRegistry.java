@@ -48,7 +48,7 @@ import com.vaadin.flow.theme.Theme;
  * @author Vaadin Ltd.
  * @since 2.0
  */
-@EmbeddedApplicationAnnotations({ Theme.class, Push.class })
+@EmbeddedApplicationAnnotations({Theme.class, Push.class})
 public class WebComponentConfigurationRegistry implements Serializable {
 
     /**
@@ -59,7 +59,8 @@ public class WebComponentConfigurationRegistry implements Serializable {
     private final ReentrantLock configurationLock = new ReentrantLock(true);
 
     private boolean configurationsSet = false;
-    private HashMap<String, WebComponentConfiguration<? extends Component>> configurationMap = new HashMap<>();
+    private HashMap<String, WebComponentConfiguration<? extends Component>> configurationMap =
+            new HashMap<>();
 
     private HashMap<Class<? extends Annotation>, Annotation> embeddedAppAnnotations;
     private ArrayList<Element> bootstrapElements;
@@ -75,7 +76,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * registered.
      *
      * @param tag
-     *            custom element tag
+     *         custom element tag
      * @return Optional containing a web component configuration matching given
      *         tag
      */
@@ -94,9 +95,9 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * configurations for a specific {@link Component} type.
      *
      * @param componentClass
-     *            type of the exported {@link Component}
+     *         type of the exported {@link Component}
      * @param <T>
-     *            component
+     *         component
      * @return set of {@link WebComponentConfiguration} or an empty set.
      */
     @SuppressWarnings("unchecked")
@@ -104,12 +105,10 @@ public class WebComponentConfigurationRegistry implements Serializable {
             Class<T> componentClass) {
         lock();
         try {
-            return Collections
-                    .unmodifiableSet(configurationMap.values().stream()
-                            .filter(config -> componentClass
-                                    .equals(config.getComponentClass()))
-                            .map(b -> (WebComponentConfiguration<T>) b)
-                            .collect(Collectors.toSet()));
+            return Collections.unmodifiableSet(configurationMap.values().stream()
+                    .filter(config -> componentClass.equals(config.getComponentClass()))
+                    .map(b -> (WebComponentConfiguration<T>) b)
+                    .collect(Collectors.toSet()));
         } finally {
             unlock();
         }
@@ -119,7 +118,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * Internal method for updating registry.
      *
      * @param configurations
-     *            set of web component configurations to register
+     *         set of web component configurations to register
      */
     protected void updateRegistry(
             Set<WebComponentConfiguration<? extends Component>> configurations) {
@@ -127,9 +126,11 @@ public class WebComponentConfigurationRegistry implements Serializable {
         try {
             updateConfiguration(configurations);
 
-            configurationMap = new HashMap<>(configurations.stream()
-                    .collect(Collectors.toMap(WebComponentConfiguration::getTag,
-                            config -> config)));
+            configurationMap =
+                    new HashMap<>(configurations.stream().collect(
+                            Collectors.toMap(
+                                    WebComponentConfiguration::getTag,
+                                    config -> config)));
         } finally {
             unlock();
         }
@@ -142,8 +143,8 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * false.
      *
      * @param configurations
-     *            set of web component configurations to register. These
-     *            configurations must have both unique and valid tag names.
+     *         set of web component configurations to register. These
+     *         configurations must have both unique and valid tag names.
      * @return {@code true} if set successfully or {@code false} if not set
      */
     public boolean setConfigurations(
@@ -186,7 +187,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * servlet initialization (exporter classes discovering).
      *
      * @param type
-     *            the configuration annotation type
+     *         the configuration annotation type
      * @return an optional configuration annotation, or an empty optional if
      *         there is no configuration annotation with the given {@code type}
      */
@@ -262,28 +263,25 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * Get WebComponentRegistry instance for given servlet context.
      *
      * @param context
-     *            {@link VaadinService} to keep the instance in
+     *         {@link VaadinService} to keep the instance in
      * @return WebComponentRegistry instance
      */
     public static WebComponentConfigurationRegistry getInstance(
             VaadinContext context) {
         assert context != null;
 
-        WebComponentConfigurationRegistry attribute = context.getAttribute(
-                WebComponentConfigurationRegistry.class,
-                WebComponentConfigurationRegistry::createRegistry);
+        WebComponentConfigurationRegistry attribute =
+            context.getAttribute(WebComponentConfigurationRegistry.class, WebComponentConfigurationRegistry::createRegistry);
 
         if (attribute == null) {
             throw new IllegalStateException(
-                    "Null WebComponentConfigurationRegistry obtained from VaadinContext of type "
-                            + context.getClass().getName());
+                    "Null WebComponentConfigurationRegistry obtained from VaadinContext of type " + context.getClass().getName());
         }
 
         return attribute;
     }
 
-    private void updateConfiguration(
-            Set<WebComponentConfiguration<? extends Component>> webComponentConfigurations) {
+    private void updateConfiguration(Set<WebComponentConfiguration<? extends Component>> webComponentConfigurations) {
         assertLockHeld();
 
         Optional<Class<? extends Annotation>[]> annotationTypes = AnnotationReader
@@ -293,9 +291,9 @@ public class WebComponentConfigurationRegistry implements Serializable {
 
         HashMap<Class<? extends Annotation>, Annotation> map = new HashMap<>();
 
-        webComponentConfigurations
-                .forEach(config -> addEmbeddedApplicationAnnotation(config,
-                        annotationTypes.get(), map));
+        webComponentConfigurations.forEach(config ->
+                addEmbeddedApplicationAnnotation(config, annotationTypes.get(),
+                        map));
 
         embeddedAppAnnotations = map;
     }
@@ -306,8 +304,8 @@ public class WebComponentConfigurationRegistry implements Serializable {
             Map<Class<? extends Annotation>, Annotation> map) {
         for (Class<? extends Annotation> type : types) {
             Annotation annotation = map.get(type);
-            Annotation configAnnotation = configuration.getExporterClass()
-                    .getAnnotation(type);
+            Annotation configAnnotation =
+                    configuration.getExporterClass().getAnnotation(type);
             if (configAnnotation == null) {
                 continue;
             }
@@ -352,11 +350,12 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * Creates a partial copy of the element sub-tree, with the given
      * {@code rootElement} as the root element of the created tree. The copy
      * cares only about the HTML structure of the element and by-passes state
-     * information where possible. The copying is done on element-level: tags,
-     * attributes, and contents.
+     * information where possible. The copying is done on element-level:
+     * tags, attributes, and contents.
      * <p>
-     * This is used create copies from elements which should be moved from
-     * document head to each embedded web component on the page.
+     * This is used create copies from elements
+     * which should be moved from document head to each embedded web component
+     * on the page.
      * <p>
      * Copies the following
      * {@link com.vaadin.flow.internal.nodefeature.NodeFeature}:
@@ -378,8 +377,8 @@ public class WebComponentConfigurationRegistry implements Serializable {
 
         StateNode copyNode = new StateNode(rootElement.getNode());
         // copy ElementData
-        ElementData originalData = rootElement.getNode()
-                .getFeature(ElementData.class);
+        ElementData originalData =
+                rootElement.getNode().getFeature(ElementData.class);
         ElementData copyData = copyNode.getFeature(ElementData.class);
         copyData.setTag(originalData.getTag());
         copyData.setPayload(originalData.getPayload());

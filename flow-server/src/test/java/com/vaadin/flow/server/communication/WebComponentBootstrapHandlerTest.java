@@ -26,9 +26,7 @@ import org.hamcrest.MatcherAssert;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
@@ -56,9 +54,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 
 public class WebComponentBootstrapHandlerTest {
-
-    @Rule
-    public final TemporaryFolder tmpDir = new TemporaryFolder();
 
     private static class TestWebComponentBootstrapHandler
             extends WebComponentBootstrapHandler {

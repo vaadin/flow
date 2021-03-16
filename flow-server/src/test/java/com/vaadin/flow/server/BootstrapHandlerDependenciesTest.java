@@ -369,8 +369,7 @@ public class BootstrapHandlerDependenciesTest {
             Elements deferElements = page.getElementsByAttribute("defer");
 
             // Ignore polyfills that should be loaded immediately and
-            // scripts
-            // without src (separate test)
+            // scripts without src (separate test)
             jsElements.removeIf(element -> {
                 String jsUrl = element.attr("src");
                 return jsUrl.isEmpty() || jsUrl.contains("es6-collections.js")

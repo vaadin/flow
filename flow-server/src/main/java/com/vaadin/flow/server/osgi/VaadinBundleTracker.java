@@ -87,10 +87,12 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
             String pathInfo = req.getPathInfo();
             if (pathInfo == null) {
                 resp.setStatus(HttpURLConnection.HTTP_NOT_FOUND);
+                return;
             }
             URL resource = bundle.getResource(resourceDirPath + pathInfo);
             if (resource == null) {
                 resp.setStatus(HttpURLConnection.HTTP_NOT_FOUND);
+                return;
             }
             try (InputStream stream = resource.openStream()) {
                 IOUtils.copy(stream, resp.getOutputStream());
