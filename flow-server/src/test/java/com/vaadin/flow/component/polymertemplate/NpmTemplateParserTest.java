@@ -149,6 +149,24 @@ public class NpmTemplateParserTest {
     }
 
     @Test
+    public void getTypescriptTemplateContent_templateExists_getTemplateContent() {
+        TemplateParser instance = NpmTemplateParser.getInstance();
+        TemplateData templateContent = instance.getTemplateContent(MyForm.class,
+                "my-form", service);
+
+        Assert.assertEquals("Parent element ID not the expected one.",
+                "my-form", templateContent.getTemplateElement().parent().id());
+
+        Assert.assertEquals("Expected template element to have 2 children", 2,
+                templateContent.getTemplateElement().childNodeSize());
+
+        Assert.assertEquals(
+                "Template element should have contained a div element with the id 'nameField'",
+                "vaadin-text-field", templateContent.getTemplateElement()
+                        .getElementById("nameField").tag().toString());
+    }
+
+    @Test
     public void shouldnt_UseStats_when_LocalFileTemplateExists() {
         TemplateParser instance = NpmTemplateParser.getInstance();
         TemplateParser.TemplateData templateContent = instance

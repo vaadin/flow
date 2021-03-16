@@ -41,7 +41,6 @@ import com.vaadin.flow.server.osgi.OSGiAccess;
  *
  */
 @RunWith(EnableOSGiRunner.class)
-
 @NotThreadSafe
 public class OSGiInitApplicationRouteRegistryTest
         extends RouteRegistryTestBase {

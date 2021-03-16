@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.server;
 
-import java.util.Collections;
-import java.util.List;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+
+import java.util.Collections;
+import java.util.List;
 
 import org.mockito.Mockito;
 
@@ -30,11 +30,6 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Router;
 
-/**
- *
- * @author Vaadin Ltd
- * @since 1.0
- */
 public class MockVaadinServletService extends VaadinServletService {
 
     private Instantiator instantiator;

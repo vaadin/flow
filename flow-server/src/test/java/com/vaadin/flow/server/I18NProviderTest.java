@@ -24,6 +24,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -40,6 +41,11 @@ public class I18NProviderTest {
     private VaadinServletService service;
 
     private MockDeploymentConfiguration config = new MockDeploymentConfiguration();
+
+    @Before
+    public void setUp() {
+        config.setCompatibilityMode(true);
+    }
 
     @Test
     public void no_property_defined_should_leave_with_default_locale()

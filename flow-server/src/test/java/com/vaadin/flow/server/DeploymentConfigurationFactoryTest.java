@@ -342,9 +342,12 @@ public class DeploymentConfigurationFactoryTest {
 
     @Test
     public void should_readConfigurationFromTokenFile() throws Exception {
-        FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"compatibilityMode\": false,",
-                        "\"productionMode\": true", "}"));
+        FileUtils.writeLines(tokenFile, Arrays.asList("{",
+        // @formatter:off
+                        "\"compatibilityMode\": false,",
+                        "\"productionMode\": true",
+        // @formatter: on
+                        "}"));
 
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
@@ -359,10 +362,14 @@ public class DeploymentConfigurationFactoryTest {
         exception.expectMessage(
                 String.format(DEV_FOLDER_MISSING_MESSAGE, "npm"));
         FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"compatibilityMode\": false,",
-                        "\"productionMode\": false,", "\"npmFolder\": \"npm\",",
-                        "\"generatedFolder\": \"generated\",",
-                        "\"frontendFolder\": \"frontend\"", "}"));
+             // @formatter:off
+                Arrays.asList("{",
+                        "\"compatibilityMode\": false,",
+                        "\"productionMode\": false,",
+                        "\"npmFolder\": \"npm\",",
+                        "\"frontendFolder\": \"frontend\"",
+                        "}"));
+            // @formatter:on
 
         createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                 tokenFile.getPath()));
@@ -409,10 +416,13 @@ public class DeploymentConfigurationFactoryTest {
         String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
                 .replace("\\", "/");
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
-                "\"compatibilityMode\": false,", "\"productionMode\": false,",
+        // @formatter:off
+                "\"compatibilityMode\": false,",
+                "\"productionMode\": false,",
                 "\"npmFolder\": \"" + tempFolder + "/npm\",",
                 "\"frontendFolder\": \"" + tempFolder + "/npm/frontend\"",
                 "}"));
+        // @formatter:on
 
         createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                 tokenFile.getPath()));
@@ -425,9 +435,12 @@ public class DeploymentConfigurationFactoryTest {
         String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
                 .replace("\\", "/");
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
-                "\"compatibilityMode\": false,", "\"productionMode\": false,",
+        // @formatter:off
+                "\"compatibilityMode\": false,",
+                "\"productionMode\": false,",
                 "\"npmFolder\": \"" + tempFolder + "/npm\",",
                 "\"frontendFolder\": \"" + tempFolder + "/frontend\"", "}"));
+        // @formatter:on
 
         createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                 tokenFile.getPath()));
@@ -475,8 +488,7 @@ public class DeploymentConfigurationFactoryTest {
                 Arrays.asList("{", "\"compatibilityMode\": true,",
                         "\"enableDevServer\": true,",
                         // production mode can be altered even when external
-                        // stats
-                        // are used
+                        // stats are used
                         "\"productionMode\": true,",
                         "\"externalStatsFile\": true", "}"));
 
