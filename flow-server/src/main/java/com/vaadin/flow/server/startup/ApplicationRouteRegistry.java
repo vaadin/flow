@@ -177,8 +177,8 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                 return null;
             } catch (Exception exception) {
                 if (logException) {
-                    LoggerFactory.getLogger(OSGiRouteRegistry.class)
-                            .error("Route remove exception thrown", exception);
+                    LoggerFactory.getLogger(OSGiRouteRegistry.class).error(
+                            "Route modification exception thrown", exception);
                     return null;
                 } else {
                     return exception;
