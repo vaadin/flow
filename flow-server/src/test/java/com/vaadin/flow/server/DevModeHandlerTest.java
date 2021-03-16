@@ -580,6 +580,7 @@ public class DevModeHandlerTest {
         Mockito.verify(configuration).reuseDevServer();
     }
 
+    @Ignore("Flaky test, see #10101")
     @Test
     public void start_twoInstances_secondInstanceUsesAnotherPort()
             throws Exception {
