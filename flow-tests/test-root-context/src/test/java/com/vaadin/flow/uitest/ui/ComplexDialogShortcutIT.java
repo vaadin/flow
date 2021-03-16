@@ -1,8 +1,10 @@
 package com.vaadin.flow.uitest.ui;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
+@Ignore("Disabled due flaky behavior, see #10284")
 public class ComplexDialogShortcutIT extends DialogShortcutIT {
 
     @Test
