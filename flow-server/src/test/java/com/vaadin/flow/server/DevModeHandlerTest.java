@@ -62,6 +62,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
+
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.WEBPACK_TEST_OUT_FILE;
@@ -581,6 +582,7 @@ public class DevModeHandlerTest {
     }
 
     @Test
+    @Ignore("Flaky test, see #10101")
     public void start_twoInstances_secondInstanceUsesAnotherPort()
             throws Exception {
 
@@ -590,7 +592,7 @@ public class DevModeHandlerTest {
 
         // remove the "singleton" instance to be able to start another one
         removeDevModeHandlerInstance();
-        
+
         // since the timeout is quite big the server port still should be
         // available and the second instance should try to reuse it
         DevModeHandler anotherHandler = DevModeHandler.start(0,
