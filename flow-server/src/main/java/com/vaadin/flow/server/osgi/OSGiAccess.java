@@ -22,6 +22,8 @@ import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -113,7 +115,8 @@ public final class OSGiAccess {
         public String getInitParameter(String name) {
             // OSGi is supported in compatibiity mode only. So set it by default
             // for every ServletContainerInitializer
-            if (InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE.equals(name)) {
+            if (InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE
+                    .equals(name)) {
                 return Boolean.TRUE.toString();
             }
             return null;
@@ -290,12 +293,33 @@ public final class OSGiAccess {
 
         private static boolean isInOSGi() {
             try {
-                Class.forName("org.osgi.framework.FrameworkUtil");
+                Class<?> clazz = Class
+                        .forName("org.osgi.framework.FrameworkUtil");
+
+                Method method = clazz.getDeclaredMethod("getBundle",
+                        Class.class);
+
+                // even though the FrameworkUtil class is in the classpath it
+                // may be there not because of OSGi container but plain WAR with
+                // jar which contains the class
+                if (method.invoke(null, OSGiAccess.class) == null) {
+                    return false;
+                }
 
                 UsageStatistics.markAsUsed("flow/osgi", getOSGiVersion());
 
                 return true;
-            } catch (ClassNotFoundException exception) {
+            } catch (ClassNotFoundException | NoSuchMethodException
+                    | SecurityException | IllegalAccessException
+                    | IllegalArgumentException
+                    | InvocationTargetException exception) {
+                if (LoggerFactory.getLogger(OSGiAccess.class)
+                        .isTraceEnabled()) {
+                    LoggerFactory.getLogger(OSGiAccess.class)
+                            .trace("Exception in OSGi container check "
+                                    + "(which most likely means that this is not OSGi container)",
+                                    exception);
+                }
                 return false;
             }
         }
