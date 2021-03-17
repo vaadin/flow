@@ -364,6 +364,10 @@ public class FrontendUtils {
     /**
      * Gets the content of the <code>stats.json</code> file produced by webpack.
      *
+     * Note: Caches the <code>stats.json</code> when external stats is enabled or
+     * <code>stats.json</code> is provided from the class path. To clear the
+     * cache use {@link #clearCachedStatsContent(VaadinService)}.
+     *
      * @param service
      *            the vaadin service.
      * @return the content of the file as a string, null if not found.
@@ -375,21 +379,25 @@ public class FrontendUtils {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         InputStream content = null;
 
-        if (!config.isProductionMode() && config.enableDevServer()) {
-            content = getStatsFromWebpack();
-        }
+        try {
+            if (!config.isProductionMode() && config.enableDevServer()) {
+                content = getStatsFromWebpack();
+            }
 
-        if (config.isStatsExternal()) {
-            content = getStatsFromExternalUrl(config.getExternalStatsUrl(),
-                    service.getContext());
-        }
+            if (config.isStatsExternal()) {
+                content = getStatsFromExternalUrl(config.getExternalStatsUrl(),
+                  service.getContext());
+            }
 
-        if (content == null) {
-            content = getStatsFromClassPath(service);
+            if (content == null) {
+                content = getStatsFromClassPath(service);
+            }
+            return content != null
+                   ? IOUtils.toString(content, StandardCharsets.UTF_8)
+                   : null;
+        } finally {
+            IOUtils.closeQuietly(content);
         }
-        return content != null
-                ? IOUtils.toString(content, StandardCharsets.UTF_8)
-                : null;
     }
 
     /**
@@ -422,6 +430,16 @@ public class FrontendUtils {
         }
 
         return "";
+    }
+
+    /**
+     * Clears the <code>stats.json</code> cache within this {@link VaadinContext}.
+     *
+     * @param service
+     *            the vaadin service.
+     */
+    protected static void clearCachedStatsContent(VaadinService service) {
+        service.getContext().removeAttribute(Stats.class);
     }
 
     private static InputStream getStatsFromWebpack() throws IOException {
@@ -462,7 +480,7 @@ public class FrontendUtils {
                         .toLocalDateTime();
                 Stats statistics = context.getAttribute(Stats.class);
                 if (statistics == null
-                        || modified.isAfter(statistics.getLastModified())) {
+                  || modified.isAfter(statistics.getLastModified().orElse(LocalDateTime.MIN))) {
                     statistics = new Stats(
                             streamToString(connection.getInputStream()),
                             lastModified);
@@ -494,6 +512,13 @@ public class FrontendUtils {
     }
 
     private static InputStream getStatsFromClassPath(VaadinService service) {
+        Stats statistics = service.getContext().getAttribute(Stats.class);
+
+        if (statistics != null) {
+            return new ByteArrayInputStream(
+              statistics.statsJson.getBytes(StandardCharsets.UTF_8));
+        }
+
         String stats = service.getDeploymentConfiguration()
                 .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
                         VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
@@ -505,14 +530,23 @@ public class FrontendUtils {
             getLogger().error(
                     "Cannot get the 'stats.json' from the classpath '{}'",
                     stats);
+        } else {
+            statistics = new Stats(streamToString(stream), null);
+            service.getContext().setAttribute(statistics);
+            stream = new ByteArrayInputStream(
+              statistics.statsJson.getBytes(StandardCharsets.UTF_8));
         }
         return stream;
     }
 
     /**
-     * Load the asset chunks from stats.json. We will only read the file until
-     * we have reached the assetsByChunkName json and return that as a json
-     * object string.
+     * Load the asset chunks from <code>stats.json</code>. We will only read the
+     * file until we have reached the assetsByChunkName json and return that as
+     * a json object string.
+     *
+     * Note: The <code>stats.json</code> is cached when external stats is enabled
+     * or <code>stats.json</code> is provided from the class path. To clear the
+     * cache use {@link #clearCachedStatsContent(VaadinService)}.
      *
      * @param service
      *            the Vaadin service.
@@ -883,10 +917,13 @@ public class FrontendUtils {
          *
          * @return timestamp as LocalDateTime
          */
-        public LocalDateTime getLastModified() {
-            return ZonedDateTime
+        public Optional<LocalDateTime> getLastModified() {
+            if (lastModified == null) {
+                return Optional.empty();
+            }
+            return Optional.of(ZonedDateTime
                     .parse(lastModified, DateTimeFormatter.RFC_1123_DATE_TIME)
-                    .toLocalDateTime();
+                    .toLocalDateTime());
         }
 
     }
