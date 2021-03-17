@@ -39,7 +39,6 @@ public class PushLongPollingWithPreserveOnRefreshIT extends ChromeBrowserTest {
 
         waitPageLoad();
 
-        // open the dialog
         findElement(By.id(ADD_BUTTON_ID)).click();
 
         ensureDivIsPresent();
