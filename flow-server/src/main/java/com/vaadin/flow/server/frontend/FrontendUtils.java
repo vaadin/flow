@@ -379,25 +379,21 @@ public class FrontendUtils {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         InputStream content = null;
 
-        try {
-            if (!config.isProductionMode() && config.enableDevServer()) {
-                content = getStatsFromWebpack();
-            }
-
-            if (config.isStatsExternal()) {
-                content = getStatsFromExternalUrl(config.getExternalStatsUrl(),
-                  service.getContext());
-            }
-
-            if (content == null) {
-                content = getStatsFromClassPath(service);
-            }
-            return content != null
-                   ? IOUtils.toString(content, StandardCharsets.UTF_8)
-                   : null;
-        } finally {
-            IOUtils.closeQuietly(content);
+        if (!config.isProductionMode() && config.enableDevServer()) {
+            content = getStatsFromWebpack();
         }
+
+        if (config.isStatsExternal()) {
+            content = getStatsFromExternalUrl(config.getExternalStatsUrl(),
+                    service.getContext());
+        }
+
+        if (content == null) {
+            content = getStatsFromClassPath(service);
+        }
+        return content != null
+                ? IOUtils.toString(content, StandardCharsets.UTF_8)
+                : null;
     }
 
     /**
