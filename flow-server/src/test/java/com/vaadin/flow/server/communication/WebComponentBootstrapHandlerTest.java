@@ -198,7 +198,7 @@ public class WebComponentBootstrapHandlerTest {
     }
 
     @Test
-    public void writeBootstrapPage_devmodeGizmoIsDisabled()
+    public void writeBootstrapPage_scriptGuadedAndGizmoDisabled()
             throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService();
@@ -223,6 +223,13 @@ public class WebComponentBootstrapHandlerTest {
         handler.synchronizedHandleRequest(session, request, response);
 
         String result = stream.toString(StandardCharsets.UTF_8.name());
+
+        int guardIndex = result.indexOf("if (!hasScript(\"/VAADIN/build/vaadin-export-2222.cache.js\")) {");
+        Assert.assertTrue(guardIndex > 0);
+
+        int createScriptIndex = result.indexOf("document.createElement('script')");
+        Assert.assertTrue(createScriptIndex > guardIndex);
+
         Assert.assertTrue(
                 result.contains("\\\"devmodeGizmoEnabled\\\": false"));
     }
