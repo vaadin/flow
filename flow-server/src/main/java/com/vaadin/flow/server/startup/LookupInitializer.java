@@ -143,10 +143,6 @@ public class LookupInitializer
         @Override
         public List<URL> getApplicationResources(VaadinContext context,
                 String path) throws IOException {
-            if (context instanceof VaadinServletContext) {
-                return Collections.list(((VaadinServletContext) context)
-                        .getContext().getClassLoader().getResources(path));
-            }
             return Collections.list(
                     context.getClass().getClassLoader().getResources(path));
         }
@@ -154,11 +150,7 @@ public class LookupInitializer
         @Override
         public URL getApplicationResource(VaadinContext context, String path) {
             Objects.requireNonNull(context);
-            if (context instanceof VaadinServletContext) {
-                return ((VaadinServletContext) context).getContext()
-                        .getClassLoader().getResource(path);
-            }
-            return null;
+            return context.getClass().getClassLoader().getResource(path);
         }
 
         @Override
