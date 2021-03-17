@@ -39,7 +39,6 @@ import elemental.json.JsonObject;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 
@@ -547,19 +546,30 @@ public class NodeTasks implements FallibleCommand {
 
     private final List<FallibleCommand> commands = new ArrayList<>();
 
+    // @formatter:off
     // This list keeps the tasks in order so that they are executed
     // without depending on when they are added.
-    private static final List<Class<? extends FallibleCommand>> commandOrder = Collections
-            .unmodifiableList(Arrays.asList(TaskGeneratePackageJson.class,
-                    TaskGenerateIndexHtml.class, TaskGenerateIndexTs.class,
-                    TaskGenerateTsConfig.class, TaskGenerateTsDefinitions.class,
-                    TaskGenerateServiceWorker.class, TaskGenerateOpenApi.class,
-                    TaskGenerateConnect.class, TaskGenerateBootstrap.class,
-                    TaskUpdatePackages.class, TaskRunNpmInstall.class,
-                    TaskInstallWebpackPlugins.class,
-                    TaskCopyFrontendFiles.class,
-                    TaskCopyLocalFrontendFiles.class, TaskUpdateWebpack.class,
-                    TaskUpdateImports.class, TaskUpdateThemeImport.class));
+    private static final List<Class<? extends FallibleCommand>> commandOrder =
+        Collections.unmodifiableList(Arrays.asList(
+            TaskGeneratePackageJson.class,
+            TaskGenerateIndexHtml.class,
+            TaskGenerateIndexTs.class,
+            TaskGenerateTsConfig.class,
+            TaskGenerateTsDefinitions.class,
+            TaskGenerateServiceWorker.class,
+            TaskGenerateOpenApi.class,
+            TaskGenerateConnect.class,
+            TaskGenerateBootstrap.class,
+            TaskUpdatePackages.class,
+            TaskInstallWebpackPlugins.class,
+            TaskRunNpmInstall.class,
+            TaskCopyFrontendFiles.class,
+            TaskCopyLocalFrontendFiles.class,
+            TaskUpdateWebpack.class,
+            TaskUpdateImports.class,
+            TaskUpdateThemeImport.class
+        ));
+    // @formatter:on
 
     private NodeTasks(Builder builder) {
 
@@ -598,8 +608,7 @@ public class NodeTasks implements FallibleCommand {
                         builder.enablePnpm, builder.requireHomeNodeExec,
                         builder.nodeVersion, builder.nodeDownloadRoot));
 
-                commands.add(new TaskInstallWebpackPlugins(
-                        new File(builder.npmFolder, NODE_MODULES)));
+                commands.add(new TaskInstallWebpackPlugins(builder.npmFolder));
             }
 
         }

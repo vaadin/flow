@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,10 +31,15 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class TaskInstallWebpackPluginsTest {
@@ -41,14 +47,14 @@ public class TaskInstallWebpackPluginsTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private File nodeModulesFolder;
+    private File rootFolder;
 
     private TaskInstallWebpackPlugins task;
 
     @Before
     public void init() throws IOException {
-        nodeModulesFolder = temporaryFolder.newFolder();
-        task = new TaskInstallWebpackPlugins(nodeModulesFolder);
+        rootFolder = temporaryFolder.newFolder();
+        task = new TaskInstallWebpackPlugins(rootFolder);
     }
 
     @Test
@@ -82,9 +88,43 @@ public class TaskInstallWebpackPluginsTest {
         }
     }
 
+    @Test
+    public void pluginsAddedToPackageJson() throws IOException {
+        File resourceFolder = temporaryFolder.newFolder();
+        ClassFinder finder = Mockito.mock(ClassFinder.class);
+        NodeUpdater nodeUpdater = new NodeUpdater(finder,
+                Mockito.mock(FrontendDependencies.class), rootFolder,
+                new File(""), resourceFolder) {
+
+            @Override
+            public void execute() {
+            }
+        };
+
+        task.execute();
+
+        final JsonObject packageJson = nodeUpdater.getPackageJson();
+
+        final JsonObject devDependencies = packageJson
+                .getObject(DEV_DEPENDENCIES);
+        for (String plugin : task.getPlugins()) {
+            Assert.assertTrue("packageJson is missing " + plugin,
+                    devDependencies.hasKey("@vaadin/" + plugin));
+
+            final String pluginFolder = "./" + rootFolder.toPath()
+                    .relativize(getPluginFolder(plugin).toPath()).toString()
+                    .replace('\\', '/');
+
+            Assert.assertEquals("Plugin is pointing to wrong directory",
+                    pluginFolder,
+                    devDependencies.getString("@vaadin/" + plugin));
+        }
+    }
+
     private void assertPlugins() throws IOException {
         Assert.assertTrue("No @vaadin folder created",
-                new File(nodeModulesFolder, "@vaadin").exists());
+                Paths.get(rootFolder.toString(), "target", "plugins").toFile()
+                        .exists());
         for (String plugin : task.getPlugins()) {
             assertPlugin(plugin);
         }
@@ -141,8 +181,9 @@ public class TaskInstallWebpackPluginsTest {
     }
 
     private File getPluginFolder(String plugin) {
-        final String pluginString = "@vaadin" + File.separator + plugin;
-        final File pluginFolder = new File(nodeModulesFolder, pluginString);
+        final String pluginString = Paths.get("target", "plugins", plugin)
+                .toString();
+        final File pluginFolder = new File(rootFolder, pluginString);
 
         Assert.assertTrue("Missing plugin folder for " + plugin,
                 pluginFolder.exists());

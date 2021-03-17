@@ -18,8 +18,11 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -209,8 +212,34 @@ public abstract class NodeUpdater implements FallibleCommand {
         }
 
         addVaadinDefaultsToJson(packageJson);
+        addWebpackPlugins(packageJson);
 
         return packageJson;
+    }
+
+    private void addWebpackPlugins(JsonObject packageJson) {
+        final List<String> plugins = TaskInstallWebpackPlugins.getPlugins();
+
+        // TODO: TARGET FOLDER SHOULD NOT BE HARDCODED AND SHOULD BE GOTTEN FROM
+        // SOME PLACE!!!
+        Path targetFolder = Paths.get(npmFolder.toString(),
+                FrontendUtils.TARGET, "plugins");
+
+        JsonObject dev_dependencies;
+        if (packageJson.hasKey(DEV_DEPENDENCIES)) {
+            dev_dependencies = packageJson.getObject(DEV_DEPENDENCIES);
+        } else {
+            dev_dependencies = Json.createObject();
+            packageJson.put(DEV_DEPENDENCIES, dev_dependencies);
+        }
+
+        plugins.stream().filter(plugin -> targetFolder.toFile().exists())
+                .forEach(plugin -> {
+                    String pluginTarget = "./" + (npmFolder.toPath()
+                            .relativize(targetFolder).toString() + "/" + plugin)
+                                    .replace('\\', '/');
+                    dev_dependencies.put("@vaadin/" + plugin, pluginTarget);
+                });
     }
 
     JsonObject getResourcesPackageJson() throws IOException {

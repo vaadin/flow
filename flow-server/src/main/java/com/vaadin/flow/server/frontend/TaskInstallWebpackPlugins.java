@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,16 +47,19 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class TaskInstallWebpackPlugins implements FallibleCommand {
 
-    private File nodeModulesFolder;
+    private File targetFolder;
 
     /**
      * Copy Flow webpack plugins into the given nodeModulesFolder.
      *
-     * @param nodeModulesFolder
-     *            node_modules folder to copy files to
+     * @param projectRoot
+     *            project root folder
      */
-    public TaskInstallWebpackPlugins(File nodeModulesFolder) {
-        this.nodeModulesFolder = nodeModulesFolder;
+    // TODO: Change project root folder to project buildFolder
+    public TaskInstallWebpackPlugins(File projectRoot) {
+        targetFolder = Paths
+                .get(projectRoot.toString(), FrontendUtils.TARGET, "plugins")
+                .toFile();
     }
 
     @Override
@@ -77,7 +81,7 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
      *
      * @return names of plugins to install
      */
-    protected List<String> getPlugins() {
+    protected static List<String> getPlugins() {
         try {
             final JsonObject jsonFile = getJsonFile(
                     "plugins/webpack-plugins.json");
@@ -102,8 +106,7 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
 
     private void generatePluginFiles(String pluginName) throws IOException {
         // Get the target folder where the plugin should be installed to
-        File pluginTargetFile = new File(nodeModulesFolder,
-                "@vaadin/" + pluginName);
+        File pluginTargetFile = new File(targetFolder, pluginName);
 
         final String pluginFolderName = "plugins/" + pluginName + "/";
         final JsonObject packageJson = getJsonFile(
@@ -143,7 +146,8 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
                 new File(pluginTargetFile, PACKAGE_JSON));
     }
 
-    private JsonObject getJsonFile(String jsonFilePath) throws IOException {
+    private static JsonObject getJsonFile(String jsonFilePath)
+            throws IOException {
         final URL urlResource = getResourceUrl(jsonFilePath);
         if (urlResource == null) {
             return null;
@@ -151,8 +155,8 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
         File jsonFile = new File(urlResource.getFile());
         String jsonString;
         if (!jsonFile.exists()) {
-            try (InputStream resourceAsStream = this.getClass().getClassLoader()
-                    .getResourceAsStream(jsonFilePath)) {
+            try (InputStream resourceAsStream = getResourceAsStream(
+                    jsonFilePath)) {
                 if (resourceAsStream != null) {
                     jsonString = FrontendUtils.streamToString(resourceAsStream);
                 } else {
@@ -165,11 +169,17 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
         return Json.parse(jsonString);
     }
 
-    private URL getResourceUrl(String resource) {
-        return this.getClass().getClassLoader().getResource(resource);
+    private static URL getResourceUrl(String resource) {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        return cl.getResource(resource);
     }
 
-    private Logger log() {
-        return LoggerFactory.getLogger(this.getClass());
+    private static Logger log() {
+        return LoggerFactory.getLogger(TaskInstallWebpackPlugins.class);
+    }
+
+    private static InputStream getResourceAsStream(String resource) {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        return cl.getResourceAsStream(resource);
     }
 }
