@@ -16,8 +16,10 @@
 package com.vaadin.flow.contexttest.ui;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.NoTheme;
 
 @NoTheme
+@PWA(name = "test-router-custom-context", shortName = "custom-context", offlinePath = "offline.html")
 public class AppShell implements AppShellConfigurator {
 }

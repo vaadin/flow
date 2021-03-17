@@ -13,6 +13,7 @@ export class SimpleLitTemplateShadowRoot extends LitElement {
 
       <button id="mappedButton"></button>
       <div id="label"></div>
+      <div id="sort"></div>
     `;
   }
 }

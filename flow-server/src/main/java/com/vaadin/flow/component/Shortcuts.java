@@ -17,6 +17,7 @@
 package com.vaadin.flow.component;
 
 import com.vaadin.flow.server.Command;
+import com.vaadin.flow.shared.Registration;
 
 
 /**
@@ -39,6 +40,7 @@ import com.vaadin.flow.server.Command;
  */
 public final class Shortcuts {
     static final String NULL = "Parameter '%s' must not be null!";
+    static final String ELEMENT_LOCATOR_JS_KEY = "_element_locator_js_key";
 
     private Shortcuts() {
     }
@@ -128,4 +130,48 @@ public final class Shortcuts {
         return new ShortcutRegistration(lifecycleOwner, () -> new Component[] { lifecycleOwner.getUI().get() },
                 listener, key).withModifiers(keyModifiers);
     }
+
+    /**
+     * Setup an element, that is only accessible on the browser (not server
+     * side), to listen for shortcut events on and delegate to the given
+     * component. The element will be located in the browser by executing the
+     * given JS statement. This needs to be set for each listen-on component
+     * instance.
+     * <p>
+     * <b>This should be only used by component developers</b>, when their
+     * component is used as the {@code listenOn} component for shortcuts, and
+     * their component does some magic on the browser which means that the
+     * shortcut events are not coming through from the actual element. Thus when
+     * an application developer calls e.g. <br>
+     * {@code myButton.addClickShortcut(Key.ENTER).listenOn(dialog);} <br>
+     * the framework will automatically make sure the events are passed from the
+     * browser only element to the listenOn component (dialog in this case).
+     *
+     * @param elementLocatorJs
+     *            js execution string that references the desired element in DOM
+     *            or {@code null} to any remove existing locator
+     * @param listenOnComponent
+     *            the component that is setup for listening shortcuts on
+     *            {@link ShortcutRegistration#listenOn(Component...)}
+     * @return a registration for removing the locator, does not affect active
+     *         shortcuts or if the locator has changed from what was set for
+     *         this registration
+     * @since
+     */
+    public static Registration setShortcutListenOnElement(
+            String elementLocatorJs, Component listenOnComponent) {
+        // a bit wasteful to store this for each component instance but it
+        // stays in memory only as long as the component itself does
+        ComponentUtil.setData(listenOnComponent, ELEMENT_LOCATOR_JS_KEY,
+                elementLocatorJs);
+        return () -> {
+            if (elementLocatorJs != null
+                    && elementLocatorJs.equals(ComponentUtil.getData(
+                            listenOnComponent, ELEMENT_LOCATOR_JS_KEY))) {
+                ComponentUtil.setData(listenOnComponent, ELEMENT_LOCATOR_JS_KEY,
+                        null);
+            }
+        };
+    }
+
 }

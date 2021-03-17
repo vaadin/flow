@@ -22,7 +22,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.lumo.Lumo;
+import com.vaadin.flow.theme.CustomLumo;
 
 /**
  * A container class for all components used in tests.
@@ -76,7 +76,7 @@ public class TestComponents {
     }
 
     @Route
-    @Theme(themeClass = Lumo.class, variant = Lumo.DARK)
+    @Theme(themeClass = CustomLumo.class, variant = CustomLumo.DARK)
     public static class MainView extends Component {
         ButtonComponent buttonComponent;
         IconComponent iconComponent;

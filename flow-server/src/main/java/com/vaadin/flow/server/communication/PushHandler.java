@@ -41,7 +41,6 @@ import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -148,7 +147,7 @@ public class PushHandler {
         }
     };
 
-    private VaadinServletService service;
+    private VaadinService service;
 
     /**
      * Creates an instance connected to the given service.
@@ -156,7 +155,7 @@ public class PushHandler {
      * @param service
      *            the service this handler belongs to
      */
-    public PushHandler(VaadinServletService service) {
+    public PushHandler(VaadinService service) {
         this.service = service;
     }
 

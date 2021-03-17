@@ -21,6 +21,8 @@ public class SimpleLitTemplateNoShadowRootView extends LitTemplate {
     public NativeButton mappedButton;
     @Id
     public Div label;
+    @Id
+    public Div sort;
 
     public SimpleLitTemplateNoShadowRootView() {
         getElement().setProperty("text", "Client button");
@@ -28,6 +30,7 @@ public class SimpleLitTemplateNoShadowRootView extends LitTemplate {
         mappedButton.addClickListener(e -> {
             label.setText("Hello from server component event listener");
         });
+        sort.setText("Sort");
 
     }
 

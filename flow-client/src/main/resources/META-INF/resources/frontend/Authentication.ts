@@ -1,6 +1,4 @@
-/* tslint:disable:max-classes-per-file */
-
-import { MiddlewareClass, MiddlewareContext, MiddlewareNext } from "./Connect";
+import { MiddlewareClass, MiddlewareContext, MiddlewareNext } from './Connect';
 
 export interface LoginResult {
   error: boolean;
@@ -9,20 +7,20 @@ export interface LoginResult {
   errorMessage?: string;
 }
 
-export interface LoginOptions{
+export interface LoginOptions {
   loginProcessingUrl?: string;
   failureUrl?: string;
   defaultSuccessUrl?: string;
 }
 
-export interface LogoutOptions{
+export interface LogoutOptions {
   logoutUrl?: string;
 }
 
 /**
  * A helper method for Spring Security based form login.
- * @param username 
- * @param password 
+ * @param username
+ * @param password
  * @param options defines additional options, e.g, the loginProcessingUrl, failureUrl, defaultSuccessUrl etc.
  */
 export async function login(username: string, password: string, options?: LoginOptions): Promise<LoginResult> {
@@ -32,11 +30,11 @@ export async function login(username: string, password: string, options?: LoginO
     data.append('username', username);
     data.append('password', password);
 
-    const loginProcessingUrl = options && options.loginProcessingUrl ? options.loginProcessingUrl : '/login'; 
-    const response = await fetch(loginProcessingUrl, {method: 'POST', body: data});
+    const loginProcessingUrl = options && options.loginProcessingUrl ? options.loginProcessingUrl : '/login';
+    const response = await fetch(loginProcessingUrl, { method: 'POST', body: data });
 
-    const failureUrl = options && options.failureUrl ? options.failureUrl : '/login?error'; 
-    const defaultSuccessUrl = options && options.defaultSuccessUrl ? options.defaultSuccessUrl : '/'
+    const failureUrl = options && options.failureUrl ? options.failureUrl : '/login?error';
+    const defaultSuccessUrl = options && options.defaultSuccessUrl ? options.defaultSuccessUrl : '/';
     // this assumes the default Spring Security form login configuration (handler URL and responses)
     if (response.ok && response.redirected && response.url.endsWith(failureUrl)) {
       result = {
@@ -64,14 +62,16 @@ export async function login(username: string, password: string, options?: LoginO
       error: true,
       errorTitle: e.name,
       errorMessage: e.message
-    }
+    };
   }
 
-  return result || {
-    error: true,
-    errorTitle: 'Error',
-    errorMessage: 'Something went wrong when trying to login.',
-  };
+  return (
+    result || {
+      error: true,
+      errorTitle: 'Error',
+      errorMessage: 'Something went wrong when trying to login.'
+    }
+  );
 }
 
 /**
@@ -96,15 +96,15 @@ export async function logout(options?: LogoutOptions) {
 }
 
 const getCsrfTokenFromResponseBody = (body: string): string | undefined => {
-  const match = body.match(/window\.Vaadin = \{TypeScript: \{"csrfToken":"([0-9a-zA-Z\-]{36})"}};/i);
+  const match = body.match(/window\.Vaadin = \{TypeScript: \{"csrfToken":"([0-9a-zA-Z\\-]{36})"}};/i);
   return match ? match[1] : undefined;
-}
+};
 
 /**
- * It defines what to do when it detects a session is invalid. E.g., 
+ * It defines what to do when it detects a session is invalid. E.g.,
  * show a login view.
- * It takes an <code>EndpointCallContinue</code> parameter, which can be 
- * used to continue the endpoint call.  
+ * It takes an <code>EndpointCallContinue</code> parameter, which can be
+ * used to continue the endpoint call.
  */
 export type OnInvalidSessionCallback = () => Promise<LoginResult>;
 
@@ -121,11 +121,11 @@ export class InvalidSessionMiddleware implements MiddlewareClass {
     const response = await next(context);
     if (response.status === 401) {
       const loginResult = await this.onInvalidSessionCallback();
-      if(loginResult.token){
+      if (loginResult.token) {
         clonedContext.request.headers.set('X-CSRF-Token', loginResult.token);
         return next(clonedContext);
       }
-    } 
+    }
     return response;
   }
 }

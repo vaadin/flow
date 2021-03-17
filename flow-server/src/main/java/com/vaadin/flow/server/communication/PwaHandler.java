@@ -42,6 +42,8 @@ import com.vaadin.flow.server.VaadinSession;
  * @since 1.2
  */
 public class PwaHandler implements RequestHandler {
+    public static final String SW_RUNTIME_PRECACHE_PATH = "/sw-runtime-resources-precache.js";
+
     private final Map<String, RequestHandler> requestHandlerMap = new HashMap<>();
     private final SerializableSupplier<PwaRegistry> pwaRegistryGetter;
 
@@ -104,8 +106,7 @@ public class PwaHandler implements RequestHandler {
         // sw-runtime.js handling (service worker import for precaching runtime
         // generated assets)
         requestHandlerMap.put(
-                // pwaRegistry.getPwaConfiguration().relServiceWorkerPath(),
-                "/sw-runtime-resources-precache.js",
+                SW_RUNTIME_PRECACHE_PATH,
                 (session, request, response) -> {
                     response.setContentType("application/javascript");
                     try (PrintWriter writer = response.getWriter()) {

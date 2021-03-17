@@ -52,7 +52,7 @@ import com.vaadin.flow.shared.JsonConstants;
  * @since 1.0
  */
 public class VaadinServlet extends HttpServlet {
-    private VaadinServletService servletService;
+    private VaadinService vaadinService;
     private StaticFileHandler staticFileHandler;
 
     private volatile boolean isServletInitialized;
@@ -89,12 +89,12 @@ public class VaadinServlet extends HttpServlet {
              * its "init" method is called from the {@code
              * ServletContextListener} with the same ServletConfig instance.
              */
-            VaadinServletContext vaadinServletContext = null;
+            VaadinContext vaadinContext = null;
             if (getServletConfig() == null) {
                 isServletInitialized = true;
                 super.init(servletConfig);
 
-                vaadinServletContext = initializeContext();
+                vaadinContext = initializeContext();
             }
 
             if (getServletConfig() != servletConfig) {
@@ -103,18 +103,18 @@ public class VaadinServlet extends HttpServlet {
                                 + "instance which has been used for the initial method call");
             }
 
-            if (vaadinServletContext == null) {
-                vaadinServletContext = new VaadinServletContext(
+            if (vaadinContext == null) {
+                vaadinContext = new VaadinServletContext(
                         getServletConfig().getServletContext());
             }
 
-            if (servletService != null || vaadinServletContext
-                    .getAttribute(Lookup.class) == null) {
+            if (vaadinService != null
+                    || vaadinContext.getAttribute(Lookup.class) == null) {
                 return;
             }
 
             try {
-                servletService = createServletService();
+                vaadinService = createServletService();
             } catch (ServiceException e) {
                 throw new ServletException("Could not initialize VaadinServlet",
                         e);
@@ -122,9 +122,9 @@ public class VaadinServlet extends HttpServlet {
 
             // Sets current service as it is needed in static file server even
             // though there are no request and response.
-            servletService.setCurrentInstances(null, null);
+            vaadinService.setCurrentInstances(null, null);
 
-            staticFileHandler = createStaticFileHandler(servletService);
+            staticFileHandler = createStaticFileHandler(vaadinService);
 
             servletInitialized();
         } finally {
@@ -142,16 +142,18 @@ public class VaadinServlet extends HttpServlet {
 
     /**
      * Creates a new instance of {@link StaticFileHandler}, that is responsible
-     * to find and serve static resources. By default it returns a
-     * {@link StaticFileServer} instance.
-     *
-     * @param servletService
-     *            the servlet service created at {@link #createServletService()}
-     * @return the file server to be used by this servlet, not <code>null</code>
+     * to find and serve static resources.
+     * 
+     * @param vaadinService
+     *            the vaadinService created at {@link #createServletService()}
+     * @return the file handler to be used by this servlet, not
+     *         <code>null</code>
      */
     protected StaticFileHandler createStaticFileHandler(
-            VaadinServletService servletService) {
-        return new StaticFileServer(servletService);
+            VaadinService vaadinService) {
+        Lookup lookup = vaadinService.getContext().getAttribute(Lookup.class);
+        return lookup.lookup(StaticFileHandlerFactory.class)
+                .createHandler(vaadinService);
     }
 
     protected void servletInitialized() throws ServletException {
@@ -287,8 +289,8 @@ public class VaadinServlet extends HttpServlet {
 
         CurrentInstance.clearAll();
 
-        VaadinServletRequest vaadinRequest = createVaadinRequest(request);
-        VaadinServletResponse vaadinResponse = createVaadinResponse(response);
+        VaadinRequest vaadinRequest = createVaadinRequest(request);
+        VaadinResponse vaadinResponse = createVaadinResponse(response);
         if (!ensureCookiesEnabled(vaadinRequest, vaadinResponse)) {
             return;
         }
@@ -419,8 +421,7 @@ public class VaadinServlet extends HttpServlet {
         }
     }
 
-    private VaadinServletResponse createVaadinResponse(
-            HttpServletResponse response) {
+    private VaadinResponse createVaadinResponse(HttpServletResponse response) {
         return new VaadinServletResponse(response, getService());
     }
 
@@ -442,8 +443,8 @@ public class VaadinServlet extends HttpServlet {
      *
      * @return the Vaadin service
      */
-    public VaadinServletService getService() {
-        return servletService;
+    public VaadinService getService() {
+        return vaadinService;
     }
 
     /**
@@ -457,13 +458,15 @@ public class VaadinServlet extends HttpServlet {
      * @return false if cookies are disabled, true otherwise
      * @throws IOException
      */
-    private boolean ensureCookiesEnabled(VaadinServletRequest request,
-            VaadinServletResponse response) throws IOException {
+    private boolean ensureCookiesEnabled(VaadinRequest request,
+            VaadinResponse response) throws IOException {
         if (HandlerHelper.isRequestType(request, RequestType.UIDL)) {
             // In all other but the first UIDL request a cookie should be
             // returned by the browser.
             // This can be removed if cookieless mode (#3228) is supported
-            if (request.getRequestedSessionId() == null) {
+            if (request instanceof HttpServletRequest
+                    && ((HttpServletRequest) request)
+                            .getRequestedSessionId() == null) {
                 // User has cookies disabled
                 SystemMessages systemMessages = getService().getSystemMessages(
                         HandlerHelper.findLocale(null, request), request);
@@ -535,7 +538,7 @@ public class VaadinServlet extends HttpServlet {
         }
     }
 
-    private VaadinServletContext initializeContext() {
+    private VaadinContext initializeContext() {
         ServletContext servletContext = getServletConfig().getServletContext();
         VaadinServletContext vaadinServletContext = new VaadinServletContext(
                 servletContext);

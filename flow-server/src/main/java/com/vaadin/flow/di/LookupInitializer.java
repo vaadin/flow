@@ -41,7 +41,11 @@ import org.apache.commons.io.IOUtils;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.server.StaticFileHandler;
+import com.vaadin.flow.server.StaticFileHandlerFactory;
+import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.AppShellPredicate;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
@@ -207,6 +211,24 @@ public class LookupInitializer implements AbstractLookupInitializer {
 
     }
 
+    private static class RegularOneTimeInitializerPredicate
+            implements OneTimeInitializerPredicate {
+
+        @Override
+        public boolean runOnce() {
+            return true;
+        }
+
+    }
+
+    private static class StaticFileHandlerFactoryImpl
+            implements StaticFileHandlerFactory {
+        @Override
+        public StaticFileHandler createHandler(VaadinService service) {
+            return new StaticFileServer(service);
+        }
+    }
+
     /**
      * Default implementation of {@link AppShellPredicate}.
      * 
@@ -244,12 +266,16 @@ public class LookupInitializer implements AbstractLookupInitializer {
             Map<Class<?>, Collection<Class<?>>> services,
             VaadinApplicationInitializationBootstrap bootstrap)
             throws ServletException {
+        services.put(OneTimeInitializerPredicate.class, Collections
+                .singleton(RegularOneTimeInitializerPredicate.class));
         ensureService(services, ResourceProvider.class,
                 ResourceProviderImpl.class);
         ensureService(services, AppShellPredicate.class,
                 AppShellPredicateImpl.class);
         ensureService(services, ApplicationConfigurationFactory.class,
                 DefaultApplicationConfigurationFactory.class);
+        ensureService(services, StaticFileHandlerFactory.class,
+                StaticFileHandlerFactoryImpl.class);
         bootstrap.bootstrap(createLookup(context, services));
     }
 
@@ -303,13 +329,26 @@ public class LookupInitializer implements AbstractLookupInitializer {
         }
     }
 
-    private <T> T instantiate(Class<T> serviceClass, Class<?> implementation) {
-        if (ResourceProviderImpl.class.equals(implementation)) {
-            return serviceClass.cast(new ResourceProviderImpl());
-        } else {
-            return serviceClass
-                    .cast(ReflectTools.createInstance(implementation));
+    /**
+     * Instantiates service {@code implementation} type with the given
+     * {@code serviceClass} .
+     * 
+     * @param <T>
+     *            service type
+     * @param serviceClass
+     *            service class
+     * @param implementation
+     *            service implementation class
+     * @return an instantiated service implementation object
+     */
+    protected <T> T instantiate(Class<T> serviceClass,
+            Class<?> implementation) {
+        if (RegularOneTimeInitializerPredicate.class.equals(implementation)) {
+            return serviceClass.cast(new RegularOneTimeInitializerPredicate());
+        } else if (StaticFileHandlerFactoryImpl.class.equals(implementation)) {
+            return serviceClass.cast(new StaticFileHandlerFactoryImpl());
         }
+        return serviceClass.cast(ReflectTools.createInstance(implementation));
     }
 
 }

@@ -16,11 +16,14 @@
 
 package com.vaadin.flow.server.communication;
 
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URLDecoder;
 import java.util.function.Function;
+
+import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
@@ -28,15 +31,14 @@ import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import elemental.json.Json;
@@ -83,7 +85,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     }
 
     protected String getRequestUrl(VaadinRequest request) {
-        return ((VaadinServletRequest) request).getRequestURL().toString();
+        return ((HttpServletRequest) request).getRequestURL().toString();
     }
 
     @Override

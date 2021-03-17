@@ -36,6 +36,7 @@ import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.server.StaticFileHandlerFactory;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
@@ -51,7 +52,7 @@ import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
         DeprecatedPolymerPublishedEventHandler.class,
         EndpointGeneratorTaskFactory.class,
         ApplicationConfigurationFactory.class, AbstractLookupInitializer.class,
-        AppShellPredicate.class })
+        AppShellPredicate.class, StaticFileHandlerFactory.class })
 public class LookupServletContainerInitializer
         implements ClassLoaderAwareServletContainerInitializer {
 

@@ -30,6 +30,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -60,7 +61,8 @@ public class TaskRunNpmInstallTest {
 
     private ClassFinder finder = Mockito.mock(ClassFinder.class);
 
-    private Logger logger = Mockito.mock(Logger.class);
+    private Logger logger =
+            Mockito.spy(LoggerFactory.getLogger(NodeUpdater.class));
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
