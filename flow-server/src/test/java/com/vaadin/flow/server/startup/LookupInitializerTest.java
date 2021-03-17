@@ -24,10 +24,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -124,28 +122,16 @@ public class LookupInitializerTest {
         ResourceProvider resourceProvider = lookup
                 .lookup(ResourceProvider.class);
 
-        String path = "foo/bar";
-
         ClassLoader loader = Mockito.mock(ClassLoader.class);
         VaadinContext context = mockContext(loader);
 
-        URL singleResourceURL = new URL("file:/baz");
-        Mockito.when(loader.getResource(path)).thenReturn(singleResourceURL);
-        Mockito.when(loader.getResources(path))
-                .thenReturn(Collections.enumeration(Arrays
-                        .asList(new URL("file:/foo"), new URL("file:/bar"))));
-
         URL serviceResource = resourceProvider.getApplicationResource(context,
-                path);
-        Assert.assertEquals(singleResourceURL, serviceResource);
+                "resource-provider/some-resource.json");
 
-        List<URL> serviceResources = resourceProvider
-                .getApplicationResources(context, path);
-
-        Assert.assertEquals(2, serviceResources.size());
-
-        Assert.assertEquals(new URL("file:/foo"), serviceResources.get(0));
-        Assert.assertEquals(new URL("file:/bar"), serviceResources.get(1));
+        String content = IOUtils
+                .readLines(serviceResource.openStream(), StandardCharsets.UTF_8)
+                .stream().collect(Collectors.joining("\n"));
+        assertClasspathResourceContent(content);
 
         // =========== resourceProvider.getClientResource
 
@@ -153,14 +139,15 @@ public class LookupInitializerTest {
                 .getClientResource("resource-provider/some-resource.json");
 
         Assert.assertNotNull(clientResource);
+        Assert.assertEquals(serviceResource.toString(),
+                clientResource.toString());
 
         InputStream stream = resourceProvider.getClientResourceAsStream(
                 "resource-provider/some-resource.json");
 
-        String content = IOUtils.readLines(stream, StandardCharsets.UTF_8)
-                .stream().collect(Collectors.joining("\n"));
-        JsonObject object = Json.parse(content);
-        Assert.assertTrue(object.getBoolean("client-resource"));
+        content = IOUtils.readLines(stream, StandardCharsets.UTF_8).stream()
+                .collect(Collectors.joining("\n"));
+        assertClasspathResourceContent(content);
     }
 
     @Test
@@ -203,5 +190,10 @@ public class LookupInitializerTest {
 
         Mockito.when(servletContext.getClassLoader()).thenReturn(loader);
         return context;
+    }
+
+    private void assertClasspathResourceContent(String content) {
+        JsonObject object = Json.parse(content);
+        Assert.assertTrue(object.getBoolean("client-resource"));
     }
 }
