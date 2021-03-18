@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,17 +36,32 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.MockServletContext;
 
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class FrontendUtilsTest {
 
     private static final String USER_HOME = "user.home";
+
+    private static Class<?> CACHE_KEY;
+
+    static {
+        try {
+            CACHE_KEY = Class.forName("com.vaadin.flow.server.frontend.FrontendUtils$Stats");
+        } catch (ClassNotFoundException e) {
+            Assert.fail("Could not access cache key for stats.json!");
+        }
+    }
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -243,6 +257,56 @@ public class FrontendUtilsTest {
                 wrappedCommand);
     }
 
+    @Test
+    public void getStatsContent_getStatsFromClassPath_populatesStatsCache()
+      throws IOException {
+        VaadinService service = setupStatsAssetMocks("ValidStats.json");
+
+        assertNull("Stats cache should not be present",
+          service.getContext().getAttribute(CACHE_KEY));
+
+        // Populates cache
+        FrontendUtils.getStatsContent(service);
+
+        assertNotNull("Stats cache should be created",
+          service.getContext().getAttribute(CACHE_KEY));
+    }
+
+    @Test
+    public void getStatsAssetsByChunkName_getStatsFromClassPath_populatesStatsCache()
+      throws IOException {
+        VaadinService service = setupStatsAssetMocks("ValidStats.json");
+
+        assertNull("Stats cache should not be present",
+          service.getContext().getAttribute(CACHE_KEY));
+
+        // Populates cache
+        FrontendUtils.getStatsAssetsByChunkName(service);
+
+        assertNotNull("Stats cache should be created",
+          service.getContext().getAttribute(CACHE_KEY));
+    }
+
+    @Test
+    public void clearCachedStatsContent_clearsCache()
+      throws IOException {
+        VaadinService service = setupStatsAssetMocks("ValidStats.json");
+
+        assertNull("Stats cache should not be present",
+          service.getContext().getAttribute(CACHE_KEY));
+        // Can be invoked without cache - throws no exception
+        FrontendUtils.clearCachedStatsContent(service);
+
+        // Populates cache
+        FrontendUtils.getStatsContent(service);
+
+        // Clears cache
+        FrontendUtils.clearCachedStatsContent(service);
+
+        assertNull("Stats cache should not be present",
+          service.getContext().getAttribute(CACHE_KEY));
+    }
+
     private VaadinService setupStatsAssetMocks(String statsFile)
             throws IOException {
         String stats = IOUtils.toString(FrontendUtilsTest.class.getClassLoader()
@@ -257,6 +321,9 @@ public class FrontendUtilsTest {
         ClassLoader classLoader = Mockito.mock(ClassLoader.class);
         DeploymentConfiguration deploymentConfiguration = Mockito
                 .mock(DeploymentConfiguration.class);
+
+        VaadinContext context = new VaadinServletContext(new MockServletContext());
+        Mockito.when(service.getContext()).thenReturn(context);
 
         Mockito.when(service.getClassLoader()).thenReturn(classLoader);
         Mockito.when(service.getDeploymentConfiguration())
