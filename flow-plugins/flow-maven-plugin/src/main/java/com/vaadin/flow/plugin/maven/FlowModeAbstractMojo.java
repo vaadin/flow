@@ -38,6 +38,7 @@ import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
@@ -371,5 +372,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Override
     public boolean isJarProject() {
         return "jar".equals(project.getPackaging());
+    }
+
+    @Override
+    public String flowResourcesFolder() {
+
+        return FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
     }
 }

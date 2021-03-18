@@ -130,7 +130,7 @@ public class BuildFrontendUtil {
                     e);
         }
         File flowResourcesFolder = new File(adapter.npmFolder(),
-                FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER);
+                adapter.flowResourcesFolder());
         ClassFinder classFinder = adapter.getClassFinder();
         Lookup lookup = adapter.createLookup(classFinder);
         NodeTasks.Builder builder = new NodeTasks.Builder(lookup,

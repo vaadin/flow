@@ -274,5 +274,13 @@ public interface PluginAdapterBase {
      */
     File webpackOutputDirectory();
 
+    /**
+     *  Default folder for copying front-end resources present in the classpath
+     * jars.
+     * 
+     * @return {@link String}
+     */
+    String flowResourcesFolder();
+
 
 }
