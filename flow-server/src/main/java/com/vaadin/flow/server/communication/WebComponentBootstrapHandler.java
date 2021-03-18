@@ -97,7 +97,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             extends BootstrapPageBuilder {
         @Override
         protected List<String> getChunkKeys(JsonObject chunks) {
-            return Collections.singletonList(EXPORT_CHUNK);
+            if (chunks.hasKey(EXPORT_CHUNK)) {
+                return Collections.singletonList(EXPORT_CHUNK);
+            } else {
+                return super.getChunkKeys(chunks);
+            }
         }
     }
 
