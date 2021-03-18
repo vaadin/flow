@@ -24,9 +24,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import org.reflections.Reflections;
 import org.reflections.util.ConfigurationBuilder;
+
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
  * A class finder using org.reflections.
@@ -46,9 +47,14 @@ public class ReflectionsClassFinder implements ClassFinder {
      */
     public ReflectionsClassFinder(URL... urls) {
         classLoader = new URLClassLoader(urls, null); // NOSONAR
-        reflections = new Reflections(
-                new ConfigurationBuilder().addClassLoader(classLoader)
-                        .setExpandSuperTypes(false).addUrls(urls));
+        ConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
+                .addClassLoader(classLoader).setExpandSuperTypes(false)
+                .addUrls(urls);
+
+        configurationBuilder.setInputsFilter(
+                file -> file.endsWith(".class") && !file
+                        .endsWith("module-info.class"));
+        reflections = new Reflections(configurationBuilder);
     }
 
     @Override
