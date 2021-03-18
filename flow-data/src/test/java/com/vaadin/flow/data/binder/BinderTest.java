@@ -583,7 +583,22 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         // € 10.00
         assertEquals("€ " + new DecimalFormat("0.00").format(10),
                 rentField.getValue());
-    } 
+    }
+
+    @Test
+    public void withConverter_writeBackValueDisabled() {
+        TestTextField rentField = new TestTextField();
+        rentField.setValue("");
+        Binding<Person, BigDecimal> binding = binder.forField(rentField)
+          .withConverter(new EuroConverter(""))
+          .withNullRepresentation(BigDecimal.valueOf(0d))
+          .bind(Person::getRent, Person::setRent);
+        binder.setBean(item);
+        binding.setConvertBackToPresentation(false);
+        rentField.setValue("10");
+
+        assertNotEquals("€ 10.00", rentField.getValue());
+    }
 
     @Test
     public void beanBinder_nullRepresentationIsNotDisabled() {

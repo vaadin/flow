@@ -250,6 +250,23 @@ public class Binder<BEAN> implements Serializable {
          * @return A boolean value.
          */
         public boolean isValidatorsDisabled();
+
+        /**
+         * Define whether the value should be converted back to the presentation
+         * in the field when a converter is used in binding.
+         *
+         * @param convertBackToPresentation
+         *            A boolean value
+         */
+        void setConvertBackToPresentation(boolean convertBackToPresentation);
+
+        /**
+         * Returns whether the value is converted back to the presentation in
+         * the field when a converter is used in binding.
+         *
+         * @return A boolean value
+         */
+        boolean isConvertBackToPresentation();
     }
 
     /**
@@ -1055,6 +1072,8 @@ public class Binder<BEAN> implements Serializable {
 
         private boolean validatorsDisabled = false;
 
+        private boolean convertBackToPresentation = true;
+
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
                 Setter<BEAN, TARGET> setter) {
@@ -1246,7 +1265,7 @@ public class Binder<BEAN> implements Serializable {
             if (!isReadOnly()) {
                 result.ifOk(value -> {
                     setter.accept(bean, value);
-                    if (value != null) {
+                    if (convertBackToPresentation && value != null) {
                         FIELDVALUE converted = convertToFieldType(value);
                         if (!field.getValue().equals(converted)) {
                             getField().setValue(converted);
@@ -1352,6 +1371,16 @@ public class Binder<BEAN> implements Serializable {
         @Override
         public boolean isValidatorsDisabled() {
             return validatorsDisabled;
+        }
+
+        @Override
+        public void setConvertBackToPresentation(boolean convertBackToPresentation) {
+            this.convertBackToPresentation = convertBackToPresentation;
+        }
+
+        @Override
+        public boolean isConvertBackToPresentation() {
+            return convertBackToPresentation;
         }
     }
 
