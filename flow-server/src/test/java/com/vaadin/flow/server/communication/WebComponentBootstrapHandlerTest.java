@@ -224,8 +224,11 @@ public class WebComponentBootstrapHandlerTest {
 
         String result = stream.toString(StandardCharsets.UTF_8.name());
 
+        int scriptIndex = result.indexOf("var hasScript = function(src)");
+        Assert.assertTrue(scriptIndex >= 0);
+
         int guardIndex = result.indexOf("if (!hasScript(\"/VAADIN/build/vaadin-export-2222.cache.js\")) {");
-        Assert.assertTrue(guardIndex > 0);
+        Assert.assertTrue(guardIndex > scriptIndex);
 
         int createScriptIndex = result.indexOf("document.createElement('script')");
         Assert.assertTrue(createScriptIndex > guardIndex);
