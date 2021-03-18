@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.NoSuchElementException;
 
 import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -60,9 +61,8 @@ public class PushLongPollingWithPreserveOnRefreshIT extends ChromeBrowserTest {
     }
 
     private void ensureNoErrorIsDisplayed() {
-        WebElement errorOverlay = findElement(
-                By.className("v-system-error"));
-        Assert.assertNull(errorOverlay);
+        Assert.assertThrows(NoSuchElementException.class, () ->
+            findElement(By.className("v-system-error")) );
     }
 
     private void ensureDivIsPresent() {
