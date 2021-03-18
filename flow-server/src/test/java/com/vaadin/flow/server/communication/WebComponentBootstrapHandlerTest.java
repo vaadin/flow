@@ -259,6 +259,38 @@ public class WebComponentBootstrapHandlerTest {
     }
 
     @Test
+    public void writeBootstrapPage_withExportChunk()
+            throws IOException, ServiceException {
+        TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
+        VaadinServletService service = new MockVaadinServletService();
+
+        initLookup(service);
+
+        VaadinSession session = new MockVaadinSession(service);
+        session.lock();
+        session.setConfiguration(service.getDeploymentConfiguration());
+        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
+                .getDeploymentConfiguration();
+        config.setEnableDevServer(false);
+
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+        Mockito.when(request.getService()).thenReturn(service);
+        Mockito.when(request.getServletPath()).thenReturn("/");
+        VaadinResponse response = getMockResponse(null);
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(stream);
+
+        handler.synchronizedHandleRequest(session, request, response);
+
+        String result = stream.toString(StandardCharsets.UTF_8.name());
+        Assert.assertTrue(
+                result.contains("VAADIN/build/vaadin-export-2222.cache.js"));
+        Assert.assertFalse(
+                result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
+    }
+
+    @Test
     public void writeBootstrapPage_noExportChunk()
             throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
