@@ -24,7 +24,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.Transport;
 
 @PreserveOnRefresh
-@Push(transport = Transport.WEBSOCKET)
+@Push(transport = Transport.LONG_POLLING)
 @Route("com.vaadin.flow.uitest.ui.PushLongPollingWithPreserveOnRefreshView")
 public class PushLongPollingWithPreserveOnRefreshView extends Div {
 
