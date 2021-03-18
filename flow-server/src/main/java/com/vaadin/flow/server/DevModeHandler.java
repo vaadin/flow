@@ -147,7 +147,8 @@ public final class DevModeHandler implements RequestHandler {
 
     private boolean useSnowpack = false;
     private boolean useSnowpackBuildWatch = false;
-    private final ResponseWriter responseWriter;
+    // FIXME: remove or fix the snowpack watch mode
+    private final ResponseWriter responseWriter = null;
     private final File snowpackBuildRoot;
 
     private DevModeHandler(Lookup lookup, int runningPort, File npmFolder,
@@ -155,11 +156,14 @@ public final class DevModeHandler implements RequestHandler {
 
         this.npmFolder = npmFolder;
         port = runningPort;
-        DeploymentConfiguration config = lookup
-                .lookup(DeploymentConfiguration.class);
+        ApplicationConfiguration config = lookup
+                .lookup(ApplicationConfiguration.class);
         reuseDevServer = config.reuseDevServer();
         devServerPortFile = getDevServerPortFile(npmFolder);
-        responseWriter = new ResponseWriter(config);
+
+        // FIXME: remove or fix the snowpack watch mode
+        // cannot construct a ResponseWriter - need a `DeploymentConfiguration` but only `ApplicationConfiguration` is available
+        // responseWriter = new ResponseWriter(config);
         snowpackBuildRoot = new File(npmFolder, "build");
 
         BiConsumer<Void, ? super Throwable> action = (value, exception) -> {
@@ -612,7 +616,7 @@ public final class DevModeHandler implements RequestHandler {
         FileUtils.deleteQuietly(devServerPortFile);
     }
 
-    private void runOnFutureComplete(DeploymentConfiguration config) {
+    private void runOnFutureComplete(ApplicationConfiguration config) {
         try {
             doStartDevModeServer(config);
         } catch (ExecutionFailedException exception) {
@@ -676,7 +680,7 @@ public final class DevModeHandler implements RequestHandler {
 
     }
 
-    private void doStartDevModeServer(DeploymentConfiguration config)
+    private void doStartDevModeServer(ApplicationConfiguration config)
             throws ExecutionFailedException {
         useSnowpack = config.useSnowpack();
         useSnowpackBuildWatch = config.useSnowpackBuildWatch();
@@ -729,8 +733,8 @@ public final class DevModeHandler implements RequestHandler {
         }
     }
 
-    private boolean doStartWebpack(DeploymentConfiguration config,
-            Pair<File, File> webPackFiles, long start) {
+    private boolean doStartWebpack(ApplicationConfiguration config,
+            Pair<File, File> webPackFiles, long start) throws ExecutionFailedException {
         String displayName = useSnowpack ? "snowpack" : "webpack";
 
         ProcessBuilder processBuilder = new ProcessBuilder()
@@ -805,7 +809,7 @@ public final class DevModeHandler implements RequestHandler {
             }
 
             if (!webpackProcess.get().isAlive()) {
-                throw new IllegalStateException(displayName + " exited prematurely");
+                throw new ExecutionFailedException(displayName + " exited prematurely");
             }
 
             long ms = (System.nanoTime() - start) / 1000000;
@@ -828,7 +832,7 @@ public final class DevModeHandler implements RequestHandler {
         watchDog.set(null);
     }
 
-    private List<String> makeCommands(DeploymentConfiguration config,
+    private List<String> makeCommands(ApplicationConfiguration config,
             File webpack, File webpackConfig, String nodeExec) {
         if (useSnowpack) {
             if (useSnowpackBuildWatch) {
@@ -864,7 +868,7 @@ public final class DevModeHandler implements RequestHandler {
         }
     }
 
-    private Pair<File, File> validateFiles(DeploymentConfiguration config, File npmFolder)
+    private Pair<File, File> validateFiles(ApplicationConfiguration config, File npmFolder)
             throws ExecutionFailedException {
         assert port == 0;
         // Skip checks if we have a webpack-dev-server already running

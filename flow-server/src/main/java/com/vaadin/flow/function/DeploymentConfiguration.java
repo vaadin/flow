@@ -41,6 +41,7 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_POLYFILLS;
  */
 public interface DeploymentConfiguration
         extends AbstractConfiguration, Serializable {
+
     /**
      * Returns whether the server provides timing info to the client.
      *
