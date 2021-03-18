@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -24,6 +25,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class LogoutIT extends ChromeBrowserTest {
 
+    @Ignore("Flaky test, see https://github.com/vaadin/flow/issues/9705")
     @Test
     public void setLocation_noErrorMessages() {
         open();
