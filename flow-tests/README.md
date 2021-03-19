@@ -1,4 +1,18 @@
-## Test modules and their meanings
+## Convention for naming test modules
+
+* artifact: flow-test-xyz
+* folder name: test-xyz
+* name: IT: `<the feature being tested>` + `<variant>`
+* description: details on the IT module behavior
+
+example:
+* artifact: flow-test-embedding-production-mode-compatibility
+* folder name: test-embedding-production-mode
+  (compatibility mode is set in another pom file)
+* name: IT: Embedding Flow in Production Mode with Compatibility mode
+* description: ITs for embedding applications in production mode with the compatibility mode 
+
+## Test modules and their meaning
 
 * servlet-containers
   * Tests functionality on different servlet containers using test-root-context sources and tests
@@ -12,11 +26,8 @@
   * Sum test modules:
     * embedding-test-assets
     * test-embedding-generic
-    * test-embedding-generic-compatibility
     * test-embedding-production-mode
-    * test-embedding-production-mode-compatibility
     * test-embedding-theme-variant
-    * test-embedding-theme-variant-compatibility
     * webapp
       * test module configuration and templates
 * test-frontend-production-custom-context

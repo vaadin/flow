@@ -9,7 +9,8 @@
         <version>7.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-multi-war</artifactId>
-    <name>Flow tests with more than one war deployed at the same time</name>
+    <name>IT: multiple war files deployed</name>
+    <description>Flow tests with more than one war deployed at the same time</description>
     <packaging>pom</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>

@@ -9,8 +9,8 @@
         <version>7.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-tests</artifactId>
-    <name>Flow tests</name>
-    <description>Test modules for Flow</description>
+    <name>Integration Tests</name>
+    <description>Integration Test modules for Flow</description>
     <packaging>pom</packaging>
 
     <properties>

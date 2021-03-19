@@ -10,7 +10,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>flow-test-generic</artifactId>
-    <name>Flow Generic Test Utilities</name>
+    <name>Flow Unit Testing Classes</name>
+    <description>This module contains the ClassesSerializableTest that is reused
+    in multiple modules & projects.</description>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
