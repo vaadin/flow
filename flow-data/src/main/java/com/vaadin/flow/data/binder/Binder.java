@@ -255,8 +255,14 @@ public class Binder<BEAN> implements Serializable {
          * Define whether the value should be converted back to the presentation
          * in the field when a converter is used in binding.
          * <p>
-         * As of version 6.0, when a converter is used on a binding and the user input value is modified by the converter,
-         * the value from the converter is applied back to the input. It is possible to control this behavior with this API.
+         * As of version 6.0, when a converter is used on a binding and the user
+         * input value is modified by the converter, the value from the converter
+         * is applied back to the input. It is possible to control this behavior
+         * with this API.
+         *
+         * @see BindingBuilder#withConverter(Converter)
+         * @see BindingBuilder#withConverter(SerializableFunction, SerializableFunction)
+         * @see BindingBuilder#withConverter(SerializableFunction, SerializableFunction, String)
          *
          * @param convertBackToPresentation
          *            A boolean value
@@ -528,6 +534,12 @@ public class Binder<BEAN> implements Serializable {
          * For instance, a {@code TextField} can be bound to an integer-typed
          * property using an appropriate converter such as a
          * {@link StringToIntegerConverter}.
+         * <p>
+         * The converted value is applied back to the field by default,
+         * this can be controlled with the method
+         * {@link Binding#setConvertBackToPresentation(boolean)}.
+         *
+         * @see Binding#setConvertBackToPresentation(boolean)
          *
          * @param <NEWTARGET>
          *            the type to convert to
@@ -554,6 +566,12 @@ public class Binder<BEAN> implements Serializable {
          * For instance, a {@code TextField} can be bound to an integer-typed
          * property using appropriate functions such as:
          * <code>withConverter(Integer::valueOf, String::valueOf);</code>
+         * <p>
+         * The converted value is applied back to the field by default,
+         * this can be controlled with the method
+         * {@link Binding#setConvertBackToPresentation(boolean)}.
+         *
+         * @see Binding#setConvertBackToPresentation(boolean)
          *
          * @param <NEWTARGET>
          *            the type to convert to
@@ -589,6 +607,12 @@ public class Binder<BEAN> implements Serializable {
          * For instance, a {@code TextField} can be bound to an integer-typed
          * property using appropriate functions such as:
          * <code>withConverter(Integer::valueOf, String::valueOf);</code>
+         * <p>
+         * The converted value is applied back to the field by default,
+         * this can be controlled with the method
+         * {@link Binding#setConvertBackToPresentation(boolean)}.
+         *
+         * @see Binding#setConvertBackToPresentation(boolean)
          *
          * @param <NEWTARGET>
          *            the type to convert to
