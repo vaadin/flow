@@ -21,9 +21,12 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,6 +34,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,6 +60,8 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
 import com.vaadin.flow.server.startup.DevModeInitializer;
@@ -90,6 +96,55 @@ public final class OSGiAccess {
 
     private OSGiAccess() {
         // The class is a singleton. Avoid instantiation outside of the class.
+    }
+
+    /**
+     * OSGi capable implementation of {@link ResourceProvider}.
+     *
+     */
+    private static class OSGiResourceProvider implements ResourceProvider {
+
+        @Override
+        public List<URL> getApplicationResources(VaadinContext context,
+                String path) throws IOException {
+            if (context instanceof VaadinService) {
+                return Collections.list(((VaadinService) context)
+                        .getClassLoader().getResources(path));
+            }
+            return Collections.list(
+                    context.getClass().getClassLoader().getResources(path));
+        }
+
+        @Override
+        public URL getApplicationResource(VaadinContext context, String path) {
+            Objects.requireNonNull(context);
+            if (context instanceof VaadinServletContext) {
+                return ((VaadinServletContext) context).getContext()
+                        .getClassLoader().getResource(path);
+            }
+            return null;
+        }
+
+        @Override
+        public URL getClientResource(String path) {
+            Bundle[] bundles = FrameworkUtil
+                    .getBundle(OSGiResourceProvider.class).getBundleContext()
+                    .getBundles();
+            for (Bundle bundle : bundles) {
+                if ("com.vaadin.flow.client".equals(bundle.getSymbolicName())) {
+                    return bundle.getResource(path);
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public InputStream getClientResourceAsStream(String path)
+                throws IOException {
+            // No any caching !: flow-client may be reinstalled at any moment
+            return getClientResource(path).openStream();
+        }
+
     }
 
     private static class OsgiLookupImpl implements Lookup {
