@@ -280,7 +280,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         ArrayList<com.vaadin.flow.dom.Element> elementsForShadows = new ArrayList<>();
         try (BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
-            writer.write("var hasScript = function(src) {\n"
+            writer.write("(function () {\n"
+                    + "var hasScript = function(src) {\n"
                     + "  var scriptTags = Array.from(document.head.querySelectorAll('script'));\n"
                     + "  return scriptTags.some(script => script.src.endsWith(src))\n"
                     + "};\n");
@@ -314,6 +315,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     writer.append("}\n");
                 }
             }
+            writer.append("})();");
         }
 
         WebComponentConfigurationRegistry
