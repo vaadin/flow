@@ -254,6 +254,9 @@ public class Binder<BEAN> implements Serializable {
         /**
          * Define whether the value should be converted back to the presentation
          * in the field when a converter is used in binding.
+         * <p>
+         * As of version 6.0, when a converter is used on a binding and the user input value is modified by the converter,
+         * the value from the converter is applied back to the input. It is possible to control this behavior with this API.
          *
          * @param convertBackToPresentation
          *            A boolean value
