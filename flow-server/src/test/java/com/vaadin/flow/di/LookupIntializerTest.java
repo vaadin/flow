@@ -90,7 +90,8 @@ public class LookupIntializerTest {
     @Test
     public void ensureResourceProvider_defaultImplClassIsStoredAsAService() {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
-        initializer.ensureResourceProviders(map);
+        initializer.ensureService(map, ResourceProvider.class,
+                ResourceProviderImpl.class);
 
         Collection<Class<?>> collection = map.get(ResourceProvider.class);
         Assert.assertEquals(1, collection.size());
@@ -103,7 +104,8 @@ public class LookupIntializerTest {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
         map.put(ResourceProvider.class,
                 Collections.singletonList(ResourceProviderImpl.class));
-        initializer.ensureResourceProviders(map);
+        initializer.ensureService(map, ResourceProvider.class,
+                ResourceProviderImpl.class);
 
         Collection<Class<?>> collection = map.get(ResourceProvider.class);
         Assert.assertEquals(1, collection.size());
@@ -187,7 +189,8 @@ public class LookupIntializerTest {
                 .mock(VaadinApplicationInitializationBootstrap.class);
         initializer.initialize(null, services, bootstrap);
 
-        Mockito.verify(initializer).ensureResourceProviders(services);
+        Mockito.verify(initializer).ensureService(services,
+                ResourceProvider.class, ResourceProviderImpl.class);
         Mockito.verify(bootstrap).bootstrap(Mockito.any());
     }
 
