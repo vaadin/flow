@@ -139,7 +139,12 @@ public interface HasStyle extends HasElement {
      * @param classNames the CSS class name or class names to be added to the component
      */
     default void addClassNames(String... classNames) {
-        getClassNames().addAll(Arrays.asList(classNames));
+        for (String rawClassName : classNames) {
+            String[] parts = rawClassName.split(" ");
+            for (String part : parts) {
+                getClassNames().add(part);
+            }
+        }
     }
 
     /**
@@ -149,6 +154,11 @@ public interface HasStyle extends HasElement {
      * @param classNames the CSS class name or class names to be removed from the component
      */
     default void removeClassNames(String... classNames) {
-        getClassNames().removeAll(Arrays.asList(classNames));
+        for (String rawClassName : classNames) {
+            String[] parts = rawClassName.split(" ");
+            for (String part : parts) {
+                getClassNames().remove(part);
+            }
+        }
     }
 }
