@@ -133,7 +133,7 @@ public interface HasStyle extends HasElement {
 
     /**
      * Adds one or more CSS class names to this component. Multiple class names can be
-     * specified by using multiple parameters.
+     * specified by using spaces or by giving multiple parameters.
      *
      * @param classNames the CSS class name or class names to be added to the component
      */
@@ -148,7 +148,7 @@ public interface HasStyle extends HasElement {
 
     /**
      * Removes one or more CSS class names from component. Multiple class names can be
-     * specified by using multiple parameters.
+     * specified by using spaces or by giving multiple parameters.
      *
      * @param classNames the CSS class name or class names to be removed from the component
      */
