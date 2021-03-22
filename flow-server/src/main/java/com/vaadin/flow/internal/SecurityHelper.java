@@ -47,6 +47,9 @@ public final class SecurityHelper implements Serializable {
             "/" + PwaConfiguration.DEFAULT_OFFLINE_PATH
     };
 
+    private SecurityHelper() {
+    }
+
     /**
      * Returns whether the servlet request is Vaadin internal, as decided by the
      * presence of the {@code v-r} request parameter with a type matching a
@@ -61,8 +64,5 @@ public final class SecurityHelper implements Serializable {
         return parameterValue != null && Stream
                 .of(HandlerHelper.RequestType.values())
                 .anyMatch(r -> r.getIdentifier().equals(parameterValue));
-    }
-
-    private SecurityHelper() {
     }
 }
