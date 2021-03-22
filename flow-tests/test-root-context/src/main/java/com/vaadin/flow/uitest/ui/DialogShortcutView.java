@@ -17,6 +17,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import java.util.EventObject;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClickEvent;
@@ -48,7 +49,7 @@ public class DialogShortcutView extends Div {
     public static final Key SHORTCUT_KEY = Key.KEY_X;
     public static final String REUSABLE_DIALOG = "reusable-dialog";
 
-    private int dialogCounter = 0;
+    private AtomicInteger dialogCounter = new AtomicInteger(-1);
     private int eventCounter;
     private final Div eventLog;
 
@@ -59,41 +60,42 @@ public class DialogShortcutView extends Div {
         eventLog.setId(EVENT_LOG_ID);
 
         final NativeButton testButton = createButton(
-                "UI level button with shortcut",
-                this::logClickEvent);
+                "UI level button with shortcut", this::logClickEvent);
         testButton.setId(UI_BUTTON);
         testButton.addClickShortcut(SHORTCUT_KEY);
 
         add(new Div(new Text("Shortcut key: "
                 + SHORTCUT_KEY.getKeys().stream().findFirst().orElse(""))),
-                createOpenDialogButton(OPEN_BUTTON), testButton,
-                eventLog);
+                createOpenDialogButton(OPEN_BUTTON), testButton, eventLog);
         setId("main-div");
 
         final NativeButton reusableDialogButton = new NativeButton(
                 "Open reusable dialog", event -> {
                     if (reusedDialog == null) {
                         reusedDialog = new Dialog();
+
                     }
                     open(reusedDialog);
+                    eventLog.add(new Div(new Text("Opened reusable dialog DC"
+                            + dialogCounter + "-EC" + eventCounter)));
                 });
         reusableDialogButton.setId(REUSABLE_DIALOG);
         add(reusableDialogButton);
     }
 
     private void logClickEvent(EventObject event) {
-        eventLog.addComponentAsFirst(new Div(new Text((eventCounter++) + "-"
-                + ((Component) event.getSource()).getId()
+        eventLog.addComponentAsFirst(new Div(new Text(
+                (eventCounter++) + "-" + ((Component) event.getSource()).getId()
                         .orElse("NO-SOURCE-ID"))));
     }
 
     private Component createOpenDialogButton(String id) {
-        final NativeButton button = createButton(
-                "Open dialog",
-                event -> {
-                    final Dialog dialog = new Dialog();
-                    open(dialog);
-                });
+        final NativeButton button = createButton("Open dialog", event -> {
+            final Dialog dialog = new Dialog();
+            open(dialog);
+            eventLog.add(new Div(new Text(
+                    "Opened dialog DC" + dialogCounter + "-EC" + eventCounter)));
+        });
         button.setId(id);
         return button;
     }
@@ -114,7 +116,7 @@ public class DialogShortcutView extends Div {
         public final Div content;
 
         public Dialog() {
-            index = dialogCounter++;
+            index = dialogCounter.incrementAndGet();
             final NativeButton testButton = createButton(
                     "Test button with shortcut",
                     DialogShortcutView.this::logClickEvent);
@@ -180,5 +182,6 @@ public class DialogShortcutView extends Div {
 
     public void close(Dialog dialog) {
         remove(dialog);
+        eventLog.add(new Div(new Text("Dialog " + dialog.index + " closed")));
     }
 }

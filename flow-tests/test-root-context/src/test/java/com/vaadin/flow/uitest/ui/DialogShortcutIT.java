@@ -1,5 +1,7 @@
 package com.vaadin.flow.uitest.ui;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -15,7 +17,8 @@ public class DialogShortcutIT extends ChromeBrowserTest {
     private TestBenchElement eventLog;
     private TestBenchElement openDialogButton;
     private NativeButtonElement uiLevelButton;
-    protected int dialogCounter = -1; // first one will get id 0
+    protected AtomicInteger dialogCounter = new AtomicInteger(-1);
+    private int reusedDialogIndex = -1;
 
     @Before
     public void init() {
@@ -30,19 +33,18 @@ public class DialogShortcutIT extends ChromeBrowserTest {
     // #7799
     @Test
     public void dialogOpenedWithListenOnShortcut_sameShortcutListeningOnUi_focusDecidesWhichIsExecuted() {
-        pressShortcutKey(
-                uiLevelButton);
+        pressShortcutKey(uiLevelButton);
         validateLatestShortcutEvent(0, DialogShortcutView.UI_BUTTON);
 
-        openNewDialog();
-        pressShortcutKey(getFirstDialogInput());
+        final int firstDialogIndex = openNewDialog();
+        pressShortcutKey(getDialogInput(firstDialogIndex));
         // no shortcut in dialog -> ui still gets the shortcut
         validateLatestShortcutEvent(1, DialogShortcutView.UI_BUTTON);
 
-        listenToShortcutOnDialog(0);
-        pressShortcutKey(getFirstDialogInput());
+        listenToShortcutOnDialog(firstDialogIndex);
+        pressShortcutKey(getDialogInput(firstDialogIndex));
         // focus on dialog -> only dialog shortcut occurs
-        validateLatestShortcutEvent(2, DialogShortcutView.DIALOG_ID + 0);
+        validateLatestDialogShortcut(2, firstDialogIndex);
 
         // focus outside dialog -> ui level shortcut occurs
         pressShortcutKey(uiLevelButton);
@@ -51,22 +53,21 @@ public class DialogShortcutIT extends ChromeBrowserTest {
 
     @Test
     public void dialogOpenedWithShortcutNoListenOn_sameShortcutListeningOnUi_bothExecuted() {
-        pressShortcutKey(
-                uiLevelButton);
+        pressShortcutKey(uiLevelButton);
         validateLatestShortcutEvent(0, DialogShortcutView.UI_BUTTON);
 
-        openNewDialog();
-        pressShortcutKey(getFirstDialogInput());
+        final int dialogIndex = openNewDialog();
+        pressShortcutKey(getDialogInput(dialogIndex));
         // no shortcut in dialog -> ui still gets the shortcut
         validateLatestShortcutEvent(1, DialogShortcutView.UI_BUTTON);
 
-        listenToShortcutOnUI(0);
-        pressShortcutKey(getFirstDialogInput());
+        listenToShortcutOnUI(dialogIndex);
+        pressShortcutKey(getDialogInput(dialogIndex));
         // last even is on dialog
         validateLatestShortcutEvent(3, DialogShortcutView.UI_ID);
         validateShortcutEvent(1, 2, DialogShortcutView.UI_BUTTON);
 
-        closeDialog(0);
+        closeDialog(dialogIndex);
         pressShortcutKey(
                 $(NativeButtonElement.class).id(DialogShortcutView.UI_BUTTON));
         validateLatestShortcutEvent(4, DialogShortcutView.UI_BUTTON);
@@ -76,66 +77,74 @@ public class DialogShortcutIT extends ChromeBrowserTest {
     public void dialogOpenedWithListenOnShortcut_dialogReopened_oldShortcutStillWorks() {
         openReusedDialog();
 
-        pressShortcutKey(getFirstDialogInput());
+        pressShortcutKey(getDialogInput(reusedDialogIndex));
         // no shortcut in dialog -> ui still gets the shortcut
-        validateLatestShortcutEvent(0, DialogShortcutView.UI_BUTTON);
+        validateLatestShortcutEvent(reusedDialogIndex,
+                DialogShortcutView.UI_BUTTON);
 
-        listenToShortcutOnDialog(0);
+        listenToShortcutOnDialog(reusedDialogIndex);
 
-        pressShortcutKey(getFirstDialogInput());
-        validateLatestShortcutEvent(1, DialogShortcutView.DIALOG_ID + 0);
+        pressShortcutKey(getDialogInput(reusedDialogIndex));
+        validateLatestDialogShortcut(1, reusedDialogIndex);
 
         pressShortcutKey(uiLevelButton);
         validateLatestShortcutEvent(2, DialogShortcutView.UI_BUTTON);
 
-        closeDialog(0);
+        closeDialog(reusedDialogIndex);
 
         pressShortcutKey(uiLevelButton);
         validateLatestShortcutEvent(3, DialogShortcutView.UI_BUTTON);
 
         openReusedDialog();
 
-        pressShortcutKey(getFirstDialogInput());
-        validateLatestShortcutEvent(4, DialogShortcutView.DIALOG_ID + 0);
+        pressShortcutKey(getDialogInput(reusedDialogIndex));
+        validateLatestDialogShortcut(4, reusedDialogIndex);
     }
 
     // vaadin/vaadin-dialog#229
     @Test
     public void twoDialogsOpenedWithSameShortcutKeyOnListenOn_dialogWithFocusExecuted() {
-        openNewDialog();
-        listenToShortcutOnDialog(0);
-        openNewDialog();
-        listenToShortcutOnDialog(1);
+        final int firstDialogIndex = openNewDialog();
+        listenToShortcutOnDialog(firstDialogIndex);
+        final int secondDialogIndex = openNewDialog();
+        listenToShortcutOnDialog(secondDialogIndex);
 
-        pressShortcutKey(
-                getFirstDialogInput());
-        validateLatestShortcutEvent(0, DialogShortcutView.DIALOG_ID + 0);
+        pressShortcutKey(getDialogInput(firstDialogIndex));
+        validateLatestDialogShortcut(0, firstDialogIndex);
 
-        pressShortcutKey(
-                getDialogInput(1));
-        validateLatestShortcutEvent(1, DialogShortcutView.DIALOG_ID + 1);
+        pressShortcutKey(getDialogInput(secondDialogIndex));
+        validateLatestDialogShortcut(1, secondDialogIndex);
 
-        pressShortcutKey(
-                getFirstDialogInput());
-        validateLatestShortcutEvent(2, DialogShortcutView.DIALOG_ID + 0);
+        pressShortcutKey(getDialogInput(firstDialogIndex));
+        validateLatestDialogShortcut(2, firstDialogIndex);
 
         pressShortcutKey(uiLevelButton);
         validateLatestShortcutEvent(3, DialogShortcutView.UI_BUTTON);
     }
-    protected void openReusedDialog() {
+
+    protected int openReusedDialog() {
         findElement(By.id(DialogShortcutView.REUSABLE_DIALOG)).click();
-        dialogCounter++;
+        if (reusedDialogIndex == -1) {
+            reusedDialogIndex = dialogCounter.incrementAndGet();
+        }
+        return reusedDialogIndex;
     }
 
-    protected void openNewDialog() {
+    protected int openNewDialog() {
         openDialogButton.click();
-        dialogCounter++;
+        return dialogCounter.incrementAndGet();
     }
 
     private void closeDialog(int dialogIndex) {
         $(NativeButtonElement.class)
                 .id(DialogShortcutView.DIALOG_CLOSE_BUTTON + dialogIndex)
                 .click();
+    }
+
+    protected void validateLatestDialogShortcut(int eventCounter,
+            int dialogId) {
+        validateShortcutEvent(0, eventCounter,
+                DialogShortcutView.DIALOG_ID + dialogId);
     }
 
     protected void validateLatestShortcutEvent(int eventCounter,
@@ -156,13 +165,10 @@ public class DialogShortcutIT extends ChromeBrowserTest {
         elementToFocus.sendKeys("x");
     }
 
-    protected TestBenchElement getFirstDialogInput() {
-        return getDialogInput(0);
-    }
-
-    private TestBenchElement getDialogInput(int dialogIndex) {
-        return $(DivElement.class).id(DialogShortcutView.CONTENT_ID + dialogIndex)
-                .$("input").first();
+    protected TestBenchElement getDialogInput(int dialogIndex) {
+        return $(DivElement.class)
+                .id(DialogShortcutView.CONTENT_ID + dialogIndex).$("input")
+                .first();
     }
 
     private void listenToShortcutOnUI(int dialogIndex) {
