@@ -3,6 +3,7 @@ package com.vaadin.flow.uitest.ui;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
+import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
@@ -124,6 +125,53 @@ public class DialogShortcutIT extends ChromeBrowserTest {
         validateLatestShortcutEvent(3, DialogShortcutView.UI_BUTTON);
     }
 
+    // #10362
+    @Test
+    public void shortcutAddedWithPreventDefault_inputFocused_enteringOtherKeysToInputWorks() {
+        final int firstDialogIndex = openNewDialog();
+        listenToShortcutOnDialog(firstDialogIndex);
+
+        final InputTextElement dialogInput = getDialogInput(firstDialogIndex);
+        pressShortcutKey(dialogInput);
+        validateLatestDialogShortcut(0, firstDialogIndex);
+        Assert.assertNotEquals(
+                "Entered shortcut key should not be visible in input due to prevent default",
+                DialogShortcutView.KEY_STRING, dialogInput.getValue());
+
+        // use another key
+        dialogInput.focus();
+        dialogInput.sendKeys("fooxbar");
+        // only x triggers event and value changes
+        validateLatestDialogShortcut(1, firstDialogIndex);
+        Assert.assertEquals("Entered value should be visible in input",
+                "foobar", dialogInput.getValue());
+    }
+
+    // #10362
+    @Test
+    public void shortcutAddedWithAllowDefault_inputFocused_allKeysAcceptedToInput() {
+        $(NativeButtonElement.class)
+                .id(DialogShortcutView.ALLOW_BROWSER_DEFAULT_BUTTON).click();
+        final int firstDialogIndex = openNewDialog();
+        listenToShortcutOnDialog(firstDialogIndex);
+
+        final InputTextElement dialogInput = getDialogInput(firstDialogIndex);
+        pressShortcutKey(dialogInput);
+        validateLatestDialogShortcut(0, firstDialogIndex);
+        Assert.assertEquals(
+                "Entered shortcut key should be visible in input due to allow default",
+                DialogShortcutView.KEY_STRING, dialogInput.getValue());
+        dialogInput.clear();
+
+        dialogInput.focus();
+        dialogInput.sendKeys("foo" + DialogShortcutView.KEY_STRING + "bar");
+        // only x triggers event and value changes
+        validateLatestDialogShortcut(1, firstDialogIndex);
+        Assert.assertEquals("Entered value should be visible in input",
+                "foo" + DialogShortcutView.KEY_STRING + "bar",
+                dialogInput.getValue());
+    }
+
     protected void openReusedDialog() {
         findElement(By.id(DialogShortcutView.REUSABLE_DIALOG_BUTTON)).click();
     }
@@ -154,7 +202,9 @@ public class DialogShortcutIT extends ChromeBrowserTest {
             String eventSourceId) {
         final WebElement latestEvent = eventLog.findElements(By.tagName("div"))
                 .get(indexFromTop);
-        Assert.assertEquals("Invalid latest event",
+        Assert.assertEquals(
+                "Invalid latest event with " + indexFromTop + ":" + ":"
+                        + eventSourceId,
                 eventCounter + "-" + eventSourceId, latestEvent.getText());
     }
 
@@ -163,10 +213,10 @@ public class DialogShortcutIT extends ChromeBrowserTest {
         elementToFocus.sendKeys("x");
     }
 
-    protected TestBenchElement getDialogInput(int dialogIndex) {
+    protected InputTextElement getDialogInput(int dialogIndex) {
         return $(DivElement.class)
-                .id(DialogShortcutView.CONTENT_ID + dialogIndex).$("input")
-                .first();
+                .id(DialogShortcutView.CONTENT_ID + dialogIndex)
+                .$(InputTextElement.class).first();
     }
 
     private void listenToShortcutOnUI(int dialogIndex) {
