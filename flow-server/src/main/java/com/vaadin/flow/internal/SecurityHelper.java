@@ -26,7 +26,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
- * Helper methods for settigng up security contexts in Vaadin applications.
+ * Helper methods for setting up security contexts in Vaadin applications.
  *
  * @author Vaadin Ltd
  *
