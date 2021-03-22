@@ -49,6 +49,8 @@ import org.osgi.service.http.whiteboard.HttpWhiteboardConstants;
 import org.osgi.util.tracker.BundleTracker;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.HandlerHelper;
+
 /**
  * Bundle tracker to discover all classes in active bundles.
  * <p>
@@ -87,6 +89,10 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
             String pathInfo = req.getPathInfo();
             if (pathInfo == null) {
                 resp.setStatus(HttpURLConnection.HTTP_NOT_FOUND);
+                return;
+            }
+            if (HandlerHelper.isPathUnsafe(pathInfo)) {
+                resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 return;
             }
             URL resource = bundle.getResource(resourceDirPath + pathInfo);
