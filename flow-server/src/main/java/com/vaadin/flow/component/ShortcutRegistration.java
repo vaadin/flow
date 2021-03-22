@@ -51,10 +51,12 @@ public class ShortcutRegistration implements Registration, Serializable {
             + "const delegate=%1$s;" // the output of the JsLocator
             + "if (delegate) {"
             + "delegate.addEventListener('keydown', function(event) {"
+            + "if (%2$s) {" // the filter text to match the key
             + "const new_event = new event.constructor(event.type, event);"
             + "listenOn.dispatchEvent(new_event);"
-            + "event.preventDefault();" // the propagation and default actions are left for the new event
-            + "event.stopPropagation();});"
+            + "%3$s" // the new event allows default if desired
+            + "event.stopPropagation();}" // the new event bubbles if desired
+            + "});" // end matches filter
             + "} else {"
             + "throw \"Shortcut listenOn element not found with JS locator string '%1$s'\""
             + "}";//@formatter:on
@@ -766,8 +768,14 @@ public class ShortcutRegistration implements Registration, Serializable {
         final String elementLocatorJs = (String) ComponentUtil.getData(listenOn,
                 Shortcuts.ELEMENT_LOCATOR_JS_KEY);
         if (elementLocatorJs != null) {
+            // #10362 only prevent default when key filter matches to not block
+            // typing or existing shortcuts
+            final String filterText = filterText();
+            // enable default actions if desired
+            final String preventDefault = allowDefaultBehavior ? ""
+                    : "event.preventDefault();";
             final String jsExpression = String.format(ELEMENT_LOCATOR_JS,
-                    elementLocatorJs);
+                    elementLocatorJs, filterText, preventDefault);
             listenOn.getElement().executeJs(jsExpression);
         }
     }
