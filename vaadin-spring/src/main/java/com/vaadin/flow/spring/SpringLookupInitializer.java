@@ -53,6 +53,10 @@ public class SpringLookupInitializer extends LookupInitializer {
         void execute() throws ServletException;
     }
 
+    private static class ApplicationContextWrapper {
+        private WebApplicationContext appContext;
+    }
+
     private static class SpringLookup extends LookupImpl {
 
         private final WebApplicationContext context;
@@ -119,6 +123,9 @@ public class SpringLookupInitializer extends LookupInitializer {
                             .getAttribute(BootstrapCallable.class);
                     vaadinServletContext
                             .removeAttribute(BootstrapCallable.class);
+                    ApplicationContextWrapper wrapper = new ApplicationContextWrapper();
+                    wrapper.appContext = (WebApplicationContext) applicationContext;
+                    vaadinServletContext.setAttribute(wrapper);
                 }
             }
             if (callable != null) {
@@ -140,8 +147,7 @@ public class SpringLookupInitializer extends LookupInitializer {
         VaadinServletContext servletContext = (VaadinServletContext) context;
         boolean isContextAvailable = false;
         synchronized (LOCK) {
-            ApplicationContext appContext = WebApplicationContextUtils
-                    .getWebApplicationContext(servletContext.getContext());
+            ApplicationContext appContext = getApplicationContext(context);
             isContextAvailable = appContext != null;
             if (!isContextAvailable) {
                 context.setAttribute(BootstrapCallable.class,
@@ -157,9 +163,7 @@ public class SpringLookupInitializer extends LookupInitializer {
     @Override
     protected Lookup createLookup(VaadinContext context,
             Map<Class<?>, Collection<Class<?>>> services) {
-        WebApplicationContext appContext = WebApplicationContextUtils
-                .getWebApplicationContext(
-                        ((VaadinServletContext) context).getContext());
+        WebApplicationContext appContext = getApplicationContext(context);
         return new SpringLookup(appContext,
                 (spi, impl) -> instantiate(appContext, spi, impl), services);
     }
@@ -169,6 +173,21 @@ public class SpringLookupInitializer extends LookupInitializer {
             VaadinApplicationInitializationBootstrap bootstrap)
             throws ServletException {
         super.initialize(context, services, bootstrap);
+    }
+
+    private WebApplicationContext getApplicationContext(VaadinContext context) {
+        VaadinServletContext servletContext = (VaadinServletContext) context;
+        WebApplicationContext appContext = WebApplicationContextUtils
+                .getWebApplicationContext(servletContext.getContext());
+        if (appContext == null) {
+            // Spring behavior is always unbelievably surprising: under some
+            // circumstances {@code appContext} may be null even though the app
+            // context has been set via ApplicationContextAware: no idea WHY
+            ApplicationContextWrapper wrapper = context
+                    .getAttribute(ApplicationContextWrapper.class);
+            appContext = wrapper == null ? null : wrapper.appContext;
+        }
+        return appContext;
     }
 
     private <T> T instantiate(WebApplicationContext context,
