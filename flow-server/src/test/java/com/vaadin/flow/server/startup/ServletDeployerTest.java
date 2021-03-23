@@ -23,7 +23,6 @@ import org.easymock.CaptureType;
 import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -293,18 +292,6 @@ public class ServletDeployerTest {
 
         assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
-    }
-
-    @Test
-    public void contextInitialized_noLookup_noAction() {
-        ServletContextEvent event = Mockito.mock(ServletContextEvent.class);
-        ServletContext context = Mockito.mock(ServletContext.class);
-        Mockito.when(event.getServletContext()).thenReturn(context);
-
-        deployer.contextInitialized(event);
-
-        Mockito.verify(context).getAttribute(Lookup.class.getName());
-        Mockito.verifyNoMoreInteractions(context);
     }
 
     private void assertMappingsCount(int numServlets, int numMappings) {
