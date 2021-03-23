@@ -15,10 +15,13 @@
  */
 package com.vaadin.flow.webcomponent;
 
+import java.util.List;
+
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
@@ -37,6 +40,11 @@ public class WebComponentIT extends ChromeBrowserTest implements HasById {
         waitForElementVisible(By.id("show-message"));
 
         TestBenchElement showMessage = byId("show-message");
+        waitUntil(driver -> {
+            List<WebElement> selects = findInShadowRoot(showMessage, By.tagName(
+                    "select"));
+            return selects != null && !selects.isEmpty();
+        });
         TestBenchElement select = showMessage.$("select").first();
 
         // Selection is visibly changed and event manually dispatched
@@ -67,6 +75,10 @@ public class WebComponentIT extends ChromeBrowserTest implements HasById {
 
         waitForElementVisible(By.id("show-message"));
         TestBenchElement showMessage = byId("show-message");
+        waitUntil(driver -> {
+            List<WebElement> links = findInShadowRoot(showMessage, By.id("link"));
+            return links != null && !links.isEmpty();
+        });
         TestBenchElement link = showMessage.$("a").id("link");
         String href = link.getAttribute("href");
         // self check
