@@ -52,7 +52,7 @@ public class ReflectionsClassFinder implements ClassFinder {
                 .addUrls(urls);
 
         configurationBuilder.setInputsFilter(
-                file -> file.endsWith(".class") && !file
+            resourceName -> resourceName.endsWith(".class") && !resourceName
                         .endsWith("module-info.class"));
         reflections = new Reflections(configurationBuilder);
     }
