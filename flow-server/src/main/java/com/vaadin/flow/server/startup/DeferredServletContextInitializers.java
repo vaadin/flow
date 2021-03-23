@@ -29,7 +29,7 @@ import com.vaadin.flow.server.VaadinContext;
  * Internal collection of initializers which may not be executed immediately but
  * requires a {@link Lookup} instance which will be set in the
  * {@link VaadinContext} ({@link ServletContext}) only when
- * {@link LookupServletContainerInitializer} completed.
+ * {@link LookupInitializer} completed.
  * 
  * @author Vaadin Ltd
  * @since
