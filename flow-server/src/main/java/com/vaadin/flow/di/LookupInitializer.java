@@ -284,8 +284,7 @@ public class LookupInitializer {
             Map<Class<?>, Collection<Class<?>>> services,
             VaadinApplicationInitializationBootstrap bootstrap)
             throws ServletException {
-        ensureService(services, ResourceProvider.class,
-                ResourceProviderImpl.class);
+        ensureResourceProviders(services);
         bootstrap.bootstrap(createLookup(context, services));
     }
 
@@ -307,53 +306,44 @@ public class LookupInitializer {
 
     /**
      * Ensures that provided {@code services} contain implementation for
-     * {@code serviceType} SPI.
+     * {@link ResourceProvider} SPI.
      * <p>
-     * The default {@code  serviceImpl} implementation will be set as the
-     * service into {@code services} if there is no other services available.
+     * The default {@link ResourceProviderImpl} implementation will be set as
+     * the service into {@code services} if there is no other services
+     * available.
      * 
      * @param services
      *            map of internal services
-     * @param serviceType
-     *            SPI type
-     * @param serviceImpl
-     *            the default SPI implementation
      */
-    protected <T> void ensureService(
-            Map<Class<?>, Collection<Class<?>>> services, Class<T> serviceType,
-            Class<? extends T> serviceImpl) {
-        Collection<Class<?>> impls = services.get(serviceType);
-        if (impls == null) {
-            impls = Collections.emptyList();
+    protected void ensureResourceProviders(
+            Map<Class<?>, Collection<Class<?>>> services) {
+        Collection<Class<?>> resourceProviders = services
+                .get(ResourceProvider.class);
+        if (resourceProviders == null) {
+            resourceProviders = Collections.emptyList();
         }
-        impls = impls.stream().filter(clazz -> !clazz.equals(serviceImpl))
+        resourceProviders = resourceProviders.stream()
+                .filter(clazz -> !clazz.equals(ResourceProviderImpl.class))
                 .collect(Collectors.toList());
-        if (impls.isEmpty()) {
-            services.put(serviceType, Collections.singletonList(serviceImpl));
-        } else if (impls.size() > 1) {
+        if (resourceProviders.isEmpty()) {
+            services.put(ResourceProvider.class,
+                    Collections.singletonList(ResourceProviderImpl.class));
+        } else if (resourceProviders.size() > 1) {
             throw new IllegalStateException(
-                    SEVERAL_IMPLS + serviceType.getSimpleName() + SPI + impls
-                            + ONE_IMPL_REQUIRED);
+                    SEVERAL_IMPLS + ResourceProvider.class.getSimpleName() + SPI
+                            + resourceProviders + ONE_IMPL_REQUIRED);
         } else {
-            services.put(serviceType, impls);
+            services.put(ResourceProvider.class, resourceProviders);
         }
     }
 
-    /**
-     * Instantiates service {@code implementation} type with the given
-     * {@code serviceClass} .
-     * 
-     * @param <T>
-     *            service type
-     * @param serviceClass
-     *            service class
-     * @param implementation
-     *            service implementation class
-     * @return an instantiated service implementation object
-     */
-    protected <T> T instantiate(Class<T> serviceClass,
-            Class<?> implementation) {
-        return serviceClass.cast(ReflectTools.createInstance(implementation));
+    private <T> T instantiate(Class<T> serviceClass, Class<?> implementation) {
+        if (ResourceProviderImpl.class.equals(implementation)) {
+            return serviceClass.cast(new ResourceProviderImpl());
+        } else {
+            return serviceClass
+                    .cast(ReflectTools.createInstance(implementation));
+        }
     }
 
 }
