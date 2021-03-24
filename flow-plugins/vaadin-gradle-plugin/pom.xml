@@ -103,4 +103,19 @@
 
         </plugins>
     </build>
+    
+
+    <profiles>
+        <profile>
+            <id>windows_profile</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <properties>
+                <gradle.executable>./gradlew.bat</gradle.executable>
+            </properties>
+        </profile>
+    </profiles>
 </project>

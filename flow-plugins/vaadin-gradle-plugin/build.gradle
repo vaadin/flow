@@ -1,6 +1,6 @@
 /*
  * Copyright 2018-2019 Devsoap Inc.
- * Copyright 2019 Vaadin Ltd.
+ * Copyright 2019-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,9 +37,9 @@ plugins {
 
 def pom = new XmlSlurper().parse(rootProject.file('pom.xml'))
 defaultTasks 'jar'
-group '${pom.parent.groupId}'
-version = project.hasProperty('version') ? getProperty('version') : '20.0-SNAPSHOT'
-archivesBaseName = '${pom.artifactId}'
+group pom.parent.groupId
+version = project.hasProperty('vaadin.version') ? project.getProperty('vaadin.version') : pom.parent.version
+archivesBaseName = pom.artifactId
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
@@ -115,7 +115,7 @@ jar {
  */
 task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
-    archiveClassifier= 'sources'
+    archiveClassifier = 'sources'
     include 'com/**/*.groovy'
     include 'com/**/*.java'
     include 'com/**/*.kt'
