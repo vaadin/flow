@@ -44,10 +44,11 @@ public class DialogShortcutView extends Div {
     public static final String LISTEN_ON_DIALOG_BUTTON = "listen-on-dialog-button";
     public static final String LISTEN_CLICK_ON_UI_BUTTON = "listen-click-on-ui-button";
     public static final String LISTEN_CLICK_ON_DIALOG_BUTTON = "listen-click-on-dialog-button";
+    public static final String REUSABLE_DIALOG_BUTTON = "reusable-dialog-button";
     public static final String UI_ID = "UI-ID";
     public static final String CONTENT_ID = "CONTENT";
     public static final Key SHORTCUT_KEY = Key.KEY_X;
-    public static final String REUSABLE_DIALOG = "reusable-dialog";
+    public static final int REUSABLE_DIALOG_ID = 999;
 
     private AtomicInteger dialogCounter = new AtomicInteger(-1);
     private int eventCounter;
@@ -72,14 +73,13 @@ public class DialogShortcutView extends Div {
         final NativeButton reusableDialogButton = new NativeButton(
                 "Open reusable dialog", event -> {
                     if (reusedDialog == null) {
-                        reusedDialog = new Dialog();
-
+                        reusedDialog = new Dialog(REUSABLE_DIALOG_ID);
                     }
                     open(reusedDialog);
                     eventLog.add(new Div(new Text("Opened reusable dialog DC"
                             + dialogCounter + "-EC" + eventCounter)));
                 });
-        reusableDialogButton.setId(REUSABLE_DIALOG);
+        reusableDialogButton.setId(REUSABLE_DIALOG_BUTTON);
         add(reusableDialogButton);
     }
 
@@ -91,10 +91,10 @@ public class DialogShortcutView extends Div {
 
     private Component createOpenDialogButton(String id) {
         final NativeButton button = createButton("Open dialog", event -> {
-            final Dialog dialog = new Dialog();
+            final Dialog dialog = new Dialog(dialogCounter.incrementAndGet());
             open(dialog);
-            eventLog.add(new Div(new Text(
-                    "Opened dialog DC" + dialogCounter + "-EC" + eventCounter)));
+            eventLog.add(new Div(new Text("Opened dialog DC" + dialogCounter
+                    + "-EC" + eventCounter)));
         });
         button.setId(id);
         return button;
@@ -115,8 +115,8 @@ public class DialogShortcutView extends Div {
         public final int index;
         public final Div content;
 
-        public Dialog() {
-            index = dialogCounter.incrementAndGet();
+        public Dialog(int index) {
+            this.index = index;
             final NativeButton testButton = createButton(
                     "Test button with shortcut",
                     DialogShortcutView.this::logClickEvent);

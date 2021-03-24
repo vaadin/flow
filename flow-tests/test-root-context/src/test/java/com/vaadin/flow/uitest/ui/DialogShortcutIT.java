@@ -12,13 +12,14 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import static com.vaadin.flow.uitest.ui.DialogShortcutView.REUSABLE_DIALOG_ID;
+
 public class DialogShortcutIT extends ChromeBrowserTest {
 
     private TestBenchElement eventLog;
     private TestBenchElement openDialogButton;
     private NativeButtonElement uiLevelButton;
     protected AtomicInteger dialogCounter = new AtomicInteger(-1);
-    private int reusedDialogIndex = -1;
 
     @Before
     public void init() {
@@ -77,28 +78,28 @@ public class DialogShortcutIT extends ChromeBrowserTest {
     public void dialogOpenedWithListenOnShortcut_dialogReopened_oldShortcutStillWorks() {
         openReusedDialog();
 
-        pressShortcutKey(getDialogInput(reusedDialogIndex));
+        pressShortcutKey(getDialogInput(REUSABLE_DIALOG_ID));
         // no shortcut in dialog -> ui still gets the shortcut
-        validateLatestShortcutEvent(reusedDialogIndex,
+        validateLatestShortcutEvent(0,
                 DialogShortcutView.UI_BUTTON);
 
-        listenToShortcutOnDialog(reusedDialogIndex);
+        listenToShortcutOnDialog(REUSABLE_DIALOG_ID);
 
-        pressShortcutKey(getDialogInput(reusedDialogIndex));
-        validateLatestDialogShortcut(1, reusedDialogIndex);
+        pressShortcutKey(getDialogInput(REUSABLE_DIALOG_ID));
+        validateLatestDialogShortcut(1, REUSABLE_DIALOG_ID);
 
         pressShortcutKey(uiLevelButton);
         validateLatestShortcutEvent(2, DialogShortcutView.UI_BUTTON);
 
-        closeDialog(reusedDialogIndex);
+        closeDialog(REUSABLE_DIALOG_ID);
 
         pressShortcutKey(uiLevelButton);
         validateLatestShortcutEvent(3, DialogShortcutView.UI_BUTTON);
 
         openReusedDialog();
 
-        pressShortcutKey(getDialogInput(reusedDialogIndex));
-        validateLatestDialogShortcut(4, reusedDialogIndex);
+        pressShortcutKey(getDialogInput(REUSABLE_DIALOG_ID));
+        validateLatestDialogShortcut(4, REUSABLE_DIALOG_ID);
     }
 
     // vaadin/vaadin-dialog#229
@@ -122,12 +123,8 @@ public class DialogShortcutIT extends ChromeBrowserTest {
         validateLatestShortcutEvent(3, DialogShortcutView.UI_BUTTON);
     }
 
-    protected int openReusedDialog() {
-        findElement(By.id(DialogShortcutView.REUSABLE_DIALOG)).click();
-        if (reusedDialogIndex == -1) {
-            reusedDialogIndex = dialogCounter.incrementAndGet();
-        }
-        return reusedDialogIndex;
+    protected void openReusedDialog() {
+        findElement(By.id(DialogShortcutView.REUSABLE_DIALOG_BUTTON)).click();
     }
 
     protected int openNewDialog() {

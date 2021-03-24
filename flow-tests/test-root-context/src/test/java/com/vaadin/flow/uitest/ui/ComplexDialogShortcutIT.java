@@ -3,6 +3,8 @@ package com.vaadin.flow.uitest.ui;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
+import static com.vaadin.flow.uitest.ui.DialogShortcutView.REUSABLE_DIALOG_ID;
+
 public class ComplexDialogShortcutIT extends DialogShortcutIT {
 
     @Test
@@ -23,10 +25,9 @@ public class ComplexDialogShortcutIT extends DialogShortcutIT {
     }
 
     @Override
-    protected int openReusedDialog() {
-        int dialogId = super.openReusedDialog();
-        waitForTransport(dialogId);
-        return dialogId;
+    protected void openReusedDialog() {
+        super.openReusedDialog();
+        waitForTransport(REUSABLE_DIALOG_ID);
     }
 
     @Override
