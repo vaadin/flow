@@ -15,10 +15,6 @@ public class FragmentLinkIT extends ChromeBrowserTest {
     public void testInsidePageNavigation_noRouterLinkHandling() {
         open();
 
-        if (hasClientIssue("8236")) {
-            return;
-        }
-
         clickScrollerLink2();
 
         verifyInsideServletLocation(
