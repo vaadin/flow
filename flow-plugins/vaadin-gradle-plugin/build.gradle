@@ -39,7 +39,7 @@ def pom = new XmlSlurper().parse(rootProject.file('pom.xml'))
 defaultTasks 'jar'
 group '${pom.parent.groupId}'
 version = project.hasProperty('version') ? getProperty('version') : '20.0-SNAPSHOT'
-archivesBaseName = 'vaadin-gradle-plugin'
+archivesBaseName = '${pom.artifactId}'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
