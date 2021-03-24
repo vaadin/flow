@@ -47,9 +47,14 @@ public class ReflectionsClassFinder implements ClassFinder {
      */
     public ReflectionsClassFinder(URL... urls) {
         classLoader = new URLClassLoader(urls, null); // NOSONAR
-        reflections = new Reflections(
-                new ConfigurationBuilder().addClassLoader(classLoader)
-                        .setExpandSuperTypes(false).addUrls(urls));
+        ConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
+                .addClassLoader(classLoader).setExpandSuperTypes(false)
+                .addUrls(urls);
+
+        configurationBuilder.setInputsFilter(
+            resourceName -> resourceName.endsWith(".class") && !resourceName
+                        .endsWith("module-info.class"));
+        reflections = new Reflections(configurationBuilder);
     }
 
     @Override
