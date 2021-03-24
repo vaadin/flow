@@ -571,13 +571,14 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
-    public void withConverter_writeBackValue() {
+    public void withConverter_writeBackValueWhenEnabled() {
         TestTextField rentField = new TestTextField();
         rentField.setValue("");
-        binder.forField(rentField).withConverter(new EuroConverter(""))
+        Binding<Person, BigDecimal> binding = binder.forField(rentField).withConverter(new EuroConverter(""))
                 .withNullRepresentation(BigDecimal.valueOf(0d))
                 .bind(Person::getRent, Person::setRent);
         binder.setBean(item);
+        binding.setConvertBackToPresentation(true);
         rentField.setValue("10");
 
         // € 10.00
@@ -586,7 +587,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
-    public void withConverter_writeBackValueDisabled() {
+    public void withConverter_writeBackValueDisabledByDefault() {
         TestTextField rentField = new TestTextField();
         rentField.setValue("");
         Binding<Person, BigDecimal> binding = binder.forField(rentField)
@@ -594,7 +595,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
           .withNullRepresentation(BigDecimal.valueOf(0d))
           .bind(Person::getRent, Person::setRent);
         binder.setBean(item);
-        binding.setConvertBackToPresentation(false);
+        // Default in 2.6 - changes in 6.0 to true
+        // binding.setConvertBackToPresentation(false);
         rentField.setValue("10");
 
         assertNotEquals("€ 10.00", rentField.getValue());
