@@ -47,9 +47,12 @@ let connectionLost = false;
 const navigationFallback = new NavigationRoute(async (context: RouteHandlerCallbackOptions) => {
   // serve any file in the manifest directly from cache
   const path = context.url.pathname;
-  const pathNoLeadingSlash = path.replace(/^\/+/, '');;
-  if (manifestEntries.some(({url}) => url === pathNoLeadingSlash)) {
-    return await matchPrecache(pathNoLeadingSlash);
+  const scopePath = new URL(self.registration.scope).pathname;
+  if (path.startsWith(scopePath)) {
+    const pathRelativeToScope = path.substr(scopePath.length);
+    if (manifestEntries.some(({url}) => url === pathRelativeToScope)) {
+      return await matchPrecache(pathRelativeToScope);
+    }
   }
 
   // Use offlinePath fallback if offline was detected
