@@ -16,6 +16,7 @@
 package com.vaadin.gradle
 
 import com.vaadin.flow.server.Constants
+import com.vaadin.flow.server.InitParameters
 import elemental.json.JsonObject
 import elemental.json.impl.JsonUtil
 import org.gradle.testkit.runner.BuildResult
@@ -44,7 +45,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:vaadin-core:$vaadinVersion")
+                compile("com.vaadin:flow:$flowVersion")
                 providedCompile("javax.servlet:javax.servlet-api:3.1.0")
                 compile("org.slf4j:slf4j-simple:1.7.30")
             }
@@ -66,7 +67,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         val tokenFile = File(testProject.dir, "build/vaadin-generated/META-INF/VAADIN/config/flow-build-info.json")
         expect(true, tokenFile.toString()) { tokenFile.isFile }
         val buildInfo: JsonObject = JsonUtil.parse(tokenFile.readText())
-        expect(false, buildInfo.toJson()) { buildInfo.getBoolean(Constants.SERVLET_PARAMETER_PRODUCTION_MODE) }
+        expect(false, buildInfo.toJson()) { buildInfo.getBoolean(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE) }
     }
 
     @Test
@@ -94,7 +95,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
 
         val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
         val buildInfo: JsonObject = JsonUtil.parse(tokenFile.readText())
-        expect(false, buildInfo.toJson()) { buildInfo.getBoolean(Constants.SERVLET_PARAMETER_PRODUCTION_MODE) }
+        expect(false, buildInfo.toJson()) { buildInfo.getBoolean(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE) }
     }
 
     @Test
@@ -111,7 +112,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         build.find("*.js", 5..10)
         val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
         val buildInfo: JsonObject = JsonUtil.parse(tokenFile.readText())
-        expect(true, buildInfo.toJson()) { buildInfo.getBoolean(Constants.SERVLET_PARAMETER_PRODUCTION_MODE) }
+        expect(true, buildInfo.toJson()) { buildInfo.getBoolean(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE) }
     }
 
     @Test

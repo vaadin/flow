@@ -43,7 +43,7 @@ public open class VaadinCleanTask : DefaultTask() {
     init {
         group = "Vaadin"
         description = "Cleans the project completely and removes node_modules, webpack.generated.js, " +
-                      "tsconfig.json, types.d.ts, pnpm-lock.yaml, pnpmfile.js, package*.json and webpack.*.js"
+                      "tsconfig.json, types.d.ts, pnpm-lock.yaml, pnpmfile.js and package-lock.json"
 
         dependsOn("clean")
     }
@@ -51,7 +51,6 @@ public open class VaadinCleanTask : DefaultTask() {
     @TaskAction
     public fun clean() {
         project.delete("${project.projectDir}/node_modules",
-                "${project.projectDir}/package.json",
                 "${project.projectDir}/package-lock.json",
                 "${project.projectDir}/webpack.generated.js",
                 "${project.projectDir}/pnpm-lock.yaml", // used by Vaadin 14.2+ pnpm

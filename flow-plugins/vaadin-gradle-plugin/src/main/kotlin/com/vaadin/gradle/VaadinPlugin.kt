@@ -32,7 +32,7 @@ public class VaadinPlugin : Plugin<Project> {
         var extensionName = "vaadin"
         if (project.extensions.findByName(extensionName) != null) {
             // fixes https://github.com/vaadin/vaadin-gradle-plugin/issues/26
-            extensionName = "vaadin14"
+            extensionName = "vaadinPlatform"
         }
         project.extensions.create(extensionName, VaadinFlowPluginExtension::class.java, project)
 
