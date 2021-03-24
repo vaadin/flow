@@ -12,7 +12,6 @@
 
     <properties>
         <gradle.executable>./gradlew</gradle.executable>
-        <platform.version>20.0.0.alpha3</platform.version>
     </properties>
 
     <dependencies>
@@ -63,8 +62,6 @@
                             <arguments>
                                 <argument>clean</argument>
                                 <argument>build</argument>
-                                <argument>-Pgroup=${project.groupId}</argument>
-                                <argument>-Pversion=${platform.version}</argument>
                                 <argument>-S</argument>
                             </arguments>
                         </configuration>
@@ -103,7 +100,6 @@
 
         </plugins>
     </build>
-    
 
     <profiles>
         <profile>

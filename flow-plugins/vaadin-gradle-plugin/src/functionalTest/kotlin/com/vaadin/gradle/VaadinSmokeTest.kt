@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2020 Vaadin Ltd
+ *    Copyright 2000-2021 Vaadin Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,12 +120,12 @@ class VaadinSmokeTest : AbstractGradleTest() {
         testProject.newFile("src/main/java/org/vaadin/example/MainView.java", """
             package org.vaadin.example;
 
+            import com.vaadin.flow.component.html.Div;
             import com.vaadin.flow.component.html.Span;
-            import com.vaadin.flow.component.orderedlayout.VerticalLayout;
             import com.vaadin.flow.router.Route;
 
             @Route("")
-            public class MainView extends VerticalLayout {
+            public class MainView extends Div {
 
                 public MainView() {
                     add(new Span("It works!"));

@@ -1,6 +1,21 @@
+/**
+ *    Copyright 2000-2021 Vaadin Ltd
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.vaadin.gradle
 
-import com.vaadin.flow.server.frontend.FrontendUtils
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
@@ -8,12 +23,14 @@ import org.junit.Test
 import java.io.File
 import kotlin.test.expect
 
+import com.vaadin.flow.server.frontend.FrontendUtils
+
 class MiscSingleModuleTest : AbstractGradleTest() {
     /**
      * Tests https://github.com/vaadin/vaadin-gradle-plugin/issues/26
      */
     @Test
-    fun testVaadin8Vaadin14MPRProject() {
+    fun testVaadin8VaadinPlatformMPRProject() {
         testProject.buildFile.writeText(
             """
             plugins {
@@ -29,7 +46,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             vaadin {
                 version = "8.9.4"
             }
-            vaadin14 {
+            vaadinPlatform {
                 optimizeBundle = true
             }
         """.trimIndent()
@@ -59,7 +76,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:vaadin-core:$vaadinVersion")
+                compile("com.vaadin:flow:$flowVersion")
                 providedCompile("javax.servlet:javax.servlet-api:3.1.0")
                 compile("org.slf4j:slf4j-simple:1.7.30")
             }
@@ -99,7 +116,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 pnpmEnable = true
             }
             dependencies {
-                compile("com.vaadin:vaadin-core:$vaadinVersion")
+                compile("com.vaadin:flow:$flowVersion")
                 providedCompile("javax.servlet:javax.servlet-api:3.1.0")
                 compile("org.slf4j:slf4j-simple:1.7.30")
             }
@@ -136,7 +153,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 pnpmEnable = true
             }
             dependencies {
-                compile("com.vaadin:vaadin-core:$vaadinVersion")
+                compile("com.vaadin:flow:$flowVersion")
                 compile("org.slf4j:slf4j-simple:1.7.30")
                 compile("javax.servlet:javax.servlet-api:3.1.0")
 
@@ -179,7 +196,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 pnpmEnable = true
             }
             dependencies {
-                compile("com.vaadin:vaadin-core:$vaadinVersion")
+                compile("com.vaadin:flow:$flowVersion")
                 compile("org.slf4j:slf4j-simple:1.7.30")
                 compile("javax.servlet:javax.servlet-api:3.1.0")
 
@@ -207,12 +224,12 @@ class MiscSingleModuleTest : AbstractGradleTest() {
      *
      * The `implementation()` dependency type would cause incorrect jar list computation,
      * which would then not populate the `node_modules/@vaadin/flow-frontend` folder,
-     * which would case webpack to fail during vaadinBuildFrontend.
+     * which would cause webpack to fail during vaadinBuildFrontend.
      *
      * This build script covers the [Spring Boot example](https://github.com/vaadin/base-starter-spring-gradle)
      */
     @Test
-    fun testVaadin17SpringProjectProductionMode() {
+    fun testVaadin20SpringProjectProductionMode() {
         testProject.buildFile.writeText(
             """
             plugins {
@@ -229,7 +246,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             
             ext {
-                set('vaadinVersion', "$vaadinVersion")
+                set('vaadinVersion', "20.0-SNAPSHOT")
             }
             
             configurations {
@@ -240,7 +257,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             
             dependencies {
-                implementation('com.vaadin:vaadin-spring-boot-starter')
+                implementation('com.vaadin:vaadin-spring-boot-starter:20.0-SNAPSHOT')
                 developmentOnly 'org.springframework.boot:spring-boot-devtools'
                 testImplementation('org.springframework.boot:spring-boot-starter-test') {
                     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
@@ -249,7 +266,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             
             dependencyManagement {
                 imports {
-                    mavenBom "com.vaadin:vaadin-bom:${"$"}{vaadinVersion}"
+                    mavenBom "com.vaadin:flow:$flowVersion"
                 }
             }
 
@@ -319,7 +336,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:vaadin-core:$vaadinVersion")
+                compile("com.vaadin:flow:$flowVersion")
                 providedCompile("javax.servlet:javax.servlet-api:3.1.0")
                 compile("org.slf4j:slf4j-simple:1.7.30")
             }
@@ -381,7 +398,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:vaadin-core:$vaadinVersion")
+                compile("com.vaadin:flow:$flowVersion")
             }
             vaadin {
                 pnpmEnable = true
@@ -423,7 +440,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:vaadin-core:$vaadinVersion")
+                compile("com.vaadin:flow:$flowVersion")
             }
             vaadin {
                 pnpmEnable = true
