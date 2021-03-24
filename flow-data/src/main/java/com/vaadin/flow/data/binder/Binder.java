@@ -255,10 +255,11 @@ public class Binder<BEAN> implements Serializable {
          * Define whether the value should be converted back to the presentation
          * in the field when a converter is used in binding.
          * <p>
-         * As of version 6.0, when a converter is used on a binding and the user
-         * input value is modified by the converter, the value from the converter
-         * is applied back to the input. It is possible to control this behavior
-         * with this API.
+         * The default behavior (do not convert back to presentation) changes to the
+         * opposite as of Vaadin 19 / Flow 6.0, when a converter is used on a binding
+         * and the user input value is modified by the converter, the value from the
+         * converter is applied back to the input. It is possible to control this
+         * behavior with this API.
          *
          * @see BindingBuilder#withConverter(Converter)
          * @see BindingBuilder#withConverter(SerializableFunction, SerializableFunction)
@@ -535,7 +536,7 @@ public class Binder<BEAN> implements Serializable {
          * property using an appropriate converter such as a
          * {@link StringToIntegerConverter}.
          * <p>
-         * The converted value is applied back to the field by default,
+         * The converted value is not applied back to the field by default,
          * this can be controlled with the method
          * {@link Binding#setConvertBackToPresentation(boolean)}.
          *
@@ -1099,7 +1100,7 @@ public class Binder<BEAN> implements Serializable {
 
         private boolean validatorsDisabled = false;
 
-        private boolean convertBackToPresentation = true;
+        private boolean convertBackToPresentation = false;
 
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
