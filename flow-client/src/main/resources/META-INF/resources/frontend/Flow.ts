@@ -37,9 +37,14 @@ interface FlowRoot {
   $server: any;
 }
 
+export interface Resolver {
+  baseUrl: string;
+}
+
 export interface NavigationParameters {
   pathname: string;
   search: string;
+  resolver?: Resolver;
 }
 
 export interface PreventCommands {
@@ -141,6 +146,8 @@ export class Flow {
       // Store last action pathname so as we can check it in events
       this.pathname = params.pathname;
 
+      const baseUrl = params.resolver ? params.resolver!.baseUrl : '/';
+
       if ($wnd.Vaadin.connectionState.online) {
         // @ts-ignore
         try {
@@ -149,14 +156,14 @@ export class Flow {
           if (error instanceof FlowUiInitializationError) {
             // error initializing Flow: assume connection lost
             $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
-            return this.offlineStubAction();
+            return this.offlineStubAction(baseUrl);
           } else {
             throw error;
           }
         }
       } else {
         // insert an offline stub
-        return this.offlineStubAction();
+        return this.offlineStubAction(baseUrl);
       }
 
       // When an action happens, navigation will be resolved `onBeforeEnter`
@@ -394,9 +401,11 @@ export class Flow {
     });
   }
 
-  private async offlineStubAction() {
-    await import('./OfflineStub');
-    const offlineStub = document.createElement('vaadin-offline-stub') as HTMLRouterContainer;
+  private async offlineStubAction(baseUrl: string) {
+    const offlineStub = document.createElement('iframe') as HTMLRouterContainer;
+    const offlineStubPath = baseUrl + (baseUrl.endsWith('/') ? '' : ' /') + 'offline-stub.html';
+    offlineStub.setAttribute('src', offlineStubPath);
+    offlineStub.setAttribute('style', 'width: 100%; height: 100%; border: 0');
     this.response = undefined;
 
     let onlineListener: ConnectionStateChangeListener | undefined;
