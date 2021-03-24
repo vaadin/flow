@@ -45,6 +45,13 @@ const offlinePath = OFFLINE_PATH_ENABLED ? OFFLINE_PATH : appShellPath;
 const networkOnly = new NetworkOnly();
 let connectionLost = false;
 const navigationFallback = new NavigationRoute(async (context: RouteHandlerCallbackOptions) => {
+  // serve any file in the manifest directly from cache
+  const path = context.url.pathname;
+  const pathNoLeadingSlash = path.replace(/^\/+/, '');;
+  if (manifestEntries.some(({url}) => url === pathNoLeadingSlash)) {
+    return await matchPrecache(pathNoLeadingSlash);
+  }
+
   // Use offlinePath fallback if offline was detected
   if (!self.navigator.onLine) {
     const offlinePathPrecachedResponse = await matchPrecache(offlinePath);
@@ -68,7 +75,7 @@ const navigationFallback = new NavigationRoute(async (context: RouteHandlerCallb
 
 registerRoute(navigationFallback);
 
-let manifestEntries = self.__WB_MANIFEST;
+let manifestEntries: Array<PrecacheEntry> = self.__WB_MANIFEST;
 if (self.additionalManifestEntries && self.additionalManifestEntries.length) {
   manifestEntries = [...manifestEntries, ...self.additionalManifestEntries];
 }
