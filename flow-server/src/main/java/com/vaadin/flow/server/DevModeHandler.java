@@ -384,7 +384,14 @@ public final class DevModeHandler implements RequestHandler {
         return true;
     }
 
-    private boolean checkWebpackConnection() {
+    /**
+     * Checks the status of connection with Webpack dev server.
+     * 
+     * @return <code>true</code> if connection established, <code>false</code>
+     *         otherwise.
+     */
+    // Non-private for testing purposes
+    boolean checkWebpackConnection() {
         try {
             readManifestPaths();
             return true;
