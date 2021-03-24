@@ -147,24 +147,26 @@ const swManifestTransform = (manifestEntries) => {
   return { manifest, warnings };
 };
 
-const serviceWorkerPlugin = new InjectManifest({
-  swSrc: clientServiceWorkerEntryPoint,
-  swDest: serviceWorkerPath,
-  manifestTransforms: [swManifestTransform],
-  maximumFileSizeToCacheInBytes: 100 * 1024 * 1024,
-  dontCacheBustURLsMatching: /.*-[a-z0-9]{20}\.cache\.js/,
-  include: [
-    (chunk) => {
-      return true;
-    },
-  ],
-  webpackCompilationPlugins: [
-    new DefinePlugin({
-      OFFLINE_PATH_ENABLED: offlinePathEnabled,
-      OFFLINE_PATH: JSON.stringify(offlinePath)
-    }),
-  ],
-});
+const createServiceWorkerPlugin = function() {
+  return new InjectManifest({
+    swSrc: clientServiceWorkerEntryPoint,
+    swDest: serviceWorkerPath,
+    manifestTransforms: [swManifestTransform],
+    maximumFileSizeToCacheInBytes: 100 * 1024 * 1024,
+    dontCacheBustURLsMatching: /.*-[a-z0-9]{20}\.cache\.js/,
+    include: [
+      (chunk) => {
+        return true;
+      },
+    ],
+    webpackCompilationPlugins: [
+      new DefinePlugin({
+        OFFLINE_PATH_ENABLED: offlinePathEnabled,
+        OFFLINE_PATH: JSON.stringify(offlinePath)
+      }),
+    ],
+  });
+}
 
 if (devMode) {
   webPackEntries.devmodeGizmo = devmodeGizmoJS;
@@ -332,7 +334,7 @@ module.exports = {
     }),
 
     // Service worker for offline
-    pwaEnabled && serviceWorkerPlugin,
+    pwaEnabled && createServiceWorkerPlugin(),
 
     // Generate compressed bundles when not devMode
     !devMode && new CompressionPlugin(),
