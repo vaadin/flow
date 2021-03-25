@@ -28,6 +28,8 @@ import org.openqa.selenium.mobile.NetworkConnection;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
 import static com.vaadin.flow.navigate.HelloWorldView.NAVIGATE_ABOUT;
 
 public class ServiceWorkerIT extends ChromeDeviceTest {
@@ -278,6 +280,27 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
             waitForElementNotPresent(By.tagName("vaadin-offline-stub"));
             Assert.assertNotNull(findElement(By.id(NAVIGATE_ABOUT)));
+        } finally {
+            setConnectionType(NetworkConnection.ConnectionType.ALL);
+        }
+    }
+
+    @Test
+    public void offline_cachedResourceRequest_resourceLoaded()
+            throws IOException {
+        getDriver().get(getRootURL());
+        waitForDevServer();
+        waitForServiceWorkerReady();
+        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        try {
+            // verify that we can retrieve a cached file (manifest.webmanifest)
+            driver.get(getRootURL() + "/manifest.webmanifest");
+
+            // expect JSON contents wrapped in <pre>
+            String jsonString = findElement(By.tagName("pre")).getText();
+            JsonObject json = Json.parse(jsonString);
+            Assert.assertTrue(json.hasKey("name"));
+            Assert.assertTrue(json.hasKey("short_name"));
         } finally {
             setConnectionType(NetworkConnection.ConnectionType.ALL);
         }
