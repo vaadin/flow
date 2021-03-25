@@ -582,45 +582,6 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void startTwoInstances_secondInstanceStartsWhenWebpackStarts_secondInstanceUsesSamePort()
-            throws Exception {
-
-        // start the first instance
-        DevModeHandler handler = DevModeHandler.start(0, createDevModeLookup(),
-                npmFolder, CompletableFuture.completedFuture(null));
-
-        // remove the "singleton" instance to be able to start another one
-        removeDevModeHandlerInstance();
-
-        Assert.assertNotNull(
-                "Not expected null instance of started dev mode handler",
-                handler);
-
-        // Waits until first handler starts web pack server, which means that
-        // the port should have already been saved into the local file. Thus,
-        // the second handler should be able to read this file, reuse the
-        // port and not to start another web pack server.
-        while (!handler.checkWebpackConnection()) {
-            Thread.sleep(100);
-        }
-
-        // since the timeout is quite big the server port still should be
-        // available and the second instance should try to reuse it
-        DevModeHandler anotherHandler = DevModeHandler.start(0,
-                createDevModeLookup(), npmFolder,
-                CompletableFuture.completedFuture(null));
-
-        int firstPort = handler.getPort();
-
-        anotherHandler.join();
-
-        int secondPort = anotherHandler.getPort();
-
-        // the second instance was able to start with the same port value
-        Assert.assertEquals(firstPort, secondPort);
-    }
-
-    @Test
     public void start_serverPortDoesNotWork_throws() throws Exception {
         exception.expect(CompletionException.class);
         exception.expectCause(Matchers.instanceOf(IllegalStateException.class));
