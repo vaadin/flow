@@ -237,7 +237,7 @@ public class PwaRegistry implements Serializable {
             ServletContext servletContext) {
         StringBuilder stringBuilder = new StringBuilder();
 
-        // List of icons for precache
+        // List of files to precache
         Collection<String> filesToCache = getIcons().stream()
                 .filter(PwaIcon::shouldBeCached).map(PwaIcon::getCacheFormat)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
