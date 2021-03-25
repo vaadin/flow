@@ -41,7 +41,7 @@ public class HasStyleTest {
         assertClasses(component, "foo");
         component.addClassName("bar");
         assertClasses(component, "foo", "bar");
-
+        
         // use ClassList
 
         component.getClassNames().add("baz");
@@ -152,6 +152,14 @@ public class HasStyleTest {
         assertClasses(component);
         component.addClassNames("foo", "bar");
         assertClasses(component, "foo", "bar");
+
+        component.removeClassNames("foo bar");
+        assertClasses(component);
+        
+        component.addClassNames("foo bar");
+        assertClasses(component, "foo", "bar");
+       
+
         component.addClassNames("baz1", "baz2");
         assertClasses(component, "foo", "bar", "baz1", "baz2");
     }

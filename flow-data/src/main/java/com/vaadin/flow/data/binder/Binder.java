@@ -250,6 +250,33 @@ public class Binder<BEAN> implements Serializable {
          * @return A boolean value.
          */
         public boolean isValidatorsDisabled();
+
+        /**
+         * Define whether the value should be converted back to the presentation
+         * in the field when a converter is used in binding.
+         * <p>
+         * The default behavior (do not convert back to presentation) changes to the
+         * opposite as of Vaadin 19 / Flow 6.0, when a converter is used on a binding
+         * and the user input value is modified by the converter, the value from the
+         * converter is applied back to the input. It is possible to control this
+         * behavior with this API.
+         *
+         * @see BindingBuilder#withConverter(Converter)
+         * @see BindingBuilder#withConverter(SerializableFunction, SerializableFunction)
+         * @see BindingBuilder#withConverter(SerializableFunction, SerializableFunction, String)
+         *
+         * @param convertBackToPresentation
+         *            A boolean value
+         */
+        void setConvertBackToPresentation(boolean convertBackToPresentation);
+
+        /**
+         * Returns whether the value is converted back to the presentation in
+         * the field when a converter is used in binding.
+         *
+         * @return A boolean value
+         */
+        boolean isConvertBackToPresentation();
     }
 
     /**
@@ -508,6 +535,12 @@ public class Binder<BEAN> implements Serializable {
          * For instance, a {@code TextField} can be bound to an integer-typed
          * property using an appropriate converter such as a
          * {@link StringToIntegerConverter}.
+         * <p>
+         * The converted value is not applied back to the field by default,
+         * this can be controlled with the method
+         * {@link Binding#setConvertBackToPresentation(boolean)}.
+         *
+         * @see Binding#setConvertBackToPresentation(boolean)
          *
          * @param <NEWTARGET>
          *            the type to convert to
@@ -534,6 +567,12 @@ public class Binder<BEAN> implements Serializable {
          * For instance, a {@code TextField} can be bound to an integer-typed
          * property using appropriate functions such as:
          * <code>withConverter(Integer::valueOf, String::valueOf);</code>
+         * <p>
+         * The converted value is applied back to the field by default,
+         * this can be controlled with the method
+         * {@link Binding#setConvertBackToPresentation(boolean)}.
+         *
+         * @see Binding#setConvertBackToPresentation(boolean)
          *
          * @param <NEWTARGET>
          *            the type to convert to
@@ -569,6 +608,12 @@ public class Binder<BEAN> implements Serializable {
          * For instance, a {@code TextField} can be bound to an integer-typed
          * property using appropriate functions such as:
          * <code>withConverter(Integer::valueOf, String::valueOf);</code>
+         * <p>
+         * The converted value is applied back to the field by default,
+         * this can be controlled with the method
+         * {@link Binding#setConvertBackToPresentation(boolean)}.
+         *
+         * @see Binding#setConvertBackToPresentation(boolean)
          *
          * @param <NEWTARGET>
          *            the type to convert to
@@ -1055,6 +1100,8 @@ public class Binder<BEAN> implements Serializable {
 
         private boolean validatorsDisabled = false;
 
+        private boolean convertBackToPresentation = false;
+
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
                 Setter<BEAN, TARGET> setter) {
@@ -1244,7 +1291,15 @@ public class Binder<BEAN> implements Serializable {
 
             Result<TARGET> result = doConversion();
             if (!isReadOnly()) {
-                result.ifOk(value -> setter.accept(bean, value));
+                result.ifOk(value -> {
+                    setter.accept(bean, value);
+                    if (convertBackToPresentation && value != null) {
+                        FIELDVALUE converted = convertToFieldType(value);
+                        if (!Objects.equals(field.getValue(), converted)) {
+                            getField().setValue(converted);
+                        }
+                    }
+                });
             }
             return toValidationStatus(result);
         }
@@ -1344,6 +1399,16 @@ public class Binder<BEAN> implements Serializable {
         @Override
         public boolean isValidatorsDisabled() {
             return validatorsDisabled;
+        }
+
+        @Override
+        public void setConvertBackToPresentation(boolean convertBackToPresentation) {
+            this.convertBackToPresentation = convertBackToPresentation;
+        }
+
+        @Override
+        public boolean isConvertBackToPresentation() {
+            return convertBackToPresentation;
         }
     }
 
