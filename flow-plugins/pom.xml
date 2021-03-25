@@ -14,7 +14,7 @@
 	<modules>
 		<module>flow-plugin-base</module>
 		<module>flow-maven-plugin</module>
-		<module>vaadin-gradle-plugin</module>
+		<module>flow-gradle-plugin</module>
 	</modules>
 	<build>
 		<plugins>
