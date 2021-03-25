@@ -568,7 +568,7 @@ public class Binder<BEAN> implements Serializable {
          * property using appropriate functions such as:
          * <code>withConverter(Integer::valueOf, String::valueOf);</code>
          * <p>
-         * The converted value is applied back to the field by default,
+         * The converted value is not applied back to the field by default,
          * this can be controlled with the method
          * {@link Binding#setConvertBackToPresentation(boolean)}.
          *
@@ -609,7 +609,7 @@ public class Binder<BEAN> implements Serializable {
          * property using appropriate functions such as:
          * <code>withConverter(Integer::valueOf, String::valueOf);</code>
          * <p>
-         * The converted value is applied back to the field by default,
+         * The converted value is not applied back to the field by default,
          * this can be controlled with the method
          * {@link Binding#setConvertBackToPresentation(boolean)}.
          *
