@@ -17,6 +17,7 @@
 
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.page.Push;
@@ -31,8 +32,7 @@ public class SessionCloseLogoutView extends Div {
         NativeButton btn = new NativeButton("Logout!");
         btn.addClickListener(evt -> getUI().ifPresent(ui -> {
 
-            ui.getPage().executeJs(String.format("window.location.href='%s'",
-                    BaseHrefView.class.getName()));
+            UI.getCurrent().getPage().setLocation(BaseHrefView.class.getName());
             ui.getSession().close();
         }));
         add(btn);
