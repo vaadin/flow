@@ -19,7 +19,7 @@ public class DialogShortcutIT extends ChromeBrowserTest {
     private TestBenchElement eventLog;
     private TestBenchElement openDialogButton;
     private NativeButtonElement uiLevelButton;
-    protected AtomicInteger dialogCounter = new AtomicInteger(-1);
+    protected AtomicInteger dialogCounter;
 
     @Before
     public void init() {
@@ -29,6 +29,7 @@ public class DialogShortcutIT extends ChromeBrowserTest {
                 .id(DialogShortcutView.OPEN_BUTTON);
         uiLevelButton = $(NativeButtonElement.class)
                 .id(DialogShortcutView.UI_BUTTON);
+        dialogCounter = new AtomicInteger(-1);
     }
 
     // #7799
