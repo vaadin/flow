@@ -22,6 +22,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.core.StringContains;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -39,6 +42,7 @@ import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class NodeUpdaterTest {
 
@@ -55,6 +59,8 @@ public class NodeUpdaterTest {
 
     private URL url;
 
+    private File brokenPackageJsonFile;
+
     @Before
     public void setUp() throws IOException {
         url = new URL("file://bar");
@@ -70,12 +76,16 @@ public class NodeUpdaterTest {
             }
 
         };
+        brokenPackageJsonFile = temporaryFolder.newFile("broken-package.json");
+        FileUtils.writeStringToFile(brokenPackageJsonFile,
+                "{ some broken json ", UTF_8);
     }
 
     @After
     public void tearDown() throws IOException {
         npmFolder.delete();
         resourceFolder.delete();
+        brokenPackageJsonFile.delete();
     }
 
     @Test
@@ -218,6 +228,18 @@ public class NodeUpdaterTest {
         JsonObject packageJson = NodeUpdater.getJsonFileContent(
                 formPackageJsonFile);
         Assert.assertEquals("bar", packageJson.getString("foo"));
+    }
+
+    @Test
+    public void getJsonFileContent_incorrectPackageJsonContent_throwsExceptionWithFileName() {
+        RuntimeException exception = Assert.assertThrows(RuntimeException.class,
+                () -> NodeUpdater.getJsonFileContent(brokenPackageJsonFile));
+
+        MatcherAssert.assertThat(exception.getMessage(),
+                StringContains.containsString(
+                        "Cannot parse package file located in path: "));
+        MatcherAssert.assertThat(exception.getMessage(),
+                StringContains.containsString("broken-package.json"));
     }
 
     private String getPolymerVersion(JsonObject object) {
