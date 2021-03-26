@@ -12,6 +12,9 @@
     <name>Flow Push</name>
     <packaging>jar</packaging>
 
+    <properties>
+        <skipTests>true</skipTests>
+    </properties>
     <dependencies>
         <!-- Atmosphere -->
         <dependency>
