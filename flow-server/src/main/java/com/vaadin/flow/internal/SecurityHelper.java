@@ -50,19 +50,4 @@ public final class SecurityHelper implements Serializable {
     private SecurityHelper() {
     }
 
-    /**
-     * Returns whether the servlet request is Vaadin internal, as decided by the
-     * presence of the {@code v-r} request parameter with a type matching a
-     * {@link HandlerHelper.RequestType}.
-     *
-     * @param request the servlet request
-     * @return {@code true} iff the request is Vaadin internal.
-     */
-    public static boolean isFrameworkInternalRequest(HttpServletRequest request) {
-        final String parameterValue = request
-                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
-        return parameterValue != null && Stream
-                .of(HandlerHelper.RequestType.values())
-                .anyMatch(r -> r.getIdentifier().equals(parameterValue));
-    }
 }

@@ -22,6 +22,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
+
+import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -105,6 +108,29 @@ public class HandlerHelper implements Serializable {
             RequestType requestType) {
         return requestType.getIdentifier().equals(request
                 .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
+    }
+
+    /**
+     * Returns whether the request is an internal request.
+     *
+     * The requests listed in {@link RequestType} are considered internal.
+     * Especially bootstrap requests for any route or static resource requests are
+     * not internal, even resource requests for the JS bundle.
+     *
+     * @param request the servlet request
+     * @return {@code true} if the request is Vaadin internal, {@code false}
+     *         otherwise
+     */
+    public static boolean isFrameworkInternalRequest(HttpServletRequest request) {
+        String pathInfo = request.getPathInfo();
+        if (pathInfo == null || pathInfo.isEmpty() || pathInfo.equals("/")) {
+            // According to the spec, pathInfo should be null but not all servers and Spring
+            // Boot implement it like that...
+            final String parameterValue = request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
+            return Stream.of(RequestType.values()).anyMatch(r -> r.getIdentifier().equals(parameterValue));
+        }
+
+        return false;
     }
 
     /**
