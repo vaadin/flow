@@ -35,8 +35,6 @@ public final class SecurityHelper implements Serializable {
      */
     public static final String[] PUBLIC_VAADIN_URLS = {
             "/favicon.ico",
-            "/images/**",
-            "/icons/**",
             "/" + PwaConfiguration.DEFAULT_PATH,
             "/" + FrontendUtils.SERVICE_WORKER_SRC_JS,
             PwaHandler.SW_RUNTIME_PRECACHE_PATH,
