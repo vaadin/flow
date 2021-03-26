@@ -15,15 +15,11 @@
  */
 package com.vaadin.flow.internal;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
-import java.util.stream.Stream;
 
-import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
  * Helper methods for setting up security contexts in Vaadin applications.
