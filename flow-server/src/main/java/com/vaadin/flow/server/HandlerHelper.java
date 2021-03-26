@@ -123,9 +123,11 @@ public class HandlerHelper implements Serializable {
      */
     public static boolean isFrameworkInternalRequest(HttpServletRequest request) {
         String pathInfo = request.getPathInfo();
-        if (pathInfo == null || pathInfo.isEmpty() || pathInfo.equals("/")) {
-            // According to the spec, pathInfo should be null but not all servers and Spring
-            // Boot implement it like that...
+        if (pathInfo == null || pathInfo.isEmpty() || "/".equals(pathInfo)) {
+            // According to the spec, pathInfo should be null but not all servers implement
+            // it like that...
+            // Additionally the spring servlet is mapped as /vaadinServlet right now it
+            // seems but requests are sent to /vaadinServlet/, causing the "/" path info
             final String parameterValue = request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
             return Stream.of(RequestType.values()).anyMatch(r -> r.getIdentifier().equals(parameterValue));
         }
