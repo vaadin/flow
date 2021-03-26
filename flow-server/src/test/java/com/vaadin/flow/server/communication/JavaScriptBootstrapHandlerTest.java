@@ -73,22 +73,20 @@ public class JavaScriptBootstrapHandlerTest {
 
     @Test
     public void should_handleRequest_when_initTypeRequest() throws Exception {
-        VaadinRequest request = mocks.createRequest(mocks,
-                "/foo/?v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo");
         Assert.assertTrue(jsInitHandler.canHandleRequest(request));
     }
 
     @Test
     public void should_not_handleRequest_if_not_initTypeRequest()
             throws Exception {
-        VaadinRequest request = mocks.createRequest(mocks, "/foo/?v-r=bar");
+        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=bar");
         Assert.assertFalse(jsInitHandler.canHandleRequest(request));
     }
 
     @Test
     public void should_produceValidJsonResponse() throws Exception {
-        VaadinRequest request = mocks.createRequest(mocks,
-                "/foo/?v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo");
         jsInitHandler.handleRequest(session, request, response);
 
         Assert.assertEquals(200, response.getErrorCode());
@@ -112,7 +110,7 @@ public class JavaScriptBootstrapHandlerTest {
         Assert.assertNull(
                 "ServiceUrl should not be set. It will be computed by flow-client",
                 json.getObject("appConfig").get("serviceUrl"));
-        Assert.assertEquals("http://localhost:8888/foo/",
+        Assert.assertEquals("http://localhost:8888/",
                 json.getObject("appConfig").getString("requestURL"));
 
         Assert.assertFalse(json.hasKey("pushScript"));
@@ -120,8 +118,7 @@ public class JavaScriptBootstrapHandlerTest {
 
     @Test
     public void should_initialize_UI() throws Exception {
-        VaadinRequest request = mocks.createRequest(mocks,
-                "/foo/?v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo");
         jsInitHandler.handleRequest(session, request, response);
 
         Assert.assertNotNull(UI.getCurrent());
@@ -135,8 +132,7 @@ public class JavaScriptBootstrapHandlerTest {
 
     @Test
     public void should_attachViewTo_UiContainer() throws Exception {
-        VaadinRequest request = mocks.createRequest(mocks,
-                "/foo/?v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo");
         jsInitHandler.handleRequest(session, request, response);
 
         JavaScriptBootstrapUI ui = (JavaScriptBootstrapUI) UI.getCurrent();
@@ -158,10 +154,9 @@ public class JavaScriptBootstrapHandlerTest {
     }
 
     @Test
-    public void should_attachViewTo_Body_when_location() throws Exception {
-
-        VaadinRequest request = mocks.createRequest(mocks,
-                "/foo/?v-r=init&location=%2Fbar%3Fpar1%26par2");
+    public void should_attachViewTo_Body_when_serverRouting() throws Exception {
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&location=bar%3Fpar1%26par2&serverSideRouting");
 
         jsInitHandler.handleRequest(session, request, response);
 
@@ -176,9 +171,9 @@ public class JavaScriptBootstrapHandlerTest {
         Assert.assertTrue(hasNodeTag(visitor, "^<div>.*", ElementType.REGULAR));
         Assert.assertTrue(hasNodeTag(visitor,
                 "^<div>.*Could not navigate to 'bar'.*", ElementType.REGULAR));
-
         Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING,
                 Boolean.TRUE);
+
     }
 
     @Test
@@ -186,8 +181,7 @@ public class JavaScriptBootstrapHandlerTest {
             throws Exception {
         mocks.getDeploymentConfiguration().setPushMode(PushMode.AUTOMATIC);
 
-        VaadinRequest request = mocks.createRequest(mocks,
-                "/foo/?v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo");
         jsInitHandler.handleRequest(session, request, response);
 
         Assert.assertEquals(200, response.getErrorCode());
@@ -204,8 +198,7 @@ public class JavaScriptBootstrapHandlerTest {
         AppShellRegistry registry = Mockito.mock(AppShellRegistry.class);
         mocks.setAppShellRegistry(registry);
 
-        VaadinRequest request = mocks.createRequest(mocks,
-                "/foo/?v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo");
         jsInitHandler.handleRequest(session, request, response);
 
         Mockito.verify(registry)
@@ -221,8 +214,7 @@ public class JavaScriptBootstrapHandlerTest {
         registry.setShell(PushAppShell.class);
         mocks.setAppShellRegistry(registry);
 
-        VaadinRequest request = mocks.createRequest(mocks,
-                "/foo/?v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo");
         jsInitHandler.handleRequest(session, request, response);
 
         Assert.assertEquals(200, response.getErrorCode());

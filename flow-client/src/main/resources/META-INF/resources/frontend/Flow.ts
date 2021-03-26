@@ -333,9 +333,10 @@ export class Flow {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       const httpRequest = xhr as any;
-      const currentPath = location.pathname || '/';
       const requestPath =
-        `${currentPath}?v-r=init` + (serverSideRouting ? `&location=${encodeURI(this.getFlowRoute(location))}` : '');
+        `?v-r=init&location=${encodeURIComponent(this.getFlowRoute(location))}` + serverSideRouting
+          ? '&serverSideRouting'
+          : '';
 
       httpRequest.open('GET', requestPath);
 

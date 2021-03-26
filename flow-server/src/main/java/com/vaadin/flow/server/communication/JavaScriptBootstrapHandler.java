@@ -16,10 +16,12 @@
 
 package com.vaadin.flow.server.communication;
 
+import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
+
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.URLDecoder;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,6 +32,7 @@ import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.DevModeHandler;
@@ -44,7 +47,6 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 
 /**
  * Processes a 'start' request type from the client to initialize server session
@@ -62,12 +64,29 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     /**
      * Custom BootstrapContext for {@link JavaScriptBootstrapHandler}.
      */
-    private static class JavaScriptBootstrapContext extends BootstrapContext {
-        private JavaScriptBootstrapContext(VaadinRequest request,
+    public static class JavaScriptBootstrapContext extends BootstrapContext {
+        public JavaScriptBootstrapContext(VaadinRequest request,
                 VaadinResponse response, UI ui,
                 Function<VaadinRequest, String> callback) {
             super(request, response, ui.getInternals().getSession(), ui,
                     callback);
+        }
+
+        @Override
+        protected Location initRoute() {
+            String pathAndParams = getRequest().getParameter(
+                    ApplicationConstants.REQUEST_LOCATION_PARAMETER);
+            URI uri;
+            try {
+                uri = new URI(pathAndParams != null ? pathAndParams : "");
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(
+                        "Invalid location parameter: " + pathAndParams, e);
+            }
+            String path = uri.getPath();
+            QueryParameters parameters = QueryParameters
+                    .fromString(uri.getQuery());
+            return new Location(path, parameters);
         }
     }
 
@@ -80,7 +99,13 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return HandlerHelper.isRequestType(request, RequestType.INIT);
+        return HandlerHelper.isRequestType(request, RequestType.INIT)
+                && isServletRootRequest(request);
+    }
+
+    private boolean isServletRootRequest(VaadinRequest request) {
+        String pathInfo = request.getPathInfo();
+        return pathInfo == null || "".equals(pathInfo) || "/".equals(pathInfo);
     }
 
     protected String getRequestUrl(VaadinRequest request) {
@@ -118,22 +143,11 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected void initializeUIWithRouter(BootstrapContext context, UI ui) {
-        String route = context.getRequest()
-                .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER);
-        if (route != null) {
-            try {
-                route = URLDecoder.decode(route, "UTF-8").replaceFirst("^/+",
-                        "");
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalArgumentException(e);
-            }
-            Location location = new Location(route);
-
+        if (context.getRequest().getParameter("serverSideRouting") != null) {
             // App is using classic server-routing, set a session attribute
             // to know that in future navigation calls
             ui.getSession().setAttribute(SERVER_ROUTING, Boolean.TRUE);
-
-            ui.getInternals().getRouter().initializeUI(ui, location);
+            ui.getInternals().getRouter().initializeUI(ui, context.getRoute());
         }
     }
 
