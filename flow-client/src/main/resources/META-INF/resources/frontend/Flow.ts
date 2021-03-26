@@ -333,9 +333,8 @@ export class Flow {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       const httpRequest = xhr as any;
-      const currentPath = location.pathname || '/';
       const requestPath =
-        `${currentPath}?v-r=init` + (serverSideRouting ? `&location=${encodeURI(this.getFlowRoute(location))}` : '');
+        './?v-r=init' + (serverSideRouting ? `&location=${encodeURI(this.getFlowRoute(location))}` : '');
 
       httpRequest.open('GET', requestPath);
 
@@ -376,8 +375,7 @@ export class Flow {
         // (HTTP error code is ok since it still verifies server's presence).
         $wnd.Vaadin.connectionState.state = ConnectionState.RECONNECTING;
         const http = new XMLHttpRequest();
-        const serverRoot = location.pathname || '/';
-        http.open('HEAD', serverRoot + (serverRoot.endsWith('/') ? '' : ' /') + 'sw.js');
+        http.open('HEAD', './sw.js');
         http.onload = () => {
           $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
         };
