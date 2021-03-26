@@ -22,7 +22,7 @@ import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 /**
- * Helper methods for setting up security contexts in Vaadin applications.
+ * Helper methods for settigng up security contexts in Vaadin applications.
  *
  * @author Vaadin Ltd
  *
@@ -45,5 +45,4 @@ public final class SecurityHelper implements Serializable {
 
     private SecurityHelper() {
     }
-
 }
