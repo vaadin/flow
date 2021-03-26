@@ -14,6 +14,7 @@
 
     <properties>
         <javax.validation.version>2.0.0.Final</javax.validation.version>
+        <skipTests>true</skipTests>
     </properties>
     <dependencies>
 

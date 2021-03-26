@@ -13,6 +13,7 @@
 
     <properties>
         <maven.version>3.3.9</maven.version>
+        <skipTests>true</skipTests>
     </properties>
 
     <dependencies>
