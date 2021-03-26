@@ -8,7 +8,7 @@
 
     <artifactId>flow-gradle-plugin</artifactId>
     <name>Flow Gradle Plugin</name>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <properties>
         <gradle.executable>./gradlew</gradle.executable>
@@ -72,6 +72,21 @@
                 </executions>
             </plugin>
 
+            <!-- skip jar generation as we build with gradle -->
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <phase>none</phase>
+                        <configuration>
+                            <finalName>unwanted</finalName>
+                            <classifier>unwanted</classifier>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- copy generated JARs -->
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -118,30 +133,9 @@
                             </file>
                         </configuration>
                     </execution>
-                </executions>
-            </plugin>
-
-            <!-- publish the gradle created jars to the configured repository -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <executions>
                     <execution>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>deploy-file</goal>
-                        </goals>
-                        <configuration>
-                            <packaging>jar</packaging>
-                            <generatePom>true</generatePom>
-                            <url>${project.distributionManagement.repository.url}</url>
-                            <artifactId>${project.artifactId}</artifactId>
-                            <groupId>${project.groupId}</groupId>
-                            <version>${project.version}</version>
-                            <file>
-                                build/libs/${project.artifactId}-${project.version}.jar
-                            </file>
-                        </configuration>
+                        <id>default-install</id>
+                        <phase>none</phase>
                     </execution>
                 </executions>
             </plugin>
