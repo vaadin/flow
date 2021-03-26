@@ -380,8 +380,7 @@ public class StreamReceiverHandlerTest {
                 .forClass(StreamVariable.StreamingEndEvent.class);
         verify(streamVariable)
                 .streamingFinished(endEventArgumentCaptor.capture());
-        Assert.assertEquals("foobar", new String(
-                ((ByteArrayOutputStream) outputStream).toByteArray()));
+        Assert.assertEquals("foobar", outputStream.toString());
         Assert.assertEquals(fileName,
                 endEventArgumentCaptor.getValue().getFileName());
         Assert.assertEquals(contentType,
@@ -390,5 +389,40 @@ public class StreamReceiverHandlerTest {
         Mockito.verify(response).setContentType(
                 ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
         Mockito.verify(response, Mockito.times(0)).setStatus(Mockito.anyInt());
+    }
+
+    @Test
+    public void getContentLength_VaadinServletRequest_returnsGetContentLengthLong() {
+        HttpServletRequest servletRequest = Mockito.mock(HttpServletRequest.class);
+        when(servletRequest.getContentLengthLong()).thenReturn(123L);
+        request = new VaadinServletRequest(servletRequest, mockService);
+
+        Assert.assertEquals(123L, handler.getContentLength(request));
+    }
+
+    @Test
+    public void getContentLength_NonVaadinServletRequest_returnsGetContentLength() {
+        VaadinRequest vaadinRequest = Mockito.mock(VaadinRequest.class);
+        when(vaadinRequest.getContentLength()).thenReturn(123);
+
+        Assert.assertEquals(123, handler.getContentLength(vaadinRequest));
+    }
+
+    @Test
+    public void getContentLength_NonVaadinServletRequest_returnsContentLengthHeaderWhenGetContentLengthIsTooBig() {
+        VaadinRequest vaadinRequest = Mockito.mock(VaadinRequest.class);
+        when(vaadinRequest.getContentLength()).thenReturn(-1);
+        when(vaadinRequest.getHeader("Content-Length")).thenReturn("123");
+
+        Assert.assertEquals(123L, handler.getContentLength(vaadinRequest));
+    }
+
+    @Test
+    public void getContentLength_NonVaadinServletRequest_returnsDefaultValueWhenContentLengthHeaderNotParsable() {
+        VaadinRequest vaadinRequest = Mockito.mock(VaadinRequest.class);
+        when(vaadinRequest.getContentLength()).thenReturn(-1);
+        when(vaadinRequest.getHeader("Content-Length")).thenReturn("not parsable");
+
+        Assert.assertEquals(-1L, handler.getContentLength(vaadinRequest));
     }
 }

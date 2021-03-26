@@ -49,6 +49,7 @@ import com.vaadin.flow.server.UploadException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.communication.streaming.StreamingEndEventImpl;
 import com.vaadin.flow.server.communication.streaming.StreamingErrorEventImpl;
 import com.vaadin.flow.server.communication.streaming.StreamingProgressEventImpl;
@@ -237,7 +238,7 @@ public class StreamReceiverHandler implements Serializable {
             VaadinRequest request, StreamReceiver streamReceiver,
             StateNode owner) throws IOException {
         boolean success = true;
-        long contentLength = request.getContentLength();
+        long contentLength = getContentLength(request);
         // Parse the request
         FileItemIterator iter;
         try {
@@ -574,14 +575,29 @@ public class StreamReceiverHandler implements Serializable {
 
     /**
      * The request.getContentLength() is limited to "int" by the Servlet
-     * specification. To support larger file uploads manually evaluate the
-     * Content-Length header which can contain long values.
+     * specification (<= 3.0). To support larger file uploads we check if
+     * the given {@link VaadinRequest} is of type {@link VaadinServletRequest}
+     * and returns the appropriated value of
+     * {@link VaadinServletRequest#getContentLengthLong()}, otherwise
+     * manually evaluate the Content-Length header which can contain
+     * long values.
      */
     protected long getContentLength(VaadinRequest request) {
         try {
-            return Long.parseLong(request.getHeader("Content-Length"));
+            if (request instanceof VaadinServletRequest) {
+                return ((VaadinServletRequest) request).getContentLengthLong();
+            }
+
+            int contentLength = request.getContentLength();
+            if (contentLength == -1) {
+                // contentLength could not be determined by servlet
+                // use Content-Length header instead
+                return Long.parseLong(request.getHeader("Content-Length"));
+            }
+
+            return contentLength;
         } catch (NumberFormatException e) {
-            return -1l;
+            return -1L;
         }
     }
 
