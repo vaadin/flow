@@ -111,7 +111,22 @@ public class HandlerHelper implements Serializable {
     }
 
     /**
-     * Returns whether the request is an internal request.
+     * Checks whether the request is an internal request.
+     *
+     * The requests listed in {@link RequestType} are considered internal.
+     * Especially bootstrap requests for any route or static resource requests are
+     * not internal, even resource requests for the JS bundle.
+     *
+     * @param request the request
+     * @return {@code true} if the request is Vaadin internal, {@code false}
+     *         otherwise
+     */
+    public static boolean isFrameworkInternalRequest(VaadinRequest request) {
+        return isFrameworkInternalRequest(request.getPathInfo(), request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
+    }
+
+    /**
+     * Checks whether the request is an internal request.
      *
      * The requests listed in {@link RequestType} are considered internal.
      * Especially bootstrap requests for any route or static resource requests are
@@ -122,14 +137,16 @@ public class HandlerHelper implements Serializable {
      *         otherwise
      */
     public static boolean isFrameworkInternalRequest(HttpServletRequest request) {
-        String pathInfo = request.getPathInfo();
+        return isFrameworkInternalRequest(request.getPathInfo(), request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
+    }
+
+    private static boolean isFrameworkInternalRequest(String pathInfo, String requestTypeParameter) {
+        // According to the spec, pathInfo should be null but not all servers implement
+        // it like that...
+        // Additionally the spring servlet is mapped as /vaadinServlet right now it
+        // seems but requests are sent to /vaadinServlet/, causing the "/" path info
         if (pathInfo == null || pathInfo.isEmpty() || "/".equals(pathInfo)) {
-            // According to the spec, pathInfo should be null but not all servers implement
-            // it like that...
-            // Additionally the spring servlet is mapped as /vaadinServlet right now it
-            // seems but requests are sent to /vaadinServlet/, causing the "/" path info
-            final String parameterValue = request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
-            return Stream.of(RequestType.values()).anyMatch(r -> r.getIdentifier().equals(parameterValue));
+            return requestTypeParameter != null;
         }
 
         return false;
