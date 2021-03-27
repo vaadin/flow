@@ -575,12 +575,16 @@ public class StreamReceiverHandler implements Serializable {
 
     /**
      * The request.getContentLength() is limited to "int" by the Servlet
-     * specification (<= 3.0). To support larger file uploads we check if
+     * specification (&lt;= 3.0). To support larger file uploads we check if
      * the given {@link VaadinRequest} is of type {@link VaadinServletRequest}
      * and returns the appropriated value of
      * {@link VaadinServletRequest#getContentLengthLong()}, otherwise
      * manually evaluate the Content-Length header which can contain
      * long values.
+     *
+     * @param request
+     *            request to get content length from
+     * @return content length in bytes
      */
     protected long getContentLength(VaadinRequest request) {
         try {
