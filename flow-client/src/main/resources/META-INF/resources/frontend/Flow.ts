@@ -376,8 +376,7 @@ export class Flow {
         // (HTTP error code is ok since it still verifies server's presence).
         $wnd.Vaadin.connectionState.state = ConnectionState.RECONNECTING;
         const http = new XMLHttpRequest();
-        const serverRoot = location.pathname || '/';
-        http.open('HEAD', serverRoot + (serverRoot.endsWith('/') ? '' : ' /') + 'sw.js');
+        http.open('HEAD', 'sw.js');
         http.onload = () => {
           $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
         };
