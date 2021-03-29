@@ -34,6 +34,7 @@ import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
+import com.vaadin.flow.router.Location;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinContext;
@@ -199,10 +200,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     @Override
-    protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
-        if (request.getService().getBootstrapInitialPredicate()
-                .includeInitialUidl(request)) {
-            ui.getInternals().getRouter().initializeUI(ui, request);
+    protected void initializeUIWithRouter(BootstrapContext context, UI ui) {
+        if (context.getService().getBootstrapInitialPredicate()
+                .includeInitialUidl(context.getRequest())) {
+            ui.getInternals().getRouter().initializeUI(ui, context.getRoute());
         }
     }
 

@@ -117,8 +117,8 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     }
 
     @Override
-    protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
-        String route = request
+    protected void initializeUIWithRouter(BootstrapContext context, UI ui) {
+        String route = context.getRequest()
                 .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER);
         if (route != null) {
             try {
