@@ -3,6 +3,7 @@ package com.vaadin.flow.uitest.ui;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -35,12 +36,9 @@ public class FragmentLinkIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore("Ignored because of fusion issue : https://github.com/vaadin/flow/issues/7575")
     public void testViewChangeWithFragment_scrollToPageAndHashChangeEventWorks() {
         open();
-
-        if (hasClientIssue("7575")) {
-            return;
-        }
 
         clickAnotherViewLink();
 
@@ -52,12 +50,9 @@ public class FragmentLinkIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore("Ignored because of fusion issue : https://github.com/vaadin/flow/issues/7575")
     public void testViewChangeWithFragment_serverOverridesLocation_noScrollOrHashChange() {
         open();
-
-        if (hasClientIssue("7575")) {
-            return;
-        }
 
         clickOverriddenLink();
 
