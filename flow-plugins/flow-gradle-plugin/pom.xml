@@ -8,12 +8,12 @@
 
     <artifactId>flow-gradle-plugin</artifactId>
     <name>Flow Gradle Plugin</name>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <properties>
         <gradle.executable>./gradlew</gradle.executable>
-        <deploy.url>${altDeploymentRepository}</deploy.url>
-        <deploy.repository.id>${deployFileRepositoryId}</deploy.repository.id>
+<!--        <deploy.url>${altDeploymentRepository}</deploy.url>-->
+<!--        <deploy.repository.id>${deployFileRepositoryId}</deploy.repository.id>-->
     </properties>
 
     <dependencies>
@@ -142,31 +142,59 @@
                 </executions>
             </plugin>
 
-            <!-- publish the gradle created jars to the configured repository -->
+            <!-- attach copied JARs to build -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <phase>deploy</phase>
+                        <id>attach-artifacts</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>deploy-file</goal>
+                            <goal>attach-artifact</goal>
                         </goals>
                         <configuration>
-                            <packaging>jar</packaging>
-                            <generatePom>true</generatePom>
-                            <url>${deploy.url}</url>
-                            <repositoryId>${deploy.repository.id}</repositoryId>
-                            <artifactId>${project.artifactId}</artifactId>
-                            <groupId>${project.groupId}</groupId>
-                            <version>${project.version}</version>
-                            <file>
-                                build/libs/${project.artifactId}-${project.version}.jar
-                            </file>
+                            <artifacts>
+                                <artifact>
+                                    <file>target/${project.artifactId}-${project.version}.jar</file>
+                                    <type>jar</type>
+                                </artifact>
+                                <artifact>
+                                    <file>target/${project.artifactId}-${project.version}-sources.jar</file>
+                                    <type>jar</type>
+                                    <classifier>sources</classifier>
+                                </artifact>
+                            </artifacts>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- publish the gradle created jars to the configured repository -->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-deploy-plugin</artifactId>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <phase>deploy</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>deploy-file</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <packaging>jar</packaging>-->
+<!--                            <generatePom>true</generatePom>-->
+<!--                            <url>${deploy.url}</url>-->
+<!--                            <repositoryId>${deploy.repository.id}</repositoryId>-->
+<!--                            <artifactId>${project.artifactId}</artifactId>-->
+<!--                            <groupId>${project.groupId}</groupId>-->
+<!--                            <version>${project.version}</version>-->
+<!--                            <file>-->
+<!--                                build/libs/${project.artifactId}-${project.version}.jar-->
+<!--                            </file>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
 
         </plugins>
     </build>
