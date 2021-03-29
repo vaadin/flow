@@ -8,7 +8,7 @@
 
     <artifactId>flow-gradle-plugin</artifactId>
     <name>Flow Gradle Plugin</name>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <properties>
         <gradle.executable>./gradlew</gradle.executable>
@@ -25,15 +25,22 @@
     </dependencies>
 
     <build>
-        <extensions>
-            <!-- Enabling the use of SSH for deployment -->
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-ssh-external</artifactId>
-                <version>2.9</version>
-            </extension>
-        </extensions>
         <plugins>
+            <!-- skip jar generation as we build with gradle -->
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <phase>none</phase>
+                        <configuration>
+                            <finalName>unwanted</finalName>
+                            <classifier>unwanted</classifier>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- copy all dependencies to target/dependencies -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -127,6 +134,10 @@
                                 build/libs/${project.artifactId}-${project.version}.jar
                             </file>
                         </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-install</id>
+                        <phase>none</phase>
                     </execution>
                 </executions>
             </plugin>
