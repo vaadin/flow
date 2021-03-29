@@ -24,6 +24,14 @@
     </dependencies>
 
     <build>
+        <extensions>
+            <!-- Enabling the use of SSH for deployment -->
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh-external</artifactId>
+                <version>2.9</version>
+            </extension>
+        </extensions>
         <plugins>
             <!-- copy all dependencies to target/dependencies -->
             <plugin>
@@ -73,21 +81,6 @@
                 </executions>
             </plugin>
 
-            <!-- skip jar generation as we build with gradle -->
-            <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <id>default-jar</id>
-                        <phase>none</phase>
-                        <configuration>
-                            <finalName>unwanted</finalName>
-                            <classifier>unwanted</classifier>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <!-- copy generated JARs -->
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
