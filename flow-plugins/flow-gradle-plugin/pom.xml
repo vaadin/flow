@@ -13,6 +13,7 @@
     <properties>
         <gradle.executable>./gradlew</gradle.executable>
         <deploy.url>${deployFileRepository}</deploy.url>
+        <deploy.repository.id>${deployFileRepositoryId}</deploy.repository.id>
     </properties>
 
     <dependencies>
@@ -24,14 +25,6 @@
     </dependencies>
 
     <build>
-        <extensions>
-            <!-- Enabling the use of SSH for deployment -->
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-ssh-external</artifactId>
-                <version>2.9</version>
-            </extension>
-        </extensions>
         <plugins>
             <!-- copy all dependencies to target/dependencies -->
             <plugin>
@@ -144,6 +137,7 @@
                             <packaging>jar</packaging>
                             <generatePom>true</generatePom>
                             <url>${deploy.url}</url>
+                            <repositoryId>${deploy.repository.id}</repositoryId>
                             <artifactId>${project.artifactId}</artifactId>
                             <groupId>${project.groupId}</groupId>
                             <version>${project.version}</version>
