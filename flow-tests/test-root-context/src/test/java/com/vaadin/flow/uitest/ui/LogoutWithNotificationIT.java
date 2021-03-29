@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,32 +13,39 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class LogoutIT extends ChromeBrowserTest {
+public class LogoutWithNotificationIT extends ChromeBrowserTest {
 
-    @Ignore("Flaky test, see https://github.com/vaadin/flow/issues/9705")
+    @Override
+    protected String getTestPath() {
+        return "/logout-with-notification/logout-with-notification-view";
+    }
+
     @Test
-    public void setLocationWithNotificationDisabled_noErrorMessages() {
+    public void setLocationWithNotificationEnabled_noErrorMessages() {
         open();
 
         $(NativeButtonElement.class).first().click();
 
         // There can be "Session Expired" message because of heartbeat
-        checkLogsForErrors(msg -> msg.equals("Session Expired"));
+        // Strings defined in com.vaadin.flow.server.SystemMessages
+        checkLogsForErrors(msg -> msg.contains("Session Expired")
+                || msg.contains("Take note of any unsaved data, and <u>click " +
+                         "here</u> or press ESC key to continue."));
 
         // There can't be any error dialog
         Assert.assertFalse(isElementPresent(By.className("v-system-error")));
 
-        // The base href view should be shown
-        waitForElementPresent(By.tagName("a"));
+        // Another view with span element should be shown
+        waitForElementPresent(By.id("redirect-target-span"));
     }
 }

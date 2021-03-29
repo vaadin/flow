@@ -39,6 +39,7 @@ import com.vaadin.flow.uitest.servlet.ProductionModeTimingDataViewTestServlet;
 import com.vaadin.flow.uitest.servlet.ProductionModeViewTestServlet;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet;
 import com.vaadin.flow.uitest.servlet.ViewTestServlet;
+import com.vaadin.flow.uitest.ui.LogoutWithNotificationServlet;
 
 public class Activator implements BundleActivator {
 
@@ -120,6 +121,18 @@ public class Activator implements BundleActivator {
         public void init(ServletConfig servletConfig) throws ServletException {
             super.init(servletConfig);
 
+            if (getService() != null) {
+                getService().setClassLoader(getClass().getClassLoader());
+            }
+        }
+    }
+
+    private static class FixedLogoutWithNotificationServlet
+            extends LogoutWithNotificationServlet {
+        @Override
+        public void init(ServletConfig servletConfig) throws ServletException {
+            super.init(servletConfig);
+
             getService().setClassLoader(getClass().getClassLoader());
         }
 
@@ -191,6 +204,9 @@ public class Activator implements BundleActivator {
                             dictionary, null);
                     httpService.registerServlet("/view-es6-url/*",
                             new FixedEs6UrlViewServlet(), dictionary, null);
+                    httpService.registerServlet("/logout-with-notification/*",
+                            new FixedLogoutWithNotificationServlet(),
+                            dictionary, null);
                 } catch (ServletException | NamespaceException exception) {
                     throw new RuntimeException(exception);
                 }
