@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -141,6 +142,7 @@ public class MigrationTest {
         }
     }
 
+    @Ignore("Flaky test https://github.com/vaadin/flow/issues/10429")
     @Test
     public void migratePnpmPassesHappyPath() throws MigrationFailureException,
             MigrationToolsException, IOException {
