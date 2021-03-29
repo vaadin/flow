@@ -25,6 +25,14 @@
     </dependencies>
 
     <build>
+        <extensions>
+            <!-- Enabling the use of SSH for deployment -->
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh-external</artifactId>
+                <version>2.9</version>
+            </extension>
+        </extensions>
         <plugins>
             <!-- copy all dependencies to target/dependencies -->
             <plugin>
