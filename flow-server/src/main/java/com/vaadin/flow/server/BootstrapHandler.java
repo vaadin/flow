@@ -214,6 +214,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         /**
+         * Gets the Vaadin service.
+         *
+         * @return the Vaadin/HTTP service
+         */
+        public VaadinService getService() {
+            return request.getService();
+        }
+
+        /**
          * Gets the Vaadin session.
          *
          * @return the Vaadin session
@@ -241,12 +250,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
                 pushMode = getUI().getPushConfiguration().getPushMode();
                 if (pushMode == null) {
-                    pushMode = getRequest().getService()
-                            .getDeploymentConfiguration().getPushMode();
+                    pushMode = getService().getDeploymentConfiguration()
+                            .getPushMode();
                 }
 
                 if (pushMode.isEnabled()
-                        && !getRequest().getService().ensurePushAvailable()) {
+                        && !getService().ensurePushAvailable()) {
                     /*
                      * Fall back if not supported (ensurePushAvailable will log
                      * information to the developer the first time this happens)
@@ -267,8 +276,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          */
         public String getAppId() {
             if (appId == null) {
-                appId = getRequest().getService().getMainDivId(getSession(),
-                        getRequest());
+                appId = getService().getMainDivId(getSession(), getRequest());
             }
             return appId;
         }
@@ -307,8 +315,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *         otherwise.
          */
         public boolean isProductionMode() {
-            return request.getService().getDeploymentConfiguration()
-                    .isProductionMode();
+            return getService().getDeploymentConfiguration().isProductionMode();
         }
 
         /**
@@ -1386,7 +1393,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getFullVersion();
         // Load client-side dependencies for push support
-        String pushJSPath = context.getRequest().getService()
+        String pushJSPath = context.getService()
                 .getContextRootRelativePath(request);
 
         if (request.getService().getDeploymentConfiguration()
