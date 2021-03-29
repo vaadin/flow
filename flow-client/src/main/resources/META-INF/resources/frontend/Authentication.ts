@@ -83,7 +83,7 @@ export async function logout(options?: LogoutOptions) {
   const logoutUrl = options && options.logoutUrl ? options.logoutUrl : '/logout';
 
   try {
-    const response = await fetch(logoutUrl);
+    const response = await fetch(logoutUrl, { method: 'POST' });
     // TODO: find a more efficient way to get a new CSRF token
     // parsing the full response body just to get a token may be wasteful
     const token = getCsrfTokenFromResponseBody(await response.text());

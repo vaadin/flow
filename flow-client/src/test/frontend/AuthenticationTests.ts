@@ -80,7 +80,7 @@ describe('Authentication', () => {
     afterEach(() => fetchMock.restore());
 
     it('should set the csrf token on logout', async () => {
-      fetchMock.get('/logout', {
+      fetchMock.post('/logout', {
         body: 'window.Vaadin = {TypeScript: {"csrfToken":"6a60700e-852b-420f-a126-a1c61b73d1ba"}};',
         redirectUrl: '/logout?login'
       });
@@ -91,7 +91,7 @@ describe('Authentication', () => {
 
     it('should clear the csrf token on failed server logout', async () => {
       const fakeError = new Error('unable to connect');
-      fetchMock.get('/logout', () => {
+      fetchMock.post('/logout', () => {
         throw fakeError;
       });
       try {
