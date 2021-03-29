@@ -1,6 +1,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -8,16 +9,12 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class RouterLinkIT extends ChromeBrowserTest {
 
-
     @Test
+    @Ignore("Ignored because of issue in fusion : https://github.com/vaadin/flow/issues/7575")
     public void testRoutingLinks_insideServletMapping_updateLocation() {
         open();
 
         verifySamePage();
-
-        if (hasClientIssue("7575")) {
-            return;
-        }
 
         testInsideServlet("foo", "foo", "", "foo");
         testInsideServlet("./foobar", "foobar", "", "foobar");
@@ -63,6 +60,7 @@ public class RouterLinkIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore("Ignored because of issue in fusion : https://github.com/vaadin/flow/issues/7575")
     public void testImageInsideRouterLink() {
         open();
 
@@ -71,10 +69,6 @@ public class RouterLinkIT extends ChromeBrowserTest {
         findElement(By.tagName("img")).click();
 
         verifyInsideServletLocation("image/link");
-
-        if (hasClientIssue("7575")) {
-            return;
-        }
 
         verifyPopStateEvent("image/link");
     }
