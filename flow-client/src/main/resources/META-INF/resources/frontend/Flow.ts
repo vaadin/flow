@@ -394,8 +394,10 @@ export class Flow {
   }
 
   private async offlineStubAction() {
-    await import('./OfflineStub');
-    const offlineStub = document.createElement('vaadin-offline-stub') as HTMLRouterContainer;
+    const offlineStub = document.createElement('iframe') as HTMLRouterContainer;
+    const offlineStubPath = './offline-stub.html';
+    offlineStub.setAttribute('src', offlineStubPath);
+    offlineStub.setAttribute('style', 'width: 100%; height: 100%; border: 0');
     this.response = undefined;
 
     let onlineListener: ConnectionStateChangeListener | undefined;
