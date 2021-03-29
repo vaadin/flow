@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -48,12 +49,9 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void should_StayOnSessionExpirationView_when_NavigationAfterSessionExpired(){
+    @Ignore("Ignored because of fusion issue : https://github.com/vaadin/flow/issues/7581")
+    public void should_StayOnSessionExpirationView_when_NavigationAfterSessionExpired() {
         openUrl("/new-router-session/NormalView");
-
-        if (hasClientIssue("7581")) {
-            return;
-        }
 
         navigateToSesssionExpireView();
 
