@@ -12,7 +12,7 @@
 
     <properties>
         <gradle.executable>./gradlew</gradle.executable>
-        <deploy.url>${deployFileRepository}</deploy.url>
+        <deploy.url>${altDeploymentRepository}</deploy.url>
         <deploy.repository.id>${deployFileRepositoryId}</deploy.repository.id>
     </properties>
 
