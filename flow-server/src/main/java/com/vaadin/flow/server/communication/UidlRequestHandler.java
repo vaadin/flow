@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +56,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class UidlRequestHandler extends SynchronizedRequestHandler
         implements SessionExpiredHandler {
 
-    private ServerRpcHandler rpcHandler;
+    private AtomicReference<ServerRpcHandler> rpcHandler = new AtomicReference<>();
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
@@ -151,11 +152,12 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     }
 
     private ServerRpcHandler getRpcHandler(VaadinSession session) {
-        session.checkHasLock();
-        if (rpcHandler == null) {
-            rpcHandler = createRpcHandler();
+        ServerRpcHandler handler = rpcHandler.get();
+        if (handler == null) {
+            rpcHandler.compareAndSet(null, createRpcHandler());
+            handler = rpcHandler.get();
         }
-        return rpcHandler;
+        return handler;
     }
 
     /**
