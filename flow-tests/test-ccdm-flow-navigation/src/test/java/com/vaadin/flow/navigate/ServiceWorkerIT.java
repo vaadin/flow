@@ -226,14 +226,11 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
         try {
             $("main-view").first().$("a").id("menu-hello").click();
 
-            waitForElementPresent(By.tagName("vaadin-offline-stub"));
+            waitForElementPresent(By.tagName("iframe"));
             WebElement offlineStub = findElement(
-                    By.tagName("vaadin-offline-stub"));
-
-            Assert.assertFalse(
-                    "vaadin-offline-stub shadow root expected to contain an element with class offline",
-                    findInShadowRoot(offlineStub, By.className("offline"))
-                            .isEmpty());
+                    By.tagName("iframe"));
+            driver.switchTo().frame(offlineStub);
+            Assert.assertNotNull(findElement(By.className("offline")));
         } finally {
             setConnectionType(NetworkConnection.ConnectionType.ALL);
         }
@@ -250,14 +247,11 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
         try {
             $("main-view").first().$("a").id("menu-hello").click();
 
-            waitForElementPresent(By.tagName("vaadin-offline-stub"));
+            waitForElementPresent(By.tagName("iframe"));
             WebElement offlineStub = findElement(
-                    By.tagName("vaadin-offline-stub"));
-
-            Assert.assertFalse(
-                    "vaadin-offline-stub shadow root expected to contain an element with class offline",
-                    findInShadowRoot(offlineStub, By.className("offline"))
-                            .isEmpty());
+                    By.tagName("iframe"));
+            driver.switchTo().frame(offlineStub);
+            Assert.assertNotNull(findElement(By.className("offline")));
         } finally {
             setConnectionType(NetworkConnection.ConnectionType.ALL);
         }
@@ -272,11 +266,11 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
         setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
         try {
             $("main-view").first().$("a").id("menu-hello").click();
-            waitForElementPresent(By.tagName("vaadin-offline-stub"));
+            waitForElementPresent(By.tagName("iframe"));
 
             setConnectionType(NetworkConnection.ConnectionType.ALL);
 
-            waitForElementNotPresent(By.tagName("vaadin-offline-stub"));
+            waitForElementNotPresent(By.tagName("iframe"));
             Assert.assertNotNull(findElement(By.id(NAVIGATE_ABOUT)));
         } finally {
             setConnectionType(NetworkConnection.ConnectionType.ALL);

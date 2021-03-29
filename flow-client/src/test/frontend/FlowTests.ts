@@ -19,8 +19,6 @@ const flowRoot = window.document.body as any;
 
 const stubVaadinPushSrc = '/src/test/frontend/stubVaadinPush.js';
 
-const OFFLINE_STUB_NAME = 'vaadin-offline-stub';
-
 // A `changes` array that adds a div with 'Foo' text to body
 const changesResponse = `[
   {
@@ -659,7 +657,8 @@ suite("Flow", () => {
       search: ''
     };
     const view = await route.action(params);
-    assert.equal(view.localName, OFFLINE_STUB_NAME);
+    assert.equal(view.localName, 'iframe');
+    assert.equal(view.getAttribute('src'), './offline-stub.html');
 
     // @ts-ignore
     let onBeforeEnterReturns = view.onBeforeEnter(params, {});
@@ -686,7 +685,8 @@ suite("Flow", () => {
 
     const view = await route.action(params);
     assert.isNotNull(view);
-    assert.equal(view.localName, OFFLINE_STUB_NAME);
+    assert.equal(view.localName, 'iframe');
+    assert.equal(view.getAttribute('src'), './offline-stub.html');
 
     assert.equal(indicator.getAttribute('style'), 'display: none');
 
