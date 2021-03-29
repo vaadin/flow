@@ -654,7 +654,7 @@ suite("Flow", () => {
     };
     const view = await route.action(params);
     assert.equal(view.localName, 'iframe');
-    assert.equal(view.getAttribute('src'), '/offline-stub.html');
+    assert.equal(view.getAttribute('src'), './offline-stub.html');
 
     // @ts-ignore
     let onBeforeEnterReturns = view.onBeforeEnter(params, {});
@@ -682,7 +682,7 @@ suite("Flow", () => {
     const view = await route.action(params);
     assert.isNotNull(view);
     assert.equal(view.localName, 'iframe');
-    assert.equal(view.getAttribute('src'), '/offline-stub.html');
+    assert.equal(view.getAttribute('src'), './offline-stub.html');
 
     assert.equal(indicator.getAttribute('style'), 'display: none');
 
