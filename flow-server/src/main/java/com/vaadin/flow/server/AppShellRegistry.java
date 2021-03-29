@@ -255,18 +255,18 @@ public class AppShellRegistry implements Serializable {
         settings.getHeadElements(Position.APPEND).forEach(
                 elm -> insertElement(elm, document.head()::appendChild));
 
-        settings.getInlineElements(request, TargetElement.HEAD,
+        settings.getInlineElements(request.getService(), TargetElement.HEAD,
                 Position.PREPEND)
                 .forEach(elm -> insertInlineElement(elm,
                         document.head()::prependChild));
-        settings.getInlineElements(request, TargetElement.HEAD, Position.APPEND)
+        settings.getInlineElements(request.getService(), TargetElement.HEAD, Position.APPEND)
                 .forEach(elm -> insertInlineElement(elm,
                         document.head()::appendChild));
-        settings.getInlineElements(request, TargetElement.BODY,
+        settings.getInlineElements(request.getService(), TargetElement.BODY,
                 Position.PREPEND)
                 .forEach(elm -> insertInlineElement(elm,
                         document.body()::prependChild));
-        settings.getInlineElements(request, TargetElement.BODY, Position.APPEND)
+        settings.getInlineElements(request.getService(), TargetElement.BODY, Position.APPEND)
                 .forEach(elm -> insertInlineElement(elm,
                         document.body()::appendChild));
     }
