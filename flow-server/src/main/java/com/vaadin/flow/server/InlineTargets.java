@@ -63,7 +63,7 @@ public class InlineTargets {
         dependency.put("LoadMode", LoadMode.INLINE.toString());
 
         dependency.put(Dependency.KEY_CONTENTS,
-                BootstrapUtils.getDependencyContents(request, inline.value()));
+                BootstrapUtils.getDependencyContents(request.getService(), inline.value()));
 
         // Add to correct element target
         if (inline.target() == TargetElement.BODY) {

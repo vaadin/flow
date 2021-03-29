@@ -176,7 +176,7 @@ public class InitialPageSettings implements Serializable {
                                   WrapMode type) {
         JsonObject prepend = createInlineObject(type);
         prepend.put(Dependency.KEY_CONTENTS,
-                BootstrapUtils.getDependencyContents(request, file));
+                BootstrapUtils.getDependencyContents(request.getService(), file));
         getInline(position).add(prepend);
     }
 
