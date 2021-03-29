@@ -8,12 +8,10 @@
 
     <artifactId>flow-gradle-plugin</artifactId>
     <name>Flow Gradle Plugin</name>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <properties>
         <gradle.executable>./gradlew</gradle.executable>
-<!--        <deploy.url>${altDeploymentRepository}</deploy.url>-->
-<!--        <deploy.repository.id>${deployFileRepositoryId}</deploy.repository.id>-->
     </properties>
 
     <dependencies>
@@ -26,21 +24,6 @@
 
     <build>
         <plugins>
-            <!-- skip jar generation as we build with gradle -->
-            <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <id>default-jar</id>
-                        <phase>none</phase>
-                        <configuration>
-                            <finalName>unwanted</finalName>
-                            <classifier>unwanted</classifier>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <!-- copy all dependencies to target/dependencies -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -110,34 +93,8 @@
                                     </includes>
                                 </resource>
                             </resources>
+                            <overwrite>true</overwrite>
                         </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- install the gradle jars -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <packaging>jar</packaging>
-                            <artifactId>${project.artifactId}</artifactId>
-                            <groupId>${project.groupId}</groupId>
-                            <version>${project.version}</version>
-                            <file>
-                                build/libs/${project.artifactId}-${project.version}.jar
-                            </file>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>default-install</id>
-                        <phase>none</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -156,10 +113,6 @@
                         <configuration>
                             <artifacts>
                                 <artifact>
-                                    <file>target/${project.artifactId}-${project.version}.jar</file>
-                                    <type>jar</type>
-                                </artifact>
-                                <artifact>
                                     <file>target/${project.artifactId}-${project.version}-sources.jar</file>
                                     <type>jar</type>
                                     <classifier>sources</classifier>
@@ -169,33 +122,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <!-- publish the gradle created jars to the configured repository -->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-deploy-plugin</artifactId>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <phase>deploy</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>deploy-file</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <packaging>jar</packaging>-->
-<!--                            <generatePom>true</generatePom>-->
-<!--                            <url>${deploy.url}</url>-->
-<!--                            <repositoryId>${deploy.repository.id}</repositoryId>-->
-<!--                            <artifactId>${project.artifactId}</artifactId>-->
-<!--                            <groupId>${project.groupId}</groupId>-->
-<!--                            <version>${project.version}</version>-->
-<!--                            <file>-->
-<!--                                build/libs/${project.artifactId}-${project.version}.jar-->
-<!--                            </file>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
-
         </plugins>
     </build>
 
