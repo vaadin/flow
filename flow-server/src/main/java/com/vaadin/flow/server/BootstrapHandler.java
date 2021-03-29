@@ -23,7 +23,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,6 +68,8 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
@@ -163,6 +167,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private final UI ui;
         private final Class<?> pageConfigurationHolder;
         private final ApplicationParameterBuilder parameterBuilder;
+        private final Location route;
 
         private String appId;
         private PushMode pushMode;
@@ -180,19 +185,48 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *            the current session
          * @param ui
          *            the UI object
+         * @param contextCallback
+         *            a callback that is invoked to resolve the context root
+         *            from the request
          */
         protected BootstrapContext(VaadinRequest request,
                 VaadinResponse response, VaadinSession session, UI ui,
                 Function<VaadinRequest, String> contextCallback) {
+            this(request, response, session, ui, contextCallback,
+                    BootstrapHandler::requestToLocation);
+        }
+
+        /**
+         * Creates a new context instance using the given parameters.
+         *
+         * @param request
+         *            the request object
+         * @param response
+         *            the response object
+         * @param session
+         *            the current session
+         * @param ui
+         *            the UI object
+         * @param contextCallback
+         *            a callback that is invoked to resolve the context root
+         *            from the request
+         * @param routeCallback
+         *            a callback that is invoked to resolve the route from the
+         *            request
+         */
+        protected BootstrapContext(VaadinRequest request,
+                VaadinResponse response, VaadinSession session, UI ui,
+                Function<VaadinRequest, String> contextCallback,
+                Function<VaadinRequest, Location> routeCallback) {
             this.request = request;
             this.response = response;
             this.session = session;
             this.ui = ui;
+            this.route = routeCallback.apply(request);
             parameterBuilder = new ApplicationParameterBuilder(contextCallback);
 
             pageConfigurationHolder = BootstrapUtils
-                    .resolvePageConfigurationHolder(ui, request).orElse(null);
-
+                    .resolvePageConfigurationHolder(ui, route).orElse(null);
         }
 
         /**
@@ -373,6 +407,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
             return Optional.ofNullable(vaadinService.getPwaRegistry());
         }
+
+        /**
+         * Gets the location of the route that should be activated for this
+         * bootstrap request.
+         *
+         * @return the route to activate
+         */
+        public Location getRoute() {
+            return route;
+        }
+
     }
 
     /**
@@ -446,6 +491,62 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         writeBootstrapPage(response, document.outerHtml());
 
         return true;
+    }
+
+    /**
+     * Extracts route information (path and parameters) from the given request.
+     * 
+     * Note that this is only valid for V14 mode bootstrap requests
+     *
+     * @param request
+     *            the request to parse information from
+     * @return a location object containing the route information
+     */
+    public static Location requestToLocation(VaadinRequest request) {
+        return requestToLocation(request.getPathInfo(),
+                request.getParameterMap());
+    }
+
+    /**
+     * Extracts route information (path and parameters) from the given request.
+     * 
+     * Note that this is only valid for V14 mode bootstrap requests
+     *
+     * @param path
+     *            pathInfo as returned by
+     *            {@link javax.servlet.http.HttpServletRequest#getPathInfo()}
+     * @param parameterMap
+     *            parameter map as returned by
+     *            {@link javax.servlet.http.HttpServletRequest#getParameterMap()}
+     * @return a location object containing the route information
+     */
+    public static Location requestToLocation(String path,
+            Map<String, String[]> parameterMap) {
+        if (path == null) {
+            path = "";
+        } else if (path.startsWith("/")) {
+            path = path.substring(1);
+        }
+        try {
+            return new Location(path, QueryParameters.full(parameterMap));
+        } catch (IllegalArgumentException iae) {
+            getLogger().warn("Exception when parsing location path {}", path,
+                    iae);
+        }
+
+        int index = path.indexOf('?');
+        String encodedPath = path;
+        if (index >= 0) {
+            encodedPath = path.substring(0, index);
+        }
+        try {
+            encodedPath = URLEncoder.encode(path,
+                    StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            getLogger().warn("Exception when encoding path {}", path, e);
+        }
+        return new Location(encodedPath);
+
     }
 
     private void writeBootstrapPage(VaadinResponse response, String html)
@@ -1246,14 +1347,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // After init and adding UI to session fire init listeners.
         session.getService().fireUIInitListeners(ui);
 
-        initializeUIWithRouter(request, ui);
+        initializeUIWithRouter(context, ui);
 
         return context;
     }
 
-    protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
+    protected void initializeUIWithRouter(BootstrapContext context, UI ui) {
         if (ui.getInternals().getRouter() != null) {
-            ui.getInternals().getRouter().initializeUI(ui, request);
+            ui.getInternals().getRouter().initializeUI(ui, context.getRoute());
         }
     }
 

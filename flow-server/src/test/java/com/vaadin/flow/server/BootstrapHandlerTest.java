@@ -43,6 +43,7 @@ import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
@@ -348,11 +349,11 @@ public class BootstrapHandlerTest {
         service.setRouteRegistry(routeRegistry);
         service.setRouter(new Router(routeRegistry) {
             @Override
-            public void initializeUI(UI ui, VaadinRequest initRequest) {
+            public void initializeUI(UI ui, Location location) {
                 // Skip initial navigation during UI.init if no routes have been
                 // injected
                 if (routeRegistry.hasNavigationTargets()) {
-                    super.initializeUI(ui, initRequest);
+                    super.initializeUI(ui, location);
                 }
             }
         });
@@ -383,7 +384,8 @@ public class BootstrapHandlerTest {
         this.request = request;
 
         ui.doInit(request, 0);
-        ui.getInternals().getRouter().initializeUI(ui, request);
+        ui.getInternals().getRouter().initializeUI(ui,
+                BootstrapHandler.requestToLocation(request));
         context = new BootstrapContext(request, null, session, ui,
                 this::contextRootRelativePath);
         ui.getInternals().setContextRoot(contextRootRelativePath(request));
@@ -429,7 +431,8 @@ public class BootstrapHandlerTest {
         anotherUI.getInternals().setSession(session);
         VaadinRequest vaadinRequest = createVaadinRequest();
         anotherUI.doInit(vaadinRequest, 0);
-        anotherUI.getInternals().getRouter().initializeUI(anotherUI, request);
+        anotherUI.getInternals().getRouter().initializeUI(anotherUI,
+                BootstrapHandler.requestToLocation(request));
         anotherUI.getInternals()
                 .setContextRoot(contextRootRelativePath(request));
         BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
@@ -1138,7 +1141,8 @@ public class BootstrapHandlerTest {
         anotherUI.getInternals().setSession(session);
         VaadinRequest vaadinRequest = createVaadinRequest();
         anotherUI.doInit(vaadinRequest, 0);
-        anotherUI.getInternals().getRouter().initializeUI(anotherUI, request);
+        anotherUI.getInternals().getRouter().initializeUI(anotherUI,
+                BootstrapHandler.requestToLocation(request));
         BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
                 null, session, anotherUI, this::contextRootRelativePath);
         anotherUI.getInternals()
@@ -1221,7 +1225,8 @@ public class BootstrapHandlerTest {
         anotherUI.getInternals().setSession(session);
         VaadinRequest vaadinRequest = createVaadinRequest();
         anotherUI.doInit(vaadinRequest, 0);
-        anotherUI.getInternals().getRouter().initializeUI(anotherUI, request);
+        anotherUI.getInternals().getRouter().initializeUI(anotherUI,
+                BootstrapHandler.requestToLocation(request));
         BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
                 null, session, anotherUI, this::contextRootRelativePath);
         anotherUI.getInternals()
@@ -1421,7 +1426,8 @@ public class BootstrapHandlerTest {
         anotherUI.getInternals().setSession(session);
         VaadinServletRequest vaadinRequest = createVaadinRequest();
         anotherUI.doInit(vaadinRequest, 0);
-        anotherUI.getInternals().getRouter().initializeUI(anotherUI, request);
+        anotherUI.getInternals().getRouter().initializeUI(anotherUI,
+                BootstrapHandler.requestToLocation(request));
         BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
                 null, session, anotherUI, this::contextRootRelativePath);
         anotherUI.getInternals()

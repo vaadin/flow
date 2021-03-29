@@ -15,15 +15,11 @@
  */
 package com.vaadin.flow.router;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 
-import org.slf4j.LoggerFactory;
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.internal.DefaultRouteResolver;
@@ -32,6 +28,7 @@ import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.InternalRedirectHandler;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.router.internal.ResolveRequest;
+import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
@@ -39,6 +36,8 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+
+import org.slf4j.LoggerFactory;
 
 import elemental.json.JsonValue;
 
@@ -78,10 +77,11 @@ public class Router implements Serializable {
      *            the UI that navigation should be set up for
      * @param initRequest
      *            the Vaadin request that bootstraps the provided UI
+     * @deprecated use {@link #initializeUI(UI, Location)} instead
      */
-    public void initializeUI(UI ui, VaadinRequest initRequest) {
-        Location location = getLocationForRequest(initRequest.getPathInfo(),
-                initRequest.getParameterMap());
+    @Deprecated
+    public void initialidzeUI(UI ui, VaadinRequest initRequest) {
+        Location location = BootstrapHandler.requestToLocation(initRequest);
         initializeUI(ui, location);
     }
 
@@ -107,46 +107,6 @@ public class Router implements Serializable {
         }
     }
 
-    private Location getLocationForRequest(String pathInfo,
-            Map<String, String[]> parameterMap) {
-        final String path;
-        if (pathInfo == null) {
-            path = "";
-        } else {
-            assert pathInfo.startsWith("/");
-            path = pathInfo.substring(1);
-        }
-
-        final QueryParameters queryParameters = QueryParameters
-                .full(parameterMap);
-
-        try {
-            return new Location(path, queryParameters);
-        } catch (IllegalArgumentException iae) {
-            LoggerFactory.getLogger(Router.class.getName())
-                    .warn("Exception when parsing location path {}", path, iae);
-        }
-
-        int index = path.indexOf('?');
-        String encodedPath = path;
-        if (index >= 0) {
-            encodedPath = path.substring(0, index);
-        }
-        try {
-            if (path.startsWith("/")) {
-                encodedPath = URLEncoder.encode(path.substring(1),
-                        StandardCharsets.UTF_8.name());
-            } else {
-                encodedPath = URLEncoder.encode(path,
-                        StandardCharsets.UTF_8.name());
-            }
-        } catch (UnsupportedEncodingException e) {
-            LoggerFactory.getLogger(Router.class.getName())
-                    .warn("Exception when encoding path {}", path, e);
-        }
-        return new Location(encodedPath);
-    }
-
     /**
      * Resolve the navigation target for given path and parameter map using the
      * router routeResolver.
@@ -159,7 +119,8 @@ public class Router implements Serializable {
      */
     public Optional<NavigationState> resolveNavigationTarget(String pathInfo,
             Map<String, String[]> parameterMap) {
-        Location location = getLocationForRequest(pathInfo, parameterMap);
+        Location location = BootstrapHandler.requestToLocation(pathInfo,
+                parameterMap);
         return resolveNavigationTarget(location);
     }
 

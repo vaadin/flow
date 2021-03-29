@@ -69,6 +69,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
+import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -235,7 +236,8 @@ public class UITest {
         });
 
         ui.doInit(request, 0);
-        ui.getInternals().getRouter().initializeUI(ui, request);
+        ui.getInternals().getRouter().initializeUI(ui,
+                BootstrapHandler.requestToLocation(request));
 
         session.unlock();
 
