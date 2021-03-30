@@ -294,8 +294,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         Set<ThemeData> themes = endPoints.values().stream()
                 // consider only endPoints with theme information
-                .filter(data -> data.getTheme().getThemeClass() != null ||
-                    (data.getTheme().getThemeName() != null && !data.getTheme().getThemeName().isEmpty())
+                .filter(data -> data.getTheme().getThemeClass() != null
+                        || (data.getTheme().getThemeName() != null
+                                && !data.getTheme().getThemeName().isEmpty())
                         || data.getTheme().isNotheme())
                 .map(EndPointData::getTheme)
                 // Remove duplicates by returning a set
@@ -303,8 +304,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         if (themes.size() > 1) {
             String names = endPoints.values().stream()
-                    .filter(data -> data.getTheme().getThemeClass() != null ||
-                        data.getTheme().getThemeName() != null
+                    .filter(data -> data.getTheme().getThemeClass() != null
+                            || data.getTheme().getThemeName() != null
                             || data.getTheme().isNotheme())
                     .map(data -> "found '"
                             + (data.getTheme().isNotheme()
@@ -329,8 +330,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 String themeClass = themeData.getThemeClass();
                 if (!themeData.getThemeName().isEmpty() && themeClass != null) {
                     throw new IllegalStateException(
-                        "Theme name and theme class can not both be specified. "
-                            + "Theme name uses Lumo and can not be used in combination with custom theme class.");
+                            "Theme name and theme class can not both be specified. "
+                                    + "Theme name uses Lumo and can not be used in combination with custom theme class.");
                 }
                 variant = themeData.getVariant();
                 if (themeClass != null) {
@@ -339,7 +340,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                     theme = getDefaultTheme();
                     if (theme == null) {
                         throw new IllegalStateException(
-                            "Lumo dependency needs to be available on the classpath when using a theme name.");
+                                "Lumo dependency needs to be available on the classpath when using a theme name.");
                     }
                 }
                 themeName = themeData.getThemeName();
@@ -417,17 +418,16 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private void computePwaConfiguration() throws ClassNotFoundException {
         FrontendAnnotatedClassVisitor pwaVisitor = new FrontendAnnotatedClassVisitor(
                 getFinder(), PWA.class.getName());
-        Class<?> appShellConfiguratorClass = getFinder().loadClass(
-                AppShellConfigurator.class.getName());
+        Class<?> appShellConfiguratorClass = getFinder()
+                .loadClass(AppShellConfigurator.class.getName());
 
-        for (Class<?> hopefullyAppShellClass :
-                getFinder().getAnnotatedClasses(PWA.class.getName())) {
-                    if (!Arrays.asList(hopefullyAppShellClass.getInterfaces())
-                            .contains(appShellConfiguratorClass)) {
-                        throw new IllegalStateException(
-                                ERROR_INVALID_PWA_ANNOTATION);
-                    }
-                    pwaVisitor.visitClass(hopefullyAppShellClass.getName());
+        for (Class<?> hopefullyAppShellClass : getFinder()
+                .getAnnotatedClasses(PWA.class.getName())) {
+            if (!Arrays.asList(hopefullyAppShellClass.getInterfaces())
+                    .contains(appShellConfiguratorClass)) {
+                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
+            }
+            pwaVisitor.visitClass(hopefullyAppShellClass.getName());
         }
 
         Set<String> dependencies = pwaVisitor.getValues("name");

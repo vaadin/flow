@@ -44,7 +44,9 @@ public class PolymerModelPropertiesView extends PolymerTemplate<Message> {
         setId("template");
         getModel().setText("foo");
 
-        getElement().addPropertyChangeListener("text", "text-changed",event -> {});
+        getElement().addPropertyChangeListener("text", "text-changed",
+                event -> {
+                });
 
         addListener(ValueChangeEvent.class, event -> {
             getUI().get().add(addUpdateElement("property-update-event"));

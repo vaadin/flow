@@ -43,7 +43,6 @@ public class ShortcutsIT extends ChromeBrowserTest {
         resetKeys();
     }
 
-
     @Test
     public void clickShortcutWorks() {
         sendKeys(Keys.ALT, "b");

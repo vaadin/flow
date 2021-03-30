@@ -24,6 +24,7 @@ public class IFrameIT extends ChromeBrowserTest {
         findElement(By.id("Reload")).click();
 
         getDriver().switchTo().frame("frame1");
-        waitUntil(webDriver -> "B".equals( findElement(By.id("Friday")).getText()));
+        waitUntil(webDriver -> "B"
+                .equals(findElement(By.id("Friday")).getText()));
     }
 }

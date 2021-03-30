@@ -59,7 +59,7 @@ public class RouteData extends RouteBaseData<RouteData> {
         Collections.sort(routeAliases);
         this.routeAliases = Collections.unmodifiableList(routeAliases);
     }
-    
+
     /**
      * RouteData constructor.
      *
@@ -96,10 +96,9 @@ public class RouteData extends RouteBaseData<RouteData> {
     @Override
     public String toString() {
         return "RouteData{" + "parentLayout=" + getParentLayout() + ", url='"
-                + getTemplate() + '\'' + ", parameters="
-                + getRouteParameters() + ", navigationTarget="
-                + getNavigationTarget() + ", routeAliases=" + routeAliases
-                + '}';
+                + getTemplate() + '\'' + ", parameters=" + getRouteParameters()
+                + ", navigationTarget=" + getNavigationTarget()
+                + ", routeAliases=" + routeAliases + '}';
     }
 
     @Override

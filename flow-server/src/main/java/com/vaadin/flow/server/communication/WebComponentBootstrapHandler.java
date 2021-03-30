@@ -298,7 +298,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                             .ifPresent(elementsForShadows::add);
                     continue;
                 }
-                String conditionalFilename = getVaadinFilenameIfVaadinScript(element);
+                String conditionalFilename = getVaadinFilenameIfVaadinScript(
+                        element);
                 if (conditionalFilename != null) {
                     writer.append("if (!hasScript(\"" + conditionalFilename
                             + "\")) {\n");
@@ -343,6 +344,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
         return null;
     }
+
     private static boolean elementShouldNotBeTransferred(Element element) {
         // we skip base href adjustment, since we are in a 3rd party
         // context, also "meta" and "style" affects the page globally and should

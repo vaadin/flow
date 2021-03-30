@@ -780,8 +780,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 } else {
                     chunkName = chunks.getString(key);
                 }
-                Element script = createJavaScriptElement(
-                        "./" + chunkName, false);
+                Element script = createJavaScriptElement("./" + chunkName,
+                        false);
                 head.appendChild(script.attr("type", "module")
                         .attr("data-app-id",
                                 context.getUI().getInternals().getAppId())

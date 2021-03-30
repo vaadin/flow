@@ -33,13 +33,11 @@ public final class SecurityHelper implements Serializable {
      * URLs matching these patterns should be publicly available for application
      * to work. Used for defining bypass rules in e.g. Spring Security.
      */
-    public static final String[] PUBLIC_VAADIN_URLS = {
-            "/favicon.ico",
+    public static final String[] PUBLIC_VAADIN_URLS = { "/favicon.ico",
             "/" + PwaConfiguration.DEFAULT_PATH,
             "/" + FrontendUtils.SERVICE_WORKER_SRC_JS,
             PwaHandler.SW_RUNTIME_PRECACHE_PATH,
-            "/" + PwaConfiguration.DEFAULT_OFFLINE_PATH
-    };
+            "/" + PwaConfiguration.DEFAULT_OFFLINE_PATH };
 
     private SecurityHelper() {
     }

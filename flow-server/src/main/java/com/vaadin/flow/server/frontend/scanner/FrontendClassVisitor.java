@@ -103,7 +103,9 @@ final class FrontendClassVisitor extends ClassVisitor {
         // are interested in the case Supplier<Component> s = MyComponent::new;
         // flow #6524
         @Override
-        public void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
+        public void visitInvokeDynamicInsn(String name, String descriptor,
+                Handle bootstrapMethodHandle,
+                Object... bootstrapMethodArguments) {
             addSignatureToClasses(children, descriptor);
             addSignatureToClasses(children, bootstrapMethodHandle.getOwner());
             addSignatureToClasses(children, bootstrapMethodHandle.getDesc());
@@ -114,7 +116,7 @@ final class FrontendClassVisitor extends ClassVisitor {
                     // The owner of the Handle is the reference information
                     addSignatureToClasses(children, ((Handle) obj).getOwner());
                     // the descriptor for the Handle won't be scanned, as it
-                    // adds from +10% to 40%  to the execution time and does not
+                    // adds from +10% to 40% to the execution time and does not
                     // affect the fix in itself
                 }
                 // the case for ConstantDynamic is also skipped for
@@ -161,7 +163,7 @@ final class FrontendClassVisitor extends ClassVisitor {
             @Override
             public void visit(String name, Object value) {
                 if (VALUE.equals(name)) {
-                    endPoint.theme.themeName = (String)value;
+                    endPoint.theme.themeName = (String) value;
                 } else if (THEME_CLASS.equals(name)) {
                     endPoint.theme.themeClass = ((Type) value).getClassName();
                     children.add(endPoint.theme.themeClass);
@@ -176,7 +178,8 @@ final class FrontendClassVisitor extends ClassVisitor {
             public void visit(String name, Object value) {
                 if (VALUE.equals(name)) {
                     themeRouteVisitor.visit(name, value);
-                } else if (THEME_CLASS.equals(name) && endPoint.theme.themeClass == null) {
+                } else if (THEME_CLASS.equals(name)
+                        && endPoint.theme.themeClass == null) {
                     themeRouteVisitor.visit(name, value);
                 } else if (VARIANT.equals(name)
                         && endPoint.theme.variant.isEmpty()) {
@@ -232,7 +235,6 @@ final class FrontendClassVisitor extends ClassVisitor {
         addSignatureToClasses(children, descriptor);
         return methodVisitor;
     }
-
 
     // Executed for each annotation in the class.
     @Override

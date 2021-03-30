@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-
 /**
  * Generate OpenAPI json file for Vaadin Endpoints.
  */

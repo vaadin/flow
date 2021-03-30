@@ -133,22 +133,26 @@ public class TaskUpdateImports extends NodeUpdater {
             ThemeDefinition themeDef = getThemeDefinition();
 
             if (theme != null) {
-                boolean hasApplicationTheme = themeDef != null && !"".equals(themeDef.getName());
-                // There is no application theme in use, write theme includes here. Otherwise they are written by the theme
+                boolean hasApplicationTheme = themeDef != null
+                        && !"".equals(themeDef.getName());
+                // There is no application theme in use, write theme includes
+                // here. Otherwise they are written by the theme
                 if (!theme.getHeaderInlineContents().isEmpty()) {
                     lines.add("");
                     if (hasApplicationTheme) {
                         lines.add("// Handled in the application theme");
                     }
                     theme.getHeaderInlineContents()
-                    .forEach(html -> addLines(lines,
-                    String.format(THEME_LINE_TPL, hasApplicationTheme ? "// ":"" ,NEW_LINE_TRIM
-                    .matcher(html).replaceAll(""))));
+                            .forEach(html -> addLines(lines,
+                                    String.format(THEME_LINE_TPL,
+                                            hasApplicationTheme ? "// " : "",
+                                            NEW_LINE_TRIM.matcher(html)
+                                                    .replaceAll(""))));
                 }
                 if (themeDef != null) {
-                    theme.getHtmlAttributes(themeDef.getVariant()).forEach(
-                        (key, value) -> addLines(lines,
-                            String.format(THEME_VARIANT_TPL, key, value)));
+                    theme.getHtmlAttributes(themeDef.getVariant())
+                            .forEach((key, value) -> addLines(lines, String
+                                    .format(THEME_VARIANT_TPL, key, value)));
                 }
                 lines.add("");
             }

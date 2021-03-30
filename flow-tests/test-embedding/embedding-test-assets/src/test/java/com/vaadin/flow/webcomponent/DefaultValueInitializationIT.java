@@ -21,7 +21,8 @@ import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class DefaultValueInitializationIT extends ChromeBrowserTest implements HasById{
+public class DefaultValueInitializationIT extends ChromeBrowserTest
+        implements HasById {
 
     @Override
     protected String getTestPath() {

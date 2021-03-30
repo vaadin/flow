@@ -355,8 +355,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
          * position towards to target item.
          */
         removeItemIfPresent(item, dataProvider);
-        itemList.add(insertItemsIndexProvider.apply(getItemIndex(target,
-                itemList.stream())), item);
+        itemList.add(insertItemsIndexProvider
+                .apply(getItemIndex(target, itemList.stream())), item);
         dataProvider.refreshAll();
     }
 
