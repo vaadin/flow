@@ -16,11 +16,13 @@
 package com.vaadin.flow.uitest.ui.scroll;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
 public class CustomScrollCallbacksIT extends AbstractScrollIT {
     @Test
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/7584")
     public void customCallbacks_customResults() throws InterruptedException {
         open();
         assertView("null");
@@ -35,9 +37,7 @@ public class CustomScrollCallbacksIT extends AbstractScrollIT {
 
         assertView("navigated");
 
-        if (!hasClientIssue("7584")) {
-            assertLog("[0,0]");
-        }
+        assertLog("[0,0]");
         /*
          * Scroll position should not be reset, but might have changed slightly
          * because of more log rows
@@ -47,9 +47,7 @@ public class CustomScrollCallbacksIT extends AbstractScrollIT {
         findElement(By.id("back")).click();
 
         assertView("null");
-        if (!hasClientIssue("7584")) {
-            assertLog("[0,0]\n[42,-" + bottom + "]");
-        }
+        assertLog("[0,0]\n[42,-" + bottom + "]");
         /*
          * Scroll position should not be reset, but might have changed slightly
          * because of more log rows
