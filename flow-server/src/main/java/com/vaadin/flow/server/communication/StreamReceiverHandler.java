@@ -18,6 +18,7 @@ package com.vaadin.flow.server.communication;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -237,7 +238,7 @@ public class StreamReceiverHandler implements Serializable {
             VaadinSession session, VaadinRequest request,
             StreamReceiver streamReceiver, StateNode owner) throws IOException {
         boolean success = true;
-        long contentLength = request.getContentLength();
+        long contentLength = getContentLength(request);
         // Parse the request
         FileItemIterator iter;
         try {
@@ -578,11 +579,7 @@ public class StreamReceiverHandler implements Serializable {
      * Content-Length header which can contain long values.
      */
     protected long getContentLength(VaadinRequest request) {
-        try {
-            return Long.parseLong(request.getHeader("Content-Length"));
-        } catch (NumberFormatException e) {
-            return -1l;
-        }
+        return request.getContentLengthLong();
     }
 
     protected boolean isMultipartUpload(VaadinRequest request) {
