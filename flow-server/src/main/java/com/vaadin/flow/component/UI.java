@@ -768,8 +768,7 @@ public class UI extends Component
      */
     public void setDirection(Direction direction) {
         Objects.requireNonNull(direction, "Direction cannot be null");
-        getPage().executeJs("document.dir = $0",
-                direction.getClientName());
+        getPage().executeJs("document.dir = $0", direction.getClientName());
     }
 
     /**
@@ -886,9 +885,8 @@ public class UI extends Component
      *            parameters to pass to view.
      * @throws IllegalArgumentException
      *             if navigationTarget is a {@link HasUrlParameter} with a
-     *             mandatory parameter, but parameters argument doesn't
-     *             provide {@link HasUrlParameterFormat#PARAMETER_NAME}
-     *             parameter.
+     *             mandatory parameter, but parameters argument doesn't provide
+     *             {@link HasUrlParameterFormat#PARAMETER_NAME} parameter.
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
@@ -940,7 +938,8 @@ public class UI extends Component
      */
     public void navigate(String location, QueryParameters queryParameters) {
         Objects.requireNonNull(location, "Location must not be null");
-        Objects.requireNonNull(queryParameters, "Query parameters must not be null");
+        Objects.requireNonNull(queryParameters,
+                "Query parameters must not be null");
 
         getInternals().getRouter().navigate(this,
                 new Location(location, queryParameters),

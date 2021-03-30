@@ -23,7 +23,6 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 @JsModule("./src/template-with-client-side-imports.js")
 @NpmPackage(value = "@vaadin/vaadin-button", version = "2.2.0")
 @Tag("template-with-client-side-imports")
-public class TemplateWithClientSideImports
-        extends Component {
+public class TemplateWithClientSideImports extends Component {
 
 }

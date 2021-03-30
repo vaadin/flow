@@ -179,8 +179,8 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void deleteFile(File fileToDelete) {
-        if (fileToDelete != null && fileToDelete.exists() && !fileToDelete
-            .delete()) {
+        if (fileToDelete != null && fileToDelete.exists()
+                && !fileToDelete.delete()) {
             Assert.fail("Unable to delete " + fileToDelete);
         }
     }

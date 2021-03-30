@@ -40,9 +40,9 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
      * enables running jar projects locally.
      *
      * @param flowResourcesFolder
-     *     target directory for the discovered files
+     *            target directory for the discovered files
      * @param localResourcesFolder
-     *     local folder containing resources to copy
+     *            local folder containing resources to copy
      */
     TaskCopyLocalFrontendFiles(File flowResourcesFolder,
             File localResourcesFolder) {

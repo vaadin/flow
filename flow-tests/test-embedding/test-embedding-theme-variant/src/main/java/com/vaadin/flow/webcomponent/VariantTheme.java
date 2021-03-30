@@ -25,8 +25,8 @@ public class VariantTheme implements AbstractTheme {
 
     @Override
     public List<String> getHeaderInlineContents() {
-        return Collections.singletonList("<custom-style>\n"
-                + "</custom-style>");
+        return Collections
+                .singletonList("<custom-style>\n" + "</custom-style>");
     }
 
     @Override

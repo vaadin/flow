@@ -42,15 +42,16 @@ public interface VaadinContextStartupInitializer {
      * Applies this initializer to the given context
      *
      * @param classSet
-     *            the Set of application classes which this initializer
-     *            needs to do its job
+     *            the Set of application classes which this initializer needs to
+     *            do its job
      *
      * @param context
      *            the {@link VaadinContext} to use with this initializer
      *
      * @throws VaadinInitializerException
-     *            if an error has occurred
+     *             if an error has occurred
      */
-    void initialize(Set<Class<?>> classSet, VaadinContext context) throws VaadinInitializerException;
+    void initialize(Set<Class<?>> classSet, VaadinContext context)
+            throws VaadinInitializerException;
 
 }

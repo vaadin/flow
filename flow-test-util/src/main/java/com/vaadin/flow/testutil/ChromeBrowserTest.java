@@ -73,7 +73,7 @@ public class ChromeBrowserTest extends ViewOrUITest {
 
     static WebDriver createHeadlessChromeDriver() {
         return TestBench
-            .createDriver(new ChromeDriver(createHeadlessChromeOptions()));
+                .createDriver(new ChromeDriver(createHeadlessChromeOptions()));
     }
 
     @Override
@@ -88,17 +88,17 @@ public class ChromeBrowserTest extends ViewOrUITest {
 
     @Override
     protected List<DesiredCapabilities> getBrowserCapabilities(
-        Browser... browsers) {
+            Browser... browsers) {
         return customizeCapabilities(super.getBrowserCapabilities(browsers));
     }
 
     protected List<DesiredCapabilities> customizeCapabilities(
-        List<DesiredCapabilities> capabilities) {
+            List<DesiredCapabilities> capabilities) {
 
         capabilities.stream()
-            .filter(cap -> "chrome".equalsIgnoreCase(cap.getBrowserName()))
-            .forEach(cap -> cap.setCapability(ChromeOptions.CAPABILITY,
-                createHeadlessChromeOptions()));
+                .filter(cap -> "chrome".equalsIgnoreCase(cap.getBrowserName()))
+                .forEach(cap -> cap.setCapability(ChromeOptions.CAPABILITY,
+                        createHeadlessChromeOptions()));
 
         return capabilities;
     }

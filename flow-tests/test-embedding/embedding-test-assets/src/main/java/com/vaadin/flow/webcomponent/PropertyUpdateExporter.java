@@ -37,8 +37,9 @@ public class PropertyUpdateExporter
     }
 
     @Override
-    public void configureInstance(WebComponent<PropertyUpdateComponent> webComponent,
-                                  PropertyUpdateComponent component) {
+    public void configureInstance(
+            WebComponent<PropertyUpdateComponent> webComponent,
+            PropertyUpdateComponent component) {
         component.addListener(number -> {
             webComponent.setProperty(property, number);
             webComponent.setProperty(jsonProperty, component.getNumberJson());

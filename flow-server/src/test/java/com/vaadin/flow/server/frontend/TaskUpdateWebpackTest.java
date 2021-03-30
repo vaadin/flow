@@ -192,9 +192,8 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         Assert.assertTrue(
                 "useClientSideIndexFileForBootstrapping should be false by "
                         + "default",
-                webpackGeneratedContents
-                        .contains(
-                                "const useClientSideIndexFileForBootstrapping = false;"));
+                webpackGeneratedContents.contains(
+                        "const useClientSideIndexFileForBootstrapping = false;"));
     }
 
     @Test
@@ -205,9 +204,8 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 .collect(Collectors.joining("\n"));
         Assert.assertTrue(
                 "useClientSideIndexFileForBootstrapping should be true",
-                webpackGeneratedContents
-                        .contains(
-                                "const useClientSideIndexFileForBootstrapping = true;"));
+                webpackGeneratedContents.contains(
+                        "const useClientSideIndexFileForBootstrapping = true;"));
 
     }
 
@@ -226,7 +224,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
     @Test
     public void should_enableCustomOfflinePath_when_customisedInPwa()
-        throws IOException {
+            throws IOException {
         pwaConfiguration = new PwaConfiguration(
                 AppShellWithOfflinePath.class.getAnnotation(PWA.class));
         createWebpackUpdater();
@@ -244,27 +242,23 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void should_setPwaEnabledFalse_when_noPwa()
-            throws IOException {
+    public void should_setPwaEnabledFalse_when_noPwa() throws IOException {
         pwaConfiguration = new PwaConfiguration();
         createWebpackUpdater();
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));
         Assert.assertTrue("pwaEnabled expected false",
-                webpackGeneratedContents
-                        .contains("const pwaEnabled = false;"));
+                webpackGeneratedContents.contains("const pwaEnabled = false;"));
     }
 
     @Test
-    public void should_setPwaEnabledTrue_when_Pwa()
-            throws IOException {
+    public void should_setPwaEnabledTrue_when_Pwa() throws IOException {
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));
         Assert.assertTrue("pwaEnabled expected true",
-                webpackGeneratedContents
-                        .contains("const pwaEnabled = true;"));
+                webpackGeneratedContents.contains("const pwaEnabled = true;"));
     }
 
     @Test
@@ -273,9 +267,10 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));
-        Assert.assertTrue("service workder entry point should be from target folder",
-                webpackGeneratedContents
-                        .contains("const clientServiceWorkerEntryPoint = path.resolve(__dirname, 'target/sw');"));
+        Assert.assertTrue(
+                "service workder entry point should be from target folder",
+                webpackGeneratedContents.contains(
+                        "const clientServiceWorkerEntryPoint = path.resolve(__dirname, 'target/sw');"));
     }
 
     @Test
@@ -288,9 +283,10 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));
-        Assert.assertTrue("service workder entry point should be from current folder",
-                webpackGeneratedContents
-                        .contains("const clientServiceWorkerEntryPoint = './sw';"));
+        Assert.assertTrue(
+                "service workder entry point should be from current folder",
+                webpackGeneratedContents.contains(
+                        "const clientServiceWorkerEntryPoint = './sw';"));
         customSWFile.delete();
         frontendFolder.delete();
     }
@@ -305,9 +301,10 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));
-        Assert.assertTrue("service workder entry point should be from current folder",
-                webpackGeneratedContents
-                        .contains("const clientServiceWorkerEntryPoint = './sw';"));
+        Assert.assertTrue(
+                "service workder entry point should be from current folder",
+                webpackGeneratedContents.contains(
+                        "const clientServiceWorkerEntryPoint = './sw';"));
         customSWFile.delete();
         frontendFolder.delete();
     }
@@ -315,8 +312,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     protected void createWebpackUpdater() {
         webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
                 new File(baseDir, TARGET + "webapp"),
-                new File(baseDir, TARGET + "classes"),
-                WEBPACK_CONFIG,
+                new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
                 WEBPACK_GENERATED,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME),
                 useV14Bootstrapping,

@@ -228,11 +228,11 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertTrue(importsDefinitionFile.exists());
 
-        String definitionContent = FileUtils.readFileToString(importsDefinitionFile,
-                Charset.defaultCharset());
+        String definitionContent = FileUtils.readFileToString(
+                importsDefinitionFile, Charset.defaultCharset());
 
-        Assert.assertThat(definitionContent, CoreMatchers
-                .containsString("export declare const addCssBlock: (block: string, before?: boolean) => void;"));
+        Assert.assertThat(definitionContent, CoreMatchers.containsString(
+                "export declare const addCssBlock: (block: string, before?: boolean) => void;"));
     }
 
     @Test
@@ -265,8 +265,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         // ============== check main generated imports file ============
 
         // Contains theme lines
-        Assert.assertThat(mainContent, CoreMatchers
-                .containsString("export const addCssBlock = function(block, before = false) {"));
+        Assert.assertThat(mainContent, CoreMatchers.containsString(
+                "export const addCssBlock = function(block, before = false) {"));
 
         Assert.assertThat(mainContent, CoreMatchers.containsString(
                 "addCssBlock('<custom-style>foo</custom-style>', true);"));

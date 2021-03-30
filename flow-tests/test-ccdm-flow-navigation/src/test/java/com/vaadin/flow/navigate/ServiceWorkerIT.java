@@ -41,8 +41,9 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
         waitForServiceWorkerReady();
 
         boolean serviceWorkerActive = (boolean) ((JavascriptExecutor) getDriver())
-                .executeAsyncScript("const resolve = arguments[arguments.length - 1];"
-                        + "navigator.serviceWorker.ready.then( function(reg) { resolve(!!reg.active); });");
+                .executeAsyncScript(
+                        "const resolve = arguments[arguments.length - 1];"
+                                + "navigator.serviceWorker.ready.then( function(reg) { resolve(!!reg.active); });");
         Assert.assertTrue("service worker not installed", serviceWorkerActive);
     }
 
@@ -57,7 +58,8 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
                 findElement(By.id("outlet")));
 
         // Confirm that client side view is loaded
-        Assert.assertNotNull("Should have <about-view> in DOM when loaded online",
+        Assert.assertNotNull(
+                "Should have <about-view> in DOM when loaded online",
                 findElement(By.tagName("about-view")));
 
         // Set offline network conditions in ChromeDriver
@@ -78,7 +80,8 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
                     findElement(By.id("outlet")));
 
             // Confirm that client side view is loaded
-            Assert.assertNotNull("Should have <about-view> in DOM when loaded offline",
+            Assert.assertNotNull(
+                    "Should have <about-view> in DOM when loaded offline",
                     findElement(By.tagName("about-view")));
         } finally {
             // Reset network conditions back
@@ -100,8 +103,8 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
             // Wait for component inside shadow root as there is no vaadin
             // to wait for as with server-side
-            waitUntil(input -> $("another-view").first().$("div").id("another-content")
-                    .isDisplayed());
+            waitUntil(input -> $("another-view").first().$("div")
+                    .id("another-content").isDisplayed());
 
             // Reload the page in offline mode
             executeScript("window.location.reload();");
@@ -111,8 +114,9 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
             MatcherAssert.assertThat(getDriver().getCurrentUrl(),
                     CoreMatchers.endsWith("/another"));
-            Assert.assertTrue(getInShadowRoot(findElement(By.tagName("another-view")),
-                    By.id("another-content")).isDisplayed());
+            Assert.assertTrue(
+                    getInShadowRoot(findElement(By.tagName("another-view")),
+                            By.id("another-content")).isDisplayed());
         } finally {
             // Reset network conditions back
             setConnectionType(NetworkConnection.ConnectionType.ALL);
@@ -120,7 +124,8 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     }
 
     @Test
-    public void offlineDeepPath_reload_viewReloaded_baseUrlRewritten() throws IOException {
+    public void offlineDeepPath_reload_viewReloaded_baseUrlRewritten()
+            throws IOException {
         getDriver().get(getRootURL() + "/");
         waitForDevServer();
         waitForServiceWorkerReady();
@@ -133,8 +138,8 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
             // Wait for component inside shadow root as there is no vaadin
             // to wait for as with server-side
-            waitUntil(input -> $("another-view").first().$("div").id("another-content")
-                    .isDisplayed());
+            waitUntil(input -> $("another-view").first().$("div")
+                    .id("another-content").isDisplayed());
 
             // Reload the page in offline mode
             executeScript("window.location.reload();");
@@ -144,8 +149,9 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
             MatcherAssert.assertThat(getDriver().getCurrentUrl(),
                     CoreMatchers.endsWith("/another"));
-            Assert.assertTrue(getInShadowRoot(findElement(By.tagName("another-view")),
-                    By.id("another-content")).isDisplayed());
+            Assert.assertTrue(
+                    getInShadowRoot(findElement(By.tagName("another-view")),
+                            By.id("another-content")).isDisplayed());
 
             // Verify <base href> by navigating with a relative link
             $("main-view").first().$("a").id("menu-about").click();
@@ -161,7 +167,8 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     }
 
     @Test
-    public void offlineTsView_navigateToOtherTsView_navigationSuccessful() throws IOException {
+    public void offlineTsView_navigateToOtherTsView_navigationSuccessful()
+            throws IOException {
         getDriver().get(getRootURL() + "/about");
         waitForDevServer();
         waitForServiceWorkerReady();
@@ -177,13 +184,14 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
             // Wait for component inside shadow root as there is no vaadin
             // to wait for as with server-side
-            waitUntil(input -> $("another-view").first().$("div").id("another-content")
-                    .isDisplayed());
+            waitUntil(input -> $("another-view").first().$("div")
+                    .id("another-content").isDisplayed());
 
             MatcherAssert.assertThat(getDriver().getCurrentUrl(),
                     CoreMatchers.endsWith("/another"));
-            Assert.assertTrue(getInShadowRoot(findElement(By.tagName("another-view")),
-                    By.id("another-content")).isDisplayed());
+            Assert.assertTrue(
+                    getInShadowRoot(findElement(By.tagName("another-view")),
+                            By.id("another-content")).isDisplayed());
         } finally {
             // Reset network conditions back
             setConnectionType(NetworkConnection.ConnectionType.ALL);
@@ -191,7 +199,8 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     }
 
     @Test
-    public void offlineServerView_navigateToTsView_navigationSuccessful() throws IOException {
+    public void offlineServerView_navigateToTsView_navigationSuccessful()
+            throws IOException {
         getDriver().get(getRootURL() + "/hello");
         waitForDevServer();
         waitForServiceWorkerReady();
@@ -204,13 +213,14 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
             // Wait for component inside shadow root as there is no vaadin
             // to wait for as with server-side
-            waitUntil(input -> $("another-view").first().$("div").id("another-content")
-                    .isDisplayed());
+            waitUntil(input -> $("another-view").first().$("div")
+                    .id("another-content").isDisplayed());
 
             MatcherAssert.assertThat(getDriver().getCurrentUrl(),
                     CoreMatchers.endsWith("/another"));
-            Assert.assertTrue(getInShadowRoot(findElement(By.tagName("another-view")),
-                    By.id("another-content")).isDisplayed());
+            Assert.assertTrue(
+                    getInShadowRoot(findElement(By.tagName("another-view")),
+                            By.id("another-content")).isDisplayed());
         } finally {
             // Reset network conditions back
             setConnectionType(NetworkConnection.ConnectionType.ALL);
@@ -229,8 +239,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
             $("main-view").first().$("a").id("menu-hello").click();
 
             waitForElementPresent(By.tagName("iframe"));
-            WebElement offlineStub = findElement(
-                    By.tagName("iframe"));
+            WebElement offlineStub = findElement(By.tagName("iframe"));
             driver.switchTo().frame(offlineStub);
             Assert.assertNotNull(findElement(By.className("offline")));
         } finally {
@@ -250,8 +259,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
             $("main-view").first().$("a").id("menu-hello").click();
 
             waitForElementPresent(By.tagName("iframe"));
-            WebElement offlineStub = findElement(
-                    By.tagName("iframe"));
+            WebElement offlineStub = findElement(By.tagName("iframe"));
             driver.switchTo().frame(offlineStub);
             Assert.assertNotNull(findElement(By.className("offline")));
         } finally {
@@ -301,7 +309,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     }
 
     @Override
-    protected String getRootURL()  {
+    protected String getRootURL() {
         return super.getRootURL() + "/context-path";
     }
 }

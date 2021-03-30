@@ -289,7 +289,7 @@ public final class JsonUtils {
      * Converts the given bean to JSON.
      *
      * @param bean
-     *                 the bean to convert, not {@code null}
+     *            the bean to convert, not {@code null}
      * @return a JSON representation of the bean
      */
     public static JsonObject beanToJson(Object bean) {
@@ -306,7 +306,7 @@ public final class JsonUtils {
      * Converts the given list to JSON.
      *
      * @param list
-     *                 the list to convert, not {@code null}
+     *            the list to convert, not {@code null}
      * @return a JSON representation of the bean
      */
     public static JsonArray listToJson(List<?> list) {
@@ -322,7 +322,7 @@ public final class JsonUtils {
      * Converts the given map to JSON.
      *
      * @param map
-     *                the map to convert, not {@code null}
+     *            the map to convert, not {@code null}
      * @return a JSON representation of the bean
      */
     public static JsonObject mapToJson(Map<String, ?> map) {

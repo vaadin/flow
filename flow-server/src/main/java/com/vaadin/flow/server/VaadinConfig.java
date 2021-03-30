@@ -19,9 +19,9 @@ import java.io.Serializable;
 import java.util.Enumeration;
 
 /**
- * Configuration in which {@link VaadinService} is running.
- * This is a wrapper for Config objects for instance <code>ServletConfig</code>
- * and <code>PortletConfig</code>.
+ * Configuration in which {@link VaadinService} is running. This is a wrapper
+ * for Config objects for instance <code>ServletConfig</code> and
+ * <code>PortletConfig</code>.
  *
  * @since
  */
@@ -48,9 +48,9 @@ public interface VaadinConfig extends Serializable {
      * the parameter does not exist.
      *
      * @param name
-     *         name of the parameter whose value is requested
+     *            name of the parameter whose value is requested
      * @return parameter value as <code>String</code> or <code>null</code> for
-     * no parameter
+     *         no parameter
      */
     String getConfigParameter(String name);
 }

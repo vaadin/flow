@@ -34,8 +34,7 @@ abstract class RepeatedAnnotationVisitor extends AnnotationVisitor {
     }
 
     @Override
-    public AnnotationVisitor visitAnnotation(String name,
-            String descriptor) {
+    public AnnotationVisitor visitAnnotation(String name, String descriptor) {
         return this;
     }
 

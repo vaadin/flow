@@ -32,7 +32,8 @@ public class SessionCloseLogoutIT extends ChromeBrowserTest {
     public void changeOnClient() throws InterruptedException {
         open();
 
-        // clean all messages: if there is an error in the console it won't appear anymore
+        // clean all messages: if there is an error in the console it won't
+        // appear anymore
         getLogEntries(Level.ALL).forEach(logEntry -> {
             // no-op
         });

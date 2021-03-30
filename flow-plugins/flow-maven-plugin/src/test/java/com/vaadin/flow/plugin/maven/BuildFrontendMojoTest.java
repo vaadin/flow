@@ -120,15 +120,15 @@ public class BuildFrontendMojoTest {
         generatedFolder = new File(npmFolder, DEFAULT_GENERATED_DIR);
         importsFile = new File(generatedFolder, IMPORTS_NAME);
         nodeModulesPath = new File(npmFolder, NODE_MODULES);
-        flowResourcesFolder = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
+        flowResourcesFolder = new File(npmFolder,
+                DEFAULT_FLOW_RESOURCES_FOLDER);
         File frontendDirectory = new File(npmFolder, DEFAULT_FRONTEND_DIR);
 
         packageJson = new File(npmFolder, PACKAGE_JSON).getAbsolutePath();
         webpackConfig = new File(npmFolder, WEBPACK_CONFIG).getAbsolutePath();
-        webpackGenerated =
-                new File(npmFolder, WEBPACK_GENERATED).getAbsolutePath();
-        webpackOutputDirectory = new File(projectBase,
-                VAADIN_WEBAPP_RESOURCES);
+        webpackGenerated = new File(npmFolder, WEBPACK_GENERATED)
+                .getAbsolutePath();
+        webpackOutputDirectory = new File(projectBase, VAADIN_WEBAPP_RESOURCES);
         resourceOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
 
@@ -196,10 +196,12 @@ public class BuildFrontendMojoTest {
                 TestUtils.getInitalPackageJson().toJson());
 
         Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(new EndpointGeneratorTaskFactoryImpl()).when(lookup).lookup(EndpointGeneratorTaskFactory.class);
+        Mockito.doReturn(new EndpointGeneratorTaskFactoryImpl()).when(lookup)
+                .lookup(EndpointGeneratorTaskFactory.class);
         Mockito.doAnswer(invocation -> {
-            Mockito.doReturn((ClassFinder)invocation.getArguments()[0]).when(lookup).lookup(ClassFinder.class);
-            return lookup;    
+            Mockito.doReturn((ClassFinder) invocation.getArguments()[0])
+                    .when(lookup).lookup(ClassFinder.class);
+            return lookup;
         }).when(mojo).createLookup(Mockito.any(ClassFinder.class));
     }
 
@@ -256,13 +258,13 @@ public class BuildFrontendMojoTest {
                 .map(File::getName).collect(Collectors.toSet());
 
         Set<String> filesInFlowResourcesFolder = Stream
-                .of(flowResourcesFolder.listFiles())
-                .map(File::getName).collect(Collectors.toSet());
+                .of(flowResourcesFolder.listFiles()).map(File::getName)
+                .collect(Collectors.toSet());
 
         projectFrontendResources.forEach(fileName -> {
             Assert.assertTrue(String.format(
-                    "Expected the copied file '%s' to be in the project resources", fileName),
-                    filesInFlowResourcesFolder.contains(fileName));
+                    "Expected the copied file '%s' to be in the project resources",
+                    fileName), filesInFlowResourcesFolder.contains(fileName));
         });
     }
 
@@ -407,8 +409,7 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
                 webpackOutputDirectory);
         ReflectionUtils.setVariableValueInObject(mojo,
-                "resourceOutputDirectory",
-                resourceOutputDirectory);
+                "resourceOutputDirectory", resourceOutputDirectory);
 
         JsonObject initialBuildInfo = Json.createObject();
         initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);

@@ -63,15 +63,14 @@ public class DefaultArchiveExtractorTest {
         archiveFile.createNewFile();
         Path tempArchive = archiveFile.toPath();
 
-        try (OutputStream fo = Files.newOutputStream(
-                tempArchive); OutputStream gzo = new GzipCompressorOutputStream(
-                fo); ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
+        try (OutputStream fo = Files.newOutputStream(tempArchive);
+                OutputStream gzo = new GzipCompressorOutputStream(fo);
+                ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
             o.putArchiveEntry(
                     o.createArchiveEntry(new File(ROOT_FILE), ROOT_FILE));
             o.closeArchiveEntry();
-            o.putArchiveEntry(
-                    o.createArchiveEntry(new File(SUBFOLDER_FILE),
-                            SUBFOLDER_FILE));
+            o.putArchiveEntry(o.createArchiveEntry(new File(SUBFOLDER_FILE),
+                    SUBFOLDER_FILE));
             o.closeArchiveEntry();
         }
 
@@ -85,14 +84,14 @@ public class DefaultArchiveExtractorTest {
 
     @Test(expected = ArchiveExtractionException.class)
     public void extractTarAsZip_ArchiveExtractionExceptionIsThrown()
-            throws IOException, ArchiveExtractionException{
+            throws IOException, ArchiveExtractionException {
         File archiveFile = new File(baseDir, "archive.zip");
         archiveFile.createNewFile();
         Path tempArchive = archiveFile.toPath();
 
-        try (OutputStream fo = Files.newOutputStream(
-                tempArchive); OutputStream gzo = new GzipCompressorOutputStream(
-                fo); ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
+        try (OutputStream fo = Files.newOutputStream(tempArchive);
+                OutputStream gzo = new GzipCompressorOutputStream(fo);
+                ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
             o.putArchiveEntry(
                     o.createArchiveEntry(new File(ROOT_FILE), ROOT_FILE));
             o.closeArchiveEntry();

@@ -590,8 +590,8 @@ public class FrontendTools {
                 // changes the behavior of npx
                 .map(pnpm -> getNpmCliToolExecutable(NpmCliTool.NPX, "--yes",
                         "--quiet", pnpm))
-                .filter(this::validatePnpmVersion)
-                .findFirst().orElseThrow(() -> new IllegalStateException(
+                .filter(this::validatePnpmVersion).findFirst()
+                .orElseThrow(() -> new IllegalStateException(
                         "Found too old 'pnpm'. If installed into the project "
                                 + "'node_modules', upgrade 'pnpm' to at least "
                                 + SUPPORTED_PNPM_VERSION.getFullVersion()));
@@ -605,16 +605,16 @@ public class FrontendTools {
         try {
             List<String> versionCmd = new ArrayList<>(pnpmCommand);
             versionCmd.add("--version"); // NOSONAR
-            FrontendVersion pnpmVersion = FrontendUtils
-                    .getVersion("pnpm", versionCmd);
+            FrontendVersion pnpmVersion = FrontendUtils.getVersion("pnpm",
+                    versionCmd);
             boolean versionNewEnough = FrontendUtils
                     .isVersionAtLeast(pnpmVersion, SUPPORTED_PNPM_VERSION);
             boolean versionAccepted = ignoreVersionChecks || versionNewEnough;
             if (!versionAccepted) {
-                getLogger()
-                        .info("pnpm '{}' is version {} which is not supported (expected >={})",
-                                commandLine, pnpmVersion.getFullVersion(),
-                                SUPPORTED_PNPM_VERSION.getFullVersion());
+                getLogger().info(
+                        "pnpm '{}' is version {} which is not supported (expected >={})",
+                        commandLine, pnpmVersion.getFullVersion(),
+                        SUPPORTED_PNPM_VERSION.getFullVersion());
             }
             return versionAccepted;
         } catch (UnknownVersionException e) {

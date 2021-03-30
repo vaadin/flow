@@ -67,7 +67,7 @@ public class DialogShortcutView extends Div {
                 "Allow Browser Default", event -> {
                     allowBrowserDefault = true;
                     event.getSource().setEnabled(false);
-        });
+                });
         allowBrowserDefaultButton.setId(ALLOW_BROWSER_DEFAULT_BUTTON);
         final NativeButton testButton = createButton(
                 "UI level button with shortcut", this::logClickEvent);

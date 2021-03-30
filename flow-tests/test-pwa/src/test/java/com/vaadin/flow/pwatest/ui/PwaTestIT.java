@@ -114,7 +114,8 @@ public class PwaTestIT extends ChromeDeviceTest {
 
         String serviceWorkerJS = readStringFromUrl(serviceWorkerUrl);
         // parse the precache resources (the app bundles) from service worker JS
-        pattern = Pattern.compile("\\{'revision':('[^']+'|null),'url':'([^']+)'}");
+        pattern = Pattern
+                .compile("\\{'revision':('[^']+'|null),'url':'([^']+)'}");
         matcher = pattern.matcher(serviceWorkerJS);
         ArrayList<String> precacheUrls = new ArrayList<>();
         while (matcher.find()) {
@@ -198,7 +199,8 @@ public class PwaTestIT extends ChromeDeviceTest {
     }
 
     @Test
-    public void compareUncompressedAndCompressedServiceWorkerJS() throws IOException {
+    public void compareUncompressedAndCompressedServiceWorkerJS()
+            throws IOException {
         // test only in production mode
         Assume.assumeTrue(isProductionMode());
 
@@ -233,11 +235,10 @@ public class PwaTestIT extends ChromeDeviceTest {
     private boolean exists(String url) {
         // If the mimetype can be guessed from the file name, check consistency
         // with the actual served file
-        String expectedMimeType = URLConnection
-                .guessContentTypeFromName(url);
+        String expectedMimeType = URLConnection.guessContentTypeFromName(url);
         String script = "const mimeType = arguments[0];"
-                + "const resolve = arguments[1];"
-                + "fetch('" + url + "', {method: 'GET'})"
+                + "const resolve = arguments[1];" + "fetch('" + url
+                + "', {method: 'GET'})"
                 + ".then(response => resolve(response.status===200"
                 + "      && !response.redirected"
                 + "      && (mimeType===null || response.headers.get('Content-Type')===mimeType)))"
@@ -247,11 +248,11 @@ public class PwaTestIT extends ChromeDeviceTest {
     }
 
     private static String readStringFromUrl(String url) throws IOException {
-        return new String(readAllBytes(new URL(url).openStream()), StandardCharsets.UTF_8);
+        return new String(readAllBytes(new URL(url).openStream()),
+                StandardCharsets.UTF_8);
     }
 
-    private static JsonObject readJsonFromUrl(String url)
-            throws IOException {
+    private static JsonObject readJsonFromUrl(String url) throws IOException {
         return Json.parse(readStringFromUrl(url));
     }
 
@@ -261,7 +262,8 @@ public class PwaTestIT extends ChromeDeviceTest {
         }
     }
 
-    private static byte[] readAllBytes(InputStream inputStream) throws IOException {
+    private static byte[] readAllBytes(InputStream inputStream)
+            throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         int count;
         byte[] data = new byte[1024];
@@ -273,7 +275,8 @@ public class PwaTestIT extends ChromeDeviceTest {
     }
 
     private boolean isProductionMode() throws IOException {
-        JsonObject stats = readJsonFromUrl(getRootURL() + "/VAADIN/stats.json?v-r=init");
+        JsonObject stats = readJsonFromUrl(
+                getRootURL() + "/VAADIN/stats.json?v-r=init");
         return stats.getObject("appConfig").getBoolean("productionMode");
     }
 }

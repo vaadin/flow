@@ -25,7 +25,8 @@ public class InputTest extends ComponentTest {
     // Actual test methods in super class
 
     @Override
-    public void setup() throws IntrospectionException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public void setup() throws IntrospectionException, InstantiationException,
+            IllegalAccessException, ClassNotFoundException {
         whitelistProperty("valueChangeMode");
         whitelistProperty("valueChangeTimeout");
         super.setup();
