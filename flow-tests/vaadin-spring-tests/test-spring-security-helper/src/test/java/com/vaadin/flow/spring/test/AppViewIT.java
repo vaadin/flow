@@ -58,8 +58,6 @@ public class AppViewIT extends ChromeBrowserTest {
 
     @Test
     public void static_resources_accessible_without_login() throws Exception {
-        verifyResponseCode("/images/image.png", 200);
-        verifyResponseCode("/icons/icon.png", 200);
         verifyResponseCode("/manifest.webmanifest", 200);
         verifyResponseCode("/sw.js", 200);
         verifyResponseCode("/sw-runtime-resources-precache.js", 200);
@@ -70,6 +68,10 @@ public class AppViewIT extends ChromeBrowserTest {
     public void other_static_resources_secured() throws Exception {
         // expect redirect
         verifyResponseCode("/secured.html", 302);
+        // Images and Icons are application specific and not related to Vaadin
+        // See https://github.com/vaadin/flow/pull/10428
+        verifyResponseCode("/images/image.png", 302);
+        verifyResponseCode("/icons/icon.png", 302);
     }
 
     private void login() {
