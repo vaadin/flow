@@ -265,15 +265,15 @@ public class MessageHandler {
         }
 
         /**
-         * Should only prepare resync after the 
-         * if (locked || !isNextExpectedMessage(serverId)) {...}
-         * since stateTree.repareForResync() will remove the nodes,
-         * and if locked is true, it will return without handling 
-         * the message, thus won't adding nodes back. 
+         * Should only prepare resync after the if (locked ||
+         * !isNextExpectedMessage(serverId)) {...} since
+         * stateTree.repareForResync() will remove the nodes, and if locked is
+         * true, it will return without handling the message, thus won't adding
+         * nodes back.
          * 
-         * This is related to https://github.com/vaadin/flow/issues/8699
-         * It seems that the reason is that `connectClient` is removed 
-         * from the rootNode(<body> element) during a resync and not added back.
+         * This is related to https://github.com/vaadin/flow/issues/8699 It
+         * seems that the reason is that `connectClient` is removed from the
+         * rootNode(<body> element) during a resync and not added back.
          */
         if (isResynchronize(valueMap)) {
             // Unregister all nodes and rebuild the state tree
@@ -566,8 +566,10 @@ public class MessageHandler {
     }
 
     private void forceMessageHandling() {
-        // Clear previous request if it exists. Otherwise resyncrhonize can trigger
-        // "Trying to start a new request while another is active" exception and fail.
+        // Clear previous request if it exists. Otherwise resyncrhonize can
+        // trigger
+        // "Trying to start a new request while another is active" exception and
+        // fail.
         if (registry.getRequestResponseTracker().hasActiveRequest()) {
             registry.getRequestResponseTracker().endRequest();
         }

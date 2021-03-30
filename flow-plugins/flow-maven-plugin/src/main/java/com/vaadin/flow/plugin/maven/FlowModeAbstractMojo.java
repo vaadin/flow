@@ -294,7 +294,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         getLog().warn(warning, e);
 
     }
-    
+
     @Override
     public void logError(CharSequence warning, Throwable e) {
 

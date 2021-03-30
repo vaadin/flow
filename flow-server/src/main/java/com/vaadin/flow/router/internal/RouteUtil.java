@@ -162,8 +162,8 @@ public class RouteUtil {
         return list;
     }
 
-    static Optional<RouteAlias> getMatchingRouteAlias(
-            Class<?> component, String path, List<RouteAlias> routeAliases) {
+    static Optional<RouteAlias> getMatchingRouteAlias(Class<?> component,
+            String path, List<RouteAlias> routeAliases) {
         return routeAliases.stream().filter(
                 alias -> path.equals(getRouteAliasPath(component, alias))
                         && !alias.layout().equals(UI.class))
@@ -307,7 +307,8 @@ public class RouteUtil {
         Logger logger = LoggerFactory.getLogger(RouteUtil.class);
 
         registry.update(() -> {
-            // remove deleted classes and classes that lost the annotation from registry
+            // remove deleted classes and classes that lost the annotation from
+            // registry
             Stream.concat(deletedClasses.stream(),
                     modifiedClasses.stream().filter(
                             clazz -> !clazz.isAnnotationPresent(Route.class)))
@@ -319,8 +320,7 @@ public class RouteUtil {
                     });
             // add new routes to registry
             Stream.concat(addedClasses.stream(), modifiedClasses.stream())
-                    .distinct()
-                    .filter(Component.class::isAssignableFrom)
+                    .distinct().filter(Component.class::isAssignableFrom)
                     .filter(clazz -> clazz.isAnnotationPresent(Route.class))
                     .forEach(clazz -> {
                         Class<? extends Component> componentClass = (Class<? extends Component>) clazz;

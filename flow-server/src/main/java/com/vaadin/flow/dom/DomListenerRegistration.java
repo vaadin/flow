@@ -181,8 +181,8 @@ public interface DomListenerRegistration extends Registration {
      * @see #debounce(int)
      * @see #throttle(int)
      *
-     * @return timeout in milliseconds,
-     *         or <code>0</code> if debouncing is disabled
+     * @return timeout in milliseconds, or <code>0</code> if debouncing is
+     *         disabled
      */
     default int getDebounceTimeout() {
         /*

@@ -678,9 +678,9 @@ public class Element extends Node<Element> {
      * or {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @param name
-     *                  the property name, not <code>null</code>
+     *            the property name, not <code>null</code>
      * @param value
-     *                  the property value, not <code>null</code>
+     *            the property value, not <code>null</code>
      * @return this element
      */
     // Distinct name so setProperty("foo", null) is not ambiguous
@@ -702,11 +702,11 @@ public class Element extends Node<Element> {
      * or {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @param <T>
-     *                  the type of items in the list
+     *            the type of items in the list
      * @param name
-     *                  the property name, not <code>null</code>
+     *            the property name, not <code>null</code>
      * @param value
-     *                  the property value, not <code>null</code>
+     *            the property value, not <code>null</code>
      * @return this element
      */
     public <T> Element setPropertyList(String name, List<T> value) {
@@ -728,9 +728,9 @@ public class Element extends Node<Element> {
      * or {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @param name
-     *                  the property name, not <code>null</code>
+     *            the property name, not <code>null</code>
      * @param value
-     *                  the property value, not <code>null</code>
+     *            the property value, not <code>null</code>
      * @return this element
      */
     public Element setPropertyMap(String name, Map<String, ?> value) {

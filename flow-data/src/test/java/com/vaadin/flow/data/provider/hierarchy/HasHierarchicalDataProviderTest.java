@@ -72,7 +72,8 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public void setItemCountEstimateIncrease(int itemCountEstimateIncrease) {
+        public void setItemCountEstimateIncrease(
+                int itemCountEstimateIncrease) {
 
         }
 
@@ -249,7 +250,8 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public TestDataView setItems(InMemoryDataProvider<String> dataProvider) {
+        public TestDataView setItems(
+                InMemoryDataProvider<String> dataProvider) {
             return null;
         }
 

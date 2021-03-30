@@ -84,14 +84,12 @@ public class NodeTasksTest {
     @Test
     public void should_UseDefaultFolders() throws Exception {
         Lookup mockedLookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(new DefaultClassFinder(this.getClass().getClassLoader()))
+        Mockito.doReturn(
+                new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Builder builder = new Builder(mockedLookup,
-                new File(userDir))
-            .enablePackagesUpdate(false)
-            .enableImportsUpdate(true)
-            .runNpmInstall(false)
-            .withEmbeddableWebComponents(false);
+        Builder builder = new Builder(mockedLookup, new File(userDir))
+                .enablePackagesUpdate(false).enableImportsUpdate(true)
+                .runNpmInstall(false).withEmbeddableWebComponents(false);
 
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
@@ -111,13 +109,12 @@ public class NodeTasksTest {
     @Test
     public void should_generateServiceWorkerWhenPwa() throws Exception {
         Lookup mockedLookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(new DefaultClassFinder(this.getClass().getClassLoader()))
+        Mockito.doReturn(
+                new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Builder builder = new Builder(
-                mockedLookup,
-                new File(userDir)).enablePackagesUpdate(false)
-                        .enableImportsUpdate(true).runNpmInstall(false)
-                        .withEmbeddableWebComponents(false);
+        Builder builder = new Builder(mockedLookup, new File(userDir))
+                .enablePackagesUpdate(false).enableImportsUpdate(true)
+                .runNpmInstall(false).withEmbeddableWebComponents(false);
 
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
@@ -140,19 +137,22 @@ public class NodeTasksTest {
         System.setProperty(PARAM_GENERATED_DIR, "my/custom/generated/folder");
 
         Lookup mockedLookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(new DefaultClassFinder(this.getClass().getClassLoader()))
+        Mockito.doReturn(
+                new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Builder builder = new Builder(mockedLookup,
-                new File(userDir))
-            .enablePackagesUpdate(false)
-            .enableImportsUpdate(true)
-            .runNpmInstall(false)
-            .withEmbeddableWebComponents(false);
+        Builder builder = new Builder(mockedLookup, new File(userDir))
+                .enablePackagesUpdate(false).enableImportsUpdate(true)
+                .runNpmInstall(false).withEmbeddableWebComponents(false);
 
-        Assert.assertEquals(new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
-                ((File)getFieldValue(builder, "frontendDirectory")).getAbsolutePath());
-        Assert.assertEquals(new File(userDir, "my/custom/generated/folder").getAbsolutePath(),
-                ((File)getFieldValue(builder, "generatedFolder")).getAbsolutePath());
+        Assert.assertEquals(
+                new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
+                ((File) getFieldValue(builder, "frontendDirectory"))
+                        .getAbsolutePath());
+        Assert.assertEquals(
+                new File(userDir, "my/custom/generated/folder")
+                        .getAbsolutePath(),
+                ((File) getFieldValue(builder, "generatedFolder"))
+                        .getAbsolutePath());
 
         builder.build().execute();
         Assert.assertTrue(
@@ -164,20 +164,20 @@ public class NodeTasksTest {
     public void should_SetIsClientBootstrapMode_When_EnableClientSideBootstrapMode()
             throws ExecutionFailedException, IOException {
         Lookup mockedLookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(new DefaultClassFinder(this.getClass().getClassLoader()))
+        Mockito.doReturn(
+                new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Builder builder = new Builder(mockedLookup,
-                new File(userDir))
-                        .enablePackagesUpdate(false)
-                        .withWebpack(new File(userDir, TARGET + "webapp"),
-                                new File(userDir, TARGET + "classes"),
-                                WEBPACK_CONFIG, WEBPACK_GENERATED)
-                        .enableImportsUpdate(true).runNpmInstall(false)
-                        .withEmbeddableWebComponents(false)
-                        .useV14Bootstrap(false).withFlowResourcesFolder(
-                                new File(userDir, TARGET + "flow-frontend"))
-                        .withConnectClientTsApiFolder(new File(userDir,
-                                DEFAULT_PROJECT_FRONTEND_GENERATED_DIR));
+        Builder builder = new Builder(mockedLookup, new File(userDir))
+                .enablePackagesUpdate(false)
+                .withWebpack(new File(userDir, TARGET + "webapp"),
+                        new File(userDir, TARGET + "classes"), WEBPACK_CONFIG,
+                        WEBPACK_GENERATED)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false).useV14Bootstrap(false)
+                .withFlowResourcesFolder(
+                        new File(userDir, TARGET + "flow-frontend"))
+                .withConnectClientTsApiFolder(new File(userDir,
+                        DEFAULT_PROJECT_FRONTEND_GENERATED_DIR));
         builder.build().execute();
         String webpackGeneratedContent = Files
                 .lines(new File(userDir, WEBPACK_GENERATED).toPath())

@@ -227,7 +227,7 @@ class BootstrapUtils {
      * Read the contents of the given file from the classpath.
      *
      * @param service
-     *           the service that can provide the file
+     *            the service that can provide the file
      * @param file
      *            target file to read contents for
      * @return file contents as a {@link String}

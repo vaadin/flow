@@ -190,8 +190,8 @@ public interface Validator<T>
                             errorMessageProvider.apply(context), errorLevel);
                 }
             } catch (Exception e) {
-                LoggerFactory.getLogger(Validator.class.getName()).info(
-                        "An exception is thrown during validation", e);
+                LoggerFactory.getLogger(Validator.class.getName())
+                        .info("An exception is thrown during validation", e);
                 return ValidationResult.create(
                         errorMessageProvider.apply(context), errorLevel);
             }

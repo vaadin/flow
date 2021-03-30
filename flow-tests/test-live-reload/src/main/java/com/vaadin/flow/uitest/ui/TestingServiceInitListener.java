@@ -43,7 +43,8 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
                         FrontendLiveReloadView
                                 .resetFrontendFile(session.getService());
                         return true;
-                    } else if ("/update_frontend".equals(request.getPathInfo())) {
+                    } else if ("/update_frontend"
+                            .equals(request.getPathInfo())) {
                         String code = IOUtils.toString(request.getInputStream(),
                                 StandardCharsets.UTF_8.name());
                         FrontendLiveReloadView.replaceFrontendFile(

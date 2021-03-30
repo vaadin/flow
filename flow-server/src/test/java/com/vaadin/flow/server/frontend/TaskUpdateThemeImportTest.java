@@ -71,15 +71,16 @@ public class TaskUpdateThemeImportTest {
         npmFolder = temporaryFolder.getRoot();
         frontendDirectory = new File(projectRoot, DEFAULT_FRONTEND_DIR);
         frontendGeneratedDirectory = new File(projectRoot,
-            DEFAULT_PROJECT_FRONTEND_GENERATED_DIR);
+                DEFAULT_PROJECT_FRONTEND_GENERATED_DIR);
 
-        File frontendFolder = new File(npmFolder, FrontendUtils.DEFAULT_FRONTEND_DIR);
+        File frontendFolder = new File(npmFolder,
+                FrontendUtils.DEFAULT_FRONTEND_DIR);
         themeImportFile = new File(
                 new File(frontendFolder, FrontendUtils.GENERATED),
-            THEME_IMPORTS_NAME);
+                THEME_IMPORTS_NAME);
         themeImportTsFile = new File(
-            new File(frontendFolder, FrontendUtils.GENERATED),
-            THEME_IMPORTS_D_TS_NAME);
+                new File(frontendFolder, FrontendUtils.GENERATED),
+                THEME_IMPORTS_D_TS_NAME);
         dummyThemeClass = Mockito.mock(AbstractTheme.class).getClass();
         customTheme = new ThemeDefinition(dummyThemeClass, CUSTOM_VARIANT_NAME,
                 CUSTOM_THEME_NAME);
@@ -93,9 +94,9 @@ public class TaskUpdateThemeImportTest {
         File faultyFrontendDirectory = new File(projectRoot,
                 DEFAULT_FRONTEND_DIR);
 
-        TaskUpdateThemeImport taskUpdateThemeImportWithNonExistentThemeFolder =
-                new TaskUpdateThemeImport(npmFolder, customTheme,
-                        faultyFrontendDirectory, frontendGeneratedDirectory);
+        TaskUpdateThemeImport taskUpdateThemeImportWithNonExistentThemeFolder = new TaskUpdateThemeImport(
+                npmFolder, customTheme, faultyFrontendDirectory,
+                frontendGeneratedDirectory);
 
         ExecutionFailedException e = Assert.assertThrows(
                 ExecutionFailedException.class,
@@ -198,15 +199,15 @@ public class TaskUpdateThemeImportTest {
 
     @Test
     public void runTaskWithTheme_createsThemeFile_afterRunWithoutTheme_removesThemeFile()
-        throws Exception {
+            throws Exception {
 
         File themesDir = new File(frontendDirectory, APPLICATION_THEME_ROOT);
         File aCustomThemeDir = new File(themesDir, CUSTOM_THEME_NAME);
 
         boolean customThemeDirCreatedSuccessfully = aCustomThemeDir.mkdirs();
 
-        Assert.assertTrue(String
-            .format("%s directory should be created at '%s%s/%s' but failed.",
+        Assert.assertTrue(String.format(
+                "%s directory should be created at '%s%s/%s' but failed.",
                 CUSTOM_THEME_NAME, DEFAULT_FRONTEND_DIR, APPLICATION_THEME_ROOT,
                 CUSTOM_THEME_NAME), customThemeDirCreatedSuccessfully);
 
@@ -215,29 +216,29 @@ public class TaskUpdateThemeImportTest {
         assertThemeGeneratedDefinitionFilesExist(SHOULD_EXIST_AFTER_EXECUTION);
 
         taskUpdateThemeImport = new TaskUpdateThemeImport(npmFolder, null,
-            frontendDirectory, frontendGeneratedDirectory);
+                frontendDirectory, frontendGeneratedDirectory);
 
         taskUpdateThemeImport.execute();
 
         assertNoThemeGeneratedDefinitionFilesExist(
-            "After removal of theme %s should be removed");
+                "After removal of theme %s should be removed");
     }
 
     private void assertNoThemeGeneratedDefinitionFilesExist(
-        String errorMessage) {
+            String errorMessage) {
         Assert.assertFalse(String.format(errorMessage, "\"theme.js\""),
-            themeImportFile.exists());
+                themeImportFile.exists());
 
         Assert.assertFalse(String.format(errorMessage, "\theme.d.ts\""),
-            themeImportTsFile.exists());
+                themeImportTsFile.exists());
     }
 
     private void assertThemeGeneratedDefinitionFilesExist(String errorMessage) {
         Assert.assertTrue(String.format(errorMessage, "\"theme.js\""),
-            themeImportFile.exists());
+                themeImportFile.exists());
 
         Assert.assertTrue(String.format(errorMessage, "\theme.d.ts\""),
-            themeImportTsFile.exists());
+                themeImportTsFile.exists());
     }
 
     @Test
@@ -300,8 +301,8 @@ public class TaskUpdateThemeImportTest {
         ExecutionFailedException e = Assert.assertThrows(
                 ExecutionFailedException.class, taskUpdateThemeImport::execute);
 
-        Assert.assertTrue(e.getMessage(), e.getMessage()
-                .contains(String.format(
+        Assert.assertTrue(e.getMessage(),
+                e.getMessage().contains(String.format(
                         "Theme '%s' should not exist inside a "
                                 + "jar and in the project at the same time.",
                         CUSTOM_THEME_NAME)));
@@ -346,11 +347,11 @@ public class TaskUpdateThemeImportTest {
                 ExecutionFailedException.class, taskUpdateThemeImport::execute);
 
         Assert.assertTrue(e.getMessage().contains(String.format(
-            "Discovered Theme folder for theme '%s' "
-                    + "in more than one place in the project. Please "
-                    + "make sure there is only one theme folder with name '%s' "
-                    + "exists in the your project. ",
-            CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
+                "Discovered Theme folder for theme '%s' "
+                        + "in more than one place in the project. Please "
+                        + "make sure there is only one theme folder with name '%s' "
+                        + "exists in the your project. ",
+                CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
     }
 
     @Test
@@ -368,11 +369,11 @@ public class TaskUpdateThemeImportTest {
                 ExecutionFailedException.class, taskUpdateThemeImport::execute);
 
         Assert.assertTrue(e.getMessage().contains(String.format(
-            "Discovered Theme folder for theme '%s' "
-                    + "in more than one place in the project. Please "
-                    + "make sure there is only one theme folder with name '%s' "
-                    + "exists in the your project. ",
-            CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
+                "Discovered Theme folder for theme '%s' "
+                        + "in more than one place in the project. Please "
+                        + "make sure there is only one theme folder with name '%s' "
+                        + "exists in the your project. ",
+                CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
     }
 
     @Test
@@ -395,11 +396,11 @@ public class TaskUpdateThemeImportTest {
                 ExecutionFailedException.class, taskUpdateThemeImport::execute);
 
         Assert.assertTrue(e.getMessage().contains(String.format(
-            "Discovered Theme folder for theme '%s' "
-                    + "in more than one place in the project. Please "
-                    + "make sure there is only one theme folder with name '%s' "
-                    + "exists in the your project. ",
-            CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
+                "Discovered Theme folder for theme '%s' "
+                        + "in more than one place in the project. Please "
+                        + "make sure there is only one theme folder with name '%s' "
+                        + "exists in the your project. ",
+                CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
     }
 
     @Test

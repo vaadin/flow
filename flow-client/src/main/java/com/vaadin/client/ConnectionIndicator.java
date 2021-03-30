@@ -63,7 +63,8 @@ public class ConnectionIndicator {
     /**
      * Set the connection state to be displayed by the loading indicator.
      *
-     * @param state the connection state
+     * @param state
+     *            the connection state
      */
     public static native void setState(String state)
     /*-{
@@ -89,8 +90,10 @@ public class ConnectionIndicator {
     /**
      * Set a property of the connection indicator component.
      *
-     * @param property the property to set
-     * @param value    the value to set
+     * @param property
+     *            the property to set
+     * @param value
+     *            the value to set
      */
     public static native void setProperty(String property, Object value)
     /*-{

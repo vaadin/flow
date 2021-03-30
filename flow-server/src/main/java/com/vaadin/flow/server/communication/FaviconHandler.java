@@ -39,8 +39,8 @@ public class FaviconHandler implements RequestHandler {
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-        //please be careful with changing HttpServletRequest. 
-        //may Implementations VaadinService just deliver HttpServletRequest.
+        // please be careful with changing HttpServletRequest.
+        // may Implementations VaadinService just deliver HttpServletRequest.
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         boolean isFavicon = httpRequest.getContextPath().isEmpty()
                 && httpRequest.getServletPath().isEmpty()

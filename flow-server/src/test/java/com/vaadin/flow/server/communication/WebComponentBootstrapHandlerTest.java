@@ -228,10 +228,12 @@ public class WebComponentBootstrapHandlerTest {
         int scriptIndex = result.indexOf("var hasScript = function(src)");
         Assert.assertTrue(scriptIndex >= 0);
 
-        int guardIndex = result.indexOf("if (!hasScript(\"/VAADIN/build/vaadin-export-2222.cache.js\")) {");
+        int guardIndex = result.indexOf(
+                "if (!hasScript(\"/VAADIN/build/vaadin-export-2222.cache.js\")) {");
         Assert.assertTrue(guardIndex > scriptIndex);
 
-        int createScriptIndex = result.indexOf("document.createElement('script')");
+        int createScriptIndex = result
+                .indexOf("document.createElement('script')");
         Assert.assertTrue(createScriptIndex > guardIndex);
 
         Assert.assertTrue(
@@ -366,11 +368,10 @@ public class WebComponentBootstrapHandlerTest {
         Class<? extends VaadinServlet> servletClass = service.getServlet()
                 .getClass();
 
-        Mockito.when(provider
-                .getApplicationResource(Mockito.anyString()))
-                .thenAnswer(answer ->
-                        WebComponentBootstrapHandlerTest.class.getClassLoader()
-                                .getResource(answer.getArgumentAt(0, String.class)));
+        Mockito.when(provider.getApplicationResource(Mockito.anyString()))
+                .thenAnswer(answer -> WebComponentBootstrapHandlerTest.class
+                        .getClassLoader()
+                        .getResource(answer.getArgumentAt(0, String.class)));
 
         Mockito.when(provider.getClientResourceAsStream(
                 "META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH

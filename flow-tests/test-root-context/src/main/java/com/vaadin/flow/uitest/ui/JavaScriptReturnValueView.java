@@ -78,8 +78,8 @@ public class JavaScriptReturnValueView extends AbstractDivView {
         executionSelect.addOption("Resolved promise",
                 (value, resolveOrReject) -> "return Promise." + resolveOrReject
                         + "(" + value + ")");
-        executionSelect.addOption("Timeout",
-                (value, resolveOrReject) -> "return new Promise((resolve, reject) => {setTimeout(() => "
+        executionSelect.addOption("Timeout", (value,
+                resolveOrReject) -> "return new Promise((resolve, reject) => {setTimeout(() => "
                         + resolveOrReject + "(" + value + "), 1000)})");
 
         NativeButton runButton = createButton("Run", "run", event -> {
