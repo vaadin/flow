@@ -458,38 +458,6 @@ public class JavaScriptBootstrapUITest {
         assertEquals("whatever", execArg.getValue());
     }
 
-    @Test
-    public void should_update_pushState_when_navigationHasBeenAlreadyStarted() {
-        ui = Mockito.spy(ui);
-        Page page = mockPage();
-
-        UIInternals internals = mockUIInternals();
-
-        Mockito.when(internals.hasLastHandledLocation()).thenReturn(true);
-        Location lastLocation = new Location("clean");
-        Mockito.when(internals.getLastHandledLocation())
-                .thenReturn(lastLocation);
-        StateTree stateTree = Mockito.mock(StateTree.class);
-        Mockito.when(internals.getStateTree()).thenReturn(stateTree);
-        Mockito.when(internals.getTitle()).thenReturn("");
-
-        StateNode stateNode = BasicElementStateProvider
-                .createStateNode("foo-element");
-        Mockito.when(stateTree.getRootNode()).thenReturn(stateNode);
-
-        ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> execArg = ArgumentCaptor.forClass(String.class);
-
-        ui.navigate("clean/1");
-        Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
-
-        assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
-
-        final List<String> execValues = execArg.getAllValues();
-        assertEquals(2, execValues.size());
-        assertNull(execValues.get(0));
-        assertEquals("clean/1", execArg.getValue());
-    }
 
     @Test
     public void should_not_notify_clientRoute_when_navigatingToTheSame() {
@@ -508,48 +476,6 @@ public class JavaScriptBootstrapUITest {
                 Mockito.anyString());
     }
 
-    @Test
-    public void server_should_not_doClientRoute_when_navigatingToServer() {
-        ui.connectClient("foo", "bar", "/clean", "");
-        assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H2,
-                ui.wrapperElement.getChild(0).getChild(0).getTag());
-
-        ui = Mockito.spy(ui);
-        Page page = mockPage();
-
-        ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> execArg = ArgumentCaptor.forClass(String.class);
-
-        // Dirty view is allowed after clean view
-        ui.navigate("dirty");
-        // A server navigation happens
-        assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
-        Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
-
-        assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
-
-        final List<String> execValues = execArg.getAllValues();
-        assertEquals(2, execValues.size());
-        assertNull(execValues.get(0));
-        assertEquals("dirty", execArg.getValue());
-    }
-
-    @Test
-    public void should_updatePageTitle_when_serverNavigation() {
-        ui.navigate("empty");
-        assertNull(ui.getInternals().getTitle());
-        ui.navigate("product");
-        assertEquals("my-product", ui.getInternals().getTitle());
-    }
-
-    @Test
-    public void should_removeTitle_when_noAppShellTitle() {
-        ui.navigate("empty");
-        assertNull(ui.getInternals().getTitle());
-        ui.navigate("dirty");
-        assertEquals("", ui.getInternals().getTitle());
-    }
 
     @Test
     public void should_restoreIndexHtmlTitle() {
