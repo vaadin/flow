@@ -63,7 +63,6 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static com.vaadin.flow.server.DevModeHandlerTest.createStubWebpackTcpListener;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
@@ -272,9 +271,6 @@ public class IndexHtmlRequestHandlerTest {
         Assert.assertEquals("", scripts.get(0).attr("initial"));
         Assert.assertTrue(
                 scripts.get(0).toString().contains("Could not navigate"));
-
-        Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING,
-                Boolean.TRUE);
     }
 
     @Test
@@ -292,8 +288,6 @@ public class IndexHtmlRequestHandlerTest {
                 scripts.get(0).childNode(0).toString());
         Assert.assertEquals("", scripts.get(0).attr("initial"));
 
-        Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING,
-                Boolean.TRUE);
     }
 
     @Test
@@ -428,27 +422,6 @@ public class IndexHtmlRequestHandlerTest {
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
         Assert.assertFalse(indexHtml.contains("csrfToken"));
-    }
-
-    @Test
-    public void should_use_client_routing_when_there_is_a_router_call()
-            throws IOException {
-
-        deploymentConfiguration.setEagerServerLoad(true);
-
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                createVaadinRequest("/"), response);
-
-        Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING,
-                Boolean.TRUE);
-        Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING,
-                Boolean.FALSE);
-
-        ((JavaScriptBootstrapUI) UI.getCurrent()).connectClient("foo", "bar",
-                "/foo", "");
-
-        Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING,
-                Boolean.FALSE);
     }
 
     @Test

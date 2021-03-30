@@ -48,8 +48,6 @@ import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
  * internal use in client side bootstrapping.
  */
 public class JavaScriptBootstrapUI extends UI {
-    public static final String SERVER_ROUTING = "clientRoutingMode";
-
     static final String SERVER_CONNECTED = "this.serverConnected($0)";
     static final String CLIENT_NAVIGATE_TO = "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: new URL($0, document.baseURI)}))";
 
@@ -139,11 +137,6 @@ public class JavaScriptBootstrapUI extends UI {
         } else {
             acknowledgeClient();
         }
-
-        // If this call happens, there is a client-side routing, thus
-        // it's needed to remove the flag that might be set in
-        // IndexHtmlRequestHandler
-        getSession().setAttribute(SERVER_ROUTING, Boolean.FALSE);
     }
 
     /**
@@ -175,44 +168,40 @@ public class JavaScriptBootstrapUI extends UI {
     @Override
     public void navigate(String pathname, QueryParameters queryParameters) {
         Location location = new Location(pathname, queryParameters);
-        if (Boolean.TRUE.equals(getSession().getAttribute(SERVER_ROUTING))) {
-            // server-side routing
-            renderViewForRoute(location, NavigationTrigger.UI_NAVIGATE);
-        } else {
-            // client-side routing
+        renderViewForRoute(location, NavigationTrigger.UI_NAVIGATE);
+        // client-side routing
 
-            // There is an in-progress navigation or there are no changes,
-            // prevent looping
-            if (navigationInProgress || getInternals().hasLastHandledLocation()
-                    && sameLocation(getInternals().getLastHandledLocation(),
-                            location)) {
+        // There is an in-progress navigation or there are no changes,
+        // prevent looping
+        if (navigationInProgress
+                || getInternals().hasLastHandledLocation() && sameLocation(
+                        getInternals().getLastHandledLocation(), location)) {
+            return;
+        }
+
+        navigationInProgress = true;
+        Optional<NavigationState> navigationState = getInternals().getRouter()
+                .resolveNavigationTarget(location);
+
+        if (navigationState.isPresent()) {
+            // Navigation can be done in server side without extra
+            // round-trip
+            handleNavigation(location, navigationState.get(),
+                    NavigationTrigger.UI_NAVIGATE);
+            if (getForwardToClientUrl() != null) {
+                navigationInProgress = false;
+                // Server is forwarding to a client route from a
+                // BeforeEnter.
+                navigateToClient(getForwardToClientUrl());
                 return;
             }
-
-            navigationInProgress = true;
-            Optional<NavigationState> navigationState = getInternals()
-                    .getRouter().resolveNavigationTarget(location);
-
-            if (navigationState.isPresent()) {
-                // Navigation can be done in server side without extra
-                // round-trip
-                handleNavigation(location, navigationState.get(),
-                        NavigationTrigger.UI_NAVIGATE);
-                if (getForwardToClientUrl() != null) {
-                    navigationInProgress = false;
-                    // Server is forwarding to a client route from a
-                    // BeforeEnter.
-                    navigateToClient(getForwardToClientUrl());
-                    return;
-                }
-            } else {
-                // Server cannot resolve navigation, let client-side to handle
-                // it.
-                navigateToClient(location.getPathWithQueryParameters());
-            }
-
-            navigationInProgress = false;
+        } else {
+            // Server cannot resolve navigation, let client-side to handle
+            // it.
+            navigateToClient(location.getPathWithQueryParameters());
         }
+
+        navigationInProgress = false;
     }
 
     void navigateToClient(String clientRoute) {

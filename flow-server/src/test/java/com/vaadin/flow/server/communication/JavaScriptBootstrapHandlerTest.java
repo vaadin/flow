@@ -43,8 +43,6 @@ import com.vaadin.flow.shared.communication.PushMode;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
-
 @NotThreadSafe
 public class JavaScriptBootstrapHandlerTest {
 
@@ -127,10 +125,6 @@ public class JavaScriptBootstrapHandlerTest {
         Assert.assertNotNull(UI.getCurrent());
         Assert.assertEquals(JavaScriptBootstrapUI.class,
                 UI.getCurrent().getClass());
-
-        Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING,
-                Boolean.TRUE);
-
     }
 
     @Test
@@ -176,9 +170,6 @@ public class JavaScriptBootstrapHandlerTest {
         Assert.assertTrue(hasNodeTag(visitor, "^<div>.*", ElementType.REGULAR));
         Assert.assertTrue(hasNodeTag(visitor,
                 "^<div>.*Could not navigate to 'bar'.*", ElementType.REGULAR));
-
-        Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING,
-                Boolean.TRUE);
     }
 
     @Test
