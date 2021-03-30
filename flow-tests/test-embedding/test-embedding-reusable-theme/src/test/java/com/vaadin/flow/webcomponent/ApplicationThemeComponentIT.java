@@ -16,6 +16,7 @@
 package com.vaadin.flow.webcomponent;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -96,6 +97,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 handElement.getCssValue("color"));
     }
 
+    @Ignore("Flaky test: #10331")
     @Test
     public void componentThemeIsApplied_forPolymerAndLit() {
         open();
