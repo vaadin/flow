@@ -73,7 +73,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void webpackLiveReload_newCssCreatedAndDeleted_stylesUpdatedOnFly() {
+    public void webpackLiveReload_newCssAndFontCreatedAndDeleted_stylesUpdatedOnFly() {
         open();
         Assert.assertFalse(
                 "Red background is not expected before applying the styles",
@@ -95,15 +95,15 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
 
         // Live reload upon file deletion
         doActionAndWaitUntilLiveReloadComplete(this::deleteTestStyles);
-        waitUntilInitialBackgroundColor();
+        waitUntilInitialStyles();
     }
 
     private void waitUntilCustomBackgroundColor() {
         waitUntil(driver -> isCustomBackGroundColor());
     }
 
-    private void waitUntilInitialBackgroundColor() {
-        waitUntil(driver -> !isCustomBackGroundColor());
+    private void waitUntilInitialStyles() {
+        waitUntil(driver -> !isCustomBackGroundColor() && !isCustomFont());
     }
 
     private void waitUntilCustomFont() {
