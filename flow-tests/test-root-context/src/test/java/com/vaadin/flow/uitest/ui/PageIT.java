@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -73,12 +74,9 @@ public class PageIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/7575")
     public void testSetLocation() {
         open();
-
-        if (hasClientIssue("7575")) {
-            return;
-        }
 
         findElement(By.id("setLocation")).click();
         Assert.assertThat(getDriver().getCurrentUrl(),
@@ -86,11 +84,9 @@ public class PageIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/7575")
     public void testOpenUrlInNewTab() {
         open();
-        if (hasClientIssue("7575")) {
-            return;
-        }
 
         findElement(By.id("open")).click();
         ArrayList<String> tabs = new ArrayList<>(
@@ -101,11 +97,9 @@ public class PageIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/7575")
     public void testOpenUrlInIFrame() throws InterruptedException {
         open();
-        if (hasClientIssue("7575")) {
-            return;
-        }
 
         findElement(By.id("openInIFrame")).click();
 

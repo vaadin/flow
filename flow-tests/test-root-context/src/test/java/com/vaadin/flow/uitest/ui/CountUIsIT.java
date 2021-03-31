@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -27,6 +28,7 @@ import com.vaadin.testbench.parallel.BrowserUtil;
 public class CountUIsIT extends ChromeBrowserTest {
 
     @Test
+    @Ignore("Ignored because the test is flaky: https://github.com/vaadin/flow/issues/10493")
     public void countUisNumer_onlyOneUIShouldBeInitiialized() {
         if (!BrowserUtil.isChrome(getDesiredCapabilities())) {
             // limit this test for being executed in one browser only
