@@ -9,61 +9,155 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 public class HandlerHelperTest {
+
+    private HttpServletRequest createRequest(String pathInfo,
+            RequestType type) {
+        return createRequest(pathInfo,
+                type == null ? null : type.getIdentifier());
+    }
+
+    private HttpServletRequest createRequest(String pathInfo,
+            String typeString) {
+        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        if ("".equals(pathInfo)) {
+            pathInfo = null;
+        }
+
+        Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
+        Mockito.when(request.getParameter("v-r")).thenReturn(typeString);
+        return request;
+    }
+
     @Test
     public void isFrameworkInternalRequest_validType_nullPathInfo() {
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.getPathInfo()).thenReturn(null);
-        Mockito.when(request.getParameter("v-r"))
-                .thenReturn(RequestType.INIT.getIdentifier());
-        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest(request));
+        HttpServletRequest request = createRequest(null, RequestType.INIT);
+
+        Assert.assertTrue(
+                HandlerHelper.isFrameworkInternalRequest("/", request));
+        Assert.assertTrue(
+                HandlerHelper.isFrameworkInternalRequest("/*", request));
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/foo/*", request));
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/foo", request));
     }
 
     @Test
     public void isFrameworkInternalRequest_validType_emptyPathinfo() {
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.getPathInfo()).thenReturn("");
-        Mockito.when(request.getParameter("v-r"))
-                .thenReturn(RequestType.INIT.getIdentifier());
-        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest(request));
+        HttpServletRequest request = createRequest("", RequestType.INIT);
+
+        Assert.assertTrue(
+                HandlerHelper.isFrameworkInternalRequest("/", request));
+        Assert.assertTrue(
+                HandlerHelper.isFrameworkInternalRequest("/*", request));
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/foo", request));
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/foo/*", request));
     }
 
     @Test
-    public void isFrameworkInternalRequest_validType_slashPathinfo() {
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.getPathInfo()).thenReturn("/");
-        Mockito.when(request.getParameter("v-r"))
-                .thenReturn(RequestType.INIT.getIdentifier());
-        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest(request));
-    }
+    public void isFrameworkInternalRequest_unknownType() {
+        HttpServletRequest request = createRequest(null, "unknown");
 
-    @Test
-    public void isFrameworkInternalRequest_invalidType() {
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.getParameter("v-r")).thenReturn("unknown");
-        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest(request));
+        Assert.assertTrue(
+                HandlerHelper.isFrameworkInternalRequest("/", request));
+        Assert.assertTrue(
+                HandlerHelper.isFrameworkInternalRequest("/*", request));
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/foo", request));
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/foo/*", request));
+
     }
 
     @Test
     public void isFrameworkInternalRequest_noType() {
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.getParameter("v-r")).thenReturn(null);
+        HttpServletRequest request = createRequest(null, (RequestType) null);
+
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/", request));
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/*", request));
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/foo", request));
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/foo/*", request));
+
+    }
+
+    @Test
+    public void isFrameworkInternalRequest_validType_withPath() {
+        HttpServletRequest request = createRequest("/hello", RequestType.INIT);
+
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/", request));
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/*", request));
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/foo", request));
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/foo/*", request));
+        Assert.assertTrue(
+                HandlerHelper.isFrameworkInternalRequest("/hello", request));
+        Assert.assertTrue(
+                HandlerHelper.isFrameworkInternalRequest("/hello/*", request));
+    }
+
+    @Test
+    public void isFrameworkInternalRequest_vaadinRequest_servletRoot() {
+        VaadinRequest request = createVaadinRequest("", "/*", RequestType.INIT);
+
+        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest(request));
+    }
+
+    @Test
+    public void isFrameworkInternalRequest_vaadinRequest_servletRoot_noType() {
+        VaadinRequest request = createVaadinRequest("", "/*", null);
+
         Assert.assertFalse(HandlerHelper.isFrameworkInternalRequest(request));
     }
 
     @Test
-    public void isFrameworkInternalRequest_wrongPath() {
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.getPathInfo()).thenReturn("hello");
-        Mockito.when(request.getParameter("v-r"))
-                .thenReturn(RequestType.INIT.getIdentifier());
+    public void isFrameworkInternalRequest_vaadinRequest_pathInsideServlet() {
+        VaadinRequest request = createVaadinRequest("/foo", "/*",
+                RequestType.INIT);
+
         Assert.assertFalse(HandlerHelper.isFrameworkInternalRequest(request));
     }
 
     @Test
-    public void isFrameworkInternalRequest_staticResourceRequest() {
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.getPathInfo()).thenReturn("/VAADIN/foo.css");
+    public void isFrameworkInternalRequest_vaadinRequest_pathInsideServlet_noType() {
+        VaadinRequest request = createVaadinRequest("/foo", "/*", null);
+
         Assert.assertFalse(HandlerHelper.isFrameworkInternalRequest(request));
     }
 
+    @Test
+    public void isFrameworkInternalRequest_vaadinRequest_nonRootServlet() {
+        VaadinRequest request = createVaadinRequest("", "/myservlet/",
+                RequestType.INIT);
+
+        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest(request));
+    }
+
+    @Test
+    public void isFrameworkInternalRequest_vaadinRequest_nonRootServlet_pathInsideServlet() {
+        VaadinRequest request = createVaadinRequest("/hello", "/myservlet",
+                null);
+
+        Assert.assertFalse(HandlerHelper.isFrameworkInternalRequest(request));
+    }
+
+    private VaadinRequest createVaadinRequest(String requestPath,
+            String servletPath, RequestType type) {
+        HttpServletRequest servletRequest = createRequest(requestPath, type);
+        if (servletPath.equals("/*")) {
+            // This is what the spec says HttpServletRequest#getServletPath
+            servletPath = "";
+        }
+        Mockito.when(servletRequest.getServletPath()).thenReturn(servletPath);
+        return new VaadinServletRequest(servletRequest,
+                Mockito.mock(VaadinServletService.class));
+    }
 }

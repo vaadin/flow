@@ -123,8 +123,13 @@ public class HandlerHelper implements Serializable {
      *         otherwise
      */
     public static boolean isFrameworkInternalRequest(VaadinRequest request) {
-        return isFrameworkInternalRequest(request.getPathInfo(), request
-                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
+        if (request instanceof VaadinServletRequest) {
+            // We can ignore the servlet path in this case as we know that
+            // this is targeting a Vaadin servlet and not some other servlet
+            return isInternalRequestInsideServlet(request.getPathInfo(), request
+                    .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
+        }
+        return false;
     }
 
     /**
@@ -134,19 +139,23 @@ public class HandlerHelper implements Serializable {
      * Especially bootstrap requests for any route or static resource requests
      * are not internal, even resource requests for the JS bundle.
      *
+     * @param servletMappingPath
+     *            the path the Vaadin servlet is mapped to, with or without and
+     *            ending "/*"
      * @param request
      *            the servlet request
      * @return {@code true} if the request is Vaadin internal, {@code false}
      *         otherwise
      */
-    public static boolean isFrameworkInternalRequest(
+    public static boolean isFrameworkInternalRequest(String servletMappingPath,
             HttpServletRequest request) {
-        return isFrameworkInternalRequest(request.getPathInfo(), request
-                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
+        return isFrameworkInternalRequest(servletMappingPath,
+                getRequestPathInsideContext(request), request.getParameter(
+                        ApplicationConstants.REQUEST_TYPE_PARAMETER));
     }
 
-    private static boolean isFrameworkInternalRequest(String pathInfo,
-            String requestTypeParameter) {
+    private static boolean isFrameworkInternalRequest(String servletMappingPath,
+            String requestedPath, String requestTypeParameter) {
         /*
          * According to the spec, pathInfo should be null but not all servers
          * implement it like that...
@@ -155,11 +164,58 @@ public class HandlerHelper implements Serializable {
          * it seems but requests are sent to /vaadinServlet/, causing the "/"
          * path info
          */
-        if (pathInfo == null || pathInfo.isEmpty() || "/".equals(pathInfo)) {
-            return requestTypeParameter != null;
+
+        // This is only an internal request if it is for the Vaadin servlet
+        String requestedPathWithoutServletMapping = getPathIfInsideServlet(
+                servletMappingPath, requestedPath);
+        if (requestedPathWithoutServletMapping == null) {
+            return false;
+        }
+        if (isInternalRequestInsideServlet(requestedPathWithoutServletMapping,
+                requestTypeParameter)) {
+            return true;
         }
 
         return false;
+    }
+
+    private static boolean isInternalRequestInsideServlet(
+            String requestedPathWithoutServletMapping,
+            String requestTypeParameter) {
+        if (requestedPathWithoutServletMapping == null
+                || requestedPathWithoutServletMapping.isEmpty()) {
+            return requestTypeParameter != null;
+        }
+        return false;
+    }
+
+    private static String getPathIfInsideServlet(String servletMappingPath,
+            String requestedPath) {
+        if (servletMappingPath.endsWith("/*")) {
+            servletMappingPath = servletMappingPath.substring(0,
+                    servletMappingPath.length() - "/*".length());
+        }
+        if (servletMappingPath.equals("/")) {
+            servletMappingPath = "";
+        }
+        if (!requestedPath.startsWith(servletMappingPath)) {
+            return null;
+        }
+        return requestedPath.substring(servletMappingPath.length());
+    }
+
+    private static String getRequestPathInsideContext(
+            HttpServletRequest request) {
+        String servletPath = request.getServletPath();
+        String pathInfo = request.getPathInfo();
+        String url = "";
+        if (servletPath != null) {
+            url += servletPath;
+        }
+        if (pathInfo != null) {
+            url += pathInfo;
+        }
+        return url;
     }
 
     /**
