@@ -30,9 +30,11 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.router.QueryParameters;
-
 public class QueryParametersTest {
+
+    private String simpleInputQueryString = "one=1&two=2&three=3&four&five=4%2f5";
+
+    private String complexInputQueryString = "one=1&one=11&two=2&two=22&three=3&four&five=4%2f5";
 
     private Map<String, String> getSimpleInputParameters() {
         Map<String, String> inputParameters = new HashMap<>();
@@ -94,6 +96,20 @@ public class QueryParametersTest {
     }
 
     @Test
+    public void simpleParametersFromQueryString() {
+        QueryParameters simpleParams = QueryParameters
+                .fromString(simpleInputQueryString);
+
+        Map<String, List<String>> expectedFullParams = new HashMap<>();
+        expectedFullParams.put("one", Collections.singletonList("1"));
+        expectedFullParams.put("two", Collections.singletonList("2"));
+        expectedFullParams.put("three", Collections.singletonList("3"));
+        expectedFullParams.put("four", Collections.singletonList(""));
+        expectedFullParams.put("five", Collections.singletonList("4/5"));
+        assertEquals(expectedFullParams, simpleParams.getParameters());
+    }
+
+    @Test
     public void simpleParametersToQueryString() {
         QueryParameters simpleParams = QueryParameters
                 .simple(getSimpleInputParameters());
@@ -128,6 +144,20 @@ public class QueryParametersTest {
         expectedFullParams.put("one", Arrays.asList("1", "11"));
         expectedFullParams.put("two", Arrays.asList("2", "22"));
         expectedFullParams.put("three", Collections.singletonList("3"));
+        assertEquals(expectedFullParams, fullParams.getParameters());
+    }
+
+    @Test
+    public void complexParametersFromQueryString() {
+        QueryParameters fullParams = QueryParameters
+                .fromString(complexInputQueryString);
+
+        Map<String, List<String>> expectedFullParams = new HashMap<>();
+        expectedFullParams.put("one", Arrays.asList("1", "11"));
+        expectedFullParams.put("two", Arrays.asList("2", "22"));
+        expectedFullParams.put("three", Collections.singletonList("3"));
+        expectedFullParams.put("four", Collections.singletonList(""));
+        expectedFullParams.put("five", Collections.singletonList("4/5"));
         assertEquals(expectedFullParams, fullParams.getParameters());
     }
 
