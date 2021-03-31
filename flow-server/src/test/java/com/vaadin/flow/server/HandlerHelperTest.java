@@ -40,7 +40,7 @@ public class HandlerHelperTest {
     public void isFrameworkInternalRequest_invalidType() {
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         Mockito.when(request.getParameter("v-r")).thenReturn("unknown");
-        Assert.assertFalse(HandlerHelper.isFrameworkInternalRequest(request));
+        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest(request));
     }
 
     @Test
