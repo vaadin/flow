@@ -16,14 +16,19 @@
 package com.vaadin.flow.router;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
 
 /**
  * Holds query parameters information.
@@ -95,6 +100,35 @@ public class QueryParameters implements Serializable {
         return simpleParameters.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey,
                         entry -> Collections.singletonList(entry.getValue())));
+    }
+
+    /**
+     * Creates parameters from a query string.
+     *
+     * @param queryString
+     *            the query string
+     * @return query parameters information
+     */
+    public static QueryParameters fromString(String queryString) {
+        return new QueryParameters(parseQueryString(queryString));
+    }
+
+    private static Map<String, List<String>> parseQueryString(
+            String queryString) {
+        List<NameValuePair> params = URLEncodedUtils.parse(queryString,
+                StandardCharsets.UTF_8);
+        Map<String, List<String>> map = new HashMap<>();
+        for (NameValuePair param : params) {
+            List<String> currentValue = map.computeIfAbsent(param.getName(),
+                    key -> new ArrayList<>());
+            String value = param.getValue();
+            if (value == null) {
+                value = ""; // "?foo" should result in foo with value ""
+            }
+            currentValue.add(value);
+        }
+        return map;
+
     }
 
     /**
