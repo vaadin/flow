@@ -15,12 +15,6 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static elemental.json.JsonType.ARRAY;
-import static elemental.json.JsonType.OBJECT;
-import static elemental.json.JsonType.STRING;
-
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,6 +32,12 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static elemental.json.JsonType.ARRAY;
+import static elemental.json.JsonType.OBJECT;
+import static elemental.json.JsonType.STRING;
 
 /**
  * Parse statistics data provided by webpack.
@@ -90,7 +90,7 @@ public final class BundleParser {
      * end character with <code>;}</code> e.g. <code>';}</code>
      */
     private static final Pattern POLYMER_TEMPLATE_PATTERN = Pattern.compile(
-            "get[\\s]*template\\(\\)[\\s]*\\{[\\s]*return[\\s]*html([\\`\\'\\\"])([\\s\\S]*)\\1;[\\s]*\\}");
+            "get[\\s]*template\\(\\)[\\s]*\\{[\\s]*return[\\s]*html[\\s]*([\\`\\'\\\"])([\\s\\S]*)\\1;[\\s]*\\}");
 
     private static final Pattern NO_TEMPLATE_PATTERN = Pattern.compile(
             "innerHTML[\\s]*=[\\s]*([\\`\\'\\\"])([\\s]*<dom-module\\s+[\\s\\S]*)\\1;");
