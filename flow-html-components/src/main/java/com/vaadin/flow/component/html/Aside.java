@@ -28,7 +28,8 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.ASIDE)
-public class Aside extends HtmlContainer implements ClickNotifier<Aside>, HasOrderedComponents {
+public class Aside extends HtmlContainer
+        implements ClickNotifier<Aside>, HasOrderedComponents {
 
     /**
      * Creates a new empty aside.

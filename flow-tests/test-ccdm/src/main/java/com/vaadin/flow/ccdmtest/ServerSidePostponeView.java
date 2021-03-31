@@ -63,10 +63,9 @@ public class ServerSidePostponeView extends Div implements BeforeLeaveObserver {
         lastEvent = event;
 
         if (proceedButton == null) {
-            proceedButton = new NativeButton("Proceed",
-                    buttonClickEvent -> {
-                        lastEvent.getContinueNavigationAction().proceed();
-                    });
+            proceedButton = new NativeButton("Proceed", buttonClickEvent -> {
+                lastEvent.getContinueNavigationAction().proceed();
+            });
             proceedButton.setId("proceedAfterPostpone");
             add(proceedButton);
         }

@@ -58,7 +58,8 @@ public class LoadingIndicatorConfigurationMapTest
 
     @Test
     public void setGetDefaultThemeApplied() {
-        testBoolean(map, LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_KEY,
+        testBoolean(map,
+                LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_KEY,
                 map::setApplyDefaultTheme, map::isApplyDefaultTheme);
     }
 }

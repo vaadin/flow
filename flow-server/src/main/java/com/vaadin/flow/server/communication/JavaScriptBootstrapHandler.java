@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.server.communication;
 
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;

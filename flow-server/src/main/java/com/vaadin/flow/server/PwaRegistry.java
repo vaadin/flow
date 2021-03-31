@@ -33,11 +33,14 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import elemental.json.Json;
@@ -234,16 +237,20 @@ public class PwaRegistry implements Serializable {
             ServletContext servletContext) {
         StringBuilder stringBuilder = new StringBuilder();
 
-        // List of icons for precache
-        List<String> filesToCache = getIcons().stream()
+        // List of files to precache
+        Collection<String> filesToCache = getIcons().stream()
                 .filter(PwaIcon::shouldBeCached).map(PwaIcon::getCacheFormat)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        // When offlinePath is in use, it is also an offline resource to
+        // When custom offlinePath is in use, it is also an offline resource to
         // precache
         if (pwaConfiguration.isOfflinePathEnabled()) {
-            filesToCache.add(offlinePageCache());
+            filesToCache
+                    .add(offlinePageCache(pwaConfiguration.getOfflinePath()));
         }
+        // Offline stub to be shown within an <iframe> in the app shell
+        filesToCache
+                .add(offlinePageCache(PwaHandler.DEFAULT_OFFLINE_STUB_PATH));
 
         // Add manifest to precache
         filesToCache.add(manifestCache());
@@ -403,9 +410,8 @@ public class PwaRegistry implements Serializable {
         return runtimeServiceWorkerJs;
     }
 
-    private String offlinePageCache() {
-        return String.format(WORKBOX_CACHE_FORMAT,
-                pwaConfiguration.getOfflinePath(), offlineHash);
+    private String offlinePageCache(String offlinePath) {
+        return String.format(WORKBOX_CACHE_FORMAT, offlinePath, offlineHash);
     }
 
     private String manifestCache() {

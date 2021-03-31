@@ -247,7 +247,6 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             
-            
             configurations {
                 developmentOnly
                 runtimeClasspath {

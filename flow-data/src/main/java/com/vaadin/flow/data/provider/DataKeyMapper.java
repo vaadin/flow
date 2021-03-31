@@ -93,4 +93,3 @@ public interface DataKeyMapper<T> extends Serializable {
      */
     void setIdentifierGetter(ValueProvider<T, Object> identifierGetter);
 }
-

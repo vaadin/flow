@@ -133,7 +133,7 @@ public class JavaScriptBootstrapUI extends UI {
         if (getForwardToClientUrl() != null) {
             navigateToClient(getForwardToClientUrl());
             acknowledgeClient();
-            
+
         } else if (isPostponed()) {
             cancelClient();
         } else {
@@ -185,7 +185,7 @@ public class JavaScriptBootstrapUI extends UI {
             // prevent looping
             if (navigationInProgress || getInternals().hasLastHandledLocation()
                     && sameLocation(getInternals().getLastHandledLocation(),
-                    location)) {
+                            location)) {
                 return;
             }
 
@@ -243,7 +243,8 @@ public class JavaScriptBootstrapUI extends UI {
                 NavigationTrigger.CLIENT_SIDE);
     }
 
-    private void renderViewForRoute(Location location, NavigationTrigger trigger) {
+    private void renderViewForRoute(Location location,
+            NavigationTrigger trigger) {
         if (!shouldHandleNavigation(location)) {
             return;
         }
@@ -280,7 +281,8 @@ public class JavaScriptBootstrapUI extends UI {
                         .trimPath(oldLocation.getPathWithQueryParameters()));
     }
 
-    private void handleNavigation(Location location, NavigationState navigationState, NavigationTrigger trigger) {
+    private void handleNavigation(Location location,
+            NavigationState navigationState, NavigationTrigger trigger) {
         try {
             NavigationEvent navigationEvent = new NavigationEvent(
                     getInternals().getRouter(), location, this, trigger);
@@ -290,7 +292,8 @@ public class JavaScriptBootstrapUI extends UI {
 
             clientNavigationStateRenderer.handle(navigationEvent);
 
-            forwardToClientUrl = clientNavigationStateRenderer.getClientForwardRoute();
+            forwardToClientUrl = clientNavigationStateRenderer
+                    .getClientForwardRoute();
 
             adjustPageTitle();
 
@@ -337,7 +340,8 @@ public class JavaScriptBootstrapUI extends UI {
         // app shell title is computed from the title tag in index.html
         String appShellTitle = getInternals().getAppShellTitle();
         // restore the app shell title when there is no one for the route
-        if ((newTitle == null || newTitle.isEmpty()) && appShellTitle != null && !appShellTitle.isEmpty()) {
+        if ((newTitle == null || newTitle.isEmpty()) && appShellTitle != null
+                && !appShellTitle.isEmpty()) {
             getInternals().cancelPendingTitleUpdate();
             getInternals().setTitle(appShellTitle);
         }
@@ -354,8 +358,8 @@ public class JavaScriptBootstrapUI extends UI {
         ErrorParameter<NotFoundException> errorParameter = new ErrorParameter<>(
                 NotFoundException.class, notFoundException);
         ErrorNavigationEvent errorNavigationEvent = new ErrorNavigationEvent(
-                getInternals().getRouter(), location, this, NavigationTrigger.CLIENT_SIDE,
-                errorParameter);
+                getInternals().getRouter(), location, this,
+                NavigationTrigger.CLIENT_SIDE, errorParameter);
         errorStateRenderer.handle(errorNavigationEvent);
     }
 

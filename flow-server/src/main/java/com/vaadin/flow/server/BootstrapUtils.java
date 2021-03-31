@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -227,23 +226,18 @@ class BootstrapUtils {
      *
      * Read the contents of the given file from the classpath.
      *
-     * @param request
-     *            the request for the ui
+     * @param service
+     *            the service that can provide the file
      * @param file
      *            target file to read contents for
      * @return file contents as a {@link String}
      */
-    static String getDependencyContents(VaadinRequest request, String file) {
-        Charset requestCharset = Optional
-                .ofNullable(request.getCharacterEncoding())
-                .filter(string -> !string.isEmpty()).map(Charset::forName)
-                .orElse(StandardCharsets.UTF_8);
-
-        try (InputStream inlineResourceStream = getInlineResourceStream(request,
+    static String getDependencyContents(VaadinService service, String file) {
+        try (InputStream inlineResourceStream = getInlineResourceStream(service,
                 file);
                 BufferedReader bufferedReader = new BufferedReader(
                         new InputStreamReader(inlineResourceStream,
-                                requestCharset))) {
+                                StandardCharsets.UTF_8))) {
             return bufferedReader.lines()
                     .collect(Collectors.joining(System.lineSeparator()));
         } catch (IOException e) {
@@ -252,9 +246,8 @@ class BootstrapUtils {
         }
     }
 
-    private static InputStream getInlineResourceStream(VaadinRequest request,
+    private static InputStream getInlineResourceStream(VaadinService service,
             String file) {
-        VaadinService service = request.getService();
         ResourceProvider resourceProvider = service.getContext()
                 .getAttribute(Lookup.class).lookup(ResourceProvider.class);
         URL appResource = resourceProvider.getApplicationResource(file);

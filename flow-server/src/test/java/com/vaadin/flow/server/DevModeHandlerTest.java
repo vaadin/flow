@@ -62,7 +62,6 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.WEBPACK_TEST_OUT_FILE;
@@ -579,40 +578,6 @@ public class DevModeHandlerTest {
         // No more "reuseDevServer" calls are done: see above, it has been
         // already called one time
         Mockito.verify(configuration).reuseDevServer();
-    }
-
-    @Test
-    @Ignore("Flaky test, see #10101")
-    public void start_twoInstances_secondInstanceUsesAnotherPort()
-            throws Exception {
-
-        // start the first instance
-        DevModeHandler handler = DevModeHandler.start(0, createDevModeLookup(),
-                npmFolder, CompletableFuture.completedFuture(null));
-
-        // remove the "singleton" instance to be able to start another one
-        removeDevModeHandlerInstance();
-
-        // since the timeout is quite big the server port still should be
-        // available and the second instance should try to reuse it
-        DevModeHandler anotherHandler = DevModeHandler.start(0,
-                createDevModeLookup(), npmFolder,
-                CompletableFuture.completedFuture(null));
-
-        while (handler.getPort() == 0) {
-            Thread.sleep(100);
-        }
-
-        int firstPort = handler.getPort();
-
-        anotherHandler.join();
-
-        int secondPort = anotherHandler.getPort();
-
-        // the second instance was able to start with another port value
-        // even though the first port number is not bound to webpack server
-        // instance
-        Assert.assertNotEquals(firstPort, secondPort);
     }
 
     @Test

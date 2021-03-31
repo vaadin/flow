@@ -1380,11 +1380,10 @@ public class BootstrapHandlerTest {
 
         String statsJson = "{\n" + " \"errors\": [],\n" + " \"warnings\": [],\n"
                 + " \"assetsByChunkName\": {\n" + "  \"bundle\": [\n"
-                + "    \"VAADIN/build/vaadin-bundle-e77008557c8d410bf0dc" +
-                ".cache.js\",\n"
-                + "    \"VAADIN/build/vaadin-bundle-e77008557c8d410bf0dc" +
-                ".cache.js.map\"\n"
-                + "  ],\n" + " }" + "}";
+                + "    \"VAADIN/build/vaadin-bundle-e77008557c8d410bf0dc"
+                + ".cache.js\",\n"
+                + "    \"VAADIN/build/vaadin-bundle-e77008557c8d410bf0dc"
+                + ".cache.js.map\"\n" + "  ],\n" + " }" + "}";
 
         File tmpFile = tmpDir.newFile();
         try (FileOutputStream stream = new FileOutputStream(tmpFile)) {

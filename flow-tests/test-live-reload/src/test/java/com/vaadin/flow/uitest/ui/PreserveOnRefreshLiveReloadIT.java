@@ -40,7 +40,7 @@ public class PreserveOnRefreshLiveReloadIT extends AbstractLiveReloadIT {
     public void viewIsPreservedOnLiveReload() {
         open();
 
-        String instanceId0= findElement(
+        String instanceId0 = findElement(
                 By.id(AbstractLiveReloadView.INSTANCE_IDENTIFIER)).getText();
         WebElement liveReloadTrigger = findElement(
                 By.id(JavaLiveReloadView.JAVA_LIVE_RELOAD_TRIGGER_BUTTON));

@@ -294,9 +294,8 @@ public class BuildFrontendUtil {
      * @throws URISyntaxException
      *             - while parsing nodeDownloadRoot()) to URI
      */
-    public static void runWebpack(PluginAdapterBase adapter)
-            throws IOException, InterruptedException,
-            TimeoutException, URISyntaxException {
+    public static void runWebpack(PluginAdapterBase adapter) throws IOException,
+            InterruptedException, TimeoutException, URISyntaxException {
 
         String webpackCommand = "webpack/bin/webpack.js";
         File webpackExecutable = new File(adapter.npmFolder(),

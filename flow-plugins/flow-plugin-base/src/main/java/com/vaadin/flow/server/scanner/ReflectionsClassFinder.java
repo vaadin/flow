@@ -51,9 +51,9 @@ public class ReflectionsClassFinder implements ClassFinder {
                 .addClassLoader(classLoader).setExpandSuperTypes(false)
                 .addUrls(urls);
 
-        configurationBuilder.setInputsFilter(
-            resourceName -> resourceName.endsWith(".class") && !resourceName
-                        .endsWith("module-info.class"));
+        configurationBuilder
+                .setInputsFilter(resourceName -> resourceName.endsWith(".class")
+                        && !resourceName.endsWith("module-info.class"));
         reflections = new Reflections(configurationBuilder);
     }
 

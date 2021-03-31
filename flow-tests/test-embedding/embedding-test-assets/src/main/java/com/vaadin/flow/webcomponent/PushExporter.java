@@ -28,7 +28,8 @@ public class PushExporter extends WebComponentExporter<PushComponent> {
     }
 
     @Override
-    public void configureInstance(WebComponent<PushComponent> webComponent, PushComponent component) {
+    public void configureInstance(WebComponent<PushComponent> webComponent,
+            PushComponent component) {
 
     }
 }

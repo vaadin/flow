@@ -52,7 +52,8 @@ public class ThemeView extends Div {
         faText.setId(FONTAWESOME_ID);
 
         Image snowFlake = new Image(
-            "themes/app-theme/fortawesome/icons/snowflake.svg", "snowflake");
+                "themes/app-theme/fortawesome/icons/snowflake.svg",
+                "snowflake");
         snowFlake.setHeight("1em");
         snowFlake.setId(SNOWFLAKE_ID);
 

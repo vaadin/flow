@@ -23,8 +23,7 @@ public class ComplexDialogShortcutView extends DialogShortcutView {
         final String overlayId = OVERLAY_ID + dialog.index;
         final String overlayFetchJS = "document.getElementById('" + overlayId
                 + "')";
-        Shortcuts.setShortcutListenOnElement(overlayFetchJS,
-                dialog);
+        Shortcuts.setShortcutListenOnElement(overlayFetchJS, dialog);
         // simulate a fake overlay element
         fakeOverlayElement = new Div();
         fakeOverlayElement.setId(overlayId);
