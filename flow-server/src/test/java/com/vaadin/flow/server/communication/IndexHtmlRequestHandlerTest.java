@@ -704,7 +704,7 @@ public class IndexHtmlRequestHandlerTest {
 
     @Test
     public void internal_request_no_bootstrap_page() {
-        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         Mockito.when(request.getPathInfo()).thenReturn(null);
         Mockito.when(request.getParameter("v-r")).thenReturn("hello-foo-bar");
         Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest(request));
