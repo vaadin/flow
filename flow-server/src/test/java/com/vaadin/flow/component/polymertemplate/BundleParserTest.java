@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
 public class BundleParserTest {
@@ -84,5 +85,13 @@ public class BundleParserTest {
                 "Parsed value for attribute 'placeholder' was wrong.",
                 "nats://server:port", natsElement.attr("placeholder"));
 
+    }
+
+    @Test
+    public void parseTemplateElement_spacesBetweenHtmlAndTick() {
+        String source = "static get template() { return html    `<div id='bar'></div>`;}";
+        Element element = BundleParser.parseTemplateElement("foo.js", source);
+
+        Assert.assertNotNull(element.getElementById("bar"));
     }
 }
