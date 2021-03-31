@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -53,10 +54,17 @@ public class NavigationTriggerIT extends ChromeBrowserTest {
         assertMessageCount(3);
         assertLastMessage("/navigate", NavigationTrigger.UI_NAVIGATE,
                 "navigate");
+    }
 
-        if (hasClientIssue("7572")) {
-            return;
-        }
+    @Test
+    @Ignore("Ignored because of fusion issue https://github.com/vaadin/flow/issues/10513")
+    public void testNavigationTriggers_back_forward() {
+        String url = getTestURL() + "/abc/";
+        getDriver().get(url);
+
+        findElement(By.id("routerlink")).click();
+
+        findElement(By.id("navigate")).click();
 
         getDriver().navigate().back();
         assertMessageCount(4);
