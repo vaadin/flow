@@ -183,7 +183,8 @@ public class HandlerHelper implements Serializable {
             String requestedPathWithoutServletMapping,
             String requestTypeParameter) {
         if (requestedPathWithoutServletMapping == null
-                || requestedPathWithoutServletMapping.isEmpty()) {
+                || requestedPathWithoutServletMapping.isEmpty()
+                || "/".equals(requestedPathWithoutServletMapping)) {
             return requestTypeParameter != null;
         }
         return false;

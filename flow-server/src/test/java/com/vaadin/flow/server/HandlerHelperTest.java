@@ -57,6 +57,21 @@ public class HandlerHelperTest {
     }
 
     @Test
+    public void isFrameworkInternalRequest_validType_slashPathinfo() {
+        // This is how requests to /vaadinServlet/ are interpreted
+        HttpServletRequest request = createRequest("/", RequestType.INIT);
+
+        Assert.assertTrue(
+                HandlerHelper.isFrameworkInternalRequest("/", request));
+        Assert.assertTrue(
+                HandlerHelper.isFrameworkInternalRequest("/*", request));
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/foo", request));
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/foo/*", request));
+    }
+
+    @Test
     public void isFrameworkInternalRequest_unknownType() {
         HttpServletRequest request = createRequest(null, "unknown");
 
