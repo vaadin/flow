@@ -43,13 +43,15 @@ public class WebBrowser implements Serializable {
     private BrowserDetails browserDetails = null;
 
     /**
-     * For internal use only. Configures all properties for the initial empty state.
+     * For internal use only. Configures all properties for the initial empty
+     * state.
      */
-    protected WebBrowser() {}
+    protected WebBrowser() {
+    }
 
     /**
-     * For internal use only. Configures all properties in the class according to
-     * the given information.
+     * For internal use only. Configures all properties in the class according
+     * to the given information.
      *
      * @param request
      *            the Vaadin request to read the information from
@@ -301,6 +303,9 @@ public class WebBrowser implements Serializable {
      */
     @Deprecated
     public boolean isIOS() {
+        if (browserDetails == null) {
+            return false;
+        }
         return browserDetails.isIOS();
     }
 
@@ -327,6 +332,9 @@ public class WebBrowser implements Serializable {
      */
     @Deprecated
     public boolean isIPad() {
+        if (browserDetails == null) {
+            return false;
+        }
         return browserDetails.isIPad();
     }
 
