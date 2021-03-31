@@ -136,7 +136,7 @@ public class VaadinConnectAccessChecker {
     private boolean cannotAccessMethod(Method method,
             HttpServletRequest request) {
         return requestForbidden(request)
-                || entityForbidden(getSecurityTarget(method), request);
+                || !entityAllowed(getSecurityTarget(method), request);
     }
 
     private boolean requestForbidden(HttpServletRequest request) {
@@ -174,20 +174,19 @@ public class VaadinConnectAccessChecker {
         return false;
     }
 
-    private boolean entityForbidden(AnnotatedElement entity,
+    private boolean entityAllowed(AnnotatedElement entity,
             HttpServletRequest request) {
-        return entity.isAnnotationPresent(DenyAll.class) || (!entity
-                .isAnnotationPresent(AnonymousAllowed.class)
-                && !roleAllowed(entity.getAnnotation(RolesAllowed.class),
-                        request));
+
+        RolesAllowed rolesAllowed = entity.getAnnotation(RolesAllowed.class);
+        return (entity.isAnnotationPresent(AnonymousAllowed.class) ||
+                (rolesAllowed == null && entity.isAnnotationPresent(PermitAll.class)) ||
+                (rolesAllowed != null && roleAllowed(rolesAllowed, request)))
+                && !entity
+                .isAnnotationPresent(DenyAll.class);
     }
 
     private boolean roleAllowed(RolesAllowed rolesAllowed,
             HttpServletRequest request) {
-        if (rolesAllowed == null) {
-            return true;
-        }
-
         for (String role : rolesAllowed.value()) {
             if (request.isUserInRole(role)) {
                 return true;
