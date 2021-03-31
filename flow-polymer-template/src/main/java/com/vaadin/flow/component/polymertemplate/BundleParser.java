@@ -90,7 +90,7 @@ public final class BundleParser {
      * end character with <code>;}</code> e.g. <code>';}</code>
      */
     private static final Pattern POLYMER_TEMPLATE_PATTERN = Pattern.compile(
-            "get[\\s]*template\\(\\)[\\s]*\\{[\\s]*return[\\s]*html\s*([\\`\\'\\\"])([\\s\\S]*)\\1;[\\s]*\\}");
+            "get[\\s]*template\\(\\)[\\s]*\\{[\\s]*return[\\s]*html[\\s]*([\\`\\'\\\"])([\\s\\S]*)\\1;[\\s]*\\}");
 
     private static final Pattern NO_TEMPLATE_PATTERN = Pattern.compile(
             "innerHTML[\\s]*=[\\s]*([\\`\\'\\\"])([\\s]*<dom-module\\s+[\\s\\S]*)\\1;");
