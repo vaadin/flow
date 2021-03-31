@@ -206,12 +206,13 @@ public class Element extends Node<Element> {
      * Creates a text node with the given text.
      *
      * @param text
-     *            the text in the node, not <code>null</code>
-     * @return an element representing the text node
+     *            the text in the node, <code>null</code>
+     *            is interpreted as an empty string
+     * @return an element representing the text node, never <code>null</code>
      */
     public static Element createText(String text) {
         if (text == null) {
-            throw new IllegalArgumentException("Text cannot be null");
+            text = "";
         }
 
         return new Element(BasicTextElementStateProvider.createStateNode(text),

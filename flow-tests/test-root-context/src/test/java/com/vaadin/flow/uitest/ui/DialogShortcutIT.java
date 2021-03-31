@@ -9,6 +9,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -76,6 +77,7 @@ public class DialogShortcutIT extends ChromeBrowserTest {
         validateLatestShortcutEvent(4, DialogShortcutView.UI_BUTTON);
     }
 
+    @Ignore("Flaky test, see https://github.com/vaadin/flow/issues/10481")
     @Test
     public void dialogOpenedWithListenOnShortcut_dialogReopened_oldShortcutStillWorks() {
         openReusedDialog();
@@ -103,6 +105,7 @@ public class DialogShortcutIT extends ChromeBrowserTest {
         validateLatestDialogShortcut(4, REUSABLE_DIALOG_ID);
     }
 
+    @Ignore("Flaky test, see https://github.com/vaadin/flow/issues/10487")
     // vaadin/vaadin-dialog#229
     @Test
     public void twoDialogsOpenedWithSameShortcutKeyOnListenOn_dialogWithFocusExecuted() {
@@ -124,6 +127,7 @@ public class DialogShortcutIT extends ChromeBrowserTest {
         validateLatestShortcutEvent(3, DialogShortcutView.UI_BUTTON);
     }
 
+    @Ignore("Flaky test, see https://github.com/vaadin/flow/issues/10491")
     // #10362
     @Test
     public void shortcutAddedWithPreventDefault_inputFocused_enteringOtherKeysToInputWorks() {
