@@ -111,7 +111,8 @@ public class HistoryView extends AbstractDivView {
 
     private static Element createSynchronizedInput(String id) {
         Element element = ElementFactory.createInput().setAttribute("id", id);
-        element.addPropertyChangeListener("value", "change", event -> {});
+        element.addPropertyChangeListener("value", "change", event -> {
+        });
         return element;
     }
 

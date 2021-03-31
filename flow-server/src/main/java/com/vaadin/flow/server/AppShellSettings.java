@@ -72,9 +72,9 @@ public class AppShellSettings {
                     null);
         }
 
-        private Element element(VaadinRequest request) {
+        private Element element(VaadinService service) {
             if (content == null) {
-                content = BootstrapUtils.getDependencyContents(request, file);
+                content = BootstrapUtils.getDependencyContents(service, file);
             }
 
             if (type == Wrapping.AUTOMATIC && file != null) {
@@ -456,12 +456,12 @@ public class AppShellSettings {
      *            position in the target
      * @return the list of dom elements to add.
      */
-    List<Element> getInlineElements(VaadinRequest request, TargetElement target,
+    List<Element> getInlineElements(VaadinService service, TargetElement target,
             Position position) {
         return inlines.stream()
                 .filter(inline -> inline.target == target
                         && inline.position == position)
-                .map(inline -> inline.element(request))
+                .map(inline -> inline.element(service))
                 .collect(Collectors.toList());
     }
 

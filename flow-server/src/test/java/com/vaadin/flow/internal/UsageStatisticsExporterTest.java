@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 public class UsageStatisticsExporterTest {
 
     @Test
-    public void should_append_script_element_to_the_body(){
+    public void should_append_script_element_to_the_body() {
         Document document = new Document("");
         Element html = document.appendElement("html");
         html.appendElement("body");
@@ -32,13 +32,14 @@ public class UsageStatisticsExporterTest {
             return json.toString();
         }).collect(Collectors.joining(","));
 
-        String expected = StringUtil.normaliseWhitespace(
-                "window.Vaadin = window.Vaadin || {};\n" +
-                        "window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
-                        + "window.Vaadin.registrations.push(" + entries
-                        + ");");
+        String expected = StringUtil
+                .normaliseWhitespace("window.Vaadin = window.Vaadin || {};\n"
+                        + "window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
+                        + "window.Vaadin.registrations.push(" + entries + ");");
 
-        Elements bodyInlineElements = document.body().getElementsByTag("script");
-        assertEquals(StringUtil.normaliseWhitespace(expected), bodyInlineElements.get(0).childNode(0).outerHtml());
+        Elements bodyInlineElements = document.body()
+                .getElementsByTag("script");
+        assertEquals(StringUtil.normaliseWhitespace(expected),
+                bodyInlineElements.get(0).childNode(0).outerHtml());
     }
 }

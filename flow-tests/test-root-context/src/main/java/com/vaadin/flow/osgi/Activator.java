@@ -38,6 +38,7 @@ import com.vaadin.flow.uitest.servlet.ProductionModeTimingDataViewTestServlet;
 import com.vaadin.flow.uitest.servlet.ProductionModeViewTestServlet;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet;
 import com.vaadin.flow.uitest.servlet.ViewTestServlet;
+import com.vaadin.flow.uitest.ui.LogoutWithNotificationServlet;
 
 @Component(immediate = true)
 public class Activator {
@@ -119,6 +120,18 @@ public class Activator {
         }
     }
 
+    private static class FixedLogoutWithNotificationServlet
+            extends LogoutWithNotificationServlet {
+        @Override
+        public void init(ServletConfig servletConfig) throws ServletException {
+            super.init(servletConfig);
+
+            if (getService() != null) {
+                getService().setClassLoader(getClass().getClassLoader());
+            }
+        }
+    }
+
     @Activate
     void activate() throws NamespaceException {
         BundleContext context = FrameworkUtil.getBundle(Activator.class)
@@ -140,6 +153,10 @@ public class Activator {
         context.registerService(Servlet.class,
                 new FixedProductionModeTimingDataViewServlet(),
                 createProperties("/view-production-timing/*", true));
+
+        context.registerService(Servlet.class,
+                new FixedLogoutWithNotificationServlet(),
+                createProperties("/logout-with-notification/*", false));
 
         registerPlainJsResource(context);
 

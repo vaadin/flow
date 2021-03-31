@@ -43,7 +43,8 @@ public class MockUI extends UI {
     private static VaadinSession findOrCreateSession() {
         VaadinSession session = VaadinSession.getCurrent();
         if (session == null) {
-            session = new AlwaysLockedVaadinSession(Mockito.mock(VaadinService.class));
+            session = new AlwaysLockedVaadinSession(
+                    Mockito.mock(VaadinService.class));
             VaadinSession.setCurrent(session);
         }
         return session;

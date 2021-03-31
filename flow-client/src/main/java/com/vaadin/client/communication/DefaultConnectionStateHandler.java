@@ -178,8 +178,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
             return;
         }
 
-        ConnectionIndicator.setState(
-                ConnectionIndicator.RECONNECTING);
+        ConnectionIndicator.setState(ConnectionIndicator.RECONNECTING);
 
         if (!isReconnecting()) {
             // First problem encounter
@@ -317,8 +316,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
                     getConfiguration().getDialogText());
         }
         if (getConfiguration().getDialogTextGaveUp() != null) {
-        ConnectionIndicator.setProperty("offlineText",
-                getConfiguration().getDialogTextGaveUp());
+            ConnectionIndicator.setProperty("offlineText",
+                    getConfiguration().getDialogTextGaveUp());
         }
     }
 
@@ -540,8 +539,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     private void registerConnectionStateEventHandlers() {
         Browser.getWindow().addEventListener("offline", event ->
-                // Browser goes offline: CONNECTION_LOST and stop heartbeats
-                giveUp());
+        // Browser goes offline: CONNECTION_LOST and stop heartbeats
+        giveUp());
 
         Browser.getWindow().addEventListener("online", event -> {
             // Browser goes back online: RECONNECTING while verifying

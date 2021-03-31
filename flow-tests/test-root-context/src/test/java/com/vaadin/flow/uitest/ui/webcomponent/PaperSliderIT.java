@@ -29,9 +29,6 @@ public class PaperSliderIT extends ChromeBrowserTest {
     @Test
     public void domCorrect() {
         open();
-        if (hasClientUnknownIssue()) {
-            return;
-        }
 
         WebElement eventField = findElement(
                 By.id(PaperSliderView.VALUE_TEXT_ID));

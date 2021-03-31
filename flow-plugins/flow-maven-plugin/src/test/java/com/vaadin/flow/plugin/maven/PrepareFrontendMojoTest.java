@@ -83,10 +83,10 @@ public class PrepareFrontendMojoTest {
         project = Mockito.mock(MavenProject.class);
         Mockito.when(project.getBasedir()).thenReturn(projectBase);
 
-        flowResourcesFolder = new File(projectBase, DEFAULT_FLOW_RESOURCES_FOLDER);
+        flowResourcesFolder = new File(projectBase,
+                DEFAULT_FLOW_RESOURCES_FOLDER);
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
-        webpackOutputDirectory = new File(projectBase,
-                VAADIN_WEBAPP_RESOURCES);
+        webpackOutputDirectory = new File(projectBase, VAADIN_WEBAPP_RESOURCES);
         resourceOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
         defaultJavaSource = new File(".", "src/test/java");

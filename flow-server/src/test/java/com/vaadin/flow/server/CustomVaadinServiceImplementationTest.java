@@ -17,7 +17,8 @@ import org.mockito.Mockito;
 import com.vaadin.flow.server.communication.PushRequestHandler;
 
 /**
- * Makes sure that a custom vaadin service that is not vaadin servlet service can be used in when desired.
+ * Makes sure that a custom vaadin service that is not vaadin servlet service
+ * can be used in when desired.
  *
  */
 public class CustomVaadinServiceImplementationTest {

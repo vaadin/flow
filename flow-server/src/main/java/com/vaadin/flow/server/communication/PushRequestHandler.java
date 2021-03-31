@@ -78,23 +78,23 @@ public class PushRequestHandler
             throws ServiceException {
         this(service, service.getServlet());
     }
-        /**
-         * Creates an instance connected to the given service and servlet.
-         *
-         * @param service
-         *            the service this handler belongs to
-         * @param servlet
-         *            the servlet this handler belongs to
-         * @throws ServiceException
-         *             if initialization of Atmosphere fails
-         */
-        public PushRequestHandler(VaadinService service,VaadinServlet servlet)
-                throws ServiceException {
+
+    /**
+     * Creates an instance connected to the given service and servlet.
+     *
+     * @param service
+     *            the service this handler belongs to
+     * @param servlet
+     *            the servlet this handler belongs to
+     * @throws ServiceException
+     *             if initialization of Atmosphere fails
+     */
+    public PushRequestHandler(VaadinService service, VaadinServlet servlet)
+            throws ServiceException {
 
         service.addServiceDestroyListener(event -> destroy());
 
-        final ServletConfig vaadinServletConfig = servlet
-                .getServletConfig();
+        final ServletConfig vaadinServletConfig = servlet.getServletConfig();
 
         pushHandler = createPushHandler(service);
 

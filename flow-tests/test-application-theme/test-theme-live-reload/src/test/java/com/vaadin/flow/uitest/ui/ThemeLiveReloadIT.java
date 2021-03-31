@@ -66,8 +66,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
     private void removeGeneratedFiles() {
         try {
             // Cleanup the default 'styles.css' file
-            FileUtils.write(stylesCSSFile, "",
-                StandardCharsets.UTF_8.name());
+            FileUtils.write(stylesCSSFile, "", StandardCharsets.UTF_8.name());
             deleteFile(fontFile);
         } catch (IOException e) {
             Assert.fail("Couldn't cleanup test files: " + e.getMessage());
@@ -76,15 +75,15 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
 
     @Test
     public void webpackLiveReload_newCssCreatedAndDeleted_stylesUpdatedOnFly()
-        throws IOException {
+            throws IOException {
         open();
 
         // Live reload upon new styles.css
         final WebElement htmlElement = findElement(By.tagName("html"));
         Assert.assertNotEquals(RED_COLOR,
-            htmlElement.getCssValue("background-color"));
+                htmlElement.getCssValue("background-color"));
         doActionAndWaitUntilLiveReloadComplete(
-            this::addBackgroundColorToStylesCSS);
+                this::addBackgroundColorToStylesCSS);
         waitUntilCustomBackgroundColor();
 
         // Live reload upon file deletion
@@ -93,7 +92,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
 
         // Live reload upon adding a font
         File copyFontFrom = new File(baseDir,
-            "frontend/fonts/ostrich-sans-regular.ttf");
+                "frontend/fonts/ostrich-sans-regular.ttf");
 
         FileUtils.copyFile(copyFontFrom, fontFile);
         waitUntil(driver -> fontFile.exists());
@@ -133,9 +132,10 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
 
     private void addBackgroundColorToStylesCSS() {
         try {
-            final String styles = "html { background-color: " + RED_COLOR + "; }";
+            final String styles = "html { background-color: " + RED_COLOR
+                    + "; }";
             FileUtils.write(stylesCSSFile, styles,
-                StandardCharsets.UTF_8.name());
+                    StandardCharsets.UTF_8.name());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -154,7 +154,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
                     "}";
             // @formatter:on
             FileUtils.write(stylesCSSFile, fontStyle,
-                StandardCharsets.UTF_8.name());
+                    StandardCharsets.UTF_8.name());
             waitUntil(driver -> stylesCSSFile.exists());
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -162,8 +162,8 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void deleteFile(File fileToDelete) {
-        if (fileToDelete != null && fileToDelete.exists() && !fileToDelete
-            .delete()) {
+        if (fileToDelete != null && fileToDelete.exists()
+                && !fileToDelete.delete()) {
             Assert.fail("Unable to delete " + fileToDelete);
         }
     }

@@ -23,5 +23,4 @@ import com.vaadin.flow.component.dependency.JsModule;
 @JsModule("./my-button.js")
 public class MyButton extends Component {
 
-
 }

@@ -58,8 +58,8 @@ public class ElementListenerMap extends NodeMap {
      */
     public static final String ALWAYS_TRUE_FILTER = "1";
 
-    private static final EnumSet<DebouncePhase> NO_TIMEOUT_PHASES
-            = EnumSet.of(DebouncePhase.LEADING);
+    private static final EnumSet<DebouncePhase> NO_TIMEOUT_PHASES = EnumSet
+            .of(DebouncePhase.LEADING);
 
     // Server-side only data
     private Map<String, List<DomEventListenerWrapper>> listeners;
@@ -86,12 +86,12 @@ public class ElementListenerMap extends NodeMap {
             } else {
                 // [[timeout1, phase1, phase2, ...], [timeout2, phase1, ...]]
                 return debounceSettings.entrySet().stream()
-                        .map(entry -> Stream
-                                .concat(Stream.of(
+                        .map(entry -> Stream.concat(
+                                Stream.of(
                                         Json.create(entry.getKey().intValue())),
-                                        entry.getValue().stream()
-                                                .map(DebouncePhase::getIdentifier)
-                                                .map(Json::create))
+                                entry.getValue().stream()
+                                        .map(DebouncePhase::getIdentifier)
+                                        .map(Json::create))
                                 .collect(JsonUtils.asArray()))
                         .collect(JsonUtils.asArray());
             }
@@ -375,15 +375,15 @@ public class ElementListenerMap extends NodeMap {
     }
 
     private void updateEventSettings(String eventType) {
-            Map<String, ExpressionSettings> eventSettings = collectEventExpressions(
-                    eventType);
-            JsonObject eventSettingsJson = JsonUtils.createObject(eventSettings,
-                    ExpressionSettings::toJson);
+        Map<String, ExpressionSettings> eventSettings = collectEventExpressions(
+                eventType);
+        JsonObject eventSettingsJson = JsonUtils.createObject(eventSettings,
+                ExpressionSettings::toJson);
 
-            ConstantPoolKey constantPoolKey = new ConstantPoolKey(
-                    eventSettingsJson);
+        ConstantPoolKey constantPoolKey = new ConstantPoolKey(
+                eventSettingsJson);
 
-            put(eventType, constantPoolKey);
+        put(eventType, constantPoolKey);
     }
 
     private void removeListener(String eventType,

@@ -15,12 +15,12 @@ import static org.junit.Assert.assertNotNull;
 public class DataSerializableTest extends ClassesSerializableTest {
 
     /*
-     * AbstractDataProvider.addDataProviderListener may return a Registration instance
-     * that is not deserializable due to self references.
-     * This happens for example if the dataprovider, member of a component,
-     * is used to add a com.vaadin.flow.data.provider.DataProviderListener
-     * into an inner component; the resulting Registration handles a reference
-     * to the dataprovider itself that is already referenced by the outer component
+     * AbstractDataProvider.addDataProviderListener may return a Registration
+     * instance that is not deserializable due to self references. This happens
+     * for example if the dataprovider, member of a component, is used to add a
+     * com.vaadin.flow.data.provider.DataProviderListener into an inner
+     * component; the resulting Registration handles a reference to the
+     * dataprovider itself that is already referenced by the outer component
      */
     @Test
     public void selfReferenceSerialization() throws Throwable {
@@ -38,7 +38,8 @@ public class DataSerializableTest extends ClassesSerializableTest {
             if (registration != null) {
                 registration.remove();
             }
-            registration = dataProvider.addDataProviderListener(event -> onDataProviderChange());
+            registration = dataProvider
+                    .addDataProviderListener(event -> onDataProviderChange());
         }
 
         void onDataProviderChange() {
@@ -48,7 +49,8 @@ public class DataSerializableTest extends ClassesSerializableTest {
     }
 
     static class Outer implements Serializable {
-        private final ListDataProvider<Object> dataProvider = new ListDataProvider<>(Collections.emptyList());
+        private final ListDataProvider<Object> dataProvider = new ListDataProvider<>(
+                Collections.emptyList());
         private final Inner inner = new Inner();
 
         public Outer() {

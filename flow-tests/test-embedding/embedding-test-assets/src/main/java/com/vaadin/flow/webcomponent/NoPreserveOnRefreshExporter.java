@@ -27,7 +27,8 @@ public class NoPreserveOnRefreshExporter
     }
 
     @Override
-    public void configureInstance(WebComponent<PreserveOnRefreshComponent> webComponent,
-                                  PreserveOnRefreshComponent component) {
+    public void configureInstance(
+            WebComponent<PreserveOnRefreshComponent> webComponent,
+            PreserveOnRefreshComponent component) {
     }
 }

@@ -194,19 +194,16 @@ public class NodeUpdaterTest {
     @Test
     public void assertFormResourcesPackageJson() throws IOException {
         JsonObject formPackageJson = nodeUpdater.getFormResourcesPackageJson();
-        Assert.assertEquals("@vaadin/form", formPackageJson
-                .getString("name"));
-        Assert.assertEquals("UNLICENSED", formPackageJson
-                .getString("license"));
-        Assert.assertEquals("index", formPackageJson
-                .getString("main"));
-        Assert.assertEquals("1.0.0", formPackageJson
-                .getString("version"));
+        Assert.assertEquals("@vaadin/form", formPackageJson.getString("name"));
+        Assert.assertEquals("UNLICENSED", formPackageJson.getString("license"));
+        Assert.assertEquals("index", formPackageJson.getString("main"));
+        Assert.assertEquals("1.0.0", formPackageJson.getString("version"));
     }
 
     @Test
     public void assertWriteFormResourcesPackageFile() throws IOException {
-        File formPackageJsonFile = new File(nodeUpdater.formResourcesFolder, Constants.PACKAGE_JSON);
+        File formPackageJsonFile = new File(nodeUpdater.formResourcesFolder,
+                Constants.PACKAGE_JSON);
         Assert.assertFalse(formPackageJsonFile.exists());
 
         JsonObject formPackageJson = Json.createObject();
@@ -215,8 +212,8 @@ public class NodeUpdaterTest {
         nodeUpdater.writeFormResourcesPackageFile(formPackageJson);
 
         Assert.assertTrue(formPackageJsonFile.exists());
-        JsonObject packageJson = NodeUpdater.getJsonFileContent(
-                formPackageJsonFile);
+        JsonObject packageJson = NodeUpdater
+                .getJsonFileContent(formPackageJsonFile);
         Assert.assertEquals("bar", packageJson.getString("foo"));
     }
 

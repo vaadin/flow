@@ -24,11 +24,11 @@ import com.vaadin.flow.router.Route;
 public class LogoutView extends Div {
 
     public LogoutView() {
-        NativeButton button = new NativeButton("logout", ev -> {
+        NativeButton logoutButton = new NativeButton("logout", ev -> {
             UI.getCurrent().getPage().setLocation(BaseHrefView.class.getName());
             UI.getCurrent().getSession().close();
         });
-        add(button);
+        add(logoutButton);
     }
 
 }

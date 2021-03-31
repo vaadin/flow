@@ -25,14 +25,14 @@ import com.vaadin.flow.component.dependency.NpmPackage;
  */
 @JsModule("@vaadin/vaadin-text-field/vaadin-text-field.js")
 @Tag("vaadin-text-field")
-@NpmPackage(value="@vaadin/vaadin-text-field", version = "2.7.1")
+@NpmPackage(value = "@vaadin/vaadin-text-field", version = "2.7.1")
 public class MyPolymerField extends Component {
 
     /**
      * Set the component id.
      *
      * @param id
-     *     value to set
+     *            value to set
      * @return this component
      */
     public Component withId(String id) {

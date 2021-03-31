@@ -94,8 +94,9 @@ public class ElementUtilTest {
         final String EXPECTED_TEXT_2 = "Other text";
 
         Element originalElement = ElementFactory.createDiv();
-        originalElement.appendChild(ElementFactory.createParagraph(EXPECTED_TEXT_1)
-                .appendChild(ElementFactory.createDiv(EXPECTED_TEXT_2)));
+        originalElement.appendChild(
+                ElementFactory.createParagraph(EXPECTED_TEXT_1).appendChild(
+                        ElementFactory.createDiv(EXPECTED_TEXT_2)));
 
         Document jDocument = Document.createShell("http://example.com");
 

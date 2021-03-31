@@ -28,7 +28,7 @@ public class ArchiveExtractionException extends Exception {
      * Exception with message.
      *
      * @param message
-     *         exception message
+     *            exception message
      */
     public ArchiveExtractionException(String message) {
         super(message);
@@ -38,9 +38,9 @@ public class ArchiveExtractionException extends Exception {
      * Exceptioon with message and cause.
      *
      * @param message
-     *         exception message
+     *            exception message
      * @param cause
-     *         cause for exception
+     *            cause for exception
      */
     public ArchiveExtractionException(String message, Throwable cause) {
         super(message, cause);

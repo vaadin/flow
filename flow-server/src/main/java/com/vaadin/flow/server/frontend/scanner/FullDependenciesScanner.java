@@ -204,8 +204,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                         .apply(clazz, loadedAnnotation);
                 packageAnnotations.forEach(pckg -> {
                     String value = getAnnotationValueAsString(pckg, VALUE);
-                    String vers = getAnnotationValueAsString(pckg,
-                            "version");
+                    String vers = getAnnotationValueAsString(pckg, "version");
                     logs.add(value + " " + vers + " " + clazz.getName());
                     result.put(value, vers);
                 });
@@ -291,8 +290,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             setupTheme(theme, data.getVariant(), data.getThemeName());
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
-                "Could not load theme class " + data.getThemeClass(),
-                exception);
+                    "Could not load theme class " + data.getThemeClass(),
+                    exception);
         }
     }
 
@@ -339,11 +338,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                                 + getThemesList(themes));
             }
             if (!themes.isEmpty() && !notThemeClasses.isEmpty()) {
-                throw new IllegalStateException("@"
-                        + Theme.class.getSimpleName() + " ("
-                        + getThemesList(themes) + ") and @"
-                        + NoTheme.class.getSimpleName()
-                        + " annotations can't be used simultaneously.");
+                throw new IllegalStateException(
+                        "@" + Theme.class.getSimpleName() + " ("
+                                + getThemesList(themes) + ") and @"
+                                + NoTheme.class.getSimpleName()
+                                + " annotations can't be used simultaneously.");
             }
             if (!notThemeClasses.isEmpty()) {
                 return ThemeData.createNoTheme();
@@ -402,8 +401,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         return result == null ? null : result.toString();
     }
 
-    private Object getAnnotationValue(Annotation target,
-            String methodName) {
+    private Object getAnnotationValue(Annotation target, String methodName) {
         try {
             Object value = target.getClass().getDeclaredMethod(methodName)
                     .invoke(target);
@@ -439,17 +437,15 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             if (annotatedClasses.isEmpty()) {
                 return new PwaConfiguration();
             } else if (annotatedClasses.size() != 1) {
-                throw new IllegalStateException(
-                        ERROR_INVALID_PWA_ANNOTATION);
+                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
             }
 
-            Class<?> hopefullyAppShellClass =
-                    annotatedClasses.iterator().next();
+            Class<?> hopefullyAppShellClass = annotatedClasses.iterator()
+                    .next();
             if (!Arrays.stream(hopefullyAppShellClass.getInterfaces())
                     .map(Class::getName).collect(Collectors.toList())
                     .contains(AppShellConfigurator.class.getName())) {
-                throw new IllegalStateException(
-                        ERROR_INVALID_PWA_ANNOTATION);
+                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
             }
 
             Annotation pwa = annotationFinder
@@ -457,17 +453,14 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
             String name = getAnnotationValueAsString(pwa, "name");
             String shortName = getAnnotationValueAsString(pwa, "shortName");
-            String description = getAnnotationValueAsString(pwa,
-                    "description");
+            String description = getAnnotationValueAsString(pwa, "description");
             String backgroundColor = getAnnotationValueAsString(pwa,
                     "backgroundColor");
-            String themeColor = getAnnotationValueAsString(pwa,
-                    "themeColor");
+            String themeColor = getAnnotationValueAsString(pwa, "themeColor");
             String iconPath = getAnnotationValueAsString(pwa, "iconPath");
             String manifestPath = getAnnotationValueAsString(pwa,
                     "manifestPath");
-            String offlinePath = getAnnotationValueAsString(pwa,
-                    "offlinePath");
+            String offlinePath = getAnnotationValueAsString(pwa, "offlinePath");
             String display = getAnnotationValueAsString(pwa, "display");
             String startPath = getAnnotationValueAsString(pwa, "startPath");
             String[] offlineResources = (String[]) getAnnotationValue(pwa,
