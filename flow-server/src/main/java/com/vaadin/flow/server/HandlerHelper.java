@@ -114,37 +114,47 @@ public class HandlerHelper implements Serializable {
      * Checks whether the request is an internal request.
      *
      * The requests listed in {@link RequestType} are considered internal.
-     * Especially bootstrap requests for any route or static resource requests are
-     * not internal, even resource requests for the JS bundle.
+     * Especially bootstrap requests for any route or static resource requests
+     * are not internal, even resource requests for the JS bundle.
      *
-     * @param request the request
+     * @param request
+     *            the request
      * @return {@code true} if the request is Vaadin internal, {@code false}
      *         otherwise
      */
     public static boolean isFrameworkInternalRequest(VaadinRequest request) {
-        return isFrameworkInternalRequest(request.getPathInfo(), request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
+        return isFrameworkInternalRequest(request.getPathInfo(), request
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
     }
 
     /**
      * Checks whether the request is an internal request.
      *
      * The requests listed in {@link RequestType} are considered internal.
-     * Especially bootstrap requests for any route or static resource requests are
-     * not internal, even resource requests for the JS bundle.
+     * Especially bootstrap requests for any route or static resource requests
+     * are not internal, even resource requests for the JS bundle.
      *
-     * @param request the servlet request
+     * @param request
+     *            the servlet request
      * @return {@code true} if the request is Vaadin internal, {@code false}
      *         otherwise
      */
-    public static boolean isFrameworkInternalRequest(HttpServletRequest request) {
-        return isFrameworkInternalRequest(request.getPathInfo(), request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
+    public static boolean isFrameworkInternalRequest(
+            HttpServletRequest request) {
+        return isFrameworkInternalRequest(request.getPathInfo(), request
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
     }
 
-    private static boolean isFrameworkInternalRequest(String pathInfo, String requestTypeParameter) {
-        // According to the spec, pathInfo should be null but not all servers implement
-        // it like that...
-        // Additionally the spring servlet is mapped as /vaadinServlet right now it
-        // seems but requests are sent to /vaadinServlet/, causing the "/" path info
+    private static boolean isFrameworkInternalRequest(String pathInfo,
+            String requestTypeParameter) {
+        /*
+         * According to the spec, pathInfo should be null but not all servers
+         * implement it like that...
+         * 
+         * Additionally the spring servlet is mapped as /vaadinServlet right now
+         * it seems but requests are sent to /vaadinServlet/, causing the "/"
+         * path info
+         */
         if (pathInfo == null || pathInfo.isEmpty() || "/".equals(pathInfo)) {
             return requestTypeParameter != null;
         }

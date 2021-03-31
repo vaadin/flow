@@ -423,13 +423,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     @Override
-    public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response) throws IOException {
-
+    protected boolean canHandleRequest(VaadinRequest request) {
         if (HandlerHelper.isFrameworkInternalRequest(request)) {
-            // Never accidentally send a bootstrap page for what is considered an internal request
+            // Never accidentally send a bootstrap page for what is considered
+            // an internal request
             return false;
         }
+        return super.canHandleRequest(request);
+    }
+
+    @Override
+    public boolean synchronizedHandleRequest(VaadinSession session,
+            VaadinRequest request, VaadinResponse response) throws IOException {
 
         // Find UI class
         Class<? extends UI> uiClass = getUIClass(request);

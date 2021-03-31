@@ -13,7 +13,8 @@ public class HandlerHelperTest {
     public void isFrameworkInternalRequest_validType_nullPathInfo() {
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         Mockito.when(request.getPathInfo()).thenReturn(null);
-        Mockito.when(request.getParameter("v-r")).thenReturn(RequestType.INIT.getIdentifier());
+        Mockito.when(request.getParameter("v-r"))
+                .thenReturn(RequestType.INIT.getIdentifier());
         Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest(request));
     }
 
@@ -21,7 +22,8 @@ public class HandlerHelperTest {
     public void isFrameworkInternalRequest_validType_emptyPathinfo() {
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         Mockito.when(request.getPathInfo()).thenReturn("");
-        Mockito.when(request.getParameter("v-r")).thenReturn(RequestType.INIT.getIdentifier());
+        Mockito.when(request.getParameter("v-r"))
+                .thenReturn(RequestType.INIT.getIdentifier());
         Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest(request));
     }
 
@@ -29,7 +31,8 @@ public class HandlerHelperTest {
     public void isFrameworkInternalRequest_validType_slashPathinfo() {
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         Mockito.when(request.getPathInfo()).thenReturn("/");
-        Mockito.when(request.getParameter("v-r")).thenReturn(RequestType.INIT.getIdentifier());
+        Mockito.when(request.getParameter("v-r"))
+                .thenReturn(RequestType.INIT.getIdentifier());
         Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest(request));
     }
 
@@ -51,7 +54,8 @@ public class HandlerHelperTest {
     public void isFrameworkInternalRequest_wrongPath() {
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         Mockito.when(request.getPathInfo()).thenReturn("hello");
-        Mockito.when(request.getParameter("v-r")).thenReturn(RequestType.INIT.getIdentifier());
+        Mockito.when(request.getParameter("v-r"))
+                .thenReturn(RequestType.INIT.getIdentifier());
         Assert.assertFalse(HandlerHelper.isFrameworkInternalRequest(request));
     }
 
