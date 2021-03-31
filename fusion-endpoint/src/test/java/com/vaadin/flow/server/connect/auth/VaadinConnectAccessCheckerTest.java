@@ -8,15 +8,19 @@ import javax.servlet.http.HttpSession;
 import java.lang.reflect.Method;
 import java.security.Principal;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinService;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -522,5 +526,52 @@ public class VaadinConnectAccessCheckerTest {
         }
         Method securityMethod = Test.class.getMethod("test");
         assertEquals(securityMethod, checker.getSecurityTarget(securityMethod));
+    }
+
+    @Test
+    public void should_showHelpfulMessage_When_accessDeniedInDevMode()
+            throws Exception {
+        VaadinService mockService = Mockito.mock(VaadinService.class);
+        DeploymentConfiguration mockDeploymentConfiguration = Mockito.mock(DeploymentConfiguration.class);
+        Mockito.when(mockService.getDeploymentConfiguration()).thenReturn(mockDeploymentConfiguration);
+        Mockito.when(mockDeploymentConfiguration.isProductionMode()).thenReturn(false);
+        CurrentInstance.set(VaadinService.class, mockService);
+        try {
+            class Test {
+                public void test() {
+                }
+            }
+            Method method = Test.class.getMethod("test");
+            String accessDeniedMessage = checker.check(method, requestMock);
+            assertNotNull(accessDeniedMessage);
+            assertTrue(accessDeniedMessage.contains("Unauthorized access to Vaadin endpoint"));
+            assertTrue(accessDeniedMessage.contains(PermitAll.class.getSimpleName()));
+            assertTrue(accessDeniedMessage.contains(RolesAllowed.class.getSimpleName()));
+            assertTrue(accessDeniedMessage.contains(AnonymousAllowed.class.getSimpleName()));
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    @Test
+    public void should_notShowHelpfulMessage_When_accessDeniedInDevMode()
+            throws Exception {
+        VaadinService mockService = Mockito.mock(VaadinService.class);
+        DeploymentConfiguration mockDeploymentConfiguration = Mockito.mock(DeploymentConfiguration.class);
+        Mockito.when(mockService.getDeploymentConfiguration()).thenReturn(mockDeploymentConfiguration);
+        Mockito.when(mockDeploymentConfiguration.isProductionMode()).thenReturn(true);
+        CurrentInstance.set(VaadinService.class, mockService);
+        try {
+            class Test {
+                public void test() {
+                }
+            }
+            Method method = Test.class.getMethod("test");
+            String accessDeniedMessage = checker.check(method, requestMock);
+            assertEquals("Unauthorized access to Vaadin endpoint",
+                    accessDeniedMessage);
+        } finally {
+            CurrentInstance.clearAll();
+        }
     }
 }

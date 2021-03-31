@@ -128,7 +128,19 @@ public class VaadinConnectAccessChecker {
     private String verifyAuthenticatedUser(Method method,
             HttpServletRequest request) {
         if (cannotAccessMethod(method, request)) {
-            return "Unauthorized access to Vaadin endpoint";
+            VaadinService vaadinService = VaadinService.getCurrent();
+            final String accessDeniedMessage;
+            if (vaadinService != null && !vaadinService
+                    .getDeploymentConfiguration().isProductionMode()) {
+                // suggest access control annotations in dev mode
+                accessDeniedMessage = "Unauthorized access to Vaadin endpoint; "
+                        + "to enable endpoint access use one of the following "
+                        + "annotations: @AnonymousAllowed, @PermitAll, "
+                        + "@RolesAllowed";
+            } else {
+                accessDeniedMessage = "Unauthorized access to Vaadin endpoint";
+            }
+            return accessDeniedMessage;
         }
         return null;
     }
@@ -176,13 +188,18 @@ public class VaadinConnectAccessChecker {
 
     private boolean entityAllowed(AnnotatedElement entity,
             HttpServletRequest request) {
-
+        if (entity.isAnnotationPresent(DenyAll.class)) {
+            return false;
+        }
+        if (entity.isAnnotationPresent(AnonymousAllowed.class)) {
+            return true;
+        }
         RolesAllowed rolesAllowed = entity.getAnnotation(RolesAllowed.class);
-        return (entity.isAnnotationPresent(AnonymousAllowed.class) ||
-                (rolesAllowed == null && entity.isAnnotationPresent(PermitAll.class)) ||
-                (rolesAllowed != null && roleAllowed(rolesAllowed, request)))
-                && !entity
-                .isAnnotationPresent(DenyAll.class);
+        if (rolesAllowed == null) {
+            return entity.isAnnotationPresent(PermitAll.class);
+        } else {
+            return roleAllowed(rolesAllowed, request);
+        }
     }
 
     private boolean roleAllowed(RolesAllowed rolesAllowed,
