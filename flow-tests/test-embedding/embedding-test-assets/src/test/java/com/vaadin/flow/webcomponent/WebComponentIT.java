@@ -40,11 +40,8 @@ public class WebComponentIT extends ChromeBrowserTest implements HasById {
         waitForElementVisible(By.id("show-message"));
 
         TestBenchElement showMessage = byId("show-message");
-        waitUntil(driver -> {
-            List<WebElement> selects = findInShadowRoot(showMessage, By.tagName(
-                    "select"));
-            return selects != null && !selects.isEmpty();
-        });
+        waitUntil(driver -> isPresentInShadowRoot(showMessage,
+                By.tagName("select")));
         TestBenchElement select = showMessage.$("select").first();
 
         // Selection is visibly changed and event manually dispatched
@@ -75,10 +72,7 @@ public class WebComponentIT extends ChromeBrowserTest implements HasById {
 
         waitForElementVisible(By.id("show-message"));
         TestBenchElement showMessage = byId("show-message");
-        waitUntil(driver -> {
-            List<WebElement> links = findInShadowRoot(showMessage, By.id("link"));
-            return links != null && !links.isEmpty();
-        });
+        waitUntil(driver -> isPresentInShadowRoot(showMessage, By.id("link")));
         TestBenchElement link = showMessage.$("a").id("link");
         String href = link.getAttribute("href");
         // self check
