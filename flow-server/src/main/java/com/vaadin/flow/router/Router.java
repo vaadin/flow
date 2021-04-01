@@ -17,9 +17,6 @@ package com.vaadin.flow.router;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 

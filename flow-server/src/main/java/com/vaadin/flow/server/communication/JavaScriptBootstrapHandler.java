@@ -65,6 +65,18 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
      * Custom BootstrapContext for {@link JavaScriptBootstrapHandler}.
      */
     public static class JavaScriptBootstrapContext extends BootstrapContext {
+
+        /**
+         * Creates a new context instance using the given parameters.
+         *
+         * @param request
+         *            the request object
+         * @param response
+         *            the response object
+         * @param ui
+         *            the UI object
+         * @param callback
+         */
         public JavaScriptBootstrapContext(VaadinRequest request,
                 VaadinResponse response, UI ui,
                 Function<VaadinRequest, String> callback) {
