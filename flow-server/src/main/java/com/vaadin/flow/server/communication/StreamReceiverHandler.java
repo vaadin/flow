@@ -18,6 +18,7 @@ package com.vaadin.flow.server.communication;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -237,7 +238,7 @@ public class StreamReceiverHandler implements Serializable {
             VaadinRequest request, StreamReceiver streamReceiver,
             StateNode owner) throws IOException {
         boolean success = true;
-        long contentLength = request.getContentLength();
+        long contentLength = getContentLength(request);
         // Parse the request
         FileItemIterator iter;
         try {
@@ -576,13 +577,12 @@ public class StreamReceiverHandler implements Serializable {
      * The request.getContentLength() is limited to "int" by the Servlet
      * specification. To support larger file uploads manually evaluate the
      * Content-Length header which can contain long values.
+     * 
+     * @deprecated use {@link VaadinRequest#getContentLengthLong()} instead
      */
+    @Deprecated
     protected long getContentLength(VaadinRequest request) {
-        try {
-            return Long.parseLong(request.getHeader("Content-Length"));
-        } catch (NumberFormatException e) {
-            return -1l;
-        }
+        return request.getContentLengthLong();
     }
 
     protected boolean isMultipartUpload(VaadinRequest request) {
