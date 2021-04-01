@@ -1,6 +1,7 @@
 package com.vaadin.flow.connect;
 
 import javax.annotation.Nullable;
+import javax.annotation.security.PermitAll;
 
 import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
@@ -11,6 +12,7 @@ import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 @Endpoint
 class PackagePrivateEndpoint {
 
+    @PermitAll
     public String hello(String name, @Nullable String title) {
         return "Hello, " + (title != null ? title + " " : "") + name + "!";
     }

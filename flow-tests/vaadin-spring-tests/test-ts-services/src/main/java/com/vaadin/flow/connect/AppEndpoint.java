@@ -1,6 +1,7 @@
 package com.vaadin.flow.connect;
 
 import javax.annotation.Nullable;
+import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 
 import java.util.Optional;
@@ -18,6 +19,12 @@ import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 @Endpoint
 public class AppEndpoint {
 
+    // DenyAll by default
+    public String denied() {
+        return "Will never be accessible";
+    }
+
+    @PermitAll
     public String hello(String name, @Nullable String title) {
         return "Hello, " + (title != null ? title + " " : "") + name + "!";
     }
@@ -61,6 +68,7 @@ public class AppEndpoint {
         return auth == null ? null : auth.getName();
     }
 
+    @PermitAll
     public String checkUserFromVaadinRequest() {
         return "Hello, "+VaadinRequest.getCurrent().getUserPrincipal().getName()+"!";
     }

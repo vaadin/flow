@@ -17,6 +17,7 @@ class TestComponent extends PolymerElement {
         <button id="checkUserFromVaadinRequest" on-click="checkUserFromVaadinRequest">endpoint checkUser from VaadinRequest</button><br/>
         <button id="helloFromPackagePrivate" on-click="hello">package private endpoint hello</button><br/>
         <button id="helloAnonymousFromPackagePrivate" on-click="helloAnonymousFromPackagePrivateEndpoint">package private endpoint helloAnonymous</button><br/>
+        <button id="denied" on-click="denied">endpoint denied</button><br/>
         <button id="logout" on-click="logout">logout</button><br/>
         <form method="post" action="login">
           <input id="username" name="username"></input>
@@ -87,6 +88,13 @@ class TestComponent extends PolymerElement {
   checkUserFromVaadinRequest(e) {
     appEndpoint
       .checkUserFromVaadinRequest()
+      .then(response => this.$.content.textContent = response)
+      .catch(error => this.$.content.textContent = 'Error:' + error);
+  }
+
+  denied(e) {
+    appEndpoint
+      .denied()
       .then(response => this.$.content.textContent = response)
       .catch(error => this.$.content.textContent = 'Error:' + error);
   }

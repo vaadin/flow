@@ -256,6 +256,13 @@ public class AppViewIT extends ChromeBrowserTest {
         verifyContent("Hello, stranger!");
     }
 
+    @Test
+    public void should_notAbleToRequestDenied_when_LoggedIn() {
+        login("user");
+        testComponent.$(TestBenchElement.class).id("denied").click();
+        verifyContent("Unauthorized access to Vaadin endpoint");
+    }
+
     private void load() {
         openTestUrl("/");
         testComponent = $("test-component").waitForFirst();
