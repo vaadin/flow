@@ -16,6 +16,8 @@
 package com.vaadin.flow.router;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -125,6 +127,12 @@ public class QueryParameters implements Serializable {
         }
         String param = paramAndValue.substring(0, index);
         String value = paramAndValue.substring(index + 1);
+        try {
+            value = URLDecoder.decode(value, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(
+                    "Unable to decode parameter value: " + value, e);
+        }
         return Arrays.asList(param, value);
     }
 
