@@ -484,7 +484,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      */
     public static Location requestToLocation(VaadinRequest request) {
         return requestToLocation(request.getPathInfo(),
-                request.getParameterMap());
+                QueryParameters.full(request.getParameterMap()));
     }
 
     /**
@@ -495,21 +495,21 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * @param path
      *            pathInfo as returned by
      *            {@link javax.servlet.http.HttpServletRequest#getPathInfo()}
-     * @param parameterMap
-     *            parameter map as returned by
-     *            {@link javax.servlet.http.HttpServletRequest#getParameterMap()}
+     * @param parameters
+     *            query parameters
      * @return a location object containing the route information
      */
     public static Location requestToLocation(String path,
-            Map<String, String[]> parameterMap) {
+            QueryParameters queryParameters) {
         if (path == null) {
             path = "";
         } else {
-            assert path.startsWith("/");
-            path = path.substring(1);
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
         }
         try {
-            return new Location(path, QueryParameters.full(parameterMap));
+            return new Location(path, queryParameters);
         } catch (IllegalArgumentException iae) {
             getLogger().warn("Exception when parsing location path {}", path,
                     iae);
@@ -526,7 +526,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         } catch (UnsupportedEncodingException e) {
             getLogger().warn("Exception when encoding path {}", path, e);
         }
-        return new Location(encodedPath);
+        return new Location(encodedPath, queryParameters);
 
     }
 

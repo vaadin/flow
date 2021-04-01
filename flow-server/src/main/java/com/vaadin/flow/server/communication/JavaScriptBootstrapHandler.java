@@ -86,7 +86,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
             String path = uri.getPath();
             QueryParameters parameters = QueryParameters
                     .fromString(uri.getQuery());
-            return new Location(path, parameters);
+            return BootstrapHandler.requestToLocation(path, parameters);
         }
     }
 
