@@ -138,7 +138,7 @@ public class QueryParameters implements Serializable {
 
     private static List<String> getParameterValues(List<String> paramAndValue) {
         if (paramAndValue.size() == 1) {
-            return Collections.emptyList();
+            return Collections.singletonList("");
         } else {
             return Collections.singletonList(paramAndValue.get(1));
         }
