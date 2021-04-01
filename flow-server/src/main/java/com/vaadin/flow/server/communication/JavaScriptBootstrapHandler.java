@@ -76,6 +76,8 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
          * @param ui
          *            the UI object
          * @param callback
+         *            a callback that is invoked to resolve the context root
+         *            from the request
          */
         public JavaScriptBootstrapContext(VaadinRequest request,
                 VaadinResponse response, UI ui,
