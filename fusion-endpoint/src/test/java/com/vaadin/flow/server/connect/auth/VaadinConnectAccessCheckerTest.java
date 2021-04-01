@@ -554,7 +554,7 @@ public class VaadinConnectAccessCheckerTest {
     }
 
     @Test
-    public void should_notShowHelpfulMessage_When_accessDeniedInDevMode()
+    public void should_notShowHelpfulMessage_When_accessDeniedInProductionMode()
             throws Exception {
         VaadinService mockService = Mockito.mock(VaadinService.class);
         DeploymentConfiguration mockDeploymentConfiguration = Mockito.mock(DeploymentConfiguration.class);
