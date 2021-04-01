@@ -265,8 +265,8 @@ class BootstrapUtils {
      *
      * @param ui
      *            the UI for which to do the lookup, not <code>null</code>
-     * @param request
-     *            the request for which to do the lookup, not <code>null</code>
+     * @param route
+     *            the route to lookup, not <code>null</code>
      * @return the class for which page configuration annotations should be
      *         defined, or an empty optional if no such class is available
      */
@@ -285,8 +285,8 @@ class BootstrapUtils {
      *
      * @param ui
      *            the UI for which to do the lookup, not <code>null</code>
-     * @param request
-     *            the request for which to do the lookup, not <code>null</code>
+     * @param route
+     *            the route to lookup, not <code>null</code>
      * @return the class for which page configuration annotations should be
      *         defined, or an empty optional if no such class is available
      */

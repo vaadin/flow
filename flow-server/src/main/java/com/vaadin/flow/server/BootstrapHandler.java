@@ -185,6 +185,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *            the current session
          * @param ui
          *            the UI object
+         * @param contextCallback
+         *            a callback that is invoked to resolve the context root
+         *            from the request
          */
         protected BootstrapContext(VaadinRequest request,
                 VaadinResponse response, VaadinSession session, UI ui,
@@ -201,7 +204,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         /**
-         * Extracts information about the route from the request
+         * Extracts information about the route from the request.
          * 
          * @return the route that should be initialized for this request
          */
