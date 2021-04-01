@@ -495,7 +495,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * @param path
      *            pathInfo as returned by
      *            {@link javax.servlet.http.HttpServletRequest#getPathInfo()}
-     * @param parameters
+     * @param queryParameters
      *            query parameters
      * @return a location object containing the route information
      */
