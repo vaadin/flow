@@ -22,6 +22,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.core.StringContains;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,9 +36,11 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
 import elemental.json.Json;
+import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class NodeUpdaterTest {
 
@@ -186,6 +191,24 @@ public class NodeUpdaterTest {
                         .getString("@webcomponents/webcomponentsjs"));
         Assert.assertEquals("5.0.1", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
+    }
+
+    @Test
+    public void getJsonFileContent_incorrectPackageJsonContent_throwsExceptionWithFileName()
+            throws IOException {
+        File brokenPackageJsonFile = temporaryFolder
+                .newFile("broken-package.json");
+        FileUtils.writeStringToFile(brokenPackageJsonFile,
+                "{ some broken json ", UTF_8);
+
+        JsonException exception = Assert.assertThrows(JsonException.class,
+                () -> NodeUpdater.getJsonFileContent(brokenPackageJsonFile));
+
+        MatcherAssert.assertThat(exception.getMessage(),
+                StringContains.containsString(
+                        "Cannot parse package file "));
+        MatcherAssert.assertThat(exception.getMessage(),
+                StringContains.containsString("broken-package.json"));
     }
 
     private String getPolymerVersion(JsonObject object) {
