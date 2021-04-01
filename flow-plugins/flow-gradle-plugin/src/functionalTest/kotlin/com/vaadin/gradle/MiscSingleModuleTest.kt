@@ -227,11 +227,15 @@ class MiscSingleModuleTest : AbstractGradleTest() {
      * This build script covers the [Spring Boot example](https://github.com/vaadin/base-starter-spring-gradle)
      */
     @Test
-    fun testVaadin20SpringProjectProductionMode() {
+    fun testSpringProjectProductionMode() {
+
+        val springBootVersion = "2.2.4.RELEASE"
+        val springVersion = "17.0-SNAPSHOT"
+
         testProject.buildFile.writeText(
             """
             plugins {
-                id 'org.springframework.boot' version '2.2.4.RELEASE'
+                id 'org.springframework.boot' version '$springBootVersion'
                 id 'io.spring.dependency-management' version '1.0.9.RELEASE'
                 id 'java'
                 id("com.vaadin")
@@ -242,11 +246,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 jcenter()
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
-            
-            ext {
-                set('vaadinVersion', "20.0-SNAPSHOT")
-            }
-            
+
             configurations {
                 developmentOnly
                 runtimeClasspath {
@@ -255,7 +255,9 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             
             dependencies {
-                implementation('com.vaadin:vaadin-spring-boot-starter:20.0-SNAPSHOT')
+                implementation('com.vaadin:flow:$flowVersion')
+                implementation('com.vaadin:vaadin-spring:$springVersion')
+                implementation('org.springframework.boot:spring-boot-starter-web:$springBootVersion')
                 developmentOnly 'org.springframework.boot:spring-boot-devtools'
                 testImplementation('org.springframework.boot:spring-boot-starter-test') {
                     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
