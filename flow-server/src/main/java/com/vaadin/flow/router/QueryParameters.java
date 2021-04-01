@@ -16,19 +16,14 @@
 package com.vaadin.flow.router;
 
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
 
 /**
  * Holds query parameters information.
@@ -113,22 +108,47 @@ public class QueryParameters implements Serializable {
         return new QueryParameters(parseQueryString(queryString));
     }
 
-    private static Map<String, List<String>> parseQueryString(
-            String queryString) {
-        List<NameValuePair> params = URLEncodedUtils.parse(queryString,
-                StandardCharsets.UTF_8);
-        Map<String, List<String>> map = new HashMap<>();
-        for (NameValuePair param : params) {
-            List<String> currentValue = map.computeIfAbsent(param.getName(),
-                    key -> new ArrayList<>());
-            String value = param.getValue();
-            if (value == null) {
-                value = ""; // "?foo" should result in foo with value ""
-            }
-            currentValue.add(value);
-        }
-        return map;
+    private static Map<String, List<String>> parseQueryString(String query) {
+        Map<String, List<String>> parsedParams = Arrays
+                .stream(query.split(PARAMETERS_SEPARATOR))
+                .map(QueryParameters::makeQueryParamList)
+                .collect(Collectors.toMap(list -> list.get(0),
+                        QueryParameters::getParameterValues,
+                        QueryParameters::mergeLists));
+        return parsedParams;
+    }
 
+    private static List<String> makeQueryParamList(String paramAndValue) {
+        int index = paramAndValue.indexOf('=');
+        if (index == -1) {
+            return Collections.singletonList(paramAndValue);
+        }
+        String param = paramAndValue.substring(0, index);
+        String value = paramAndValue.substring(index + 1);
+        return Arrays.asList(param, value);
+    }
+
+    private static List<String> getParameterValues(List<String> paramAndValue) {
+        if (paramAndValue.size() == 1) {
+            return Collections.emptyList();
+        } else {
+            return Collections.singletonList(paramAndValue.get(1));
+        }
+    }
+
+    private static List<String> mergeLists(List<String> list1,
+            List<String> list2) {
+        List<String> result = new ArrayList<>(list1);
+        if (result.isEmpty()) {
+            result.add(null);
+        }
+        if (list2.isEmpty()) {
+            result.add(null);
+        } else {
+            result.addAll(list2);
+        }
+
+        return result;
     }
 
     /**
