@@ -86,6 +86,8 @@ public class StreamReceiverHandlerTest {
     private String contentType;
     private List<Part> parts;
 
+    private boolean isGetContentLengthLongCalled;
+
     @Before
     public void setup() throws Exception {
         contentLength = "6";
@@ -174,6 +176,12 @@ public class StreamReceiverHandlerTest {
             public Collection<Part> getParts()
                     throws IOException, ServletException {
                 return parts;
+            }
+
+            @Override
+            public long getContentLengthLong() {
+                isGetContentLengthLongCalled = true;
+                return 0;
             }
         };
     }
@@ -274,7 +282,7 @@ public class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleMultipartFileUpload_noPart_uploadFailed_responseStatusIs500()
+    public void doHandleMultipartFileUpload_noPart_uploadFailed_responseStatusIs500_getContentLengthLongCalled()
             throws IOException {
 
         handler.doHandleMultipartFileUpload(session, request, response,
@@ -282,6 +290,7 @@ public class StreamReceiverHandlerTest {
 
         Mockito.verify(response)
                 .setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        Assert.assertTrue(isGetContentLengthLongCalled);
     }
 
     @Test
