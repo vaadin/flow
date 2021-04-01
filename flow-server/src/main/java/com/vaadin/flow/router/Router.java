@@ -122,7 +122,7 @@ public class Router implements Serializable {
     public Optional<NavigationState> resolveNavigationTarget(String pathInfo,
             Map<String, String[]> parameterMap) {
         Location location = BootstrapHandler.requestToLocation(pathInfo,
-                parameterMap);
+                QueryParameters.full(parameterMap));
         return resolveNavigationTarget(location);
     }
 
