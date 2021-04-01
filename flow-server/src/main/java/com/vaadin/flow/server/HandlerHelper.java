@@ -22,7 +22,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -170,8 +169,7 @@ public class HandlerHelper implements Serializable {
                 servletMappingPath, requestedPath);
         if (requestedPathWithoutServletMapping == null) {
             return false;
-        }
-        if (isInternalRequestInsideServlet(requestedPathWithoutServletMapping,
+        } else if (isInternalRequestInsideServlet(requestedPathWithoutServletMapping,
                 requestTypeParameter)) {
             return true;
         }
@@ -196,7 +194,7 @@ public class HandlerHelper implements Serializable {
             servletMappingPath = servletMappingPath.substring(0,
                     servletMappingPath.length() - "/*".length());
         }
-        if (servletMappingPath.equals("/")) {
+        if ("/".equals(servletMappingPath)) {
             servletMappingPath = "";
         }
         if (!requestedPath.startsWith(servletMappingPath)) {
