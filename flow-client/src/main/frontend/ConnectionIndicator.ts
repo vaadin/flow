@@ -14,7 +14,7 @@
  * the License.
  */
 
-import { css, html, LitElement, property } from 'lit-element';
+import { html, LitElement, property } from 'lit-element';
 import { classMap } from 'lit-html/directives/class-map';
 import { ConnectionState, ConnectionStateStore } from './ConnectionState';
 
@@ -246,7 +246,7 @@ export class ConnectionIndicator extends LitElement {
       if (!document.getElementById(DEFAULT_STYLE_ID)) {
         const style = document.createElement('style');
         style.id = DEFAULT_STYLE_ID;
-        style.textContent = this.getDefaultStyle().cssText;
+        style.textContent = this.getDefaultStyle();
         document.head.appendChild(style);
       }
     } else {
@@ -257,8 +257,8 @@ export class ConnectionIndicator extends LitElement {
     }
   }
 
-  private getDefaultStyle() {
-    return css`
+  private getDefaultStyle():string {
+    return `
       @keyframes v-progress-start {
         0% {
           width: 0%;
