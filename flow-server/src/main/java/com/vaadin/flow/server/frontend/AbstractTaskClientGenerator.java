@@ -56,7 +56,6 @@ public abstract class AbstractTaskClientGenerator implements FallibleCommand {
      */
     protected abstract boolean shouldGenerate();
 
-
     @Override
     public void execute() throws ExecutionFailedException {
         if (!shouldGenerate()) {
@@ -70,7 +69,8 @@ public abstract class AbstractTaskClientGenerator implements FallibleCommand {
             FileUtils.forceMkdirParent(generatedFile);
             FileUtils.writeStringToFile(generatedFile, fileContent, UTF_8);
         } catch (IOException exception) {
-            String errorMessage = String.format("Error writing '%s'", generatedFile);
+            String errorMessage = String.format("Error writing '%s'",
+                    generatedFile);
             throw new ExecutionFailedException(errorMessage, exception);
         }
     }

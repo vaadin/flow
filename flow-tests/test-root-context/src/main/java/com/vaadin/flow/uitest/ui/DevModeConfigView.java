@@ -32,9 +32,9 @@ public class DevModeConfigView extends Div {
                 .getCurrent().getDeploymentConfiguration().isProductionMode()));
         productionMode.setId("productionMode");
 
-        Paragraph devModeLiveReloadEnabled = new Paragraph(
-                String.valueOf(VaadinService.getCurrent()
-                        .getDeploymentConfiguration().isDevModeLiveReloadEnabled()));
+        Paragraph devModeLiveReloadEnabled = new Paragraph(String
+                .valueOf(VaadinService.getCurrent().getDeploymentConfiguration()
+                        .isDevModeLiveReloadEnabled()));
         devModeLiveReloadEnabled.setId("devModeLiveReloadEnabled");
 
         add(productionMode, devModeLiveReloadEnabled);

@@ -68,7 +68,7 @@ public class AbstractThemeTest {
 
         assertUrlTranslations(theme);
     }
-    
+
     @Test
     public void only_last_instance_of_base_url_should_be_replaced() {
         AbstractTheme theme = new AbstractTheme() {
@@ -83,20 +83,20 @@ public class AbstractThemeTest {
             }
         };
 
-        assertEquals("src/button/theme/custom/Button.html", theme.translateUrl(
-                "src/button/src/Button.html"));
+        assertEquals("src/button/theme/custom/Button.html",
+                theme.translateUrl("src/button/src/Button.html"));
     }
 
     private void assertUrlTranslations(AbstractTheme theme) {
-        assertEquals("button/theme/custom/Button.html", theme.translateUrl(
-                "button/src/Button.html"));
+        assertEquals("button/theme/custom/Button.html",
+                theme.translateUrl("button/src/Button.html"));
 
         assertEquals("Non base url should return as was", "button/Button.html",
                 theme.translateUrl("button/Button.html"));
 
         assertEquals("Non base url should return as was",
-                "button/custom/Button.html", theme.translateUrl(
-                        "button/custom/Button.html"));
+                "button/custom/Button.html",
+                theme.translateUrl("button/custom/Button.html"));
     }
 
 }

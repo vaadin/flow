@@ -69,8 +69,8 @@ class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
     @Override
     public int handle(NavigationEvent event) {
 
-        continueNavigationAction = event.getUI()
-                .getInternals().getContinueNavigationAction();
+        continueNavigationAction = event.getUI().getInternals()
+                .getContinueNavigationAction();
 
         return super.handle(event);
     }

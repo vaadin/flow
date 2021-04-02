@@ -40,6 +40,6 @@ public class AppThemeTestIT extends CCDMTest {
     public void should_apply_AppTheme_on_serverSideView() {
         findAnchor("serverview").click();
         Assert.assertEquals(BLUE_RGBA,
-            findElement(By.id("serverView")).getCssValue("color"));
+                findElement(By.id("serverView")).getCssValue("color"));
     }
 }

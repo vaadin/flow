@@ -248,8 +248,8 @@ public abstract class NodeUpdater implements FallibleCommand {
             try {
                 jsonContent = Json.parse(fileContent);
             } catch (JsonException e) {
-                throw new JsonException(String.format(
-                        "Cannot parse package file '%s'", packageFile));
+                throw new JsonException(String
+                        .format("Cannot parse package file '%s'", packageFile));
             }
         }
         return jsonContent;

@@ -59,8 +59,8 @@ public enum Unit {
      */
     INCH("in"),
     /**
-     * Unit code representing in percentage of the containing element
-     * defined by terminal.
+     * Unit code representing in percentage of the containing element defined by
+     * terminal.
      */
     PERCENTAGE("%");
 
@@ -86,21 +86,24 @@ public enum Unit {
     /**
      * Gives size unit of the css string representing a size.
      * 
-     * @param cssSize Css compliant size string such as "50px".
+     * @param cssSize
+     *            Css compliant size string such as "50px".
      * 
      * @return A Optional unit.
      */
     public static Optional<Unit> getUnit(String cssSize) {
         if (cssSize == null) {
-             throw new IllegalArgumentException("The parameter can't be null");
+            throw new IllegalArgumentException("The parameter can't be null");
         }
-        return getUnits().filter(unit -> cssSize.endsWith(unit.toString())).findFirst();
+        return getUnits().filter(unit -> cssSize.endsWith(unit.toString()))
+                .findFirst();
     }
 
     /**
      * Gives size component as float of the css string representing a size.
      * 
-     * @param cssSize Css compliant size string such as "50px".
+     * @param cssSize
+     *            Css compliant size string such as "50px".
      * 
      * @return Size as float, 0 if string contained only the unit.
      */
@@ -113,8 +116,8 @@ public enum Unit {
                 .orElseThrow(() -> new IllegalArgumentException(String.format(
                         "The parameter string '%s' does not contain valid unit",
                         cssSize)));
-        String size = cssSize
-                .substring(0, cssSize.length() - unit.toString().length());
+        String size = cssSize.substring(0,
+                cssSize.length() - unit.toString().length());
         if (size.isEmpty()) {
             size = "0";
         }
@@ -124,7 +127,8 @@ public enum Unit {
     /**
      * Convert unit string symbol to Unit.
      *
-     * @param symbol A String.
+     * @param symbol
+     *            A String.
      * @return A Unit, Unit.PIXELS if symbol was null or not matching.
      */
     public static Unit getUnitFromSymbol(String symbol) {

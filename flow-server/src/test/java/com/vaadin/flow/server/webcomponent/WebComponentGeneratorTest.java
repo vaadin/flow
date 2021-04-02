@@ -160,8 +160,7 @@ public class WebComponentGeneratorTest {
         module = module.replace("\r", "");
         MatcherAssert.assertThat(module,
                 startsWith("class Tag extends HTMLElement {"));
-        MatcherAssert
-            .assertThat(module, containsString("style.innerHTML = `\n" //
+        MatcherAssert.assertThat(module, containsString("style.innerHTML = `\n" //
                 + "      :host {\n" //
                 + "        position: relative;\n" //
                 + "        display: inline-block;\n" //
@@ -174,25 +173,24 @@ public class WebComponentGeneratorTest {
 
     @Test
     public void providedJSModuleContainsCorrectThemeReplacements() {
-        String module = WebComponentGenerator.generateModule(
-                new DefaultWebComponentExporterFactory<>(
-                        MyComponentExporter.class),
-                "", false, "my-theme");
+        String module = WebComponentGenerator
+                .generateModule(
+                        new DefaultWebComponentExporterFactory<>(
+                                MyComponentExporter.class),
+                        "", false, "my-theme");
         // make sure that the test works on windows machines:
         module = module.replace("\r", "");
-        MatcherAssert.assertThat(module,
-                startsWith("import {applyTheme} from '"
-                        + "generated/theme';\n\nclass Tag extends "
-                        + "HTMLElement {"));
-        MatcherAssert
-            .assertThat(module, containsString("style.innerHTML = `\n" //
+        MatcherAssert.assertThat(module, startsWith("import {applyTheme} from '"
+                + "generated/theme';\n\nclass Tag extends " + "HTMLElement {"));
+        MatcherAssert.assertThat(module, containsString("style.innerHTML = `\n" //
                 + "      :host {\n" //
                 + "        position: relative;\n" //
                 + "        display: inline-block;\n" //
                 + "      }\n" //
                 + "    `;\n"));
 
-        MatcherAssert.assertThat(module, containsString("applyTheme(shadow);\n    shadow.appendChild(style);"));
+        MatcherAssert.assertThat(module, containsString(
+                "applyTheme(shadow);\n    shadow.appendChild(style);"));
         MatcherAssert.assertThat(module,
                 containsString("customElements.define('tag', Tag);\n"));
     }

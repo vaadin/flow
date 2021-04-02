@@ -58,14 +58,15 @@ public class PwaConfiguration implements Serializable {
     public PwaConfiguration() {
         this(false, DEFAULT_NAME, "Flow PWA", "", DEFAULT_BACKGROUND_COLOR,
                 DEFAULT_THEME_COLOR, DEFAULT_ICON, DEFAULT_PATH,
-                DEFAULT_OFFLINE_PATH, DEFAULT_DISPLAY, DEFAULT_START_URL, 
+                DEFAULT_OFFLINE_PATH, DEFAULT_DISPLAY, DEFAULT_START_URL,
                 new String[] {});
     }
 
     /**
      * Constructs the configuration using the {@link PWA} annotation.
      *
-     * @param pwa the annotation to use for configuration
+     * @param pwa
+     *            the annotation to use for configuration
      */
     public PwaConfiguration(PWA pwa) {
         this(true, pwa.name(), pwa.shortName(), pwa.description(),
@@ -77,18 +78,30 @@ public class PwaConfiguration implements Serializable {
     /**
      * Constructs a configuration from individual values.
      *
-     * @param enabled is PWA enabled
-     * @param name the application name
-     * @param shortName the application short name
-     * @param description the description of the application
-     * @param backgroundColor the background color
-     * @param themeColor the theme color
-     * @param iconPath the icon file path
-     * @param manifestPath the `manifest.webmanifest` file path
-     * @param offlinePath the static offline HTML file path
-     * @param display the display mode
-     * @param startPath the start path
-     * @param offlineResources the list of files to add for pre-caching
+     * @param enabled
+     *            is PWA enabled
+     * @param name
+     *            the application name
+     * @param shortName
+     *            the application short name
+     * @param description
+     *            the description of the application
+     * @param backgroundColor
+     *            the background color
+     * @param themeColor
+     *            the theme color
+     * @param iconPath
+     *            the icon file path
+     * @param manifestPath
+     *            the `manifest.webmanifest` file path
+     * @param offlinePath
+     *            the static offline HTML file path
+     * @param display
+     *            the display mode
+     * @param startPath
+     *            the start path
+     * @param offlineResources
+     *            the list of files to add for pre-caching
      */
     @SuppressWarnings("squid:S00107")
     public PwaConfiguration(boolean enabled, String name, String shortName,
@@ -281,8 +294,8 @@ public class PwaConfiguration implements Serializable {
     /**
      * Is static offline HTML used for offline mode.
      *
-     * Disabled by default, meaning that application shell (`index.html`)
-     * and client-side views are served offline.
+     * Disabled by default, meaning that application shell (`index.html`) and
+     * client-side views are served offline.
      *
      * Set {@link PWA#offlinePath()} value in PWA annotation to enable.
      *

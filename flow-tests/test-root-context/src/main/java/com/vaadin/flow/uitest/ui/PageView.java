@@ -43,10 +43,11 @@ public class PageView extends AbstractDivView {
             getPage().reload();
         });
 
-        VaadinServletRequest request = (VaadinServletRequest) VaadinRequest.getCurrent();
+        VaadinServletRequest request = (VaadinServletRequest) VaadinRequest
+                .getCurrent();
         HttpServletRequest httpServletRequest = request.getHttpServletRequest();
-        String url = httpServletRequest.getRequestURI()
-                .replace(PageView.class.getName(), BaseHrefView.class.getName());
+        String url = httpServletRequest.getRequestURI().replace(
+                PageView.class.getName(), BaseHrefView.class.getName());
 
         Div setLocationButton = new Div();
         setLocationButton.setId("setLocation");

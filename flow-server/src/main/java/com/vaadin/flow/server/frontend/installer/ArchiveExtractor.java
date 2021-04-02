@@ -30,14 +30,12 @@ interface ArchiveExtractor {
      * Extract archive contents to given destination.
      *
      * @param archive
-     *         archive file to extract
+     *            archive file to extract
      * @param destinationDirectory
-     *         destination directory to extract files to
+     *            destination directory to extract files to
      * @throws ArchiveExtractionException
-     *         exception thrown for failure during extraction
+     *             exception thrown for failure during extraction
      */
     void extract(File archive, File destinationDirectory)
             throws ArchiveExtractionException;
 }
-
-

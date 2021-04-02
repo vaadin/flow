@@ -130,8 +130,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     public void loadingJars_useResourcesThemesFolder_allFilesExist()
             throws IOException, VaadinInitializerException {
         loadingJarsWithProtocol_allFilesExist(RESOURCES_THEME_JAR_DEFAULT,
-            "src/test/resources/jar-with-themes-resources.jar!/META-INF/resources/themes",
-            this::jarUrlBuilder);
+                "src/test/resources/jar-with-themes-resources.jar!/META-INF/resources/themes",
+                this::jarUrlBuilder);
     }
 
     @Test
@@ -441,7 +441,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         servletContextAttributes.put(Lookup.class.getName(), lookup);
 
         process();
-        assertTrue(DevModeInitializer.isDevModeAlreadyStarted(new VaadinServletContext(servletContext)));
+        assertTrue(DevModeInitializer.isDevModeAlreadyStarted(
+                new VaadinServletContext(servletContext)));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -511,7 +512,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     private void loadingJars_allFilesExist(String resourcesFolder)
             throws IOException, VaadinInitializerException {
-        loadingJarsWithProtocol_allFilesExist(resourcesFolder, this::jarUrlBuilder);
+        loadingJarsWithProtocol_allFilesExist(resourcesFolder,
+                this::jarUrlBuilder);
     }
 
     private URL jarUrlBuilder(String url) {
@@ -550,13 +552,12 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                 urlBuilder);
     }
 
-    private void loadingJarsWithProtocol_allFilesExist(String resourcesFolder, String jarContent,
-                                                       Function<String, URL> urlBuilder)
-        throws IOException, VaadinInitializerException {
+    private void loadingJarsWithProtocol_allFilesExist(String resourcesFolder,
+            String jarContent, Function<String, URL> urlBuilder)
+            throws IOException, VaadinInitializerException {
         // Create jar urls with the given urlBuilder for test
         String urlPath = this.getClass().getResource("/").toString()
-            .replace("target/test-classes/", "")
-            + jarContent;
+                .replace("target/test-classes/", "") + jarContent;
         URL jar = urlBuilder.apply(urlPath);
         List<URL> urls = new ArrayList<>();
         urls.add(jar);
@@ -564,30 +565,32 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         // Create mock loader with the single jar to be found
         ClassLoader classLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(classLoader.getResources(resourcesFolder))
-            .thenReturn(Collections.enumeration(urls));
+                .thenReturn(Collections.enumeration(urls));
 
         // load jars from classloader
         List<File> jarFilesFromClassloader = new ArrayList<>(DevModeInitializer
-            .getFrontendLocationsFromClassloader(classLoader));
+                .getFrontendLocationsFromClassloader(classLoader));
 
         // Assert that jar was found and accepted
         assertEquals("One jar should have been found and added as a File", 1,
-            jarFilesFromClassloader.size());
+                jarFilesFromClassloader.size());
         // Assert that the file can be found from the filesystem by the given
         // path.
         assertTrue("File in path 'with space' doesn't load from given path",
-            jarFilesFromClassloader.get(0).exists());
+                jarFilesFromClassloader.get(0).exists());
     }
 
     private void loadingFsResources_allFilesExist(String resourcesRoot,
-            String resourcesFolder) throws IOException, VaadinInitializerException {
+            String resourcesFolder)
+            throws IOException, VaadinInitializerException {
         List<URL> urls = Collections.singletonList(
                 getClass().getResource(resourcesRoot + resourcesFolder));
         loadingFsResources_allFilesExist(urls, resourcesFolder);
     }
 
     private void loadingFsResources_allFilesExist(Collection<URL> urls,
-            String resourcesFolder) throws IOException, VaadinInitializerException {
+            String resourcesFolder)
+            throws IOException, VaadinInitializerException {
         // Create mock loader with the single jar to be found
         ClassLoader classLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(classLoader.getResources(resourcesFolder))

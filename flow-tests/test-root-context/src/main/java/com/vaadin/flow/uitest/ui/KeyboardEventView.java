@@ -13,8 +13,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DefaultErrorHandler;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.KeyboardEventView",
-        layout = ViewTestLayout.class)
+@Route(value = "com.vaadin.flow.uitest.ui.KeyboardEventView", layout = ViewTestLayout.class)
 public class KeyboardEventView extends Div {
     private Input input = new Input();
     private NativeButton sendInvalidKeyUp = new NativeButton();
@@ -26,14 +25,13 @@ public class KeyboardEventView extends Div {
 
         ComponentUtil.addListener(input, KeyDownEvent.class, event -> {
             /*
-                for each event, sets a string "keyvalue:codevalue;" to the
-                paragraph. For 'Q' the string would be
-                    "Q:KeyQ"
+             * for each event, sets a string "keyvalue:codevalue;" to the
+             * paragraph. For 'Q' the string would be "Q:KeyQ"
              */
             String keyText = String.join(",", event.getKey().getKeys());
-            String codeText = (event.getCode().isPresent() ?
-                    String.join(",", event.getCode().get().getKeys()) :
-                    "");
+            String codeText = (event.getCode().isPresent()
+                    ? String.join(",", event.getCode().get().getKeys())
+                    : "");
             paragraph.setText(keyText + ":" + codeText);
         });
         add(input, paragraph);

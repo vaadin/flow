@@ -279,8 +279,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
         HasUrlParameterFormat.checkMandatoryParameter(navigationTarget, null);
 
-        return Optional.ofNullable(
-                getConfiguration().getTargetUrl(navigationTarget));
+        return Optional
+                .ofNullable(getConfiguration().getTargetUrl(navigationTarget));
     }
 
     @Override
@@ -292,8 +292,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         HasUrlParameterFormat.checkMandatoryParameter(navigationTarget,
                 parameters);
 
-        return Optional.ofNullable(getConfiguration()
-                .getTargetUrl(navigationTarget, parameters));
+        return Optional.ofNullable(
+                getConfiguration().getTargetUrl(navigationTarget, parameters));
     }
 
     @Override
@@ -301,8 +301,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
             Class<? extends Component> navigationTarget) {
         Objects.requireNonNull(navigationTarget, TARGET_MUST_NOT_BE_NULL);
 
-        return Optional.ofNullable(
-                getConfiguration().getTemplate(navigationTarget));
+        return Optional
+                .ofNullable(getConfiguration().getTemplate(navigationTarget));
     }
 
     @Override
@@ -462,5 +462,5 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
         return Optional.empty();
     }
-    
+
 }

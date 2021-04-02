@@ -57,8 +57,10 @@ public class OfflineWithCustomContextIT extends ChromeDeviceTest {
                     body.findElements(By.id("outlet")).isEmpty());
 
             WebElement offline = body.findElement(By.id("offline"));
-            Assert.assertTrue("Should have the content defined in offline.html file",
-                    offline.findElement(By.tagName("h1")).getText().contains("PWA With custom offline page"));
+            Assert.assertTrue(
+                    "Should have the content defined in offline.html file",
+                    offline.findElement(By.tagName("h1")).getText()
+                            .contains("PWA With custom offline page"));
         } finally {
             // Reset network conditions back
             setConnectionType(NetworkConnection.ConnectionType.ALL);

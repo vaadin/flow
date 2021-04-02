@@ -72,7 +72,7 @@ public class TaskRunNpmInstallTest {
         generatedPath.mkdir();
         nodeUpdater = new NodeUpdater(Mockito.mock(ClassFinder.class),
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-            generatedPath, null) {
+                generatedPath, null) {
 
             @Override
             public void execute() {
@@ -185,8 +185,9 @@ public class TaskRunNpmInstallTest {
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         Mockito.verify(logger).info(captor.capture(),
                 Mockito.matches(getToolName()),
-                Mockito.matches(nodeModules.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\")), Mockito.any(),
-                Mockito.matches(Constants.PACKAGE_JSON));
+                Mockito.matches(nodeModules.getAbsolutePath().replaceAll("\\\\",
+                        "\\\\\\\\")),
+                Mockito.any(), Mockito.matches(Constants.PACKAGE_JSON));
         Assert.assertEquals(
                 "Skipping `{} install` because the frontend packages are already installed in the folder '{}' and the hash in the file '{}' is the same as in '{}'",
                 captor.getValue());

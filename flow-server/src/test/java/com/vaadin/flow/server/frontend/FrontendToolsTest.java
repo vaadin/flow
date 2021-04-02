@@ -107,7 +107,8 @@ public class FrontendToolsTest {
 
     }
 
-    private void prepareNodeDownloadableZipAt(String baseDir, String version) throws IOException {
+    private void prepareNodeDownloadableZipAt(String baseDir, String version)
+            throws IOException {
         Platform platform = Platform.guess();
         String nodeExec = platform.isWindows() ? "node.exe" : "node";
         String prefix = "node-" + version + "-" + platform.getNodeClassifier();
@@ -173,13 +174,13 @@ public class FrontendToolsTest {
 
     @Test
     public void installNodeFromFileSystem_ForceAlternativeNodeExecutableInstallsToTargetDirectory()
-            throws Exception{
+            throws Exception {
         Assert.assertFalse("npm should not yet be present",
                 new File(vaadinHomeDir, "node/node_modules/npm/bin/npm")
                         .exists());
 
-        tools = new FrontendTools(baseDir, () -> vaadinHomeDir,
-                "v12.10.0", new File(baseDir).toURI());
+        tools = new FrontendTools(baseDir, () -> vaadinHomeDir, "v12.10.0",
+                new File(baseDir).toURI());
         prepareNodeDownloadableZipAt(baseDir, "v12.10.0");
         tools.forceAlternativeNodeExecutable();
 
@@ -459,7 +460,8 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void getSuitablePnpm_incompatibleDefaultVersionInstalled_rejected() throws Exception {
+    public void getSuitablePnpm_incompatibleDefaultVersionInstalled_rejected()
+            throws Exception {
         createStubNode(false, true, baseDir);
         createFakePnpm("4.5.0");
         List<String> pnpmCommand = tools.getSuitablePnpm();
@@ -467,8 +469,10 @@ public class FrontendToolsTest {
                 "pnpm@" + FrontendTools.DEFAULT_PNPM_VERSION,
                 pnpmCommand.get(pnpmCommand.size() - 1));
     }
+
     @Test
-    public void getSuitablePnpm_compatibleVersionInstalled_accepted() throws Exception {
+    public void getSuitablePnpm_compatibleVersionInstalled_accepted()
+            throws Exception {
         createStubNode(false, true, baseDir);
         createFakePnpm("5.15.1");
         List<String> pnpmCommand = tools.getSuitablePnpm();
@@ -534,12 +538,11 @@ public class FrontendToolsTest {
 
         FileWriter fileWriter = new FileWriter(npxJs);
         try {
-            fileWriter
-                    .write("pnpmVersion = process.argv.filter(a=>a.startsWith('pnpm')).map(a=>a.substring(5))[0] || '"
+            fileWriter.write(
+                    "pnpmVersion = process.argv.filter(a=>a.startsWith('pnpm')).map(a=>a.substring(5))[0] || '"
                             + defaultPnpmVersion + "'\n"
                             + "if (process.argv.includes('--version') || process.argv.includes('-v')) {\n"
-                            + "    console.log(pnpmVersion);\n"
-                            + "}\n");
+                            + "    console.log(pnpmVersion);\n" + "}\n");
         } finally {
             fileWriter.close();
         }
