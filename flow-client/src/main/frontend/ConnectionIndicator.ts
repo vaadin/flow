@@ -14,8 +14,9 @@
  * the License.
  */
 
-import { html, LitElement, property } from 'lit-element';
-import { classMap } from 'lit-html/directives/class-map';
+import { html, LitElement } from 'lit';
+import { property } from 'lit/decorators';
+import { classMap } from 'lit/directives/class-map';
 import { ConnectionState, ConnectionStateStore } from './ConnectionState';
 
 const DEFAULT_STYLE_ID = 'css-loading-indicator';
@@ -257,7 +258,7 @@ export class ConnectionIndicator extends LitElement {
     }
   }
 
-  private getDefaultStyle():string {
+  private getDefaultStyle(): string {
     return `
       @keyframes v-progress-start {
         0% {
