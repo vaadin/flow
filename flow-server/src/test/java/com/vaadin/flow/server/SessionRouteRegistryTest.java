@@ -1,6 +1,7 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.ServletContext;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -41,7 +42,9 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteBaseData;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
@@ -988,6 +991,21 @@ public class SessionRouteRegistryTest {
 
     }
 
+    @Test
+    public void getTargetUrl_annotatedRoute_rootIsAlias_mainRouteIsNotRoot_mainRouteIsReturned() {
+        SessionRouteRegistry registry = getRegistry(session);
+        RouteConfiguration configuration = RouteConfiguration
+                .forRegistry(registry);
+
+        configuration.setAnnotatedRoute(RouteWithRootAlias.class);
+
+        Optional<String> url = registry.getTargetUrl(RouteWithRootAlias.class,
+                RouteParameters.empty());
+
+        Assert.assertTrue(url.isPresent());
+        Assert.assertEquals("foo", url.get());
+    }
+
     private <T> T serializeAndDeserialize(T instance) throws Throwable {
         ByteArrayOutputStream bs = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(bs);
@@ -1051,6 +1069,13 @@ public class SessionRouteRegistryTest {
                 ErrorParameter<NotFoundException> parameter) {
             return 404;
         }
+    }
+
+    @Tag("div")
+    @Route("foo")
+    @RouteAlias("")
+    private static class RouteWithRootAlias extends Component {
+
     }
 
     /**
