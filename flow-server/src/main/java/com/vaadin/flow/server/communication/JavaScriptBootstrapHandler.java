@@ -20,8 +20,6 @@ import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_RO
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,7 +30,6 @@ import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.DevModeHandler;
