@@ -198,15 +198,15 @@ public class QueryParametersTest {
     @Test
     public void parameterWithoutValue() {
         QueryParameters params = new QueryParameters(
-                Collections.singletonMap("foo", Collections.emptyList()));
+                Collections.singletonMap("foo", Collections.singletonList("")));
         Assert.assertEquals("foo", params.getQueryString());
 
         params = new QueryParameters(
-                Collections.singletonMap("foo", Arrays.asList(null, "bar")));
+                Collections.singletonMap("foo", Arrays.asList("", "bar")));
         Assert.assertEquals("foo&foo=bar", params.getQueryString());
 
         params = new QueryParameters(
-                Collections.singletonMap("foo", Arrays.asList("bar", null)));
+                Collections.singletonMap("foo", Arrays.asList("bar", "")));
         Assert.assertEquals("foo=bar&foo", params.getQueryString());
     }
 
@@ -214,6 +214,6 @@ public class QueryParametersTest {
     public void parameterWithEmptyValue() {
         QueryParameters fullParams = new QueryParameters(
                 Collections.singletonMap("foo", Collections.singletonList("")));
-        Assert.assertEquals("foo=", fullParams.getQueryString());
+        Assert.assertEquals("foo", fullParams.getQueryString());
     }
 }
