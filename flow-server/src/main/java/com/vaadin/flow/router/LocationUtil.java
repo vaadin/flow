@@ -34,7 +34,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class LocationUtil {
 
     private static final String PATH_SEPARATOR = "/";
-    private static final String PARAMETERS_SEPARATOR = "&";
 
     // Prevent instantiation of util class
     private LocationUtil() {
