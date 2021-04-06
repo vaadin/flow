@@ -101,6 +101,10 @@ public class QueryParameters implements Serializable {
 
     /**
      * Creates parameters from a query string.
+     * <p>
+     * Note that no length checking is done for the string. It is the
+     * responsibility of the caller (or the server) to limit the length of the
+     * query string.
      *
      * @param queryString
      *            the query string
