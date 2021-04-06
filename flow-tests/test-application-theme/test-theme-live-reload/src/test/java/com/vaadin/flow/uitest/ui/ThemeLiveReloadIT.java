@@ -144,7 +144,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
             final String stylesCssContent = "@Import \"./test-styles.css\";";
             // @formatter:on
             FileUtils.write(testStylesCSSFile, fontStyle,
-                StandardCharsets.UTF_8.name());
+                    StandardCharsets.UTF_8.name());
             FileUtils.write(stylesCSSFile, stylesCssContent,
                     StandardCharsets.UTF_8.name());
             waitUntil(driver -> testStylesCSSFile.exists());
