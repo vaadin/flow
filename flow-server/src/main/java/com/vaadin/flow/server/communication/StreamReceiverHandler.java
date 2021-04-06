@@ -189,7 +189,9 @@ public class StreamReceiverHandler implements Serializable {
             }
         } catch (IOException exception) {
             // do not report IO exceptions via ErrorHandler
-            getLogger().warn("IO Exception during file upload, fired as StreamingErrorEvent", exception);
+            getLogger().warn(
+                    "IO Exception during file upload, fired as StreamingErrorEvent",
+                    exception);
         } catch (Exception exception) {
             session.lock();
             try {
@@ -530,12 +532,12 @@ public class StreamReceiverHandler implements Serializable {
         } catch (UploadInterruptedException | IOException e) {
             // Download is either interrupted by application code or some
             // IOException happens
-            fireStreamingFailedEvent(session, filename, type, contentLength,
+            onStreamingFailed(session, filename, type, contentLength,
                     streamVariable, out, totalBytes, e);
             // Interrupted exception and IOEXception are not thrown forward:
             // it's enough to fire them via streamVariable
         } catch (final Exception e) {
-            fireStreamingFailedEvent(session, filename, type, contentLength,
+            onStreamingFailed(session, filename, type, contentLength,
                     streamVariable, out, totalBytes, e);
             // Throw not IOException and interrupted exception for terminal to
             // be handled (to be passed to terminalErrorHandler): such
@@ -547,10 +549,9 @@ public class StreamReceiverHandler implements Serializable {
                 success ? UploadStatus.OK : UploadStatus.ERROR);
     }
 
-    private void fireStreamingFailedEvent(VaadinSession session,
-            String filename, String type, long contentLength,
-            StreamVariable streamVariable, OutputStream out, long totalBytes,
-            final Exception exception) {
+    private void onStreamingFailed(VaadinSession session, String filename,
+            String type, long contentLength, StreamVariable streamVariable,
+            OutputStream out, long totalBytes, final Exception exception) {
         tryToCloseStream(out);
         session.lock();
         try {
