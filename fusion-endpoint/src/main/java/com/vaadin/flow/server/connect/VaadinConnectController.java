@@ -66,6 +66,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
@@ -279,6 +280,18 @@ public class VaadinConnectController {
         } finally {
             CurrentInstance.set(VaadinRequest.class, null);
         }
+    }
+
+    @PostMapping(path="/transient", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<String> testController(HttpServletRequest request) throws JsonProcessingException  {
+        VaadinConnectAccessChecker accessChecker = getAccessChecker(
+                request.getServletContext());
+        if (!accessChecker.requestForbidden(request)) {
+            Object springCsrfToken = request.getAttribute("_csrf");
+            return ResponseEntity
+                .ok(JsonUtils.beanToJson(springCsrfToken).toJson());
+        }
+        return null;
     }
 
     private ResponseEntity<String> invokeVaadinEndpointMethod(

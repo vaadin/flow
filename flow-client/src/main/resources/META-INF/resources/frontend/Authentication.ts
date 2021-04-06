@@ -81,9 +81,20 @@ export async function login(username: string, password: string, options?: LoginO
 export async function logout(options?: LogoutOptions) {
   // this assumes the default Spring Security logout configuration (handler URL)
   const logoutUrl = options && options.logoutUrl ? options.logoutUrl : '/logout';
+  const $wnd = window as any;
 
   try {
-    const response = await fetch(logoutUrl, { method: 'POST' });
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': ($wnd.Vaadin.TypeScript && $wnd.Vaadin.TypeScript.csrfToken) || ''
+    };
+    const res = await fetch('connect/transient', { method: 'POST', headers });
+    const csrfToken = await res.json();
+
+    headers['X-CSRF-Token'] = (csrfToken as any).token;
+
+    const response = await fetch(logoutUrl, { method: 'POST', headers });
     // TODO: find a more efficient way to get a new CSRF token
     // parsing the full response body just to get a token may be wasteful
     const token = getCsrfTokenFromResponseBody(await response.text());

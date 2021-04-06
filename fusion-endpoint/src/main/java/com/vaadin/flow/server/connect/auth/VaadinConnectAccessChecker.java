@@ -139,7 +139,7 @@ public class VaadinConnectAccessChecker {
                 || entityForbidden(getSecurityTarget(method), request);
     }
 
-    private boolean requestForbidden(HttpServletRequest request) {
+    public boolean requestForbidden(HttpServletRequest request) {
         if (!xsrfProtectionEnabled) {
             return false;
         }
