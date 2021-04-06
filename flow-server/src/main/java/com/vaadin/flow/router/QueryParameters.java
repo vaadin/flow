@@ -187,12 +187,12 @@ public class QueryParameters implements Serializable {
 
     private Stream<String> getParameterAndValues(
             Entry<String, List<String>> entry) {
-        List<String> parameters = entry.getValue();
-        if (parameters.size() == 1 && "".equals(parameters.get(0))) {
+        List<String> params = entry.getValue();
+        if (params.size() == 1 && "".equals(params.get(0))) {
             return Stream.of(entry.getKey());
         }
         String param = entry.getKey();
-        return parameters.stream().map(value -> "".equals(value) ? param
+        return params.stream().map(value -> "".equals(value) ? param
                 : param + PARAMETER_VALUES_SEPARATOR + value);
     }
 }
