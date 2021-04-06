@@ -193,7 +193,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 VaadinResponse response, VaadinSession session, UI ui,
                 Function<VaadinRequest, String> contextCallback) {
             this(request, response, session, ui, contextCallback,
-                    BootstrapHandler::requestToLocation);
+                    req -> new Location(req.getPathInfo(),
+                            QueryParameters.full(req.getParameterMap())));
         }
 
         /**
@@ -491,61 +492,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         writeBootstrapPage(response, document.outerHtml());
 
         return true;
-    }
-
-    /**
-     * Extracts route information (path and parameters) from the given request.
-     * 
-     * Note that this is only valid for V14 mode bootstrap requests
-     *
-     * @param request
-     *            the request to parse information from
-     * @return a location object containing the route information
-     */
-    public static Location requestToLocation(VaadinRequest request) {
-        return requestToLocation(request.getPathInfo(),
-                QueryParameters.full(request.getParameterMap()));
-    }
-
-    /**
-     * Extracts route information (path and parameters) from the given request.
-     * 
-     * Note that this is only valid for V14 mode bootstrap requests
-     *
-     * @param path
-     *            pathInfo as returned by
-     *            {@link javax.servlet.http.HttpServletRequest#getPathInfo()}
-     * @param queryParameters
-     *            query parameters
-     * @return a location object containing the route information
-     */
-    public static Location requestToLocation(String path,
-            QueryParameters queryParameters) {
-        if (path == null) {
-            path = "";
-        } else if (path.startsWith("/")) {
-            path = path.substring(1);
-        }
-        try {
-            return new Location(path, queryParameters);
-        } catch (IllegalArgumentException iae) {
-            getLogger().warn("Exception when parsing location path {}", path,
-                    iae);
-        }
-
-        int index = path.indexOf('?');
-        String encodedPath = path;
-        if (index >= 0) {
-            encodedPath = path.substring(0, index);
-        }
-        try {
-            encodedPath = URLEncoder.encode(path,
-                    StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            getLogger().warn("Exception when encoding path {}", path, e);
-        }
-        return new Location(encodedPath, queryParameters);
-
     }
 
     private void writeBootstrapPage(VaadinResponse response, String html)

@@ -83,24 +83,9 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
                 VaadinResponse response, UI ui,
                 Function<VaadinRequest, String> callback) {
             super(request, response, ui.getInternals().getSession(), ui,
-                    callback, JavaScriptBootstrapContext::initRoute);
+                    callback);
         }
 
-        private static Location initRoute(VaadinRequest request) {
-            String pathAndParams = request.getParameter(
-                    ApplicationConstants.REQUEST_LOCATION_PARAMETER);
-            URI uri;
-            try {
-                uri = new URI(pathAndParams != null ? pathAndParams : "");
-            } catch (URISyntaxException e) {
-                throw new RuntimeException(
-                        "Invalid location parameter: " + pathAndParams, e);
-            }
-            String path = uri.getPath();
-            QueryParameters parameters = QueryParameters
-                    .fromString(uri.getQuery());
-            return BootstrapHandler.requestToLocation(path, parameters);
-        }
     }
 
     /**

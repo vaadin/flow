@@ -42,6 +42,7 @@ import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.ParentLayout;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
@@ -261,7 +262,9 @@ class BootstrapUtils {
     /**
      * Finds the class on on which page configuration annotation should be
      * defined.
-     *
+     * <p>
+     * This method is only valid for V14 bootstrapping
+     * 
      * @param ui
      *            the UI for which to do the lookup, not <code>null</code>
      * @param request
@@ -269,12 +272,14 @@ class BootstrapUtils {
      * @return the class for which page configuration annotations should be
      *         defined, or an empty optional if no such class is available
      */
+    @Deprecated
     public static Optional<Class<?>> resolvePageConfigurationHolder(UI ui,
             VaadinRequest request) {
         assert ui != null;
         assert request != null;
 
-        Location route = BootstrapHandler.requestToLocation(request);
+        Location route = new Location(request.getPathInfo(),
+                QueryParameters.full(request.getParameterMap()));
         return resolvePageConfigurationHolder(ui, route);
     }
 
