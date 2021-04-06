@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
 public class Location implements Serializable {
     private static final String PATH_SEPARATOR = "/";
     private static final String QUERY_SEPARATOR = "?";
-    private static final String PARAMETERS_SEPARATOR = "&";
 
     private final List<String> segments;
     private final QueryParameters queryParameters;
