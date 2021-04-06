@@ -192,24 +192,41 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         protected BootstrapContext(VaadinRequest request,
                 VaadinResponse response, VaadinSession session, UI ui,
                 Function<VaadinRequest, String> contextCallback) {
+            this(request, response, session, ui, contextCallback,
+                    BootstrapHandler::requestToLocation);
+        }
+
+        /**
+         * Creates a new context instance using the given parameters.
+         *
+         * @param request
+         *            the request object
+         * @param response
+         *            the response object
+         * @param session
+         *            the current session
+         * @param ui
+         *            the UI object
+         * @param contextCallback
+         *            a callback that is invoked to resolve the context root
+         *            from the request
+         * @param routeCallback
+         *            a callback that is invoked to resolve the route from the
+         *            request
+         */
+        protected BootstrapContext(VaadinRequest request,
+                VaadinResponse response, VaadinSession session, UI ui,
+                Function<VaadinRequest, String> contextCallback,
+                Function<VaadinRequest, Location> routeCallback) {
             this.request = request;
             this.response = response;
             this.session = session;
             this.ui = ui;
-            this.route = initRoute();
+            this.route = routeCallback.apply(request);
             parameterBuilder = new ApplicationParameterBuilder(contextCallback);
 
             pageConfigurationHolder = BootstrapUtils
                     .resolvePageConfigurationHolder(ui, route).orElse(null);
-        }
-
-        /**
-         * Extracts information about the route from the request.
-         * 
-         * @return the route that should be initialized for this request
-         */
-        protected Location initRoute() {
-            return BootstrapHandler.requestToLocation(request);
         }
 
         /**
@@ -506,10 +523,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             QueryParameters queryParameters) {
         if (path == null) {
             path = "";
-        } else {
-            if (path.startsWith("/")) {
-                path = path.substring(1);
-            }
+        } else if (path.startsWith("/")) {
+            path = path.substring(1);
         }
         try {
             return new Location(path, queryParameters);

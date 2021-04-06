@@ -83,12 +83,11 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
                 VaadinResponse response, UI ui,
                 Function<VaadinRequest, String> callback) {
             super(request, response, ui.getInternals().getSession(), ui,
-                    callback);
+                    callback, JavaScriptBootstrapContext::initRoute);
         }
 
-        @Override
-        protected Location initRoute() {
-            String pathAndParams = getRequest().getParameter(
+        private static Location initRoute(VaadinRequest request) {
+            String pathAndParams = request.getParameter(
                     ApplicationConstants.REQUEST_LOCATION_PARAMETER);
             URI uri;
             try {
