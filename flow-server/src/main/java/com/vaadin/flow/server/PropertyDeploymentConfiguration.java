@@ -190,6 +190,16 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
+    public String getBuildFolder() {
+        return super.getBuildFolder();
+    }
+
+    @Override
+    public String getFlowResourcesFolder() {
+        return super.getFlowResourcesFolder();
+    }
+
+    @Override
     public boolean isSyncIdCheckEnabled() {
         return getBooleanProperty(SERVLET_PARAMETER_SYNC_ID_CHECK, true);
     }

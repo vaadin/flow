@@ -13,6 +13,8 @@ import org.mockito.Mockito;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 
+import static com.vaadin.flow.server.Constants.TARGET;
+
 /**
  * Test that commands in NodeTasks are always executed in a predefined order.
  */
@@ -29,7 +31,7 @@ public class NodeTasksExecutionTest {
 
         // Make a builder that doesn't add any commands.
         NodeTasks.Builder builder = new NodeTasks.Builder(
-                Mockito.mock(Lookup.class), null);
+                Mockito.mock(Lookup.class), null, TARGET);
         builder.useV14Bootstrap(true);
 
         nodeTasks = builder.build();

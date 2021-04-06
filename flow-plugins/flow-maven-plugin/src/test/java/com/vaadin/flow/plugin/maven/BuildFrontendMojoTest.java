@@ -17,8 +17,8 @@
 package com.vaadin.flow.plugin.maven;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
@@ -117,11 +117,12 @@ public class BuildFrontendMojoTest {
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
 
         File npmFolder = temporaryFolder.getRoot();
-        generatedFolder = new File(npmFolder, DEFAULT_GENERATED_DIR);
+        generatedFolder = new File(npmFolder,
+                "target/" + DEFAULT_GENERATED_DIR);
         importsFile = new File(generatedFolder, IMPORTS_NAME);
         nodeModulesPath = new File(npmFolder, NODE_MODULES);
         flowResourcesFolder = new File(npmFolder,
-                DEFAULT_FLOW_RESOURCES_FOLDER);
+                "target/" + DEFAULT_FLOW_RESOURCES_FOLDER);
         File frontendDirectory = new File(npmFolder, DEFAULT_FRONTEND_DIR);
 
         packageJson = new File(npmFolder, PACKAGE_JSON).getAbsolutePath();
@@ -183,6 +184,10 @@ public class BuildFrontendMojoTest {
                 FrontendTools.DEFAULT_NODE_VERSION);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeDownloadRoot",
                 NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
+        ReflectionUtils.setVariableValueInObject(mojo, "projectBasedir",
+                projectBase);
+        ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
+                Paths.get(projectBase.toString(), "target").toString());
 
         flowResourcesFolder.mkdirs();
         generatedFolder.mkdirs();
@@ -246,6 +251,38 @@ public class BuildFrontendMojoTest {
     @Test
     public void should_copyProjectFrontendResources()
             throws MojoExecutionException, MojoFailureException {
+
+        List<File> initialFiles = gatherFiles(flowResourcesFolder);
+        initialFiles.forEach(file -> Assert.assertFalse(String.format(
+                "Test resource shouldn't exist before running mojo.", file),
+                TEST_PROJECT_RESOURCE_JS.equals(file.getName())));
+        mojo.execute();
+
+        Set<String> projectFrontendResources = Stream
+                .of(projectFrontendResourcesDirectory.listFiles())
+                .map(File::getName).collect(Collectors.toSet());
+
+        Set<String> filesInFlowResourcesFolder = Stream
+                .of(flowResourcesFolder.listFiles()).map(File::getName)
+                .collect(Collectors.toSet());
+
+        projectFrontendResources.forEach(fileName -> {
+            Assert.assertTrue(String.format(
+                    "Expected the copied file '%s' to be in the project resources",
+                    fileName), filesInFlowResourcesFolder.contains(fileName));
+        });
+    }
+
+    @Test
+    public void should_copyProjectFrontendResources_withChangedBuildTargetDirectory()
+            throws MojoExecutionException, MojoFailureException,
+            IllegalAccessException {
+
+        ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
+                "build");
+
+        flowResourcesFolder = new File(temporaryFolder.getRoot(),
+                "build/" + DEFAULT_FLOW_RESOURCES_FOLDER);
 
         List<File> initialFiles = gatherFiles(flowResourcesFolder);
         initialFiles.forEach(file -> Assert.assertFalse(String.format(

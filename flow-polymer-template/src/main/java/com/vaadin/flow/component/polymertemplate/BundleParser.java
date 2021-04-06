@@ -15,6 +15,11 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static elemental.json.JsonType.ARRAY;
+import static elemental.json.JsonType.OBJECT;
+import static elemental.json.JsonType.STRING;
+
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,17 +32,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
-
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static elemental.json.JsonType.ARRAY;
-import static elemental.json.JsonType.OBJECT;
-import static elemental.json.JsonType.STRING;
 
 /**
  * Parse statistics data provided by webpack.
@@ -134,11 +135,13 @@ public final class BundleParser {
      *            name of the file to get from the json
      * @param statistics
      *            statistics json as a JsonObject
+     * @param service
+     *            current VaadinService
      * @return JsonObject for the file statistic
      */
     public static String getSourceFromStatistics(String fileName,
-            JsonObject statistics) {
-        return getSourceFromObject(statistics, fileName);
+            JsonObject statistics, VaadinService service) {
+        return getSourceFromObject(statistics, fileName, service);
     }
 
     /**
@@ -237,13 +240,15 @@ public final class BundleParser {
     // From the statistics json recursively go through all chunks and modules to
     // find the first module whose name matches the file name
     private static String getSourceFromObject(JsonObject module,
-            String fileName) {
+            String fileName, VaadinService service) {
         String source = null;
         if (validKey(module, MODULES, ARRAY)) {
-            source = getSourceFromArray(module.getArray(MODULES), fileName);
+            source = getSourceFromArray(module.getArray(MODULES), fileName,
+                    service);
         }
         if (source == null && validKey(module, CHUNKS, ARRAY)) {
-            source = getSourceFromArray(module.getArray(CHUNKS), fileName);
+            source = getSourceFromArray(module.getArray(CHUNKS), fileName,
+                    service);
         }
         if (source == null && validKey(module, NAME, STRING)
                 && validKey(module, SOURCE, STRING)) {
@@ -260,8 +265,8 @@ public final class BundleParser {
             // using ./ as the actual path contains
             // "node_modules/@vaadin/flow-frontend/" instead of "./"
             // "target/flow-frontend/" instead of "./"
-            if (name.contains(FLOW_NPM_PACKAGE_NAME)
-                    || name.contains(DEAULT_FLOW_RESOURCES_FOLDER)) {
+            if (name.contains(FLOW_NPM_PACKAGE_NAME) || name.contains(service
+                    .getDeploymentConfiguration().getFlowResourcesFolder())) {
                 alternativeFileName = alternativeFileName.replaceFirst("\\./",
                         "");
             }
@@ -280,12 +285,12 @@ public final class BundleParser {
 
     // Visits all elements of a JsonArray and returns the first element with a
     // valid source module
-    private static String getSourceFromArray(JsonArray objects,
-            String fileName) {
+    private static String getSourceFromArray(JsonArray objects, String fileName,
+            VaadinService service) {
         String source = null;
         for (int i = 0; source == null && i < objects.length(); i++) {
             if (objects.get(i).getType().equals(OBJECT)) {
-                source = getSourceFromObject(objects.get(i), fileName);
+                source = getSourceFromObject(objects.get(i), fileName, service);
             }
         }
         return source;

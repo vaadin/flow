@@ -230,6 +230,11 @@ public final class Constants implements Serializable {
     public static final String PACKAGE_JSON = "package.json";
 
     /**
+     *
+     */
+    public static final String TARGET = "target";
+
+    /**
      * Location for the frontend resources in jar files for compatibility mode
      * (also obsolete but supported for NPM mode).
      */

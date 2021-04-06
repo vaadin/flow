@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -35,6 +36,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DI
 import static com.vaadin.flow.server.frontend.FrontendUtils.FALLBACK_IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.Constants.TARGET;
 
 public class StatsContentTest {
 
@@ -44,7 +46,8 @@ public class StatsContentTest {
     public void init() {
 
         final File baseDir = new File(System.getProperty("user.dir", "."));
-        generatedFrontend = new File(baseDir, DEFAULT_GENERATED_DIR);
+        generatedFrontend = new File(baseDir,
+                Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
     }
 
     @Test
@@ -96,7 +99,7 @@ public class StatsContentTest {
                 .filter(in -> in.startsWith("import"))
                 .map(in -> in.replace("import '", "")
                         .replace(FLOW_NPM_PACKAGE_NAME,
-                                String.format("../%s/",
+                                String.format("../%s/%s/", TARGET,
                                         DEFAULT_FLOW_RESOURCES_FOLDER))
                         .replace("//", "/").replace("Frontend/", "./")
                         .replace("';", ""))

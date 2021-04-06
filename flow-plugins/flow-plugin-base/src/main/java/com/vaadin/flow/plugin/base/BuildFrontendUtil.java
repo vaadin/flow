@@ -37,6 +37,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -49,6 +50,7 @@ import org.zeroturnaround.exec.ProcessExecutor;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
@@ -130,12 +132,13 @@ public class BuildFrontendUtil {
                     e);
         }
         File flowResourcesFolder = new File(adapter.npmFolder(),
-                FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER);
+                Paths.get(adapter.buildFolder(), DEFAULT_FLOW_RESOURCES_FOLDER)
+                        .toString());
         ClassFinder classFinder = adapter.getClassFinder();
         Lookup lookup = adapter.createLookup(classFinder);
         NodeTasks.Builder builder = new NodeTasks.Builder(lookup,
                 adapter.npmFolder(), adapter.generatedFolder(),
-                adapter.frontendDirectory())
+                adapter.frontendDirectory(), adapter.buildFolder())
                         .useV14Bootstrap(
                                 adapter.isUseDeprecatedV14Bootstrapping())
                         .withFlowResourcesFolder(flowResourcesFolder)
@@ -196,6 +199,8 @@ public class BuildFrontendUtil {
         buildInfo.put(Constants.REQUIRE_HOME_NODE_EXECUTABLE,
                 adapter.requireHomeNodeExec());
 
+        buildInfo.put(InitParameters.BUILD_FOLDER, adapter.buildFolder());
+
         try {
             FileUtils.forceMkdir(token.getParentFile());
             FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",
@@ -239,7 +244,8 @@ public class BuildFrontendUtil {
 
         Set<File> jarFiles = adapter.getJarFiles();
         File flowResourcesFolder = new File(adapter.npmFolder(),
-                DEFAULT_FLOW_RESOURCES_FOLDER);
+                Paths.get(adapter.buildFolder(), DEFAULT_FLOW_RESOURCES_FOLDER)
+                        .toString());
         final URI nodeDownloadRootURI;
 
         nodeDownloadRootURI = adapter.nodeDownloadRoot();
@@ -248,7 +254,8 @@ public class BuildFrontendUtil {
         Lookup lookup = adapter.createLookup(classFinder);
 
         new NodeTasks.Builder(lookup, adapter.npmFolder(),
-                adapter.generatedFolder(), adapter.frontendDirectory())
+                adapter.generatedFolder(), adapter.frontendDirectory(),
+                adapter.buildFolder())
                         .runNpmInstall(adapter.runNpmInstall())
                         .withWebpack(adapter.webpackOutputDirectory(),
                                 adapter.servletResourceOutputDirectory(),
@@ -380,6 +387,7 @@ public class BuildFrontendUtil {
             buildInfo.remove(Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
             buildInfo.remove(Constants.CONNECT_OPEN_API_FILE_TOKEN);
             buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
+            buildInfo.remove(InitParameters.BUILD_FOLDER);
 
             buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",

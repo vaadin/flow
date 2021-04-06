@@ -34,7 +34,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 
 /**
  * The default implementation of {@link DeploymentConfiguration} based on a base
@@ -342,8 +341,8 @@ public class DefaultDeploymentConfiguration
         String entryPointMessage;
         if (!indexEntry.exists() && !indexEntryTs.exists()) {
             entryPointMessage = String.format(INDEX_NOT_FOUND,
-                    indexEntryTs.getName(), indexEntryTs.getPath(), TARGET,
-                    indexEntryTs.getName(),
+                    indexEntryTs.getName(), indexEntryTs.getPath(),
+                    getBuildFolder(), indexEntryTs.getName(),
                     indexEntryTs.getParentFile().getPath());
         } else {
             String fileName = indexEntry.exists() ? "index.js" : "index.ts";
@@ -361,7 +360,7 @@ public class DefaultDeploymentConfiguration
         String indexHTMLMessage;
         if (!indexHTML.exists()) {
             indexHTMLMessage = String.format(INDEX_NOT_FOUND,
-                    indexHTML.getName(), indexHTML.getPath(), TARGET,
+                    indexHTML.getName(), indexHTML.getPath(), getBuildFolder(),
                     indexHTML.getName(), indexHTML.getParentFile().getPath());
         } else {
             indexHTMLMessage = String.format("Using 'index.html' from '%s'",

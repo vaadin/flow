@@ -3,12 +3,21 @@ package com.vaadin.flow.component.polymertemplate;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Properties;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.jsoup.nodes.Element;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -22,6 +31,8 @@ public class BundleParserTest {
 
     private static JsonObject stats;
 
+    private MockVaadinServletService service;
+
     @BeforeClass
     public static void initClass() throws IOException {
         InputStream stream = BundleParserTest.class.getClassLoader()
@@ -31,31 +42,58 @@ public class BundleParserTest {
         stats = BundleParser.parseJsonStatistics(statsFileContents);
     }
 
+    @Before
+    public void init() {
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
+                .thenAnswer(invocation -> invocation.getArgumentAt(1,
+                        String.class));
+        Mockito.when(configuration.getFlowResourcesFolder()).thenReturn(
+                "target/" + FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER);
+
+        Properties properties = new Properties();
+        Mockito.when(configuration.getInitParameters()).thenReturn(properties);
+
+        Instantiator instantiator = Mockito.mock(Instantiator.class);
+        Mockito.when(instantiator.getServiceInitListeners())
+                .thenReturn(Stream.empty());
+        Mockito.when(instantiator.getDependencyFilters(Mockito.any()))
+                .thenReturn(Stream.empty());
+        Mockito.when(instantiator.getBootstrapListeners(Mockito.any()))
+                .thenReturn(Stream.empty());
+        Mockito.when(instantiator.getIndexHtmlRequestListeners(Mockito.any()))
+                .thenReturn(Stream.empty());
+        service = new MockVaadinServletService(configuration);
+        service.init(instantiator);
+    }
+
     @Test
     public void nonLocalTemplate_sourcesShouldBeFound() {
-        final String source = BundleParser
-                .getSourceFromStatistics("./src/hello-world.js", stats);
+        final String source = BundleParser.getSourceFromStatistics(
+                "./src/hello-world.js", stats, service);
         Assert.assertNotNull("Source expected in stats.json", source);
     }
 
     @Test
     public void nonLocalTemplate_sourcesShouldBeFoundInTargetFolder() {
-        final String source = BundleParser
-                .getSourceFromStatistics("./src/hello-world2.js", stats);
+        final String source = BundleParser.getSourceFromStatistics(
+                "./src/hello-world2.js", stats, service);
         Assert.assertNotNull("Source expected in stats.json", source);
     }
 
     @Test
     public void frontendPrefix_sourcesShouldBeFound() {
         final String source = BundleParser.getSourceFromStatistics(
-                "./frontend/src/hello-world.js", stats);
+                "./frontend/src/hello-world.js", stats, service);
         Assert.assertNotNull("Source expected in stats.json", source);
     }
 
     @Test
     public void typeScriptExtension_sourcesShouldBeFound() {
-        final String source = BundleParser
-                .getSourceFromStatistics("./frontend/my-form.ts", stats);
+        final String source = BundleParser.getSourceFromStatistics(
+                "./frontend/my-form.ts", stats, service);
         Assert.assertNotNull("TypeScript sources expected in stats.json",
                 source);
     }
@@ -63,7 +101,7 @@ public class BundleParserTest {
     @Test
     public void frontendProtocol_sourcesShouldBeFound() {
         final String source = BundleParser.getSourceFromStatistics(
-                "frontend:///src/hello-world.js", stats);
+                "frontend:///src/hello-world.js", stats, service);
         Assert.assertNotNull("Source expected in stats.json", source);
     }
 
@@ -75,7 +113,7 @@ public class BundleParserTest {
         module.put("name", "a/src/hello-world.js");
         module.put("source", "some-source.js");
         final String source = BundleParser.getSourceFromStatistics(
-                "a/frontend/src/hello-world.js", module);
+                "a/frontend/src/hello-world.js", module, service);
         Assert.assertNull("Source not expected in module", source);
     }
 
