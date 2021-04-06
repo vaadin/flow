@@ -1,7 +1,7 @@
 # Vaadin Gradle Plugin
 
 This is the official Vaadin Gradle Plugin for Vaadin 19 and newer.
-The implementation is based on `flow-plugin-base` which is the same base module as the maven plugin.
+The implementation is based on `flow-plugin-base` which is also used by the Vaadin Maven plugin.
 
 Prerequisites:
 * Java 8 or higher
@@ -42,7 +42,8 @@ Vaadin recommends using the latest Vaadin LTS (Long-Term Support) version.
 | 0.14.3.7                     | All other Vaadin 14 LTS versions (recommended) |
 | -                            | Vaadin 15 and 16 are unsupported |
 | 0.17.0.1                     | Vaadin 17 and higher |
-| 0.20.0.0.alpha3              | Vaadin 20 and higher, experimental support for Vaadin 19 |
+| 0.20.0.0.alpha3              | experimental support for Vaadin 19 and 20 |
+| 20.0.0                            | Vaadin 20 and higher |
 ## Tasks
 
 Most common commands for all projects:

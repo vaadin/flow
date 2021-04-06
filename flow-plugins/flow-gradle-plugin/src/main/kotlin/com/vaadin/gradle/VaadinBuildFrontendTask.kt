@@ -36,7 +36,6 @@ import org.gradle.api.tasks.bundling.Jar
  * the classpath,
  * * Update [FrontendUtils.WEBPACK_CONFIG] file.
  *
- * @since 2.0
  */
 public open class VaadinBuildFrontendTask : DefaultTask() {
     init {
