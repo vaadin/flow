@@ -70,7 +70,9 @@ public class LocationTest {
         Location location = new Location("path?query");
 
         assertEquals("path", location.getPath());
-        assertEquals(Collections.singletonMap("query", Collections.emptyList()),
+        assertEquals(
+                Collections.singletonMap("query",
+                        Collections.singletonList("")),
                 location.getQueryParameters().getParameters());
         assertEquals("path?query", location.getPathWithQueryParameters());
     }
@@ -84,7 +86,7 @@ public class LocationTest {
                 Collections.singletonMap("query",
                         Collections.singletonList("")),
                 location.getQueryParameters().getParameters());
-        assertEquals("path?query=", location.getPathWithQueryParameters());
+        assertEquals("path?query", location.getPathWithQueryParameters());
     }
 
     @Test
@@ -224,7 +226,7 @@ public class LocationTest {
     public void locationWithParamAndEmptyValue() {
         Location location = new Location("foo?param=&param=bar");
 
-        Assert.assertEquals("param=&param=bar",
+        Assert.assertEquals("param&param=bar",
                 location.getQueryParameters().getQueryString());
     }
 
