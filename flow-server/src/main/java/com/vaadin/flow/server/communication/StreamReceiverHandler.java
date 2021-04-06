@@ -193,7 +193,7 @@ public class StreamReceiverHandler implements Serializable {
         } catch (Exception exception) {
             session.lock();
             try {
-                // Report not IO exceptions (which are mistakes) via
+                // Report other than IO exceptions, which are mistakes, via
                 // ErrorHandler
                 session.getErrorHandler().error(new ErrorEvent(exception));
             } finally {
