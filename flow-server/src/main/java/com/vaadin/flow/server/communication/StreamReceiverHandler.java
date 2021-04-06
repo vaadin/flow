@@ -189,7 +189,7 @@ public class StreamReceiverHandler implements Serializable {
             }
         } catch (IOException exception) {
             // do not report IO exceptions via ErrorHandler
-            getLogger().warn("IO Exception during file upload", exception);
+            getLogger().warn("IO Exception during file upload, fired as StreamingErrorEvent", exception);
         } catch (Exception exception) {
             session.lock();
             try {
