@@ -187,9 +187,16 @@ public class StreamReceiverHandler implements Serializable {
                 success = handleMultipartFileUploadFromInputStream(session,
                         request, streamReceiver, owner);
             }
+        } catch (IOException exception) {
+            // do not report IO exceptions via ErrorHandler
+            getLogger().warn(
+                    "IO Exception during file upload, fired as StreamingErrorEvent",
+                    exception);
         } catch (Exception exception) {
             session.lock();
             try {
+                // Report other than IO exceptions, which are mistakes, via
+                // ErrorHandler
                 session.getErrorHandler().error(new ErrorEvent(exception));
             } finally {
                 session.unlock();
@@ -500,35 +507,37 @@ public class StreamReceiverHandler implements Serializable {
                 session.unlock();
             }
             success = true;
-        } catch (UploadInterruptedException e) {
-            // Download interrupted by application code
-            tryToCloseStream(out);
-            StreamVariable.StreamingErrorEvent event = new StreamingErrorEventImpl(
-                    filename, type, contentLength, totalBytes, e);
-            session.lock();
-            try {
-                streamVariable.streamingFailed(event);
-            } finally {
-                session.unlock();
-            }
-            // Note, we are not throwing interrupted exception forward as it is
-            // not a terminal level error like all other exception.
+        } catch (UploadInterruptedException | IOException e) {
+            // Download is either interrupted by application code or some
+            // IOException happens
+            onStreamingFailed(session, filename, type, contentLength,
+                    streamVariable, out, totalBytes, e);
+            // Interrupted exception and IOEXception are not thrown forward:
+            // it's enough to fire them via streamVariable
         } catch (final Exception e) {
-            tryToCloseStream(out);
-            session.lock();
-            try {
-                StreamVariable.StreamingErrorEvent event = new StreamingErrorEventImpl(
-                        filename, type, contentLength, totalBytes, e);
-                streamVariable.streamingFailed(event);
-                // throw exception for terminal to be handled (to be passed to
-                // terminalErrorHandler)
-                throw new UploadException(e);
-            } finally {
-                session.unlock();
-            }
+            onStreamingFailed(session, filename, type, contentLength,
+                    streamVariable, out, totalBytes, e);
+            // Throw not IOException and interrupted exception for terminal to
+            // be handled (to be passed to terminalErrorHandler): such
+            // exceptions mean mistakes in the implementation logic (not upload
+            // I/O operations).
+            throw new UploadException(e);
         }
         return new Pair<>(startedEvent.isDisposed(),
                 success ? UploadStatus.OK : UploadStatus.ERROR);
+    }
+
+    private void onStreamingFailed(VaadinSession session, String filename,
+            String type, long contentLength, StreamVariable streamVariable,
+            OutputStream out, long totalBytes, final Exception exception) {
+        tryToCloseStream(out);
+        session.lock();
+        try {
+            streamVariable.streamingFailed(new StreamingErrorEventImpl(filename,
+                    type, contentLength, totalBytes, exception));
+        } finally {
+            session.unlock();
+        }
     }
 
     private long updateProgress(VaadinSession session,
