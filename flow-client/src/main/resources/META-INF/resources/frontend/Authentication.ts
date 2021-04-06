@@ -17,6 +17,11 @@ export interface LogoutOptions {
   logoutUrl?: string;
 }
 
+interface CsrfTokens {
+  vaadinCsrfToken: string;
+  springCsrfToken?: string;
+}
+
 /**
  * A helper method for Spring Security based form login.
  * @param username
@@ -45,10 +50,15 @@ export async function login(username: string, password: string, options?: LoginO
     } else if (response.ok && response.redirected && response.url.endsWith(defaultSuccessUrl)) {
       // TODO: find a more efficient way to get a new CSRF token
       // parsing the full response body just to get a token may be wasteful
-      const token = getCsrfTokenFromResponseBody(await response.text());
+      const responseText = await response.text();
+      const token = getCsrfTokenFromResponseBody(responseText)?.vaadinCsrfToken;
+      const springToken = getCsrfTokenFromResponseBody(responseText)?.springCsrfToken;
       if (token) {
         (window as any).Vaadin.TypeScript = (window as any).Vaadin.TypeScript || {};
         (window as any).Vaadin.TypeScript.csrfToken = token;
+        if (springToken) {
+          (window as any).Vaadin.TypeScript.springCsrfToken = springToken;
+        }
         result = {
           error: false,
           errorTitle: '',
@@ -81,23 +91,34 @@ export async function login(username: string, password: string, options?: LoginO
 export async function logout(options?: LogoutOptions) {
   // this assumes the default Spring Security logout configuration (handler URL)
   const logoutUrl = options && options.logoutUrl ? options.logoutUrl : '/logout';
-
+  const $wnd = window as any;
   try {
-    const response = await fetch(logoutUrl, { method: 'POST' });
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': ($wnd.Vaadin.TypeScript && $wnd.Vaadin.TypeScript.springCsrfToken) || ''
+    };
+    const response = await fetch(logoutUrl, { method: 'POST', headers });
     // TODO: find a more efficient way to get a new CSRF token
     // parsing the full response body just to get a token may be wasteful
-    const token = getCsrfTokenFromResponseBody(await response.text());
+    const responseText = await response.text();
+    const token = getCsrfTokenFromResponseBody(responseText)?.vaadinCsrfToken;
+    const springToken = getCsrfTokenFromResponseBody(responseText)?.springCsrfToken;
     (window as any).Vaadin.TypeScript.csrfToken = token;
+    (window as any).Vaadin.TypeScript.springCsrfToken = springToken;
   } catch (error) {
     // clear the token if the call fails
     delete (window as any).Vaadin.TypeScript.csrfToken;
+    delete (window as any).Vaadin.TypeScript.springToken;
     throw error;
   }
 }
 
-const getCsrfTokenFromResponseBody = (body: string): string | undefined => {
-  const match = body.match(/window\.Vaadin = \{TypeScript: \{"csrfToken":"([0-9a-zA-Z\\-]{36})"}};/i);
-  return match ? match[1] : undefined;
+const getCsrfTokenFromResponseBody = (body: string): CsrfTokens | undefined => {
+  const match = body.match(
+    /window\.Vaadin = \{TypeScript: \{"csrfToken":"([0-9a-zA-Z\\-]{36})","springCsrfToken":"([0-9a-zA-Z\\-]{36})"}};/i
+  );
+  return match ? { vaadinCsrfToken: match[1], springCsrfToken: match[2] } : undefined;
 };
 
 /**

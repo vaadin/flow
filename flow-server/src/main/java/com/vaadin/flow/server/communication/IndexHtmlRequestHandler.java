@@ -33,6 +33,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccess;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.Constants;
@@ -58,6 +59,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * inject baseHref as well as the bundle scripts into the template.
  */
 public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
+
+    private static final String SPRING_CSRF_TOKEN = "springCsrfToken";
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -170,6 +173,15 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             String csrfToken = session.getCsrfToken();
             if (csrfToken != null) {
                 initialJson.put(CSRF_TOKEN, csrfToken);
+            }
+            Object springCsrfToken = request.getAttribute("_csrf");
+            if (springCsrfToken != null) {
+                JsonObject springCsrfTokenJson = JsonUtils.beanToJson(springCsrfToken);
+                if( springCsrfTokenJson!=null ){
+                    String springCsrfTokenString = springCsrfTokenJson.getString("token");
+                    System.out.println(springCsrfTokenString);
+                    initialJson.put(SPRING_CSRF_TOKEN, springCsrfTokenString);
+                }
             }
         }
 
