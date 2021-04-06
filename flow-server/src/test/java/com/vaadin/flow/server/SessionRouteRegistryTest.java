@@ -22,7 +22,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -47,6 +46,7 @@ import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 
@@ -1006,6 +1006,21 @@ public class SessionRouteRegistryTest {
         Assert.assertEquals("foo", url.get());
     }
 
+    @Test
+    public void getTargetUrl_annotatedRoute_rootIsAlias_mainRouteIsParamerterized_routeAliasIsReturned() {
+        SessionRouteRegistry registry = getRegistry(session);
+        RouteConfiguration configuration = RouteConfiguration
+                .forRegistry(registry);
+
+        configuration.setAnnotatedRoute(ParameterizedRouteWithRootAlias.class);
+
+        Optional<String> url = registry.getTargetUrl(
+                ParameterizedRouteWithRootAlias.class, RouteParameters.empty());
+
+        Assert.assertTrue(url.isPresent());
+        Assert.assertEquals("", url.get());
+    }
+
     private <T> T serializeAndDeserialize(T instance) throws Throwable {
         ByteArrayOutputStream bs = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(bs);
@@ -1075,6 +1090,13 @@ public class SessionRouteRegistryTest {
     @Route("foo")
     @RouteAlias("")
     private static class RouteWithRootAlias extends Component {
+
+    }
+
+    @Tag("div")
+    @Route(":foo")
+    @RouteAlias("")
+    private static class ParameterizedRouteWithRootAlias extends Component {
 
     }
 
