@@ -43,7 +43,8 @@ Vaadin recommends using the latest Vaadin LTS (Long-Term Support) version.
 | -                            | Vaadin 15 and 16 are unsupported |
 | 0.17.0.1                     | Vaadin 17 and higher |
 | 0.20.0.0.alpha3              | experimental support for Vaadin 19 and 20 |
-| 20.0.0                            | Vaadin 20 and higher |
+| 20.0.0                       | Vaadin 20 and higher |
+
 ## Tasks
 
 Most common commands for all projects:
@@ -74,72 +75,6 @@ All tasks provided by the plugin:
   then later picked up by `jar` and `war` tasks which then package the folder contents properly
   onto the classpath. Note that this task is not automatically hooked into `war`/`jar`/`assemble`/`build` and
   need to be invoked explicitly. Note: this task is only triggered automatically if `productionMode` is set to true.
-
-## Configuration
-
-To configure the plugin, you can use the following snippet in your `build.gradle` file:
-
-`build.gradle` in Groovy:
-```groovy
-vaadin {
-  pnpmEnable = true
-}
-```
-
-All configuration options follow. Note that you **RARELY** need to change anything of the below.
-
-* `productionMode = false`: Whether or not the plugin should run in productionMode. Defaults to false.
-  Responds to the `-Pvaadin.productionMode` property. You need to set this to `true` if you wish
-  to build a production-ready war/jar artifact. If this is false, the `vaadinBuildFrontend`
-  task is not triggered automatically by the build.
-* `buildOutputDirectory = File(project.buildDir, "vaadin-generated")`: 
-  The plugin will generate additional resource files here. These files need
-  to be present on the classpath, in order for Vaadin to be
-  able to run, both in dev mode and in the production mode.
-  The plugin will automatically register
-  this as an additional resource folder, which should then be picked up by the IDE.
-  That will allow the app to run for example in Intellij with Tomcat.
-  For example the `flow-build-info.json` goes here.
-* `webpackOutputDirectory`: The folder where webpack should output index.js and other generated
-  files. Defaults to `build/resources/main/META-INF/VAADIN/`.
-* `npmFolder: File = project.projectDir`: The folder where
-  `package.json` file is located. Default is project root dir.
-* `webpackTemplate: String = "webpack.config.js"`:
-  Copy the `webapp.config.js` from the specified URL if missing. Default is
-  the template provided by this plugin. Set it to empty string to disable
-  the feature.
-* `webpackGeneratedTemplate = "webpack.generated.js"`:
-  Copy the `webapp.generated.js` from the specified URL. Default is the
-  template provided by this plugin. Set it to empty string to disable the
-  feature.  
-* `generatedFolder = File(project.projectDir, "target/frontend")`:
-  The folder where flow will put generated files that will be used by
-  webpack. Should be `build/frontend/` but this is only supported in Vaadin 15+
-* `frontendDirectory = File(project.projectDir, "frontend")`:
-  A directory with project's frontend source files.
-* `generateBundle = true`: Whether to generate a bundle from the project frontend sources or not.
-* `runNpmInstall = true`: Whether to run `npm install` after updating dependencies.
-* `generateEmbeddableWebComponents = true`:
-  Whether to generate embeddable web components from WebComponentExporter inheritors.
-* `frontendResourcesDirectory = File(project.projectDir, "src/main/resources/META-INF/resources/frontend")`:
-  Defines the project frontend directory from where resources should be
-  copied from for use with webpack.
-* `optimizeBundle = true`: Whether to use byte code scanner strategy to discover frontend
-  components.
-* `pnpmEnable = false` (since 0.7.0): Instructs to use pnpm for installing npm frontend resources.
-  pnpm, a.k.a. performant npm, is a better front-end dependency management option.
-  With pnpm, packages are cached locally by default and linked (instead of
-  downloaded) for every project. This results in reduced disk space usage
-  and faster recurring builds when compared to npm.
-* `requireHomeNodeExec = false` (since 0.7.0): Whether vaadin home node executable usage is forced. If it's set to
-  `true` then vaadin home 'node' is checked and installed if it's
-  absent. Then it will be used instead of globally 'node' or locally
-  installed installed 'node'.
-* `nodeVersion = "v12.16.0"` (since 0.8.0): The node.js version to be used when node.js is
-  installed automatically by Vaadin
-* `nodeDownloadRoot = "https://nodejs.org/dist/"` (since 0.8.0): Download node.js from this URL.
-  Handy in heavily firewalled corporate environments where the node.js
-  download can be provided from an intranet mirror.
 
 ## Automatic Download of node.js and npm/pnpm
 
@@ -220,15 +155,6 @@ all necessary tasks and extensions into the project.
 
 Use Intellij (Community is enough) to open the project.
 
-## Branches
-
-Individual branches contain plugin targeting different Vaadin versions:
-
-* `master` plugin targets newest Vaadin version (Vaadin 17 at the moment of writing). Plugin versions released
-  from this branch: 0.17.0.0 etc.
-* `14.x` plugin targets Vaadin 14.x; plugin versions released from this branch: 0.14.3.4 etc.
-
-When the Gradle plugin becomes a supported part of Vaadin platform (covering e.g. paid bug prioritisation), we'll drop the `0.´part from the version numbers.
 ## Running The IT/Functional Tests
 
 There is a comprehensive test suite which tests the plugin in various generated projects.

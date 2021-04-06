@@ -10,6 +10,14 @@
     <name>Flow Gradle Plugin</name>
     <packaging>jar</packaging>
 
+    <description>
+        This maven module act as a proxy to test, build, and release the flow gradle plugin,
+        which is written in Kotlin and is built by gradle natively. This makes development
+        and testing of the gradle plugin much easier against the changes of flow, especially
+        the flow-plugin-base. However, publishing the vaadin-gradle-plugin to gradle plugin
+        central repo is done within platform final releases.
+    </description>
+
     <properties>
         <gradle.executable>./gradlew</gradle.executable>
     </properties>
