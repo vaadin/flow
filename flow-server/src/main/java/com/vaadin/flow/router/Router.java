@@ -80,8 +80,9 @@ public class Router implements Serializable {
      * @deprecated use {@link #initializeUI(UI, Location)} instead
      */
     @Deprecated
-    public void initialidzeUI(UI ui, VaadinRequest initRequest) {
-        Location location = BootstrapHandler.requestToLocation(initRequest);
+    public void initializeUI(UI ui, VaadinRequest initRequest) {
+        Location location = new Location(initRequest.getPathInfo(),
+                QueryParameters.full(initRequest.getParameterMap()));
         initializeUI(ui, location);
     }
 
@@ -119,8 +120,8 @@ public class Router implements Serializable {
      */
     public Optional<NavigationState> resolveNavigationTarget(String pathInfo,
             Map<String, String[]> parameterMap) {
-        Location location = BootstrapHandler.requestToLocation(pathInfo,
-                parameterMap);
+        Location location = new Location(pathInfo,
+                QueryParameters.full(parameterMap));
         return resolveNavigationTarget(location);
     }
 
