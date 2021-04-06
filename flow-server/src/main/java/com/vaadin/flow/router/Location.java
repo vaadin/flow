@@ -44,37 +44,55 @@ public class Location implements Serializable {
     private final QueryParameters queryParameters;
 
     /**
-     * Creates a new {@link Location} object for given location string. This
-     * string can contain relative path and query parameters, if needed.
+     * Creates a new {@link Location} object for given location string.
+     * <p>
+     * This string can contain relative path and query parameters, if needed.
+     * <p>
+     * A possible "/" prefix of the location is ignored and a <code>null</code>
+     * location is interpreted as <code>""</code>
      *
      * @param location
-     *            the relative location, not <code>null</code>
+     *            the relative location or <code>null</code> which is
+     *            interpreted as <code>""</code>
      */
     public Location(String location) {
-        this(parsePath(location.trim()), parseParams(location.trim()));
+        this(parsePath(ensureRelativeNonNull(location), true),
+                parseParams(ensureRelativeNonNull(location)));
+    }
+
+    private static String ensureRelativeNonNull(String location) {
+        if (location == null) {
+            return "";
+        }
+        if (location.startsWith("/")) {
+            location = location.substring(1);
+        }
+        return location.trim();
     }
 
     /**
      * Creates a new {@link Location} object for given location string and query
-     * parameters. Location string can not contain query parameters or exception
-     * will be thrown. To pass query parameters, either specify them in
-     * {@link QueryParameters} in this constructor, or use
-     * {@link Location#Location(String)}
+     * parameters.
+     * <p>
+     * The location string can not contain query parameters. To pass query
+     * parameters, either specify them in {@link QueryParameters} in this
+     * constructor, or use {@link Location#Location(String)}
+     * <p>
+     * A possible "/" prefix of the location is ignored and a <code>null</code>
+     * location is interpreted as <code>""</code>
      *
+     * 
      * @param location
-     *            the relative location, not {@code null}
+     *            the relative location or <code>null</code> which is
+     *            interpreted as <code>""</code>
      * @param queryParameters
      *            query parameters information, not {@code null}
      * @throws IllegalArgumentException
      *             if location string contains query parameters inside
      */
     public Location(String location, QueryParameters queryParameters) {
-        this(parsePath(location.trim()), queryParameters);
-
-        if (location.contains(QUERY_SEPARATOR)) {
-            throw new IllegalArgumentException(
-                    "Location string can not contain query parameters in this constructor");
-        }
+        this(parsePath(ensureRelativeNonNull(location), false),
+                queryParameters);
     }
 
     /**
@@ -229,10 +247,11 @@ public class Location implements Serializable {
         return QueryParameters.fromString(query);
     }
 
-    private static List<String> parsePath(String path) {
+    private static List<String> parsePath(String path,
+            boolean stripQueryString) {
         final String basePath;
         int endIndex = path.indexOf(QUERY_SEPARATOR);
-        if (endIndex >= 0) {
+        if (stripQueryString && endIndex >= 0) {
             basePath = path.substring(0, endIndex);
         } else {
             basePath = path;

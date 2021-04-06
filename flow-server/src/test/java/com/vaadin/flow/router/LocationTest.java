@@ -46,9 +46,23 @@ public class LocationTest {
         assertEquals(Arrays.asList("foo", "bar", ""), location.getSegments());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void parseLocationStartingWithSlash() {
-        new Location("/foo/bar");
+        Location location = new Location("/foo/bar/");
+        assertEquals(Arrays.asList("foo", "bar", ""), location.getSegments());
+    }
+
+    @Test
+    public void parseNullLocation() {
+        Location location = new Location((String) null);
+        assertEquals(Arrays.asList(""), location.getSegments());
+    }
+
+    @Test
+    public void parseNullLocationWithParameters() {
+        Location location = new Location((String) null,
+                QueryParameters.fromString("foo"));
+        assertEquals(Arrays.asList(""), location.getSegments());
     }
 
     @Test
@@ -206,9 +220,12 @@ public class LocationTest {
                 location.getQueryParameters().getParameters());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void locationWithParamsInUrlAndParameters() {
-        new Location("foo/bar/?one&two=222", getQueryParameters());
+        Location location = new Location("foo/bar/?one&two=222",
+                getQueryParameters());
+        assertEquals(Arrays.asList("foo", "bar", "?one&two=222"),
+                location.getSegments());
     }
 
     @Test
