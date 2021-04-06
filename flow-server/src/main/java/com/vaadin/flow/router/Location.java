@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -40,7 +39,6 @@ import java.util.stream.Collectors;
 public class Location implements Serializable {
     private static final String PATH_SEPARATOR = "/";
     private static final String QUERY_SEPARATOR = "?";
-    private static final String PARAMETERS_SEPARATOR = "&";
 
     private final List<String> segments;
     private final QueryParameters queryParameters;
@@ -228,45 +226,7 @@ public class Location implements Serializable {
             query = path.substring(beginIndex + 1);
         }
 
-        Map<String, List<String>> parsedParams = Arrays
-                .stream(query.split(PARAMETERS_SEPARATOR))
-                .map(Location::makeQueryParamList)
-                .collect(Collectors.toMap(list -> list.get(0),
-                        Location::getParameterValues, Location::mergeLists));
-        return new QueryParameters(parsedParams);
-    }
-
-    private static List<String> makeQueryParamList(String paramAndValue) {
-        int index = paramAndValue.indexOf('=');
-        if (index == -1) {
-            return Collections.singletonList(paramAndValue);
-        }
-        String param = paramAndValue.substring(0, index);
-        String value = paramAndValue.substring(index + 1);
-        return Arrays.asList(param, value);
-    }
-
-    private static List<String> getParameterValues(List<String> paramAndValue) {
-        if (paramAndValue.size() == 1) {
-            return Collections.emptyList();
-        } else {
-            return Collections.singletonList(paramAndValue.get(1));
-        }
-    }
-
-    private static List<String> mergeLists(List<String> list1,
-            List<String> list2) {
-        List<String> result = new ArrayList<>(list1);
-        if (result.isEmpty()) {
-            result.add(null);
-        }
-        if (list2.isEmpty()) {
-            result.add(null);
-        } else {
-            result.addAll(list2);
-        }
-
-        return result;
+        return QueryParameters.fromString(query);
     }
 
     private static List<String> parsePath(String path) {
