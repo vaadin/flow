@@ -17,11 +17,6 @@ export interface LogoutOptions {
   logoutUrl?: string;
 }
 
-interface CsrfTokens {
-  vaadinCsrfToken: string;
-  springCsrfToken?: string;
-}
-
 /**
  * A helper method for Spring Security based form login.
  * @param username
@@ -36,7 +31,8 @@ export async function login(username: string, password: string, options?: LoginO
     data.append('password', password);
 
     const loginProcessingUrl = options && options.loginProcessingUrl ? options.loginProcessingUrl : '/login';
-    const response = await fetch(loginProcessingUrl, { method: 'POST', body: data });
+    const headers = getSpringCsrfTokenHeadersFromDocument(document);
+    const response = await fetch(loginProcessingUrl, { method: 'POST', body: data, headers });
 
     const failureUrl = options && options.failureUrl ? options.failureUrl : '/login?error';
     const defaultSuccessUrl = options && options.defaultSuccessUrl ? options.defaultSuccessUrl : '/';
@@ -51,14 +47,11 @@ export async function login(username: string, password: string, options?: LoginO
       // TODO: find a more efficient way to get a new CSRF token
       // parsing the full response body just to get a token may be wasteful
       const responseText = await response.text();
-      const token = getCsrfTokenFromResponseBody(responseText)?.vaadinCsrfToken;
-      const springToken = getCsrfTokenFromResponseBody(responseText)?.springCsrfToken;
+      const token = getCsrfTokenFromResponseBody(responseText);
       if (token) {
         (window as any).Vaadin.TypeScript = (window as any).Vaadin.TypeScript || {};
         (window as any).Vaadin.TypeScript.csrfToken = token;
-        if (springToken) {
-          (window as any).Vaadin.TypeScript.springCsrfToken = springToken;
-        }
+        updateSpringCsrfMetaTag(responseText);
         result = {
           error: false,
           errorTitle: '',
@@ -91,34 +84,72 @@ export async function login(username: string, password: string, options?: LoginO
 export async function logout(options?: LogoutOptions) {
   // this assumes the default Spring Security logout configuration (handler URL)
   const logoutUrl = options && options.logoutUrl ? options.logoutUrl : '/logout';
-  const $wnd = window as any;
   try {
-    const headers: Record<string, string> = {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': ($wnd.Vaadin.TypeScript && $wnd.Vaadin.TypeScript.springCsrfToken) || ''
-    };
-    const response = await fetch(logoutUrl, { method: 'POST', headers });
-    // TODO: find a more efficient way to get a new CSRF token
-    // parsing the full response body just to get a token may be wasteful
-    const responseText = await response.text();
-    const token = getCsrfTokenFromResponseBody(responseText)?.vaadinCsrfToken;
-    const springToken = getCsrfTokenFromResponseBody(responseText)?.springCsrfToken;
-    (window as any).Vaadin.TypeScript.csrfToken = token;
-    (window as any).Vaadin.TypeScript.springCsrfToken = springToken;
-  } catch (error) {
-    // clear the token if the call fails
-    delete (window as any).Vaadin.TypeScript.csrfToken;
-    delete (window as any).Vaadin.TypeScript.springToken;
-    throw error;
+    const headers = getSpringCsrfTokenHeadersFromDocument(document);
+    await doLogout(logoutUrl, headers);
+  } catch {
+    try {
+      const response = await fetch('?nocache');
+      const responseText = await response.text();
+      const doc = new DOMParser().parseFromString(responseText, 'text/html');
+      const headers = getSpringCsrfTokenHeadersFromDocument(doc);
+      await doLogout(logoutUrl, headers);
+    } catch (error) {
+      // clear the token if the call fails
+      delete (window as any).Vaadin.TypeScript.csrfToken;
+      delete (window as any).Vaadin.TypeScript.springToken;
+      throw error;
+    }
   }
 }
 
-const getCsrfTokenFromResponseBody = (body: string): CsrfTokens | undefined => {
-  const match = body.match(
-    /window\.Vaadin = \{TypeScript: \{"csrfToken":"([0-9a-zA-Z\\-]{36})","springCsrfToken":"([0-9a-zA-Z\\-]{36})"}};/i
-  );
-  return match ? { vaadinCsrfToken: match[1], springCsrfToken: match[2] } : undefined;
+async function doLogout(logoutUrl: string, headers: Record<string, string>) {
+  const response = await fetch(logoutUrl, { method: 'POST', headers });
+  if (!response.ok) {
+    throw new Error('failed to logout');
+  }
+  // TODO: find a more efficient way to get a new CSRF token
+  // parsing the full response body just to get a token may be wasteful
+  const responseText = await response.text();
+  const token = getCsrfTokenFromResponseBody(responseText);
+  (window as any).Vaadin.TypeScript.csrfToken = token;
+  updateSpringCsrfMetaTag(responseText);
+}
+
+function updateSpringCsrfMetaTag(body: string) {
+  const doc = new DOMParser().parseFromString(body, 'text/html');
+  const newHeaders = getSpringCsrfTokenHeadersFromDocument(doc);
+  const [[headerName, csrf]] = Object.entries(newHeaders);
+  let csrfMetaTag = document.head.querySelector('meta[name="_csrf"]') as HTMLMetaElement | null;
+  if (!csrfMetaTag) {
+    csrfMetaTag = document.createElement('meta');
+    csrfMetaTag.name = '_csrf';
+    document.head.appendChild(csrfMetaTag);
+  }
+  csrfMetaTag.content = csrf;
+
+  let csrfHeaderNameMetaTag = document.head.querySelector('meta[name="_csrf_header"]') as HTMLMetaElement | null;
+  if (!csrfHeaderNameMetaTag) {
+    csrfHeaderNameMetaTag = document.createElement('meta');
+    csrfHeaderNameMetaTag.name = '_csrf_header';
+    document.head.appendChild(csrfHeaderNameMetaTag);
+  }
+  csrfHeaderNameMetaTag.content = headerName;
+}
+
+const getCsrfTokenFromResponseBody = (body: string): string | undefined => {
+  const match = body.match(/window\.Vaadin = \{TypeScript: \{"csrfToken":"([0-9a-zA-Z\\-]{36})"}};/i);
+  return match ? match[1] : undefined;
+};
+
+const getSpringCsrfTokenHeadersFromDocument = (doc: Document): Record<string, string> => {
+  const csrf = doc.head.querySelector('meta[name="_csrf"]');
+  const csrfHeader = doc.head.querySelector('meta[name="_csrf_header"]');
+  const headers: Record<string, string> = {};
+  if (csrf !== null && csrfHeader !== null) {
+    headers[(csrfHeader as HTMLMetaElement).content] = (csrf as HTMLMetaElement).content;
+  }
+  return headers;
 };
 
 /**

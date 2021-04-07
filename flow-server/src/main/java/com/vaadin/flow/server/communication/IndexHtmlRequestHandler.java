@@ -60,8 +60,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
-    private static final String SPRING_CSRF_TOKEN = "springCsrfToken";
-
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
@@ -179,8 +177,17 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 JsonObject springCsrfTokenJson = JsonUtils.beanToJson(springCsrfToken);
                 if( springCsrfTokenJson!=null ){
                     String springCsrfTokenString = springCsrfTokenJson.getString("token");
-                    System.out.println(springCsrfTokenString);
-                    initialJson.put(SPRING_CSRF_TOKEN, springCsrfTokenString);
+                    String springCsrfTokenHeaderName = springCsrfTokenJson.getString("headerName");
+                    
+                    Element meta = new Element("meta");
+                    meta.attr("name", "_csrf");
+                    meta.attr("content", springCsrfTokenString);
+                    indexDocument.head().insertChildren(0, meta);
+
+                    meta = new Element("meta");
+                    meta.attr("name", "_csrf_header");
+                    meta.attr("content", springCsrfTokenHeaderName);
+                    indexDocument.head().insertChildren(0, meta);
                 }
             }
         }
