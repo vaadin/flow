@@ -200,10 +200,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     @Override
-    protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
-        if (request.getService().getBootstrapInitialPredicate()
-                .includeInitialUidl(request)) {
-            ui.getInternals().getRouter().initializeUI(ui, request);
+    protected void initializeUIWithRouter(BootstrapContext context, UI ui) {
+        if (context.getService().getBootstrapInitialPredicate()
+                .includeInitialUidl(context.getRequest())) {
+            ui.getInternals().getRouter().initializeUI(ui, context.getRoute());
         }
     }
 

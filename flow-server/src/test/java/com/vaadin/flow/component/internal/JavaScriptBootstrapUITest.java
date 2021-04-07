@@ -414,8 +414,8 @@ public class JavaScriptBootstrapUITest {
 
     @Test
     public void should_initializeUI_when_wrapperElement_null() {
-        VaadinRequest request = mocks.createRequest(mocks, "/foo");
-        ui.getInternals().getRouter().initializeUI(ui, request);
+        Location location = new Location("foo");
+        ui.getInternals().getRouter().initializeUI(ui, location);
         assertNull(ui.wrapperElement);
         // attached to body
         assertTrue(ui.getElement().toString().contains("Available routes:"));

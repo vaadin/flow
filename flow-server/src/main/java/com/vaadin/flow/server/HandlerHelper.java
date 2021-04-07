@@ -26,6 +26,8 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.communication.PwaHandler;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -319,6 +321,34 @@ public class HandlerHelper implements Serializable {
                     e);
         }
         return PARENT_DIRECTORY_REGEX.matcher(path).find();
+    }
+
+    /**
+     * URLs matching these patterns should be publicly available for
+     * applications to work. Can be used for defining a bypass for rules in e.g.
+     * Spring Security.
+     */
+    public static String[] getPublicResources() {
+        return new String[] { //
+                "/favicon.ico", //
+                "/" + PwaConfiguration.DEFAULT_PATH, //
+                "/" + FrontendUtils.SERVICE_WORKER_SRC_JS, //
+                PwaHandler.SW_RUNTIME_PRECACHE_PATH, //
+                "/" + PwaConfiguration.DEFAULT_OFFLINE_PATH //
+        };
+    }
+
+    /**
+     * URLs matching these patterns should be publicly available for
+     * applications to work but might require a security context, i.e.
+     * authentication information.
+     */
+    public static String[] getPublicResourcesRequiringSecurityContext() {
+        return new String[] { //
+                "/VAADIN/**", // This contains static bundle files which
+                              // typically do not need a security
+                              // context but also uploads go here
+        };
     }
 
 }
