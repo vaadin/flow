@@ -97,7 +97,6 @@ export async function logout(options?: LogoutOptions) {
     } catch (error) {
       // clear the token if the call fails
       delete (window as any).Vaadin.TypeScript.csrfToken;
-      delete (window as any).Vaadin.TypeScript.springToken;
       throw error;
     }
   }
