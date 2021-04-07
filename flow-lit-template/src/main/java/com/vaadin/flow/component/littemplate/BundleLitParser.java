@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

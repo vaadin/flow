@@ -167,6 +167,8 @@ public class NodeTasks implements FallibleCommand {
          *            folder with the `package.json` file
          * @param generatedPath
          *            folder where flow generated files will be placed.
+         * @param buildDirectory
+         *            project build directory
          */
         public Builder(Lookup lookup, File npmFolder, File generatedPath,
                 String buildDirectory) {
@@ -186,6 +188,8 @@ public class NodeTasks implements FallibleCommand {
          *            folder where flow generated files will be placed.
          * @param frontendDirectory
          *            a directory with project's frontend files
+         * @param buildDirectory
+         *            project build directory
          */
         public Builder(Lookup lookup, File npmFolder, File generatedPath,
                 File frontendDirectory, String buildDirectory) {

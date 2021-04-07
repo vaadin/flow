@@ -230,7 +230,7 @@ public final class Constants implements Serializable {
     public static final String PACKAGE_JSON = "package.json";
 
     /**
-     *
+     * Target folder constant.
      */
     public static final String TARGET = "target";
 

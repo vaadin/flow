@@ -47,8 +47,7 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
             File frontendDirectory, String buildDirectory) {
         this.frontDeps = frontDeps;
         this.frontendDirectory = frontendDirectory;
-        this.connectClientTsApiFolder = new File(
-                Paths.get(frontendDirectory.getPath(), GENERATED).toString());
+        this.connectClientTsApiFolder = new File(frontendDirectory, GENERATED);
         this.buildDirectory = buildDirectory;
     }
 
