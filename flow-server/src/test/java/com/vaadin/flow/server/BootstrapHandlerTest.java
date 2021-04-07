@@ -1548,7 +1548,7 @@ public class BootstrapHandlerTest {
         Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest(request));
         Assert.assertFalse(bootstrapHandler.canHandleRequest(request));
     }
-    
+
     public static Location requestToLocation(VaadinRequest request) {
         return new Location(request.getPathInfo(),
                 QueryParameters.full(request.getParameterMap()));

@@ -171,8 +171,8 @@ public class HandlerHelper implements Serializable {
                 servletMappingPath, requestedPath);
         if (requestedPathWithoutServletMapping == null) {
             return false;
-        } else if (isInternalRequestInsideServlet(requestedPathWithoutServletMapping,
-                requestTypeParameter)) {
+        } else if (isInternalRequestInsideServlet(
+                requestedPathWithoutServletMapping, requestTypeParameter)) {
             return true;
         }
 
