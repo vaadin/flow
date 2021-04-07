@@ -52,7 +52,7 @@ public class FrontendTools {
 
     public static final String DEFAULT_NODE_VERSION = "v14.15.4";
 
-    public static final String DEFAULT_PNPM_VERSION = "5.15.1";
+    public static final String DEFAULT_PNPM_VERSION = "5";
 
     public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm "
             + "-DnodeVersion=\"" + DEFAULT_NODE_VERSION + "\" ";
@@ -583,9 +583,13 @@ public class FrontendTools {
     }
 
     List<String> getSuitablePnpm() {
+        // install pnpm version < 6.0.0, later requires ensuring
+        // NodeJS >= 12.17
+        final String pnpmSpecifier = ignoreVersionChecks ?
+                "pnpm" :
+                "pnpm@" + DEFAULT_PNPM_VERSION;
         List<String> pnpmCommand = Stream
-                // first try default pnpm, followed by known supported version
-                .of("pnpm", "pnpm@" + DEFAULT_PNPM_VERSION)
+                .of(pnpmSpecifier)
                 // do NOT modify the order of the --yes and --quiet flags, as it
                 // changes the behavior of npx
                 .map(pnpm -> getNpmCliToolExecutable(NpmCliTool.NPX, "--yes",
