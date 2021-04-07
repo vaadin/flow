@@ -78,6 +78,13 @@ public class JavaScriptBootstrapHandlerTest {
     }
 
     @Test
+    public void should_not_handleRequest_when_pathInfo_set() throws Exception {
+        VaadinRequest request = mocks.createRequest(mocks, "/foo",
+                "v-r=init&foo");
+        Assert.assertFalse(jsInitHandler.canHandleRequest(request));
+    }
+
+    @Test
     public void should_not_handleRequest_if_not_initTypeRequest()
             throws Exception {
         VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=bar");

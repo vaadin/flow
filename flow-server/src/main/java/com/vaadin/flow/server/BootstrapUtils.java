@@ -271,7 +271,8 @@ class BootstrapUtils {
      *            the request for which to do the lookup, not <code>null</code>
      * @return the class for which page configuration annotations should be
      *         defined, or an empty optional if no such class is available
-     * @deprecated use {@link #resolvePageConfigurationHolder(UI, Location)} instead
+     * @deprecated use {@link #resolvePageConfigurationHolder(UI, Location)}
+     *             instead
      */
     @Deprecated
     public static Optional<Class<?>> resolvePageConfigurationHolder(UI ui,
