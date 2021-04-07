@@ -15,17 +15,14 @@
  */
 package com.vaadin.flow.component;
 
-import java.util.Arrays;
+import static org.junit.Assert.assertEquals;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
+import java.util.Arrays;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.server.BootstrapHandlerTest;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -35,7 +32,11 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 public class InvalidUrlTest {
 
@@ -97,7 +98,8 @@ public class InvalidUrlTest {
         });
 
         ui.doInit(request, 0);
-        ui.getRouter().initializeUI(ui, request);
+        ui.getRouter().initializeUI(ui,
+                BootstrapHandlerTest.requestToLocation(request));
 
         session.unlock();
 
