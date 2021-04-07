@@ -171,7 +171,9 @@ if (devMode) {
 }
 
 const flowFrontendThemesFolder = path.resolve(flowFrontendFolder, 'themes');
-const themeName = extractThemeName(flowFrontendThemesFolder);
+// Current theme name is being extracted from theme.js located in frontend
+// generated folder
+const themeName = extractThemeName(frontendGeneratedFolder);
 const themeOptions = {
   devMode: devMode,
   // The following matches folder 'target/flow-frontend/themes/'
@@ -305,14 +307,12 @@ module.exports = {
 
     new ApplicationThemePlugin(themeOptions),
 
-    devMode && themeName && new ExtraWatchWebpackPlugin({
+    ...(devMode && themeName ? [new ExtraWatchWebpackPlugin({
       files: [],
       dirs: [path.resolve(__dirname, 'frontend', 'themes', themeName),
         path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources', 'themes', themeName),
         path.resolve(__dirname, 'src', 'main', 'resources', 'static', 'themes', themeName)]
-    }),
-
-    devMode && themeName && new ThemeLiveReloadPlugin(themeName, processThemeResourcesCallback),
+    }), new ThemeLiveReloadPlugin(processThemeResourcesCallback)] : []),
 
     new StatsPlugin({
       devMode: devMode,

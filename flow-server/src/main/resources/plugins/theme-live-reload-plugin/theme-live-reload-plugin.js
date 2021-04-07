@@ -22,16 +22,11 @@ class ThemeLiveReloadPlugin {
 
     /**
      * Create a new instance of ThemeLiveReloadPlugin
-     * @param themeName current theme name
      * @param processThemeResourcesCallback callback which is called on
      * adding/deleting of theme resource files to re-generate theme meta
      * data and apply theme changes to application.
      */
-    constructor(themeName, processThemeResourcesCallback) {
-      if (!themeName) {
-        throw new Error("Missing theme name");
-      }
-      this.themeName = themeName;
+    constructor(processThemeResourcesCallback) {
       if (!processThemeResourcesCallback || typeof processThemeResourcesCallback !== 'function') {
         throw new Error("Couldn't instantiate a ThemeLiveReloadPlugin" +
           " instance, because theme resources process callback is not set" +
@@ -52,7 +47,15 @@ class ThemeLiveReloadPlugin {
           const changedFilesPaths = Object.keys(changedFilesMap);
           logger.debug("Detected changes in the following files " + changedFilesPaths);
           changedFilesPaths.map(file => `${file}`).forEach(file => {
-              if (file.indexOf(this.themeName + '.generated.js') > -1) {
+              // Webpack watches to the changes in theme-[my-theme].generated.js
+              // because it is referenced from theme.js. Changes in this file
+              // should not trigger the theme handling callback (which
+              // re-generates theme-[my-theme].generated.js),
+              // otherwise it will get into infinite re-compilation loop.
+              // There might be several theme generated files in the
+              // generated folder, so the condition does not contain the exact
+              // theme name
+              if (file.endsWith('.generated.js')) {
                 themeGeneratedFileChanged = true;
               }
             });
