@@ -193,12 +193,12 @@
 
             <plugin>
                 <groupId>com.github.ryanholdren</groupId>
-                <artifactId>resourcecompressor</artifactId>
-                <version>2017-06-24</version>
+                <artifactId>resourcegzipper</artifactId>
+                <version>2016-02-10</version>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>compress</goal>
+                            <goal>gzip</goal>
                         </goals>
                         <phase>prepare-package</phase>
                         <configuration>
