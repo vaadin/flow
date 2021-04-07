@@ -77,6 +77,8 @@ export async function login(username: string, password: string, options?: LoginO
   );
 }
 
+export class LogoutError extends Error {}
+
 /**
  * A helper method for Spring Security based form logout
  * @param options defines additional options, e.g, the logoutUrl.
@@ -87,17 +89,24 @@ export async function logout(options?: LogoutOptions) {
   try {
     const headers = getSpringCsrfTokenHeadersFromDocument(document);
     await doLogout(logoutUrl, headers);
-  } catch {
-    try {
-      const response = await fetch('?nocache');
-      const responseText = await response.text();
-      const doc = new DOMParser().parseFromString(responseText, 'text/html');
-      const headers = getSpringCsrfTokenHeadersFromDocument(doc);
-      await doLogout(logoutUrl, headers);
-    } catch (error) {
+  } catch (e) {
+    if (e instanceof LogoutError) {
+      // retry on logout error, e.g. invalid spirng csrf token
+      try {
+        const response = await fetch('?nocache');
+        const responseText = await response.text();
+        const doc = new DOMParser().parseFromString(responseText, 'text/html');
+        const headers = getSpringCsrfTokenHeadersFromDocument(doc);
+        await doLogout(logoutUrl, headers);
+      } catch (error) {
+        // clear the token if the call fails
+        delete (window as any).Vaadin.TypeScript.csrfToken;
+        throw error;
+      }
+    } else {
       // clear the token if the call fails
       delete (window as any).Vaadin.TypeScript.csrfToken;
-      throw error;
+      throw e;
     }
   }
 }
@@ -105,7 +114,7 @@ export async function logout(options?: LogoutOptions) {
 async function doLogout(logoutUrl: string, headers: Record<string, string>) {
   const response = await fetch(logoutUrl, { method: 'POST', headers });
   if (!response.ok) {
-    throw new Error('failed to logout');
+    throw new LogoutError('failed to logout with response ' + response.status);
   }
   // TODO: find a more efficient way to get a new CSRF token
   // parsing the full response body just to get a token may be wasteful
@@ -118,22 +127,24 @@ async function doLogout(logoutUrl: string, headers: Record<string, string>) {
 function updateSpringCsrfMetaTag(body: string) {
   const doc = new DOMParser().parseFromString(body, 'text/html');
   const newHeaders = getSpringCsrfTokenHeadersFromDocument(doc);
-  const [[headerName, csrf]] = Object.entries(newHeaders);
-  let csrfMetaTag = document.head.querySelector('meta[name="_csrf"]') as HTMLMetaElement | null;
-  if (!csrfMetaTag) {
-    csrfMetaTag = document.createElement('meta');
-    csrfMetaTag.name = '_csrf';
-    document.head.appendChild(csrfMetaTag);
-  }
-  csrfMetaTag.content = csrf;
+  if(Object.keys(newHeaders).length > 0){
+    const [[headerName, csrf]] = Object.entries(newHeaders);
+    let csrfMetaTag = document.head.querySelector('meta[name="_csrf"]') as HTMLMetaElement | null;
+    if (!csrfMetaTag) {
+      csrfMetaTag = document.createElement('meta');
+      csrfMetaTag.name = '_csrf';
+      document.head.appendChild(csrfMetaTag);
+    }
+    csrfMetaTag.content = csrf;
 
-  let csrfHeaderNameMetaTag = document.head.querySelector('meta[name="_csrf_header"]') as HTMLMetaElement | null;
-  if (!csrfHeaderNameMetaTag) {
-    csrfHeaderNameMetaTag = document.createElement('meta');
-    csrfHeaderNameMetaTag.name = '_csrf_header';
-    document.head.appendChild(csrfHeaderNameMetaTag);
+    let csrfHeaderNameMetaTag = document.head.querySelector('meta[name="_csrf_header"]') as HTMLMetaElement | null;
+    if (!csrfHeaderNameMetaTag) {
+      csrfHeaderNameMetaTag = document.createElement('meta');
+      csrfHeaderNameMetaTag.name = '_csrf_header';
+      document.head.appendChild(csrfHeaderNameMetaTag);
+    }
+    csrfHeaderNameMetaTag.content = headerName;
   }
-  csrfHeaderNameMetaTag.content = headerName;
 }
 
 const getCsrfTokenFromResponseBody = (body: string): string | undefined => {
