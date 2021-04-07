@@ -88,6 +88,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
                     ApplicationConstants.REQUEST_LOCATION_PARAMETER);
             return new Location(pathAndParams);
         }
+
     }
 
     /**
