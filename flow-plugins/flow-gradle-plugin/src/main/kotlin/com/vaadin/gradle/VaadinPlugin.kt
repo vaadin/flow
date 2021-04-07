@@ -37,9 +37,6 @@ public class VaadinPlugin : Plugin<Project> {
         project.extensions.create(extensionName, VaadinFlowPluginExtension::class.java, project)
 
         project.tasks.apply {
-            getByPath("clean").doLast {
-                project.delete("${project.projectDir}/target")
-            }
             register("vaadinClean", VaadinCleanTask::class.java)
             register("vaadinPrepareFrontend", VaadinPrepareFrontendTask::class.java)
             register("vaadinBuildFrontend", VaadinBuildFrontendTask::class.java)

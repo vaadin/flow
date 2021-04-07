@@ -168,4 +168,11 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
     override fun webpackGeneratedTemplate(): String = extension.webpackGeneratedTemplate
 
     override fun webpackTemplate(): String = extension.webpackTemplate
+
+    override fun buildFolder(): String {
+        if (extension.projectBuildDir.startsWith(project.projectDir.toString())) {
+            return File(extension.projectBuildDir).relativeTo(project.projectDir).toString()
+        }
+        return extension.projectBuildDir
+    }
 }

@@ -59,10 +59,8 @@ public open class VaadinFlowPluginExtension(project: Project) {
     /**
      * The folder where flow will put generated files that will be used by
      * webpack.
-     *
-     * @todo mavi we should move this to `build/frontend/` but in order to do that we need Flow 2.2 or higher. Leaving as-is for now.
      */
-    public var generatedFolder: File = File(project.projectDir, "target/frontend")
+    public var generatedFolder: File = File(project.buildDir, "frontend")
     /**
      * A directory with project's frontend source files.
      */
@@ -175,6 +173,13 @@ public open class VaadinFlowPluginExtension(project: Project) {
      * The `flow-build-info.json` file is generated here.
      */
     public var resourceOutputDirectory: File = File(project.buildDir, "vaadin-generated")
+
+    /**
+     * Defines the output folder used by the project.
+     *
+     * Default value is the `project.buildDir` and should not need to be changed.
+     */
+    public var projectBuildDir: String = project.buildDir.toString()
 
     public companion object {
         public fun get(project: Project): VaadinFlowPluginExtension =
