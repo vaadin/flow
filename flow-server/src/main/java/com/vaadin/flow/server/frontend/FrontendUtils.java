@@ -192,7 +192,8 @@ public class FrontendUtils {
 
     /**
      * File name of the bootstrap file that is generated in frontend
-     * {@link #GENERATED} folder. The bootstrap file is always executed in a Vaadin app.
+     * {@link #GENERATED} folder. The bootstrap file is always executed in a
+     * Vaadin app.
      */
     public static final String BOOTSTRAP_FILE_NAME = "vaadin.ts";
 
@@ -230,8 +231,8 @@ public class FrontendUtils {
     /**
      * Default generated path for generated frontend files.
      */
-    public static final String DEFAULT_PROJECT_FRONTEND_GENERATED_DIR =
-        DEFAULT_FRONTEND_DIR + GENERATED;
+    public static final String DEFAULT_PROJECT_FRONTEND_GENERATED_DIR = DEFAULT_FRONTEND_DIR
+            + GENERATED;
 
     /**
      * Name of the file that contains all application imports, javascript, theme
@@ -444,8 +445,8 @@ public class FrontendUtils {
     /**
      * Gets the content of the <code>stats.json</code> file produced by webpack.
      *
-     * Note: Caches the <code>stats.json</code> when external stats is enabled or
-     * <code>stats.json</code> is provided from the class path. To clear the
+     * Note: Caches the <code>stats.json</code> when external stats is enabled
+     * or <code>stats.json</code> is provided from the class path. To clear the
      * cache use {@link #clearCachedStatsContent(VaadinService)}.
      *
      * @param service
@@ -466,22 +467,23 @@ public class FrontendUtils {
 
             if (config.isStatsExternal()) {
                 content = getStatsFromExternalUrl(config.getExternalStatsUrl(),
-                  service.getContext());
+                        service.getContext());
             }
 
             if (content == null) {
                 content = getStatsFromClassPath(service);
             }
             return content != null
-                   ? IOUtils.toString(content, StandardCharsets.UTF_8)
-                   : null;
+                    ? IOUtils.toString(content, StandardCharsets.UTF_8)
+                    : null;
         } finally {
             IOUtils.closeQuietly(content);
         }
     }
 
     /**
-     * Clears the <code>stats.json</code> cache within this {@link VaadinContext}.
+     * Clears the <code>stats.json</code> cache within this
+     * {@link VaadinContext}.
      *
      * @param service
      *            the vaadin service.
@@ -511,8 +513,7 @@ public class FrontendUtils {
         return getFileContent(service, INDEX_HTML);
     }
 
-    private static String getFileContent(VaadinService service,
-            String path)
+    private static String getFileContent(VaadinService service, String path)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         InputStream content = null;
@@ -616,8 +617,8 @@ public class FrontendUtils {
                                 DateTimeFormatter.RFC_1123_DATE_TIME)
                         .toLocalDateTime();
                 Stats statistics = context.getAttribute(Stats.class);
-                if (statistics == null
-                  || modified.isAfter(statistics.getLastModified().orElse(LocalDateTime.MIN))) {
+                if (statistics == null || modified.isAfter(statistics
+                        .getLastModified().orElse(LocalDateTime.MIN))) {
                     statistics = new Stats(
                             streamToString(connection.getInputStream()),
                             lastModified);
@@ -653,7 +654,7 @@ public class FrontendUtils {
 
         if (statistics != null) {
             return new ByteArrayInputStream(
-              statistics.statsJson.getBytes(StandardCharsets.UTF_8));
+                    statistics.statsJson.getBytes(StandardCharsets.UTF_8));
         }
 
         String stats = service.getDeploymentConfiguration()
@@ -671,7 +672,7 @@ public class FrontendUtils {
                 statistics = new Stats(streamToString(stream), null);
                 service.getContext().setAttribute(statistics);
                 stream = new ByteArrayInputStream(
-                  statistics.statsJson.getBytes(StandardCharsets.UTF_8));
+                        statistics.statsJson.getBytes(StandardCharsets.UTF_8));
             }
         } catch (IOException exception) {
             getLogger().warn("Couldn't read content of stats file {}", stats,
@@ -689,7 +690,8 @@ public class FrontendUtils {
     private static InputStream getFileFromWebpack(String filePath)
             throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        return handler.prepareConnection("/" + filePath, "GET").getInputStream();
+        return handler.prepareConnection("/" + filePath, "GET")
+                .getInputStream();
     }
 
     /**
@@ -697,9 +699,9 @@ public class FrontendUtils {
      * file until we have reached the assetsByChunkName json and return that as
      * a json object string.
      *
-     * Note: The <code>stats.json</code> is cached when external stats is enabled
-     * or <code>stats.json</code> is provided from the class path. To clear the
-     * cache use {@link #clearCachedStatsContent(VaadinService)}.
+     * Note: The <code>stats.json</code> is cached when external stats is
+     * enabled or <code>stats.json</code> is provided from the class path. To
+     * clear the cache use {@link #clearCachedStatsContent(VaadinService)}.
      *
      * @param service
      *            the Vaadin service.
@@ -1117,8 +1119,8 @@ public class FrontendUtils {
     }
 
     /**
-     * Parse "manifest.json" file contents obtained from webpack and extract
-     * the list of request paths to handle as static resources.
+     * Parse "manifest.json" file contents obtained from webpack and extract the
+     * list of request paths to handle as static resources.
      *
      * @param manifestJson
      *            "manifest.json" file contents

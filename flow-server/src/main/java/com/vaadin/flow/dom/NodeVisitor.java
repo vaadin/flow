@@ -30,7 +30,7 @@ public interface NodeVisitor {
      * The type of the element.
      *
      * @author Vaadin Ltd
- * @since 1.0
+     * @since 1.0
      *
      */
     enum ElementType {

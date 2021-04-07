@@ -43,16 +43,14 @@ import java.lang.annotation.Target;
  * </ul>
  *
  * Any of the handled resources can be explicitly overridden with static file in
- * public resources. For example, if {@literal manifest.webmanifest} is available in
- * webapp root folder it will be served instead of generated
- * {@literal manifest.webmanifest}. Same applies for service worker and generated
- * icons.
+ * public resources. For example, if {@literal manifest.webmanifest} is
+ * available in webapp root folder it will be served instead of generated
+ * {@literal manifest.webmanifest}. Same applies for service worker and
+ * generated icons.
  *
- * <b>
- * NOTE: PWA Install Prompt feature will be removed in future versions since this
- * feature was only supported by Chromium-based browsers, in favour of a more
- * uniform implementation and experience for all browsers.
- * </b>
+ * <b> NOTE: PWA Install Prompt feature will be removed in future versions since
+ * this feature was only supported by Chromium-based browsers, in favour of a
+ * more uniform implementation and experience for all browsers. </b>
  *
  * @since 1.2
  *
@@ -104,7 +102,7 @@ public @interface PWA {
      * <p>
      * Used in manifest as start_url of application. Must be relative to root
      * context. ie. If install address of application would be
-     * https://foo.bar.org/sub/  and wanted start url would be
+     * https://foo.bar.org/sub/ and wanted start url would be
      * https://foo.bar.org/sub/pwa-start then value of startPath would be
      * "pwa-start" (without leading "/").
      * <p>
@@ -113,7 +111,6 @@ public @interface PWA {
      * @return application start url
      */
     String startPath() default PwaConfiguration.DEFAULT_START_URL;
-
 
     /**
      * Name of the application.

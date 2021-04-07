@@ -28,7 +28,8 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.HEADER)
-public class Header extends HtmlContainer implements ClickNotifier<Header>, HasOrderedComponents {
+public class Header extends HtmlContainer
+        implements ClickNotifier<Header>, HasOrderedComponents {
 
     /**
      * Creates a new empty header.

@@ -82,7 +82,7 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
         // ${project.root}/frontend/generated/vaadin.ts.
         // The index file paths are:
         // * project_root/frontend/index.ts => ../index.ts
-        // * project_root/target/index.ts   => ../../target/index.ts
+        // * project_root/target/index.ts => ../../target/index.ts
         String relativePath = FrontendUtils
                 .getUnixRelativePath(connectClientTsApiFolder.toPath(), path);
         return relativePath.replaceFirst("\\.[tj]s$", "");

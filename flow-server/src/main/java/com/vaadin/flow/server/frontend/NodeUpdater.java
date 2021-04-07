@@ -37,6 +37,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.Json;
+import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -244,7 +245,12 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (packageFile.exists()) {
             String fileContent = FileUtils.readFileToString(packageFile,
                     UTF_8.name());
-            jsonContent = Json.parse(fileContent);
+            try {
+                jsonContent = Json.parse(fileContent);
+            } catch (JsonException e) {
+                throw new JsonException(String.format(
+                        "Cannot parse package file '%s'", packageFile));
+            }
         }
         return jsonContent;
     }
@@ -292,7 +298,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         Map<String, String> defaults = new HashMap<>();
 
         defaults.put("html-webpack-plugin", "4.5.1");
-        defaults.put("typescript", "4.1.5");
+        defaults.put("typescript", "4.2.3");
         defaults.put("ts-loader", "8.0.12");
 
         defaults.put("webpack", "4.46.0");

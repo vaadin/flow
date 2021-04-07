@@ -104,8 +104,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
      * @param context
      *            the vaadin context for which to get a route registry, not
      *            <code>null</code>
-     * @return a registry instance for the given context, not
-     *         <code>null</code>
+     * @return a registry instance for the given context, not <code>null</code>
      */
     public static ApplicationRouteRegistry getInstance(VaadinContext context) {
         assert context != null;

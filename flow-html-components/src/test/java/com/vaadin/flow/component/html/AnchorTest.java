@@ -44,8 +44,8 @@ public class AnchorTest extends ComponentTest {
         anchor.getElement().setAttribute("router-ignore", true);
         anchor.removeHref();
 
-        Assert.assertEquals("Anchor element should have router-ignore " +
-                        "attribute", "",
+        Assert.assertEquals(
+                "Anchor element should have router-ignore " + "attribute", "",
                 anchor.getElement().getAttribute("router-ignore"));
     }
 
@@ -55,8 +55,8 @@ public class AnchorTest extends ComponentTest {
         anchor.getElement().setAttribute("router-ignore", true);
         anchor.setHref("/logout");
 
-        Assert.assertEquals("Anchor element should have router-ignore " +
-                        "attribute", "",
+        Assert.assertEquals(
+                "Anchor element should have router-ignore " + "attribute", "",
                 anchor.getElement().getAttribute("router-ignore"));
     }
 

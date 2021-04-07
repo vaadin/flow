@@ -66,17 +66,15 @@ public class NodeInstallerTest {
                 zipOutputStream.closeEntry();
             }
         } else {
-            try (OutputStream fo = Files.newOutputStream(
-                    tempArchive); OutputStream gzo = new GzipCompressorOutputStream(
-                    fo); ArchiveOutputStream o = new TarArchiveOutputStream(
-                    gzo)) {
+            try (OutputStream fo = Files.newOutputStream(tempArchive);
+                    OutputStream gzo = new GzipCompressorOutputStream(fo);
+                    ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
                 o.putArchiveEntry(o.createArchiveEntry(
                         new File(prefix + "/bin/" + nodeExec),
                         prefix + "/bin/" + nodeExec));
                 o.closeArchiveEntry();
-                o.putArchiveEntry(
-                        o.createArchiveEntry(new File(prefix + "/bin/npm"),
-                                prefix + "/bin/npm"));
+                o.putArchiveEntry(o.createArchiveEntry(
+                        new File(prefix + "/bin/npm"), prefix + "/bin/npm"));
                 o.closeArchiveEntry();
                 o.putArchiveEntry(o.createArchiveEntry(
                         new File(prefix + "/lib/node_modules/npm/bin/npm"),
@@ -92,7 +90,8 @@ public class NodeInstallerTest {
         NodeInstaller nodeInstaller = new NodeInstaller(targetDir,
                 Collections.emptyList())
                         .setNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
-                .setNodeDownloadRoot(new File(baseDir).toPath().toUri());
+                        .setNodeDownloadRoot(
+                                new File(baseDir).toPath().toUri());
 
         try {
             nodeInstaller.install();

@@ -113,8 +113,7 @@ public class PwaHandler implements RequestHandler {
 
         // sw-runtime.js handling (service worker import for precaching runtime
         // generated assets)
-        requestHandlerMap.put(
-                SW_RUNTIME_PRECACHE_PATH,
+        requestHandlerMap.put(SW_RUNTIME_PRECACHE_PATH,
                 (session, request, response) -> {
                     response.setContentType("application/javascript");
                     try (PrintWriter writer = response.getWriter()) {

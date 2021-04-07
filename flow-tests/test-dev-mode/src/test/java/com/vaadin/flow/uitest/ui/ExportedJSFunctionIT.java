@@ -100,8 +100,8 @@ public class ExportedJSFunctionIT extends ChromeBrowserTest {
 
     private List<Long> getProfilingData() {
         Object data = executeScript(
-                "var key = Object.keys(Vaadin.Flow.clients).filter(k => k !== 'TypeScript')[0];" +
-                "return Vaadin.Flow.clients[key].getProfilingData();");
+                "var key = Object.keys(Vaadin.Flow.clients).filter(k => k !== 'TypeScript')[0];"
+                        + "return Vaadin.Flow.clients[key].getProfilingData();");
         if (data == null) {
             throw new IllegalStateException("No profiling data available");
         }

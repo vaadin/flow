@@ -37,7 +37,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
  * Task generating the theme definition file 'theme.js' for importing
  * application theme into the generated frontend directory.
  * 
- * Default directory is ' ./frontend/generated' 
+ * Default directory is ' ./frontend/generated'
  *
  * @since
  */
@@ -66,7 +66,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
     @Override
     public void execute() throws ExecutionFailedException {
         if (theme == null || theme.getName().isEmpty()) {
-            if(themeImportFile.exists()) {
+            if (themeImportFile.exists()) {
                 themeImportFile.delete();
                 themeImportFileDefinition.delete();
             }
@@ -77,21 +77,21 @@ public class TaskUpdateThemeImport implements FallibleCommand {
 
         if (!themeImportFile.getParentFile().mkdirs()) {
             LoggerFactory.getLogger(getClass()).debug(
-                "Didn't create folders as they probably already exist. "
-                    + "If there is a problem check access rights for folder {}",
-                themeImportFile.getParentFile().getAbsolutePath());
+                    "Didn't create folders as they probably already exist. "
+                            + "If there is a problem check access rights for folder {}",
+                    themeImportFile.getParentFile().getAbsolutePath());
         }
 
         try {
             FileUtils.write(themeImportFile, String.format(
-                "import {applyTheme as _applyTheme} from './theme-%s.generated.js';%n"
-                    + "export const applyTheme = _applyTheme;%n",
-                theme.getName()), StandardCharsets.UTF_8);
+                    "import {applyTheme as _applyTheme} from './theme-%s.generated.js';%n"
+                            + "export const applyTheme = _applyTheme;%n",
+                    theme.getName()), StandardCharsets.UTF_8);
             FileUtils.write(themeImportFileDefinition, EXPORT_MODULES_DEF,
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new ExecutionFailedException(
-                "Unable to write theme import file", e);
+                    "Unable to write theme import file", e);
         }
     }
 
@@ -104,8 +104,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         List<String> appThemePossiblePaths = getAppThemePossiblePaths(
                 themePath);
         List<File> existingAppThemeDirectories = appThemePossiblePaths.stream()
-                .map(path -> new File(npmFolder, path))
-                .filter(File::exists)
+                .map(path -> new File(npmFolder, path)).filter(File::exists)
                 .collect(Collectors.toList());
 
         if (existingAppThemeDirectories.isEmpty()) {
@@ -117,14 +116,16 @@ public class TaskUpdateThemeImport implements FallibleCommand {
             throw new ExecutionFailedException(
                     String.format(errorMessage, themeName,
                             new File(frontendDirectory, APPLICATION_THEME_ROOT)
-                                    .getPath(), themeName));
+                                    .getPath(),
+                            themeName));
         }
         if (existingAppThemeDirectories.size() >= 2) {
 
-            boolean themeFoundInJar = existingAppThemeDirectories
-                    .stream().map(File::getPath)
-                    .anyMatch(path -> path
-                            .contains(Paths.get(FrontendUtils.FLOW_NPM_PACKAGE_NAME).toString()));
+            boolean themeFoundInJar = existingAppThemeDirectories.stream()
+                    .map(File::getPath)
+                    .anyMatch(path -> path.contains(
+                            Paths.get(FrontendUtils.FLOW_NPM_PACKAGE_NAME)
+                                    .toString()));
 
             if (themeFoundInJar) {
                 String errorMessage = "Theme '%s' should not exist inside a "
@@ -150,8 +151,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
     }
 
     private List<String> getAppThemePossiblePaths(String themePath) {
-        String frontendTheme = String.join("/",
-                npmFolder.toPath()
+        String frontendTheme = String.join("/", npmFolder.toPath()
                 .relativize(frontendDirectory.toPath()).toString(), themePath);
 
         String themePathInMetaInfResources = String.join("/",

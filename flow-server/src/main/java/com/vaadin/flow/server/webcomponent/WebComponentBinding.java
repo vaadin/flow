@@ -178,9 +178,9 @@ public final class WebComponentBinding<C extends Component>
      * @param propertyConfiguration
      *            property configuration, not {@code null}
      * @param overrideDefault
-     *            set to {@code true} if the property should be initialized
-     *            with {@code startingValue} instead of default value found
-     *            in {@link PropertyData}
+     *            set to {@code true} if the property should be initialized with
+     *            {@code startingValue} instead of default value found in
+     *            {@link PropertyData}
      * @param startingValue
      *            starting value for the property. Can be {@code null}.
      *            {@code overrideDefault} must be {@code true} for this value to
@@ -197,14 +197,16 @@ public final class WebComponentBinding<C extends Component>
         final SerializableBiConsumer<C, Serializable> consumer = propertyConfiguration
                 .getOnChangeHandler();
 
-        final Serializable selectedStartingValue = !overrideDefault ?
-                propertyConfiguration.getPropertyData().getDefaultValue() :
-                jsonValueToConcreteType(startingValue,
+        final Serializable selectedStartingValue = !overrideDefault
+                ? propertyConfiguration.getPropertyData().getDefaultValue()
+                : jsonValueToConcreteType(startingValue,
                         propertyConfiguration.getPropertyData().getType());
 
         final PropertyBinding<? extends Serializable> binding = new PropertyBinding<>(
-                propertyConfiguration.getPropertyData(), consumer == null ? null
-                        : value -> consumer.accept(component, value), selectedStartingValue);
+                propertyConfiguration.getPropertyData(),
+                consumer == null ? null
+                        : value -> consumer.accept(component, value),
+                selectedStartingValue);
 
         properties.put(propertyConfiguration.getPropertyData().getName(),
                 binding);
@@ -221,9 +223,9 @@ public final class WebComponentBinding<C extends Component>
             }
             return value;
         } else {
-            throw new IllegalArgumentException(String.format(
-                    "Received '%s' was not convertible to '%s'",
-                    JsonValue.class.getName(), type.getName()));
+            throw new IllegalArgumentException(
+                    String.format("Received '%s' was not convertible to '%s'",
+                            JsonValue.class.getName(), type.getName()));
         }
     }
 
@@ -233,8 +235,8 @@ public final class WebComponentBinding<C extends Component>
         private SerializableConsumer<P> listener;
         private P value;
 
-        PropertyBinding(PropertyData<P> data,
-                        SerializableConsumer<P> listener, Serializable startingValue) {
+        PropertyBinding(PropertyData<P> data, SerializableConsumer<P> listener,
+                Serializable startingValue) {
             Objects.requireNonNull(data, "Parameter 'data' must not be null!");
             this.data = data;
             this.listener = listener;
@@ -252,7 +254,8 @@ public final class WebComponentBinding<C extends Component>
                 return;
             }
 
-            if (newValue != null && !getType().isAssignableFrom(newValue.getClass())) {
+            if (newValue != null
+                    && !getType().isAssignableFrom(newValue.getClass())) {
                 throw new IllegalArgumentException(String.format("Parameter "
                         + "'newValue' is of the wrong type: onChangeHandler"
                         + " of the property expected to receive %s but "

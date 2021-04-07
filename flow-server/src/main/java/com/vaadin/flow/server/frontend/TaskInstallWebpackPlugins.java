@@ -36,8 +36,8 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Task that installs any Flow webpack plugins into node_modules/@vaadin for
- * use with webpack compilation.
+ * Task that installs any Flow webpack plugins into node_modules/@vaadin for use
+ * with webpack compilation.
  * <p>
  * This should preferably be executed after npm installation to not make it skip
  * or have the plugins deleted by {@link TaskRunNpmInstall}.
@@ -52,7 +52,7 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
      * Copy Flow webpack plugins into the given nodeModulesFolder.
      *
      * @param nodeModulesFolder
-     *     node_modules folder to copy files to
+     *            node_modules folder to copy files to
      */
     public TaskInstallWebpackPlugins(File nodeModulesFolder) {
         this.nodeModulesFolder = nodeModulesFolder;
@@ -65,8 +65,9 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
                 generatePluginFiles(plugin);
             } catch (IOException ioe) {
                 throw new UncheckedIOException(
-                    "Installation of Flow webpack plugin '" + plugin
-                        + "' failed", ioe);
+                        "Installation of Flow webpack plugin '" + plugin
+                                + "' failed",
+                        ioe);
             }
         });
     }
@@ -79,11 +80,11 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
     protected List<String> getPlugins() {
         try {
             final JsonObject jsonFile = getJsonFile(
-                "plugins/webpack-plugins.json");
+                    "plugins/webpack-plugins.json");
             if (jsonFile == null) {
                 log().error(
-                    "Couldn't locate plugins/webpack-plugins.json, no Webpack plugins for Flow will be installed."
-                        + "If webpack build fails validate flow-server jar content.");
+                        "Couldn't locate plugins/webpack-plugins.json, no Webpack plugins for Flow will be installed."
+                                + "If webpack build fails validate flow-server jar content.");
                 return Collections.emptyList();
             }
 
@@ -95,33 +96,34 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
             return pluginsToInstall;
         } catch (IOException ioe) {
             throw new UncheckedIOException(
-                "Couldn't load webpack-plugins.json file", ioe);
+                    "Couldn't load webpack-plugins.json file", ioe);
         }
     }
 
     private void generatePluginFiles(String pluginName) throws IOException {
         // Get the target folder where the plugin should be installed to
         File pluginTargetFile = new File(nodeModulesFolder,
-            "@vaadin/" + pluginName);
+                "@vaadin/" + pluginName);
 
         final String pluginFolderName = "plugins/" + pluginName + "/";
         final JsonObject packageJson = getJsonFile(
-            pluginFolderName + PACKAGE_JSON);
+                pluginFolderName + PACKAGE_JSON);
         if (packageJson == null) {
             log().error(
-                "Couldn't locate '{}' for plugin '{}'. Plugin will not be installed.",
-                PACKAGE_JSON, pluginName);
+                    "Couldn't locate '{}' for plugin '{}'. Plugin will not be installed.",
+                    PACKAGE_JSON, pluginName);
             return;
         }
 
         // Validate installed version and don't override if same
-        if (pluginTargetFile.exists() && new File(pluginTargetFile,
-            PACKAGE_JSON).exists()) {
-            String packageFile = FileUtils
-                .readFileToString(new File(pluginTargetFile, PACKAGE_JSON),
+        if (pluginTargetFile.exists()
+                && new File(pluginTargetFile, PACKAGE_JSON).exists()) {
+            String packageFile = FileUtils.readFileToString(
+                    new File(pluginTargetFile, PACKAGE_JSON),
                     StandardCharsets.UTF_8);
             final JsonObject targetJson = Json.parse(packageFile);
-            if(targetJson.hasKey("update") && !targetJson.getBoolean("update")) {
+            if (targetJson.hasKey("update")
+                    && !targetJson.getBoolean("update")) {
                 return;
             }
         }
@@ -134,11 +136,11 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
         for (int i = 0; i < files.length(); i++) {
             final String file = files.getString(i);
             FileUtils.copyURLToFile(getResourceUrl(pluginFolderName + file),
-                new File(pluginTargetFile, file));
+                    new File(pluginTargetFile, file));
         }
         // copy package.json to plugin directory
         FileUtils.copyURLToFile(getResourceUrl(pluginFolderName + PACKAGE_JSON),
-            new File(pluginTargetFile, PACKAGE_JSON));
+                new File(pluginTargetFile, PACKAGE_JSON));
     }
 
     private JsonObject getJsonFile(String jsonFilePath) throws IOException {
@@ -150,7 +152,7 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
         String jsonString;
         if (!jsonFile.exists()) {
             try (InputStream resourceAsStream = this.getClass().getClassLoader()
-                .getResourceAsStream(jsonFilePath)) {
+                    .getResourceAsStream(jsonFilePath)) {
                 if (resourceAsStream != null) {
                     jsonString = FrontendUtils.streamToString(resourceAsStream);
                 } else {

@@ -38,13 +38,13 @@ public class RoutesChangedEvent extends EventObject {
      * Constructs a prototypical Event.
      *
      * @param source
-     *         The object on which the Event initially occurred.
+     *            The object on which the Event initially occurred.
      * @param added
-     *         list of all the added routes
+     *            list of all the added routes
      * @param removed
-     *         list of all the removed routes
+     *            list of all the removed routes
      * @throws IllegalArgumentException
-     *         if source is null.
+     *             if source is null.
      */
     public RoutesChangedEvent(RouteRegistry source,
             List<RouteBaseData<?>> added, List<RouteBaseData<?>> removed) {
@@ -88,7 +88,8 @@ public class RoutesChangedEvent extends EventObject {
     }
 
     /**
-     * Determines if a given route navigation target was removed for this change.
+     * Determines if a given route navigation target was removed for this
+     * change.
      *
      * @param clazz
      *            a route navigation target
@@ -99,9 +100,8 @@ public class RoutesChangedEvent extends EventObject {
     }
 
     private boolean checkIfRouteIsPresent(List<RouteBaseData<?>> routes,
-                                          Class<? extends Component> clazz) {
-        return routes.stream()
-                .map(RouteBaseData::getNavigationTarget)
+            Class<? extends Component> clazz) {
+        return routes.stream().map(RouteBaseData::getNavigationTarget)
                 .anyMatch(navigationTarget -> navigationTarget.equals(clazz));
     }
 
@@ -133,9 +133,9 @@ public class RoutesChangedEvent extends EventObject {
      * @return immutable list of all added navigation targets
      */
     public List<Class<? extends Component>> getAddedNavigationTargets() {
-        return Collections.unmodifiableList(added.stream()
-                .map(RouteBaseData::getNavigationTarget)
-                .collect(Collectors.toList()));
+        return Collections.unmodifiableList(
+                added.stream().map(RouteBaseData::getNavigationTarget)
+                        .collect(Collectors.toList()));
     }
 
     /**
@@ -144,9 +144,9 @@ public class RoutesChangedEvent extends EventObject {
      * @return immutable list of all removed navigation targets
      */
     public List<Class<? extends Component>> getRemovedNavigationTargets() {
-        return Collections.unmodifiableList(removed.stream()
-                .map(RouteBaseData::getNavigationTarget)
-                .collect(Collectors.toList()));
+        return Collections.unmodifiableList(
+                removed.stream().map(RouteBaseData::getNavigationTarget)
+                        .collect(Collectors.toList()));
     }
 
     /**
@@ -170,9 +170,8 @@ public class RoutesChangedEvent extends EventObject {
     }
 
     private boolean checkIfRouteIsPresent(List<RouteBaseData<?>> routes,
-                                          String path) {
-        return routes.stream()
-                .map(RouteBaseData::getUrl)
+            String path) {
+        return routes.stream().map(RouteBaseData::getUrl)
                 .anyMatch(url -> url.equals(path));
     }
 
