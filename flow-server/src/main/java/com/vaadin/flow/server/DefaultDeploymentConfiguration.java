@@ -17,6 +17,7 @@
 package com.vaadin.flow.server;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -72,7 +73,7 @@ public class DefaultDeploymentConfiguration
             + "and \"automatic\". The default of \"disabled\" will be used.";
 
     private static final String INDEX_NOT_FOUND = "'%s' is not found from '%s'.%n"
-            + "Generating a default one in '%s%s'. "
+            + "Generating a default one in '%s'. "
             + "Move it to the '%s' folder if you want to customize it.";
 
     /**
@@ -342,7 +343,8 @@ public class DefaultDeploymentConfiguration
         if (!indexEntry.exists() && !indexEntryTs.exists()) {
             entryPointMessage = String.format(INDEX_NOT_FOUND,
                     indexEntryTs.getName(), indexEntryTs.getPath(),
-                    getBuildFolder(), indexEntryTs.getName(),
+                    Paths.get(getBuildFolder(), indexEntryTs.getName())
+                            .toString(),
                     indexEntryTs.getParentFile().getPath());
         } else {
             String fileName = indexEntry.exists() ? "index.js" : "index.ts";
@@ -360,8 +362,9 @@ public class DefaultDeploymentConfiguration
         String indexHTMLMessage;
         if (!indexHTML.exists()) {
             indexHTMLMessage = String.format(INDEX_NOT_FOUND,
-                    indexHTML.getName(), indexHTML.getPath(), getBuildFolder(),
-                    indexHTML.getName(), indexHTML.getParentFile().getPath());
+                    indexHTML.getName(), indexHTML.getPath(),
+                    Paths.get(getBuildFolder(), indexHTML.getName()).toString(),
+                    indexHTML.getParentFile().getPath());
         } else {
             indexHTMLMessage = String.format("Using 'index.html' from '%s'",
                     indexHTML.getPath());
