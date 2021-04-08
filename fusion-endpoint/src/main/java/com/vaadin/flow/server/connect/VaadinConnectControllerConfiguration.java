@@ -135,7 +135,7 @@ public class VaadinConnectControllerConfiguration {
     }
 
     /**
-     * Registers endpoint utility methods
+     * Registers endpoint utility methods.
      *
      * @return the endpoint util class
      */
