@@ -35,7 +35,9 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.server.AppShellRegistry;
+import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -194,8 +196,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return request.getService().getBootstrapUrlPredicate()
-                .isValidUrl(request);
+        return !BootstrapHandler.isFrameworkInternalRequest(request) && request
+                .getService().getBootstrapUrlPredicate().isValidUrl(request);
     }
 
     @Override

@@ -20,8 +20,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.communication.PwaHandler;
@@ -107,6 +110,96 @@ public class HandlerHelper implements Serializable {
             RequestType requestType) {
         return requestType.getIdentifier().equals(request
                 .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
+    }
+
+    /**
+     * Checks whether the request is an internal request.
+     *
+     * The requests listed in {@link RequestType} are considered internal as
+     * they are needed for applications to work.
+     * <p>
+     * Requests for routes, static resources requests and similar are not
+     * considered internal requests.
+     *
+     * @param servletMappingPath
+     *            the path the Vaadin servlet is mapped to, with or without and
+     *            ending "/*"
+     * @param request
+     *            the servlet request
+     * @return {@code true} if the request is Vaadin internal, {@code false}
+     *         otherwise
+     */
+    public static boolean isFrameworkInternalRequest(String servletMappingPath,
+            HttpServletRequest request) {
+        return isFrameworkInternalRequest(servletMappingPath,
+                getRequestPathInsideContext(request), request.getParameter(
+                        ApplicationConstants.REQUEST_TYPE_PARAMETER));
+    }
+
+    private static boolean isFrameworkInternalRequest(String servletMappingPath,
+            String requestedPath, String requestTypeParameter) {
+        /*
+         * According to the spec, pathInfo should be null but not all servers
+         * implement it like that...
+         * 
+         * Additionally the spring servlet is mapped as /vaadinServlet right now
+         * it seems but requests are sent to /vaadinServlet/, causing a "/" path
+         * info
+         */
+
+        // This is only an internal request if it is for the Vaadin servlet
+        Optional<String> requestedPathWithoutServletMapping = getPathIfInsideServlet(
+                servletMappingPath, requestedPath);
+        if (!requestedPathWithoutServletMapping.isPresent()) {
+            return false;
+        } else if (isInternalRequestInsideServlet(
+                requestedPathWithoutServletMapping.get(),
+                requestTypeParameter)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    static boolean isInternalRequestInsideServlet(
+            String requestedPathWithoutServletMapping,
+            String requestTypeParameter) {
+        if (requestedPathWithoutServletMapping == null
+                || requestedPathWithoutServletMapping.isEmpty()
+                || "/".equals(requestedPathWithoutServletMapping)) {
+            return requestTypeParameter != null;
+        }
+        return false;
+    }
+
+    private static Optional<String> getPathIfInsideServlet(
+            String servletMappingPath, String requestedPath) {
+        if (servletMappingPath.endsWith("/*")) {
+            servletMappingPath = servletMappingPath.substring(0,
+                    servletMappingPath.length() - "/*".length());
+        }
+        if ("/".equals(servletMappingPath)) {
+            servletMappingPath = "";
+        }
+        if (!requestedPath.startsWith(servletMappingPath)) {
+            return Optional.empty();
+        }
+        return Optional
+                .of(requestedPath.substring(servletMappingPath.length()));
+    }
+
+    private static String getRequestPathInsideContext(
+            HttpServletRequest request) {
+        String servletPath = request.getServletPath();
+        String pathInfo = request.getPathInfo();
+        String url = "";
+        if (servletPath != null) {
+            url += servletPath;
+        }
+        if (pathInfo != null) {
+            url += pathInfo;
+        }
+        return url;
     }
 
     /**
