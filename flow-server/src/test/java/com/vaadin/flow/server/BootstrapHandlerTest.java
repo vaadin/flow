@@ -1541,11 +1541,11 @@ public class BootstrapHandlerTest {
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         Mockito.when(request.getPathInfo()).thenReturn(null);
         Mockito.when(request.getParameter("v-r")).thenReturn("hello-foo-bar");
-        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest(request));
+        Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
         Assert.assertFalse(bootstrapHandler.canHandleRequest(request));
 
         Mockito.when(request.getParameter("v-r")).thenReturn("init");
-        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest(request));
+        Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
         Assert.assertFalse(bootstrapHandler.canHandleRequest(request));
     }
 

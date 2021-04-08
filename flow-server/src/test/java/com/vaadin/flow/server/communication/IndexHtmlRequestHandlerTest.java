@@ -46,6 +46,7 @@ import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.AppShellRegistry;
+import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
@@ -707,11 +708,11 @@ public class IndexHtmlRequestHandlerTest {
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         Mockito.when(request.getPathInfo()).thenReturn(null);
         Mockito.when(request.getParameter("v-r")).thenReturn("hello-foo-bar");
-        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest(request));
+        Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
         Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(request));
 
         Mockito.when(request.getParameter("v-r")).thenReturn("init");
-        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest(request));
+        Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
         Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(request));
     }
 

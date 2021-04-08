@@ -123,14 +123,15 @@ public class HandlerHelperTest {
     public void isFrameworkInternalRequest_vaadinRequest_servletRoot() {
         VaadinRequest request = createVaadinRequest("", "/*", RequestType.INIT);
 
-        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest(request));
+        Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
     }
 
     @Test
     public void isFrameworkInternalRequest_vaadinRequest_servletRoot_noType() {
         VaadinRequest request = createVaadinRequest("", "/*", null);
 
-        Assert.assertFalse(HandlerHelper.isFrameworkInternalRequest(request));
+        Assert.assertFalse(
+                BootstrapHandler.isFrameworkInternalRequest(request));
     }
 
     @Test
@@ -138,14 +139,16 @@ public class HandlerHelperTest {
         VaadinRequest request = createVaadinRequest("/foo", "/*",
                 RequestType.INIT);
 
-        Assert.assertFalse(HandlerHelper.isFrameworkInternalRequest(request));
+        Assert.assertFalse(
+                BootstrapHandler.isFrameworkInternalRequest(request));
     }
 
     @Test
     public void isFrameworkInternalRequest_vaadinRequest_pathInsideServlet_noType() {
         VaadinRequest request = createVaadinRequest("/foo", "/*", null);
 
-        Assert.assertFalse(HandlerHelper.isFrameworkInternalRequest(request));
+        Assert.assertFalse(
+                BootstrapHandler.isFrameworkInternalRequest(request));
     }
 
     @Test
@@ -153,7 +156,7 @@ public class HandlerHelperTest {
         VaadinRequest request = createVaadinRequest("", "/myservlet/",
                 RequestType.INIT);
 
-        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest(request));
+        Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
     }
 
     @Test
@@ -161,7 +164,19 @@ public class HandlerHelperTest {
         VaadinRequest request = createVaadinRequest("/hello", "/myservlet",
                 null);
 
-        Assert.assertFalse(HandlerHelper.isFrameworkInternalRequest(request));
+        Assert.assertFalse(
+                BootstrapHandler.isFrameworkInternalRequest(request));
+    }
+
+    @Test
+    public void test() {
+        HttpServletRequest request = createRequest("/", RequestType.INIT);
+        Mockito.when(request.getServletPath()).thenReturn("/abc");
+
+        Assert.assertTrue(
+                HandlerHelper.isFrameworkInternalRequest("/abc", request));
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/", request));
     }
 
     private VaadinRequest createVaadinRequest(String requestPath,
