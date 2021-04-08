@@ -52,12 +52,11 @@ public class VaadinSpringSecurity {
      * @return default {@link HttpSecurity} bypass matcher
      */
     public static RequestMatcher getDefaultHttpSecurityPermitMatcher() {
+        Stream<String> flowProvided = Stream.of(HandlerHelper.getPublicResourcesRequiringSecurityContext());
+        Stream<String> other = Stream.of("/vaadinServlet/**");
 
-        return new OrRequestMatcher(Stream.of(
-                "/vaadinServlet/**",
-                "/VAADIN/**")
-                .map(AntPathRequestMatcher::new)
-                .collect(Collectors.toList()));
+        return new OrRequestMatcher(
+                Stream.concat(flowProvided, other).map(AntPathRequestMatcher::new).collect(Collectors.toList()));
     }
 
     /**
@@ -66,35 +65,32 @@ public class VaadinSpringSecurity {
      * @return default {@link WebSecurity} ignore matcher
      */
     public static RequestMatcher getDefaultWebSecurityIgnoreMatcher() {
-        return new OrRequestMatcher(Stream
-                .of(HandlerHelper.getPublicResources())
-                .map(AntPathRequestMatcher::new)
+        return new OrRequestMatcher(Stream.of(HandlerHelper.getPublicResources()).map(AntPathRequestMatcher::new)
                 .collect(Collectors.toList()));
     }
 
     /**
-     * Configure Spring Boot to bypass security for framework internal urls
-     * the app shell (index page), but require it for all other routes.
+     * Configure Spring Boot to bypass security for framework internal urls the app
+     * shell (index page), but require it for all other routes.
      *
      * @param http the {@link HttpSecurity} instance
      *
      * @throws Exception thrown by {@link HttpSecurity#authorizeRequests()}
      */
     public static void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
-                .requestMatchers(getDefaultHttpSecurityPermitMatcher()).permitAll()
+        http.authorizeRequests().requestMatchers(getDefaultHttpSecurityPermitMatcher()).permitAll()
                 // all other requests require authentication
                 .anyRequest().authenticated();
     }
 
     /**
-     * Configure Spring Boot to bypass security for default static assets
-     * (favicon, content in {@code icons} and {@code images} folders, default
-     * offline page, and service worker.
+     * Configure Spring Boot to bypass security for default static assets (favicon,
+     * content in {@code icons} and {@code images} folders, default offline page,
+     * and service worker.
      *
      * @param web the {@link WebSecurity} instance
      */
-    public static void configure(WebSecurity web)  {
+    public static void configure(WebSecurity web) {
         web.ignoring().requestMatchers(getDefaultWebSecurityIgnoreMatcher());
     }
 }
