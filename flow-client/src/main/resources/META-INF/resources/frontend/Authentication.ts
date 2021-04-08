@@ -1,6 +1,6 @@
 import { MiddlewareClass, MiddlewareContext, MiddlewareNext } from './Connect';
 
-const $wnd = (window as any);
+const $wnd = window as any;
 
 export interface LoginResult {
   error: boolean;
@@ -47,7 +47,7 @@ export async function login(username: string, password: string, options?: LoginO
       };
     } else if (response.ok && response.redirected && response.url.endsWith(defaultSuccessUrl)) {
       const vaadinCsrfToken = await updateCsrfTokensBasedOnResponse(response);
-      if (vaadinCsrfToken) {  
+      if (vaadinCsrfToken) {
         result = {
           error: false,
           errorTitle: '',
@@ -102,7 +102,7 @@ export async function logout(options?: LogoutOptions) {
 async function doLogout(logoutUrl: string, headers: Record<string, string>) {
   const response = await fetch(logoutUrl, { method: 'POST', headers });
   if (!response.ok) {
-    throw new Error('failed to logout with response ' + response.status);
+    throw new Error(`failed to logout with response ${response.status}`);
   }
 
   await updateCsrfTokensBasedOnResponse(response);
@@ -111,13 +111,15 @@ async function doLogout(logoutUrl: string, headers: Record<string, string>) {
 function updateSpringCsrfMetaTag(body: string) {
   const doc = new DOMParser().parseFromString(body, 'text/html');
   clearSpringCsrfMetaTags();
-  Array.from(doc.head.querySelectorAll('meta[name="_csrf"], meta[name="_csrf_header"]'))
-      .forEach(el => document.head.appendChild(document.importNode(el, true)));
+  Array.from(doc.head.querySelectorAll('meta[name="_csrf"], meta[name="_csrf_header"]')).forEach((el) =>
+    document.head.appendChild(document.importNode(el, true))
+  );
 }
 
 function clearSpringCsrfMetaTags() {
-  Array.from(document.head.querySelectorAll('meta[name="_csrf"], meta[name="_csrf_header"]'))
-      .forEach(el => el.remove());
+  Array.from(document.head.querySelectorAll('meta[name="_csrf"], meta[name="_csrf_header"]')).forEach((el) =>
+    el.remove()
+  );
 }
 
 const getCsrfTokenFromResponseBody = (body: string): string | undefined => {
