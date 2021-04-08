@@ -15,12 +15,7 @@ const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 // Flow plugins
 const StatsPlugin = require('@vaadin/stats-plugin');
 const ThemeLiveReloadPlugin = require('@vaadin/theme-live-reload-plugin');
-const {
-  ApplicationThemePlugin,
-  processThemeResources,
-  extractThemeName,
-  logNoThemeNameFound
-} = require('@vaadin/application-theme-plugin');
+const { ApplicationThemePlugin, processThemeResources, extractThemeName } = require('@vaadin/application-theme-plugin');
 
 const path = require('path');
 
@@ -179,9 +174,6 @@ const flowFrontendThemesFolder = path.resolve(flowFrontendFolder, 'themes');
 // Current theme name is being extracted from theme.js located in frontend
 // generated folder
 const themeName = extractThemeName(frontendGeneratedFolder);
-if (!themeName) {
-  logNoThemeNameFound(console, "Skipping Vaadin custom theme live reload.");
-}
 const themeOptions = {
   devMode: devMode,
   // The following matches folder 'target/flow-frontend/themes/'
