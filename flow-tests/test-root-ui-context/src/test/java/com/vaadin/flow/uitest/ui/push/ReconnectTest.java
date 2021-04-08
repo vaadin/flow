@@ -67,8 +67,11 @@ public abstract class ReconnectTest extends ChromeBrowserTestWithProxy {
     private void waitForNextReconnectionAttempt() {
         waitUntil(driver -> getBrowserLogs(true).stream()
                 .filter(String.class::isInstance).map(String.class::cast)
-                .anyMatch(msg -> msg.startsWith("Reconnect attempt ")
-                        || msg.equals("Reopening push connection")));
+                .anyMatch(msg -> {
+                    System.out.println("xxxxxxxx         " + msg);
+                    return msg.startsWith("Reconnect attempt ")
+                            || msg.equals("Reopening push connection");
+                }));
     }
 
     private void connectAndVerifyConnectionEstablished() throws IOException {
