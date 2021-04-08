@@ -120,6 +120,28 @@ public class HandlerHelperTest {
     }
 
     @Test
+    public void isFrameworkInternalRequest_validType_withServletMappingAndPath() {
+        HttpServletRequest request = createRequest("/", RequestType.INIT);
+        Mockito.when(request.getServletPath()).thenReturn("/servlet");
+
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/", request));
+        Assert.assertTrue(
+                HandlerHelper.isFrameworkInternalRequest("/servlet", request));
+    }
+
+    @Test
+    public void isFrameworkInternalRequest_noType_withServletMappingAndPath() {
+        HttpServletRequest request = createRequest("/", (RequestType) null);
+        Mockito.when(request.getServletPath()).thenReturn("/servlet");
+
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/", request));
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("/servlet", request));
+    }
+
+    @Test
     public void isFrameworkInternalRequest_vaadinRequest_servletRoot() {
         VaadinRequest request = createVaadinRequest("", "/*", RequestType.INIT);
 
