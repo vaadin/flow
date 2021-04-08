@@ -35,11 +35,13 @@ public class MySecurityConfigurerAdapter extends VaadinWebSecurityConfigurerAdap
  * </code>
  * 
  */
-public abstract class VaadinWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
+public abstract class VaadinWebSecurityConfigurerAdapter
+        extends WebSecurityConfigurerAdapter {
 
     /**
-     * The paths listed as "ignoring" in this method are handled without any Spring
-     * Security involvement. They have no access to any security context etc.
+     * The paths listed as "ignoring" in this method are handled without any
+     * Spring Security involvement. They have no access to any security context
+     * etc.
      * <p>
      * {@inheritDoc}
      */
@@ -50,7 +52,9 @@ public abstract class VaadinWebSecurityConfigurerAdapter extends WebSecurityConf
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().requestMatchers(getDefaultHttpSecurityPermitMatcher()).permitAll()
+        http.authorizeRequests()
+                .requestMatchers(getDefaultHttpSecurityPermitMatcher())
+                .permitAll()
                 // all other requests require authentication
                 .anyRequest().authenticated();
     }
@@ -61,11 +65,12 @@ public abstract class VaadinWebSecurityConfigurerAdapter extends WebSecurityConf
      * @return default {@link HttpSecurity} bypass matcher
      */
     public static RequestMatcher getDefaultHttpSecurityPermitMatcher() {
-        Stream<String> flowProvided = Stream.of(HandlerHelper.getPublicResourcesRequiringSecurityContext());
+        Stream<String> flowProvided = Stream
+                .of(HandlerHelper.getPublicResourcesRequiringSecurityContext());
         Stream<String> other = Stream.of("/vaadinServlet/**");
 
-        return new OrRequestMatcher(
-                Stream.concat(flowProvided, other).map(AntPathRequestMatcher::new).collect(Collectors.toList()));
+        return new OrRequestMatcher(Stream.concat(flowProvided, other)
+                .map(AntPathRequestMatcher::new).collect(Collectors.toList()));
     }
 
     /**
@@ -74,8 +79,9 @@ public abstract class VaadinWebSecurityConfigurerAdapter extends WebSecurityConf
      * @return default {@link WebSecurity} ignore matcher
      */
     public static RequestMatcher getDefaultWebSecurityIgnoreMatcher() {
-        return new OrRequestMatcher(Stream.of(HandlerHelper.getPublicResources()).map(AntPathRequestMatcher::new)
-                .collect(Collectors.toList()));
+        return new OrRequestMatcher(Stream
+                .of(HandlerHelper.getPublicResources())
+                .map(AntPathRequestMatcher::new).collect(Collectors.toList()));
     }
 
 }

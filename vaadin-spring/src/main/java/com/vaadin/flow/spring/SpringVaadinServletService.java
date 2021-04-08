@@ -53,11 +53,11 @@ public class SpringVaadinServletService extends VaadinServletService {
      * configuration with provided application {@code context}.
      *
      * @param servlet
-     *         the servlet which receives requests
+     *            the servlet which receives requests
      * @param deploymentConfiguration
-     *         the configuration to use
+     *            the configuration to use
      * @param context
-     *         the Spring application context
+     *            the Spring application context
      */
     public SpringVaadinServletService(VaadinServlet servlet,
             DeploymentConfiguration deploymentConfiguration,

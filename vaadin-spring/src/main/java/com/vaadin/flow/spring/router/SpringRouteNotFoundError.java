@@ -16,7 +16,8 @@ public class SpringRouteNotFoundError extends RouteNotFoundError {
         int retval = super.setErrorParameter(event, parameter);
         if (!event.getUI().getSession().getConfiguration().isProductionMode()) {
             // Alert user about potential issue with Spring Boot Devtools losing
-            // routes https://github.com/spring-projects/spring-boot/issues/19543
+            // routes
+            // https://github.com/spring-projects/spring-boot/issues/19543
             // This has been fixed since Spring Boot 2.4.0
             String springBootVersion = SpringBootVersion.getVersion();
             if (springBootVersion == null || springBootVersion.isEmpty()) {

@@ -77,7 +77,10 @@ public class SpringRouteNotFoundErrorTest {
         // not add the message
         springRouteNotFoundError.setErrorParameter(event, parameter);
 
-        Assert.assertEquals("Invalid number of children", ((Long) normalErrorView.getChildren().count()).intValue(), ((Long) springRouteNotFoundError.getChildren().count()).intValue());
+        Assert.assertEquals("Invalid number of children",
+                ((Long) normalErrorView.getChildren().count()).intValue(),
+                ((Long) springRouteNotFoundError.getChildren().count())
+                        .intValue());
     }
 
     @Test
@@ -85,24 +88,31 @@ public class SpringRouteNotFoundErrorTest {
         final RouteNotFoundError normalErrorView = new RouteNotFoundError();
         final SpringRouteNotFoundError springRouteNotFoundError = new SpringRouteNotFoundError();
 
-        try (MockedStatic<SpringBootVersion> theMock = Mockito.mockStatic(SpringBootVersion.class)) {
-            theMock.when(SpringBootVersion::getVersion).thenReturn("2.2.0.RELEASE");
+        try (MockedStatic<SpringBootVersion> theMock = Mockito
+                .mockStatic(SpringBootVersion.class)) {
+            theMock.when(SpringBootVersion::getVersion)
+                    .thenReturn("2.2.0.RELEASE");
 
             normalErrorView.setErrorParameter(event, parameter);
             springRouteNotFoundError.setErrorParameter(event, parameter);
 
             theMock.verify(SpringBootVersion::getVersion);
         }
-        Assert.assertNotEquals("Invalid number of children", ((Long) normalErrorView.getChildren().count()).intValue(), ((Long) springRouteNotFoundError.getChildren().count()).intValue());
+        Assert.assertNotEquals("Invalid number of children",
+                ((Long) normalErrorView.getChildren().count()).intValue(),
+                ((Long) springRouteNotFoundError.getChildren().count())
+                        .intValue());
     }
 
     @Test
     public void testRouteNotFoundError_productionMode_SpringVersionNotChecked() {
         final SpringRouteNotFoundError springRouteNotFoundError = new SpringRouteNotFoundError();
 
-        try (MockedStatic<SpringBootVersion> theMock = Mockito.mockStatic(SpringBootVersion.class)) {
+        try (MockedStatic<SpringBootVersion> theMock = Mockito
+                .mockStatic(SpringBootVersion.class)) {
             when(configuration.isProductionMode()).thenReturn(true);
-            theMock.when(SpringBootVersion::getVersion).then(AssertionError::new);
+            theMock.when(SpringBootVersion::getVersion)
+                    .then(AssertionError::new);
             springRouteNotFoundError.setErrorParameter(event, parameter);
             theMock.verifyNoInteractions();
         }

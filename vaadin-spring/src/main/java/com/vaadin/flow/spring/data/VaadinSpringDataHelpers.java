@@ -23,30 +23,29 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 
 /**
- * Contains helper methods to work with Spring Data based back-ends
- * and Vaadin components.
+ * Contains helper methods to work with Spring Data based back-ends and Vaadin
+ * components.
  */
 public interface VaadinSpringDataHelpers extends Serializable {
-    
+
     /**
      * Translates given Query object from a Vaadin component to Spring Data Sort
      * object.
      * <p>
      * Can be used as a helper when making a lazy data binding from a Vaadin
-     * component to a Spring Data based back-end. The method expects Vaadin sort 
+     * component to a Spring Data based back-end. The method expects Vaadin sort
      * data to include the property name.
      *
-     * @param vaadinQuery the Vaadin Query object passed by the component
+     * @param vaadinQuery
+     *            the Vaadin Query object passed by the component
      * @return the Sort object that can be passed for Spring Data based back-end
      */
     static Sort toSpringDataSort(Query<?, ?> vaadinQuery) {
         return Sort.by(vaadinQuery.getSortOrders().stream()
-                .map(
-                        so -> so.getDirection() == SortDirection.ASCENDING
+                .map(so -> so.getDirection() == SortDirection.ASCENDING
                         ? Order.asc(so.getSorted())
                         : Order.desc(so.getSorted()))
-                .collect(Collectors.toList())
-        );
+                .collect(Collectors.toList()));
     }
 
 }

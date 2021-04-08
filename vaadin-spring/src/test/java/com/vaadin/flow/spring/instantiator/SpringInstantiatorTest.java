@@ -168,7 +168,7 @@ public class SpringInstantiatorTest {
     }
 
     public static VaadinService getService(ApplicationContext context,
-                                           Properties configProperties, boolean rootMapping)
+            Properties configProperties, boolean rootMapping)
             throws ServletException {
         SpringServlet servlet = new SpringServlet(context, rootMapping) {
             @Override
@@ -199,9 +199,8 @@ public class SpringInstantiatorTest {
         Mockito.when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(provider);
 
-        StaticFileHandlerFactory staticFileHandlerFactory =
-                vaadinService -> new StaticFileServer(
-                        (VaadinServletService) vaadinService);
+        StaticFileHandlerFactory staticFileHandlerFactory = vaadinService -> new StaticFileServer(
+                (VaadinServletService) vaadinService);
         Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
                 .thenReturn(staticFileHandlerFactory);
 
