@@ -44,7 +44,6 @@ describe('Authentication', () => {
     }
     csrfHeaderNameMetaTag.content = headerName;
   }
-
   before( ()=> {
     setupSpringCsrfMetaTags();
     headers[headerName]=csrf;
