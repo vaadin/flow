@@ -1535,6 +1535,20 @@ public class BootstrapHandlerTest {
                 testUI.getPushConfiguration().getPushMode());
     }
 
+    @Test
+    public void internal_request_no_bootstrap_page() {
+        BootstrapHandler bootstrapHandler = new BootstrapHandler();
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+        Mockito.when(request.getPathInfo()).thenReturn(null);
+        Mockito.when(request.getParameter("v-r")).thenReturn("hello-foo-bar");
+        Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
+        Assert.assertFalse(bootstrapHandler.canHandleRequest(request));
+
+        Mockito.when(request.getParameter("v-r")).thenReturn("init");
+        Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
+        Assert.assertFalse(bootstrapHandler.canHandleRequest(request));
+    }
+
     public static Location requestToLocation(VaadinRequest request) {
         return new Location(request.getPathInfo(),
                 QueryParameters.full(request.getParameterMap()));
