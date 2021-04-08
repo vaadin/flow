@@ -60,6 +60,14 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
+    private static final String CONTENT_ATTRIBUTE = "content";
+    private static final String NAME_ATTRIBUTE = "name";
+    private static final String SPRING_CSRF_HEADER_PROPERTY = "headerName";
+    private static final String SPRING_CSRF_TOKEN_PROPERTY = "token";
+    private static final String SPRING_CSRF_HEADER_NAME_ATTRIBUTE = "_csrf_header";
+    private static final String SPRING_CSRF_TOKEN_ATTRIBUTE = "_csrf";
+    private static final String META_TAG = "meta";
+
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
@@ -177,21 +185,22 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             if (csrfToken != null) {
                 initialJson.put(CSRF_TOKEN, csrfToken);
             }
-            Object springCsrfToken = request.getAttribute("_csrf");
+            Object springCsrfToken = request.getAttribute(SPRING_CSRF_TOKEN_ATTRIBUTE);
             if (springCsrfToken != null) {
                 JsonObject springCsrfTokenJson = JsonUtils.beanToJson(springCsrfToken);
-                if( springCsrfTokenJson!=null ){
-                    String springCsrfTokenString = springCsrfTokenJson.getString("token");
-                    String springCsrfTokenHeaderName = springCsrfTokenJson.getString("headerName");
-                    
-                    Element meta = new Element("meta");
-                    meta.attr("name", "_csrf");
-                    meta.attr("content", springCsrfTokenString);
+                if (springCsrfTokenJson != null && springCsrfTokenJson.hasKey(SPRING_CSRF_TOKEN_PROPERTY)
+                        && springCsrfTokenJson.hasKey(SPRING_CSRF_HEADER_PROPERTY)) {
+                    String springCsrfTokenString = springCsrfTokenJson.getString(SPRING_CSRF_TOKEN_PROPERTY);
+                    String springCsrfTokenHeaderName = springCsrfTokenJson.getString(SPRING_CSRF_HEADER_PROPERTY);
+
+                    Element meta = new Element(META_TAG);
+                    meta.attr(NAME_ATTRIBUTE, SPRING_CSRF_TOKEN_ATTRIBUTE);
+                    meta.attr(CONTENT_ATTRIBUTE, springCsrfTokenString);
                     indexDocument.head().insertChildren(0, meta);
 
-                    meta = new Element("meta");
-                    meta.attr("name", "_csrf_header");
-                    meta.attr("content", springCsrfTokenHeaderName);
+                    meta = new Element(META_TAG);
+                    meta.attr(NAME_ATTRIBUTE, SPRING_CSRF_HEADER_NAME_ATTRIBUTE);
+                    meta.attr(CONTENT_ATTRIBUTE, springCsrfTokenHeaderName);
                     indexDocument.head().insertChildren(0, meta);
                 }
             }
