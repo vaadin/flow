@@ -190,17 +190,6 @@ public class HandlerHelperTest {
                 BootstrapHandler.isFrameworkInternalRequest(request));
     }
 
-    @Test
-    public void test() {
-        HttpServletRequest request = createRequest("/", RequestType.INIT);
-        Mockito.when(request.getServletPath()).thenReturn("/abc");
-
-        Assert.assertTrue(
-                HandlerHelper.isFrameworkInternalRequest("/abc", request));
-        Assert.assertFalse(
-                HandlerHelper.isFrameworkInternalRequest("/", request));
-    }
-
     private VaadinRequest createVaadinRequest(String requestPath,
             String servletPath, RequestType type) {
         HttpServletRequest servletRequest = createRequest(requestPath, type);
