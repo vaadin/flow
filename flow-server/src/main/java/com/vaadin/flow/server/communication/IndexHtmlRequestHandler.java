@@ -193,15 +193,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                     String springCsrfTokenString = springCsrfTokenJson.getString(SPRING_CSRF_TOKEN_PROPERTY);
                     String springCsrfTokenHeaderName = springCsrfTokenJson.getString(SPRING_CSRF_HEADER_PROPERTY);
 
-                    Element meta = new Element(META_TAG);
-                    meta.attr(NAME_ATTRIBUTE, SPRING_CSRF_TOKEN_ATTRIBUTE);
-                    meta.attr(CONTENT_ATTRIBUTE, springCsrfTokenString);
-                    indexDocument.head().insertChildren(0, meta);
-
-                    meta = new Element(META_TAG);
-                    meta.attr(NAME_ATTRIBUTE, SPRING_CSRF_HEADER_NAME_ATTRIBUTE);
-                    meta.attr(CONTENT_ATTRIBUTE, springCsrfTokenHeaderName);
-                    indexDocument.head().insertChildren(0, meta);
+                    addMetaTagToHead(indexDocument.head(), SPRING_CSRF_TOKEN_ATTRIBUTE, springCsrfTokenString);
+                    addMetaTagToHead(indexDocument.head(), SPRING_CSRF_HEADER_NAME_ATTRIBUTE,
+                            springCsrfTokenHeaderName);
                 }
             }
         }
@@ -211,6 +205,13 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         elm.appendChild(new DataNode("window.Vaadin = {TypeScript: "
                 + JsonUtil.stringify(initialJson) + "};"));
         indexDocument.head().insertChildren(0, elm);
+    }
+
+    private void addMetaTagToHead(Element head, String name, String value) {
+        Element meta = new Element(META_TAG);
+        meta.attr(NAME_ATTRIBUTE, name);
+        meta.attr(CONTENT_ATTRIBUTE, value);
+        head.insertChildren(0, meta);
     }
 
     private void includeInitialUidl(JsonObject initialJson,
