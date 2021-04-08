@@ -77,8 +77,6 @@ export async function login(username: string, password: string, options?: LoginO
   );
 }
 
-export class LogoutError extends Error {}
-
 /**
  * A helper method for Spring Security based form logout
  * @param options defines additional options, e.g, the logoutUrl.
@@ -89,24 +87,17 @@ export async function logout(options?: LogoutOptions) {
   try {
     const headers = getSpringCsrfTokenHeadersFromDocument(document);
     await doLogout(logoutUrl, headers);
-  } catch (e) {
-    if (e instanceof LogoutError) {
-      // retry on logout error, e.g. invalid spirng csrf token
-      try {
-        const response = await fetch('?nocache');
-        const responseText = await response.text();
-        const doc = new DOMParser().parseFromString(responseText, 'text/html');
-        const headers = getSpringCsrfTokenHeadersFromDocument(doc);
-        await doLogout(logoutUrl, headers);
-      } catch (error) {
-        // clear the token if the call fails
-        delete (window as any).Vaadin.TypeScript.csrfToken;
-        throw error;
-      }
-    } else {
+  } catch {
+    try {
+      const response = await fetch('?nocache');
+      const responseText = await response.text();
+      const doc = new DOMParser().parseFromString(responseText, 'text/html');
+      const headers = getSpringCsrfTokenHeadersFromDocument(doc);
+      await doLogout(logoutUrl, headers);
+    } catch (error) {
       // clear the token if the call fails
       delete (window as any).Vaadin.TypeScript.csrfToken;
-      throw e;
+      throw error;
     }
   }
 }
@@ -114,7 +105,7 @@ export async function logout(options?: LogoutOptions) {
 async function doLogout(logoutUrl: string, headers: Record<string, string>) {
   const response = await fetch(logoutUrl, { method: 'POST', headers });
   if (!response.ok) {
-    throw new LogoutError('failed to logout with response ' + response.status);
+    throw new Error('failed to logout with response ' + response.status);
   }
   // TODO: find a more efficient way to get a new CSRF token
   // parsing the full response body just to get a token may be wasteful

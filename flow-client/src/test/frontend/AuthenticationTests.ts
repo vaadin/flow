@@ -133,12 +133,15 @@ describe('Authentication', () => {
       fetchMock.post('/logout', () => {
         throw fakeError;
       }, { headers });
+      fetchMock.get('?nocache', () => {
+        throw fakeError;
+      });
       try {
         await logout();
       } catch (err) {
         expect(err).to.equal(fakeError);
       }
-      expect(fetchMock.calls()).to.have.lengthOf(1);
+      expect(fetchMock.calls()).to.have.lengthOf(2);
       expect((window as any).Vaadin.TypeScript.csrfToken).to.be.undefined
     });
 
