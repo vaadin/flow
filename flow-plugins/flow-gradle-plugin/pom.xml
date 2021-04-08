@@ -70,6 +70,8 @@
                             <arguments>
                                 <argument>clean</argument>
                                 <argument>build</argument>
+                                <argument>-x</argument>
+                                <argument>functionalTest</argument>
                                 <argument>-S</argument>
                             </arguments>
                         </configuration>
