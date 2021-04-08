@@ -1663,10 +1663,10 @@ public class RouterTest extends RoutingTestBase {
         // doesn't throw
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void resolveNavigation_pathContainsDots_pathIsRelative_noException() {
         router.resolveNavigationTarget("/../dsfsdfsdf", Collections.emptyMap());
-        // doesn't throw
+        // Location explicitly disallows ".." segments
     }
 
     @Test

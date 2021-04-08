@@ -16,10 +16,10 @@
 
 package com.vaadin.flow.server.communication;
 
+import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
+
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.URLDecoder;
 import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
@@ -44,7 +44,6 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 
 /**
  * Processes a 'start' request type from the client to initialize server session
@@ -62,13 +61,34 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     /**
      * Custom BootstrapContext for {@link JavaScriptBootstrapHandler}.
      */
-    private static class JavaScriptBootstrapContext extends BootstrapContext {
-        private JavaScriptBootstrapContext(VaadinRequest request,
+    public static class JavaScriptBootstrapContext extends BootstrapContext {
+
+        /**
+         * Creates a new context instance using the given parameters.
+         *
+         * @param request
+         *            the request object
+         * @param response
+         *            the response object
+         * @param ui
+         *            the UI object
+         * @param callback
+         *            a callback that is invoked to resolve the context root
+         *            from the request
+         */
+        public JavaScriptBootstrapContext(VaadinRequest request,
                 VaadinResponse response, UI ui,
                 Function<VaadinRequest, String> callback) {
             super(request, response, ui.getInternals().getSession(), ui,
-                    callback);
+                    callback, JavaScriptBootstrapContext::initRoute);
         }
+
+        private static Location initRoute(VaadinRequest request) {
+            String pathAndParams = request.getParameter(
+                    ApplicationConstants.REQUEST_LOCATION_PARAMETER);
+            return new Location(pathAndParams);
+        }
+
     }
 
     /**
@@ -80,7 +100,13 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return HandlerHelper.isRequestType(request, RequestType.INIT);
+        return HandlerHelper.isRequestType(request, RequestType.INIT)
+                && isServletRootRequest(request);
+    }
+
+    private boolean isServletRootRequest(VaadinRequest request) {
+        String pathInfo = request.getPathInfo();
+        return pathInfo == null || "".equals(pathInfo) || "/".equals(pathInfo);
     }
 
     protected String getRequestUrl(VaadinRequest request) {
@@ -117,23 +143,12 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     }
 
     @Override
-    protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
-        String route = request
-                .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER);
-        if (route != null) {
-            try {
-                route = URLDecoder.decode(route, "UTF-8").replaceFirst("^/+",
-                        "");
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalArgumentException(e);
-            }
-            Location location = new Location(route);
-
+    protected void initializeUIWithRouter(BootstrapContext context, UI ui) {
+        if (context.getRequest().getParameter("serverSideRouting") != null) {
             // App is using classic server-routing, set a session attribute
             // to know that in future navigation calls
             ui.getSession().setAttribute(SERVER_ROUTING, Boolean.TRUE);
-
-            ui.getInternals().getRouter().initializeUI(ui, location);
+            ui.getInternals().getRouter().initializeUI(ui, context.getRoute());
         }
     }
 

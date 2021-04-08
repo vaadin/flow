@@ -66,6 +66,8 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
@@ -163,6 +165,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private final UI ui;
         private final Class<?> pageConfigurationHolder;
         private final ApplicationParameterBuilder parameterBuilder;
+        private final Location route;
 
         private String appId;
         private PushMode pushMode;
@@ -180,19 +183,49 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *            the current session
          * @param ui
          *            the UI object
+         * @param contextCallback
+         *            a callback that is invoked to resolve the context root
+         *            from the request
          */
         protected BootstrapContext(VaadinRequest request,
                 VaadinResponse response, VaadinSession session, UI ui,
                 Function<VaadinRequest, String> contextCallback) {
+            this(request, response, session, ui, contextCallback,
+                    req -> new Location(req.getPathInfo(),
+                            QueryParameters.full(req.getParameterMap())));
+        }
+
+        /**
+         * Creates a new context instance using the given parameters.
+         *
+         * @param request
+         *            the request object
+         * @param response
+         *            the response object
+         * @param session
+         *            the current session
+         * @param ui
+         *            the UI object
+         * @param contextCallback
+         *            a callback that is invoked to resolve the context root
+         *            from the request
+         * @param routeCallback
+         *            a callback that is invoked to resolve the route from the
+         *            request
+         */
+        protected BootstrapContext(VaadinRequest request,
+                VaadinResponse response, VaadinSession session, UI ui,
+                Function<VaadinRequest, String> contextCallback,
+                Function<VaadinRequest, Location> routeCallback) {
             this.request = request;
             this.response = response;
             this.session = session;
             this.ui = ui;
+            this.route = routeCallback.apply(request);
             parameterBuilder = new ApplicationParameterBuilder(contextCallback);
 
             pageConfigurationHolder = BootstrapUtils
-                    .resolvePageConfigurationHolder(ui, request).orElse(null);
-
+                    .resolvePageConfigurationHolder(ui, route).orElse(null);
         }
 
         /**
@@ -211,6 +244,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          */
         public VaadinRequest getRequest() {
             return request;
+        }
+
+        /**
+         * Gets the Vaadin service.
+         *
+         * @return the Vaadin/HTTP service
+         */
+        public VaadinService getService() {
+            return request.getService();
         }
 
         /**
@@ -241,12 +283,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
                 pushMode = getUI().getPushConfiguration().getPushMode();
                 if (pushMode == null) {
-                    pushMode = getRequest().getService()
-                            .getDeploymentConfiguration().getPushMode();
+                    pushMode = getService().getDeploymentConfiguration()
+                            .getPushMode();
                 }
 
                 if (pushMode.isEnabled()
-                        && !getRequest().getService().ensurePushAvailable()) {
+                        && !getService().ensurePushAvailable()) {
                     /*
                      * Fall back if not supported (ensurePushAvailable will log
                      * information to the developer the first time this happens)
@@ -267,8 +309,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          */
         public String getAppId() {
             if (appId == null) {
-                appId = getRequest().getService().getMainDivId(getSession(),
-                        getRequest());
+                appId = getService().getMainDivId(getSession(), getRequest());
             }
             return appId;
         }
@@ -307,8 +348,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *         otherwise.
          */
         public boolean isProductionMode() {
-            return request.getService().getDeploymentConfiguration()
-                    .isProductionMode();
+            return getService().getDeploymentConfiguration().isProductionMode();
         }
 
         /**
@@ -366,6 +406,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
             return Optional.ofNullable(vaadinService.getPwaRegistry());
         }
+
+        /**
+         * Gets the location of the route that should be activated for this
+         * bootstrap request.
+         *
+         * @return the route to activate
+         */
+        public Location getRoute() {
+            return route;
+        }
+
     }
 
     /**
@@ -1239,14 +1290,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // After init and adding UI to session fire init listeners.
         session.getService().fireUIInitListeners(ui);
 
-        initializeUIWithRouter(request, ui);
+        initializeUIWithRouter(context, ui);
 
         return context;
     }
 
-    protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
+    protected void initializeUIWithRouter(BootstrapContext context, UI ui) {
         if (ui.getInternals().getRouter() != null) {
-            ui.getInternals().getRouter().initializeUI(ui, request);
+            ui.getInternals().getRouter().initializeUI(ui, context.getRoute());
         }
     }
 
@@ -1386,7 +1437,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getFullVersion();
         // Load client-side dependencies for push support
-        String pushJSPath = context.getRequest().getService()
+        String pushJSPath = context.getService()
                 .getContextRootRelativePath(request);
 
         if (request.getService().getDeploymentConfiguration()
