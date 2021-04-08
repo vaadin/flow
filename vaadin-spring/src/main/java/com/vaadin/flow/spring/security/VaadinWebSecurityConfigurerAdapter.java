@@ -1,10 +1,16 @@
 package com.vaadin.flow.spring.security;
 
-import com.vaadin.flow.spring.VaadinSpringSecurity;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.vaadin.flow.server.HandlerHelper;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 /**
  * Provides basic Vaadin security configuration for the project.
@@ -39,12 +45,37 @@ public abstract class VaadinWebSecurityConfigurerAdapter extends WebSecurityConf
      */
     @Override
     public void configure(WebSecurity web) throws Exception {
-        VaadinSpringSecurity.configure(web);
+        web.ignoring().requestMatchers(getDefaultWebSecurityIgnoreMatcher());
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        VaadinSpringSecurity.configure(http);
+        http.authorizeRequests().requestMatchers(getDefaultHttpSecurityPermitMatcher()).permitAll()
+                // all other requests require authentication
+                .anyRequest().authenticated();
+    }
+
+    /**
+     * Matcher for framework internal requests.
+     *
+     * @return default {@link HttpSecurity} bypass matcher
+     */
+    public static RequestMatcher getDefaultHttpSecurityPermitMatcher() {
+        Stream<String> flowProvided = Stream.of(HandlerHelper.getPublicResourcesRequiringSecurityContext());
+        Stream<String> other = Stream.of("/vaadinServlet/**");
+
+        return new OrRequestMatcher(
+                Stream.concat(flowProvided, other).map(AntPathRequestMatcher::new).collect(Collectors.toList()));
+    }
+
+    /**
+     * Matcher for Vaadin static (public) resources.
+     *
+     * @return default {@link WebSecurity} ignore matcher
+     */
+    public static RequestMatcher getDefaultWebSecurityIgnoreMatcher() {
+        return new OrRequestMatcher(Stream.of(HandlerHelper.getPublicResources()).map(AntPathRequestMatcher::new)
+                .collect(Collectors.toList()));
     }
 
 }
