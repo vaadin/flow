@@ -171,9 +171,12 @@ if (devMode) {
 }
 
 const flowFrontendThemesFolder = path.resolve(flowFrontendFolder, 'themes');
-// Current theme name is being extracted from theme.js located in frontend
-// generated folder
-const themeName = extractThemeName(frontendGeneratedFolder);
+let themeName = undefined;
+if (devMode) {
+  // Current theme name is being extracted from theme.js located in frontend
+  // generated folder
+  themeName = extractThemeName(frontendGeneratedFolder);
+}
 const themeOptions = {
   devMode: devMode,
   // The following matches folder 'target/flow-frontend/themes/'

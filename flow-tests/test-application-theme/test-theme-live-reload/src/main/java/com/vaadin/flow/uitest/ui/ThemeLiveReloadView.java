@@ -24,7 +24,13 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.ThemeLiveReloadView", layout = ViewTestLayout.class)
 public class ThemeLiveReloadView extends Div {
 
+    public static final String THEMED_COMPONENT_ID = "themed-component-id";
+
     public ThemeLiveReloadView() {
+        TestThemedTextField testThemedTextField = new TestThemedTextField();
+        testThemedTextField.withId(THEMED_COMPONENT_ID);
+        add(testThemedTextField);
+
         add(new Paragraph("This is a Paragraph to test the applied font"));
     }
 }

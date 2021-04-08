@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,14 +13,28 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.theme.Theme;
 
-@Theme(value = "app-theme")
-@NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "1.6.1")
-public class AppShell implements AppShellConfigurator {
+/**
+ * Custom vaadin text field for testing component theming live reload.
+ */
+@JsModule("@vaadin/vaadin-text-field/vaadin-text-field.js")
+@Tag("vaadin-text-field")
+@NpmPackage(value = "@vaadin/vaadin-text-field", version = "2.7.1")
+public class TestThemedTextField extends Component {
+
+    /**
+     * Set the component id.
+     *
+     * @param id
+     *            value to set
+     */
+    public void withId(String id) {
+        setId(id);
+    }
 }
