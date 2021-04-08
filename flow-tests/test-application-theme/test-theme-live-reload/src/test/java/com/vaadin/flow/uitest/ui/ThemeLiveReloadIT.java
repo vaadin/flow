@@ -238,13 +238,10 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void doActionAndWaitUntilLiveReloadComplete(Runnable action) {
-        // Add a new active client with 'blocker' key and let the
-        // waitForVaadin() to block until new page/document will be loaded as a
-        // result of live reload.
-        executeScript(
-                "window.Vaadin.Flow.clients[\"blocker\"] = {isActive: () => true};");
         action.run();
         getCommandExecutor().waitForVaadin();
+        $("vaadin-text-field").waitForFirst();
+        $("p").waitForFirst();
     }
 
     private void createDirectoryIfAbsent(File dir) {
