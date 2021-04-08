@@ -476,7 +476,7 @@ public class FrontendToolsTest {
         createStubNode(false, true, baseDir);
         createFakePnpm("5.15.1");
         List<String> pnpmCommand = tools.getSuitablePnpm();
-        Assert.assertEquals("expected pnpm version 5.15.1 accepted", "pnpm",
+        Assert.assertEquals("expected pnpm version 5.15.1 accepted", "pnpm@5",
                 pnpmCommand.get(pnpmCommand.size() - 1));
     }
 
