@@ -45,9 +45,9 @@ public abstract class AbstractClientServerCounterIT extends ChromeBrowserTest {
     }
 
     public static int getServerCounter(TestBenchTestCase t) {
-        WebElement serverCounterElem = t
-                .findElement(By.id(ClientServerCounterUI.SERVER_COUNTER_ID));
-        return Integer.parseInt(serverCounterElem.getText());
+        return Integer.parseInt(t.getCommandExecutor().executeScript(
+                "return document.getElementById('serverCounter').textContent;")
+                .toString());
     }
 
     public static WebElement getServerCounterStartButton(TestBenchTestCase t) {
