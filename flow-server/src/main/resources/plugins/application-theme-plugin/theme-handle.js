@@ -41,8 +41,7 @@ function processThemeResources(options, logger) {
   if (themeName) {
     findThemeFolderAndHandleTheme(themeName, options, logger);
   } else {
-    logger.debug("Skipping Vaadin application theme handling.");
-    logger.trace("Most likely no @Theme annotation for application or only themeClass used.");
+    logNoThemeNameFound(logger, "Skipping Vaadin custom theme handling.");
   }
 }
 
@@ -166,4 +165,19 @@ function extractThemeName(frontendGeneratedFolder) {
   }
 }
 
-module.exports = { processThemeResources, extractThemeName };
+/**
+ * Logs a debug message when a theme name cannot be extracted from theme.js
+ * file.
+ *
+ * @param logger logger for showing the given message
+ * @param message debug message.
+ */
+function logNoThemeNameFound(logger, message) {
+  logger.debug(message);
+  logger.trace("Most likely no @Theme annotation for application or only" +
+    " themeClass used. If the @Theme annotation present and the" +
+    " custom theme name is given, then please submit an issue to" +
+    " https://github.com/vaadin/flow/issues/new");
+}
+
+module.exports = {processThemeResources, extractThemeName, logNoThemeNameFound};
