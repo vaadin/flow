@@ -1,5 +1,7 @@
 import { MiddlewareClass, MiddlewareContext, MiddlewareNext } from './Connect';
 
+const $wnd = (window as any);
+
 export interface LoginResult {
   error: boolean;
   token?: string;
@@ -44,19 +46,13 @@ export async function login(username: string, password: string, options?: LoginO
         errorMessage: 'Check that you have entered the correct username and password and try again.'
       };
     } else if (response.ok && response.redirected && response.url.endsWith(defaultSuccessUrl)) {
-      // TODO: find a more efficient way to get a new CSRF token
-      // parsing the full response body just to get a token may be wasteful
-      const responseText = await response.text();
-      const token = getCsrfTokenFromResponseBody(responseText);
-      if (token) {
-        (window as any).Vaadin.TypeScript = (window as any).Vaadin.TypeScript || {};
-        (window as any).Vaadin.TypeScript.csrfToken = token;
-        updateSpringCsrfMetaTag(responseText);
+      const vaadinCsrfToken = await updateCsrfTokensBasedOnResponse(response);
+      if (vaadinCsrfToken) {  
         result = {
           error: false,
           errorTitle: '',
           errorMessage: '',
-          token
+          token: vaadinCsrfToken
         };
       }
     }
@@ -96,7 +92,8 @@ export async function logout(options?: LogoutOptions) {
       await doLogout(logoutUrl, headers);
     } catch (error) {
       // clear the token if the call fails
-      delete (window as any).Vaadin.TypeScript.csrfToken;
+      delete $wnd.Vaadin?.TypeScript?.csrfToken;
+      clearSpringCsrfMetaTags();
       throw error;
     }
   }
@@ -107,35 +104,20 @@ async function doLogout(logoutUrl: string, headers: Record<string, string>) {
   if (!response.ok) {
     throw new Error('failed to logout with response ' + response.status);
   }
-  // TODO: find a more efficient way to get a new CSRF token
-  // parsing the full response body just to get a token may be wasteful
-  const responseText = await response.text();
-  const token = getCsrfTokenFromResponseBody(responseText);
-  (window as any).Vaadin.TypeScript.csrfToken = token;
-  updateSpringCsrfMetaTag(responseText);
+
+  await updateCsrfTokensBasedOnResponse(response);
 }
 
 function updateSpringCsrfMetaTag(body: string) {
   const doc = new DOMParser().parseFromString(body, 'text/html');
-  const newHeaders = getSpringCsrfTokenHeadersFromDocument(doc);
-  if (Object.keys(newHeaders).length > 0) {
-    const [[headerName, csrf]] = Object.entries(newHeaders);
-    let csrfMetaTag = document.head.querySelector('meta[name="_csrf"]') as HTMLMetaElement | null;
-    if (!csrfMetaTag) {
-      csrfMetaTag = document.createElement('meta');
-      csrfMetaTag.name = '_csrf';
-      document.head.appendChild(csrfMetaTag);
-    }
-    csrfMetaTag.content = csrf;
+  clearSpringCsrfMetaTags();
+  Array.from(doc.head.querySelectorAll('meta[name="_csrf"], meta[name="_csrf_header"]'))
+      .forEach(el => document.head.appendChild(document.importNode(el, true)));
+}
 
-    let csrfHeaderNameMetaTag = document.head.querySelector('meta[name="_csrf_header"]') as HTMLMetaElement | null;
-    if (!csrfHeaderNameMetaTag) {
-      csrfHeaderNameMetaTag = document.createElement('meta');
-      csrfHeaderNameMetaTag.name = '_csrf_header';
-      document.head.appendChild(csrfHeaderNameMetaTag);
-    }
-    csrfHeaderNameMetaTag.content = headerName;
-  }
+function clearSpringCsrfMetaTags() {
+  Array.from(document.head.querySelectorAll('meta[name="_csrf"], meta[name="_csrf_header"]'))
+      .forEach(el => el.remove());
 }
 
 const getCsrfTokenFromResponseBody = (body: string): string | undefined => {
@@ -152,6 +134,15 @@ const getSpringCsrfTokenHeadersFromDocument = (doc: Document): Record<string, st
   }
   return headers;
 };
+
+async function updateCsrfTokensBasedOnResponse(response: Response): Promise<string | undefined> {
+  const responseText = await response.text();
+  const token = getCsrfTokenFromResponseBody(responseText);
+  $wnd.Vaadin.TypeScript = $wnd.Vaadin.TypeScript || {};
+  $wnd.Vaadin.TypeScript.csrfToken = token;
+  updateSpringCsrfMetaTag(responseText);
+  return token;
+}
 
 /**
  * It defines what to do when it detects a session is invalid. E.g.,
