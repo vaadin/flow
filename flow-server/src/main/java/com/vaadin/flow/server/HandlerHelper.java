@@ -20,6 +20,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
@@ -114,31 +115,11 @@ public class HandlerHelper implements Serializable {
     /**
      * Checks whether the request is an internal request.
      *
-     * The requests listed in {@link RequestType} are considered internal.
-     * Especially bootstrap requests for any route or static resource requests
-     * are not internal, even resource requests for the JS bundle.
-     *
-     * @param request
-     *            the request
-     * @return {@code true} if the request is Vaadin internal, {@code false}
-     *         otherwise
-     */
-    public static boolean isFrameworkInternalRequest(VaadinRequest request) {
-        if (request instanceof VaadinServletRequest) {
-            // We can ignore the servlet path in this case as we know that
-            // this is targeting a Vaadin servlet and not some other servlet
-            return isInternalRequestInsideServlet(request.getPathInfo(), request
-                    .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
-        }
-        return false;
-    }
-
-    /**
-     * Checks whether the request is an internal request.
-     *
-     * The requests listed in {@link RequestType} are considered internal.
-     * Especially bootstrap requests for any route or static resource requests
-     * are not internal, even resource requests for the JS bundle.
+     * The requests listed in {@link RequestType} are considered internal as
+     * they are needed for applications to work.
+     * <p>
+     * Requests for routes, static resources requests and similar are not
+     * considered internal requests.
      *
      * @param servletMappingPath
      *            the path the Vaadin servlet is mapped to, with or without and
@@ -162,24 +143,25 @@ public class HandlerHelper implements Serializable {
          * implement it like that...
          * 
          * Additionally the spring servlet is mapped as /vaadinServlet right now
-         * it seems but requests are sent to /vaadinServlet/, causing the "/"
-         * path info
+         * it seems but requests are sent to /vaadinServlet/, causing a "/" path
+         * info
          */
 
         // This is only an internal request if it is for the Vaadin servlet
-        String requestedPathWithoutServletMapping = getPathIfInsideServlet(
+        Optional<String> requestedPathWithoutServletMapping = getPathIfInsideServlet(
                 servletMappingPath, requestedPath);
-        if (requestedPathWithoutServletMapping == null) {
+        if (!requestedPathWithoutServletMapping.isPresent()) {
             return false;
         } else if (isInternalRequestInsideServlet(
-                requestedPathWithoutServletMapping, requestTypeParameter)) {
+                requestedPathWithoutServletMapping.get(),
+                requestTypeParameter)) {
             return true;
         }
 
         return false;
     }
 
-    private static boolean isInternalRequestInsideServlet(
+    static boolean isInternalRequestInsideServlet(
             String requestedPathWithoutServletMapping,
             String requestTypeParameter) {
         if (requestedPathWithoutServletMapping == null
@@ -190,8 +172,8 @@ public class HandlerHelper implements Serializable {
         return false;
     }
 
-    private static String getPathIfInsideServlet(String servletMappingPath,
-            String requestedPath) {
+    private static Optional<String> getPathIfInsideServlet(
+            String servletMappingPath, String requestedPath) {
         if (servletMappingPath.endsWith("/*")) {
             servletMappingPath = servletMappingPath.substring(0,
                     servletMappingPath.length() - "/*".length());
@@ -200,9 +182,10 @@ public class HandlerHelper implements Serializable {
             servletMappingPath = "";
         }
         if (!requestedPath.startsWith(servletMappingPath)) {
-            return null;
+            return Optional.empty();
         }
-        return requestedPath.substring(servletMappingPath.length());
+        return Optional
+                .of(requestedPath.substring(servletMappingPath.length()));
     }
 
     private static String getRequestPathInsideContext(
