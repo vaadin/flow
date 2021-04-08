@@ -127,7 +127,7 @@ async function doLogout(logoutUrl: string, headers: Record<string, string>) {
 function updateSpringCsrfMetaTag(body: string) {
   const doc = new DOMParser().parseFromString(body, 'text/html');
   const newHeaders = getSpringCsrfTokenHeadersFromDocument(doc);
-  if(Object.keys(newHeaders).length > 0){
+  if (Object.keys(newHeaders).length > 0) {
     const [[headerName, csrf]] = Object.entries(newHeaders);
     let csrfMetaTag = document.head.querySelector('meta[name="_csrf"]') as HTMLMetaElement | null;
     if (!csrfMetaTag) {
