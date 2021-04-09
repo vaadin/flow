@@ -108,7 +108,7 @@ async function cherryPickCommits(){
     } catch (err) {
       console.error(`Cannot Pick the Commit:${arrSHA[i]} to ${arrBranch[i]}, error :${err}`);
       await labelCommit(arrURL[i], `need to pick manually ${arrBranch[i]}`);
-      await postComment(arrURL[i], arrUser[i], arrBranch[i]);
+      await postComment(arrURL[i], arrUser[i], arrBranch[i], ${err});
       await exec(`git cherry-pick --abort`);
       await exec(`git checkout master`);
       await exec(`git branch -D ${branchName}`);
@@ -135,7 +135,7 @@ async function labelCommit(url, label){
   await axios.post(issueURL, {"labels":[label]}, options);
 }
 
-async function postComment(url, userName, branch){
+async function postComment(url, userName, branch, message){
   let issueURL = url.replace("pulls", "issues") + "/comments";
   const options = {
     headers:{
@@ -144,7 +144,7 @@ async function postComment(url, userName, branch){
     }
   };
 
-  await axios.post(issueURL, {"body":`Hi ${userName} , this commit cannot be picked to ${branch} by this bot, can you take a look and pick it manually?`}, options);
+  await axios.post(issueURL, {"body":`Hi ${userName} , this commit cannot be picked to ${branch} by this bot, can you take a look and pick it manually?\n Error Message: ${message}`}, options);
 }
 
 
