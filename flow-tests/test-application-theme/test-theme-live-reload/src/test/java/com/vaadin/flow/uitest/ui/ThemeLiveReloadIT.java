@@ -111,13 +111,16 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         Assert.assertFalse("Expected no font file in the theme folder before "
                 + "applying the font styles", fontFile.exists());
 
-        // Live reload upon adding a new font file and a new styles.css
+        // Live reload upon adding a custom background styles
+        doActionAndWaitUntilLiveReloadComplete(this::createCustomBackground);
+        waitUntilCustomBackgroundColor();
+
+        // Live reload upon adding a new font styles
         doActionAndWaitUntilLiveReloadComplete(() -> {
             copyFontFile();
-            createStylesCssWithFontAndRedBackground();
+            createCustomFont();
         });
         waitUntilCustomFont();
-        waitUntilCustomBackgroundColor();
 
         // Live reload upon adding a new component styles file
         doActionAndWaitUntilLiveReloadComplete(
@@ -182,16 +185,11 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         }
     }
 
-    private void createStylesCssWithFontAndRedBackground() {
+    private void createCustomBackground() {
         try {
             // @formatter:off
             final String fontStyle =
-                    "@font-face {" +
-                    "    font-family: \"Ostrich\";" +
-                    "    src: url(\"./fonts/" + fontFile.getName() + "\") format(\"TrueType\");" +
-                    "}" +
                     "html {" +
-                    "    font-family: \"Ostrich\";" +
                     "    background-color: " + RED_COLOR  + ";" +
                     "}";
 
@@ -204,7 +202,30 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
             waitUntil(driver -> testStylesCSSFile.exists());
         } catch (IOException e) {
             throw new RuntimeException(
-                    "Failed to apply font and background styles", e);
+                    "Failed to apply background styles", e);
+        }
+    }
+
+    private void createCustomFont() {
+        try {
+            // @formatter:off
+            final String fontStyle =
+                    "@font-face {" +
+                    "    font-family: \"Ostrich\";" +
+                    "    src: url(\"./fonts/" + fontFile.getName() + "\") format(\"TrueType\");" +
+                    "}" +
+                    "html {" +
+                    "    font-family: \"Ostrich\";" +
+                    "}";
+            // @formatter:on
+            String existingStyles = FileUtils.readFileToString(
+                    testStylesCSSFile, StandardCharsets.UTF_8);
+            FileUtils.write(testStylesCSSFile,
+                    existingStyles + "\n\n" + fontStyle,
+                    StandardCharsets.UTF_8.name());
+        } catch (IOException e) {
+            throw new RuntimeException(
+                    "Failed to apply font ", e);
         }
     }
 
