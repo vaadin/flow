@@ -5,9 +5,11 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.server.HandlerHelper;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -38,6 +40,9 @@ public class MySecurityConfigurerAdapter extends VaadinWebSecurityConfigurerAdap
 public abstract class VaadinWebSecurityConfigurerAdapter
         extends WebSecurityConfigurerAdapter {
 
+    @Autowired
+    private VaadinDefaultRequestCache vaadinDefaultRequestCache;
+
     /**
      * The paths listed as "ignoring" in this method are handled without any
      * Spring Security involvement. They have no access to any security context
@@ -52,11 +57,15 @@ public abstract class VaadinWebSecurityConfigurerAdapter
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
-                .requestMatchers(getDefaultHttpSecurityPermitMatcher())
-                .permitAll()
-                // all other requests require authentication
-                .anyRequest().authenticated();
+        // Ensure automated requests to e.g. closing push channels, service workers,
+        // endpoints are not counted as valid targets to redirect user to on login
+        http.requestCache().requestCache(vaadinDefaultRequestCache);
+
+        ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlRegistry = http
+                .authorizeRequests();
+        urlRegistry.requestMatchers(getDefaultHttpSecurityPermitMatcher()).permitAll();
+        // all other requests require authentication
+        urlRegistry.anyRequest().authenticated();
     }
 
     /**
