@@ -68,7 +68,6 @@ public abstract class ReconnectTest extends ChromeBrowserTestWithProxy {
         waitUntil(driver -> getBrowserLogs(true).stream()
                 .filter(String.class::isInstance).map(String.class::cast)
                 .anyMatch(msg -> {
-                    System.out.println("xxxxxxxx         " + msg);
                     return msg.startsWith("Reconnect attempt ")
                             || msg.equals("Reopening push connection");
                 }));
