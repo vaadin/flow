@@ -228,12 +228,12 @@ public abstract class NodeUpdater implements FallibleCommand {
         Path targetFolder = Paths.get(npmFolder.toString(), buildDir,
                 TaskInstallWebpackPlugins.PLUGIN_TARGET);
 
-        JsonObject dev_dependencies;
+        JsonObject devDependencies;
         if (packageJson.hasKey(DEV_DEPENDENCIES)) {
-            dev_dependencies = packageJson.getObject(DEV_DEPENDENCIES);
+            devDependencies = packageJson.getObject(DEV_DEPENDENCIES);
         } else {
-            dev_dependencies = Json.createObject();
-            packageJson.put(DEV_DEPENDENCIES, dev_dependencies);
+            devDependencies = Json.createObject();
+            packageJson.put(DEV_DEPENDENCIES, devDependencies);
         }
 
         plugins.stream().filter(plugin -> targetFolder.toFile().exists())
@@ -241,7 +241,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                     String pluginTarget = "./" + (npmFolder.toPath()
                             .relativize(targetFolder).toString() + "/" + plugin)
                                     .replace('\\', '/');
-                    dev_dependencies.put("@vaadin/" + plugin, pluginTarget);
+                    devDependencies.put("@vaadin/" + plugin, pluginTarget);
                 });
     }
 
