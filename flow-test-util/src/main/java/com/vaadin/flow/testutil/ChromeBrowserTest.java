@@ -18,17 +18,14 @@ package com.vaadin.flow.testutil;
 import java.lang.management.ManagementFactory;
 import java.util.List;
 
+import com.vaadin.flow.testcategory.ChromeTests;
+import com.vaadin.testbench.parallel.Browser;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
-
-import com.vaadin.flow.testcategory.ChromeTests;
-import com.vaadin.testbench.TestBench;
-import com.vaadin.testbench.parallel.Browser;
 
 /**
  * Base class for TestBench tests to run locally in the Chrome browser.
@@ -46,7 +43,8 @@ import com.vaadin.testbench.parallel.Browser;
  *
  */
 @Category(ChromeTests.class)
-public class ChromeBrowserTest extends ViewOrUITest {
+public class ChromeBrowserTest extends ViewOrUITest
+        implements ChromeHeadlessInitializer {
 
     /**
      * Sets up the chrome driver path in a system variable.
@@ -69,11 +67,6 @@ public class ChromeBrowserTest extends ViewOrUITest {
     static boolean isJavaInDebugMode() {
         return ManagementFactory.getRuntimeMXBean().getInputArguments()
                 .toString().contains("jdwp");
-    }
-
-    static WebDriver createHeadlessChromeDriver() {
-        return TestBench
-                .createDriver(new ChromeDriver(createHeadlessChromeOptions()));
     }
 
     @Override
@@ -103,9 +96,4 @@ public class ChromeBrowserTest extends ViewOrUITest {
         return capabilities;
     }
 
-    static ChromeOptions createHeadlessChromeOptions() {
-        final ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless", "--disable-gpu");
-        return options;
-    }
 }

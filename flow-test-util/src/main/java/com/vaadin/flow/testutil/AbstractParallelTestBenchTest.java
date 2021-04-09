@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.Before;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.testbench.IPAddress;
@@ -30,7 +31,6 @@ import com.vaadin.testbench.annotations.RunOnHub;
 import com.vaadin.testbench.parallel.Browser;
 import com.vaadin.testbench.parallel.DefaultBrowserFactory;
 
-import static com.vaadin.flow.testutil.ChromeBrowserTest.createHeadlessChromeDriver;
 import static com.vaadin.flow.testutil.ChromeBrowserTest.isJavaInDebugMode;
 
 /**
@@ -42,7 +42,8 @@ import static com.vaadin.flow.testutil.ChromeBrowserTest.isJavaInDebugMode;
 @RunLocally
 @BrowserFactory(DefaultBrowserFactory.class)
 @LocalExecution
-public class AbstractParallelTestBenchTest extends TestBenchHelpers {
+public class AbstractParallelTestBenchTest extends TestBenchHelpers
+        implements ChromeHeadlessInitializer {
 
     /**
      * Default port for test server, possibly overridden with system property.
