@@ -14,9 +14,6 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Configuration
 public class SecurityConfig extends VaadinWebSecurityConfigurerAdapter {
 
-    @Autowired
-    private VaadinDefaultRequestCache vaadinDefaultRequestCache;
-
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         super.configure(http);
@@ -24,7 +21,6 @@ public class SecurityConfig extends VaadinWebSecurityConfigurerAdapter {
         // use the Spring provided login form
         http.csrf().ignoringAntMatchers("/");
         http.formLogin();
-        http.requestCache().requestCache(vaadinDefaultRequestCache);
 
         // allow non-interactive logout via /logout
         http.logout()
