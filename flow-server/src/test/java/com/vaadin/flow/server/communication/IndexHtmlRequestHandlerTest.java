@@ -415,24 +415,36 @@ public class IndexHtmlRequestHandlerTest {
         VaadinRequest request = Mockito.spy(createVaadinRequest("/"));
         String springTokenString = UUID.randomUUID().toString();
         String springTokenHeaderName = "x-CSRF-TOKEN";
+        String springTokenParamName = "_csrf";
         Map<String, String> csrfJsonMap = new HashMap<>();
         csrfJsonMap.put("token", springTokenString);
         csrfJsonMap.put("headerName", springTokenHeaderName);
+        csrfJsonMap.put("parameterName", springTokenParamName);
         Mockito.when(request.getAttribute("_csrf")).thenReturn(csrfJsonMap);
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                request, response);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
+                response);
 
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
         Document document = Jsoup.parse(indexHtml);
 
-        Elements csrfMetaEelement = document.head().getElementsByAttributeValue("name", "_csrf");
+        Elements csrfMetaEelement = document.head()
+                .getElementsByAttributeValue("name", "_csrf");
         Assert.assertEquals(1, csrfMetaEelement.size());
-        Assert.assertEquals(springTokenString, csrfMetaEelement.first().attr("content"));
+        Assert.assertEquals(springTokenString,
+                csrfMetaEelement.first().attr("content"));
 
-        Elements csrfHeaderMetaEelement = document.head().getElementsByAttributeValue("name", "_csrf_header");
-        Assert.assertEquals(1, csrfHeaderMetaEelement.size());
-        Assert.assertEquals(springTokenHeaderName, csrfHeaderMetaEelement.first().attr("content"));
+        Elements csrfHeaderMetaElement = document.head()
+                .getElementsByAttributeValue("name", "_csrf_header");
+        Assert.assertEquals(1, csrfHeaderMetaElement.size());
+        Assert.assertEquals(springTokenHeaderName,
+                csrfHeaderMetaElement.first().attr("content"));
+
+        Elements csrfParameterMetaElement = document.head()
+                .getElementsByAttributeValue("name", "_csrf_parameter");
+        Assert.assertEquals(1, csrfParameterMetaElement.size());
+        Assert.assertEquals(springTokenParamName,
+                csrfParameterMetaElement.first().attr("content"));
     }
 
     @Test
