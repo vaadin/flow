@@ -169,7 +169,7 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
     }
 
     private static URL getResourceUrl(String resource) {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        ClassLoader cl = TaskInstallWebpackPlugins.class.getClassLoader();
         return cl.getResource(resource);
     }
 
@@ -178,7 +178,7 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
     }
 
     private static InputStream getResourceAsStream(String resource) {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        ClassLoader cl = TaskInstallWebpackPlugins.class.getClassLoader();
         return cl.getResourceAsStream(resource);
     }
 }
