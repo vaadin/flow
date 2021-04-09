@@ -227,8 +227,8 @@ public class NpmTemplateParser implements TemplateParser {
             lock.unlock();
         }
         if (!cache.containsKey(url) && jsonStats != null) {
-            cache.put(url,
-                    BundleParser.getSourceFromStatistics(url, jsonStats));
+            cache.put(url, BundleParser.getSourceFromStatistics(url, jsonStats,
+                    service));
         }
         return cache.get(url);
     }

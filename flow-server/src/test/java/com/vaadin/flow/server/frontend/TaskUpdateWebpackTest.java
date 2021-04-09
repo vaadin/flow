@@ -20,6 +20,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -33,16 +34,17 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PwaConfiguration;
 
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
@@ -167,8 +169,11 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         TaskUpdateWebpack newUpdater = new TaskUpdateWebpack(frontendFolder,
                 baseDir, new File(baseDir, "baz"), new File(baseDir, "foo"),
                 WEBPACK_CONFIG, WEBPACK_GENERATED, new File(baseDir, "bar"),
-                false, new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
-                pwaConfiguration, frontendGeneratedFolder);
+                false,
+                new File(baseDir,
+                        Paths.get(TARGET, DEFAULT_FLOW_RESOURCES_FOLDER)
+                                .toString()),
+                pwaConfiguration, frontendGeneratedFolder, TARGET);
 
         newUpdater.execute();
 
@@ -311,13 +316,17 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
     protected void createWebpackUpdater() {
         webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
-                new File(baseDir, TARGET + "webapp"),
-                new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
+                new File(baseDir, TARGET + "/webapp"),
+                new File(baseDir, TARGET + "/classes"), WEBPACK_CONFIG,
                 WEBPACK_GENERATED,
-                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME),
+                new File(baseDir,
+                        Paths.get(Constants.TARGET, DEFAULT_GENERATED_DIR,
+                                IMPORTS_NAME).toString()),
                 useV14Bootstrapping,
-                new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
-                pwaConfiguration, frontendGeneratedFolder);
+                new File(baseDir,
+                        Paths.get(Constants.TARGET,
+                                DEFAULT_FLOW_RESOURCES_FOLDER).toString()),
+                pwaConfiguration, frontendGeneratedFolder, TARGET);
     }
 
     private void assertWebpackGeneratedConfigContent(String entryPoint,

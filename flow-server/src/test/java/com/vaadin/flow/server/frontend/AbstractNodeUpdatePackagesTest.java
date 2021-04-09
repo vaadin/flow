@@ -20,6 +20,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,6 +43,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FLOW_DEPS;
@@ -81,8 +83,10 @@ public abstract class AbstractNodeUpdatePackagesTest
     public void setup() throws Exception {
         baseDir = temporaryFolder.getRoot();
 
-        generatedDir = new File(baseDir, DEFAULT_GENERATED_DIR);
-        resourcesDir = new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER);
+        generatedDir = new File(baseDir,
+                Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
+        resourcesDir = new File(baseDir,
+                Paths.get(TARGET, DEFAULT_FLOW_RESOURCES_FOLDER).toString());
 
         NodeUpdateTestUtil.createStubNode(true, true,
                 baseDir.getAbsolutePath());

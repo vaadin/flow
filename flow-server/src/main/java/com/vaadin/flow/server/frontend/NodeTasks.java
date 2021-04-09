@@ -19,6 +19,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,6 +55,8 @@ public class NodeTasks implements FallibleCommand {
      * Build a <code>NodeExecutor</code> instance.
      */
     public static class Builder implements Serializable {
+
+        private final String buildDirectory;
 
         private final ClassFinder classFinder;
 
@@ -106,12 +109,12 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Directory for npm and folders and files.
          */
-        public final File npmFolder;
+        private final File npmFolder;
 
         /**
          * Directory where generated files are written.
          */
-        public final File generatedFolder;
+        private final File generatedFolder;
 
         /**
          * Is in client-side bootstrapping mode.
@@ -143,10 +146,16 @@ public class NodeTasks implements FallibleCommand {
          *            a {@link Lookup} to discover services used by Flow (SPI)
          * @param npmFolder
          *            folder with the `package.json` file
+         * @param buildDirectory
+         *            project build directory
          */
-        public Builder(Lookup lookup, File npmFolder) {
-            this(lookup, npmFolder, new File(npmFolder, System
-                    .getProperty(PARAM_GENERATED_DIR, DEFAULT_GENERATED_DIR)));
+        public Builder(Lookup lookup, File npmFolder, String buildDirectory) {
+            this(lookup, npmFolder,
+                    new File(npmFolder,
+                            System.getProperty(PARAM_GENERATED_DIR,
+                                    Paths.get(buildDirectory,
+                                            DEFAULT_GENERATED_DIR).toString())),
+                    buildDirectory);
         }
 
         /**
@@ -158,10 +167,14 @@ public class NodeTasks implements FallibleCommand {
          *            folder with the `package.json` file
          * @param generatedPath
          *            folder where flow generated files will be placed.
+         * @param buildDirectory
+         *            project build directory
          */
-        public Builder(Lookup lookup, File npmFolder, File generatedPath) {
+        public Builder(Lookup lookup, File npmFolder, File generatedPath,
+                String buildDirectory) {
             this(lookup, npmFolder, generatedPath, new File(npmFolder, System
-                    .getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR)));
+                    .getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR)),
+                    buildDirectory);
         }
 
         /**
@@ -175,9 +188,11 @@ public class NodeTasks implements FallibleCommand {
          *            folder where flow generated files will be placed.
          * @param frontendDirectory
          *            a directory with project's frontend files
+         * @param buildDirectory
+         *            project build directory
          */
         public Builder(Lookup lookup, File npmFolder, File generatedPath,
-                File frontendDirectory) {
+                File frontendDirectory, String buildDirectory) {
             this.lookup = lookup;
             this.classFinder = lookup.lookup(ClassFinder.class);
             this.npmFolder = npmFolder;
@@ -186,6 +201,7 @@ public class NodeTasks implements FallibleCommand {
             this.frontendDirectory = frontendDirectory.isAbsolute()
                     ? frontendDirectory
                     : new File(npmFolder, frontendDirectory.getPath());
+            this.buildDirectory = buildDirectory;
         }
 
         /**
@@ -509,6 +525,24 @@ public class NodeTasks implements FallibleCommand {
             this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
             return this;
         }
+
+        /**
+         * Get the npm folder used for this build.
+         * 
+         * @return npmFolder
+         */
+        public File getNpmFolder() {
+            return npmFolder;
+        }
+
+        /**
+         * Get the generated folder for this build.
+         * 
+         * @return generatedFolder
+         */
+        public File getGeneratedFolder() {
+            return generatedFolder;
+        }
     }
 
     private final List<FallibleCommand> commands = new ArrayList<>();
@@ -587,7 +621,7 @@ public class NodeTasks implements FallibleCommand {
             }
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,
-                    builder.frontendDirectory));
+                    builder.frontendDirectory, builder.buildDirectory));
         }
 
         if (builder.jarFiles != null && builder.flowResourcesFolder != null) {
@@ -611,7 +645,7 @@ public class NodeTasks implements FallibleCommand {
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useDeprecatedV14Bootstrapping,
                     builder.flowResourcesFolder, pwaConfiguration,
-                    builder.connectClientTsApiFolder));
+                    builder.connectClientTsApiFolder, builder.buildDirectory));
         }
 
         if (builder.enableImportsUpdate) {
@@ -632,7 +666,7 @@ public class NodeTasks implements FallibleCommand {
     private void addBootstrapTasks(Builder builder,
             FrontendDependenciesScanner frontendDependencies) {
         File outputDirectory = new File(builder.npmFolder,
-                FrontendUtils.TARGET);
+                builder.buildDirectory);
         TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
                 builder.frontendDirectory, outputDirectory);
         commands.add(taskGenerateIndexHtml);

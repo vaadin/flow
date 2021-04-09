@@ -206,7 +206,7 @@ public class LitTemplateParserImpl implements LitTemplateParser {
             }
             if (!cache.containsKey(url) && jsonStats != null) {
                 cache.put(url, BundleLitParser.getSourceFromStatistics(url,
-                        jsonStats));
+                        jsonStats, service));
             }
             return cache.get(url);
         } finally {

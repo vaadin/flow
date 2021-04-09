@@ -144,7 +144,7 @@
                 </os>
             </activation>
             <properties>
-                <gradle.executable>./gradlew.bat</gradle.executable>
+                <gradle.executable>gradlew.bat</gradle.executable>
             </properties>
         </profile>
 

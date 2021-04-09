@@ -38,7 +38,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
@@ -65,6 +64,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private final PwaConfiguration pwaConfiguration;
     private final Path resourceFolder;
     private final Path frontendGeneratedFolder;
+    private final String buildFolder;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -92,6 +92,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
      *            relative path to `flow-frontend` package
      * @param frontendGeneratedFolder
      *            the folder with frontend auto-generated files
+     * @param buildFolder
+     *            build target forlder
      */
     @SuppressWarnings("squid:S00107")
     TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
@@ -99,7 +101,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
             String webpackTemplate, String webpackGeneratedTemplate,
             File generatedFlowImports, boolean useV14Bootstrapping,
             File flowResourcesFolder, PwaConfiguration pwaConfiguration,
-            File frontendGeneratedFolder) {
+            File frontendGeneratedFolder, String buildFolder) {
         this.frontendDirectory = frontendDirectory.toPath();
         this.webpackTemplate = webpackTemplate;
         this.webpackGeneratedTemplate = webpackGeneratedTemplate;
@@ -113,6 +115,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
         this.resourceFolder = new File(webpackOutputDirectory,
                 VAADIN_STATIC_FILES_PATH).toPath();
         this.frontendGeneratedFolder = frontendGeneratedFolder.toPath();
+        this.buildFolder = buildFolder;
     }
 
     @Override
@@ -227,8 +230,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
                 .exists();
         if (!exists) {
             Path path = Paths.get(
-                    getEscapedRelativeWebpackPath(webpackConfigPath), TARGET,
-                    INDEX_HTML);
+                    getEscapedRelativeWebpackPath(webpackConfigPath),
+                    buildFolder, INDEX_HTML);
             return formatPathResolve(getEscapedRelativeWebpackPath(path));
         } else {
             return "'./" + INDEX_HTML + "'";
@@ -248,8 +251,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
                         .exists();
         if (!exists) {
             Path path = Paths.get(
-                    getEscapedRelativeWebpackPath(webpackConfigPath), TARGET,
-                    SERVICE_WORKER_SRC);
+                    getEscapedRelativeWebpackPath(webpackConfigPath),
+                    buildFolder, SERVICE_WORKER_SRC);
             return formatPathResolve(getEscapedRelativeWebpackPath(path)
                     .replaceFirst("\\.[tj]s$", ""));
         } else {

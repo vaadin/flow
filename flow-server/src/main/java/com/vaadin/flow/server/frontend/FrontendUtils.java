@@ -130,11 +130,6 @@ public class FrontendUtils {
     public static final String SERVICE_WORKER_SRC_JS = "sw.js";
 
     /**
-     * Default target folder for the java project.
-     */
-    public static final String TARGET = "target/";
-
-    /**
      * The NPM package name that will be used for the javascript files present
      * in jar resources that will to be copied to the npm folder so as they are
      * accessible to webpack.
@@ -151,15 +146,15 @@ public class FrontendUtils {
             + "/";
 
     /**
-     * Default folder for copying front-end resources present in the classpath
-     * jars.
+     * Default folder where front-end resources present in the classpath jars
+     * are copied to.
+     * Relative to the {@link com.vaadin.flow.server.InitParameters#BUILD_FOLDER}.
      */
-    public static final String DEFAULT_FLOW_RESOURCES_FOLDER = TARGET
-            + "flow-frontend";
+    public static final String DEFAULT_FLOW_RESOURCES_FOLDER = "flow-frontend";
 
     /**
-     * Default folder for copying front-end resources present in the classpath
-     * jars.
+     * Default folder under build folder for copying front-end resources present
+     * in the classpath jars.
      *
      * @deprecated This is deprecated due to a typo. Use
      *             DEFAULT_FLOW_RESOURCES_FOLDER instead.
@@ -170,9 +165,9 @@ public class FrontendUtils {
 
     /**
      * Default folder name for flow generated stuff relative to the
-     * {@link FrontendUtils#TARGET}.
+     * {@link com.vaadin.flow.server.InitParameters#BUILD_FOLDER}.
      */
-    public static final String DEFAULT_GENERATED_DIR = TARGET + FRONTEND;
+    public static final String DEFAULT_GENERATED_DIR = FRONTEND;
 
     /**
      * Name of the file that contains application imports, javascript, theme and
@@ -225,8 +220,7 @@ public class FrontendUtils {
     /**
      * Default generated path for OpenAPI spec file.
      */
-    public static final String DEFAULT_CONNECT_OPENAPI_JSON_FILE = TARGET
-            + "generated-resources/openapi.json";
+    public static final String DEFAULT_CONNECT_OPENAPI_JSON_FILE = "generated-resources/openapi.json";
 
     /**
      * Default generated path for generated frontend files.

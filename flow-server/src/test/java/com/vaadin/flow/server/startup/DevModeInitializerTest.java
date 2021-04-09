@@ -45,6 +45,7 @@ import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_THEME_JAR_DEFAULT;
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -316,7 +317,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         String originalJavaSourceFolder = null;
         File generatedOpenApiJson = Paths
-                .get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE).toFile();
+                .get(baseDir, TARGET, DEFAULT_CONNECT_OPENAPI_JSON_FILE)
+                .toFile();
         try {
             originalJavaSourceFolder = System
                     .getProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
@@ -351,7 +353,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         String originalJavaSourceFolder = null;
         File generatedOpenApiJson = Paths
-                .get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE).toFile();
+                .get(baseDir, TARGET, DEFAULT_CONNECT_OPENAPI_JSON_FILE)
+                .toFile();
         try {
             originalJavaSourceFolder = System
                     .getProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);

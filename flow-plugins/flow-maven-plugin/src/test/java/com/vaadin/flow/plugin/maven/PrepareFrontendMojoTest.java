@@ -19,6 +19,7 @@ package com.vaadin.flow.plugin.maven;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -35,6 +36,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 
@@ -46,9 +48,9 @@ import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsP
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
@@ -84,7 +86,7 @@ public class PrepareFrontendMojoTest {
         Mockito.when(project.getBasedir()).thenReturn(projectBase);
 
         flowResourcesFolder = new File(projectBase,
-                DEFAULT_FLOW_RESOURCES_FOLDER);
+                "target/" + DEFAULT_FLOW_RESOURCES_FOLDER);
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
         webpackOutputDirectory = new File(projectBase, VAADIN_WEBAPP_RESOURCES);
         resourceOutputDirectory = new File(projectBase,
@@ -121,6 +123,10 @@ public class PrepareFrontendMojoTest {
                 FrontendTools.DEFAULT_NODE_VERSION);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeDownloadRoot",
                 NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
+        ReflectionUtils.setVariableValueInObject(mojo, "projectBasedir",
+                projectBase);
+        ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
+                Paths.get(projectBase.toString(), "target").toString());
 
         Assert.assertTrue(flowResourcesFolder.mkdirs());
         setProject(mojo, projectBase);
@@ -181,16 +187,18 @@ public class PrepareFrontendMojoTest {
         JsonObject buildInfo = JsonUtil.parse(json);
 
         Assert.assertTrue(
-                Constants.SERVLET_PARAMETER_ENABLE_PNPM
+                InitParameters.SERVLET_PARAMETER_ENABLE_PNPM
                         + "should have been written",
-                buildInfo.getBoolean(Constants.SERVLET_PARAMETER_ENABLE_PNPM));
+                buildInfo.getBoolean(
+                        InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
         Assert.assertTrue(
-                Constants.REQUIRE_HOME_NODE_EXECUTABLE
+                InitParameters.REQUIRE_HOME_NODE_EXECUTABLE
                         + "should have been written",
-                buildInfo.getBoolean(Constants.REQUIRE_HOME_NODE_EXECUTABLE));
+                buildInfo.getBoolean(
+                        InitParameters.REQUIRE_HOME_NODE_EXECUTABLE));
 
-        Assert.assertFalse(buildInfo
-                .hasKey(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
+        Assert.assertFalse(buildInfo.hasKey(
+                InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
     }
 
     @Test
