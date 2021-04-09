@@ -55,7 +55,7 @@ class ThemeLiveReloadPlugin {
               // There might be several theme generated files in the
               // generated folder, so the condition does not contain the exact
               // theme name
-              if (file.startsWith('theme-') && file.endsWith('.generated.js')) {
+              if (file.match(/theme-[\s\S]*?\.generated\.js$/)) {
                 themeGeneratedFileChanged = true;
               }
             });
