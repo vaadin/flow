@@ -346,7 +346,7 @@
                 <module>test-ts-services-custom-client</module>
                 <module>test-mvc-without-endpoints</module>
 
-                <module>test-spring-security-helper</module>
+                <module>test-spring-security-flow</module>
 
                 <!-- nexus-staging-maven-plugin requires the last module to be not skipped for deployment -->
                 <module>dummy-module</module>

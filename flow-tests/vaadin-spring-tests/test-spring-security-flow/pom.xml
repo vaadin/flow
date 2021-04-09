@@ -7,8 +7,8 @@
         <artifactId>vaadin-spring-tests</artifactId>
         <version>17.0-SNAPSHOT</version>
     </parent>
-    <artifactId>test-spring-secturity-helper</artifactId>
-    <name>Integration tests for Vaadin Spring Security helper</name>
+    <artifactId>test-spring-security-flow</artifactId>
+    <name>Integration tests for Vaadin Spring Security and Flow</name>
     <packaging>jar</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
