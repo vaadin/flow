@@ -89,8 +89,32 @@
                     <artifactId>hamcrest-core</artifactId>
                 </exclusion>
             </exclusions>
-         </dependency>
+        </dependency>
     </dependencies>
+
+    <modules>
+        <module>test-spring-common</module>
+        <module>test-spring-boot</module>
+        <!--
+                Disabled as the resource scanner does not work with Undertow
+                <module>test-spring-boot-undertow</module>
+                -->
+        <module>test-spring-boot-scan</module>
+        <!-- Skipping deployable module as it behaves strangely right now -->
+        <module>test-spring-war</module>
+        <!--        <module>test-spring</module>-->
+        <module>test-spring-boot-contextpath</module>
+
+        <module>test-ts-services</module>
+        <module>test-ts-services-custom-client</module>
+        <module>test-mvc-without-endpoints</module>
+
+        <module>test-spring-security-flow</module>
+
+        <!-- nexus-staging-maven-plugin requires the last module to be not skipped for deployment -->
+        <module>dummy-module</module>
+    </modules>
+
     <build>
         <plugins>
             <plugin>
@@ -323,68 +347,12 @@
 
     <profiles>
         <profile>
-            <id>npm</id>
-            <activation>
-                <property>
-                    <name>!bowerMode</name>
-                </property>
-            </activation>
-            <modules>
-                <module>test-spring-common</module>
-                <module>test-spring-boot</module>
-                <!--
-                Disabled as the resource scanner does not work with Undertow
-                <module>test-spring-boot-undertow</module>
-                -->
-                <module>test-spring-boot-scan</module>
-                <!-- Skipping deployable module as it behaves strangely right now -->
-                <module>test-spring-war</module>
-                <!--        <module>test-spring</module>-->
-                <module>test-spring-boot-contextpath</module>
-
-                <module>test-ts-services</module>
-                <module>test-ts-services-custom-client</module>
-                <module>test-mvc-without-endpoints</module>
-
-                <module>test-spring-security-flow</module>
-
-                <!-- nexus-staging-maven-plugin requires the last module to be not skipped for deployment -->
-                <module>dummy-module</module>
-            </modules>
-        </profile>
-        <profile>
             <id>prepare</id>
             <modules>
                 <module>test-spring-common</module>
                 <!-- This test tests that we find the packages as expected -->
                 <module>test-spring-boot-only-prepare</module>
                 <module>test-spring-white-list</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>bower</id>
-            <properties>
-                <!-- V15 does not support bowerMode -->
-                <skipITs>true</skipITs>
-            </properties>
-            <activation>
-                <property>
-                    <name>bowerMode</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-maven-plugin</artifactId>
-                        <configuration>
-                            <jvmArguments>-Dvaadin.compatibilityMode</jvmArguments>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-            <modules>
-                <module>test-spring-common</module>
             </modules>
         </profile>
         <profile>
