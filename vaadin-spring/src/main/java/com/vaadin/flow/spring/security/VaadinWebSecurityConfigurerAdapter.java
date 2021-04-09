@@ -43,6 +43,9 @@ public abstract class VaadinWebSecurityConfigurerAdapter
     @Autowired
     private VaadinDefaultRequestCache vaadinDefaultRequestCache;
 
+    @Autowired
+    private RequestUtil requestUtil;
+
     /**
      * The paths listed as "ignoring" in this method are handled without any
      * Spring Security involvement. They have no access to any security context
@@ -57,6 +60,12 @@ public abstract class VaadinWebSecurityConfigurerAdapter
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        // Vaadin has its own CSRF protection.
+        // Spring CSRF is not compatible with Vaadin internal requests
+        http.csrf().ignoringRequestMatchers(requestUtil::isFrameworkInternalRequest);
+        // nor with endpoints
+        http.csrf().ignoringRequestMatchers(requestUtil::isEndpointRequest);
+
         // Ensure automated requests to e.g. closing push channels, service workers,
         // endpoints are not counted as valid targets to redirect user to on login
         http.requestCache().requestCache(vaadinDefaultRequestCache);
