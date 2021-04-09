@@ -19,7 +19,6 @@ public class SecurityConfig extends VaadinWebSecurityConfigurerAdapter {
         super.configure(http);
 
         // use the Spring provided login form
-        http.csrf().ignoringAntMatchers("/");
         http.formLogin();
 
         // allow non-interactive logout via /logout
