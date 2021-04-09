@@ -1,5 +1,7 @@
 import { MiddlewareClass, MiddlewareContext, MiddlewareNext } from './Connect';
 
+const $wnd = window as any;
+
 export interface LoginResult {
   error: boolean;
   token?: string;
@@ -31,7 +33,8 @@ export async function login(username: string, password: string, options?: LoginO
     data.append('password', password);
 
     const loginProcessingUrl = options && options.loginProcessingUrl ? options.loginProcessingUrl : '/login';
-    const response = await fetch(loginProcessingUrl, { method: 'POST', body: data });
+    const headers = getSpringCsrfTokenHeadersFromDocument(document);
+    const response = await fetch(loginProcessingUrl, { method: 'POST', body: data, headers });
 
     const failureUrl = options && options.failureUrl ? options.failureUrl : '/login?error';
     const defaultSuccessUrl = options && options.defaultSuccessUrl ? options.defaultSuccessUrl : '/';
@@ -43,17 +46,13 @@ export async function login(username: string, password: string, options?: LoginO
         errorMessage: 'Check that you have entered the correct username and password and try again.'
       };
     } else if (response.ok && response.redirected && response.url.endsWith(defaultSuccessUrl)) {
-      // TODO: find a more efficient way to get a new CSRF token
-      // parsing the full response body just to get a token may be wasteful
-      const token = getCsrfTokenFromResponseBody(await response.text());
-      if (token) {
-        (window as any).Vaadin.TypeScript = (window as any).Vaadin.TypeScript || {};
-        (window as any).Vaadin.TypeScript.csrfToken = token;
+      const vaadinCsrfToken = await updateCsrfTokensBasedOnResponse(response);
+      if (vaadinCsrfToken) {
         result = {
           error: false,
           errorTitle: '',
           errorMessage: '',
-          token
+          token: vaadinCsrfToken
         };
       }
     }
@@ -81,24 +80,71 @@ export async function login(username: string, password: string, options?: LoginO
 export async function logout(options?: LogoutOptions) {
   // this assumes the default Spring Security logout configuration (handler URL)
   const logoutUrl = options && options.logoutUrl ? options.logoutUrl : '/logout';
-
   try {
-    const response = await fetch(logoutUrl);
-    // TODO: find a more efficient way to get a new CSRF token
-    // parsing the full response body just to get a token may be wasteful
-    const token = getCsrfTokenFromResponseBody(await response.text());
-    (window as any).Vaadin.TypeScript.csrfToken = token;
-  } catch (error) {
-    // clear the token if the call fails
-    delete (window as any).Vaadin.TypeScript.csrfToken;
-    throw error;
+    const headers = getSpringCsrfTokenHeadersFromDocument(document);
+    await doLogout(logoutUrl, headers);
+  } catch {
+    try {
+      const response = await fetch('?nocache');
+      const responseText = await response.text();
+      const doc = new DOMParser().parseFromString(responseText, 'text/html');
+      const headers = getSpringCsrfTokenHeadersFromDocument(doc);
+      await doLogout(logoutUrl, headers);
+    } catch (error) {
+      // clear the token if the call fails
+      delete $wnd.Vaadin?.TypeScript?.csrfToken;
+      clearSpringCsrfMetaTags();
+      throw error;
+    }
   }
+}
+
+async function doLogout(logoutUrl: string, headers: Record<string, string>) {
+  const response = await fetch(logoutUrl, { method: 'POST', headers });
+  if (!response.ok) {
+    throw new Error(`failed to logout with response ${response.status}`);
+  }
+
+  await updateCsrfTokensBasedOnResponse(response);
+}
+
+function updateSpringCsrfMetaTag(body: string) {
+  const doc = new DOMParser().parseFromString(body, 'text/html');
+  clearSpringCsrfMetaTags();
+  Array.from(doc.head.querySelectorAll('meta[name="_csrf"], meta[name="_csrf_header"]')).forEach((el) =>
+    document.head.appendChild(document.importNode(el, true))
+  );
+}
+
+function clearSpringCsrfMetaTags() {
+  Array.from(document.head.querySelectorAll('meta[name="_csrf"], meta[name="_csrf_header"]')).forEach((el) =>
+    el.remove()
+  );
 }
 
 const getCsrfTokenFromResponseBody = (body: string): string | undefined => {
   const match = body.match(/window\.Vaadin = \{TypeScript: \{"csrfToken":"([0-9a-zA-Z\\-]{36})"}};/i);
   return match ? match[1] : undefined;
 };
+
+const getSpringCsrfTokenHeadersFromDocument = (doc: Document): Record<string, string> => {
+  const csrf = doc.head.querySelector('meta[name="_csrf"]');
+  const csrfHeader = doc.head.querySelector('meta[name="_csrf_header"]');
+  const headers: Record<string, string> = {};
+  if (csrf !== null && csrfHeader !== null) {
+    headers[(csrfHeader as HTMLMetaElement).content] = (csrf as HTMLMetaElement).content;
+  }
+  return headers;
+};
+
+async function updateCsrfTokensBasedOnResponse(response: Response): Promise<string | undefined> {
+  const responseText = await response.text();
+  const token = getCsrfTokenFromResponseBody(responseText);
+  $wnd.Vaadin.TypeScript = $wnd.Vaadin.TypeScript || {};
+  $wnd.Vaadin.TypeScript.csrfToken = token;
+  updateSpringCsrfMetaTag(responseText);
+  return token;
+}
 
 /**
  * It defines what to do when it detects a session is invalid. E.g.,
