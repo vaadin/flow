@@ -118,19 +118,19 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         // Live reload upon adding a new font styles
         doActionAndWaitUntilLiveReloadComplete(() -> {
             copyFontFile();
-            createCustomFont();
+            createCustomFontStyles();
         });
         waitUntilCustomFont();
 
         // Live reload upon adding a new component styles file
         doActionAndWaitUntilLiveReloadComplete(
                 () -> createOrUpdateComponentCSSFile(BORDER_RADIUS));
-        waitUntilComponentCustomColor(BORDER_RADIUS);
+        waitUntilComponentCustomStyle(BORDER_RADIUS);
 
         // Live reload upon updating component styles file
         doActionAndWaitUntilLiveReloadComplete(
                 () -> createOrUpdateComponentCSSFile(OTHER_BORDER_RADIUS));
-        waitUntilComponentCustomColor(OTHER_BORDER_RADIUS);
+        waitUntilComponentCustomStyle(OTHER_BORDER_RADIUS);
 
         // Live reload upon file deletion
         doActionAndWaitUntilLiveReloadComplete(this::deleteTestStyles);
@@ -149,7 +149,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         waitUntil(driver -> isCustomFont());
     }
 
-    private void waitUntilComponentCustomColor(String borderRadius) {
+    private void waitUntilComponentCustomStyle(String borderRadius) {
         waitUntil(driver -> isComponentCustomStyle(borderRadius));
     }
 
@@ -206,7 +206,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         }
     }
 
-    private void createCustomFont() {
+    private void createCustomFontStyles() {
         try {
             // @formatter:off
             final String fontStyle =
