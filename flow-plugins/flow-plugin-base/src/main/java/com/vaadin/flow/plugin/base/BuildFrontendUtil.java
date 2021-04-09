@@ -15,21 +15,6 @@
  */
 package com.vaadin.flow.plugin.base;
 
-import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
-import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
-import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
-import static com.vaadin.flow.server.Constants.NPM_TOKEN;
-import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_INITIAL_UIDL;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -61,6 +46,20 @@ import com.vaadin.flow.utils.FlowFileUtils;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
+import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
+import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
+import static com.vaadin.flow.server.Constants.NPM_TOKEN;
+import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
  * Util class provides all methods a Plugin will need.
@@ -194,9 +193,9 @@ public class BuildFrontendUtil {
         buildInfo.put(PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
                 adapter.generatedTsFolder().getAbsolutePath());
 
-        buildInfo.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM,
+        buildInfo.put(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
                 adapter.pnpmEnable());
-        buildInfo.put(Constants.REQUIRE_HOME_NODE_EXECUTABLE,
+        buildInfo.put(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE,
                 adapter.requireHomeNodeExec());
 
         buildInfo.put(InitParameters.BUILD_FOLDER, adapter.buildFolder());

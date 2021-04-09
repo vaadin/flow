@@ -173,7 +173,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 new File(baseDir,
                         Paths.get(TARGET, DEFAULT_FLOW_RESOURCES_FOLDER)
                                 .toString()),
-                pwaConfiguration, frontendGeneratedFolder, "target");
+                pwaConfiguration, frontendGeneratedFolder, TARGET);
 
         newUpdater.execute();
 
@@ -316,8 +316,8 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
     protected void createWebpackUpdater() {
         webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
-                new File(baseDir, "target/webapp"),
-                new File(baseDir, "target/classes"), WEBPACK_CONFIG,
+                new File(baseDir, TARGET + "/webapp"),
+                new File(baseDir, TARGET + "/classes"), WEBPACK_CONFIG,
                 WEBPACK_GENERATED,
                 new File(baseDir,
                         Paths.get(Constants.TARGET, DEFAULT_GENERATED_DIR,
@@ -326,7 +326,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 new File(baseDir,
                         Paths.get(Constants.TARGET,
                                 DEFAULT_FLOW_RESOURCES_FOLDER).toString()),
-                pwaConfiguration, frontendGeneratedFolder, "target");
+                pwaConfiguration, frontendGeneratedFolder, TARGET);
     }
 
     private void assertWebpackGeneratedConfigContent(String entryPoint,
