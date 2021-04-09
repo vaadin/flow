@@ -36,6 +36,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.JsonObject;
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
@@ -599,7 +600,8 @@ public class NodeTasks implements FallibleCommand {
                 packageUpdater = new TaskUpdatePackages(classFinder,
                         frontendDependencies, builder.npmFolder,
                         builder.generatedFolder, builder.flowResourcesFolder,
-                        builder.cleanNpmFiles, builder.enablePnpm);
+                        builder.cleanNpmFiles, builder.enablePnpm,
+                        builder.buildDirectory);
                 commands.add(packageUpdater);
 
             }
@@ -608,7 +610,8 @@ public class NodeTasks implements FallibleCommand {
                         builder.enablePnpm, builder.requireHomeNodeExec,
                         builder.nodeVersion, builder.nodeDownloadRoot));
 
-                commands.add(new TaskInstallWebpackPlugins(builder.npmFolder));
+                commands.add(new TaskInstallWebpackPlugins(
+                        new File(builder.npmFolder, builder.buildDirectory)));
             }
 
         }
@@ -616,7 +619,7 @@ public class NodeTasks implements FallibleCommand {
         if (builder.createMissingPackageJson) {
             TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
                     builder.npmFolder, builder.generatedFolder,
-                    builder.flowResourcesFolder);
+                    builder.flowResourcesFolder, builder.buildDirectory);
             commands.add(packageCreator);
         }
 
@@ -663,7 +666,8 @@ public class NodeTasks implements FallibleCommand {
                             finder -> getFallbackScanner(builder, finder),
                             builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.tokenFile,
-                            builder.tokenFileData, builder.enablePnpm));
+                            builder.tokenFileData, builder.enablePnpm,
+                            builder.buildDirectory));
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),

@@ -49,17 +49,16 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
 
     private File targetFolder;
 
+    protected static final String PLUGIN_TARGET = "plugins";
+
     /**
      * Copy Flow webpack plugins into the given nodeModulesFolder.
      *
-     * @param projectRoot
-     *            project root folder
+     * @param buildDirectory
+     *            project build folder
      */
-    // TODO: Change project root folder to project buildFolder
-    public TaskInstallWebpackPlugins(File projectRoot) {
-        targetFolder = Paths
-                .get(projectRoot.toString(), FrontendUtils.TARGET, "plugins")
-                .toFile();
+    public TaskInstallWebpackPlugins(File buildDirectory) {
+        targetFolder = new File(buildDirectory, PLUGIN_TARGET);
     }
 
     @Override
@@ -108,7 +107,7 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
         // Get the target folder where the plugin should be installed to
         File pluginTargetFile = new File(targetFolder, pluginName);
 
-        final String pluginFolderName = "plugins/" + pluginName + "/";
+        final String pluginFolderName = PLUGIN_TARGET + "/" + pluginName + "/";
         final JsonObject packageJson = getJsonFile(
                 pluginFolderName + PACKAGE_JSON);
         if (packageJson == null) {

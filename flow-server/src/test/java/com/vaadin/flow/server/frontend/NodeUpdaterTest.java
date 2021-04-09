@@ -41,6 +41,7 @@ import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -67,7 +68,7 @@ public class NodeUpdaterTest {
         finder = Mockito.mock(ClassFinder.class);
         nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                new File(""), resourceFolder) {
+                new File(""), resourceFolder, TARGET) {
 
             @Override
             public void execute() {

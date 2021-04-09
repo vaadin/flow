@@ -118,6 +118,8 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     protected final FrontendDependenciesScanner frontDeps;
 
+    protected String buildDir;
+
     final ClassFinder finder;
 
     boolean modified;
@@ -135,10 +137,12 @@ public abstract class NodeUpdater implements FallibleCommand {
      *            folder where flow generated files will be placed.
      * @param flowResourcesPath
      *            folder where flow dependencies will be copied to.
+     * @param buildDir
+     *            the used build directory
      */
     protected NodeUpdater(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, File flowResourcesPath) {
+            File generatedPath, File flowResourcesPath, String buildDir) {
         this.frontDeps = frontendDependencies;
         this.finder = finder;
         this.npmFolder = npmFolder;
@@ -146,6 +150,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         this.generatedFolder = generatedPath;
         this.flowResourcesFolder = flowResourcesPath;
         this.formResourcesFolder = new File(flowResourcesPath, FORM_FOLDER);
+        this.buildDir = buildDir;
     }
 
     private File getPackageJsonFile() {
@@ -220,10 +225,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     private void addWebpackPlugins(JsonObject packageJson) {
         final List<String> plugins = TaskInstallWebpackPlugins.getPlugins();
 
-        // TODO: TARGET FOLDER SHOULD NOT BE HARDCODED AND SHOULD BE GOTTEN FROM
-        // SOME PLACE!!!
-        Path targetFolder = Paths.get(npmFolder.toString(),
-                FrontendUtils.TARGET, "plugins");
+        Path targetFolder = Paths.get(npmFolder.toString(), buildDir,
+                TaskInstallWebpackPlugins.PLUGIN_TARGET);
 
         JsonObject dev_dependencies;
         if (packageJson.hasKey(DEV_DEPENDENCIES)) {

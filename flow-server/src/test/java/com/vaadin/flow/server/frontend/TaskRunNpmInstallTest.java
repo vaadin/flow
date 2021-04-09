@@ -41,6 +41,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
@@ -74,7 +75,7 @@ public class TaskRunNpmInstallTest {
         generatedPath.mkdir();
         nodeUpdater = new NodeUpdater(Mockito.mock(ClassFinder.class),
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                generatedPath, null) {
+                generatedPath, null, TARGET) {
 
             @Override
             public void execute() {
