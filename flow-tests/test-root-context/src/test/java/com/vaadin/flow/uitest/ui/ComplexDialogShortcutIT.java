@@ -1,10 +1,12 @@
 package com.vaadin.flow.uitest.ui;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
 import static com.vaadin.flow.uitest.ui.DialogShortcutView.REUSABLE_DIALOG_ID;
 
+@Ignore("Disabled because of flakiness: varios methods are randomly fails, see e.g. #10616, 10614")
 public class ComplexDialogShortcutIT extends DialogShortcutIT {
 
     @Test

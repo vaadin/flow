@@ -2,19 +2,22 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 import static com.vaadin.flow.uitest.ui.DialogShortcutView.REUSABLE_DIALOG_ID;
 
+@Ignore("Disabled because of flakiness: varios methods are randomly fails, see e.g. #10590")
 public class DialogShortcutIT extends ChromeBrowserTest {
 
     private TestBenchElement eventLog;
@@ -82,8 +85,7 @@ public class DialogShortcutIT extends ChromeBrowserTest {
 
         pressShortcutKey(getDialogInput(REUSABLE_DIALOG_ID));
         // no shortcut in dialog -> ui still gets the shortcut
-        validateLatestShortcutEvent(0,
-                DialogShortcutView.UI_BUTTON);
+        validateLatestShortcutEvent(0, DialogShortcutView.UI_BUTTON);
 
         listenToShortcutOnDialog(REUSABLE_DIALOG_ID);
 
