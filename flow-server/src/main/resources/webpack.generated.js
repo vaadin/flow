@@ -312,9 +312,12 @@ module.exports = {
 
     ...(devMode && themeName ? [new ExtraWatchWebpackPlugin({
       files: [],
-      dirs: [path.resolve(__dirname, 'frontend', 'themes', themeName),
-        path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources', 'themes', themeName),
-        path.resolve(__dirname, 'src', 'main', 'resources', 'static', 'themes', themeName)]
+      // Watch the components folder for component styles update.
+      // Other folders or CSS files except 'styles.css' should be
+      // referenced from `styles.css` anyway, so no need to watch them.
+      dirs: [path.resolve(__dirname, 'frontend', 'themes', themeName, 'components'),
+        path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources', 'themes', themeName, 'components'),
+        path.resolve(__dirname, 'src', 'main', 'resources', 'static', 'themes', themeName, 'components')]
     }), new ThemeLiveReloadPlugin(processThemeResourcesCallback)] : []),
 
     new StatsPlugin({
