@@ -842,9 +842,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * serving new UIs.
      * <p>
      * Note that this method only closes the {@link VaadinSession} which is not
-     * the same as {@link HttpSession} so it might be needed to call
-     * {@code getSession().invalidate();} to invalidate the underlying HTTP
-     * session.
+     * the same as {@link HttpSession}. To invalidate the underlying HTTP
+     * session {@code getSession().invalidate();} needs to be called.
      * <p>
      * The method is usually called to perform logout. If user data is stored
      * inside HTTP session then {@code getSession().invalidate();} should be
