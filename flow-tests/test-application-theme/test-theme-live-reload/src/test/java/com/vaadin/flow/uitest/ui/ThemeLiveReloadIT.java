@@ -87,7 +87,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void webpackLiveReload_newCssAndFontCreatedAndDeleted_stylesUpdatedOnFly() {
+    public void webpackLiveReload_newStylesCreatedAndDeleted_stylesUpdatedOnFly() {
         open();
         Assert.assertFalse(
                 "Red background is not expected before applying the styles",
@@ -99,12 +99,21 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
                 + "applying the styles", testStylesCSSFile.exists());
         Assert.assertFalse("Expected no font file in the theme folder before "
                 + "applying the font styles", fontFile.exists());
+        Assert.assertFalse(
+                "Border radius for themed component is not expected before "
+                        + "applying the styles",
+                isComponentCustomStyle(BORDER_RADIUS)
+                        || isComponentCustomStyle(OTHER_BORDER_RADIUS));
 
-        // Cannot split those tests into two separate methods, because, for
+        // Cannot split those tests into separate methods, because, for
         // some reason, even though the @NotThreadSafe is present on the
         // class, seems they are running in parallel. Thus, since they can
         // change a single 'styles.css' simultaneously, they can erase the
         // styles of each other, and the expected condition fails.
+        // From the other side, if some test triggers the live reload, it
+        // affects another test and can lead to 'false positive' result,
+        // when the live reload doesn't work for some particular case, but it's
+        // being triggered by another test and expected conditions pass.
 
         // Live reload upon adding a custom background styles
         doActionAndWaitUntilLiveReloadComplete(this::createCustomBackground);
@@ -121,15 +130,6 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         doActionAndWaitUntilLiveReloadComplete(
                 this::deleteBackgroundAndFontStyles);
         waitUntilInitialStyles();
-    }
-
-    @Test
-    public void webpackLiveReload_newComponentCssCreatedAndDeleted_stylesUpdatedOnFly() {
-        open();
-        Assert.assertFalse(
-                "Border radius for themed component is not expected before "
-                        + "applying the styles",
-                isComponentCustomStyle(BORDER_RADIUS));
 
         // Live reload upon adding a new component styles file
         doActionAndWaitUntilLiveReloadComplete(
