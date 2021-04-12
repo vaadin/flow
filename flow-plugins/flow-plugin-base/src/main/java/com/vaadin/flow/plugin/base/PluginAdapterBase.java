@@ -277,4 +277,10 @@ public interface PluginAdapterBase {
      */
     File webpackOutputDirectory();
 
+    /**
+     * The folder where everything is built into.
+     *
+     * @return build folder
+     */
+    String buildFolder();
 }

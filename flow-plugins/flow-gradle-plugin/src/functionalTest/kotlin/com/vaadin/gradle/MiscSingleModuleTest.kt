@@ -78,13 +78,10 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 providedCompile("javax.servlet:javax.servlet-api:3.1.0")
                 compile("org.slf4j:slf4j-simple:1.7.30")
             }
-            vaadin {
-                pnpmEnable = true
-            }
         """.trimIndent()
         )
 
-        val build: BuildResult = testProject.build("clean", "build")
+        val build: BuildResult = testProject.build("build")
         // vaadinBuildFrontend should NOT have been executed automatically
         build.expectTaskNotRan("vaadinBuildFrontend")
 
@@ -110,9 +107,6 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 jcenter()
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
-            vaadin {
-                pnpmEnable = true
-            }
             dependencies {
                 compile("com.vaadin:flow:$flowVersion")
                 providedCompile("javax.servlet:javax.servlet-api:3.1.0")
@@ -122,7 +116,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         )
 
         val build: BuildResult =
-            testProject.build("-Pvaadin.productionMode", "clean", "build")
+            testProject.build("-Pvaadin.productionMode", "build")
         // vaadinBuildFrontend should have been executed automatically
         build.expectTaskSucceded("vaadinBuildFrontend")
 
@@ -147,9 +141,6 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             def jettyVersion = "9.4.20.v20190813"
-            vaadin {
-                pnpmEnable = true
-            }
             dependencies {
                 compile("com.vaadin:flow:$flowVersion")
                 compile("org.slf4j:slf4j-simple:1.7.30")
@@ -165,7 +156,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         """.trimIndent()
         )
 
-        val build: BuildResult = testProject.build("clean", "build")
+        val build: BuildResult = testProject.build( "build")
         // vaadinBuildFrontend should NOT have been executed automatically
         expect(null) { build.task(":vaadinBuildFrontend") }
 
@@ -209,7 +200,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         )
 
         val build: BuildResult =
-            testProject.build("-Pvaadin.productionMode", "clean", "build")
+            testProject.build("-Pvaadin.productionMode", "build")
         build.expectTaskSucceded("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
@@ -268,10 +259,6 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 imports {
                     mavenBom "com.vaadin:flow:$flowVersion"
                 }
-            }
-
-            vaadin {
-                pnpmEnable = true
             }
         """
         )
@@ -363,15 +350,11 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             jar {
               from sourceSets.guiceConfig.output
             }
-
-            vaadin {
-                pnpmEnable = true
-            }
         """.trimIndent()
         )
 
         val build: BuildResult =
-            testProject.build("-Pvaadin.productionMode", "clean", "build")
+            testProject.build("-Pvaadin.productionMode", "build")
         build.expectTaskSucceded("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
@@ -452,9 +435,6 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 compile("com.vaadin:flow:$flowVersion")
-            }
-            vaadin {
-                pnpmEnable = true
             }
         """
         )

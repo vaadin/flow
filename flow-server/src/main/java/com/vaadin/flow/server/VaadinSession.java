@@ -44,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -839,6 +840,18 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * After the session has been discarded, any UIs that have been left open
      * will give a Session Expired error and a new session will be created for
      * serving new UIs.
+     * <p>
+     * Note that this method only closes the {@link VaadinSession} which is not
+     * the same as {@link HttpSession}. To invalidate the underlying HTTP
+     * session {@code getSession().invalidate();} needs to be called.
+     * <p>
+     * The method is usually called to perform logout. If user data is stored
+     * inside HTTP session then {@code getSession().invalidate();} should be
+     * called instead (most common case). It makes sense to call
+     * {@link #close()} only if user data is stored inside a
+     * {@link VaadinSession}. Use the {@link Page#setLocation(String)} method to
+     * navigate to some page after session is closed to avoid session expired
+     * message.
      *
      * @see SystemMessages#getSessionExpiredCaption()
      */

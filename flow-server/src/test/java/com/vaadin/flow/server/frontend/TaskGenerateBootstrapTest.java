@@ -36,6 +36,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
@@ -60,7 +61,7 @@ public class TaskGenerateBootstrapTest {
         frontendFolder = temporaryFolder.newFolder(FRONTEND);
         generatedFolder = temporaryFolder.newFolder(FRONTEND, GENERATED);
         taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps,
-                frontendFolder);
+                frontendFolder, TARGET);
     }
 
     @Test
@@ -83,7 +84,7 @@ public class TaskGenerateBootstrapTest {
     public void should_load_AppTheme()
             throws MalformedURLException, ExecutionFailedException {
         taskGenerateBootstrap = new TaskGenerateBootstrap(getThemedDependency(),
-                frontendFolder);
+                frontendFolder, TARGET);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
 

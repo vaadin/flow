@@ -70,6 +70,8 @@
                             <arguments>
                                 <argument>clean</argument>
                                 <argument>build</argument>
+                                <argument>-x</argument>
+                                <argument>functionalTest</argument>
                                 <argument>-S</argument>
                             </arguments>
                         </configuration>
@@ -142,7 +144,7 @@
                 </os>
             </activation>
             <properties>
-                <gradle.executable>./gradlew.bat</gradle.executable>
+                <gradle.executable>gradlew.bat</gradle.executable>
             </properties>
         </profile>
 

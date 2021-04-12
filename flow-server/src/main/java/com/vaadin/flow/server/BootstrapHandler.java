@@ -474,6 +474,45 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     @Override
+    protected boolean canHandleRequest(VaadinRequest request) {
+        if (isFrameworkInternalRequest(request)) {
+            // Never accidentally send a bootstrap page for what is considered
+            // an internal request
+            return false;
+        }
+        return super.canHandleRequest(request);
+    }
+
+    /**
+     * Checks whether the request is an internal request.
+     * <p>
+     * Warning: This assumes that the VaadinRequest is targeted for a
+     * VaadinServlet and does no further checks to validate this. You want to
+     * use
+     * {@link HandlerHelper#isFrameworkInternalRequest(String, HttpServletRequest)}
+     * instead.
+     * <p>
+     * This is public only so that
+     * {@link com.vaadin.flow.server.communication.IndexHtmlRequestHandler} can
+     * access it. If you are not IndexHtmlRequestHandler, go away.
+     *
+     * @param request
+     *            the request
+     * @return {@code true} if the request is Vaadin internal, {@code false}
+     *         otherwise
+     */
+    public static boolean isFrameworkInternalRequest(VaadinRequest request) {
+        if (request instanceof VaadinServletRequest) {
+            // We can ignore the servlet path in this case as we know that
+            // this is targeting a Vaadin servlet and not some other servlet
+            return HandlerHelper.isInternalRequestInsideServlet(
+                    request.getPathInfo(), request.getParameter(
+                            ApplicationConstants.REQUEST_TYPE_PARAMETER));
+        }
+        return false;
+    }
+
+    @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
         // Find UI class
