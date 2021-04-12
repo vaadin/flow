@@ -34,8 +34,8 @@ import static com.vaadin.flow.server.frontend.WebpackPluginsUtil.PLUGIN_TARGET;
  * Task that installs any Flow webpack plugins into node_modules/@vaadin for use
  * with webpack compilation.
  * <p>
- * This should preferably be executed after npm installation to not make it skip
- * or have the plugins deleted by {@link TaskRunNpmInstall}.
+ * Plugins are copied to <code>{build directory}/plugins</code> and linked to
+ * <code>@vaadin/{plugin name}</code> in node_modules by using (p)npm install.
  *
  * @since
  */
@@ -44,7 +44,8 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
     private File targetFolder;
 
     /**
-     * Copy Flow webpack plugins into the given nodeModulesFolder.
+     * Copy Flow webpack plugins into <code>PLUGIN_TARGET</code> under the build
+     * directory.
      *
      * @param buildDirectory
      *            project build folder
