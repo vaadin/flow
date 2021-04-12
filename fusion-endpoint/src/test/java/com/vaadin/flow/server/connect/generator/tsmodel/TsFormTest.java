@@ -116,7 +116,9 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
         int line = 0;
         List<String> faultyLines = new ArrayList<>();
         for (String expectedLine : expected) {
-            if (!expectedLine.equals(content.get(line))) {
+            // ignore the line for file reference, as the file path syntax is different on Windows
+            if (!expectedLine.contains("@see {@link file:///...") &&
+                !expectedLine.equals(content.get(line))) {
                 faultyLines.add(String.format("L%d :: expected: [%s] got [%s]",
                         line + 1, expectedLine, content.get(line)));
             }
