@@ -317,7 +317,8 @@ public class HandlerHelper implements Serializable {
                 "/" + PwaConfiguration.DEFAULT_PATH, //
                 "/" + FrontendUtils.SERVICE_WORKER_SRC_JS, //
                 PwaHandler.SW_RUNTIME_PRECACHE_PATH, //
-                "/" + PwaConfiguration.DEFAULT_OFFLINE_PATH //
+                "/" + PwaConfiguration.DEFAULT_OFFLINE_PATH, //
+                "/" + PwaHandler.DEFAULT_OFFLINE_STUB_PATH //
         };
     }
 
