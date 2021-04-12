@@ -7,6 +7,7 @@ export interface LoginResult {
   token?: string;
   errorTitle?: string;
   errorMessage?: string;
+  redirectUrl?: string;
 }
 
 export interface LoginOptions {
@@ -37,23 +38,31 @@ export async function login(username: string, password: string, options?: LoginO
     const response = await fetch(loginProcessingUrl, { method: 'POST', body: data, headers });
 
     const failureUrl = options && options.failureUrl ? options.failureUrl : '/login?error';
-    const defaultSuccessUrl = options && options.defaultSuccessUrl ? options.defaultSuccessUrl : '/';
+    // const defaultSuccessUrl = options && options.defaultSuccessUrl ? options.defaultSuccessUrl : '/';
     // this assumes the default Spring Security form login configuration (handler URL and responses)
-    if (response.ok && response.redirected && response.url.endsWith(failureUrl)) {
-      result = {
-        error: true,
-        errorTitle: 'Incorrect username or password.',
-        errorMessage: 'Check that you have entered the correct username and password and try again.'
-      };
-    } else if (response.ok && response.redirected && response.url.endsWith(defaultSuccessUrl)) {
-      const vaadinCsrfToken = await updateCsrfTokensBasedOnResponse(response);
-      if (vaadinCsrfToken) {
+    if (response.ok && response.redirected) {
+      if (response.url.endsWith(failureUrl)) {
         result = {
-          error: false,
-          errorTitle: '',
-          errorMessage: '',
-          token: vaadinCsrfToken
+          error: true,
+          errorTitle: 'Incorrect username or password.',
+          errorMessage: 'Check that you have entered the correct username and password and try again.'
         };
+      } else {
+        const vaadinCsrfToken = await updateCsrfTokensBasedOnResponse(response);
+        if (vaadinCsrfToken) {
+          result = {
+            error: false,
+            redirectUrl: response.redirected ? response.url : undefined,
+            token: vaadinCsrfToken
+          };
+        } else {
+          result = {
+            error: true,
+            redirectUrl: response.redirected ? response.url : undefined,
+            errorTitle: 'Incorrect username or password.',
+            errorMessage: 'Check that you have entered the correct username and password and try again.'
+          };
+        }
       }
     }
   } catch (e) {

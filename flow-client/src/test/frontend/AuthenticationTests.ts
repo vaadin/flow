@@ -76,9 +76,8 @@ describe('Authentication', () => {
       const result = await login('valid-username', 'valid-password');
       const expectedResult = {
         error: false,
-        errorTitle: '',
-        errorMessage: '',
-        token: vaadinCsrfToken
+        token: vaadinCsrfToken,
+        redirectUrl: '/'
       };
 
       expect(fetchMock.calls()).to.have.lengthOf(1);
@@ -100,6 +99,27 @@ describe('Authentication', () => {
         error: true,
         errorTitle: 'Error',
         errorMessage: 'Something went wrong when trying to login.'
+      };
+
+      expect(fetchMock.calls()).to.have.lengthOf(1);
+      expect(result).to.deep.equal(expectedResult);
+    })
+
+    it('should redirect based on request cache after login', async () => {
+      // An unthenticated request attempt would be captured by the default
+      // request cache, so after login, it should redirect the user to that 
+      // request
+      fetchMock.post('/login', {
+        body: happyCaseResponseText,
+        // mock the unthenticated attempt, which would be 
+        // saved by the default request cache
+        redirectUrl: '/protected-view'
+      }, { headers });
+      const result = await login('valid-username', 'valid-password');
+      const expectedResult = {
+        error: false,
+        token: vaadinCsrfToken,
+        redirectUrl: '/protected-view'
       };
 
       expect(fetchMock.calls()).to.have.lengthOf(1);
