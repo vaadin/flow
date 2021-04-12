@@ -43,7 +43,6 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
@@ -223,10 +222,10 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     private void addWebpackPlugins(JsonObject packageJson) {
-        final List<String> plugins = TaskInstallWebpackPlugins.getPlugins();
+        final List<String> plugins = WebpackPluginsUtil.getPlugins();
 
         Path targetFolder = Paths.get(npmFolder.toString(), buildDir,
-                TaskInstallWebpackPlugins.PLUGIN_TARGET);
+                WebpackPluginsUtil.PLUGIN_TARGET);
 
         JsonObject devDependencies;
         if (packageJson.hasKey(DEV_DEPENDENCIES)) {

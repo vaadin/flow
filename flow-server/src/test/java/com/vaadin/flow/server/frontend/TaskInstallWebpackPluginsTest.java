@@ -41,7 +41,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
-import static com.vaadin.flow.server.frontend.TaskInstallWebpackPlugins.PLUGIN_TARGET;
+import static com.vaadin.flow.server.frontend.WebpackPluginsUtil.PLUGIN_TARGET;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class TaskInstallWebpackPluginsTest {
@@ -66,7 +66,7 @@ public class TaskInstallWebpackPluginsTest {
         String[] expectedPlugins = new String[] { "stats-plugin",
                 "application-theme-plugin", "theme-loader",
                 "theme-live-reload-plugin" };
-        final List<String> plugins = task.getPlugins();
+        final List<String> plugins = WebpackPluginsUtil.getPlugins();
         Assert.assertEquals(
                 "Unexpected amount of plugins in 'webpack-plugins.json'",
                 expectedPlugins.length, plugins.size());
@@ -87,7 +87,7 @@ public class TaskInstallWebpackPluginsTest {
 
     @Test
     public void pluginsDefineAllScriptFiles() throws IOException {
-        for (String plugin : task.getPlugins()) {
+        for (String plugin : WebpackPluginsUtil.getPlugins()) {
             verifyPluginScriptFilesAreDefined(plugin);
         }
     }
@@ -111,7 +111,7 @@ public class TaskInstallWebpackPluginsTest {
 
         final JsonObject devDependencies = packageJson
                 .getObject(DEV_DEPENDENCIES);
-        for (String plugin : task.getPlugins()) {
+        for (String plugin : WebpackPluginsUtil.getPlugins()) {
             Assert.assertTrue("packageJson is missing " + plugin,
                     devDependencies.hasKey("@vaadin/" + plugin));
 
@@ -127,9 +127,9 @@ public class TaskInstallWebpackPluginsTest {
 
     private void assertPlugins() throws IOException {
         Assert.assertTrue("No @vaadin folder created",
-                Paths.get(rootFolder.toString(), BUILD_DIRECTORY, PLUGIN_TARGET).toFile()
-                        .exists());
-        for (String plugin : task.getPlugins()) {
+                Paths.get(rootFolder.toString(), BUILD_DIRECTORY, PLUGIN_TARGET)
+                        .toFile().exists());
+        for (String plugin : WebpackPluginsUtil.getPlugins()) {
             assertPlugin(plugin);
         }
     }
