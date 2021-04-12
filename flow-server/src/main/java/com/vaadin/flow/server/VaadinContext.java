@@ -31,8 +31,12 @@ import java.util.function.Supplier;
 public interface VaadinContext extends Serializable {
 
     /**
-     * Returns value of the specified attribute, creating a default value if not
-     * present.
+     * Returns value of the specified attribute, creating and storing a default
+     * value if attribute not present.
+     * <p>
+     * If attribute is not yet available the {@code defaultValueSupplier} is
+     * used to get the default value which is set as the attribute value and the
+     * value is returned. The operation is executed atomically.
      *
      * @param type
      *            Type of the attribute.
