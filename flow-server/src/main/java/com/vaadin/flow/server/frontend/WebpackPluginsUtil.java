@@ -40,8 +40,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 class WebpackPluginsUtil {
 
+    private WebpackPluginsUtil() {
+    }
+
     /**
-     * Target folder for plugins
+     * Target folder for plugins.
      */
     protected static final String PLUGIN_TARGET = "plugins";
 
