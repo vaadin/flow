@@ -49,6 +49,18 @@
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
+                <configuration>
+                    <!-- Scan AppShell in 1 second intervals -->
+                    <scanIntervalSeconds>1</scanIntervalSeconds>
+                    <scanTargetPatterns>
+                        <scanTargetPattern>
+                            <directory>${project.basedir}</directory>
+                            <includes>
+                                <include>**/AppShell.java</include>
+                            </includes>
+                        </scanTargetPattern>
+                    </scanTargetPatterns>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -63,6 +75,10 @@
                                 <property>
                                     <!-- make sure live reload is enabled -->
                                     <name>vaadin.devmode.liveReload.enabled</name>
+                                    <value>true</value>
+                                </property>
+                                <property>
+                                    <name>vaadin.reuseDevServer</name>
                                     <value>true</value>
                                 </property>
                             </properties>
