@@ -27,7 +27,6 @@ import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.annotation.Resources;
 import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.component.UI;
@@ -336,7 +335,7 @@ public class HandlerHelper implements Serializable {
 
     private static List<String> getIconVariants(String iconPath) {
         return PwaRegistry.getIconTemplates(iconPath).stream()
-                .map(pwaIcon -> pwaIcon.getRelHref())
+                .map(PwaIcon::getRelHref)
                 .collect(Collectors.toList());
     }
 
