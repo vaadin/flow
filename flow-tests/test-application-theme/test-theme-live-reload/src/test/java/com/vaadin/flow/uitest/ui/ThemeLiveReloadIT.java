@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.uitest.ui;
 
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -66,8 +68,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
     @After
     public void cleanUp() {
         doActionAndWaitUntilLiveReloadComplete(this::removeGeneratedFiles);
-        doActionAndWaitUntilLiveReloadComplete(
-                () -> switchThemeName(OTHER_THEME, APP_THEME));
+        switchThemeName(OTHER_THEME, APP_THEME);
     }
 
     private void removeGeneratedFiles() {
@@ -104,8 +105,8 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         doActionAndWaitUntilLiveReloadComplete(this::deleteTestStyles);
         waitUntilInitialStyles();
 
-        doActionAndWaitUntilLiveReloadComplete(
-                () -> switchThemeName(APP_THEME, OTHER_THEME));
+        // Live reload upon theme name switching
+        switchThemeName(APP_THEME, OTHER_THEME);
         waitUntilOtherTheme();
     }
 
@@ -114,7 +115,11 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void waitUntilOtherTheme() {
-        waitUntil(driver -> isCustomBackGroundColor(BLUE_COLOR));
+        waitUntil(driver -> {
+            getDriver().navigate().refresh();
+            getCommandExecutor().waitForVaadin();
+            return isCustomBackGroundColor(BLUE_COLOR);
+        });
     }
 
     private void waitUntilInitialStyles() {
@@ -212,11 +217,15 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void switchThemeName(String oldThemeName, String newThemeName) {
-        File baseDir = new File(System.getProperty("user.dir", "."));
+        File sourcePath = Paths
+                .get(baseDir.getPath(), "src", "main", "java", AppShell.class
+                        .getPackage().getName().replace(".", File.separator))
+                .toFile();
         File appShellClassFile = Paths
-                .get(baseDir.getPath(), "src", "main", "java",
-                        AppShell.class.getCanonicalName()
-                                .replace(".", File.separator).concat(".java"))
+                .get(sourcePath.getPath(),
+                        AppShell.class.getSimpleName().concat(".java"))
+                .toFile();
+        File outputPath = Paths.get(baseDir.getPath(), "target", "classes")
                 .toFile();
         try {
             String content = FileUtils.readFileToString(appShellClassFile,
@@ -225,10 +234,20 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
                 content = content.replace(oldThemeName, newThemeName);
                 FileUtils.writeStringToFile(appShellClassFile, content,
                         StandardCharsets.UTF_8);
+                recompileAppShell(appShellClassFile, sourcePath, outputPath);
             }
         } catch (IOException e) {
             throw new RuntimeException(
                     "Failed to change theme name in AppShell class", e);
         }
+    }
+
+    private void recompileAppShell(File appShellClassFile, File sourcePath,
+            File outputPath) {
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        int result = compiler.run(null, null, null, "-d", outputPath.getPath(),
+                "-sourcepath", sourcePath.getPath(),
+                appShellClassFile.getPath());
+        Assert.assertEquals("Failed to recompile AppShell.java", 0, result);
     }
 }
