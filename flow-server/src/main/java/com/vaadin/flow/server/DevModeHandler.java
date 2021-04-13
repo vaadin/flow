@@ -111,6 +111,8 @@ public final class DevModeHandler implements RequestHandler {
 
     private boolean notified = false;
 
+    private StringBuilder cumulativeOutput = new StringBuilder();
+
     private volatile String failedOutput;
 
     private AtomicBoolean isDevServerFailedToStart = new AtomicBoolean();
@@ -477,6 +479,9 @@ public final class DevModeHandler implements RequestHandler {
                 output.append(cleanLine).append(System.lineSeparator());
             }
 
+            // save output so as it can be used to log exception if run fails
+            cumulativeOutput.append(cleanLine).append(System.lineSeparator());
+
             boolean succeed = success.matcher(line).find();
             boolean failed = failure.matcher(line).find();
             // We found the success or failure pattern in stream
@@ -486,6 +491,7 @@ public final class DevModeHandler implements RequestHandler {
                 failedOutput = failed ? output.toString() : null;
                 // reset output and logger for the next compilation
                 output = getOutputBuilder();
+                cumulativeOutput = new StringBuilder();
                 log = info;
                 // Notify DevModeHandler to continue
                 doNotify();
@@ -662,6 +668,9 @@ public final class DevModeHandler implements RequestHandler {
             }
 
             if (!webpackProcess.get().isAlive()) {
+                getLogger().error(
+                    String.format("Webpack failed with the exception:%n%s",
+                        cumulativeOutput.toString()));
                 throw new IllegalStateException("Webpack exited prematurely");
             }
 
