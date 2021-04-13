@@ -19,6 +19,7 @@ package com.vaadin.flow.uitest.ui;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
@@ -27,11 +28,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 @NotThreadSafe
@@ -40,6 +39,9 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
     private static final String RED_COLOR = "rgba(255, 0, 0, 1)";
     private static final String BLUE_COLOR = "rgba(0, 0, 255, 1)";
     private static final String THEME_FOLDER = "frontend/themes/app-theme/";
+
+    private static final String APP_THEME = "app-theme";
+    private static final String OTHER_THEME = "other-theme";
 
     private File baseDir;
     private File testStylesCSSFile;
@@ -64,8 +66,8 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
     @After
     public void cleanUp() {
         doActionAndWaitUntilLiveReloadComplete(this::removeGeneratedFiles);
-        doActionAndWaitUntilLiveReloadComplete(() -> waitAndDoActionOnElement(
-                ThemeLiveReloadView.CHANGE_THEME_BUTTON_ID, WebElement::click));
+        doActionAndWaitUntilLiveReloadComplete(
+                () -> switchThemeName(OTHER_THEME, APP_THEME));
     }
 
     private void removeGeneratedFiles() {
@@ -102,15 +104,9 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         doActionAndWaitUntilLiveReloadComplete(this::deleteTestStyles);
         waitUntilInitialStyles();
 
-        doActionAndWaitUntilLiveReloadComplete(() -> waitAndDoActionOnElement(
-                ThemeLiveReloadView.CHANGE_THEME_BUTTON_ID, WebElement::click));
+        doActionAndWaitUntilLiveReloadComplete(
+                () -> switchThemeName(APP_THEME, OTHER_THEME));
         waitUntilOtherTheme();
-    }
-
-    private WebElement getChangeThemeButton() {
-        waitForElementPresent(
-                By.id(ThemeLiveReloadView.CHANGE_THEME_BUTTON_ID));
-        return findElement(By.id(ThemeLiveReloadView.CHANGE_THEME_BUTTON_ID));
     }
 
     private void waitUntilCustomBackgroundColor() {
@@ -215,25 +211,24 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
         getCommandExecutor().waitForVaadin();
     }
 
-    private void waitAndDoActionOnElement(String elementId,
-            SerializableConsumer<WebElement> elementAction) {
-        int attempts = 0;
-        while (attempts < 10) {
-            try {
-                waitForElementPresent(By.id(elementId));
-                elementAction.accept(findElement(By.id(elementId)));
-            } catch (StaleElementReferenceException
-                    | NoSuchElementException e) {
-                // go to next attempt
-                attempts++;
+    private void switchThemeName(String oldThemeName, String newThemeName) {
+        File baseDir = new File(System.getProperty("user.dir", "."));
+        File appShellClassFile = Paths
+                .get(baseDir.getPath(), "src", "main", "java",
+                        AppShell.class.getCanonicalName()
+                                .replace(".", File.separator).concat(".java"))
+                .toFile();
+        try {
+            String content = FileUtils.readFileToString(appShellClassFile,
+                    StandardCharsets.UTF_8);
+            if (content.contains(oldThemeName)) {
+                content = content.replace(oldThemeName, newThemeName);
+                FileUtils.writeStringToFile(appShellClassFile, content,
+                        StandardCharsets.UTF_8);
             }
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Assert.fail("Test interrupted while waiting for element to be "
-                        + "present");
-            }
+        } catch (IOException e) {
+            throw new RuntimeException(
+                    "Failed to change theme name in AppShell class", e);
         }
-        Assert.fail("Element waiting timeout");
     }
 }
