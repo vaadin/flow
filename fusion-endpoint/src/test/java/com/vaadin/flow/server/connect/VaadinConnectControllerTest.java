@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.Principal;
@@ -288,8 +289,8 @@ public class VaadinConnectControllerTest {
         Mockito.doReturn(accessChecker).when(appContext)
                 .getBean(VaadinConnectAccessChecker.class);
 
-        EndpointRegistry registry = new EndpointRegistry(
-                mock(EndpointNameChecker.class));
+        EndpointRegistry registry = new EndpointRegistry();
+        VaadinConnectControllerMockBuilder.setEndpointNameChecker(registry, mock(EndpointNameChecker.class));
         VaadinConnectController controller = new VaadinConnectController(
                 new ObjectMapper(), mock(ExplicitNullableTypeChecker.class),
                 appContext, registry);
@@ -871,7 +872,8 @@ public class VaadinConnectControllerTest {
         when(mockObjectMapperBuilder.build()).thenReturn(mockOwnObjectMapper);
         when(mockJacksonProperties.getVisibility())
                 .thenReturn(Collections.emptyMap());
-        EndpointRegistry registry = new EndpointRegistry(
+        EndpointRegistry registry = new EndpointRegistry();
+        VaadinConnectControllerMockBuilder.setEndpointNameChecker(registry,
                 mock(EndpointNameChecker.class));
         new VaadinConnectController(null,
                 mock(ExplicitNullableTypeChecker.class), contextMock, registry);
@@ -904,7 +906,8 @@ public class VaadinConnectControllerTest {
         when(mockJacksonProperties.getVisibility())
                 .thenReturn(Collections.singletonMap(PropertyAccessor.ALL,
                         JsonAutoDetect.Visibility.PUBLIC_ONLY));
-        EndpointRegistry registry = new EndpointRegistry(
+        EndpointRegistry registry = new EndpointRegistry();
+        VaadinConnectControllerMockBuilder.setEndpointNameChecker(registry,
                 mock(EndpointNameChecker.class));
         new VaadinConnectController(null,
                 mock(ExplicitNullableTypeChecker.class), contextMock, registry);
@@ -1228,8 +1231,9 @@ public class VaadinConnectControllerTest {
 
         ApplicationContext mockApplicationContext = mockApplicationContext(
                 endpoint);
-        EndpointRegistry registry = new EndpointRegistry(endpointNameChecker);
-
+        EndpointRegistry registry = new EndpointRegistry();
+        VaadinConnectControllerMockBuilder.setEndpointNameChecker(registry,
+                endpointNameChecker);
         VaadinConnectController connectController = Mockito
                 .spy(new VaadinConnectController(vaadinEndpointMapper,
                         explicitNullableTypeChecker, mockApplicationContext,

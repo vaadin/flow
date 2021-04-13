@@ -143,4 +143,14 @@ public class VaadinConnectControllerConfiguration {
     public EndpointUtil endpointUtil() {
         return new EndpointUtil();
     }
+
+    /**
+     * Registers the endpoint registry.
+     *
+     * @return the endpoint registry
+     */
+    @Bean
+    public EndpointRegistry endpointRegistry() {
+        return new EndpointRegistry();
+    }
 }
