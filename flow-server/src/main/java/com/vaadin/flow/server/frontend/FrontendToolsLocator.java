@@ -119,7 +119,13 @@ public class FrontendToolsLocator implements Serializable {
             process = FrontendUtils
                     .createProcessBuilder(Arrays.asList(commandParts)).start();
         } catch (IOException e) {
-            log().error("Failed to execute the command '{}'", commandString, e);
+            if (logErrorOnFail) {
+                log().error("Failed to execute the command '{}'", commandString,
+                        e);
+            } else if (log().isDebugEnabled()) {
+                log().debug("Failed to execute the command '{}'", commandString,
+                        e);
+            }
             return Optional.empty();
         }
 
