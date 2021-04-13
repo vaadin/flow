@@ -456,7 +456,7 @@ public class PwaRegistry implements Serializable {
         return pwaConfiguration;
     }
 
-    private static List<PwaIcon> getIconTemplates(String baseName) {
+    static List<PwaIcon> getIconTemplates(String baseName) {
         List<PwaIcon> icons = new ArrayList<>();
         // Basic manifest icons for android support
         icons.add(

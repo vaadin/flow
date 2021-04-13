@@ -19,11 +19,15 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import javax.annotation.Resources;
 import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.component.UI;
@@ -312,14 +316,22 @@ public class HandlerHelper implements Serializable {
      * Spring Security.
      */
     public static String[] getPublicResources() {
-        return new String[] { //
-                "/favicon.ico", //
-                "/" + PwaConfiguration.DEFAULT_PATH, //
-                "/" + FrontendUtils.SERVICE_WORKER_SRC_JS, //
-                PwaHandler.SW_RUNTIME_PRECACHE_PATH, //
-                "/" + PwaConfiguration.DEFAULT_OFFLINE_PATH, //
-                "/" + PwaHandler.DEFAULT_OFFLINE_STUB_PATH //
-        };
+        List<String> resources = new ArrayList<>();
+        resources.add("/favicon.ico");
+        resources.add("/" + PwaConfiguration.DEFAULT_PATH);
+        resources.add("/" + FrontendUtils.SERVICE_WORKER_SRC_JS);
+        resources.add(PwaHandler.SW_RUNTIME_PRECACHE_PATH);
+        resources.add("/" + PwaConfiguration.DEFAULT_OFFLINE_PATH);
+        resources.add("/" + PwaHandler.DEFAULT_OFFLINE_STUB_PATH);
+        resources.add("/" + PwaConfiguration.DEFAULT_ICON);
+        resources.addAll(getIconVariants(PwaConfiguration.DEFAULT_ICON));
+        return resources.toArray(new String[resources.size()]);
+    }
+
+    private static List<String> getIconVariants(String iconPath) {
+        return PwaRegistry.getIconTemplates(iconPath).stream()
+                .map(pwaIcon -> pwaIcon.getRelHref())
+                .collect(Collectors.toList());
     }
 
     /**
