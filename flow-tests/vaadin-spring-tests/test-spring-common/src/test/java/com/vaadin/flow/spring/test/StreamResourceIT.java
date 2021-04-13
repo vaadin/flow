@@ -42,7 +42,7 @@ public class StreamResourceIT extends AbstractSpringTest {
     public void ensureStreamResourceWorks() throws IOException {
         open();
 
-        WebElement link = findElement(By.id("download"));
+        WebElement link = $("a").id("download");
         String url = link.getAttribute("href");
 
         getDriver().manage().timeouts().setScriptTimeout(15, TimeUnit.SECONDS);

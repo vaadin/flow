@@ -1,4 +1,4 @@
-package com.vaadin.flow.spring.test;
+package com.vaadin.flow.spring.test.views;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;

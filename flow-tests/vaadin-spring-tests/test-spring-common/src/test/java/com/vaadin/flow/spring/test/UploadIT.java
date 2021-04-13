@@ -34,17 +34,22 @@ import com.vaadin.testbench.TestBenchElement;
 
 public class UploadIT extends AbstractSpringTest {
 
+    private static final String UPLOAD_ID = "upl";
+
     @Test
     @Ignore
     public void multiFileUpload() throws Exception {
         open();
 
-        waitUntil(driver -> isElementPresent(By.id("upload"))
-                && findElement(By.id("upload")).isDisplayed());
+        waitUntil(driver -> {
+            By selector = By.id(UPLOAD_ID);
+            return isElementPresent(selector)
+                    && findElement(selector).isDisplayed();
+        });
 
         File tempFile = createTempFile("foo");
 
-        TestBenchElement input = $(TestBenchElement.class).id("upload")
+        TestBenchElement input = $(TestBenchElement.class).id(UPLOAD_ID)
                 .$(TestBenchElement.class).id("fileInput");
         setLocalFileDetector(input);
         input.sendKeys(tempFile.getPath());
@@ -58,10 +63,10 @@ public class UploadIT extends AbstractSpringTest {
     public void uploadComponentIsInitialized() {
         open();
 
-        waitUntil(driver -> isElementPresent(By.id("upload"))
-                && findElement(By.id("upload")).isDisplayed());
+        waitUntil(driver -> isElementPresent(By.id(UPLOAD_ID))
+                && findElement(By.id(UPLOAD_ID)).isDisplayed());
 
-        List<TestBenchElement> inputs = $(TestBenchElement.class).id("upload")
+        List<TestBenchElement> inputs = $(TestBenchElement.class).id(UPLOAD_ID)
                 .$("input").all();
         Assert.assertFalse(
                 "Upload element is not initialized: it doesn't contain "

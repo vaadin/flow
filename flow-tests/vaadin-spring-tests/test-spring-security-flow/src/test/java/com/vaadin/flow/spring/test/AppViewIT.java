@@ -2,18 +2,19 @@ package com.vaadin.flow.spring.test;
 
 import java.io.IOException;
 
+import com.vaadin.flow.component.login.testbench.LoginFormElement;
+import com.vaadin.flow.component.login.testbench.LoginOverlayElement;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class AppViewIT extends ChromeBrowserTest {
 
@@ -75,18 +76,22 @@ public class AppViewIT extends ChromeBrowserTest {
     }
 
     private void login() {
-        findElement(By.id("username")).sendKeys("user");
-        findElement(By.id("password")).sendKeys("user");
-        findElement(By.tagName("button")).click();
+        LoginFormElement form = $(LoginOverlayElement.class).first()
+                .getLoginForm();
+        form.getUsernameField().setValue("user");
+        form.getPasswordField().setValue("user");
+        form.submit();
     }
 
-    private void verifyResponseCode(String path, int expectedCode) throws IOException {
+    private void verifyResponseCode(String path, int expectedCode)
+            throws IOException {
         CloseableHttpClient httpClient = HttpClientBuilder.create()
                 .disableRedirectHandling().build();
         HttpGet httpGet = new HttpGet(getRootURL() + path);
         CloseableHttpResponse response = httpClient.execute(httpGet);
         try {
-            Assert.assertEquals(expectedCode, response.getStatusLine().getStatusCode());
+            Assert.assertEquals(expectedCode,
+                    response.getStatusLine().getStatusCode());
         } finally {
             response.close();
         }
