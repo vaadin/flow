@@ -1,7 +1,8 @@
 package com.vaadin.flow.server;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -207,7 +208,7 @@ public class HandlerHelperTest {
 
     @Test
     public void publicResources() {
-        List<String> expected = new ArrayList<>();
+        Set<String> expected = new HashSet<>();
         expected.add("/favicon.ico");
         expected.add("/manifest.webmanifest");
         expected.add("/sw.js");
@@ -226,7 +227,9 @@ public class HandlerHelperTest {
         expected.add("/icons/icon-750x1334.png");
         expected.add("/icons/icon-1242x2208.png");
         expected.add("/icons/icon-640x1136.png");
-        Assert.assertArrayEquals(expected.toArray(),
-                HandlerHelper.getPublicResources());
+
+        Set<String> actual = new HashSet<>();
+        Collections.addAll(actual, HandlerHelper.getPublicResources());
+        Assert.assertEquals(expected, actual);
     }
 }

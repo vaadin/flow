@@ -96,6 +96,21 @@ public class HandlerHelper implements Serializable {
         }
     }
 
+    private static final String[] publicResources;
+    static {
+        List<String> resources = new ArrayList<>();
+        resources.add("/favicon.ico");
+        resources.add("/" + PwaConfiguration.DEFAULT_PATH);
+        resources.add("/" + FrontendUtils.SERVICE_WORKER_SRC_JS);
+        resources.add(PwaHandler.SW_RUNTIME_PRECACHE_PATH);
+        resources.add("/" + PwaConfiguration.DEFAULT_OFFLINE_PATH);
+        resources.add("/" + PwaHandler.DEFAULT_OFFLINE_STUB_PATH);
+        resources.add("/" + PwaConfiguration.DEFAULT_ICON);
+        resources.addAll(getIconVariants(PwaConfiguration.DEFAULT_ICON));
+        publicResources = resources.toArray(new String[resources.size()]);
+
+    }
+
     private HandlerHelper() {
         // Only utility methods
     }
@@ -316,16 +331,7 @@ public class HandlerHelper implements Serializable {
      * Spring Security.
      */
     public static String[] getPublicResources() {
-        List<String> resources = new ArrayList<>();
-        resources.add("/favicon.ico");
-        resources.add("/" + PwaConfiguration.DEFAULT_PATH);
-        resources.add("/" + FrontendUtils.SERVICE_WORKER_SRC_JS);
-        resources.add(PwaHandler.SW_RUNTIME_PRECACHE_PATH);
-        resources.add("/" + PwaConfiguration.DEFAULT_OFFLINE_PATH);
-        resources.add("/" + PwaHandler.DEFAULT_OFFLINE_STUB_PATH);
-        resources.add("/" + PwaConfiguration.DEFAULT_ICON);
-        resources.addAll(getIconVariants(PwaConfiguration.DEFAULT_ICON));
-        return resources.toArray(new String[resources.size()]);
+        return publicResources;
     }
 
     private static List<String> getIconVariants(String iconPath) {
