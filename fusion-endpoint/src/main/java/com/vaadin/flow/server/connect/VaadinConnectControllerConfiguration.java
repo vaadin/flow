@@ -147,10 +147,11 @@ public class VaadinConnectControllerConfiguration {
     /**
      * Registers the endpoint registry.
      *
+     * @param endpointNameChecker the name checker to use
      * @return the endpoint registry
      */
     @Bean
-    public EndpointRegistry endpointRegistry(EndpointNameChecker nameChecker) {
-        return new EndpointRegistry(nameChecker);
+    public EndpointRegistry endpointRegistry(EndpointNameChecker endpointNameChecker) {
+        return new EndpointRegistry(endpointNameChecker);
     }
 }
