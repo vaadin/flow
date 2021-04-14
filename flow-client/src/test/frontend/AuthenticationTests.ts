@@ -71,13 +71,13 @@ describe('Authentication', () => {
     it('should return a CSRF token on valid credentials', async () => {
       fetchMock.post('/login', {
         body: happyCaseResponseText,
-        redirectUrl: '/'
+        redirectUrl: 'localhost:8080/'
       }, { headers });
       const result = await login('valid-username', 'valid-password');
       const expectedResult = {
         error: false,
         token: vaadinCsrfToken,
-        redirectUrl: '/'
+        redirectUrl: 'localhost:8080/'
       };
 
       expect(fetchMock.calls()).to.have.lengthOf(1);
@@ -113,13 +113,13 @@ describe('Authentication', () => {
         body: happyCaseResponseText,
         // mock the unthenticated attempt, which would be 
         // saved by the default request cache
-        redirectUrl: '/protected-view'
+        redirectUrl: 'localhost:8080/protected-view'
       }, { headers });
       const result = await login('valid-username', 'valid-password');
       const expectedResult = {
         error: false,
         token: vaadinCsrfToken,
-        redirectUrl: '/protected-view'
+        redirectUrl: 'localhost:8080/protected-view'
       };
 
       expect(fetchMock.calls()).to.have.lengthOf(1);
