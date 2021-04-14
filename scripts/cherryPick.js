@@ -45,7 +45,7 @@ async function getAllCommits(){
     
     res = await axios.get(url, options);
     data = res.data;
-    data = data.filter(da => da.labels.length > 0 && !(da.merged_at === null));
+    data = data.filter(da => da.labels.length > 0 && da.merged_at !== null);
     
     if (data.length === 0) {
       console.log("No commits needs to be picked.");
