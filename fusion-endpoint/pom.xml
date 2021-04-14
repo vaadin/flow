@@ -71,7 +71,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
-            <version>${spring.vesion}</version>
+            <version>${spring.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

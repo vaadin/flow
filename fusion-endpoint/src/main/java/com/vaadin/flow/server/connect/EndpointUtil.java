@@ -65,21 +65,21 @@ public class EndpointUtil {
     }
 
     private Optional<Method> getEndpoint(HttpServletRequest request) {
-        PathPatternParser p = new PathPatternParser();
-        PathPattern pathPattern = p
+        PathPatternParser pathParser = new PathPatternParser();
+        PathPattern pathPattern = pathParser
                 .parse(endpointProperties.getVaadinEndpointPrefix()
                         + VaadinConnectController.ENDPOINT_METHODS);
         RequestPath requestPath = ServletRequestPathUtils
                 .parseAndCache(request);
         if (pathPattern.matches(requestPath)) {
-            PathMatchInfo e = pathPattern.matchAndExtract(requestPath);
-            if (e == null) {
+            PathMatchInfo matchInfo = pathPattern.matchAndExtract(requestPath);
+            if (matchInfo == null) {
                 return Optional.empty();
             }
 
-            Map<String, String> vars = e.getUriVariables();
-            String endpointName = vars.get("endpoint");
-            String endpointMethod = vars.get("method");
+            Map<String, String> uriVariables = matchInfo.getUriVariables();
+            String endpointName = uriVariables.get("endpoint");
+            String endpointMethod = uriVariables.get("method");
 
             VaadinEndpointData data = registry.get(endpointName);
             if (data == null) {
