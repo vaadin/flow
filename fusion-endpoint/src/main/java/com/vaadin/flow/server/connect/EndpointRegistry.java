@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
 
@@ -68,10 +67,19 @@ public class EndpointRegistry {
         }
     }
 
-    @Autowired
     private EndpointNameChecker endpointNameChecker;
-
     private final Map<String, VaadinEndpointData> vaadinEndpoints = new HashMap<>();
+
+    /**
+     * Creates a new registry using the given name checker.
+     * 
+     * @param endpointNameChecker
+     *            the endpoint name checker to verify custom Vaadin endpoint
+     *            names
+     */
+    public EndpointRegistry(EndpointNameChecker endpointNameChecker) {
+        this.endpointNameChecker = endpointNameChecker;
+    }
 
     private static String getEndpointNameForClass(Class<?> beanType) {
         return Optional.ofNullable(beanType.getAnnotation(Endpoint.class))
