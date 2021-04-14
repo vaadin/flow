@@ -67,7 +67,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
             doActionAndWaitUntilLiveReloadComplete(() -> {
                 deleteComponentStyles();
                 deleteFile(componentsDir);
-            });
+            }, true);
         }
     }
 
@@ -91,7 +91,8 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
         waitUntilComponentCustomStyle(OTHER_BORDER_RADIUS);
 
         // Live reload upon file deletion
-        doActionAndWaitUntilLiveReloadComplete(this::deleteComponentStyles);
+        doActionAndWaitUntilLiveReloadComplete(this::deleteComponentStyles,
+                true);
         waitUntilComponentInitialStyle();
     }
 
@@ -148,9 +149,14 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void doActionAndWaitUntilLiveReloadComplete(Runnable action) {
+        doActionAndWaitUntilLiveReloadComplete(action, false);
+    }
+
+    private void doActionAndWaitUntilLiveReloadComplete(Runnable action,
+                                                        boolean deleted) {
         final String initialAttachId = getAttachIdentifier();
         action.run();
-        waitForLiveReload(initialAttachId);
+        waitForLiveReload(initialAttachId, deleted);
     }
 
     private String getAttachIdentifier() {
@@ -181,7 +187,15 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
         }
     }
 
-    private void waitForLiveReload(final String initialAttachId) {
+    private void waitForLiveReload(final String initialAttachId,
+                                   boolean deleted) {
+        if (deleted) {
+            // TODO: workaround for https://github.com/vaadin/flow/issues/9948.
+            //  one more page update is needed when a first webpack
+            //  re-compilation fails due to issue above.
+            getDriver().navigate().refresh();
+            getCommandExecutor().waitForVaadin();
+        }
         waitUntilWithMessage(d -> {
             try {
                 final String newViewId = getAttachIdentifier();
