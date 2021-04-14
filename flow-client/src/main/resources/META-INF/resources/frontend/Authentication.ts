@@ -12,6 +12,9 @@ export interface LoginResult {
 export interface LoginOptions {
   loginProcessingUrl?: string;
   failureUrl?: string;
+  /**
+   * @deprecated The `defaultSuccessUrl` is not used anymore.
+   */
   defaultSuccessUrl?: string;
 }
 
