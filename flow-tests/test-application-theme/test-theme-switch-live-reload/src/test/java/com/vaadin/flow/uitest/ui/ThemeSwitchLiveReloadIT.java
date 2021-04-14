@@ -30,14 +30,17 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 @NotThreadSafe
 public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
 
     private static final String BLUE_COLOR = "rgba(0, 0, 255, 1)";
+    private static final int TIMEOUT = 25;
 
     private static final String APP_THEME = "app-theme";
     private static final String OTHER_THEME = "other-theme";
@@ -61,19 +64,28 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void waitUntilOtherTheme() {
-        waitUntil(driver -> {
-            getDriver().navigate().refresh();
-            getCommandExecutor().waitForVaadin();
-            return isOtherThemeUsed();
-        }, 25);
+        waitUntilThemeSwap(String.format(
+                "Expected theme swap from '%s' to '%s' has not been done after timeout '%d'",
+                APP_THEME, OTHER_THEME, TIMEOUT), this::isOtherThemeUsed);
+    }
+
+    private void waitUntilThemeSwap(String errMessage,
+                                    SerializableSupplier<Boolean> themeStylesSupplier) {
+        try {
+            waitUntil(driver -> {
+                getDriver().navigate().refresh();
+                getCommandExecutor().waitForVaadin();
+                return themeStylesSupplier.get();
+            }, TIMEOUT);
+        } catch (TimeoutException e) {
+            Assert.fail(errMessage);
+        }
     }
 
     private void waitUntilAppTheme() {
-        waitUntil(driver -> {
-            getDriver().navigate().refresh();
-            getCommandExecutor().waitForVaadin();
-            return !isOtherThemeUsed();
-        }, 25);
+        waitUntilThemeSwap(String.format(
+                "Expected theme swap from '%s' to '%s' has not been done after timeout '%d'",
+                OTHER_THEME, APP_THEME, TIMEOUT), () -> !isOtherThemeUsed());
     }
 
     private boolean isOtherThemeUsed() {
