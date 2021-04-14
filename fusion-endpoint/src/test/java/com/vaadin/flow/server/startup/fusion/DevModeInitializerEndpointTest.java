@@ -167,7 +167,6 @@ public class DevModeInitializerEndpointTest {
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
         waitForDevModeServer();
-        Thread.sleep(200);
         Assert.assertTrue("Should generate OpenAPI spec if Endpoint is used.",
                 generatedOpenApiJson.exists());
     }
