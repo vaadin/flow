@@ -40,8 +40,10 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
 
     private static final String BLUE_COLOR = "rgba(0, 0, 255, 1)";
-    private static final int TIMEOUT = 25;
-    private static final String ERROR_MESSAGE = "Expected theme swap from '%s' to '%s' has not been done after timeout '%d'";
+    private static final String ERROR_MESSAGE =
+            "Expected theme swap from '%s' to '%s' has not been done after '%d' attempts";
+    private static final int TIMEOUT = 5;
+    private static final int ATTEMPTS = 5;
 
     private static final String APP_THEME = "app-theme";
     private static final String OTHER_THEME = "other-theme";
@@ -65,27 +67,29 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void waitUntilOtherTheme() {
-
         waitUntilThemeSwap(String.format(ERROR_MESSAGE, APP_THEME, OTHER_THEME,
-                TIMEOUT), this::isOtherThemeUsed);
+                ATTEMPTS), this::isOtherThemeUsed);
     }
 
     private void waitUntilThemeSwap(String errMessage,
                                     SerializableSupplier<Boolean> themeStylesSupplier) {
-        try {
-            waitUntil(driver -> {
-                getDriver().navigate().refresh();
+        int attempts = 0;
+        while (attempts < ATTEMPTS) {
+            getDriver().navigate().refresh();
+            try {
                 getCommandExecutor().waitForVaadin();
-                return themeStylesSupplier.get();
-            }, TIMEOUT);
-        } catch (TimeoutException e) {
-            Assert.fail(errMessage);
+                waitUntil(driver -> themeStylesSupplier.get(), TIMEOUT);
+                return;
+            } catch (TimeoutException e) {
+                attempts++;
+            }
         }
+        Assert.fail(errMessage);
     }
 
     private void waitUntilAppTheme() {
         waitUntilThemeSwap(String.format(ERROR_MESSAGE, OTHER_THEME, APP_THEME,
-                TIMEOUT), () -> !isOtherThemeUsed());
+                ATTEMPTS), () -> !isOtherThemeUsed());
     }
 
     private boolean isOtherThemeUsed() {
