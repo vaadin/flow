@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.TARGET;
 import static org.mockito.Mockito.verify;
 
 import java.io.File;
@@ -43,7 +44,7 @@ public class TaskGeneratePackageJsonTest {
         flowResourcesFolder = temporaryFolder.newFolder();
 
         task = Mockito.spy(new TaskGeneratePackageJson(npmFolder, null,
-                flowResourcesFolder));
+                flowResourcesFolder, TARGET));
 
         Mockito.doReturn(null).when(task).getPackageJson();
         Mockito.doReturn(false).when(task)
