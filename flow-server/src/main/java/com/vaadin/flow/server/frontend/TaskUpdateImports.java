@@ -325,13 +325,17 @@ public class TaskUpdateImports extends NodeUpdater {
      * @param disablePnpm
      *            if {@code true} then npm is used instead of pnpm, otherwise
      *            pnpm is used
+     * @param buildDir
+     *            the used build directory
      */
     TaskUpdateImports(ClassFinder finder,
             FrontendDependenciesScanner frontendDepScanner,
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
-            File tokenFile, JsonObject tokenFileData, boolean disablePnpm) {
-        super(finder, frontendDepScanner, npmFolder, generatedPath, null);
+            File tokenFile, JsonObject tokenFileData, boolean disablePnpm,
+            String buildDir) {
+        super(finder, frontendDepScanner, npmFolder, generatedPath, null,
+                buildDir);
         this.frontendDirectory = frontendDirectory;
         fallbackScanner = fallBackScannerProvider.apply(finder);
         this.tokenFile = tokenFile;

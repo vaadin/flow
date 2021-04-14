@@ -18,8 +18,11 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -40,7 +43,6 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
@@ -115,6 +117,8 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     protected final FrontendDependenciesScanner frontDeps;
 
+    protected String buildDir;
+
     final ClassFinder finder;
 
     boolean modified;
@@ -132,10 +136,12 @@ public abstract class NodeUpdater implements FallibleCommand {
      *            folder where flow generated files will be placed.
      * @param flowResourcesPath
      *            folder where flow dependencies will be copied to.
+     * @param buildDir
+     *            the used build directory
      */
     protected NodeUpdater(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, File flowResourcesPath) {
+            File generatedPath, File flowResourcesPath, String buildDir) {
         this.frontDeps = frontendDependencies;
         this.finder = finder;
         this.npmFolder = npmFolder;
@@ -143,6 +149,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         this.generatedFolder = generatedPath;
         this.flowResourcesFolder = flowResourcesPath;
         this.formResourcesFolder = new File(flowResourcesPath, FORM_FOLDER);
+        this.buildDir = buildDir;
     }
 
     private File getPackageJsonFile() {
@@ -209,8 +216,32 @@ public abstract class NodeUpdater implements FallibleCommand {
         }
 
         addVaadinDefaultsToJson(packageJson);
+        addWebpackPlugins(packageJson);
 
         return packageJson;
+    }
+
+    private void addWebpackPlugins(JsonObject packageJson) {
+        final List<String> plugins = WebpackPluginsUtil.getPlugins();
+
+        Path targetFolder = Paths.get(npmFolder.toString(), buildDir,
+                WebpackPluginsUtil.PLUGIN_TARGET);
+
+        JsonObject devDependencies;
+        if (packageJson.hasKey(DEV_DEPENDENCIES)) {
+            devDependencies = packageJson.getObject(DEV_DEPENDENCIES);
+        } else {
+            devDependencies = Json.createObject();
+            packageJson.put(DEV_DEPENDENCIES, devDependencies);
+        }
+
+        plugins.stream().filter(plugin -> targetFolder.toFile().exists())
+                .forEach(plugin -> {
+                    String pluginTarget = "./" + (npmFolder.toPath()
+                            .relativize(targetFolder).toString() + "/" + plugin)
+                                    .replace('\\', '/');
+                    devDependencies.put("@vaadin/" + plugin, pluginTarget);
+                });
     }
 
     JsonObject getResourcesPackageJson() throws IOException {
