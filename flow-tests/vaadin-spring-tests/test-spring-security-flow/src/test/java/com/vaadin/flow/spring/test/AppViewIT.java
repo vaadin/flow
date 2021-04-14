@@ -1,15 +1,9 @@
 package com.vaadin.flow.spring.test;
 
-import java.io.IOException;
-
 import com.vaadin.flow.component.login.testbench.LoginFormElement;
 import com.vaadin.flow.component.login.testbench.LoginOverlayElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,19 +14,27 @@ public class AppViewIT extends ChromeBrowserTest {
 
     @After
     public void tearDown() {
-        getDriver().get(getRootURL() + "/logout");
+        logout();
+    }
+
+    private void logout() {
+        open("logout");
+    }
+
+    private void open(String path) {
+        getDriver().get(getRootURL() + "/" + path);
     }
 
     @Test
     public void root_page_should_require_login() {
         // when the / route is opened
-        getDriver().get(getRootURL() + "/");
+        open("");
 
         // then it redirects to the default login page
         waitUntil(ExpectedConditions.urlToBe(getRootURL() + "/login"));
 
         // when the user logs in
-        login();
+        loginUser();
 
         // then it redirects to /secured and there are no client errors
         waitUntil(ExpectedConditions.urlToBe(getRootURL() + "/"));
@@ -43,13 +45,13 @@ public class AppViewIT extends ChromeBrowserTest {
     @Test
     public void deep_page_should_require_login() {
         // when the /secured route is opened
-        getDriver().get(getRootURL() + "/secured");
+        open("secured");
 
         // then it redirects to the default login page
         waitUntil(ExpectedConditions.urlToBe(getRootURL() + "/login"));
 
         // when the user logs in
-        login();
+        loginUser();
 
         // then it redirects to /secured and there are no client errors
         waitUntil(ExpectedConditions.urlToBe(getRootURL() + "/secured"));
@@ -58,42 +60,87 @@ public class AppViewIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void static_resources_accessible_without_login() throws Exception {
-        verifyResponseCode("/manifest.webmanifest", 200);
-        verifyResponseCode("/sw.js", 200);
-        verifyResponseCode("/sw-runtime-resources-precache.js", 200);
-        verifyResponseCode("/offline.html", 200);
+    public void access_restricted_to_logged_in_users() {
+        String contents = "Secret document for all logged in users";
+        String path = "all-logged-in/secret.txt";
+
+        open(path);
+        String anonResult = getDriver().getPageSource();
+        Assert.assertFalse(anonResult.contains(contents));
+        loginUser();
+        open(path);
+        String userResult = getDriver().getPageSource();
+        Assert.assertTrue(userResult.contains(contents));
+        logout();
+        loginAdmin();
+        open(path);
+        String adminResult = getDriver().getPageSource();
+        Assert.assertTrue(adminResult.contains(contents));
+        logout();
+        open(path);
+        String anonResult2 = getDriver().getPageSource();
+        Assert.assertFalse(anonResult2.contains(contents));
+
     }
 
     @Test
-    public void other_static_resources_secured() throws Exception {
-        // expect redirect
-        verifyResponseCode("/secured.html", 302);
-        // Images and Icons are application specific and not related to Vaadin
-        // See https://github.com/vaadin/flow/pull/10428
-        verifyResponseCode("/images/image.png", 302);
-        verifyResponseCode("/icons/icon.png", 302);
+    public void access_restricted_to_admin() {
+        String contents = "Secret document for admin";
+        String path = "admin-only/secret.txt";
+        open(path);
+        String anonResult = getDriver().getPageSource();
+        Assert.assertFalse(anonResult.contains(contents));
+        loginUser();
+        open(path);
+        String userResult = getDriver().getPageSource();
+        Assert.assertFalse(userResult.contains(contents));
+        logout();
+        loginAdmin();
+        open(path);
+        String adminResult = getDriver().getPageSource();
+        Assert.assertTrue(adminResult.contains(contents));
+        logout();
+        open(path);
+        String anonResult2 = getDriver().getPageSource();
+        Assert.assertFalse(anonResult2.contains(contents));
     }
 
-    private void login() {
-        LoginFormElement form = $(LoginOverlayElement.class).first()
-                .getLoginForm();
-        form.getUsernameField().setValue("user");
-        form.getPasswordField().setValue("user");
+    @Test
+    public void static_resources_accessible_without_login() throws Exception {
+        open("manifest.webmanifest");
+        Assert.assertTrue(getDriver().getPageSource().contains("\"name\":\"Spring Security Helper Test Project\""));
+        open("sw.js");
+        Assert.assertTrue(getDriver().getPageSource().contains("self.addEventListener(\"install\",this.install)"));
+        open("sw-runtime-resources-precache.js");
+        Assert.assertTrue(getDriver().getPageSource().contains("self.additionalManifestEntries = ["));
+    }
+
+    @Test
+    public void public_app_resources_available_for_all() {
+        open("public/public.txt");
+        String shouldBeTextFile = getDriver().getPageSource();
+        Assert.assertTrue(shouldBeTextFile.contains("Public document for all users"));
+        open("login");
+        loginUser();
+        open("public/public.txt");
+        shouldBeTextFile = getDriver().getPageSource();
+        Assert.assertTrue(shouldBeTextFile.contains("Public document for all users"));
+    }
+
+    private void loginUser() {
+        login("user", "user");
+    }
+
+    private void loginAdmin() {
+        login("admin", "admin");
+    }
+
+    private void login(String username, String password) {
+        LoginFormElement form = $(LoginOverlayElement.class).first().getLoginForm();
+        form.getUsernameField().setValue(username);
+        form.getPasswordField().setValue(password);
         form.submit();
+        waitUntilNot(driver -> $(LoginOverlayElement.class).exists());
     }
 
-    private void verifyResponseCode(String path, int expectedCode)
-            throws IOException {
-        CloseableHttpClient httpClient = HttpClientBuilder.create()
-                .disableRedirectHandling().build();
-        HttpGet httpGet = new HttpGet(getRootURL() + path);
-        CloseableHttpResponse response = httpClient.execute(httpGet);
-        try {
-            Assert.assertEquals(expectedCode,
-                    response.getStatusLine().getStatusCode());
-        } finally {
-            response.close();
-        }
-    }
 }
