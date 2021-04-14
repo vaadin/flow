@@ -95,7 +95,12 @@ if (watchDogPort) {
 }
 
 const flowFrontendThemesFolder = path.resolve(flowFrontendFolder, 'themes');
-const themeName = extractThemeName(flowFrontendThemesFolder);
+let themeName = undefined;
+if (devMode) {
+  // Current theme name is being extracted from theme-generated.js located in 
+  // target/frontend/themes folder
+  themeName = extractThemeName(flowFrontendThemesFolder);
+}
 const themeOptions = {
   // The following matches target/frontend/themes/theme-generated.js
   // and for theme in JAR that is copied to target/frontend/themes/
@@ -261,9 +266,12 @@ module.exports = {
 
     ...(devMode && themeName ? [new ExtraWatchWebpackPlugin({
       files: [],
-      dirs: [path.resolve(__dirname, 'frontend', 'themes', themeName),
-        path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources', 'themes', themeName),
-        path.resolve(__dirname, 'src', 'main', 'resources', 'static', 'themes', themeName)]
+      // Watch the components folder for component styles update.
+      // Other folders or CSS files except 'styles.css' should be
+      // referenced from `styles.css` anyway, so no need to watch them.
+      dirs: [path.resolve(__dirname, 'frontend', 'themes', themeName, 'components'),
+        path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources', 'themes', themeName, 'components'),
+        path.resolve(__dirname, 'src', 'main', 'resources', 'static', 'themes', themeName, 'components')]
     }), new ThemeLiveReloadPlugin(themeName, processThemeResourcesCallback)] : []),
 
     new StatsPlugin({
