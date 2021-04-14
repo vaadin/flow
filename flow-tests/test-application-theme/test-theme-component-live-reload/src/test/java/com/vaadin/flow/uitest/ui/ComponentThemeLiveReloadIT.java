@@ -29,6 +29,8 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -94,12 +96,14 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void waitUntilComponentInitialStyle() {
-        waitUntil(driver -> !isComponentCustomStyle(BORDER_RADIUS)
-                            && !isComponentCustomStyle(OTHER_BORDER_RADIUS));
+        waitUntilWithMessage(driver -> !isComponentCustomStyle(BORDER_RADIUS)
+                            && !isComponentCustomStyle(OTHER_BORDER_RADIUS),
+                "Wait for component initial styles timeout");
     }
 
     private void waitUntilComponentCustomStyle(String borderRadius) {
-        waitUntil(driver -> isComponentCustomStyle(borderRadius));
+        waitUntilWithMessage(driver -> isComponentCustomStyle(borderRadius),
+                "Wait for component custom styles timeout: " + borderRadius);
     }
 
     private boolean isComponentCustomStyle(String borderRadius) {
@@ -178,13 +182,22 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void waitForLiveReload(final String initialAttachId) {
-        waitUntil(d -> {
+        waitUntilWithMessage(d -> {
             try {
                 final String newViewId = getAttachIdentifier();
                 return !initialAttachId.equals(newViewId);
             } catch (StaleElementReferenceException e) {
                 return false;
             }
-        });
+        }, "Wait for live reload timeout");
+    }
+
+    private void waitUntilWithMessage(ExpectedCondition<?> condition,
+                                      String message) {
+        try {
+            waitUntil(condition);
+        } catch (TimeoutException te) {
+            Assert.fail(message);
+        }
     }
 }
