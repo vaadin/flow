@@ -16,34 +16,15 @@
 
 package com.vaadin.flow.uitest.ui;
 
-import java.util.Random;
-
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ThemeLiveReloadView", layout = ViewTestLayout.class)
 public class ThemeLiveReloadView extends Div {
 
-    public static final String ATTACH_IDENTIFIER = "attach-identifier";
-    public static final String THEMED_COMPONENT_ID = "themed-component-id";
-
-    private static final Random random = new Random();
-
-    private final Span attachIdLabel = new Span();
-
     public ThemeLiveReloadView() {
-        TestThemedTextField testThemedTextField = new TestThemedTextField();
-        testThemedTextField.withId(THEMED_COMPONENT_ID);
-        add(testThemedTextField);
-
         add(new Paragraph("This is a Paragraph to test the applied font"));
-
-        attachIdLabel.setId(ATTACH_IDENTIFIER);
-        add(attachIdLabel);
-        addAttachListener(
-                e -> attachIdLabel.setText(Integer.toString(random.nextInt())));
     }
 }
