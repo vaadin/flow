@@ -11,6 +11,7 @@ const { InjectManifest } = require('workbox-webpack-plugin');
 const { DefinePlugin } = require('webpack');
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 // Flow plugins
 const StatsPlugin = require('@vaadin/stats-plugin');
@@ -67,6 +68,8 @@ const themeProjectFolders = projectStaticAssetsFolders.map((folder) =>
   path.resolve(folder, 'themes')
 );
 
+const tsconfigJsonFile = path.resolve(__dirname, 'tsconfig.json');
+const enableTypeScript = fs.existsSync(tsconfigJsonFile);
 
 // Target flow-fronted auto generated to be the actual target folder
 const flowFrontendFolder = '[to-be-generated-by-flow]';
@@ -211,10 +214,7 @@ module.exports = {
       flowFrontendFolder,
       ...projectStaticAssetsFolders,
     ],
-    extensions: [
-      useClientSideIndexFileForBootstrapping && '.ts',
-      '.js'
-    ].filter(Boolean),
+    extensions: ['.ts', '.js'],
     alias: {
       Frontend: frontendFolder
     }
@@ -243,9 +243,13 @@ module.exports = {
 
   module: {
     rules: [
-      useClientSideIndexFileForBootstrapping && {
+      {
         test: /\.ts$/,
-        loader: 'ts-loader'
+        loader: 'ts-loader',
+        options: {
+          transpileOnly: true,
+          experimentalWatchApi: true
+        }
       },
       {
         test: /\.css$/i,
@@ -342,5 +346,9 @@ module.exports = {
 
     // Generate compressed bundles when not devMode
     !devMode && new CompressionPlugin(),
+
+    enableTypeScript && new ForkTsCheckerWebpackPlugin({
+      configFile: tsconfigJsonFile
+    }),
   ].filter(Boolean)
 };
