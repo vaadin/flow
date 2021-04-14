@@ -41,6 +41,7 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
 
     private static final String BLUE_COLOR = "rgba(0, 0, 255, 1)";
     private static final int TIMEOUT = 25;
+    private static final String ERROR_MESSAGE = "Expected theme swap from '%s' to '%s' has not been done after timeout '%d'";
 
     private static final String APP_THEME = "app-theme";
     private static final String OTHER_THEME = "other-theme";
@@ -64,9 +65,9 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void waitUntilOtherTheme() {
-        waitUntilThemeSwap(String.format(
-                "Expected theme swap from '%s' to '%s' has not been done after timeout '%d'",
-                APP_THEME, OTHER_THEME, TIMEOUT), this::isOtherThemeUsed);
+
+        waitUntilThemeSwap(String.format(ERROR_MESSAGE, APP_THEME, OTHER_THEME,
+                TIMEOUT), this::isOtherThemeUsed);
     }
 
     private void waitUntilThemeSwap(String errMessage,
@@ -83,9 +84,8 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void waitUntilAppTheme() {
-        waitUntilThemeSwap(String.format(
-                "Expected theme swap from '%s' to '%s' has not been done after timeout '%d'",
-                OTHER_THEME, APP_THEME, TIMEOUT), () -> !isOtherThemeUsed());
+        waitUntilThemeSwap(String.format(ERROR_MESSAGE, OTHER_THEME, APP_THEME,
+                TIMEOUT), () -> !isOtherThemeUsed());
     }
 
     private boolean isOtherThemeUsed() {
