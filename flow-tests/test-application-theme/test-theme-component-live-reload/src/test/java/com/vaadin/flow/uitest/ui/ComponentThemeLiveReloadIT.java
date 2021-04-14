@@ -44,6 +44,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     private static final String OTHER_BORDER_RADIUS = "6px";
     private static final String THEME_FOLDER = "frontend/themes/app-theme/";
 
+    private File componentsDir;
     private File componentCSSFile;
 
     @Before
@@ -51,7 +52,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
         File baseDir = new File(System.getProperty("user.dir", "."));
         final File themeFolder = new File(baseDir, THEME_FOLDER);
 
-        File componentsDir = new File(themeFolder, "components");
+        componentsDir = new File(themeFolder, "components");
         createDirectoryIfAbsent(componentsDir);
 
         componentCSSFile = new File(new File(themeFolder, "components"),
@@ -60,8 +61,11 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
 
     @After
     public void cleanUp() {
-        if (componentCSSFile.exists()) {
-            doActionAndWaitUntilLiveReloadComplete(this::deleteComponentStyles);
+        if (componentsDir.exists()) {
+            doActionAndWaitUntilLiveReloadComplete(() -> {
+                deleteComponentStyles();
+                deleteFile(componentsDir);
+            });
         }
     }
 
