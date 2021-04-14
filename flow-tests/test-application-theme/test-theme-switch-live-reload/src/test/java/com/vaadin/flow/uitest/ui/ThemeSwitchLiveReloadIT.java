@@ -65,7 +65,7 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
             getDriver().navigate().refresh();
             getCommandExecutor().waitForVaadin();
             return isOtherThemeUsed();
-        }, 20);
+        }, 25);
     }
 
     private void waitUntilAppTheme() {
@@ -73,7 +73,7 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
             getDriver().navigate().refresh();
             getCommandExecutor().waitForVaadin();
             return !isOtherThemeUsed();
-        }, 20);
+        }, 25);
     }
 
     private boolean isOtherThemeUsed() {
