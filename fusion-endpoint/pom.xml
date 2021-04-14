@@ -14,7 +14,7 @@
     <properties>
         <validation.api.version>2.0.1.Final</validation.api.version>
         <jackson.version>2.10.2</jackson.version>
-        <spring.version>5.2.0.RELEASE</spring.version>
+        <spring.version>5.3.0</spring.version>
         <spring.autoconfigure.version>2.2.0.RELEASE</spring.autoconfigure.version>
         <javax.annotation.api.version>1.3.2</javax.annotation.api.version>
         <javaparser.version>3.15.1</javaparser.version>
@@ -71,7 +71,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
-            <version>5.3.0</version>
+            <version>${spring.vesion}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
