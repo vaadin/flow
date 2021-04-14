@@ -264,7 +264,7 @@ module.exports = {
       dirs: [path.resolve(__dirname, 'frontend', 'themes', themeName),
         path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources', 'themes', themeName),
         path.resolve(__dirname, 'src', 'main', 'resources', 'static', 'themes', themeName)]
-    }), new ThemeLiveReloadPlugin(themeName, processThemeResourcesCallback)] : []),
+    }), new ThemeLiveReloadPlugin(processThemeResourcesCallback)] : []),
 
     new StatsPlugin({
       devMode: devMode,
