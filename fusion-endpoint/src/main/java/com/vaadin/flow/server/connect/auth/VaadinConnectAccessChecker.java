@@ -149,7 +149,7 @@ public class VaadinConnectAccessChecker {
     }
 
     private boolean canAccessMethod(Method method, HttpServletRequest request) {
-        return isValidCsrfToken(request)
+        return validateCsrfTokenInRequest(request)
                 && annotationAllowsAccess(getSecurityTarget(method), request);
     }
 
@@ -170,7 +170,7 @@ public class VaadinConnectAccessChecker {
      * @return {@code true} if the CSRF token is ok or checking is disabled or
      *         there is no HTTP session, {@code false} otherwise
      */
-    private boolean isValidCsrfToken(HttpServletRequest request) {
+    private boolean validateCsrfTokenInRequest(HttpServletRequest request) {
         if (!xsrfProtectionEnabled) {
             return true;
         }
