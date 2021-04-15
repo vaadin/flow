@@ -55,7 +55,7 @@ export async function login(username: string, password: string, options?: LoginO
           result = {
             error: false,
             token: vaadinCsrfToken,
-            redirectUrl: response.url,
+            redirectUrl: response.url
           };
         }
       }
