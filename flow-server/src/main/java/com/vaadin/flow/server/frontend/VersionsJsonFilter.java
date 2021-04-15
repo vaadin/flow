@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import org.slf4j.LoggerFactory;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
@@ -33,6 +35,8 @@ class VersionsJsonFilter {
 
     private final String dependenciesKey;
 
+    private final String OLDER_VERSION_WARNING = "Using user pinned version '{}' of '{}' which is older than the current platform version '{}'";
+
     VersionsJsonFilter(JsonObject packageJson, String dependenciesKey) {
         this.dependenciesKey = dependenciesKey;
         userManagedDependencies = collectUserManagedDependencies(packageJson);
@@ -49,6 +53,13 @@ class VersionsJsonFilter {
         JsonObject json = Json.createObject();
         for (String key : versions.keys()) {
             if (userManagedDependencies.hasKey(key)) {
+                if (isNewer(versions.getString(key),
+                        userManagedDependencies.getString(key))) {
+                    LoggerFactory.getLogger("Versions").warn(
+                            OLDER_VERSION_WARNING,
+                            userManagedDependencies.getString(key), key,
+                            versions.getString(key));
+                }
                 json.put(key, userManagedDependencies.getString(key));
             } else if (vaadinVersions.hasKey(key) && isNewer(
                     vaadinVersions.getString(key), versions.getString(key))) {
