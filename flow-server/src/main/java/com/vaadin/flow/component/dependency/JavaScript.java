@@ -24,6 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
@@ -70,10 +71,10 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * </code>
  * </pre>
  * 
- * because the function is private there (unless it's explicitly exposed).
- * The JavaScript where the function is defined should be either
- * external or it should be added using {@link Page#addJavaScript(String)}: in
- * this case all declared functions become available in the global scope.
+ * because the function is private there (unless it's explicitly exposed). The
+ * JavaScript where the function is defined should be either external or it
+ * should be added using {@link Page#addJavaScript(String)}: in this case all
+ * declared functions become available in the global scope.
  * 
  *
  * @author Vaadin Ltd
