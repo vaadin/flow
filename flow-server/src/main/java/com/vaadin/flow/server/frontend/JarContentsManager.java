@@ -307,19 +307,16 @@ public class JarContentsManager {
                         + basePath.length());
         File target = new File(outputDirectory, relativePath);
         try {
-            if (target.exists()) {
-                if (!hasSameContent(jarFile.getInputStream(jarEntry), target)) {
-                    FileUtils.copyInputStreamToFile(
-                            jarFile.getInputStream(jarEntry), target);
-                }
-            } else {
+            if (!target.exists()
+                    || !hasSameContent(jarFile.getInputStream(jarEntry),
+                            target)) {
                 FileUtils.copyInputStreamToFile(
                         jarFile.getInputStream(jarEntry), target);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
-                    "Failed to extract jar entry '%s' from jarFile '%s'",
-                    jarEntry, outputDirectory), e);
+                    "Failed to extract jar entry '%s' from jarFile", jarEntry),
+                    e);
         }
     }
 
