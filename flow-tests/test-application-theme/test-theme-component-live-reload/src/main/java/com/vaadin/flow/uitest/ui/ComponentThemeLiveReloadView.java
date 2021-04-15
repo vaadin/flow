@@ -24,10 +24,9 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Theme(themeFolder = "app-theme")
-@Route(value = "com.vaadin.flow.uitest.ui.ComponentThemeLiveReloadView", layout = ViewTestLayout.class)
+@Route(value = "com.vaadin.flow.uitest.ui.ComponentThemeLiveReloadView")
 @NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "1.6.1")
 public class ComponentThemeLiveReloadView extends Div {
 
