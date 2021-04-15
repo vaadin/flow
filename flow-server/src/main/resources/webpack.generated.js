@@ -97,7 +97,7 @@ if (watchDogPort) {
 const flowFrontendThemesFolder = path.resolve(flowFrontendFolder, 'themes');
 let themeName = undefined;
 if (devMode) {
-  // Current theme name is being extracted from theme-generated.js located in 
+  // Current theme name is being extracted from theme-generated.js located in
   // target/frontend/themes folder
   themeName = extractThemeName(flowFrontendThemesFolder);
 }
