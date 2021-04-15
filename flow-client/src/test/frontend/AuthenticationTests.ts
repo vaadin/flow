@@ -76,7 +76,8 @@ describe('Authentication', () => {
       const result = await login('valid-username', 'valid-password');
       const expectedResult = {
         error: false,
-        token: vaadinCsrfToken
+        token: vaadinCsrfToken,
+        redirectUrl: '//localhost:8080/'
       };
 
       expect(fetchMock.calls()).to.have.lengthOf(1);
@@ -130,7 +131,8 @@ describe('Authentication', () => {
       const result = await login('valid-username', 'valid-password');
       const expectedResult = {
         error: false,
-        token: vaadinCsrfToken
+        token: vaadinCsrfToken,
+        redirectUrl: '//localhost:8080/protected-view'
       };
 
       expect(fetchMock.calls()).to.have.lengthOf(1);

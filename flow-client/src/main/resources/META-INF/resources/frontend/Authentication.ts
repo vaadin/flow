@@ -7,6 +7,7 @@ export interface LoginResult {
   token?: string;
   errorTitle?: string;
   errorMessage?: string;
+  redirectUrl?: string;
 }
 
 export interface LoginOptions {
@@ -53,7 +54,8 @@ export async function login(username: string, password: string, options?: LoginO
         if (vaadinCsrfToken) {
           result = {
             error: false,
-            token: vaadinCsrfToken
+            token: vaadinCsrfToken,
+            redirectUrl: response.url
           };
         }
       }
