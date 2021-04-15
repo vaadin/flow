@@ -64,6 +64,9 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     @After
     public void cleanUp() {
         if (componentsDir.exists()) {
+            // This waits until live reload complete to not affect the second
+            // re-run in CI (if any) and to not affect other @Test methods
+            // (if any appear in the future)
             doActionAndWaitUntilLiveReloadComplete(() -> {
                 deleteComponentStyles();
                 deleteFile(componentsDir);
