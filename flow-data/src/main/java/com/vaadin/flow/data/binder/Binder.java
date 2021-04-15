@@ -42,8 +42,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HasValidation;
+import com.vaadin.flow.component.HasTheme;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 import com.vaadin.flow.component.HasValue.ValueChangeListener;
@@ -51,6 +53,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.BeanValidator;
+import com.vaadin.flow.dom.ThemeList;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
@@ -2545,6 +2548,7 @@ public class Binder<BEAN> implements Serializable {
             HasValidation fieldWithValidation = (HasValidation) field;
             fieldWithValidation.setInvalid(true);
             fieldWithValidation.setErrorMessage(result.getErrorMessage());
+            setErrorTheme(fieldWithValidation, result);
         }
     }
 
@@ -2558,6 +2562,7 @@ public class Binder<BEAN> implements Serializable {
         if (field instanceof HasValidation) {
             HasValidation fieldWithValidation = (HasValidation) field;
             fieldWithValidation.setInvalid(false);
+            clearErrorTheme(fieldWithValidation);
         }
     }
 
@@ -3156,4 +3161,33 @@ public class Binder<BEAN> implements Serializable {
     public boolean isValidatorsDisabled() {
         return validatorsDisabled;
     }
+
+    private static String getThemeName(ErrorLevel errorLevel) {
+        return errorLevel.name().toLowerCase();
+    }
+
+    private static Optional<ThemeList> getThemes(HasValidation field) {
+        if (field instanceof HasTheme) {
+            return Optional.of(((HasTheme) field).getThemeNames());
+        } else if (field instanceof HasElement) {
+            return Optional.of(((HasElement) field).getElement().getThemeList());
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private static void clearErrorTheme(HasValidation field) {
+        getThemes(field).ifPresent(themes -> 
+            Stream.of(ErrorLevel.values())
+                .map(Binder::getThemeName)
+                .forEach(themes::remove)
+        );
+    }
+
+    private static void setErrorTheme(HasValidation field, ValidationResult result) {
+        result.getErrorLevel()
+            .map(Binder::getThemeName)
+            .ifPresent(errorTheme->getThemes(field).ifPresent(themes -> themes.add(errorTheme)));
+    }
+
 }
