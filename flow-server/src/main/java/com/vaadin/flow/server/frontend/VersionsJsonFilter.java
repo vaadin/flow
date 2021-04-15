@@ -86,14 +86,7 @@ class VersionsJsonFilter {
      */
     private JsonObject collectUserManagedDependencies(JsonObject packageJson) {
         JsonObject json = Json.createObject();
-        JsonObject vaadinDep;
-        if (packageJson.hasKey(VAADIN_DEP_KEY) && packageJson
-                .getObject(VAADIN_DEP_KEY).hasKey(dependenciesKey)) {
-            vaadinDep = packageJson.getObject(VAADIN_DEP_KEY)
-                    .getObject(dependenciesKey);
-        } else {
-            vaadinDep = Json.createObject();
-        }
+        JsonObject vaadinDep = collectFrameworkVersions(packageJson);
 
         if (packageJson.hasKey(dependenciesKey)) {
             JsonObject dependencies = packageJson.getObject(dependenciesKey);
