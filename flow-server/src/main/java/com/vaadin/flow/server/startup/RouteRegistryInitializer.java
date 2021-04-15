@@ -55,17 +55,16 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
                     .getInstance(context);
 
-            boolean needStaticRoutesRegistry = removePreviousRoutes(context,
-                    routeRegistry);
-
             Set<Class<? extends Component>> routes = validateRouteClasses(
                     routesSet.stream());
 
-            if (needStaticRoutesRegistry) {
-                configureStaticRoutesRegistry(context, routes);
-            }
+            routeRegistry.update(() -> {
+                if (removePreviousRoutes(context, routeRegistry)) {
+                    configureStaticRoutesRegistry(context, routes);
+                }
 
-            configureRoutes(routes, routeRegistry);
+                configureRoutes(routes, routeRegistry);
+            });
             routeRegistry.setPwaConfigurationClass(validatePwaClass(
                     routes.stream().map(clazz -> (Class<?>) clazz)));
         } catch (InvalidRouteConfigurationException irce) {
