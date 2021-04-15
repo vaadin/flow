@@ -348,7 +348,9 @@ module.exports = {
     !devMode && new CompressionPlugin(),
 
     enableTypeScript && new ForkTsCheckerWebpackPlugin({
-      configFile: tsconfigJsonFile
+      typescript: {
+        configFile: tsconfigJsonFile
+      }
     }),
   ].filter(Boolean)
 };
