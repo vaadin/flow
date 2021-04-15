@@ -71,8 +71,8 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * </code>
  * </pre>
  * 
- * because the function is private there (unless it's explicitly exposed
- * somehow). The JavaScript where the function is defined should be either
+ * because the function is private there (unless it's explicitly exposed).
+ * The JavaScript where the function is defined should be either
  * external or it should be added using {@link Page#addJavaScript(String)}: in
  * this case all declared functions become available in the global scope.
  * 
