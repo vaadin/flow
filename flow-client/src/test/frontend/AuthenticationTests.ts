@@ -71,13 +71,13 @@ describe('Authentication', () => {
     it('should return a CSRF token on valid credentials', async () => {
       fetchMock.post('/login', {
         body: happyCaseResponseText,
-        redirectUrl: 'localhost:8080/'
+        redirectUrl: '//localhost:8080/'
       }, { headers });
       const result = await login('valid-username', 'valid-password');
       const expectedResult = {
         error: false,
         token: vaadinCsrfToken,
-        redirectUrl: 'localhost:8080/'
+        redirectUrl: '//localhost:8080/'
       };
 
       expect(fetchMock.calls()).to.have.lengthOf(1);
@@ -105,6 +105,19 @@ describe('Authentication', () => {
       expect(result).to.deep.equal(expectedResult);
     })
 
+    it('should return an error when response is missing CSRF token', async () => {
+      fetchMock.post('/login', 'I am mock response without CSRF token', { headers });
+      const result = await login('valid-username', 'valid-password');
+      const expectedResult = {
+        error: true,
+        errorTitle: 'Error',
+        errorMessage: 'Something went wrong when trying to login.'
+      };
+
+      expect(fetchMock.calls()).to.have.lengthOf(1);
+      expect(result).to.deep.equal(expectedResult);
+    })
+
     it('should redirect based on request cache after login', async () => {
       // An unthenticated request attempt would be captured by the default
       // request cache, so after login, it should redirect the user to that 
@@ -113,13 +126,13 @@ describe('Authentication', () => {
         body: happyCaseResponseText,
         // mock the unthenticated attempt, which would be 
         // saved by the default request cache
-        redirectUrl: 'localhost:8080/protected-view'
+        redirectUrl: '//localhost:8080/protected-view'
       }, { headers });
       const result = await login('valid-username', 'valid-password');
       const expectedResult = {
         error: false,
         token: vaadinCsrfToken,
-        redirectUrl: 'localhost:8080/protected-view'
+        redirectUrl: '//localhost:8080/protected-view'
       };
 
       expect(fetchMock.calls()).to.have.lengthOf(1);

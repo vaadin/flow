@@ -45,7 +45,7 @@ async function getAllCommits(){
     
     res = await axios.get(url, options);
     data = res.data;
-    data = data.filter(da => da.labels.length > 0);
+    data = data.filter(da => da.labels.length > 0 && da.merged_at !== null);
     
     if (data.length === 0) {
       console.log("No commits needs to be picked.");
@@ -108,7 +108,7 @@ async function cherryPickCommits(){
     } catch (err) {
       console.error(`Cannot Pick the Commit:${arrSHA[i]} to ${arrBranch[i]}, error :${err}`);
       await labelCommit(arrURL[i], `need to pick manually ${arrBranch[i]}`);
-      await postComment(arrURL[i], arrUser[i], arrBranch[i], ${err});
+      await postComment(arrURL[i], arrUser[i], arrBranch[i], err);
       await exec(`git cherry-pick --abort`);
       await exec(`git checkout master`);
       await exec(`git branch -D ${branchName}`);

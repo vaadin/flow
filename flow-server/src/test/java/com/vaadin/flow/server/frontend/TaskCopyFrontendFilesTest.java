@@ -34,6 +34,7 @@ import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.TARGET;
 
 public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     @Rule
@@ -69,7 +70,7 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     @Test
     public void should_createPackageJson() throws IOException {
         TaskGeneratePackageJson task = new TaskGeneratePackageJson(npmFolder,
-                generatedFolder, frontendDepsFolder);
+                generatedFolder, frontendDepsFolder, TARGET);
         task.execute();
         Assert.assertTrue(new File(npmFolder, PACKAGE_JSON).exists());
         Assert.assertFalse(new File(generatedFolder, PACKAGE_JSON).exists());

@@ -13,6 +13,9 @@ export interface LoginResult {
 export interface LoginOptions {
   loginProcessingUrl?: string;
   failureUrl?: string;
+  /**
+   * @deprecated The `defaultSuccessUrl` is not used anymore.
+   */
   defaultSuccessUrl?: string;
 }
 
@@ -38,7 +41,6 @@ export async function login(username: string, password: string, options?: LoginO
     const response = await fetch(loginProcessingUrl, { method: 'POST', body: data, headers });
 
     const failureUrl = options && options.failureUrl ? options.failureUrl : '/login?error';
-    // const defaultSuccessUrl = options && options.defaultSuccessUrl ? options.defaultSuccessUrl : '/';
     // this assumes the default Spring Security form login configuration (handler URL and responses)
     if (response.ok && response.redirected) {
       if (response.url.endsWith(failureUrl)) {
@@ -52,15 +54,8 @@ export async function login(username: string, password: string, options?: LoginO
         if (vaadinCsrfToken) {
           result = {
             error: false,
-            redirectUrl: response.redirected ? response.url : undefined,
-            token: vaadinCsrfToken
-          };
-        } else {
-          result = {
-            error: true,
-            redirectUrl: response.redirected ? response.url : undefined,
-            errorTitle: 'Incorrect username or password.',
-            errorMessage: 'Check that you have entered the correct username and password and try again.'
+            token: vaadinCsrfToken,
+            redirectUrl: response.url,
           };
         }
       }
