@@ -307,6 +307,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         classes.add(Visited.class);
         classes.add(RoutedWithReferenceToVisited.class);
         devModeInitializer.onStartup(classes, servletContext);
+        waitForDevModeServer();
         Mockito.verify(servletContext, Mockito.times(0)).setAttribute(
                 Mockito.eq(FallbackChunk.class.getName()),
                 Mockito.any(FallbackChunk.class));
