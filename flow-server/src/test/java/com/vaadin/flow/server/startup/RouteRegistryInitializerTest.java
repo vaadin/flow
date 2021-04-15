@@ -21,11 +21,13 @@ import javax.servlet.ServletException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -61,6 +63,7 @@ import com.vaadin.flow.router.RouteParameterRegex;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RouterTest.FileNotFound;
+import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
@@ -1426,6 +1429,32 @@ public class RouteRegistryInitializerTest {
                 Collections.singleton(BaseRouteTarget.class), vaadinContext);
         Assert.assertFalse(registry.cleanCalled);
         Assert.assertFalse(registry.removeCalled);
+    }
+
+    @Test
+    public void initialize_predicateReturnsTrue_sameRouteIsReadded_eventHasNoReaddedRoute()
+            throws VaadinInitializerException {
+        Mockito.when(lookup.lookup(OneTimeInitializerPredicate.class))
+                .thenReturn(() -> true);
+
+        routeRegistryInitializer.initialize(
+                new HashSet<>(Arrays.asList(OldRouteTarget.class)),
+                vaadinContext);
+
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(vaadinContext);
+        Assert.assertEquals(1, registry.getRegisteredRoutes().size());
+
+        AtomicReference<RoutesChangedEvent> event = new AtomicReference<>();
+        registry.addRoutesChangeListener(event::set);
+
+        routeRegistryInitializer.initialize(new HashSet<>(
+                Arrays.asList(OldRouteTarget.class, BaseRouteTarget.class)),
+                vaadinContext);
+        Assert.assertEquals(2, registry.getRegisteredRoutes().size());
+
+        Assert.assertTrue(event.get().getRemovedRoutes().isEmpty());
+        Assert.assertEquals(1, event.get().getAddedRoutes().size());
     }
 
     @Test

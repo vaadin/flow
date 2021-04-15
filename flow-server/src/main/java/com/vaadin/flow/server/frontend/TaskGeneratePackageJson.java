@@ -41,10 +41,13 @@ public class TaskGeneratePackageJson extends NodeUpdater {
      * @param flowResourcesPath
      *            folder where flow resources taken from jars will be placed.
      *            default)
+     * @param buildDir
+     *            the used build directory
      */
     TaskGeneratePackageJson(File npmFolder, File generatedPath,
-            File flowResourcesPath) {
-        super(null, null, npmFolder, generatedPath, flowResourcesPath);
+            File flowResourcesPath, String buildDir) {
+        super(null, null, npmFolder, generatedPath, flowResourcesPath,
+                buildDir);
     }
 
     @Override

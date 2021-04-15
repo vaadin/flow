@@ -1,5 +1,9 @@
 package com.vaadin.flow.server;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.server.HandlerHelper.RequestType;
@@ -200,5 +204,32 @@ public class HandlerHelperTest {
         Mockito.when(servletRequest.getServletPath()).thenReturn(servletPath);
         return new VaadinServletRequest(servletRequest,
                 Mockito.mock(VaadinServletService.class));
+    }
+
+    @Test
+    public void publicResources() {
+        Set<String> expected = new HashSet<>();
+        expected.add("/favicon.ico");
+        expected.add("/manifest.webmanifest");
+        expected.add("/sw.js");
+        expected.add("/sw-runtime-resources-precache.js");
+        expected.add("/offline.html");
+        expected.add("/offline-stub.html");
+        expected.add("/icons/icon.png");
+        expected.add("/icons/icon-144x144.png");
+        expected.add("/icons/icon-192x192.png");
+        expected.add("/icons/icon-512x512.png");
+        expected.add("/icons/icon-16x16.png");
+        expected.add("/icons/icon-32x32.png");
+        expected.add("/icons/icon-96x96.png");
+        expected.add("/icons/icon-180x180.png");
+        expected.add("/icons/icon-1125x2436.png");
+        expected.add("/icons/icon-750x1334.png");
+        expected.add("/icons/icon-1242x2208.png");
+        expected.add("/icons/icon-640x1136.png");
+
+        Set<String> actual = new HashSet<>();
+        Collections.addAll(actual, HandlerHelper.getPublicResources());
+        Assert.assertEquals(expected, actual);
     }
 }

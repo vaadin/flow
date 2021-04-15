@@ -75,13 +75,15 @@ public class TaskUpdatePackages extends NodeUpdater {
      * @param enablePnpm
      *            if {@code true} then pnpm is used instead of npm, otherwise
      *            npm is used
+     * @param buildDir
+     *            the used build directory
      */
     TaskUpdatePackages(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
             File generatedPath, File flowResourcesPath, boolean forceCleanUp,
-            boolean enablePnpm) {
+            boolean enablePnpm, String buildDir) {
         super(finder, frontendDependencies, npmFolder, generatedPath,
-                flowResourcesPath);
+                flowResourcesPath, buildDir);
         this.forceCleanUp = forceCleanUp;
         this.enablePnpm = enablePnpm;
     }
