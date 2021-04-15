@@ -102,6 +102,7 @@ if (devMode) {
   themeName = extractThemeName(flowFrontendThemesFolder);
 }
 const themeOptions = {
+  devMode: devMode,
   // The following matches target/frontend/themes/theme-generated.js
   // and for theme in JAR that is copied to target/frontend/themes/
   themeResourceFolder: flowFrontendThemesFolder,
