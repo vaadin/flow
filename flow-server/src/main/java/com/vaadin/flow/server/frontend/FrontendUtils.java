@@ -147,8 +147,8 @@ public class FrontendUtils {
 
     /**
      * Default folder where front-end resources present in the classpath jars
-     * are copied to.
-     * Relative to the {@link com.vaadin.flow.server.InitParameters#BUILD_FOLDER}.
+     * are copied to. Relative to the
+     * {@link com.vaadin.flow.server.InitParameters#BUILD_FOLDER}.
      */
     public static final String DEFAULT_FLOW_RESOURCES_FOLDER = "flow-frontend";
 

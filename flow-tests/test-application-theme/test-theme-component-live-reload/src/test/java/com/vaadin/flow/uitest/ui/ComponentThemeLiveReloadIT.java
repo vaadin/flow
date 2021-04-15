@@ -79,9 +79,9 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
         open();
         Assert.assertFalse(
                 "Border radius for themed component is not expected before "
-                + "applying the styles",
+                        + "applying the styles",
                 isComponentCustomStyle(BORDER_RADIUS)
-                || isComponentCustomStyle(OTHER_BORDER_RADIUS));
+                        || isComponentCustomStyle(OTHER_BORDER_RADIUS));
 
         // Live reload upon adding a new component styles file
         doActionAndWaitUntilLiveReloadComplete(
@@ -100,8 +100,9 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void waitUntilComponentInitialStyle() {
-        waitUntilWithMessage(driver -> !isComponentCustomStyle(BORDER_RADIUS)
-                            && !isComponentCustomStyle(OTHER_BORDER_RADIUS),
+        waitUntilWithMessage(
+                driver -> !isComponentCustomStyle(BORDER_RADIUS)
+                        && !isComponentCustomStyle(OTHER_BORDER_RADIUS),
                 "Wait for component initial styles timeout");
     }
 
@@ -146,7 +147,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
 
     private void deleteFile(File fileToDelete) {
         if (fileToDelete != null && fileToDelete.exists()
-            && !fileToDelete.delete()) {
+                && !fileToDelete.delete()) {
             Assert.fail("Unable to delete " + fileToDelete);
         }
     }
@@ -156,7 +157,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void doActionAndWaitUntilLiveReloadComplete(Runnable action,
-                                                        boolean deleted) {
+            boolean deleted) {
         final String initialAttachId = getAttachIdentifier();
         action.run();
         waitForLiveReload(initialAttachId, deleted);
@@ -191,11 +192,11 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void waitForLiveReload(final String initialAttachId,
-                                   boolean deleted) {
+            boolean deleted) {
         if (deleted) {
             // TODO: workaround for https://github.com/vaadin/flow/issues/9948.
-            //  one more page update is needed when a first webpack
-            //  re-compilation fails due to issue above.
+            // one more page update is needed when a first webpack
+            // re-compilation fails due to issue above.
             getDriver().navigate().refresh();
             getCommandExecutor().waitForVaadin();
         }
@@ -210,7 +211,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void waitUntilWithMessage(ExpectedCondition<?> condition,
-                                      String message) {
+            String message) {
         try {
             waitUntil(condition);
         } catch (TimeoutException te) {

@@ -335,8 +335,7 @@ public class HandlerHelper implements Serializable {
 
     private static List<String> getIconVariants(String iconPath) {
         return PwaRegistry.getIconTemplates(iconPath).stream()
-                .map(PwaIcon::getRelHref)
-                .collect(Collectors.toList());
+                .map(PwaIcon::getRelHref).collect(Collectors.toList());
     }
 
     /**
