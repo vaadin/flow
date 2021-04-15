@@ -51,6 +51,9 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
     @After
     public void cleanUp() {
         switchThemeName(OTHER_THEME, APP_THEME);
+        // This wait-until is needed to not affect the second re-run in CI
+        // (if any) and to not affect other @Test methods (if any appear in
+        // the future)
         waitUntilAppTheme();
     }
 
