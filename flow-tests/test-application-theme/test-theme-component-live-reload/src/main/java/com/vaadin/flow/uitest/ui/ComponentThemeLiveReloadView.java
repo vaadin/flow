@@ -18,13 +18,17 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.Random;
 
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
+@Theme(themeFolder = "app-theme")
 @Route(value = "com.vaadin.flow.uitest.ui.ComponentThemeLiveReloadView", layout = ViewTestLayout.class)
+@NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "1.6.1")
 public class ComponentThemeLiveReloadView extends Div {
 
     public static final String ATTACH_IDENTIFIER = "attach-identifier";
