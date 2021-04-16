@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.internal;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -61,6 +63,31 @@ public class StringUtilTest {
                 + "\n";
         String template = StringUtil.removeComments(initialTemplate);
         Assert.assertEquals(initialTemplate, template);
+    }
+
+    @Test
+    public void removeComments_commentsWithAsterisksInside_commentIsRemoved() {
+        String result = StringUtil.removeComments(
+        // @formatter:off
+                "import { html, LitElement } from 'lit-element';\n"
+               + "\n"
+               + "export class HelloLit extends LitElement {\n"
+               + "  /* ******************************************************\n"
+               + "   * comment\n"
+               + "   * ******************************************************/\n"
+               + "\n"
+               + "  render() {\n"
+               + "    return html` <div>Some content</div>`;\n"
+               + "  }\n"
+               + "}\n"
+               + "\n"
+               + "customElements.define('hello-lit', HelloLit);");
+        // @formatter:on
+        MatcherAssert.assertThat(result, CoreMatchers.allOf(
+                CoreMatchers.containsString("<div>Some content</div>"),
+                CoreMatchers.containsString(
+                        "customElements.define('hello-lit', HelloLit);"),
+                CoreMatchers.not(CoreMatchers.containsString("comment"))));
     }
 
 }

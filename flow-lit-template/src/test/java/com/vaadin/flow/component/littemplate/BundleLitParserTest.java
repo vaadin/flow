@@ -36,4 +36,28 @@ public class BundleLitParserTest {
         Assert.assertEquals("", "vaadin-split-layout",
                 element.getElementsByTag("template").get(0).child(0).tagName());
     }
+
+    @Test
+    public void parseTemplateWithComments_commentsProperlyIgnored()
+            throws IOException {
+        final Element element = BundleLitParser.parseLitTemplateElement("in.ts",
+        // @formatter:off
+                         "import { html, LitElement } from 'lit-element';\n"
+                        + "\n"
+                        + "export class HelloLit extends LitElement {\n"
+                        + "  /* ******************************************************\n"
+                        + "   * comment\n"
+                        + "   * ******************************************************/\n"
+                        + "\n"
+                        + "  render() {\n"
+                        + "    return html` <div>Some content</div>`;\n"
+                        + "  }\n"
+                        + "}\n"
+                        + "\n"
+                        + "customElements.define('hello-lit', HelloLit);");
+         // @formatter:on
+
+        Assert.assertEquals(2, element.getAllElements().size());
+        Assert.assertEquals(1, element.getElementsByTag("div").size());
+    }
 }
