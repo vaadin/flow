@@ -75,6 +75,8 @@ public abstract class VaadinWebSecurityConfigurerAdapter
                 // Vaadin internal requests must always be allowed to allow public Flow pages
                 // and/or login page implemented using Flow.
         urlRegistry.requestMatchers(requestUtil::isFrameworkInternalRequest).permitAll();
+        // Public endpoints are OK to access
+        urlRegistry.requestMatchers(requestUtil::isAnonymousEndpoint).permitAll();
         urlRegistry.requestMatchers(getDefaultHttpSecurityPermitMatcher()).permitAll();
 
         // all other requests require authentication

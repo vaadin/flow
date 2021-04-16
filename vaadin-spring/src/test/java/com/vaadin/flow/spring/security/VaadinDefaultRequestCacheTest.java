@@ -1,13 +1,18 @@
 package com.vaadin.flow.spring.security;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.connect.Endpoint;
+import com.vaadin.flow.server.connect.EndpointNameChecker;
+import com.vaadin.flow.server.connect.EndpointRegistry;
 import com.vaadin.flow.server.connect.EndpointUtil;
 import com.vaadin.flow.server.connect.VaadinEndpointProperties;
+import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
 
 import org.junit.Assert;
@@ -21,11 +26,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { VaadinDefaultRequestCache.class, RequestUtil.class,
         EndpointUtil.class, VaadinEndpointProperties.class,
-        VaadinConfigurationProperties.class })
+        VaadinConfigurationProperties.class, EndpointRegistry.class,
+        EndpointNameChecker.class, VaadinConnectAccessChecker.class })
 public class VaadinDefaultRequestCacheTest {
 
     @Autowired
     VaadinDefaultRequestCache cache;
+    @Autowired
+    EndpointRegistry endpointRegistry;
     @Autowired
     RequestUtil requestUtil;
 
@@ -61,11 +69,22 @@ public class VaadinDefaultRequestCacheTest {
         Assert.assertNull(cache.getRequest(request, response));
     }
 
+    @Endpoint
+    public static class FakeEndpoint {
+        public void fakeMethod() {
+        }
+    }
+
     @Test
-    public void endpointRequestNotSaved() {
+    public void endpointRequestNotSaved() throws Exception {
         HttpServletRequest request = RequestUtilTest
-                .createRequest("/connect/MyClass/MyEndpoint", null);
+                .createRequest("/connect/fakeendpoint/fakemethod", null);
         HttpServletResponse response = createResponse();
+        Method registerMethod = EndpointRegistry.class
+                .getDeclaredMethod("registerEndpoint", Object.class);
+        registerMethod.setAccessible(true);
+        registerMethod.invoke(endpointRegistry, new FakeEndpoint());
+
         cache.saveRequest(request, response);
         Assert.assertNull(cache.getRequest(request, response));
     }

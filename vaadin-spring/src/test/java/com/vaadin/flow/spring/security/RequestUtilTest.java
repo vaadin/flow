@@ -6,8 +6,11 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.connect.EndpointNameChecker;
+import com.vaadin.flow.server.connect.EndpointRegistry;
 import com.vaadin.flow.server.connect.EndpointUtil;
 import com.vaadin.flow.server.connect.VaadinEndpointProperties;
+import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
 
@@ -23,7 +26,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { VaadinDefaultRequestCache.class, RequestUtil.class,
-        EndpointUtil.class, VaadinEndpointProperties.class, })
+        EndpointUtil.class, VaadinEndpointProperties.class,
+        EndpointRegistry.class, EndpointNameChecker.class,
+        VaadinConnectAccessChecker.class })
 public class RequestUtilTest {
 
     @Autowired
@@ -120,8 +125,7 @@ public class RequestUtilTest {
 
     static HttpServletRequest createRequest(String pathInfo, RequestType type,
             Map<String, String> headers) {
-        String uri = "http://localhost:8080"
-                + (pathInfo == null ? "/" : pathInfo);
+        String uri = (pathInfo == null ? "/" : pathInfo);
         MockHttpServletRequest r = new MockHttpServletRequest("GET", uri);
         r.setPathInfo(pathInfo);
         if (type != null) {

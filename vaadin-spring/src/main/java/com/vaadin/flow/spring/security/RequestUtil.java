@@ -55,9 +55,31 @@ public class RequestUtil {
         return HandlerHelper.isFrameworkInternalRequest(vaadinMapping, request);
     }
 
+    /**
+     * Checks whether the request targets an endpoint.
+     *
+     * @param request the servlet request
+     * @return {@code true} if the request is targeting an enpoint, {@code false}
+     *         otherwise
+     */
     public boolean isEndpointRequest(HttpServletRequest request) {
         if (endpointUtil != null) {
             return ((EndpointUtil) endpointUtil).isEndpointRequest(request);
+        }
+        return false;
+    }
+
+    /**
+     * Checks whether the request targets an endpoint that is public, i.e. marked
+     * as @{@link com.vaadin.flow.server.connect.auth.AnonymousAllowed}.
+     *
+     * @param request the servlet request
+     * @return {@code true} if the request is targeting an anonymous enpoint,
+     *         {@code false} otherwise
+     */
+    public boolean isAnonymousEndpoint(HttpServletRequest request) {
+        if (endpointUtil != null) {
+            return ((EndpointUtil) endpointUtil).isAnonymousEndpoint(request);
         }
         return false;
     }
