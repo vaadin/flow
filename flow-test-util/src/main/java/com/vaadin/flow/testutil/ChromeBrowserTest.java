@@ -60,14 +60,22 @@ public class ChromeBrowserTest extends ViewOrUITest {
     @Override
     public void setup() throws Exception {
         if (Browser.CHROME == getRunLocallyBrowser() && !isJavaInDebugMode()) {
-            setDriver(createHeadlessChromeDriver(getAdditionalHeadlessChromeOptions()));
+            setDriver(createHeadlessChromeDriver(
+                    getAdditionalHeadlessChromeOptions()));
         } else {
             super.setup();
         }
     }
 
-    protected String[] getAdditionalHeadlessChromeOptions() {
-        return new String[]{};
+    /**
+     * Gets additional chrome options to be used when running on a local Chrome.
+     * <p>
+     * The returned options object is merged into the default options.
+     * 
+     * @return chrome options to use when running on a local Chrome
+     */
+    protected ChromeOptions getAdditionalHeadlessChromeOptions() {
+        return new ChromeOptions();
     }
 
     static boolean isJavaInDebugMode() {
@@ -75,9 +83,12 @@ public class ChromeBrowserTest extends ViewOrUITest {
                 .toString().contains("jdwp");
     }
 
-    static WebDriver createHeadlessChromeDriver(String... additionalOptions) {
-        return TestBench
-                .createDriver(new ChromeDriver(createHeadlessChromeOptions(additionalOptions)));
+    static WebDriver createHeadlessChromeDriver(
+            ChromeOptions additionalOptions) {
+        ChromeOptions headlessOptions = createHeadlessChromeOptions();
+
+        return TestBench.createDriver(
+                new ChromeDriver(headlessOptions.merge(additionalOptions)));
     }
 
     @Override
@@ -107,12 +118,9 @@ public class ChromeBrowserTest extends ViewOrUITest {
         return capabilities;
     }
 
-    static ChromeOptions createHeadlessChromeOptions(String... additionalOptions) {
+    static ChromeOptions createHeadlessChromeOptions() {
         final ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless", "--disable-gpu");
-        if (additionalOptions.length > 0) {
-            options.addArguments(additionalOptions);
-        }
         return options;
     }
 }

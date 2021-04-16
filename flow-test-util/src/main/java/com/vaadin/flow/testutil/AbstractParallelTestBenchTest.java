@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.Before;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.testbench.IPAddress;
@@ -71,16 +72,23 @@ public class AbstractParallelTestBenchTest extends TestBenchHelpers {
             setDesiredCapabilities(Browser.CHROME.getDesiredCapabilities());
         } else if (Browser.CHROME == getRunLocallyBrowser()
                 && !isJavaInDebugMode()) {
-            setDriver(createHeadlessChromeDriver(getAdditionalHeadlessChromeOptions()));
+            setDriver(createHeadlessChromeDriver(
+                    getAdditionalHeadlessChromeOptions()));
             return;
         }
         super.setup();
     }
 
-    protected String[] getAdditionalHeadlessChromeOptions() {
-        return new String[]{};
+    /**
+     * Gets additional chrome options to be used when running on a local Chrome.
+     * <p>
+     * The returned options object is merged into the default options.
+     * 
+     * @return chrome options to use when running on a local Chrome
+     */
+    protected ChromeOptions getAdditionalHeadlessChromeOptions() {
+        return new ChromeOptions();
     }
-
 
     /**
      * Returns the URL to the root of the server, e.g. "http://localhost:8888"
