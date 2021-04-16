@@ -17,9 +17,9 @@ const $wnd = window as any;
 
 /* global btoa localStorage setTimeout URLSearchParams Request Response */
 describe('Authentication', () => {
-  const csrf = 'spring-csrf-token';
-  const headerName = 'X-CSRF-TOKEN';
-  const headers: Record<string, string> = {};
+  const springCsrfToken = 'spring-csrf-token';
+  const springCsrfHeaderName = 'X-CSRF-TOKEN';
+  const requestHeaders: Record<string, string> = {};
   const vaadinCsrfToken = '6a60700e-852b-420f-a126-a1c61b73d1ba';
   const happyCaseResponseText =
     '<head><meta name="_csrf" content="spring-csrf-token"></meta><meta name="_csrf_header" content="X-CSRF-TOKEN"></meta></head><script>window.Vaadin = {TypeScript: {"csrfToken":"' +
@@ -30,7 +30,7 @@ describe('Authentication', () => {
       el.remove()
     );
   }
-  function setupSpringCsrfMetaTags(csrfToken = csrf) {
+  function setupSpringCsrfMetaTags(csrfToken = springCsrfToken) {
     let csrfMetaTag = document.head.querySelector('meta[name="_csrf"]') as HTMLMetaElement | null;
     let csrfHeaderNameMetaTag = document.head.querySelector('meta[name="_csrf_header"]') as HTMLMetaElement | null;
 
@@ -46,11 +46,11 @@ describe('Authentication', () => {
       csrfHeaderNameMetaTag.name = '_csrf_header';
       document.head.appendChild(csrfHeaderNameMetaTag);
     }
-    csrfHeaderNameMetaTag.content = headerName;
+    csrfHeaderNameMetaTag.content = springCsrfHeaderName;
   }
   beforeEach(() => {
     setupSpringCsrfMetaTags();
-    headers[headerName] = csrf;
+    requestHeaders[springCsrfHeaderName] = springCsrfToken;
   });
   afterEach(() => {
     // @ts-ignore
@@ -64,7 +64,7 @@ describe('Authentication', () => {
     });
 
     it('should return an error on invalid credentials', async () => {
-      fetchMock.post('/login', { redirectUrl: '/login?error' }, { headers });
+      fetchMock.post('/login', { redirectUrl: '/login?error' }, { headers: requestHeaders });
       const result = await login('invalid-username', 'invalid-password');
       const expectedResult = {
         error: true,
@@ -83,7 +83,7 @@ describe('Authentication', () => {
           body: happyCaseResponseText,
           redirectUrl: '//localhost:8080/'
         },
-        { headers }
+        { headers: requestHeaders }
       );
       const result = await login('valid-username', 'valid-password');
       const expectedResult = {
@@ -102,7 +102,7 @@ describe('Authentication', () => {
         status: 500,
         statusText: 'Internal Server Error'
       });
-      fetchMock.post('/login', errorResponse, { headers });
+      fetchMock.post('/login', errorResponse, { headers: requestHeaders });
       const result = await login('valid-username', 'valid-password');
       const expectedResult = {
         error: true,
@@ -115,7 +115,7 @@ describe('Authentication', () => {
     });
 
     it('should return an error when response is missing CSRF token', async () => {
-      fetchMock.post('/login', 'I am mock response without CSRF token', { headers });
+      fetchMock.post('/login', 'I am mock response without CSRF token', { headers: requestHeaders });
       const result = await login('valid-username', 'valid-password');
       const expectedResult = {
         error: true,
@@ -139,7 +139,7 @@ describe('Authentication', () => {
           // saved by the default request cache
           redirectUrl: '//localhost:8080/protected-view'
         },
-        { headers }
+        { headers: requestHeaders }
       );
       const result = await login('valid-username', 'valid-password');
       const expectedResult = {
@@ -172,7 +172,7 @@ describe('Authentication', () => {
           body: happyCaseResponseText,
           redirectUrl: '/logout?login'
         },
-        { headers }
+        { headers: requestHeaders }
       );
       await logout();
       expect(fetchMock.calls()).to.have.lengthOf(1);
@@ -186,7 +186,7 @@ describe('Authentication', () => {
         () => {
           throw fakeError;
         },
-        { headers }
+        { headers: requestHeaders }
       );
       fetchMock.get('?nocache', {
         body: happyCaseResponseText
@@ -216,13 +216,15 @@ describe('Authentication', () => {
           body: happyCaseResponseText,
           redirectUrl: '/logout?login'
         },
-        { headers, overwriteRoutes: false, repeat: 1 }
+        { headers: requestHeaders, overwriteRoutes: false, repeat: 1 }
       );
       await logout();
       expect(fetchMock.calls()).to.have.lengthOf(3);
       expect($wnd.Vaadin.TypeScript.csrfToken).to.equal(vaadinCsrfToken);
-      expect(document.head.querySelector('meta[name="_csrf"]')?.getAttribute('content')).to.equal(csrf);
-      expect(document.head.querySelector('meta[name="_csrf_header"]')?.getAttribute('content')).to.equal(headerName);
+      expect(document.head.querySelector('meta[name="_csrf"]')?.getAttribute('content')).to.equal(springCsrfToken);
+      expect(document.head.querySelector('meta[name="_csrf_header"]')?.getAttribute('content')).to.equal(
+        springCsrfHeaderName
+      );
     });
 
     // when started the app offline, the spring csrf meta tags are not available
@@ -241,7 +243,7 @@ describe('Authentication', () => {
         () => {
           throw fakeError;
         },
-        { headers, overwriteRoutes: false, repeat: 1 }
+        { headers: requestHeaders, overwriteRoutes: false, repeat: 1 }
       );
 
       try {
@@ -257,12 +259,12 @@ describe('Authentication', () => {
 
     // when the page has been opend too long the session has expired
     it('should retry when expired spring csrf metas in the doc', async () => {
-      const expiredSpringCsrfToken = 'expired-' + csrf;
+      const expiredSpringCsrfToken = 'expired-' + springCsrfToken;
 
       setupSpringCsrfMetaTags(expiredSpringCsrfToken);
 
       const headersWithExpiredSpringCsrfToken: Record<string, string> = {};
-      headersWithExpiredSpringCsrfToken[headerName] = expiredSpringCsrfToken;
+      headersWithExpiredSpringCsrfToken[springCsrfHeaderName] = expiredSpringCsrfToken;
 
       fetchMock.post('/logout', 403, { headers: headersWithExpiredSpringCsrfToken, repeat: 1 });
       fetchMock.get('?nocache', {
@@ -274,13 +276,15 @@ describe('Authentication', () => {
           body: happyCaseResponseText,
           redirectUrl: '/logout?login'
         },
-        { headers, overwriteRoutes: false, repeat: 1 }
+        { headers: requestHeaders, overwriteRoutes: false, repeat: 1 }
       );
       await logout();
       expect(fetchMock.calls()).to.have.lengthOf(3);
       expect($wnd.Vaadin.TypeScript.csrfToken).to.equal(vaadinCsrfToken);
-      expect(document.head.querySelector('meta[name="_csrf"]')?.getAttribute('content')).to.equal(csrf);
-      expect(document.head.querySelector('meta[name="_csrf_header"]')?.getAttribute('content')).to.equal(headerName);
+      expect(document.head.querySelector('meta[name="_csrf"]')?.getAttribute('content')).to.equal(springCsrfToken);
+      expect(document.head.querySelector('meta[name="_csrf_header"]')?.getAttribute('content')).to.equal(
+        springCsrfHeaderName
+      );
     });
   });
 
