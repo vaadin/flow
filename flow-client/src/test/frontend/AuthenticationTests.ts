@@ -7,7 +7,8 @@ import {
   ConnectClient,
   InvalidSessionMiddleware,
   login,
-  logout
+  logout,
+  LoginResult
 } from '../../main/resources/META-INF/resources/frontend';
 
 // `connectClient.call` adds the host and context to the endpoint request.
@@ -25,7 +26,9 @@ describe('Authentication', () => {
     '<head><meta name="_csrf" content="spring-csrf-token"></meta><meta name="_csrf_header" content="X-CSRF-TOKEN"></meta></head><script>window.Vaadin = {TypeScript: {"csrfToken":"' +
     vaadinCsrfToken +
     '"}};</script>';
-  const happyCaseLoginResponseText = happyCaseLogoutResponseText;
+  const happyCaseLoginResponseText = '';
+  const happyCaseResponseHeaders = { 'Vaadin-CSRF': vaadinCsrfToken, Result: 'success', 'Default-url': '/' };
+
   function clearSpringCsrfMetaTags() {
     Array.from(document.head.querySelectorAll('meta[name="_csrf"], meta[name="_csrf_header"]')).forEach((el) =>
       el.remove()
@@ -67,7 +70,7 @@ describe('Authentication', () => {
     it('should return an error on invalid credentials', async () => {
       fetchMock.post('/login', { redirectUrl: '/login?error' }, { headers: requestHeaders });
       const result = await login('invalid-username', 'invalid-password');
-      const expectedResult = {
+      const expectedResult: LoginResult = {
         error: true,
         errorTitle: 'Incorrect username or password.',
         errorMessage: 'Check that you have entered the correct username and password and try again.'
@@ -82,46 +85,16 @@ describe('Authentication', () => {
         '/login',
         {
           body: happyCaseLoginResponseText,
-          redirectUrl: '//localhost:8080/'
+          headers: happyCaseResponseHeaders
         },
         { headers: requestHeaders }
       );
       const result = await login('valid-username', 'valid-password');
-      const expectedResult = {
+      const expectedResult: LoginResult = {
         error: false,
         token: vaadinCsrfToken,
-        redirectUrl: '//localhost:8080/'
-      };
-
-      expect(fetchMock.calls()).to.have.lengthOf(1);
-      expect(result).to.deep.equal(expectedResult);
-    });
-
-    it('should return an error on other unexpected responses', async () => {
-      const body = 'Unexpected error';
-      const errorResponse = new Response(body, {
-        status: 500,
-        statusText: 'Internal Server Error'
-      });
-      fetchMock.post('/login', errorResponse, { headers: requestHeaders });
-      const result = await login('valid-username', 'valid-password');
-      const expectedResult = {
-        error: true,
-        errorTitle: 'Error',
-        errorMessage: 'Something went wrong when trying to login.'
-      };
-
-      expect(fetchMock.calls()).to.have.lengthOf(1);
-      expect(result).to.deep.equal(expectedResult);
-    });
-
-    it('should return an error when response is missing CSRF token', async () => {
-      fetchMock.post('/login', 'I am mock response without CSRF token', { headers: requestHeaders });
-      const result = await login('valid-username', 'valid-password');
-      const expectedResult = {
-        error: true,
-        errorTitle: 'Error',
-        errorMessage: 'Something went wrong when trying to login.'
+        defaultUrl: '/',
+        redirectUrl: undefined
       };
 
       expect(fetchMock.calls()).to.have.lengthOf(1);
@@ -138,15 +111,16 @@ describe('Authentication', () => {
           body: happyCaseLoginResponseText,
           // mock the unthenticated attempt, which would be
           // saved by the default request cache
-          redirectUrl: '//localhost:8080/protected-view'
+          headers: { ...happyCaseResponseHeaders, 'Saved-url': '/protected-view' }
         },
         { headers: requestHeaders }
       );
       const result = await login('valid-username', 'valid-password');
-      const expectedResult = {
+      const expectedResult: LoginResult = {
         error: false,
         token: vaadinCsrfToken,
-        redirectUrl: '//localhost:8080/protected-view'
+        defaultUrl: '/',
+        redirectUrl: '/protected-view'
       };
 
       expect(fetchMock.calls()).to.have.lengthOf(1);
