@@ -21,10 +21,11 @@ describe('Authentication', () => {
   const springCsrfHeaderName = 'X-CSRF-TOKEN';
   const requestHeaders: Record<string, string> = {};
   const vaadinCsrfToken = '6a60700e-852b-420f-a126-a1c61b73d1ba';
-  const happyCaseResponseText =
+  const happyCaseLogoutResponseText =
     '<head><meta name="_csrf" content="spring-csrf-token"></meta><meta name="_csrf_header" content="X-CSRF-TOKEN"></meta></head><script>window.Vaadin = {TypeScript: {"csrfToken":"' +
     vaadinCsrfToken +
     '"}};</script>';
+  const happyCaseLoginResponseText = happyCaseLogoutResponseText;
   function clearSpringCsrfMetaTags() {
     Array.from(document.head.querySelectorAll('meta[name="_csrf"], meta[name="_csrf_header"]')).forEach((el) =>
       el.remove()
@@ -80,7 +81,7 @@ describe('Authentication', () => {
       fetchMock.post(
         '/login',
         {
-          body: happyCaseResponseText,
+          body: happyCaseLoginResponseText,
           redirectUrl: '//localhost:8080/'
         },
         { headers: requestHeaders }
@@ -134,7 +135,7 @@ describe('Authentication', () => {
       fetchMock.post(
         '/login',
         {
-          body: happyCaseResponseText,
+          body: happyCaseLoginResponseText,
           // mock the unthenticated attempt, which would be
           // saved by the default request cache
           redirectUrl: '//localhost:8080/protected-view'
@@ -169,7 +170,7 @@ describe('Authentication', () => {
       fetchMock.post(
         '/logout',
         {
-          body: happyCaseResponseText,
+          body: happyCaseLogoutResponseText,
           redirectUrl: '/logout?login'
         },
         { headers: requestHeaders }
@@ -189,7 +190,7 @@ describe('Authentication', () => {
         { headers: requestHeaders }
       );
       fetchMock.get('?nocache', {
-        body: happyCaseResponseText
+        body: happyCaseLogoutResponseText
       });
       try {
         await logout();
@@ -208,12 +209,12 @@ describe('Authentication', () => {
       verifySpringCsrfTokenIsCleared();
       fetchMock.post('/logout', 403, { repeat: 1 });
       fetchMock.get('?nocache', {
-        body: happyCaseResponseText
+        body: happyCaseLogoutResponseText
       });
       fetchMock.post(
         '/logout',
         {
-          body: happyCaseResponseText,
+          body: happyCaseLogoutResponseText,
           redirectUrl: '/logout?login'
         },
         { headers: requestHeaders, overwriteRoutes: false, repeat: 1 }
@@ -235,7 +236,7 @@ describe('Authentication', () => {
       expect(document.head.querySelector('meta[name="_csrf_header"]')).to.be.null;
       fetchMock.post('/logout', 403, { repeat: 1 });
       fetchMock.get('?nocache', {
-        body: happyCaseResponseText
+        body: happyCaseLogoutResponseText
       });
       const fakeError = new Error('server error');
       fetchMock.post(
@@ -268,12 +269,12 @@ describe('Authentication', () => {
 
       fetchMock.post('/logout', 403, { headers: headersWithExpiredSpringCsrfToken, repeat: 1 });
       fetchMock.get('?nocache', {
-        body: happyCaseResponseText
+        body: happyCaseLogoutResponseText
       });
       fetchMock.post(
         '/logout',
         {
-          body: happyCaseResponseText,
+          body: happyCaseLogoutResponseText,
           redirectUrl: '/logout?login'
         },
         { headers: requestHeaders, overwriteRoutes: false, repeat: 1 }
