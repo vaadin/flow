@@ -11,6 +11,9 @@ import com.vaadin.flow.server.VaadinService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Handles checking of a CSRF token in endpoint requests.
+ */
 public class CsrfChecker {
 
     private boolean csrfProtectionEnabled = true;
