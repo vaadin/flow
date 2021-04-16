@@ -13,11 +13,6 @@ export interface LoginResult {
 
 export interface LoginOptions {
   loginProcessingUrl?: string;
-  failureUrl?: string;
-  /**
-   * @deprecated The `defaultSuccessUrl` is not used anymore.
-   */
-  defaultSuccessUrl?: string;
 }
 
 export interface LogoutOptions {
@@ -28,7 +23,7 @@ export interface LogoutOptions {
  * A helper method for Spring Security based form login.
  * @param username
  * @param password
- * @param options defines additional options, e.g, the loginProcessingUrl, failureUrl, defaultSuccessUrl etc.
+ * @param options defines additional options, e.g, the loginProcessingUrl etc.
  */
 export async function login(username: string, password: string, options?: LoginOptions): Promise<LoginResult> {
   try {
