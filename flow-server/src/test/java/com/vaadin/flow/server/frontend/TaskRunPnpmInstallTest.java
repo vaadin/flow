@@ -518,6 +518,94 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 object.getString("@vaadin/vaadin-notification"));
     }
 
+    @Test
+    public void runPnpmInstall_userVersionNewerThanPinned_installedOverlayVersionIsNotSpecifiedByPlatform()
+            throws IOException, ExecutionFailedException {
+        File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
+        packageJson.createNewFile();
+
+        // Write package json file
+        final String customOverlayVersion = "3.3.0";
+        // @formatter:off
+        final String packageJsonContent =
+            "{"
+                + "\"dependencies\": {"
+                    + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
+                    + "\"@vaadin/vaadin-overlay\": \"" + customOverlayVersion + "\""
+                + "}"
+            + "}";
+        // @formatter:on
+        FileUtils.write(packageJson, packageJsonContent,
+                StandardCharsets.UTF_8);
+
+        final VersionsJsonFilter versionsJsonFilter = new VersionsJsonFilter(
+                Json.parse(packageJsonContent), NodeUpdater.DEPENDENCIES);
+        // Platform defines a pinned version
+        TaskRunNpmInstall task = createTask(
+                versionsJsonFilter.getFilteredVersions(
+                        Json.parse("{ \"@vaadin/vaadin-overlay\":\""
+                                + PINNED_VERSION + "\"}"))
+                        .toJson());
+        task.execute();
+
+        File overlayPackageJson = new File(getNodeUpdater().nodeModulesFolder,
+                "@vaadin/vaadin-overlay/package.json");
+
+        // The resulting version should be the one specified by the user
+        JsonObject overlayPackage = Json.parse(FileUtils
+                .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
+        Assert.assertEquals(customOverlayVersion,
+                overlayPackage.getString("version"));
+    }
+
+    @Test
+    public void runPnpmInstall_frameworkCollectedVersionNewerThanPinned_installedOverlayVersionIsNotSpecifiedByPlatform()
+            throws IOException, ExecutionFailedException {
+        File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
+        packageJson.createNewFile();
+
+        // Write package json file
+        final String customOverlayVersion = "3.3.0";
+        // @formatter:off
+        final String packageJsonContent =
+            "{"
+                + "\"vaadin\": {"
+                    + "\"dependencies\": {"
+                        + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
+                        + "\"@vaadin/vaadin-overlay\": \"" + customOverlayVersion + "\""
+                    + "}"
+                + "},"
+                + "\"dependencies\": {"
+                    + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
+                    + "\"@vaadin/vaadin-overlay\": \"" + customOverlayVersion + "\""
+                + "}"
+            + "}";
+        // @formatter:on
+
+        FileUtils.write(packageJson, packageJsonContent,
+                StandardCharsets.UTF_8);
+
+        final VersionsJsonFilter versionsJsonFilter = new VersionsJsonFilter(
+                Json.parse(packageJsonContent), NodeUpdater.DEPENDENCIES);
+        // Platform defines a pinned version
+        TaskRunNpmInstall task = createTask(
+                versionsJsonFilter.getFilteredVersions(
+                        Json.parse("{ \"@vaadin/vaadin-overlay\":\""
+                                + PINNED_VERSION + "\"}"))
+                        .toJson());
+        task.execute();
+
+        File overlayPackageJson = new File(getNodeUpdater().nodeModulesFolder,
+                "@vaadin/vaadin-overlay/package.json");
+
+        // The resulting version should be the one collected from the
+        // annotations in the project
+        JsonObject overlayPackage = Json.parse(FileUtils
+                .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
+        Assert.assertEquals(customOverlayVersion,
+                overlayPackage.getString("version"));
+    }
+
     @Override
     protected String getToolName() {
         return "pnpm";

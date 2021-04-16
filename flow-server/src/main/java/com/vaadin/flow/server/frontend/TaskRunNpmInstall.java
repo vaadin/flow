@@ -418,7 +418,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 String stdoutLine;
                 while ((stdoutLine = reader.readLine()) != null) {
                     packageUpdater.log().debug(stdoutLine);
-                    toolOutput.append(stdoutLine);
+                    toolOutput.append(stdoutLine).append(System.lineSeparator());
                 }
             }
 
