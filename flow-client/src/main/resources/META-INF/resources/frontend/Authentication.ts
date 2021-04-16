@@ -49,12 +49,11 @@ export async function login(username: string, password: string, options?: LoginO
     const loginSuccessful = response.ok && result === 'success';
 
     if (loginSuccessful) {
-      const targetUrl = savedUrl;
       const vaadinCsrfToken = response.headers.get('Vaadin-CSRF') || undefined;
       return {
         error: false,
         token: vaadinCsrfToken,
-        redirectUrl: targetUrl
+        redirectUrl: savedUrl
       };
     } else {
       return {
