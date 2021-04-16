@@ -214,7 +214,10 @@ module.exports = {
       flowFrontendFolder,
       ...projectStaticAssetsFolders,
     ],
-    extensions: ['.ts', '.js'],
+    extensions: [
+      enableTypeScript && '.ts',
+      '.js'
+    ].filter(Boolean),
     alias: {
       Frontend: frontendFolder
     }
@@ -243,7 +246,7 @@ module.exports = {
 
   module: {
     rules: [
-      {
+      enableTypeScript && {
         test: /\.ts$/,
         loader: 'ts-loader',
         options: {
