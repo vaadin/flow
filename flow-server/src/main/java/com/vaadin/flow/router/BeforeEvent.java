@@ -276,6 +276,9 @@ public abstract class BeforeEvent extends EventObject {
 
     /**
      * Forward the navigation to the given navigation state.
+     * <p>
+     * Note that query parameters of the event are preserved in the forwarded
+     * URL.
      *
      * @param targetState
      *            the target navigation state, not {@code null}
@@ -288,6 +291,9 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Forward the navigation to show the given component instead of the
      * component that is currently about to be displayed.
+     * <p>
+     * Note that query parameters of the event are preserved in the forwarded
+     * URL.
      *
      * @param forwardTargetComponent
      *            the component type to display, not {@code null}
@@ -296,9 +302,8 @@ public abstract class BeforeEvent extends EventObject {
         Objects.requireNonNull(forwardTargetComponent,
                 "forwardTargetComponent cannot be null");
         if (HasUrlParameter.class.isAssignableFrom(forwardTargetComponent)
-                && ParameterDeserializer
-                .verifyParameters(forwardTargetComponent,
-                        Collections.emptyList())) {
+                && ParameterDeserializer.verifyParameters(
+                        forwardTargetComponent, Collections.emptyList())) {
             forwardTo(new NavigationStateBuilder(ui.getInternals().getRouter())
                     .withTarget(forwardTargetComponent, RouteParameters.empty())
                     .build());
@@ -311,6 +316,9 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Forward the navigation to show the given component instead of the
      * component that is currently about to be displayed.
+     * <p>
+     * Note that query parameters of the event are preserved in the forwarded
+     * URL.
      *
      * @param forwardTargetComponent
      *            the component type to display, not {@code null}
@@ -327,6 +335,9 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Forward to navigation component registered for given location string
      * instead of the component about to be displayed.
+     * <p>
+     * Note that query parameters of the event are preserved in the forwarded
+     * URL.
      *
      * @param location
      *            forward target location string
@@ -340,6 +351,9 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Forward to navigation component registered for given location string with
      * given location parameter instead of the component about to be displayed.
+     * <p>
+     * Note that query parameters of the event are preserved in the forwarded
+     * URL.
      *
      * @param location
      *            reroute target location string
@@ -355,6 +369,9 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Forward to navigation component registered for given location string with
      * given location parameters instead of the component about to be displayed.
+     * <p>
+     * Note that query parameters of the event are preserved in the forwarded
+     * URL.
      *
      * @param location
      *            reroute target location string
@@ -370,6 +387,8 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Reroutes the navigation to use the provided navigation handler instead of
      * the currently used handler.
+     * <p>
+     * Note that rerouting preserves the query parameters of the event.
      *
      * @param rerouteTarget
      *            the navigation handler to use, or {@code null} to clear a
@@ -385,6 +404,8 @@ public abstract class BeforeEvent extends EventObject {
 
     /**
      * Reroutes the navigation to the given navigation state.
+     * <p>
+     * Note that rerouting preserves the query parameters of the event.
      *
      * @param targetState
      *            the target navigation state of the rerouting, not {@code null}
@@ -397,6 +418,8 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Reroutes the navigation to show the given component instead of the
      * component that is currently about to be displayed.
+     * <p>
+     * Note that rerouting preserves the query parameters of the event.
      *
      * @param routeTargetType
      *            the component type to display, not {@code null}
@@ -405,11 +428,11 @@ public abstract class BeforeEvent extends EventObject {
         Objects.requireNonNull(routeTargetType,
                 "routeTargetType cannot be null");
         if (HasUrlParameter.class.isAssignableFrom(routeTargetType)
-                && ParameterDeserializer
-                .verifyParameters(routeTargetType,
+                && ParameterDeserializer.verifyParameters(routeTargetType,
                         Collections.emptyList())) {
             rerouteTo(new NavigationStateBuilder(ui.getInternals().getRouter())
-                    .withTarget(routeTargetType, RouteParameters.empty()).build());
+                    .withTarget(routeTargetType, RouteParameters.empty())
+                    .build());
         } else {
             rerouteTo(new NavigationStateBuilder(ui.getInternals().getRouter())
                     .withTarget(routeTargetType).build());
@@ -419,6 +442,8 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Reroutes the navigation to show the given component instead of the
      * component that is currently about to be displayed.
+     * <p>
+     * Note that rerouting preserves the query parameters of the event.
      *
      * @param routeTargetType
      *            the component type to display, not {@code null}
@@ -435,6 +460,8 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Reroute to navigation component registered for given location string
      * instead of the component about to be displayed.
+     * <p>
+     * Note that rerouting preserves the query parameters of the event.
      *
      * @param route
      *            reroute target location string
@@ -448,6 +475,8 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Reroute to navigation component registered for given location string with
      * given route parameter instead of the component about to be displayed.
+     * <p>
+     * Note that rerouting preserves the query parameters of the event.
      *
      * @param route
      *            reroute target location string
@@ -463,6 +492,8 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Reroute to navigation component registered for given location string with
      * given route parameters instead of the component about to be displayed.
+     * <p>
+     * Note that rerouting preserves the query parameters of the event.
      *
      * @param route
      *            reroute target location string
