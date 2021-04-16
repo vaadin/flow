@@ -71,11 +71,16 @@ public class AbstractParallelTestBenchTest extends TestBenchHelpers {
             setDesiredCapabilities(Browser.CHROME.getDesiredCapabilities());
         } else if (Browser.CHROME == getRunLocallyBrowser()
                 && !isJavaInDebugMode()) {
-            setDriver(createHeadlessChromeDriver());
+            setDriver(createHeadlessChromeDriver(getAdditionalHeadlessChromeOptions()));
             return;
         }
         super.setup();
     }
+
+    protected String[] getAdditionalHeadlessChromeOptions() {
+        return new String[]{};
+    }
+
 
     /**
      * Returns the URL to the root of the server, e.g. "http://localhost:8888"

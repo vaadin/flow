@@ -60,10 +60,14 @@ public class ChromeBrowserTest extends ViewOrUITest {
     @Override
     public void setup() throws Exception {
         if (Browser.CHROME == getRunLocallyBrowser() && !isJavaInDebugMode()) {
-            setDriver(createHeadlessChromeDriver());
+            setDriver(createHeadlessChromeDriver(getAdditionalHeadlessChromeOptions()));
         } else {
             super.setup();
         }
+    }
+
+    protected String[] getAdditionalHeadlessChromeOptions() {
+        return new String[]{};
     }
 
     static boolean isJavaInDebugMode() {
@@ -71,9 +75,9 @@ public class ChromeBrowserTest extends ViewOrUITest {
                 .toString().contains("jdwp");
     }
 
-    static WebDriver createHeadlessChromeDriver() {
+    static WebDriver createHeadlessChromeDriver(String... additionalOptions) {
         return TestBench
-                .createDriver(new ChromeDriver(createHeadlessChromeOptions()));
+                .createDriver(new ChromeDriver(createHeadlessChromeOptions(additionalOptions)));
     }
 
     @Override
@@ -103,9 +107,12 @@ public class ChromeBrowserTest extends ViewOrUITest {
         return capabilities;
     }
 
-    static ChromeOptions createHeadlessChromeOptions() {
+    static ChromeOptions createHeadlessChromeOptions(String... additionalOptions) {
         final ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless", "--disable-gpu");
+        if (additionalOptions.length > 0) {
+            options.addArguments(additionalOptions);
+        }
         return options;
     }
 }
