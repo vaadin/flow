@@ -128,8 +128,9 @@ public class VaadinConnectAccessChecker {
 
     private String verifyAnonymousUser(Method method,
             HttpServletRequest request) {
-        if (getSecurityTarget(method).isAnnotationPresent(
-                AnonymousAllowed.class) && canAccessMethod(method, request)) {
+        if (getSecurityTarget(method)
+                .isAnnotationPresent(AnonymousAllowed.class)
+                && annotationAllowsAccess(getSecurityTarget(method), request)) {
             return null;
         }
 
@@ -138,7 +139,7 @@ public class VaadinConnectAccessChecker {
 
     private String verifyAuthenticatedUser(Method method,
             HttpServletRequest request) {
-        if (canAccessMethod(method, request)) {
+        if (annotationAllowsAccess(getSecurityTarget(method), request)) {
             return null;
         }
 
@@ -157,10 +158,6 @@ public class VaadinConnectAccessChecker {
         VaadinService vaadinService = VaadinService.getCurrent();
         return (vaadinService != null && !vaadinService
                 .getDeploymentConfiguration().isProductionMode());
-    }
-
-    private boolean canAccessMethod(Method method, HttpServletRequest request) {
-        return annotationAllowsAccess(getSecurityTarget(method), request);
     }
 
     private boolean annotationAllowsAccess(
