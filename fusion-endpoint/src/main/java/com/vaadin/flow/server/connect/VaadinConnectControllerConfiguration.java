@@ -25,6 +25,7 @@ import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
+import com.vaadin.flow.server.connect.auth.CsrfChecker;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 
 /**
@@ -120,8 +121,8 @@ public class VaadinConnectControllerConfiguration {
      * @return the default Vaadin endpoint access checker bean
      */
     @Bean
-    public VaadinConnectAccessChecker accessChecker() {
-        return new VaadinConnectAccessChecker();
+    public VaadinConnectAccessChecker accessChecker(CsrfChecker csrfChecker) {
+        return new VaadinConnectAccessChecker(csrfChecker);
     }
 
     /**
