@@ -37,7 +37,7 @@ export async function login(username: string, password: string, options?: LoginO
 
     const loginProcessingUrl = options && options.loginProcessingUrl ? options.loginProcessingUrl : '/login';
     const headers = getSpringCsrfTokenHeadersFromDocument(document);
-    headers['source'] = 'typescript';
+    headers.source = 'typescript';
     const response = await fetch(loginProcessingUrl, {
       method: 'POST',
       body: data,
