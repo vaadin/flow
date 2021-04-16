@@ -8,6 +8,7 @@ export interface LoginResult {
   errorTitle?: string;
   errorMessage?: string;
   redirectUrl?: string;
+  defaultUrl?: string;
 }
 
 export interface LoginOptions {
@@ -46,6 +47,7 @@ export async function login(username: string, password: string, options?: LoginO
 
     const result = response.headers.get('Result');
     const savedUrl = response.headers.get('Saved-url') || undefined;
+    const defaultUrl = response.headers.get('Default-url') || undefined;
     const loginSuccessful = response.ok && result === 'success';
 
     if (loginSuccessful) {
@@ -53,7 +55,8 @@ export async function login(username: string, password: string, options?: LoginO
       return {
         error: false,
         token: vaadinCsrfToken,
-        redirectUrl: savedUrl
+        redirectUrl: savedUrl,
+        defaultUrl
       };
     } else {
       return {
