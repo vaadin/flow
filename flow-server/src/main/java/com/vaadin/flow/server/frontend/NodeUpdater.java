@@ -330,8 +330,6 @@ public abstract class NodeUpdater implements FallibleCommand {
         // check out https://github.com/babel/babel/issues/11488
         defaults.put("chokidar", "^3.5.0");
 
-        defaults.put("idb", "5.0.6");
-
         return defaults;
     }
 
