@@ -17,6 +17,7 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -306,24 +307,26 @@ public class JarContentsManager {
                         + basePath.length());
         File target = new File(outputDirectory, relativePath);
         try {
-            if (target.exists()) {
-                File tempFile = File.createTempFile(fullPath, null);
-                FileUtils.copyInputStreamToFile(
-                        jarFile.getInputStream(jarEntry), tempFile);
-                if (!FileUtils.contentEquals(tempFile, target)) {
-                    FileUtils.forceDelete(target);
-                    FileUtils.moveFile(tempFile, target);
-                } else {
-                    tempFile.delete();
-                }
-            } else {
+            if (!target.exists()
+                    || !hasSameContent(jarFile.getInputStream(jarEntry),
+                            target)) {
                 FileUtils.copyInputStreamToFile(
                         jarFile.getInputStream(jarEntry), target);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
-                    "Failed to extract jar entry '%s' from jarFile '%s'",
-                    jarEntry, outputDirectory), e);
+                    "Failed to extract jar entry '%s' from jarFile", jarEntry),
+                    e);
+        }
+    }
+
+    private boolean hasSameContent(InputStream jarContent, File existingContent)
+            throws IOException {
+        try (InputStream existingContentStream = new FileInputStream(
+                existingContent)) {
+            return IOUtils.contentEquals(jarContent, existingContentStream);
+        } finally {
+            IOUtils.closeQuietly(jarContent);
         }
     }
 
