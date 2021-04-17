@@ -389,7 +389,7 @@ public class VaadinConnectControllerTest {
         String responseBody = response.getBody();
         assertNotNull("Response body should not be null", responseBody);
         assertTrue("Should return unauthorized error",
-                responseBody.contains("Anonymous access is not allowed"));
+                responseBody.contains("Access denied"));
     }
 
     @Test
