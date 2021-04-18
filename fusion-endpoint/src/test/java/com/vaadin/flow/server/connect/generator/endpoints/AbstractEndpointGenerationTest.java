@@ -107,7 +107,8 @@ public abstract class AbstractEndpointGenerationTest
     private static final List<Class> DENY_LIST_CHECKING_ABSOLUTE_PATH = Arrays
             .asList(Model.class, ParentModel.class, GrandParentModel.class);
     private final Set<String> schemaReferences = new HashSet<>();
-    private static final VaadinConnectAccessChecker accessChecker = new VaadinConnectAccessChecker(new CsrfChecker());
+    private static final VaadinConnectAccessChecker accessChecker = new VaadinConnectAccessChecker(
+            new CsrfChecker());
 
     public AbstractEndpointGenerationTest(List<Class<?>> testClasses) {
         super(testClasses);

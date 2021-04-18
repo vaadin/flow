@@ -118,7 +118,8 @@ public class VaadinConnectControllerConfiguration {
     /**
      * Registers a default {@link VaadinConnectAccessChecker} bean instance.
      *
-     * @param csrfChecker the CSRF checker to use
+     * @param csrfChecker
+     *            the CSRF checker to use
      * @return the default Vaadin endpoint access checker bean
      */
     @Bean
