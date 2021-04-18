@@ -104,7 +104,8 @@ public class EndpointUtil {
             return false;
         }
 
-        return accessChecker.getSecurityTarget(method.get())
+        return accessChecker.getAccessAnnotationChecker()
+                .getSecurityTarget(method.get())
                 .isAnnotationPresent(AnonymousAllowed.class);
     }
 
