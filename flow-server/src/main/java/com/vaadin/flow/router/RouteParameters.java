@@ -133,7 +133,13 @@ public final class RouteParameters implements Serializable {
             return Optional.empty();
         }
 
-        return Optional.of(Integer.valueOf(value));
+        try {
+            return Optional.of(Integer.valueOf(value));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(String.format(
+                    "Couldn't parse '%s' paramter value '%s' as integer",
+                    parameterName, value), e);
+        }
     }
 
     /**
@@ -152,7 +158,13 @@ public final class RouteParameters implements Serializable {
             return Optional.empty();
         }
 
-        return Optional.of(Long.valueOf(value));
+        try {
+            return Optional.of(Long.valueOf(value));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(String.format(
+                    "Couldn't parse '%s' paramter value '%s' as long",
+                    parameterName, value), e);
+        }
     }
 
     /**
