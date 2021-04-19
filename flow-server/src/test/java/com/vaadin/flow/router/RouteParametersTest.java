@@ -17,7 +17,6 @@ package com.vaadin.flow.router;
 
 import java.util.Arrays;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -89,8 +88,7 @@ public class RouteParametersTest {
 
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(
-                CoreMatchers.allOf(CoreMatchers.containsString("'string'"),
-                        CoreMatchers.containsString("'foo'")));
+                "Couldn't parse 'string' parameter value 'foo' as integer");
 
         parameters.getInteger("string");
     }
@@ -101,8 +99,7 @@ public class RouteParametersTest {
 
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(
-                CoreMatchers.allOf(CoreMatchers.containsString("'long'"),
-                        CoreMatchers.containsString("'12345678900'")));
+                "Couldn't parse 'long' parameter value '12345678900' as integer");
 
         parameters.getInteger("long");
     }
@@ -113,8 +110,7 @@ public class RouteParametersTest {
 
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(
-                CoreMatchers.allOf(CoreMatchers.containsString("'varargs'"),
-                        CoreMatchers.containsString("'path/to/foo/bar'")));
+                "Couldn't parse 'varargs' parameter value 'path/to/foo/bar' as integer");
 
         parameters.getInteger("varargs");
     }
@@ -125,8 +121,7 @@ public class RouteParametersTest {
 
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(
-                CoreMatchers.allOf(CoreMatchers.containsString("'varargs'"),
-                        CoreMatchers.containsString("'path/to/foo/bar'")));
+                "Couldn't parse 'varargs' parameter value 'path/to/foo/bar' as long");
 
         parameters.getLong("varargs");
     }
@@ -137,8 +132,7 @@ public class RouteParametersTest {
 
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(
-                CoreMatchers.allOf(CoreMatchers.containsString("'string'"),
-                        CoreMatchers.containsString("'foo'")));
+                "Couldn't parse 'string' parameter value 'foo' as long");
 
         parameters.getLong("string");
     }
