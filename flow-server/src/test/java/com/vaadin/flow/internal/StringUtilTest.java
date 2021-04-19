@@ -63,4 +63,10 @@ public class StringUtilTest {
         Assert.assertEquals(initialTemplate, template);
     }
 
+    @Test
+    public void removeComments_commentsWithAsterisksInside_commentIsRemoved() {
+        String result = StringUtil.removeComments("/* comment **/ ;");
+        Assert.assertEquals(result, " ;");
+    }
+
 }
