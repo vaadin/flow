@@ -32,7 +32,7 @@ public final class StringUtil {
      * Comment parser state enumeration.
      */
     private enum State {
-        NORMAL, IN_LINE_COMMENT, IN_BLOCK_COMMENT, IN_BLOCK_COMMENT_EVEN_ASTERISKS, IN_STRING
+        NORMAL, IN_LINE_COMMENT, IN_BLOCK_COMMENT, IN_STRING
     }
 
     /**
@@ -80,21 +80,11 @@ public final class StringUtil {
                     state = State.NORMAL;
                 }
                 break;
-            case IN_BLOCK_COMMENT_EVEN_ASTERISKS:
-                if (character.equals("/")) {
-                    state = State.NORMAL;
-                }
-                break;
             case IN_BLOCK_COMMENT:
-                if (character.equals("*") && scanner.hasNext()) {
-                    String next = scanner.next();
-                    if (next.equals("/")) {
-                        state = State.NORMAL;
-                        break;
-                    } else if (next.equals("*")) {
-                        state = State.IN_BLOCK_COMMENT_EVEN_ASTERISKS;
-                        break;
-                    }
+                if (character.equals("*") && scanner.hasNext("/")) {
+                    scanner.next();
+                    state = State.NORMAL;
+                    break;
                 }
             }
         }
