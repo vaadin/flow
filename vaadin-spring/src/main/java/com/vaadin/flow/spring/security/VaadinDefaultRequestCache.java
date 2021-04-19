@@ -3,6 +3,7 @@ package com.vaadin.flow.spring.security;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.stereotype.Component;
@@ -22,8 +23,7 @@ public class VaadinDefaultRequestCache extends HttpSessionRequestCache {
     private RequestUtil requestUtil;
 
     @Override
-    public void saveRequest(HttpServletRequest request,
-            HttpServletResponse response) {
+    public void saveRequest(HttpServletRequest request, HttpServletResponse response) {
         if (requestUtil.isFrameworkInternalRequest(request)) {
             return;
         }
@@ -33,6 +33,9 @@ public class VaadinDefaultRequestCache extends HttpSessionRequestCache {
         if (isServiceWorkerInitiated(request)) {
             return;
         }
+
+        LoggerFactory.getLogger(getClass())
+                .debug("Saving request to " + request.getRequestURI());
 
         super.saveRequest(request, response);
     }
