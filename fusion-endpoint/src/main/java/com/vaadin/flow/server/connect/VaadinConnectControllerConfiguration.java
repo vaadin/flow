@@ -134,6 +134,26 @@ public class VaadinConnectControllerConfiguration {
     }
 
     /**
+     * Registers a default {@link AccessAnnotationChecker} bean instance.
+     *
+     * @return the default bean
+     */
+    @Bean
+    public AccessAnnotationChecker accessAnnotationChecker() {
+        return new AccessAnnotationChecker();
+    }
+
+    /**
+     * Registers a default {@link CsrfChecker} bean instance.
+     *
+     * @return the default bean
+     */
+    @Bean
+    public CsrfChecker csrfChecker() {
+        return new CsrfChecker();
+    }
+
+    /**
      * Registers a {@link ExplicitNullableTypeChecker} bean instance.
      *
      * @return the explicit nullable type checker
