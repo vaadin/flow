@@ -162,7 +162,7 @@ public final class RouteParameters implements Serializable {
             return Optional.of(Long.valueOf(value));
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(String.format(
-                    "Couldn't parse '%s' paramter value '%s' as long",
+                    "Couldn't parse '%s' parameter value '%s' as long",
                     parameterName, value), e);
         }
     }
