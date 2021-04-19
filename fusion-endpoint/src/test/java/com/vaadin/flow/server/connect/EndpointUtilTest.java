@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.server.connect.auth.AccessAnnotationChecker;
+import com.vaadin.flow.server.connect.auth.AccessAnnotationCheckerTest;
 import com.vaadin.flow.server.connect.auth.CsrfChecker;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 
@@ -32,21 +33,9 @@ public class EndpointUtilTest {
     @Autowired
     private EndpointRegistry registry;
 
-    private static final Class<?>[] endpointClasses = new Class<?>[] {
-            TestEndpoints.AnonymousAllowedEndpoint.class,
-            TestEndpoints.DenyAllEndpoint.class,
-            TestEndpoints.NoAnnotationEndpoint.class,
-            TestEndpoints.PermitAllEndpoint.class,
-            TestEndpoints.RolesAllowedAdminEndpoint.class,
-            TestEndpoints.RolesAllowedUserEndpoint.class };
-
-    private static final String[] endpointMethods = new String[] {
-            "noannotation", "anonymousallowed", "permitall", "denyall",
-            "rolesalloweduser", "rolesallowedadmin" };
-
-    private static final String[] endpointNames = Stream.of(endpointClasses)
-            .map(cls -> cls.getSimpleName().toLowerCase(Locale.ENGLISH))
-            .toArray(String[]::new);
+    private static final Class<?>[] endpointClasses = AccessAnnotationCheckerTest.ENDPOINT_CLASSES;
+    private static final String[] endpointMethods = AccessAnnotationCheckerTest.ENDPOINT_METHODS;
+    private static final String[] endpointNames = AccessAnnotationCheckerTest.ENDPOINT_NAMES;
 
     @Before
     public void setup() throws Exception {
