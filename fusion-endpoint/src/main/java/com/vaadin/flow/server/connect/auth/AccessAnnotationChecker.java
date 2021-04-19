@@ -68,7 +68,7 @@ public class AccessAnnotationChecker {
     public boolean annotationAllowsAccess(Method method,
             HttpServletRequest request) {
         return annotationAllowsAccess(method, request.getUserPrincipal(),
-                role -> request.isUserInRole(role));
+                request::isUserInRole);
     }
 
     /**
@@ -93,6 +93,8 @@ public class AccessAnnotationChecker {
     /**
      * Gets the entity to check for security restrictions.
      *
+     * @param method
+     *            the method to look up
      * @return the entity that is responsible for security settings for the
      *         method passed
      * @throws IllegalArgumentException
