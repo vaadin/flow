@@ -59,25 +59,25 @@ public class EndpointUtilTest {
 
     @Test
     public void isAnonymousEndpoint() {
-        verifyAnonymousAccessAllowed("AnonymousAllowedEndpoint", "noannotation",
-                "anonymousallowed");
-        verifyAnonymousAccessAllowed("DenyAllEndpoint", "anonymousallowed");
+        verifyAnonymousAccessAllowed("AnonymousAllowedEndpoint", "noAnnotation",
+                "anonymousAllowed");
+        verifyAnonymousAccessAllowed("DenyAllEndpoint", "anonymousAllowed");
         verifyAnonymousAccessAllowed("NoAnnotationEndpoint",
-                "anonymousallowed");
-        verifyAnonymousAccessAllowed("DenyAllEndpoint", "anonymousallowed");
-        verifyAnonymousAccessAllowed("PermitAllEndpoint", "anonymousallowed");
+                "anonymousAllowed");
+        verifyAnonymousAccessAllowed("DenyAllEndpoint", "anonymousAllowed");
+        verifyAnonymousAccessAllowed("PermitAllEndpoint", "anonymousAllowed");
         verifyAnonymousAccessAllowed("RolesAllowedAdminEndpoint",
-                "anonymousallowed");
+                "anonymousAllowed");
         verifyAnonymousAccessAllowed("RolesAllowedUserEndpoint",
-                "anonymousallowed");
+                "anonymousAllowed");
     }
 
     private void verifyAnonymousAccessAllowed(String endpointName,
             String... expectedAnonMethods) {
         List<String> expectedAnonList = Arrays.asList(expectedAnonMethods);
         for (String endpointMethod : endpointMethods) {
-            verifyEndpointPathIsAnonymous(
-                    "/connect/" + endpointName + "/" + endpointMethod,
+            String path = "/connect/" + endpointName + "/" + endpointMethod;
+            verifyEndpointPathIsAnonymous(path,
                     expectedAnonList.contains(endpointMethod));
         }
     }
