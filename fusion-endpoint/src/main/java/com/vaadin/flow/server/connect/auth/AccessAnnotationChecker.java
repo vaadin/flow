@@ -18,6 +18,8 @@ package com.vaadin.flow.server.connect.auth;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.security.Principal;
+import java.util.function.Function;
 
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
@@ -65,14 +67,32 @@ public class AccessAnnotationChecker {
      */
     public boolean annotationAllowsAccess(Method method,
             HttpServletRequest request) {
-        return annotationAllowsAccess(getSecurityTarget(method), request);
+        return annotationAllowsAccess(method, request.getUserPrincipal(),
+                role -> request.isUserInRole(role));
+    }
+
+    /**
+     * Checks if the user defined by the given {@link Principal} and role
+     * checker has access to the given method.
+     * 
+     * @param method
+     *            the method to check access to
+     * @param principal
+     *            the principal of the user
+     * @param roleChecker
+     *            a function that can answer if a user has a given role
+     * @return {@code true} if the user has access to the given method,
+     *         {@code false} otherwise
+     */
+    public boolean annotationAllowsAccess(Method method, Principal principal,
+            Function<String, Boolean> roleChecker) {
+        return annotationAllowsAccess(getSecurityTarget(method), principal,
+                roleChecker);
     }
 
     /**
      * Gets the entity to check for security restrictions.
      *
-     * @param method
-     *            the method to analyze, not {@code null}
      * @return the entity that is responsible for security settings for the
      *         method passed
      * @throws IllegalArgumentException
@@ -89,8 +109,8 @@ public class AccessAnnotationChecker {
     }
 
     private boolean annotationAllowsAccess(
-            AnnotatedElement annotatedClassOrMethod,
-            HttpServletRequest request) {
+            AnnotatedElement annotatedClassOrMethod, Principal principal,
+            Function<String, Boolean> roleChecker) {
         if (annotatedClassOrMethod.isAnnotationPresent(DenyAll.class)) {
             return false;
         }
@@ -98,7 +118,7 @@ public class AccessAnnotationChecker {
                 .isAnnotationPresent(AnonymousAllowed.class)) {
             return true;
         }
-        if (request.getUserPrincipal() == null) {
+        if (principal == null) {
             return false;
         }
         RolesAllowed rolesAllowed = annotatedClassOrMethod
@@ -106,14 +126,14 @@ public class AccessAnnotationChecker {
         if (rolesAllowed == null) {
             return annotatedClassOrMethod.isAnnotationPresent(PermitAll.class);
         } else {
-            return roleAllowed(rolesAllowed, request);
+            return roleAllowed(rolesAllowed, roleChecker);
         }
     }
 
     private boolean roleAllowed(RolesAllowed rolesAllowed,
-            HttpServletRequest request) {
+            Function<String, Boolean> roleChecker) {
         for (String role : rolesAllowed.value()) {
-            if (request.isUserInRole(role)) {
+            if (roleChecker.apply(role)) {
                 return true;
             }
         }

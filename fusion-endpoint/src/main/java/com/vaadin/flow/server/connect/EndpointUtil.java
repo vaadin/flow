@@ -22,7 +22,6 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.server.connect.EndpointRegistry.VaadinEndpointData;
-import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,8 +104,7 @@ public class EndpointUtil {
         }
 
         return accessChecker.getAccessAnnotationChecker()
-                .getSecurityTarget(method.get())
-                .isAnnotationPresent(AnonymousAllowed.class);
+                .annotationAllowsAccess(method.get(), null, role -> false);
     }
 
 }
