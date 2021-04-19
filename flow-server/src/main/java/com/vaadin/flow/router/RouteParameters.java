@@ -137,7 +137,7 @@ public final class RouteParameters implements Serializable {
             return Optional.of(Integer.valueOf(value));
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(String.format(
-                    "Couldn't parse '%s' paramter value '%s' as integer",
+                    "Couldn't parse '%s' parameter value '%s' as integer",
                     parameterName, value), e);
         }
     }
