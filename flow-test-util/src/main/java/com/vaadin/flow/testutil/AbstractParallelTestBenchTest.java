@@ -73,21 +73,20 @@ public class AbstractParallelTestBenchTest extends TestBenchHelpers {
         } else if (Browser.CHROME == getRunLocallyBrowser()
                 && !isJavaInDebugMode()) {
             setDriver(createHeadlessChromeDriver(
-                    getAdditionalHeadlessChromeOptions()));
+                    this::updateHeadlessChromeOptions));
             return;
         }
         super.setup();
     }
 
     /**
-     * Gets additional chrome options to be used when running on a local Chrome.
-     * <p>
-     * The returned options object is merged into the default options.
+     * Allows modifying the chrome options to be used when running on a local
+     * Chrome.
      * 
-     * @return chrome options to use when running on a local Chrome
+     * @param chromeOptions
+     *            chrome options to use when running on a local Chrome
      */
-    protected ChromeOptions getAdditionalHeadlessChromeOptions() {
-        return new ChromeOptions();
+    protected void updateHeadlessChromeOptions(ChromeOptions chromeOptions) {
     }
 
     /**

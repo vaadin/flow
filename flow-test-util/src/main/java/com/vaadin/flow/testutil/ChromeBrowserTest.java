@@ -17,6 +17,7 @@ package com.vaadin.flow.testutil;
 
 import java.lang.management.ManagementFactory;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -61,21 +62,20 @@ public class ChromeBrowserTest extends ViewOrUITest {
     public void setup() throws Exception {
         if (Browser.CHROME == getRunLocallyBrowser() && !isJavaInDebugMode()) {
             setDriver(createHeadlessChromeDriver(
-                    getAdditionalHeadlessChromeOptions()));
+                    this::updateHeadlessChromeOptions));
         } else {
             super.setup();
         }
     }
 
     /**
-     * Gets additional chrome options to be used when running on a local Chrome.
-     * <p>
-     * The returned options object is merged into the default options.
+     * Allows modifying the chrome options to be used when running on a local
+     * Chrome.
      * 
-     * @return chrome options to use when running on a local Chrome
+     * @param chromeOptions
+     *            chrome options to use when running on a local Chrome
      */
-    protected ChromeOptions getAdditionalHeadlessChromeOptions() {
-        return new ChromeOptions();
+    protected void updateHeadlessChromeOptions(ChromeOptions chromeOptions) {
     }
 
     static boolean isJavaInDebugMode() {
@@ -84,11 +84,10 @@ public class ChromeBrowserTest extends ViewOrUITest {
     }
 
     static WebDriver createHeadlessChromeDriver(
-            ChromeOptions additionalOptions) {
+            Consumer<ChromeOptions> optionsUpdater) {
         ChromeOptions headlessOptions = createHeadlessChromeOptions();
-
-        return TestBench.createDriver(
-                new ChromeDriver(headlessOptions.merge(additionalOptions)));
+        optionsUpdater.accept(headlessOptions);
+        return TestBench.createDriver(new ChromeDriver(headlessOptions));
     }
 
     @Override
