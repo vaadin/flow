@@ -234,16 +234,16 @@ abstract class AbstractUpdateImports implements Runnable {
                 : null;
 
         if (newContent.equals(oldContent)) {
-            if (getLogger().isInfoEnabled()) {
-                getLogger().info("No js modules to update '{}' file",
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug("No js modules to update '{}' file",
                         importsFile);
             }
         } else {
             FileUtils.forceMkdir(importsFile.getParentFile());
             FileUtils.writeStringToFile(importsFile,
                     String.join("\n", newContent), StandardCharsets.UTF_8);
-            if (getLogger().isInfoEnabled()) {
-                getLogger().info("Updated {}", importsFile);
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug("Updated {}", importsFile);
             }
         }
     }

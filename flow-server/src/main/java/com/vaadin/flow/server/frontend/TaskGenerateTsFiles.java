@@ -44,7 +44,7 @@ public class TaskGenerateTsFiles implements FallibleCommand {
      * Create a task to generate <code>tsconfig.json</code> file.
      *
      * @param npmFolder
-     *     project folder where the file will be generated.
+     *            project folder where the file will be generated.
      * @param modules
      */
     TaskGenerateTsFiles(File npmFolder, List<String> modules) {
@@ -58,8 +58,8 @@ public class TaskGenerateTsFiles implements FallibleCommand {
      * @return if we have modules for typescript files
      */
     protected boolean shouldGenerate() {
-        return modules.stream().filter(file -> file.endsWith(".ts")).count()
-            >= 1;
+        return modules.stream().filter(file -> file.endsWith(".ts"))
+                .count() >= 1;
     }
 
     @Override
@@ -75,20 +75,20 @@ public class TaskGenerateTsFiles implements FallibleCommand {
     private void writeFile(String file) throws ExecutionFailedException {
         File generatedFile = new File(npmFolder, file);
 
-        if(generatedFile.exists()) {
+        if (generatedFile.exists()) {
             return;
         }
 
         try {
             String fileContent = IOUtils
-                .toString(getClass().getResourceAsStream(file), UTF_8);
-            log().info("writing file '{}'", generatedFile);
+                    .toString(getClass().getResourceAsStream(file), UTF_8);
+            log().debug("writing file '{}'", generatedFile);
 
             FileUtils.forceMkdirParent(generatedFile);
             FileUtils.writeStringToFile(generatedFile, fileContent, UTF_8);
         } catch (IOException exception) {
-            String errorMessage = String
-                .format("Error writing '%s'", generatedFile);
+            String errorMessage = String.format("Error writing '%s'",
+                    generatedFile);
             throw new ExecutionFailedException(errorMessage, exception);
         }
     }
