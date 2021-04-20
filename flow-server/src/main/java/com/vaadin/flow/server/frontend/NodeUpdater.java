@@ -43,6 +43,7 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
@@ -331,6 +332,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("html-webpack-plugin", "4.5.1");
         defaults.put("typescript", "4.2.3");
         defaults.put("ts-loader", "8.0.12");
+        defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");
 
         defaults.put("webpack", "4.46.0");
         defaults.put("webpack-cli", "3.3.11");
@@ -360,8 +362,6 @@ public abstract class NodeUpdater implements FallibleCommand {
         // Forcing chokidar version for now until new babel version is available
         // check out https://github.com/babel/babel/issues/11488
         defaults.put("chokidar", "^3.5.0");
-
-        defaults.put("idb", "5.0.6");
 
         return defaults;
     }
@@ -479,7 +479,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     String writePackageFile(JsonObject json, File packageFile)
             throws IOException {
-        log().info("writing file {}.", packageFile.getAbsolutePath());
+        log().debug("writing file {}.", packageFile.getAbsolutePath());
         FileUtils.forceMkdirParent(packageFile);
         String content = stringify(json, 2) + "\n";
         FileUtils.writeStringToFile(packageFile, content, UTF_8.name());

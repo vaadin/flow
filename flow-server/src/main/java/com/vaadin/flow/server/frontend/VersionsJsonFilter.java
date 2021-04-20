@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import org.slf4j.LoggerFactory;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
@@ -29,12 +31,16 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 class VersionsJsonFilter {
 
     private final JsonObject userManagedDependencies;
+    private final JsonObject vaadinVersions;
 
     private final String dependenciesKey;
+
+    private final String OLDER_VERSION_WARNING = "Using user pinned version '{}' of '{}' which is older than the current platform version '{}'";
 
     VersionsJsonFilter(JsonObject packageJson, String dependenciesKey) {
         this.dependenciesKey = dependenciesKey;
         userManagedDependencies = collectUserManagedDependencies(packageJson);
+        vaadinVersions = collectFrameworkVersions(packageJson);
     }
 
     /**
@@ -46,13 +52,39 @@ class VersionsJsonFilter {
     JsonObject getFilteredVersions(JsonObject versions) {
         JsonObject json = Json.createObject();
         for (String key : versions.keys()) {
-            if (!userManagedDependencies.hasKey(key)) {
-                json.put(key, versions.getString(key));
-            } else {
+            if (userManagedDependencies.hasKey(key)) {
+                if (isNewer(versions.getString(key),
+                        userManagedDependencies.getString(key))) {
+                    LoggerFactory.getLogger("Versions").warn(
+                            OLDER_VERSION_WARNING,
+                            userManagedDependencies.getString(key), key,
+                            versions.getString(key));
+                }
                 json.put(key, userManagedDependencies.getString(key));
+            } else if (vaadinVersions.hasKey(key) && isNewer(
+                    vaadinVersions.getString(key), versions.getString(key))) {
+                json.put(key, vaadinVersions.getString(key));
+            } else {
+                json.put(key, versions.getString(key));
             }
         }
         return json;
+    }
+
+    /**
+     * Check if version1 is newer than version2.
+     * 
+     * @param version1
+     *            version string to see if newer
+     * @param version2
+     *            version string to compare against
+     * @return true if version1 > version2
+     */
+    private boolean isNewer(String version1, String version2) {
+        final FrontendVersion frontendVersion = new FrontendVersion(version1);
+        final FrontendVersion frontendVersion2 = new FrontendVersion(version2);
+
+        return frontendVersion.isNewerThan(frontendVersion2);
     }
 
     /**
@@ -65,14 +97,7 @@ class VersionsJsonFilter {
      */
     private JsonObject collectUserManagedDependencies(JsonObject packageJson) {
         JsonObject json = Json.createObject();
-        JsonObject vaadinDep;
-        if (packageJson.hasKey(VAADIN_DEP_KEY) && packageJson
-                .getObject(VAADIN_DEP_KEY).hasKey(dependenciesKey)) {
-            vaadinDep = packageJson.getObject(VAADIN_DEP_KEY)
-                    .getObject(dependenciesKey);
-        } else {
-            vaadinDep = Json.createObject();
-        }
+        JsonObject vaadinDep = collectFrameworkVersions(packageJson);
 
         if (packageJson.hasKey(dependenciesKey)) {
             JsonObject dependencies = packageJson.getObject(dependenciesKey);
@@ -98,5 +123,21 @@ class VersionsJsonFilter {
         }
         // User changed if not in vaadin dependency
         return true;
+    }
+
+    /**
+     * Get the Vaadin dependency.
+     * 
+     * @param packageJson
+     *            main package.json
+     * @return Vaadin dependencies or empty object
+     */
+    private JsonObject collectFrameworkVersions(JsonObject packageJson) {
+        if (packageJson.hasKey(VAADIN_DEP_KEY) && packageJson
+                .getObject(VAADIN_DEP_KEY).hasKey(dependenciesKey)) {
+            return packageJson.getObject(VAADIN_DEP_KEY)
+                    .getObject(dependenciesKey);
+        }
+        return Json.createObject();
     }
 }

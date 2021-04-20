@@ -37,6 +37,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
@@ -131,7 +132,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         if (added > 0) {
-            log().info("Added {} dependencies to main package.json", added);
+            log().debug("Added {} dependencies to main package.json", added);
         }
 
         // Remove obsolete dependencies
@@ -158,10 +159,10 @@ public class TaskUpdatePackages extends NodeUpdater {
                 DEV_DEPENDENCIES);
 
         if (removed > 0) {
-            log().info("Removed {} dependencies", removed);
+            log().debug("Removed {} dependencies", removed);
         }
         if (removedDev > 0) {
-            log().info("Removed {} devDependencies", removedDev);
+            log().debug("Removed {} devDependencies", removedDev);
         }
 
         if (doCleanUp) {

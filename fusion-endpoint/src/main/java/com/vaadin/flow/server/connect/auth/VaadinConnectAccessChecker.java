@@ -16,19 +16,14 @@
 
 package com.vaadin.flow.server.connect.auth;
 
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.VaadinService;
 
@@ -75,24 +70,39 @@ import com.vaadin.flow.server.VaadinService;
  */
 public class VaadinConnectAccessChecker {
 
-    private boolean xsrfProtectionEnabled = true;
+    public static final String ACCESS_DENIED_MSG = "Access denied";
+
+    public static final String ACCESS_DENIED_MSG_DEV_MODE = "Unauthorized access to Vaadin endpoint; "
+            + "to enable endpoint access use one of the following annotations: @AnonymousAllowed, @PermitAll, @RolesAllowed";
+
+    private CsrfChecker csrfChecker;
+
+    /**
+     * Creates a new instance.
+     * 
+     * @param csrfChecker
+     *            the csrf checker to use
+     */
+    public VaadinConnectAccessChecker(CsrfChecker csrfChecker) {
+        this.csrfChecker = csrfChecker;
+    }
 
     /**
      * Check that the endpoint is accessible for the current user.
      *
      * @param method
      *            the Vaadin endpoint method to check ACL
-     * @return an error String with an issue description, if any validation
-     *         issues occur, {@code null} otherwise
      * @param request
      *            the request that triggers the <code>method</code> invocation
+     * @return an error String with an issue description, if any validation
+     *         issues occur, {@code null} otherwise
      */
     public String check(Method method, HttpServletRequest request) {
-        if (request.getUserPrincipal() != null) {
-            return verifyAuthenticatedUser(method, request);
-        } else {
-            return verifyAnonymousUser(method, request);
+        if (!csrfChecker.validateCsrfTokenInRequest(request)) {
+            return ACCESS_DENIED_MSG;
         }
+
+        return canAccess(method, request);
     }
 
     /**
@@ -115,30 +125,16 @@ public class VaadinConnectAccessChecker {
                 : method.getDeclaringClass();
     }
 
-    private String verifyAnonymousUser(Method method,
-            HttpServletRequest request) {
-        if (getSecurityTarget(method).isAnnotationPresent(
-                AnonymousAllowed.class) && canAccessMethod(method, request)) {
-            return null;
-        }
-
-        return "Anonymous access is not allowed";
-    }
-
-    private String verifyAuthenticatedUser(Method method,
-            HttpServletRequest request) {
-        if (canAccessMethod(method, request)) {
+    private String canAccess(Method method, HttpServletRequest request) {
+        if (annotationAllowsAccess(getSecurityTarget(method), request)) {
             return null;
         }
 
         if (isDevMode()) {
             // suggest access control annotations in dev mode
-            return "Unauthorized access to Vaadin endpoint; "
-                    + "to enable endpoint access use one of the following "
-                    + "annotations: @AnonymousAllowed, @PermitAll, "
-                    + "@RolesAllowed";
+            return ACCESS_DENIED_MSG_DEV_MODE;
         } else {
-            return "Unauthorized access to Vaadin endpoint";
+            return ACCESS_DENIED_MSG;
         }
     }
 
@@ -146,63 +142,6 @@ public class VaadinConnectAccessChecker {
         VaadinService vaadinService = VaadinService.getCurrent();
         return (vaadinService != null && !vaadinService
                 .getDeploymentConfiguration().isProductionMode());
-    }
-
-    private boolean canAccessMethod(Method method, HttpServletRequest request) {
-        return validateCsrfTokenInRequest(request)
-                && annotationAllowsAccess(getSecurityTarget(method), request);
-    }
-
-    /**
-     * Validates the CSRF token that is included in the request.
-     * <p>
-     * Checks that the CSRF token in the request matches the expected one that
-     * is stored in the HTTP session.
-     * <p>
-     * Note! If there is no session, this method will always return
-     * {@code true}.
-     * <p>
-     * Note! If CSRF protection is disabled, this method will always return
-     * {@code true}.
-     * 
-     * @param request
-     *            the request to validate
-     * @return {@code true} if the CSRF token is ok or checking is disabled or
-     *         there is no HTTP session, {@code false} otherwise
-     */
-    private boolean validateCsrfTokenInRequest(HttpServletRequest request) {
-        if (!xsrfProtectionEnabled) {
-            return true;
-        }
-
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            return true;
-        }
-
-        String csrfTokenInSession = (String) session
-                .getAttribute(VaadinService.getCsrfTokenAttributeName());
-        if (csrfTokenInSession == null) {
-            if (getLogger().isInfoEnabled()) {
-                getLogger().info(
-                        "Unable to verify CSRF token for endpoint request, got null token in session");
-            }
-
-            return false;
-        }
-
-        String csrfTokenInRequest = request.getHeader("X-CSRF-Token");
-        if (csrfTokenInRequest == null || !MessageDigest.isEqual(
-                csrfTokenInSession.getBytes(StandardCharsets.UTF_8),
-                csrfTokenInRequest.getBytes(StandardCharsets.UTF_8))) {
-            if (getLogger().isInfoEnabled()) {
-                getLogger().info("Invalid CSRF token in endpoint request");
-            }
-
-            return false;
-        }
-
-        return true;
     }
 
     private boolean annotationAllowsAccess(
@@ -214,6 +153,9 @@ public class VaadinConnectAccessChecker {
         if (annotatedClassOrMethod
                 .isAnnotationPresent(AnonymousAllowed.class)) {
             return true;
+        }
+        if (request.getUserPrincipal() == null) {
+            return false;
         }
         RolesAllowed rolesAllowed = annotatedClassOrMethod
                 .getAnnotation(RolesAllowed.class);
@@ -249,10 +191,7 @@ public class VaadinConnectAccessChecker {
      *            enable or disable protection.
      */
     public void enableCsrf(boolean xsrfProtectionEnabled) {
-        this.xsrfProtectionEnabled = xsrfProtectionEnabled;
+        csrfChecker.setCsrfProtection(xsrfProtectionEnabled);
     }
 
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(VaadinConnectAccessChecker.class);
-    }
 }

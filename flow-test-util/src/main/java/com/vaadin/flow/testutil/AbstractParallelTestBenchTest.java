@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.Before;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.testbench.IPAddress;
@@ -71,10 +72,21 @@ public class AbstractParallelTestBenchTest extends TestBenchHelpers {
             setDesiredCapabilities(Browser.CHROME.getDesiredCapabilities());
         } else if (Browser.CHROME == getRunLocallyBrowser()
                 && !isJavaInDebugMode()) {
-            setDriver(createHeadlessChromeDriver());
+            setDriver(createHeadlessChromeDriver(
+                    this::updateHeadlessChromeOptions));
             return;
         }
         super.setup();
+    }
+
+    /**
+     * Allows modifying the chrome options to be used when running on a local
+     * Chrome.
+     * 
+     * @param chromeOptions
+     *            chrome options to use when running on a local Chrome
+     */
+    protected void updateHeadlessChromeOptions(ChromeOptions chromeOptions) {
     }
 
     /**

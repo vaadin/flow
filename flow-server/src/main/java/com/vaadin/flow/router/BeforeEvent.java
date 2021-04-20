@@ -263,6 +263,9 @@ public abstract class BeforeEvent extends EventObject {
      * <p>
      * This function changes the browser URL as opposed to
      * <code>rerouteTo()</code>.
+     * <p>
+     * Note that query parameters of the event are preserved in the forwarded
+     * URL.
      *
      * @param forwardTarget
      *            the navigation handler to use, or {@code null} to clear a
@@ -281,6 +284,9 @@ public abstract class BeforeEvent extends EventObject {
      * <p>
      * This function changes the browser URL as opposed to
      * <code>rerouteTo()</code>.
+     * <p>
+     * Note that query parameters of the event are preserved in the forwarded
+     * URL.
      *
      * @param targetState
      *            the target navigation state, not {@code null}
@@ -296,6 +302,9 @@ public abstract class BeforeEvent extends EventObject {
      * <p>
      * This function changes the browser URL as opposed to
      * <code>rerouteTo()</code>.
+     * <p>
+     * Note that query parameters of the event are preserved in the forwarded
+     * URL.
      *
      * @param forwardTargetComponent
      *            the component type to display, not {@code null}
@@ -313,6 +322,9 @@ public abstract class BeforeEvent extends EventObject {
      * <p>
      * This function changes the browser URL as opposed to
      * <code>rerouteTo()</code>.
+     * <p>
+     * Note that query parameters of the event are preserved in the forwarded
+     * URL.
      *
      * @param forwardTargetComponent
      *            the component type to display, not {@code null}
@@ -332,6 +344,9 @@ public abstract class BeforeEvent extends EventObject {
      * <p>
      * This function changes the browser URL as opposed to
      * <code>rerouteTo()</code>.
+     * <p>
+     * Note that query parameters of the event are preserved in the forwarded
+     * URL.
      *
      * @param location
      *            forward target location string
@@ -355,6 +370,9 @@ public abstract class BeforeEvent extends EventObject {
      * <p>
      * This function changes the browser URL as opposed to
      * <code>rerouteTo()</code>.
+     * <p>
+     * Note that query parameters of the event are preserved in the forwarded
+     * URL.
      *
      * @param location
      *            forward target location string
@@ -373,6 +391,9 @@ public abstract class BeforeEvent extends EventObject {
      * <p>
      * This function changes the browser URL as opposed to
      * <code>rerouteTo()</code>.
+     * <p>
+     * Note that query parameters of the event are preserved in the forwarded
+     * URL.
      *
      * @param location
      *            forward target location string
@@ -391,6 +412,8 @@ public abstract class BeforeEvent extends EventObject {
      * <p>
      * This function doesn't change the browser URL as opposed to
      * <code>forwardTo()</code>.
+     * <p>
+     * Note that rerouting preserves the query parameters of the event.
      *
      * @param rerouteTarget
      *            the navigation handler to use, or {@code null} to clear a
@@ -409,6 +432,8 @@ public abstract class BeforeEvent extends EventObject {
      * <p>
      * This function doesn't change the browser URL as opposed to
      * <code>forwardTo()</code>.
+     * <p>
+     * Note that rerouting preserves the query parameters of the event.
      *
      * @param targetState
      *            the target navigation state of the rerouting, not {@code null}
@@ -424,6 +449,8 @@ public abstract class BeforeEvent extends EventObject {
      * <p>
      * This function doesn't change the browser URL as opposed to
      * <code>forwardTo()</code>.
+     * <p>
+     * Note that rerouting preserves the query parameters of the event.
      *
      * @param routeTargetType
      *            the component type to display, not {@code null}
@@ -441,6 +468,8 @@ public abstract class BeforeEvent extends EventObject {
      * <p>
      * This function doesn't change the browser URL as opposed to
      * <code>forwardTo()</code>.
+     * <p>
+     * Note that rerouting preserves the query parameters of the event.
      *
      * @param routeTargetType
      *            the component type to display, not {@code null}
@@ -460,6 +489,8 @@ public abstract class BeforeEvent extends EventObject {
      * <p>
      * This function doesn't change the browser URL as opposed to
      * <code>forwardTo()</code>.
+     * <p>
+     * Note that rerouting preserves the query parameters of the event.
      *
      * @param route
      *            reroute target location string
@@ -483,6 +514,8 @@ public abstract class BeforeEvent extends EventObject {
      * <p>
      * This function doesn't change the browser URL as opposed to
      * <code>forwardTo()</code>.
+     * <p>
+     * Note that rerouting preserves the query parameters of the event.
      *
      * @param route
      *            reroute target location string
@@ -501,6 +534,8 @@ public abstract class BeforeEvent extends EventObject {
      * <p>
      * This function doesn't change the browser URL as opposed to
      * <code>forwardTo()</code>.
+     * <p>
+     * Note that rerouting preserves the query parameters of the event.
      *
      * @param route
      *            reroute target location string

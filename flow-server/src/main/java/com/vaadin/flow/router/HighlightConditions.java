@@ -45,8 +45,9 @@ public final class HighlightConditions {
      * @return the highlight condition
      */
     public static HighlightCondition<RouterLink> locationPrefix() {
-        return (link, event) -> event.getLocation().getPath()
-                .startsWith(link.getHref());
+        return (link, event) -> link.getHref().isEmpty()
+                ? event.getLocation().getPath().isEmpty()
+                : event.getLocation().getPath().startsWith(link.getHref());
     }
 
     /**
