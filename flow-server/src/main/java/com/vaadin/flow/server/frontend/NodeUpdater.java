@@ -323,7 +323,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("@polymer/polymer", POLYMER_VERSION);
 
-        defaults.put("lit", "2.0.0-pre.2");
+        defaults.put("lit", "2.0.0-rc.1");
 
         return defaults;
     }
