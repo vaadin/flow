@@ -123,8 +123,8 @@ async function mergePR(){
       }
     };
     
-    await axios.put(mergeURL, {'merge_method':'rebase'}, options);
-    await postComment(url, "This PR has been merged with 'rebase' method.[Message is sent from bot]");
+    await axios.put(mergeURL, {'merge_method':'squash'}, options);
+    await postComment(url, "This PR has been merged with 'squash' method.[Message is sent from bot]");
     console.log(`PR ${branch} has been merged automatically.`);
 
   } catch (error) {
