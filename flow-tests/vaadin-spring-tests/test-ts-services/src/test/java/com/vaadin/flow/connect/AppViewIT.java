@@ -47,7 +47,9 @@ public class AppViewIT extends ChromeBrowserTest {
 
     @After
     public void tearDown() {
-        logout();
+        if (getDriver() != null) {
+            logout();
+        }
     }
 
     /**
@@ -72,7 +74,7 @@ public class AppViewIT extends ChromeBrowserTest {
         button.click();
 
         // Wait for the server connect response
-        verifyContent("Anonymous access is not allowed");
+        verifyContent("Access denied");
     }
 
     @Test
@@ -83,7 +85,7 @@ public class AppViewIT extends ChromeBrowserTest {
         button.click();
 
         // Wait for the server connect response
-        verifyContent("Anonymous access is not allowed");
+        verifyContent("Access denied");
     }
 
     @Test
@@ -145,7 +147,7 @@ public class AppViewIT extends ChromeBrowserTest {
 
     @Test
     public void should_notAbleToRequestAdminOnly_when_NotLoggedIn() {
-        verifyCallingAdminService("Anonymous access is not allowed");
+        verifyCallingAdminService("Access denied");
     }
 
     @Test
@@ -167,7 +169,7 @@ public class AppViewIT extends ChromeBrowserTest {
         login("user");
 
         // Verify admin calls
-        verifyCallingAdminService("Unauthorized access to Vaadin endpoint");
+        verifyCallingAdminService("Access denied");
 
         // Verify logged in user calls
         verifyCallingAuthorizedService();
@@ -260,7 +262,7 @@ public class AppViewIT extends ChromeBrowserTest {
     public void should_notAbleToRequestDenied_when_LoggedIn() {
         login("user");
         testComponent.$(TestBenchElement.class).id("denied").click();
-        verifyContent("Unauthorized access to Vaadin endpoint");
+        verifyContent("Access denied");
     }
 
     private void load() {
