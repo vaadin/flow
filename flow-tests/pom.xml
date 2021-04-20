@@ -80,6 +80,7 @@
                         <webdriver.chrome.driver>${webdriver.chrome.driver}</webdriver.chrome.driver>
                     </systemPropertyVariables>
                     <excludedGroups>${test.excludegroup}</excludedGroups>
+                    <groups>${test.includegroup}</groups>
                     <excludes>
                         <exclude>**/*$*</exclude>
                         <exclude>${exclude.it.tests}</exclude>
@@ -252,6 +253,14 @@
             </modules>
         </profile>
         <profile>
+            <id>theme-live-reload-tests</id>
+            <properties>
+                <test.includegroup>
+                    com.vaadin.flow.testcategory.ThemeLiveReloadTests
+                </test.includegroup>
+            </properties>
+        </profile>
+        <profile>
             <id>run-tests</id>
             <activation>
                 <property>
@@ -338,6 +347,9 @@
             <id>validation</id>
             <properties>
                 <maven.javadoc.skip>true</maven.javadoc.skip>
+                <test.excludegroup>
+                    com.vaadin.flow.testcategory.ThemeLiveReloadTests
+                </test.excludegroup>
             </properties>
         </profile>
         <profile>
@@ -346,7 +358,10 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <test.excludegroup>com.vaadin.flow.testcategory.ScreenshotTests, com.vaadin.flow.testcategory.PushTests</test.excludegroup>
+                <test.excludegroup>com.vaadin.flow.testcategory.ScreenshotTests,
+                    com.vaadin.flow.testcategory.PushTests,
+                    com.vaadin.flow.testcategory.ThemeLiveReloadTests
+                </test.excludegroup>
             </properties>
         </profile>
         <profile>
@@ -368,7 +383,10 @@
                 </property>
             </activation>
             <properties>
-                <test.excludegroup>com.vaadin.flow.testcategory.IgnoreIE11, com.vaadin.flow.testcategory.PushTests</test.excludegroup>
+                <test.excludegroup>com.vaadin.flow.testcategory.IgnoreIE11,
+                    com.vaadin.flow.testcategory.PushTests,
+                    com.vaadin.flow.testcategory.ThemeLiveReloadTests
+                </test.excludegroup>
             </properties>
         </profile>
         <profile>
