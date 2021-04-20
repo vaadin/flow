@@ -8,15 +8,11 @@ export interface LoginResult {
   errorTitle?: string;
   errorMessage?: string;
   redirectUrl?: string;
+  defaultUrl?: string;
 }
 
 export interface LoginOptions {
   loginProcessingUrl?: string;
-  failureUrl?: string;
-  /**
-   * @deprecated The `defaultSuccessUrl` is not used anymore.
-   */
-  defaultSuccessUrl?: string;
 }
 
 export interface LogoutOptions {
@@ -27,10 +23,9 @@ export interface LogoutOptions {
  * A helper method for Spring Security based form login.
  * @param username
  * @param password
- * @param options defines additional options, e.g, the loginProcessingUrl, failureUrl, defaultSuccessUrl etc.
+ * @param options defines additional options, e.g, the loginProcessingUrl etc.
  */
 export async function login(username: string, password: string, options?: LoginOptions): Promise<LoginResult> {
-  let result;
   try {
     const data = new FormData();
     data.append('username', username);
@@ -38,43 +33,40 @@ export async function login(username: string, password: string, options?: LoginO
 
     const loginProcessingUrl = options && options.loginProcessingUrl ? options.loginProcessingUrl : '/login';
     const headers = getSpringCsrfTokenHeadersFromDocument(document);
-    const response = await fetch(loginProcessingUrl, { method: 'POST', body: data, headers });
+    headers.source = 'typescript';
+    const response = await fetch(loginProcessingUrl, {
+      method: 'POST',
+      body: data,
+      headers
+    });
 
-    const failureUrl = options && options.failureUrl ? options.failureUrl : '/login?error';
-    // this assumes the default Spring Security form login configuration (handler URL and responses)
-    if (response.ok && response.redirected) {
-      if (response.url.endsWith(failureUrl)) {
-        result = {
-          error: true,
-          errorTitle: 'Incorrect username or password.',
-          errorMessage: 'Check that you have entered the correct username and password and try again.'
-        };
-      } else {
-        const vaadinCsrfToken = await updateCsrfTokensBasedOnResponse(response);
-        if (vaadinCsrfToken) {
-          result = {
-            error: false,
-            token: vaadinCsrfToken,
-            redirectUrl: response.url
-          };
-        }
-      }
+    const result = response.headers.get('Result');
+    const savedUrl = response.headers.get('Saved-url') || undefined;
+    const defaultUrl = response.headers.get('Default-url') || undefined;
+    const loginSuccessful = response.ok && result === 'success';
+
+    if (loginSuccessful) {
+      const vaadinCsrfToken = response.headers.get('Vaadin-CSRF') || undefined;
+      return {
+        error: false,
+        token: vaadinCsrfToken,
+        redirectUrl: savedUrl,
+        defaultUrl
+      };
+    } else {
+      return {
+        error: true,
+        errorTitle: 'Incorrect username or password.',
+        errorMessage: 'Check that you have entered the correct username and password and try again.'
+      };
     }
   } catch (e) {
-    result = {
+    return {
       error: true,
       errorTitle: e.name,
       errorMessage: e.message
     };
   }
-
-  return (
-    result || {
-      error: true,
-      errorTitle: 'Error',
-      errorMessage: 'Something went wrong when trying to login.'
-    }
-  );
 }
 
 /**
