@@ -107,7 +107,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
             URL resource = this.getClass().getClassLoader()
                     .getResource(webpackTemplate);
             FileUtils.copyURLToFile(resource, configFile);
-            log().info("Created webpack configuration file: " + configFile);
+            log().debug("Created webpack configuration file: " + configFile);
         }
 
         // Generated file is always re-written
@@ -127,7 +127,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
         String mainLine = "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
                 + getEscapedRelativeWebpackPath(flowImportsFilePath) + "');";
 
-        String devmodeGizmoJSLine = "const devmodeGizmoJS = '" + FrontendUtils.DEVMODE_GIZMO_MODULE + "'";
+        String devmodeGizmoJSLine = "const devmodeGizmoJS = '"
+                + FrontendUtils.DEVMODE_GIZMO_MODULE + "'";
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i).trim();
             if (lines.get(i).startsWith(
