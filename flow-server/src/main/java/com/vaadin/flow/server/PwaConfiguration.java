@@ -54,12 +54,15 @@ public class PwaConfiguration implements Serializable {
 
     /**
      * Default constructor, uses default values.
+
+     * @param useV14Bootstrap
+     *            true iff using legacy bootstrap mode
      */
-    public PwaConfiguration() {
+    public PwaConfiguration(boolean useV14Bootstrap) {
         this(false, DEFAULT_NAME, "Flow PWA", "", DEFAULT_BACKGROUND_COLOR,
                 DEFAULT_THEME_COLOR, DEFAULT_ICON, DEFAULT_PATH,
                 DEFAULT_OFFLINE_PATH, DEFAULT_DISPLAY, DEFAULT_START_URL,
-                new String[] {});
+                new String[] {}, useV14Bootstrap);
     }
 
     /**
@@ -67,12 +70,14 @@ public class PwaConfiguration implements Serializable {
      *
      * @param pwa
      *            the annotation to use for configuration
+     * @param useV14Bootstrap
+     *            true iff using legacy bootstrap mode
      */
-    public PwaConfiguration(PWA pwa) {
+    public PwaConfiguration(PWA pwa, boolean useV14Bootstrap) {
         this(true, pwa.name(), pwa.shortName(), pwa.description(),
                 pwa.backgroundColor(), pwa.themeColor(), pwa.iconPath(),
                 pwa.manifestPath(), pwa.offlinePath(), pwa.display(),
-                pwa.startPath(), pwa.offlineResources());
+                pwa.startPath(), pwa.offlineResources(), useV14Bootstrap);
     }
 
     /**
@@ -102,12 +107,15 @@ public class PwaConfiguration implements Serializable {
      *            the start path
      * @param offlineResources
      *            the list of files to add for pre-caching
+     * @param useV14Bootstrap
+     *            true iff using legacy bootstrap mode
      */
     @SuppressWarnings("squid:S00107")
     public PwaConfiguration(boolean enabled, String name, String shortName,
             String description, String backgroundColor, String themeColor,
             String iconPath, String manifestPath, String offlinePath,
-            String display, String startPath, String[] offlineResources) {
+            String display, String startPath, String[] offlineResources,
+            boolean useV14Bootstrap) {
         this.appName = name;
         this.shortName = shortName.substring(0,
                 Math.min(shortName.length(), 12));
@@ -116,7 +124,9 @@ public class PwaConfiguration implements Serializable {
         this.themeColor = themeColor;
         this.iconPath = iconPath;
         this.manifestPath = manifestPath;
-        this.offlinePath = offlinePath;
+        this.offlinePath = offlinePath.isEmpty() && useV14Bootstrap ?
+                DEFAULT_OFFLINE_PATH :
+                offlinePath;
         this.display = display;
         this.startPath = startPath;
         this.enabled = enabled;

@@ -67,6 +67,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private AbstractTheme themeInstance;
     private final HashMap<String, String> packages = new HashMap<>();
     private final Set<String> visited = new HashSet<>();
+    private final boolean useV14Bootstrap;
     private PwaConfiguration pwaConfiguration;
 
     /**
@@ -76,7 +77,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      *            the class finder
      */
     public FrontendDependencies(ClassFinder finder) {
-        this(finder, true);
+        this(finder, true, false);
     }
 
     /**
@@ -90,10 +91,13 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      *            {@link com.vaadin.flow.component.WebComponentExporter} classes
      *            for dependencies. {@code true} is default for
      *            {@link FrontendDependencies#FrontendDependencies(ClassFinder)}
+     * @param useV14Bootstrap
+     *            whether we are in legacy V14 bootstrap mode
      */
     public FrontendDependencies(ClassFinder finder,
-            boolean generateEmbeddableWebComponents) {
+            boolean generateEmbeddableWebComponents, boolean useV14Bootstrap) {
         super(finder);
+        this.useV14Bootstrap = useV14Bootstrap;
         log().info(
                 "Scanning classes to find frontend configurations and dependencies...");
         long start = System.nanoTime();
@@ -435,7 +439,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
         }
         if (dependencies.isEmpty()) {
-            this.pwaConfiguration = new PwaConfiguration();
+            this.pwaConfiguration = new PwaConfiguration(useV14Bootstrap);
             return;
         }
 
@@ -454,7 +458,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         this.pwaConfiguration = new PwaConfiguration(true, name, shortName,
                 description, backgroundColor, themeColor, iconPath,
                 manifestPath, offlinePath, display, startPath,
-                offlineResources.toArray(new String[] {}));
+                offlineResources.toArray(new String[] {}), useV14Bootstrap);
     }
 
     private Logger log() {

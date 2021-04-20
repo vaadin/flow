@@ -82,7 +82,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 baseDir.getAbsolutePath());
 
         pwaConfiguration = new PwaConfiguration(
-                AppShell.class.getAnnotation(PWA.class));
+                AppShell.class.getAnnotation(PWA.class), false);
 
         createWebpackUpdater();
 
@@ -231,7 +231,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     public void should_enableCustomOfflinePath_when_customisedInPwa()
             throws IOException {
         pwaConfiguration = new PwaConfiguration(
-                AppShellWithOfflinePath.class.getAnnotation(PWA.class));
+                AppShellWithOfflinePath.class.getAnnotation(PWA.class), false);
         createWebpackUpdater();
 
         webpackUpdater.execute();
@@ -248,7 +248,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
     @Test
     public void should_setPwaEnabledFalse_when_noPwa() throws IOException {
-        pwaConfiguration = new PwaConfiguration();
+        pwaConfiguration = new PwaConfiguration(false);
         createWebpackUpdater();
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
