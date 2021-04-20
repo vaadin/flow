@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.utils;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -56,15 +59,36 @@ public class LookupImpl implements Lookup {
                 if (!ReflectTools.isInstantiableService((Class<?>) clazz)) {
                     continue;
                 }
-                Class<?> serviceType = serviceClass.getClassLoader()
-                        .loadClass(((Class<?>) clazz).getName());
-                result.add(serviceClass
-                        .cast(ReflectTools.createInstance(serviceType)));
+                Class<?> serviceType = classFinder.loadClass(((Class<?>) clazz).getName());
+                Object serviceImpl = ReflectTools.createInstance(serviceType);
+                Object proxyServiceImpl = Proxy.newProxyInstance(
+                    serviceClass.getClassLoader(),
+                    new Class[] { serviceClass },
+                    new ProxyServiceImpl(serviceImpl));
+                result.add(serviceClass.cast(proxyServiceImpl));
             }
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException("Could not find service class", e);
         }
         return result;
+    }
+
+    private final class ProxyServiceImpl
+            implements InvocationHandler {
+        private final Object delegate;
+
+        private ProxyServiceImpl(
+            Object delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args)
+                throws Throwable {
+            Class<?>[] argTypes = method.getParameterTypes();
+            Method delegateMethod = delegate.getClass().getMethod(method.getName(), argTypes);
+            return delegateMethod.invoke(delegate, args);
+        }
     }
 
     private Class<?> loadClassFromClassFindler(Class<?> clz) {
