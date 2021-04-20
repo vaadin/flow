@@ -65,7 +65,7 @@ public abstract class AbstractTaskClientGenerator implements FallibleCommand {
         File generatedFile = getGeneratedFile();
         try {
             String fileContent = getFileContent();
-            log().info("writing file '{}'", generatedFile);
+            log().debug("writing file '{}'", generatedFile);
 
             FileUtils.forceMkdirParent(generatedFile);
             FileUtils.writeStringToFile(generatedFile, fileContent, UTF_8);
