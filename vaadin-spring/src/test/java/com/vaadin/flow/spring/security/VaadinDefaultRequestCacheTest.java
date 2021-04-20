@@ -8,12 +8,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.connect.Endpoint;
-import com.vaadin.flow.server.connect.EndpointNameChecker;
 import com.vaadin.flow.server.connect.EndpointRegistry;
-import com.vaadin.flow.server.connect.EndpointUtil;
+import com.vaadin.flow.server.connect.VaadinConnectControllerConfiguration;
 import com.vaadin.flow.server.connect.VaadinEndpointProperties;
-import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
-import com.vaadin.flow.spring.VaadinConfigurationProperties;
+import com.vaadin.flow.spring.SpringBootAutoConfiguration;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,13 +19,14 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { VaadinDefaultRequestCache.class, RequestUtil.class,
-        EndpointUtil.class, VaadinEndpointProperties.class,
-        VaadinConfigurationProperties.class, EndpointRegistry.class,
-        EndpointNameChecker.class, VaadinConnectAccessChecker.class })
+@SpringBootTest(classes = { VaadinEndpointProperties.class,
+        VaadinDefaultRequestCache.class })
+@ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
+        VaadinConnectControllerConfiguration.class })
 public class VaadinDefaultRequestCacheTest {
 
     @Autowired
