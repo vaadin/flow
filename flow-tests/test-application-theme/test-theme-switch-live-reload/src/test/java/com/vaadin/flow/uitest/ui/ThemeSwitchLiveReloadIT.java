@@ -28,14 +28,17 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.testcategory.ThemeLiveReloadTests;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+@Category(ThemeLiveReloadTests.class)
 @NotThreadSafe
 public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
 
