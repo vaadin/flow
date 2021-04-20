@@ -605,6 +605,12 @@
     </build>
     <profiles>
         <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <profile>
             <id>validation</id>
             <properties>
                 <maven.javadoc.skip>false</maven.javadoc.skip>
