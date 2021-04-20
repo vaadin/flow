@@ -65,6 +65,7 @@ dependencies {
     compile("com.vaadin:flow-plugin-base:${pom.parent.version}")
 
     testCompile("junit:junit:4.12")
+    testCompile("com.vaadin:fusion-endpoint:${pom.parent.version}")
     testCompile("org.jetbrains.kotlin:kotlin-test:1.4.31")
 }
 
