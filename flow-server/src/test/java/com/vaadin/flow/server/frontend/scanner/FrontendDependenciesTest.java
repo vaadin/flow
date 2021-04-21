@@ -91,7 +91,7 @@ public class FrontendDependenciesTest {
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(RouteComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
-                classFinder, false, false);
+                classFinder, false);
         List<String> modules = dependencies.getModules();
         Assert.assertTrue(1 <= modules.size());
         Assert.assertTrue(modules.contains("foo.js"));
@@ -110,7 +110,7 @@ public class FrontendDependenciesTest {
                 .thenReturn((Class) FakeLumo.class);
 
         FrontendDependencies dependencies = new FrontendDependencies(
-                classFinder, false, false);
+                classFinder, false);
 
         Assert.assertEquals(1, dependencies.getEndPoints().size());
 
@@ -132,7 +132,7 @@ public class FrontendDependenciesTest {
 
         IllegalStateException exception = Assert.assertThrows(
                 IllegalStateException.class,
-                () -> new FrontendDependencies(classFinder, false, false));
+                () -> new FrontendDependencies(classFinder, false));
 
         Assert.assertEquals("Unexpected message for the thrown exception",
                 "Theme name and theme class can not both be specified. "
@@ -150,7 +150,7 @@ public class FrontendDependenciesTest {
 
         IllegalStateException exception = Assert.assertThrows(
                 IllegalStateException.class,
-                () -> new FrontendDependencies(classFinder, false, false));
+                () -> new FrontendDependencies(classFinder, false));
 
         Assert.assertEquals("Thrown exception didn't contain correct message",
                 "Lumo dependency needs to be available on the classpath when using a theme name.",
@@ -163,7 +163,7 @@ public class FrontendDependenciesTest {
                 .thenReturn(Collections.singleton(MyAppThemeShell.class));
 
         FrontendDependencies dependencies = new FrontendDependencies(
-                classFinder, false, false);
+                classFinder, false);
 
         Assert.assertEquals("Faulty default theme received", FakeLumo.class,
                 dependencies.getThemeDefinition().getTheme());
@@ -175,7 +175,7 @@ public class FrontendDependenciesTest {
         Mockito.when(classFinder.getSubTypesOf(HasErrorParameter.class))
                 .thenReturn(Collections.singleton(ErrorComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
-                classFinder, false, false);
+                classFinder, false);
         List<String> modules = dependencies.getModules();
         Assert.assertTrue(1 <= modules.size());
         Assert.assertTrue(modules.contains("./src/bar.js"));
@@ -190,7 +190,7 @@ public class FrontendDependenciesTest {
         Mockito.when(classFinder.getSubTypesOf(UIInitListener.class))
                 .thenReturn(Collections.singleton(MyUIInitListener.class));
         FrontendDependencies dependencies = new FrontendDependencies(
-                classFinder, false, false);
+                classFinder, false);
         List<String> modules = dependencies.getModules();
         Assert.assertTrue(1 <= modules.size());
         Assert.assertTrue(modules.contains("baz.js"));
@@ -205,7 +205,7 @@ public class FrontendDependenciesTest {
         Mockito.when(classFinder.getSubTypesOf(VaadinServiceInitListener.class))
                 .thenReturn(Collections.singleton(MyServiceListener.class));
         FrontendDependencies dependencies = new FrontendDependencies(
-                classFinder, false, false);
+                classFinder, false);
         List<String> modules = dependencies.getModules();
         Assert.assertTrue(1 <= modules.size());
         Assert.assertTrue(modules.contains("baz.js"));
@@ -220,7 +220,7 @@ public class FrontendDependenciesTest {
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(JsOrderComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
-                classFinder, false, false);
+                classFinder, false);
 
         Set<String> scripts = dependencies.getScripts();
         Assert.assertEquals(LinkedHashSet.class, scripts.getClass());
@@ -235,7 +235,7 @@ public class FrontendDependenciesTest {
         Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
                 Collections.singleton(RouteComponentWithLayout.class));
         FrontendDependencies dependencies = new FrontendDependencies(
-                classFinder, false, false);
+                classFinder, false);
 
         List<String> modules = dependencies.getModules();
         Assert.assertEquals("Theme's annotations should come first",
@@ -249,7 +249,7 @@ public class FrontendDependenciesTest {
                 Collections.singleton(RouteComponentWithMethodReference.class));
 
         FrontendDependencies dependencies = new FrontendDependencies(
-                classFinder, false, false);
+                classFinder, false);
 
         List<String> modules = dependencies.getModules();
         Assert.assertTrue(3 <= modules.size());
@@ -266,7 +266,7 @@ public class FrontendDependenciesTest {
                         .collect(Collectors.toSet()));
 
         FrontendDependencies dependencies = new FrontendDependencies(
-                classFinder, true, false);
+                classFinder, true);
 
         Assert.assertNotNull(dependencies.getTheme());
         Assert.assertNotNull(dependencies.getThemeDefinition());
