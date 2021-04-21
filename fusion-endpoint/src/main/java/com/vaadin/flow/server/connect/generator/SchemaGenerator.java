@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.server.connect.generator;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,16 +35,14 @@ import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.resolution.declarations.ResolvedEnumConstantDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
-import com.vaadin.flow.internal.ReflectTools;
-
-import com.vaadin.flow.server.connect.ConnectUtils;
 import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.server.connect.ConnectUtils;
 
 /**
  * Methods related with creating schema declarations, used by

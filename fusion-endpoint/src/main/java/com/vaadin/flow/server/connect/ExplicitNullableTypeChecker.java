@@ -20,9 +20,6 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-import javax.annotation.Nonnull;
-import javax.validation.constraints.NotNull;
-
 /**
  * A checker for TypeScript null compatibility in Vaadin endpoint methods
  * parameter and return types.
