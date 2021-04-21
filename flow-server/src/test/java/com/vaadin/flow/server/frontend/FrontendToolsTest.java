@@ -438,6 +438,7 @@ public class FrontendToolsTest {
         Assume.assumeFalse(
                 "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
                 FrontendUtils.isWindows());
+        tools = new FrontendTools(baseDir, () -> vaadinHomeDir, true);
         assertNodeCommand(() -> vaadinHomeDir);
     }
 
@@ -456,6 +457,7 @@ public class FrontendToolsTest {
         Assume.assumeFalse(
                 "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
                 FrontendUtils.isWindows());
+        tools = new FrontendTools(baseDir, () -> vaadinHomeDir, true);
         assertNpmCommand(() -> vaadinHomeDir);
     }
 
