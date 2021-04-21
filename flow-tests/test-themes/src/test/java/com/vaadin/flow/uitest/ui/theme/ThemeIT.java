@@ -77,12 +77,12 @@ public class ThemeIT extends ChromeBrowserTest {
         open();
         final String resourceUrl = getRootURL()
             + "/path/themes/app-theme/fortawesome/icons/snowflake.svg";
-        WebElement diceSpan = findElement(By.id(CSS_SNOWFLAKE));
+        WebElement cssNodeSnowflake = findElement(By.id(CSS_SNOWFLAKE));
         final String expectedImgUrl = "url(\"" + resourceUrl + "\")";
         Assert.assertEquals(
-            "Background image has been referenced on java page and "
+            "Background image has been referenced in styles.css and "
                 + "expected to be applied",
-            expectedImgUrl, diceSpan.getCssValue("background-image"));
+            expectedImgUrl, cssNodeSnowflake.getCssValue("background-image"));
     }
 
     @Test
