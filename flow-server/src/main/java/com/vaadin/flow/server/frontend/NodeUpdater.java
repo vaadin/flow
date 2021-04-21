@@ -210,8 +210,8 @@ public abstract class NodeUpdater implements FallibleCommand {
             try {
                 jsonContent = Json.parse(fileContent);
             } catch (JsonException e) {
-                throw new JsonException(String.format(
-                        "Cannot parse package file '%s'", packageFile));
+                throw new JsonException(String
+                        .format("Cannot parse package file '%s'", packageFile));
             }
         }
         return jsonContent;
@@ -273,7 +273,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("file-loader", "6.1.0");
         defaults.put("extract-loader", "5.1.0");
         defaults.put("lit-css-loader", "0.0.4");
-        
+
         // Constructable style sheets is only implemented for chrome,
         // polyfill needed for FireFox et.al. at the moment
         defaults.put("construct-style-sheets-polyfill", "2.4.6");
@@ -385,7 +385,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     String writePackageFile(JsonObject json, File packageFile)
             throws IOException {
-        log().info("Updated npm {}.", packageFile.getAbsolutePath());
+        log().debug("Updated npm {}.", packageFile.getAbsolutePath());
         FileUtils.forceMkdirParent(packageFile);
         String content = stringify(json, 2) + "\n";
         FileUtils.writeStringToFile(packageFile, content, UTF_8.name());

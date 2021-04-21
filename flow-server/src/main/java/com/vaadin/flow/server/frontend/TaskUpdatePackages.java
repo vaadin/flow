@@ -142,7 +142,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         if (added > 0) {
-            log().info("Added {} dependencies to main package.json", added);
+            log().debug("Added {} dependencies to main package.json", added);
         }
 
         // Remove obsolete dependencies
@@ -170,7 +170,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         if (removed > 0) {
-            log().info("Removed {} dependencies", removed);
+            log().debug("Removed {} dependencies", removed);
         }
 
         if (doCleanUp) {
@@ -212,10 +212,10 @@ public class TaskUpdatePackages extends NodeUpdater {
      * present.
      *
      * @param packageJson
-     *         JsonObject of current package.json contents
+     *            JsonObject of current package.json contents
      * @return amount of removed properties
      * @throws IOException
-     *         thrown if removal of package-lock.json fails
+     *             thrown if removal of package-lock.json fails
      */
     private int removeLegacyProperties(JsonObject packageJson)
             throws IOException {
