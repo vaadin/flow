@@ -1,10 +1,8 @@
-package com.vaadin.flow.server.connect;
+package com.vaadin.flow.server.auth;
 
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
-
-import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 public class AccessControlTestClasses {
 

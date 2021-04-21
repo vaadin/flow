@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.connect.auth;
+package com.vaadin.flow.server.auth;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -41,7 +41,7 @@ import java.lang.annotation.Target;
  * security roles)</li>
  * </ul>
  *
- * @see VaadinConnectAccessChecker for security rules check implementation
+ * @see AccessAnnotationChecker for security rules check implementation
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.TYPE })
