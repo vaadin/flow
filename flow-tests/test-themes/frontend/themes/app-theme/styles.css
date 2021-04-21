@@ -61,6 +61,12 @@ body {
     display: block;
 }
 
+#icon-snowflake {
+    background-image: url('./fortawesome/icons/snowflake.svg');
+    height: 1em;
+    width: 1em;
+}
+
 p.global {
     color: rgba(255, 255, 0, 1); /* yellow */
     font-size: 20px;
