@@ -627,6 +627,7 @@ public class NodeTasks implements FallibleCommand {
         if (frontendDependencies != null) {
             addGenerateServiceWorkerTask(builder,
                     frontendDependencies.getPwaConfiguration());
+            addGenerateTsConfigTask(builder);
         }
 
         if (!builder.useDeprecatedV14Bootstrapping) {
@@ -693,7 +694,10 @@ public class NodeTasks implements FallibleCommand {
                 new File(builder.generatedFolder, IMPORTS_NAME),
                 outputDirectory);
         commands.add(taskGenerateIndexTs);
+    }
 
+
+    private void addGenerateTsConfigTask(Builder builder) {
         TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
                 builder.npmFolder);
         commands.add(taskGenerateTsConfig);
@@ -701,6 +705,7 @@ public class NodeTasks implements FallibleCommand {
         TaskGenerateTsDefinitions taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(
                 builder.npmFolder);
         commands.add(taskGenerateTsDefinitions);
+
     }
 
     private void addGenerateServiceWorkerTask(Builder builder,
