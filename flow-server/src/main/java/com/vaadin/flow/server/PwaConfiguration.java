@@ -54,7 +54,14 @@ public class PwaConfiguration implements Serializable {
 
     /**
      * Default constructor, uses default values.
+     */
+    public PwaConfiguration() {
+        this(false);
+    }
 
+    /**
+     * Creates the configuration using default PWA parameters.
+     *
      * @param useV14Bootstrap
      *            true iff using legacy bootstrap mode
      */
@@ -63,6 +70,16 @@ public class PwaConfiguration implements Serializable {
                 DEFAULT_THEME_COLOR, DEFAULT_ICON, DEFAULT_PATH,
                 DEFAULT_OFFLINE_PATH, DEFAULT_DISPLAY, DEFAULT_START_URL,
                 new String[] {}, useV14Bootstrap);
+    }
+
+    /**
+     * Constructs the configuration using the {@link PWA} annotation.
+     *
+     * @param pwa
+     *            the annotation to use for configuration
+     */
+    public PwaConfiguration(PWA pwa) {
+        this(pwa, false);
     }
 
     /**

@@ -248,7 +248,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
     @Test
     public void should_setPwaEnabledFalse_when_noPwa() throws IOException {
-        pwaConfiguration = new PwaConfiguration(false);
+        pwaConfiguration = new PwaConfiguration();
         createWebpackUpdater();
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
