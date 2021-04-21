@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -622,11 +623,11 @@ public class FrontendTools {
         }
         if (returnCommand.isEmpty()) {
             // Otherwise look for regular `npm`/`npx` global search path
-            String command = frontendToolsLocator
+            Optional<String> command = frontendToolsLocator
                     .tryLocateTool(cliTool.getCommand())
-                    .map(File::getAbsolutePath).orElse(null);
-            if (command != null) {
-                returnCommand = Collections.singletonList(command);
+                    .map(File::getAbsolutePath);
+            if (command.isPresent()) {
+                returnCommand = Collections.singletonList(command.get());
             }
         }
         if (!alternativeDirChecked && returnCommand.isEmpty()) {
