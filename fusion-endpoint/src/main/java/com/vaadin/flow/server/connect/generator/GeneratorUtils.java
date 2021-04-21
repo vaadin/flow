@@ -23,6 +23,9 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 
+import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
+
 /**
  * A set of static methods used in CCDM generators, so as flow do not depend on
  * external libraries for these operations.
@@ -115,5 +118,10 @@ final class GeneratorUtils {
                             .equals(importDeclaration.getNameAsString())); // NOSONAR
         }
         return false;
+    }
+
+    static boolean isNodeRequired(NodeWithAnnotations<?> node) {
+        return node.isAnnotationPresent(NotNull.class)
+                || node.isAnnotationPresent(Nonnull.class);
     }
 }

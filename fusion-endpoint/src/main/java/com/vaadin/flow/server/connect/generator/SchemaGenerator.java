@@ -38,6 +38,7 @@ import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.vaadin.flow.internal.ReflectTools;
 
+import com.vaadin.flow.server.connect.ConnectUtils;
 import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -159,10 +160,7 @@ class SchemaGenerator {
                         && !Modifier.isTransient(modifiers)
                         && !field.isAnnotationPresent(JsonIgnore.class);
             }).forEach(field -> validFields.put(field.getName(),
-                    field.isAnnotationPresent(Nullable.class)
-                            || ReflectTools.hasAnnotationWithSimpleName(field,
-                                    "Id")
-                            || field.getType().equals(Optional.class)));
+                    !ConnectUtils.isElementRequired(field)));
         } catch (ClassNotFoundException e) {
 
             String message = String.format(
@@ -200,9 +198,7 @@ class SchemaGenerator {
                     wrapperSchema.addAllOfItem(propertySchema);
                     propertySchema = wrapperSchema;
                 }
-                if (field.isAnnotationPresent(Nullable.class)
-                        || field.isAnnotationPresent("Id") || GeneratorUtils
-                                .isTrue(propertySchema.getNullable())) {
+                if (GeneratorUtils.isNodeRequired(field)) {
                     // Temporarily set nullable to indicate this property is
                     // not required
                     propertySchema.setNullable(true);
