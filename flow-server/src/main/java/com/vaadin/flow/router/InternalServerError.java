@@ -31,6 +31,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 /**
  * This is a basic default error view shown on exceptions during navigation.
@@ -38,6 +39,7 @@ import com.vaadin.flow.server.VaadinService;
  * @since 1.0
  */
 @Tag(Tag.DIV)
+@AnonymousAllowed
 public class InternalServerError extends Component
         implements HasErrorParameter<Exception> {
 
