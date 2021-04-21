@@ -195,7 +195,7 @@ class SchemaGenerator {
                     wrapperSchema.addAllOfItem(propertySchema);
                     propertySchema = wrapperSchema;
                 }
-                if (GeneratorUtils.isNodeRequired(field)) {
+                if (!GeneratorUtils.isNodeRequired(field)) {
                     // Temporarily set nullable to indicate this property is
                     // not required
                     propertySchema.setNullable(true);
