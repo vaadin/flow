@@ -16,8 +16,9 @@
 
 package com.vaadin.flow.server.connect.generator.endpoints;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import javax.annotation.security.DenyAll;
+import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -106,9 +107,9 @@ public abstract class AbstractEndpointGenerationTest
      */
     private static final List<Class> DENY_LIST_CHECKING_ABSOLUTE_PATH = Arrays
             .asList(Model.class, ParentModel.class, GrandParentModel.class);
-    private final Set<String> schemaReferences = new HashSet<>();
     private static final VaadinConnectAccessChecker accessChecker = new VaadinConnectAccessChecker(
             new CsrfChecker());
+    private final Set<String> schemaReferences = new HashSet<>();
 
     public AbstractEndpointGenerationTest(List<Class<?>> testClasses) {
         super(testClasses);
@@ -349,16 +350,14 @@ public abstract class AbstractEndpointGenerationTest
             assertSchema(stringSchemaEntry.getValue(), parameterTypes[index],
                     parameterTypeArguments.get(index));
             List requiredList = requestSchema.getRequired();
-            if (parameters[index].isAnnotationPresent(Nullable.class)
-                    || Optional.class
-                            .isAssignableFrom(parameters[index].getType())) {
+            if (parameters[index].isAnnotationPresent(NotNull.class)
+                    || parameters[index].isAnnotationPresent(Nonnull.class)) {
+                assertTrue(requiredList.contains(stringSchemaEntry.getKey()));
+            } else {
                 boolean notRequired = requiredList == null
                         || !requiredList.contains(stringSchemaEntry.getKey());
                 assertTrue("@Nullable or Optional request parameter "
                         + "should not be required", notRequired);
-
-            } else {
-                assertTrue(requiredList.contains(stringSchemaEntry.getKey()));
             }
             index++;
         }
@@ -509,15 +508,14 @@ public abstract class AbstractEndpointGenerationTest
             Type type = expectedSchemaField.getGenericType();
             assertSchema(propertySchema, expectedSchemaField.getType(),
                     extractTypeArguments(type, typeArguments));
-            if (Optional.class.isAssignableFrom(expectedSchemaField.getType())
-                    || expectedSchemaField
-                            .isAnnotationPresent(Nullable.class)) {
+            if (expectedSchemaField.isAnnotationPresent(NotNull.class)
+                    || expectedSchemaField.isAnnotationPresent(Nonnull.class)) {
+                assertTrue(schema.getRequired()
+                        .contains(expectedSchemaField.getName()));
+            } else {
                 boolean notRequired = schema.getRequired() == null || !schema
                         .getRequired().contains(expectedSchemaField.getName());
                 assertTrue(notRequired);
-            } else {
-                assertTrue(schema.getRequired()
-                        .contains(expectedSchemaField.getName()));
             }
         }
         assertEquals(expectedFieldsCount, properties.size());

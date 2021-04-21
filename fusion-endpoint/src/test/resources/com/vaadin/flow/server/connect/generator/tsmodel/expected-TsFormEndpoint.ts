@@ -104,36 +104,32 @@ export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEnti
     return this[_getPropertyModel]('negativeOrCero', NumberModel, [true, new NegativeOrZero()]);
   }
 
+  get nonNullableList(): ArrayModel<string, StringModel> {
+    return this[_getPropertyModel]('nonNullableList', ArrayModel, [false, StringModel, [true]]);
+  }
+
+  get nonNullableMatrix(): ArrayModel<ModelType<ArrayModel<string, StringModel>>, ArrayModel<string, StringModel>> {
+    return this[_getPropertyModel]('nonNullableMatrix', ArrayModel, [false, ArrayModel, [false, StringModel, [true]]]);
+  }
+
+  get nonNullableString(): StringModel {
+    return this[_getPropertyModel]('nonNullableString', StringModel, [false]);
+  }
+
   get notBlank(): StringModel {
     return this[_getPropertyModel]('notBlank', StringModel, [true, new NotBlank()]);
   }
 
   get notEmpty(): StringModel {
-    return this[_getPropertyModel]('notEmpty', StringModel, [true, new NotEmpty(), new NotNull()]);
+    return this[_getPropertyModel]('notEmpty', StringModel, [false, new NotEmpty(), new NotNull()]);
   }
 
   get notNull(): StringModel {
-    return this[_getPropertyModel]('notNull', StringModel, [true, new NotNull()]);
+    return this[_getPropertyModel]('notNull', StringModel, [false, new NotNull()]);
   }
 
   get notNullEntity(): MyEntityModel {
-    return this[_getPropertyModel]('notNullEntity', MyEntityModel, [true, new NotNull()]);
-  }
-
-  get nullableEntity(): MyEntityModel {
-    return this[_getPropertyModel]('nullableEntity', MyEntityModel, [true]);
-  }
-
-  get nullableList(): ArrayModel<string, StringModel> {
-    return this[_getPropertyModel]('nullableList', ArrayModel, [true, StringModel, [true]]);
-  }
-
-  get nullableMatrix(): ArrayModel<ModelType<ArrayModel<string, StringModel>>, ArrayModel<string, StringModel>> {
-    return this[_getPropertyModel]('nullableMatrix', ArrayModel, [true, ArrayModel, [false, StringModel, [true]]]);
-  }
-
-  get nullableString(): StringModel {
-    return this[_getPropertyModel]('nullableString', StringModel, [true]);
+    return this[_getPropertyModel]('notNullEntity', MyEntityModel, [false, new NotNull()]);
   }
 
   get numberMatrix(): ArrayModel<ModelType<ArrayModel<number, NumberModel>>, ArrayModel<number, NumberModel>> {

@@ -17,7 +17,7 @@ import User from './com/vaadin/flow/server/connect/generator/endpoints/json/Json
  *
  * Return number of user
  */
-function _countUser(): Promise<number> {
+function _countUser(): Promise<number | undefined> {
   return client.call('JsonTestEndpoint', 'countUser');
 }
 export {_countUser as countUser};
@@ -30,7 +30,7 @@ export {_countUser as countUser};
  */
 function _fullFQNMethod(
     input: number
-): Promise<string> {
+): Promise<string | undefined> {
   return client.call('JsonTestEndpoint', 'fullFQNMethod', {input});
 }
 export {_fullFQNMethod as fullFQNMethod};
@@ -40,7 +40,7 @@ export {_fullFQNMethod as fullFQNMethod};
  *
  * Return map of user and roles
  */
-function _getAllUserRolesMap(): Promise<{ [key: string]: User; }> {
+function _getAllUserRolesMap(): Promise<{ [key: string]: User; } | undefined> {
   return client.call('JsonTestEndpoint', 'getAllUserRolesMap');
 }
 export {_getAllUserRolesMap as getAllUserRolesMap};
@@ -50,7 +50,7 @@ export {_getAllUserRolesMap as getAllUserRolesMap};
  *
  * Return list of users
  */
-function _getAllUsers(): Promise<Array<User>> {
+function _getAllUsers(): Promise<Array<User> | undefined> {
   return client.call('JsonTestEndpoint', 'getAllUsers');
 }
 export {_getAllUsers as getAllUsers};
@@ -63,7 +63,7 @@ export {_getAllUsers as getAllUsers};
  */
 function _getArrayInt(
     input: Array<string>
-): Promise<Array<number>> {
+): Promise<Array<number> | undefined> {
   return client.call('JsonTestEndpoint', 'getArrayInt', {input});
 }
 export {_getArrayInt as getArrayInt};
@@ -76,7 +76,7 @@ export {_getArrayInt as getArrayInt};
  */
 function _getBooleanValue(
     input: { [key: string]: User; }
-): Promise<boolean> {
+): Promise<boolean | undefined> {
   return client.call('JsonTestEndpoint', 'getBooleanValue', {input});
 }
 export {_getBooleanValue as getBooleanValue};
@@ -91,7 +91,7 @@ export {_getBooleanValue as getBooleanValue};
 function _getTwoParameters(
     input: string,
     secondInput: number
-): Promise<boolean> {
+): Promise<boolean | undefined> {
   return client.call('JsonTestEndpoint', 'getTwoParameters', {input, secondInput});
 }
 export {_getTwoParameters as getTwoParameters};
@@ -104,7 +104,7 @@ export {_getTwoParameters as getTwoParameters};
  */
 function _getUserById(
     id: number
-): Promise<User> {
+): Promise<User | undefined> {
   return client.call('JsonTestEndpoint', 'getUserById', {id});
 }
 export {_getUserById as getUserById};

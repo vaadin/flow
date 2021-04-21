@@ -16,7 +16,9 @@
 
 package com.vaadin.flow.server.connect;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -29,11 +31,11 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.vaadin.flow.server.connect.generator.tsmodel.TsFormEndpoint.Id;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.vaadin.flow.server.connect.generator.tsmodel.TsFormEndpoint.Id;
 
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -375,15 +377,30 @@ public class ExplicitNullableTypeCheckerTest {
     }
 
     @Test
-    public void should_InvokeCheckValueForType_When_NotAnnotatedNullable()
+    public void should_InvokeCheckValueForType_When_AnnotatedNotNull()
             throws NoSuchMethodException {
         explicitNullableTypeChecker = spy(explicitNullableTypeChecker);
         String notNullValue = "someValue";
         String error = explicitNullableTypeChecker
                 .checkValueForAnnotatedElement(notNullValue,
-                        getClass().getMethod("stringNotNullable"));
+                        getClass().getMethod("stringNotNull"));
 
-        Assert.assertNull("Should allow not null value", error);
+        Assert.assertNull("Should allow values with @NotNull", error);
+
+        verify(explicitNullableTypeChecker).checkValueForType(notNullValue,
+                String.class);
+    }
+
+    @Test
+    public void should_InvokeCheckValueForType_When_AnnotatedNonnull()
+            throws NoSuchMethodException {
+        explicitNullableTypeChecker = spy(explicitNullableTypeChecker);
+        String notNullValue = "someValue";
+        String error = explicitNullableTypeChecker
+                .checkValueForAnnotatedElement(notNullValue,
+                        getClass().getMethod("stringNonnull"));
+
+        Assert.assertNull("Should allow values with @Nonnull", error);
 
         verify(explicitNullableTypeChecker).checkValueForType(notNullValue,
                 String.class);
@@ -456,7 +473,16 @@ public class ExplicitNullableTypeCheckerTest {
     /**
      * Method for testing
      */
-    public String stringNotNullable() {
+    @NotNull
+    public String stringNotNull() {
+        return "";
+    }
+
+    /**
+     * Method for testing
+     */
+    @Nonnull
+    public String stringNonnull() {
         return "";
     }
 

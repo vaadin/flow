@@ -5,8 +5,8 @@ import Role from './Role';
  * All changes to this file are overridden. Please consider to make changes in the corresponding Java file if necessary.
  */
 export default interface User {
-  name: string;
+  name?: string;
   optionalField?: string;
-  password: string;
-  roles: { [key: string]: Role; };
+  password?: string;
+  roles?: { [key: string]: Role; };
 }
