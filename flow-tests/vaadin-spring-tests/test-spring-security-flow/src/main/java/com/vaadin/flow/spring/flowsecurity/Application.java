@@ -1,4 +1,4 @@
-package com.vaadin.flow.spring.test;
+package com.vaadin.flow.spring.flowsecurity;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
