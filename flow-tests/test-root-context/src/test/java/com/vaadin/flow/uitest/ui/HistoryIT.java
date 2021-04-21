@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -33,7 +32,6 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class HistoryIT extends ChromeBrowserTest {
 
     @Test
-    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/8213")
     public void testHistory() throws URISyntaxException {
         open();
 

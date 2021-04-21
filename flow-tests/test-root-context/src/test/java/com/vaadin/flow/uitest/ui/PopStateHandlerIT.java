@@ -1,7 +1,6 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -35,7 +34,6 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/10485")
     public void testDifferentPath_doubleBack_ServerSideEvent() {
         open();
 
@@ -78,7 +76,6 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/10485")
     public void testSamePathHashChanges_tripleeBack_noServerSideEvent() {
         open();
 
@@ -134,7 +131,6 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/10485")
     public void testEmptyHash_quadrupleBack_noHashServerToServer() {
         open();
 
@@ -176,9 +172,8 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
     }
 
     private void verifyInsideServletLocation(String pathAfterServletMapping) {
-        Assert.assertEquals("Invalid URL",
-                getRootURL() + "/view/" + pathAfterServletMapping,
-                getDriver().getCurrentUrl());
+        Assert.assertEquals("Invalid URL", getDriver().getCurrentUrl(),
+                getRootURL() + "/view/" + pathAfterServletMapping);
     }
 
     private void verifyNoServerVisit() {
@@ -186,7 +181,7 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
     }
 
     private void verifyPopStateEvent(String location) {
-        Assert.assertEquals("Invalid server side event location", location,
-                findElement(By.id("location")).getText());
+        Assert.assertEquals("Invalid server side event location",
+                findElement(By.id("location")).getText(), location);
     }
 }
