@@ -622,9 +622,12 @@ public class FrontendTools {
         }
         if (returnCommand.isEmpty()) {
             // Otherwise look for regular `npm`/`npx` global search path
-            returnCommand = Collections.singletonList(
-                    frontendToolsLocator.tryLocateTool(cliTool.getCommand())
-                            .orElse(null).getAbsolutePath());
+            String command = frontendToolsLocator
+                    .tryLocateTool(cliTool.getCommand())
+                    .map(File::getAbsolutePath).orElse(null);
+            if (command != null) {
+                returnCommand = Collections.singletonList(command);
+            }
         }
         if (!alternativeDirChecked && returnCommand.isEmpty()) {
             // Use alternative if global is not found and alternative location
