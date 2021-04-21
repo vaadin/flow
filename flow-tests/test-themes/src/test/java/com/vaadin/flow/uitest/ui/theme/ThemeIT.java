@@ -28,6 +28,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.BUTTERFLY_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.CSS_SNOWFLAKE;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.DICE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.FONTAWESOME_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_LIT_ID;
@@ -69,6 +70,19 @@ public class ThemeIT extends ChromeBrowserTest {
         getDriver().get(resourceUrl);
         Assert.assertFalse("Java-side referenced resource should be served",
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
+    }
+
+    @Test
+    public void nodeAssetInCss_pathIsSetCorrectly() {
+        open();
+        final String resourceUrl = getRootURL()
+            + "/path/themes/app-theme/fortawesome/icons/snowflake.svg";
+        WebElement cssNodeSnowflake = findElement(By.id(CSS_SNOWFLAKE));
+        final String expectedImgUrl = "url(\"" + resourceUrl + "\")";
+        Assert.assertEquals(
+            "Background image has been referenced in styles.css and "
+                + "expected to be applied",
+            expectedImgUrl, cssNodeSnowflake.getCssValue("background-image"));
     }
 
     @Test
