@@ -1,4 +1,4 @@
-package com.vaadin.flow.server.connect.auth;
+package com.vaadin.flow.server.auth;
 
 import static org.junit.Assert.assertEquals;
 
@@ -14,13 +14,12 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.vaadin.flow.server.connect.AccessControlTestClasses;
-import com.vaadin.flow.server.connect.AccessControlTestClasses.AnonymousAllowedEndpoint;
-import com.vaadin.flow.server.connect.AccessControlTestClasses.DenyAllEndpoint;
-import com.vaadin.flow.server.connect.AccessControlTestClasses.NoAnnotationEndpoint;
-import com.vaadin.flow.server.connect.AccessControlTestClasses.PermitAllEndpoint;
-import com.vaadin.flow.server.connect.AccessControlTestClasses.RolesAllowedAdminEndpoint;
-import com.vaadin.flow.server.connect.AccessControlTestClasses.RolesAllowedUserEndpoint;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.AnonymousAllowedEndpoint;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.DenyAllEndpoint;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationEndpoint;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.PermitAllEndpoint;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.RolesAllowedAdminEndpoint;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.RolesAllowedUserEndpoint;
 
 import org.junit.Assert;
 import org.junit.Before;
