@@ -609,6 +609,11 @@
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
+            <properties>
+                <test.excludegroup>
+                    com.vaadin.flow.testcategory.ThemeLiveReloadTests
+                </test.excludegroup>
+            </properties>
         </profile>
         <profile>
             <id>validation</id>
