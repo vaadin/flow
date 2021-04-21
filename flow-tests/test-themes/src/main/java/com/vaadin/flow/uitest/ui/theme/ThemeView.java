@@ -33,6 +33,7 @@ public class ThemeView extends Div {
     public static final String FONTAWESOME_ID = "font-awesome";
     public static final String SUB_COMPONENT_ID = "sub-component";
     public static final String DICE_ID = "dice";
+    public static final String CSS_SNOWFLAKE = "icon-snowflake";
 
     public ThemeView() {
         final Span textSpan = new Span("This is the theme test view");
@@ -46,6 +47,9 @@ public class ThemeView extends Div {
 
         Span octopuss = new Span();
         octopuss.setId(OCTOPUSS_ID);
+
+        Span cssSnowflake = new Span();
+        cssSnowflake.setId(CSS_SNOWFLAKE);
 
         Span faText = new Span("This test is FontAwesome.");
         faText.setClassName("fas fa-coffee");
@@ -62,7 +66,7 @@ public class ThemeView extends Div {
                 "url('themes/app-theme/img/dice.jpg')");
         diceImageSpan.setId(DICE_ID);
 
-        add(textSpan, snowFlake, subCss, butterfly, octopuss, faText,
+        add(textSpan, snowFlake, subCss, butterfly, octopuss, cssSnowflake, faText,
                 diceImageSpan);
 
         add(new Div());
