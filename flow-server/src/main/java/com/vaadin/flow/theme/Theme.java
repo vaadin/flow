@@ -29,6 +29,9 @@ import com.vaadin.flow.router.RouterLayout;
  * Defines that there is a theme to use and defines the theme handler
  * implementation.
  * <p>
+ * {@link Theme} annotation should be added to your root navigation level,
+ * {@link RouterLayout} or to the top level @{@link Route}.
+ * <p>
  * The {@code themeFolder} property defines the name of the application theme. When
  * the theme is present inside the project, it maps to the {@code
  * frontend/theme/<application-theme-name>}/ folder or alternatively to a folder
@@ -50,10 +53,6 @@ import com.vaadin.flow.router.RouterLayout;
  * Adding an empty {@link Theme} is equal to not having a {@link Theme}
  * annotation and will default to {@code com.vaadin.flow.theme.lumo.Lumo} if
  * available.
- * <p>
- * {@link Theme} annotation should be added to your root navigation level,
- * {@link RouterLayout} or to the top level @{@link Route}.
- *
  * <p>
  * Defining different Themes for different views will end throwing an exception.
  *
