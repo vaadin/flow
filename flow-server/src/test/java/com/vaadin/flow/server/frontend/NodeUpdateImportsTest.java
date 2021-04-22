@@ -114,9 +114,9 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         updater = new TaskUpdateImports(classFinder,
                 new FrontendDependenciesScannerFactory().createScanner(false,
-                        classFinder, true, false),
+                        classFinder, true),
                 finder -> new FrontendDependenciesScannerFactory()
-                        .createScanner(true, finder, true, false),
+                        .createScanner(true, finder, true),
                 tmpRoot, generatedPath, frontendDirectory, tokenFile,
                 fallBackData, false, TARGET) {
             @Override
@@ -247,9 +247,9 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         updater = new TaskUpdateImports(classFinder,
                 new FrontendDependenciesScannerFactory().createScanner(false,
-                        classFinder, true, false),
+                        classFinder, true),
                 finder -> new FrontendDependenciesScannerFactory()
-                        .createScanner(true, finder, true, false),
+                        .createScanner(true, finder, true),
                 tmpRoot, generatedPath, frontendDirectory, tokenFile, null,
                 false, TARGET) {
             @Override
@@ -318,7 +318,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         updater = new TaskUpdateImports(classFinder,
                 new FrontendDependenciesScannerFactory().createScanner(false,
-                        classFinder, true, false),
+                        classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
                 tokenFile, null, false, TARGET) {
             @Override
@@ -363,7 +363,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         updater = new TaskUpdateImports(classFinder,
                 new FrontendDependenciesScannerFactory().createScanner(false,
-                        classFinder, true, false),
+                        classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
                 tokenFile, null, false, TARGET) {
             @Override

@@ -24,6 +24,6 @@ public class NodeUpdateImportsWithFullCPScannerTest
     @Override
     protected FrontendDependenciesScanner getScanner(ClassFinder finder) {
         return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(true, finder, true, false);
+                .createScanner(true, finder, true);
     }
 }

@@ -56,7 +56,7 @@ public class TaskGenerateBootstrapTest {
     public void setUp() throws Exception {
         frontDeps = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                 .createScanner(false, new ClassFinder.DefaultClassFinder(
-                        Collections.singleton(this.getClass())), false, false);
+                        Collections.singleton(this.getClass())), false);
 
         frontendFolder = temporaryFolder.newFolder(FRONTEND);
         generatedFolder = temporaryFolder.newFolder(FRONTEND, GENERATED);

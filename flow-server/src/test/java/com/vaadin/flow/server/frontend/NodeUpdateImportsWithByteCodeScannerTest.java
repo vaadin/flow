@@ -24,6 +24,6 @@ public class NodeUpdateImportsWithByteCodeScannerTest
     @Override
     protected FrontendDependenciesScanner getScanner(ClassFinder finder) {
         return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(false, finder, true, false);
+                .createScanner(false, finder, true);
     }
 }
