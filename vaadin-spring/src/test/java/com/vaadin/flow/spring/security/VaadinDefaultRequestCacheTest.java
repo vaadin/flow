@@ -77,7 +77,7 @@ public class VaadinDefaultRequestCacheTest {
     @Test
     public void endpointRequestNotSaved() throws Exception {
         HttpServletRequest request = RequestUtilTest
-                .createRequest("/connect/fakeendpoint/fakemethod", null);
+                .createRequest("/connect/fakeendpoint/fakemethod");
         HttpServletResponse response = createResponse();
         Method registerMethod = EndpointRegistry.class
                 .getDeclaredMethod("registerEndpoint", Object.class);
