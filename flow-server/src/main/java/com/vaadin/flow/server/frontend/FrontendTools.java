@@ -229,7 +229,7 @@ public class FrontendTools {
      *            provided from an intranet mirror. Use
      *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
      * @param forceAlternativeNode
-     *            force alternative node executable using
+     *            force usage of node executable from alternative directory
      */
     public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
             String nodeVersion, URI nodeDownloadRoot,
