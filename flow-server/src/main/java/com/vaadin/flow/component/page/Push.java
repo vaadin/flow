@@ -26,7 +26,7 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
 /**
- * Configures automatic server push. The annotation should be placed on 
+ * Configures automatic server push. The annotation should be placed on your 
  * AppShellConfigurator class. If some other push mode is desired, it can 
  * be passed as a parameter, e.g. <code>@Push(PushMode.MANUAL)</code>.
  *
