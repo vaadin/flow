@@ -191,6 +191,24 @@ public class NodeTasksTest {
                         "const useClientSideIndexFileForBootstrapping = true;"));
     }
 
+    @Test
+    public void should_GenerateTsConfigAndTsDefinitions_When_Vaadin14BootstrapMode()
+            throws ExecutionFailedException, IOException {
+        Lookup mockedLookup = Mockito.mock(Lookup.class);
+        Mockito.doReturn(
+                new DefaultClassFinder(this.getClass().getClassLoader()))
+                .when(mockedLookup).lookup(ClassFinder.class);
+        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
+                .enablePackagesUpdate(false)
+                .useV14Bootstrap(true)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false).useV14Bootstrap(false);
+        builder.build().execute();
+
+        Assert.assertTrue(new File(userDir, "tsconfig.json").exists());
+        Assert.assertTrue(new File(userDir, "types.d.ts").exists());
+    }
+
     private static void setPropertyIfPresent(String key, String value) {
         if (value != null) {
             System.setProperty(key, value);

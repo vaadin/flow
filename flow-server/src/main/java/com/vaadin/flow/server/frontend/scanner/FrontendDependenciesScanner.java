@@ -58,13 +58,38 @@ public interface FrontendDependenciesScanner extends Serializable {
         public FrontendDependenciesScanner createScanner(
                 boolean allDependenciesScan, ClassFinder finder,
                 boolean generateEmbeddableWebComponents) {
+            return createScanner(allDependenciesScan, finder,
+                    generateEmbeddableWebComponents, false);
+        }
+
+        /**
+         * Produces scanner implementation based on {@code allDependenciesScan}
+         * value.
+         * <p>
+         *
+         * @param allDependenciesScan
+         *            if {@code true} then full classpath scanning strategy is
+         *            used, otherwise byte scanning strategy is produced
+         * @param finder
+         *            a class finder
+         * @param generateEmbeddableWebComponents
+         *            checks {@code WebComponentExporter} classes for
+         *            dependencies if {@code true}, doesn't check otherwise
+         * @param useV14Bootstrap
+         *            whether we are in legacy V14 bootstrap mode
+         * @return a scanner implementation strategy
+         */
+        public FrontendDependenciesScanner createScanner(
+                boolean allDependenciesScan, ClassFinder finder,
+                boolean generateEmbeddableWebComponents,
+                boolean useV14Bootstrap) {
             if (allDependenciesScan) {
                 // this dep scanner can't distinguish embeddable web component
                 // frontend related annotations
-                return new FullDependenciesScanner(finder);
+                return new FullDependenciesScanner(finder, useV14Bootstrap);
             } else {
                 return new FrontendDependencies(finder,
-                        generateEmbeddableWebComponents);
+                        generateEmbeddableWebComponents, useV14Bootstrap);
             }
         }
     }
