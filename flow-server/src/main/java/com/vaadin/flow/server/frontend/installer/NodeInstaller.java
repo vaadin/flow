@@ -120,7 +120,7 @@ public class NodeInstaller {
     }
 
     /**
-     * Set the node version to install. (given as "v14.15.4")
+     * Set the node version to install. (given as "v16.0.0")
      *
      * @param nodeVersion
      *            version string
@@ -136,10 +136,10 @@ public class NodeInstaller {
      * <p>
      * This should be a url or directory under which we can find a directory
      * {@link #nodeVersion} and there should then exist the archived node
-     * packages. For instance for v14.15.4 we should have under
-     * nodeDownloadRoot: ./v14.15.4/node-v14.15.4-linux-x64.tar.xz
-     * ./v14.15.4/node-v14.15.4-darwin-x64.tar.gz
-     * ./v14.15.4/node-v14.15.4-win-x64.zip ./v14.15.4/node-v14.15.4-win-x86.zip
+     * packages. For instance for v16.0.0 we should have under nodeDownloadRoot:
+     * ./v16.0.0/node-v16.0.0-linux-x64.tar.xz
+     * ./v16.0.0/node-v16.0.0-darwin-x64.tar.gz
+     * ./v16.0.0/node-v16.0.0-win-x64.zip ./v16.0.0/node-v16.0.0-win-x86.zip
      *
      * @param nodeDownloadRoot
      *            custom download root
