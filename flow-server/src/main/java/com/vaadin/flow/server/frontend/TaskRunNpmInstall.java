@@ -368,7 +368,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         FrontendTools tools = new FrontendTools(baseDir,
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
-                nodeVersion, nodeDownloadRoot);
+                nodeVersion, nodeDownloadRoot, requireHomeNodeExec);
         try {
             if (requireHomeNodeExec) {
                 tools.forceAlternativeNodeExecutable();
