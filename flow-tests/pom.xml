@@ -359,7 +359,10 @@
                 <module>test-ccdm-flow-navigation/pom-production.xml</module>
 
                 <module>test-root-context</module>
-
+				
+                <module>test-v14-bootstrap</module>
+                <module>test-v14-bootstrap/pom-production.xml</module>
+				
                 <!-- tests are disabled in this module, this reference is for maven version plugin -->
                 <module>test-no-theme</module>
             </modules>
