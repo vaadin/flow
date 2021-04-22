@@ -124,6 +124,44 @@ public class PwaConfiguration implements Serializable {
      *            the start path
      * @param offlineResources
      *            the list of files to add for pre-caching
+     */
+    @SuppressWarnings("squid:S00107")
+    public PwaConfiguration(boolean enabled, String name, String shortName,
+            String description, String backgroundColor, String themeColor,
+            String iconPath, String manifestPath, String offlinePath,
+            String display, String startPath, String[] offlineResources) {
+        this(enabled, name, shortName, description, backgroundColor, themeColor,
+                iconPath, manifestPath, offlinePath, display, startPath,
+                offlineResources, false);
+    }
+
+    /**
+     * Constructs a configuration from individual values.
+     *
+     * @param enabled
+     *            is PWA enabled
+     * @param name
+     *            the application name
+     * @param shortName
+     *            the application short name
+     * @param description
+     *            the description of the application
+     * @param backgroundColor
+     *            the background color
+     * @param themeColor
+     *            the theme color
+     * @param iconPath
+     *            the icon file path
+     * @param manifestPath
+     *            the `manifest.webmanifest` file path
+     * @param offlinePath
+     *            the static offline HTML file path
+     * @param display
+     *            the display mode
+     * @param startPath
+     *            the start path
+     * @param offlineResources
+     *            the list of files to add for pre-caching
      * @param useV14Bootstrap
      *            true iff using legacy bootstrap mode
      */
