@@ -27,6 +27,8 @@ import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 
+import com.vaadin.flow.server.VaadinServletRequest;
+
 /**
  * Checks if a given user has access to a given method.
  * <p>
@@ -53,6 +55,46 @@ import javax.servlet.http.HttpServletRequest;
 public class AccessAnnotationChecker implements Serializable {
 
     /**
+     * Checks if the user defined by the current active servlet request (using
+     * {@link HttpServletRequest#getUserPrincipal()} and
+     * {@link HttpServletRequest#isUserInRole(String)} has access to the given
+     * method.
+     * 
+     * @param method
+     *            the method to check access to
+     * @return {@code true} if the user has access to the given method,
+     *         {@code false} otherwise
+     */
+    public boolean hasAccess(Method method) {
+        VaadinServletRequest request = VaadinServletRequest.getCurrent();
+        if (request == null) {
+            throw new IllegalStateException(
+                    "No request is available. This method can only be used with an active VaadinServletRequest");
+        }
+        return hasAccess(method, request);
+    }
+
+    /**
+     * Checks if the user defined by the current active servlet request (using
+     * {@link HttpServletRequest#getUserPrincipal()} and
+     * {@link HttpServletRequest#isUserInRole(String)} has access to the given
+     * class.
+     * 
+     * @param cls
+     *            the class to check access to
+     * @return {@code true} if the user has access to the given method,
+     *         {@code false} otherwise
+     */
+    public boolean hasAccess(Class<?> cls) {
+        VaadinServletRequest request = VaadinServletRequest.getCurrent();
+        if (request == null) {
+            throw new IllegalStateException(
+                    "No request is available. This method can only be used with an active VaadinServletRequest");
+        }
+        return hasAccess(cls, request);
+    }
+
+    /**
      * 
      * Checks if the user defined by the request (using
      * {@link HttpServletRequest#getUserPrincipal()} and
@@ -66,9 +108,11 @@ public class AccessAnnotationChecker implements Serializable {
      * @return {@code true} if the user has access to the given method,
      *         {@code false} otherwise
      */
-    public boolean annotationAllowsAccess(Method method,
-            HttpServletRequest request) {
-        return annotationAllowsAccess(method, request.getUserPrincipal(),
+    public boolean hasAccess(Method method, HttpServletRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("The request cannot be null");
+        }
+        return hasAccess(method, request.getUserPrincipal(),
                 request::isUserInRole);
     }
 
@@ -86,10 +130,12 @@ public class AccessAnnotationChecker implements Serializable {
      * @return {@code true} if the user has access to the given method,
      *         {@code false} otherwise
      */
-    public boolean annotationAllowsAccess(Class<?> cls,
-            HttpServletRequest request) {
-        return annotationAllowsAccess(getSecurityTarget(cls),
-                request.getUserPrincipal(), request::isUserInRole);
+    public boolean hasAccess(Class<?> cls, HttpServletRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("The request cannot be null");
+        }
+        return hasAccess(cls, request.getUserPrincipal(),
+                request::isUserInRole);
     }
 
     /**
@@ -105,10 +151,27 @@ public class AccessAnnotationChecker implements Serializable {
      * @return {@code true} if the user has access to the given method,
      *         {@code false} otherwise
      */
-    public boolean annotationAllowsAccess(Method method, Principal principal,
+    public boolean hasAccess(Method method, Principal principal,
             Function<String, Boolean> roleChecker) {
-        return annotationAllowsAccess(getSecurityTarget(method), principal,
-                roleChecker);
+        return hasAccess(getSecurityTarget(method), principal, roleChecker);
+    }
+
+    /**
+     * Checks if the user defined by the given {@link Principal} and role
+     * checker has access to the given class.
+     * 
+     * @param cls
+     *            the class to check access to
+     * @param principal
+     *            the principal of the user
+     * @param roleChecker
+     *            a function that can answer if a user has a given role
+     * @return {@code true} if the user has access to the given method,
+     *         {@code false} otherwise
+     */
+    public boolean hasAccess(Class<?> cls, Principal principal,
+            Function<String, Boolean> roleChecker) {
+        return hasAccess(getSecurityTarget(cls), principal, roleChecker);
     }
 
     /**
@@ -145,9 +208,8 @@ public class AccessAnnotationChecker implements Serializable {
         return cls;
     }
 
-    private boolean annotationAllowsAccess(
-            AnnotatedElement annotatedClassOrMethod, Principal principal,
-            Function<String, Boolean> roleChecker) {
+    private boolean hasAccess(AnnotatedElement annotatedClassOrMethod,
+            Principal principal, Function<String, Boolean> roleChecker) {
         if (annotatedClassOrMethod.isAnnotationPresent(DenyAll.class)) {
             return false;
         }

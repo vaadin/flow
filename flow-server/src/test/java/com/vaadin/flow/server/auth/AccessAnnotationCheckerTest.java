@@ -14,6 +14,9 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.AnonymousAllowedEndpoint;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.DenyAllEndpoint;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationEndpoint;
@@ -308,6 +311,33 @@ public class AccessAnnotationCheckerTest {
 
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void hasClassAccessNoCurrentRequest() {
+        accessAnnotationChecker.hasAccess(AnonymousAllowedEndpoint.class);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void hasMethodAccessNoCurrentRequest() throws Exception {
+        accessAnnotationChecker.hasAccess(
+                AnonymousAllowedEndpoint.class.getMethod("permitAll"));
+    }
+
+    @Test
+    public void hasClassAccessUsingCurrentRequest() {
+        CurrentInstance.set(VaadinRequest.class,
+                new VaadinServletRequest(createRequest(USER_PRINCIPAL), null));
+        Assert.assertTrue(
+                accessAnnotationChecker.hasAccess(PermitAllEndpoint.class));
+    }
+
+    @Test
+    public void hasMethodAccessUsingCurrentRequest() throws Exception {
+        CurrentInstance.set(VaadinRequest.class,
+                new VaadinServletRequest(createRequest(USER_PRINCIPAL), null));
+        Assert.assertTrue(accessAnnotationChecker
+                .hasAccess(PermitAllEndpoint.class.getMethod("permitAll")));
+    }
+
     private HttpServletRequest createRequest(Principal userPrincipal,
             String... roles) {
         Set<String> roleSet = new HashSet<>();
@@ -333,8 +363,8 @@ public class AccessAnnotationCheckerTest {
             Assert.assertEquals("Expected " + endpointClass.getSimpleName()
                     + "." + endpointMethod + " to "
                     + (expectedResult ? "be" : "NOT to be") + " accessible",
-                    expectedResult, accessAnnotationChecker
-                            .annotationAllowsAccess(method, request));
+                    expectedResult,
+                    accessAnnotationChecker.hasAccess(method, request));
         }
     }
 
@@ -345,7 +375,7 @@ public class AccessAnnotationCheckerTest {
                 "Expected " + cls.getSimpleName() + " to "
                         + (expectedResult ? "be" : "NOT to be") + " accessible",
                 expectedResult,
-                accessAnnotationChecker.annotationAllowsAccess(cls, request));
+                accessAnnotationChecker.hasAccess(cls, request));
     }
 
 }
