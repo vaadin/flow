@@ -173,7 +173,7 @@ public class FrontendTools {
      *            they are not found globally or in the {@code baseDir}, may be
      *            {@code null}
      * @param forceAlternativeNode
-     *            force alternative node executable using
+     *            force usage of node executable from alternative directory
      */
     public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
             boolean forceAlternativeNode) {
