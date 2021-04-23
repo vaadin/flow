@@ -121,15 +121,15 @@ export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEnti
   }
 
   get notEmpty(): StringModel {
-    return this[_getPropertyModel]('notEmpty', StringModel, [false, new NotEmpty(), new NotNull()]);
+    return this[_getPropertyModel]('notEmpty', StringModel, [true, new NotEmpty(), new NotNull()]);
   }
 
   get notNull(): StringModel {
-    return this[_getPropertyModel]('notNull', StringModel, [false, new NotNull()]);
+    return this[_getPropertyModel]('notNull', StringModel, [true, new NotNull()]);
   }
 
   get notNullEntity(): MyEntityModel {
-    return this[_getPropertyModel]('notNullEntity', MyEntityModel, [false, new NotNull()]);
+    return this[_getPropertyModel]('notNullEntity', MyEntityModel, [true, new NotNull()]);
   }
 
   get numberMatrix(): ArrayModel<ModelType<ArrayModel<number, NumberModel>>, ArrayModel<number, NumberModel>> {
