@@ -29,6 +29,17 @@ describe('Authentication', () => {
   const happyCaseLoginResponseText = '';
   const happyCaseResponseHeaders = { 'Vaadin-CSRF': vaadinCsrfToken, Result: 'success', 'Default-url': '/' };
 
+  function verifySpringCsrfToken(token: string) {
+    expect(document.head.querySelector('meta[name="_csrf"]')!.getAttribute('content')).to.equal(token);
+    expect(document.head.querySelector('meta[name="_csrf_header"]')!.getAttribute('content')).to.equal(
+      springCsrfHeaderName
+    );
+  }
+  function verifySpringCsrfTokenIsCleared() {
+    expect(document.head.querySelector('meta[name="_csrf"]')).to.be.null;
+    expect(document.head.querySelector('meta[name="_csrf_header"]')).to.be.null;
+  }
+
   function clearSpringCsrfMetaTags() {
     Array.from(document.head.querySelectorAll('meta[name="_csrf"], meta[name="_csrf_header"]')).forEach((el) =>
       el.remove()
@@ -135,11 +146,6 @@ describe('Authentication', () => {
     });
     afterEach(() => fetchMock.restore());
 
-    function verifySpringCsrfTokenIsCleared() {
-      expect(document.head.querySelector('meta[name="_csrf"]')).to.be.null;
-      expect(document.head.querySelector('meta[name="_csrf_header"]')).to.be.null;
-    }
-
     it('should set the csrf token on logout', async () => {
       fetchMock.post(
         '/logout',
@@ -196,18 +202,15 @@ describe('Authentication', () => {
       await logout();
       expect(fetchMock.calls()).to.have.lengthOf(3);
       expect($wnd.Vaadin.TypeScript.csrfToken).to.equal(vaadinCsrfToken);
-      expect(document.head.querySelector('meta[name="_csrf"]')?.getAttribute('content')).to.equal(springCsrfToken);
-      expect(document.head.querySelector('meta[name="_csrf_header"]')?.getAttribute('content')).to.equal(
-        springCsrfHeaderName
-      );
+      verifySpringCsrfToken(springCsrfToken);
     });
 
     // when started the app offline, the spring csrf meta tags are not available
     it('should retry when no spring csrf metas in the doc and clear the csrf token on failed server logout with the retry', async () => {
       clearSpringCsrfMetaTags();
 
-      expect(document.head.querySelector('meta[name="_csrf"]')).to.be.null;
-      expect(document.head.querySelector('meta[name="_csrf_header"]')).to.be.null;
+      verifySpringCsrfTokenIsCleared();
+
       fetchMock.post('/logout', 403, { repeat: 1 });
       fetchMock.get('?nocache', {
         body: happyCaseLogoutResponseText
@@ -256,10 +259,7 @@ describe('Authentication', () => {
       await logout();
       expect(fetchMock.calls()).to.have.lengthOf(3);
       expect($wnd.Vaadin.TypeScript.csrfToken).to.equal(vaadinCsrfToken);
-      expect(document.head.querySelector('meta[name="_csrf"]')?.getAttribute('content')).to.equal(springCsrfToken);
-      expect(document.head.querySelector('meta[name="_csrf_header"]')?.getAttribute('content')).to.equal(
-        springCsrfHeaderName
-      );
+      verifySpringCsrfToken(springCsrfToken);
     });
   });
 
