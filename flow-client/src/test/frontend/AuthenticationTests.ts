@@ -27,7 +27,13 @@ describe('Authentication', () => {
     vaadinCsrfToken +
     '"}};</script>';
   const happyCaseLoginResponseText = '';
-  const happyCaseResponseHeaders = { 'Vaadin-CSRF': vaadinCsrfToken, Result: 'success', 'Default-url': '/' };
+  const happyCaseResponseHeaders = {
+    'Vaadin-CSRF': vaadinCsrfToken,
+    Result: 'success',
+    'Default-url': '/',
+    'Spring-CSRF-header': springCsrfHeaderName,
+    'Spring-CSRF-token': springCsrfToken
+  };
 
   function verifySpringCsrfToken(token: string) {
     expect(document.head.querySelector('meta[name="_csrf"]')!.getAttribute('content')).to.equal(token);
@@ -110,6 +116,25 @@ describe('Authentication', () => {
 
       expect(fetchMock.calls()).to.have.lengthOf(1);
       expect(result).to.deep.equal(expectedResult);
+    });
+
+    it('should set the csrf tokens on login', async () => {
+      fetchMock.post(
+        '/login',
+        {
+          body: happyCaseLoginResponseText,
+          headers: {
+            ...happyCaseResponseHeaders,
+            'Vaadin-CSRF': 'some-new-token',
+            'Spring-CSRF-header': 'X-CSRF-TOKEN',
+            'Spring-CSRF-token': 'some-new-spring-token'
+          }
+        },
+        { headers: requestHeaders }
+      );
+      await login('valid-username', 'valid-password');
+      expect($wnd.Vaadin.TypeScript.csrfToken).to.equal('some-new-token');
+      verifySpringCsrfToken('some-new-spring-token');
     });
 
     it('should redirect based on request cache after login', async () => {

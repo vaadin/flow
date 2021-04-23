@@ -47,6 +47,17 @@ export async function login(username: string, password: string, options?: LoginO
 
     if (loginSuccessful) {
       const vaadinCsrfToken = response.headers.get('Vaadin-CSRF') || undefined;
+      updateVaadinCsrfToken(vaadinCsrfToken);
+
+      const springCsrfHeader = response.headers.get('Spring-CSRF-header') || undefined;
+      const springCsrfToken = response.headers.get('Spring-CSRF-token') || undefined;
+      if (springCsrfHeader && springCsrfToken) {
+        const springCsrfTokenInfo: Record<string, string> = {};
+        springCsrfTokenInfo._csrf = springCsrfToken;
+        springCsrfTokenInfo._csrf_header = springCsrfHeader;
+        updateSpringCsrfMetaTags(springCsrfTokenInfo);
+      }
+
       return {
         error: false,
         token: vaadinCsrfToken,
