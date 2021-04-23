@@ -107,36 +107,36 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
     private void switchThemeName(String oldThemeName, String newThemeName) {
         File baseDir = new File(System.getProperty("user.dir", "."));
         File sourcePath = Paths
-                .get(baseDir.getPath(), "src", "main", "java", AppShell.class
+                .get(baseDir.getPath(), "src", "main", "java", ThemeSwitchLiveReloadView.class
                         .getPackage().getName().replace(".", File.separator))
                 .toFile();
-        File appShellClassFile = Paths
+        File viewClassFile = Paths
                 .get(sourcePath.getPath(),
-                        AppShell.class.getSimpleName().concat(".java"))
+                        ThemeSwitchLiveReloadView.class.getSimpleName().concat(".java"))
                 .toFile();
         File outputPath = Paths.get(baseDir.getPath(), "target", "classes")
                 .toFile();
         try {
-            String content = FileUtils.readFileToString(appShellClassFile,
+            String content = FileUtils.readFileToString(viewClassFile,
                     StandardCharsets.UTF_8);
             if (content.contains(oldThemeName)) {
                 content = content.replace(oldThemeName, newThemeName);
-                FileUtils.writeStringToFile(appShellClassFile, content,
+                FileUtils.writeStringToFile(viewClassFile, content,
                         StandardCharsets.UTF_8);
-                recompileAppShell(appShellClassFile, sourcePath, outputPath);
+                recompileViewClass(viewClassFile, sourcePath, outputPath);
             }
         } catch (IOException e) {
             throw new RuntimeException(
-                    "Failed to change theme name in AppShell class", e);
+                    "Failed to change theme name in ThemeSwitchLiveReloadView class", e);
         }
     }
 
-    private void recompileAppShell(File appShellClassFile, File sourcePath,
-                                   File outputPath) {
+    private void recompileViewClass(File viewClassFile, File sourcePath,
+                                    File outputPath) {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         int result = compiler.run(null, null, null, "-d", outputPath.getPath(),
                 "-sourcepath", sourcePath.getPath(),
-                appShellClassFile.getPath());
-        Assert.assertEquals("Failed to recompile AppShell.java", 0, result);
+                viewClassFile.getPath());
+        Assert.assertEquals("Failed to recompile ThemeSwitchLiveReloadView.java", 0, result);
     }
 }

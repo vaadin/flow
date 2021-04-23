@@ -18,7 +18,9 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.theme.Theme;
 
+@Theme(themeFolder = "app-theme")
 @Route(value = "com.vaadin.flow.uitest.ui.ThemeSwitchLiveReloadView")
 public class ThemeSwitchLiveReloadView extends Div {
 
