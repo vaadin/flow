@@ -9,7 +9,7 @@ import {
   login,
   logout,
   LoginResult
-} from '../../main/resources/META-INF/resources/frontend';
+} from '../../main/frontend';
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock

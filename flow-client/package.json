@@ -9,7 +9,7 @@
     "url": "https://github.com/vaadin/flow/issues"
   },
   "scripts": {
-    "lint": "eslint \"src/main/resources/META-INF/resources/frontend\"",
+    "lint": "eslint 'src/main/frontend'",
     "client": "node scripts/client.js",
     "version": "node scripts/version.js",
     "webpack": "webpack --config=webpack.tests.config.js",
@@ -24,7 +24,7 @@
     "url": "git://github.com/vaadin/flow.git"
   },
   "files": [
-    "src/main/resources/META-INF/resources/frontend"
+    "src/main/frontend"
   ],
   "devDependencies": {
     "@types/sinon": "^9.0.0",
@@ -34,6 +34,7 @@
     "eslint-config-vaadin": "^0.4.0",
     "fetch-mock": "^7.3.0",
     "intern": "^4.4.3",
+    "mkdirp": "^0.5.5",
     "node-fetch": "^2.3.0",
     "prettier": "^2.2.1",
     "sinon": "^7.1.1",
