@@ -141,7 +141,7 @@ public abstract class AbstractComponentDataGenerator<T>
                     + "' is already attached to a UI instance which differs "
                     + "from the conainer's UI instance. It means that the component instance is "
                     + "reused instead being produced every time on 'createComponent' call."
-                    + " Check whether the component instance is a singleton or has inapropriate Spring scope.");
+                    + " Check whether the component instance is a singleton or has inappropriate Spring scope.");
         }
         renderedComponents.put(itemKey, component);
     }
