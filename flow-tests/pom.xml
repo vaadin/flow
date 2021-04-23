@@ -329,7 +329,6 @@
                 <module>test-scalability</module>
                 <module>test-memory-leaks</module>
                 <module>test-servlet</module>
-                <module>test-application-theme</module>
                 <module>test-themes</module>
                 <module>test-lumo-theme</module>
                 <module>test-material-theme</module>
@@ -354,6 +353,9 @@
 
                 <!-- tests are disabled in this module, this reference is for maven version plugin -->
                 <module>test-no-theme</module>
+                <!-- move theme tests to the end, because theme switch live reload-->
+                <!-- test impacts startup test-->
+                <module>test-application-theme</module>
             </modules>
         </profile>
         <profile>
