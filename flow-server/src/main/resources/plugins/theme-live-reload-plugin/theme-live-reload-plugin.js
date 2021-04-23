@@ -66,10 +66,17 @@ class ThemeLiveReloadPlugin {
             // There might be several theme generated files in the
             // generated folder, so the condition does not contain the exact
             // theme name
-            themeGeneratedFileChanged = file.match(this.themeGeneratedFileRegexp);
+            const themeGeneratedFileChangedNow = file.match(this.themeGeneratedFileRegexp);
+            if (!themeGeneratedFileChanged && themeGeneratedFileChangedNow) {
+              themeGeneratedFileChanged = true;
+            }
+
             const timestamp = changedFilesMap[changedFilePath];
+            // null or negative timestamp means file delete
             if (timestamp === null || timestamp < 0) {
-              themeGeneratedFileDeleted = themeGeneratedFileChanged;
+              if (themeGeneratedFileChangedNow) {
+                themeGeneratedFileDeleted = true;
+              }
               componentStyleFileDeleted = file.match(this.componentStyleFileRegexp);
             }
           });
