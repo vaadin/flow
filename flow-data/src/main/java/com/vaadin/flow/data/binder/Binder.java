@@ -1920,8 +1920,7 @@ public class Binder<BEAN> implements Serializable {
      *             if some of the bound field values fail to validate
      */
     public void writeBean(BEAN bean) throws ValidationException {
-        BinderValidationStatus<BEAN> status = doWriteIfValid(bean,
-                new ArrayList<>(bindings));
+        BinderValidationStatus<BEAN> status = doWriteIfValid(bean, bindings);
         if (status.hasErrors()) {
             throw new ValidationException(status.getFieldValidationErrors(),
                     status.getBeanValidationErrors());
@@ -1987,7 +1986,7 @@ public class Binder<BEAN> implements Serializable {
      *         updated, {@code false} otherwise
      */
     public boolean writeBeanIfValid(BEAN bean) {
-        return doWriteIfValid(bean, new ArrayList<>(bindings)).isOk();
+        return doWriteIfValid(bean, bindings).isOk();
     }
 
     /**
@@ -2010,10 +2009,11 @@ public class Binder<BEAN> implements Serializable {
         Objects.requireNonNull(bean, "bean cannot be null");
         List<ValidationResult> binderResults = Collections.emptyList();
 
-        // Make a copy of the incoming bindings to avoid their modification
+        // make a copy of the incoming bindings to avoid their modifications
         // during validation
-        Collection<Binding<BEAN, ?>> currentBindings = new LinkedHashSet<>(
+        Collection<Binding<BEAN, ?>> currentBindings = new ArrayList<>(
                 bindings);
+
         // First run fields level validation, if no validation errors then
         // update bean
         List<BindingValidationStatus<?>> bindingResults = currentBindings
@@ -2039,7 +2039,7 @@ public class Binder<BEAN> implements Serializable {
                  * Changes have been successfully saved. The set is only cleared
                  * when the changes are stored in the currently set bean.
                  */
-                currentBindings.clear();
+                bindings.clear();
             } else if (getBean() == null) {
                 /*
                  * When using readBean and writeBean there is no knowledge of
