@@ -250,10 +250,16 @@ public final class WebComponentModulesWriter implements Serializable {
                         themeName));
                 writeMethod.setAccessible(accessible);
                 return files;
-            } catch (IllegalAccessException | InvocationTargetException
-                    | NullPointerException e) {
+            } catch (IllegalAccessException exception) {
+                throw new RuntimeException("Failed to call '"
+                        + WRITE_MODULES_METHOD
+                        + "' via reflection because Java language access control doesn't allow to call it",
+                        exception);
+            } catch (InvocationTargetException exception) {
                 throw new RuntimeException(
-                        "Could not write exported web component module!", e);
+                        "Could not write exported web component module because of exception: "
+                                + exception.getCause().getMessage(),
+                        exception.getCause());
             }
         }
 
