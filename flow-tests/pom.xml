@@ -276,7 +276,6 @@
                 <module>test-themes</module> <!-- Only npm theme tests -->
                 <module>test-themes-legacy</module>
                 <module>test-themes-legacy/pom-npm.xml</module>
-                <module>test-application-theme</module>
                 <module>test-lumo-theme</module>
                 <module>test-material-theme</module>
                 <module>servlet-containers</module>
@@ -298,6 +297,9 @@
 
                 <!-- This test fails in local -->
                 <module>test-root-context</module>
+                <!-- move theme tests to the end, because theme switch live reload-->
+                <!-- test impacts startup test-->
+                <module>test-application-theme</module>
             </modules>
         </profile>
         <profile>
