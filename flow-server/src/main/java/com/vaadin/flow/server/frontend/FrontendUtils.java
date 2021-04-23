@@ -514,7 +514,7 @@ public class FrontendUtils {
         InputStream content = null;
 
         if (!config.isProductionMode() && config.enableDevServer()) {
-            content = getFileFromWebpack(path);
+            content = config.useSnowpack() ? getFileFromSnowpack(path) : getFileFromWebpack(path);
         }
 
         if (content == null) {
@@ -682,8 +682,28 @@ public class FrontendUtils {
             throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
         return handler.prepareConnection("/" + filePath, "GET").getInputStream();
-        // TODO: should this change for snowpack?
-        // return handler.getServedFile(filePath);
+    }
+
+    private static InputStream getFileFromSnowpack(String filePath)
+            throws IOException {
+        if ("index.html".equalsIgnoreCase(filePath)) {
+            // special case treatment for the index.html file
+            //
+            // In webpack the index.html response is produced from the index.html template by
+            // HtmlWebpackPlugin. The location of the index.html template file is configured
+            // independently, and therefore it's possible to keep it in /frontend yet still serve
+            // via /index.html (not /frontend/index.html).
+            //
+            // Snowpack does not have a separate config option to specify a custom index.html file path,
+            // and it's resolved according to the same rules as everything else, effectively having the
+            // URL 'VAADIN/index.html' (which is resolved to frontend/index.html according to snowpack
+            // dev server mount point configuration)
+
+            // TODO: handle cases like /index.html?pwa=1
+            filePath = "VAADIN/index.html";
+        }
+
+        return getFileFromWebpack(filePath);
     }
 
     /**

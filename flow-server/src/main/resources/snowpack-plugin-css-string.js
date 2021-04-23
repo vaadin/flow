@@ -13,7 +13,10 @@ module.exports = function plugin(snowpackConfig, options = {}) {
     },
     async load({filePath}) {
       const contents = await fs.readFile(filePath, "utf-8");
-      return `export default ${JSON.stringify(contents)};`;
+      return `
+        import { css } from 'lit-element';
+        export default css\`${ contents.replace(/(`|\\|\${)/g, '\\$1') }\`;
+      `;
     },
   };
 };
