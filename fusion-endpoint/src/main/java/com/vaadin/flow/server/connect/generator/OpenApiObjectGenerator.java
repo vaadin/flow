@@ -90,6 +90,7 @@ import io.swagger.v3.oas.models.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.connect.Annotation;
 import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.connect.EndpointExposed;
 import com.vaadin.flow.server.connect.EndpointNameChecker;
@@ -663,7 +664,7 @@ public class OpenApiObjectGenerator {
                 .replaceAll(methodDeclaration.resolve().getReturnType());
         Schema schema = parseResolvedTypeToSchema(resolvedType);
         schema.setDescription("");
-        if (!GeneratorUtils.isNodeRequired(methodDeclaration)) {
+        if (!Annotation.isNodeRequired(methodDeclaration)) {
             schema = schemaResolver.createNullableWrapper(schema);
         }
         usedTypes.putAll(collectUsedTypesFromSchema(schema));
@@ -705,7 +706,7 @@ public class OpenApiObjectGenerator {
                         paramsDescription.remove(parameter.getNameAsString()));
             }
             requestSchema.addProperties(name, paramSchema);
-            if (GeneratorUtils.isNodeRequired(parameter)) {
+            if (Annotation.isNodeRequired(parameter)) {
                 requestSchema.addRequiredItem(name);
             }
             paramSchema.setNullable(null);

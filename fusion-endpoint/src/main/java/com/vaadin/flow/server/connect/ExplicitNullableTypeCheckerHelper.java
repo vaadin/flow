@@ -38,6 +38,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.vaadin.flow.server.connect.Annotation.isElementRequired;
+
 /**
  * A helper class for ExplicitNullableTypeChecker.
  */
@@ -83,9 +85,6 @@ class ExplicitNullableTypeCheckerHelper {
      *            the value to validate
      * @param expectedType
      *            the declared type expected for the value
-     * @param beanValueTypeCheckHelper
-     *            a helper to keep track of visited beans to avoid circular
-     *            checking
      * @return error message when the value is null while the expected type does
      *         not explicitly allow null, or null meaning the value is OK.
      */
@@ -235,9 +234,10 @@ class ExplicitNullableTypeCheckerHelper {
             }
 
             Field field = readMethod.getDeclaringClass().getDeclaredField(name);
-            return !Modifier.isStatic(field.getModifiers())
+            return (!Modifier.isStatic(field.getModifiers())
                     && !Modifier.isTransient(field.getModifiers())
-                    && !field.isAnnotationPresent(JsonIgnore.class);
+                    && !field.isAnnotationPresent(JsonIgnore.class))
+                    || isElementRequired(field);
         } catch (NoSuchFieldException e) {
             getLogger().error("Unexpected missing declared field in Java Bean",
                     e);
