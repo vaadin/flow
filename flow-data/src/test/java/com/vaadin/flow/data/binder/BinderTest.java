@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.data.binder;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -1624,6 +1625,39 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 innerListenerInvoked.get());
     }
 
+    @Test
+    public void setBean_readOnlyBinding_propertyBinding_valueIsNotUpdated() {
+        Binder<ExampleBean> binder = new Binder<>(ExampleBean.class);
+
+        binder.forField(nameField).withNullRepresentation("")
+                .withConverter(new TestConverter()).bind("vals")
+                .setReadOnly(true);
+
+        ExampleBean bean = new ExampleBean();
+        SubPropClass val = new SubPropClass();
+        bean.setVals(val);
+        binder.setBean(bean);
+
+        Assert.assertSame(val, bean.getVals());
+    }
+
+    @Test
+    public void setBean_readOnlyBinding_accessorsBiding_valueIsNotUpdated() {
+        Binder<ExampleBean> binder = new Binder<>(ExampleBean.class);
+
+        binder.forField(nameField).withNullRepresentation("")
+                .withConverter(new TestConverter())
+                .bind(ExampleBean::getVals, ExampleBean::setVals)
+                .setReadOnly(true);
+
+        ExampleBean bean = new ExampleBean();
+        SubPropClass val = new SubPropClass();
+        bean.setVals(val);
+        binder.setBean(bean);
+
+        Assert.assertSame(val, bean.getVals());
+    }
+
     private TestTextField createNullRejectingFieldWithEmptyValue(
             String emptyValue) {
         return new TestTextField() {
@@ -1652,6 +1686,43 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 .bind(AtomicReference::get, AtomicReference::set);
         return binder;
     }
+
+    public static class ExampleBean implements Serializable {
+        private SubPropClass vals;
+
+        public SubPropClass getVals() {
+            return vals;
+        }
+
+        public void setVals(SubPropClass vals) {
+            this.vals = vals;
+        }
+    }
+
+    public static class SubPropClass implements Serializable {
+        private String val1 = "Val1";
+
+        @Override
+        public String toString() {
+            return val1;
+        }
+    }
+
+    public static class TestConverter
+            implements Converter<String, SubPropClass> {
+
+        @Override
+        public Result<SubPropClass> convertToModel(String value,
+                ValueContext context) {
+            return Result.ok(null);
+        }
+
+        @Override
+        public String convertToPresentation(SubPropClass value,
+                ValueContext context) {
+            return value != null ? value.toString() : null;
+        }
+    };
 
     /**
      * A converter that adds/removes the euro sign and formats currencies with
