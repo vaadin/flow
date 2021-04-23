@@ -40,6 +40,9 @@ export async function login(username: string, password: string, options?: LoginO
       headers
     });
 
+    // This code assumes that a VaadinSavedRequestAwareAuthenticationSuccessHandler is used on the server side,
+    // setting these header values based on the "source=typescript" header set above
+
     const result = response.headers.get('Result');
     const savedUrl = response.headers.get('Saved-url') || undefined;
     const defaultUrl = response.headers.get('Default-url') || undefined;
