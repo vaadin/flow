@@ -377,21 +377,6 @@ public class ExplicitNullableTypeCheckerTest {
     }
 
     @Test
-    public void should_InvokeCheckValueForType_When_AnnotatedNotNull()
-            throws NoSuchMethodException {
-        explicitNullableTypeChecker = spy(explicitNullableTypeChecker);
-        String notNullValue = "someValue";
-        String error = explicitNullableTypeChecker
-                .checkValueForAnnotatedElement(notNullValue,
-                        getClass().getMethod("stringNotNull"));
-
-        Assert.assertNull("Should allow values with @NotNull", error);
-
-        verify(explicitNullableTypeChecker).checkValueForType(notNullValue,
-                String.class);
-    }
-
-    @Test
     public void should_InvokeCheckValueForType_When_AnnotatedNonnull()
             throws NoSuchMethodException {
         explicitNullableTypeChecker = spy(explicitNullableTypeChecker);
@@ -473,7 +458,7 @@ public class ExplicitNullableTypeCheckerTest {
     /**
      * Method for testing
      */
-    @NotNull
+    @Nonnull
     public String stringNotNull() {
         return "";
     }
