@@ -129,22 +129,22 @@ let appShellManifestEntry = undefined;
 const swManifestTransform = (manifestEntries) => {
   const warnings = [];
   const manifest = manifestEntries;
-
-  // `index.html` is a special case: in contrast with the JS bundles produced by webpack
-  // it's not served as-is directly from the webpack output at `/index.html`.
-  // It goes through IndexHtmlRequestHandler and is served at `/`.
-  //
-  // TODO: calculate the revision based on the IndexHtmlRequestHandler-processed content
-  // of the index.html file
-  const indexEntryIdx = manifest.findIndex(entry => entry.url === 'index.html');
-  if (indexEntryIdx !== -1) {
-    manifest[indexEntryIdx].url = appShellUrl;
-    appShellManifestEntry = manifest[indexEntryIdx];
-  } else {
-    // Index entry is only emitted on first compilation. Make sure it is cached also for incremental builds
-    manifest.push(appShellManifestEntry);
+  if (useClientSideIndexFileForBootstrapping) {
+    // `index.html` is a special case: in contrast with the JS bundles produced by webpack
+    // it's not served as-is directly from the webpack output at `/index.html`.
+    // It goes through IndexHtmlRequestHandler and is served at `/`.
+    //
+    // TODO: calculate the revision based on the IndexHtmlRequestHandler-processed content
+    // of the index.html file
+    const indexEntryIdx = manifest.findIndex(entry => entry.url === 'index.html');
+    if (indexEntryIdx !== -1) {
+      manifest[indexEntryIdx].url = appShellUrl;
+      appShellManifestEntry = manifest[indexEntryIdx];
+    } else {
+      // Index entry is only emitted on first compilation. Make sure it is cached also for incremental builds
+      manifest.push(appShellManifestEntry);
+    }
   }
-
   return { manifest, warnings };
 };
 

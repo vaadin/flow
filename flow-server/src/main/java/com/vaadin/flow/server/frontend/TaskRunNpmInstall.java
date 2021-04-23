@@ -42,6 +42,7 @@ import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
@@ -374,7 +375,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         FrontendTools tools = new FrontendTools(baseDir,
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
-                nodeVersion, nodeDownloadRoot);
+                nodeVersion, nodeDownloadRoot, requireHomeNodeExec);
         try {
             if (requireHomeNodeExec) {
                 tools.forceAlternativeNodeExecutable();
@@ -425,7 +426,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 String stdoutLine;
                 while ((stdoutLine = reader.readLine()) != null) {
                     packageUpdater.log().debug(stdoutLine);
-                    toolOutput.append(stdoutLine).append(System.lineSeparator());
+                    toolOutput.append(stdoutLine)
+                            .append(System.lineSeparator());
                 }
             }
 
@@ -480,7 +482,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                         "Couldn't find template pnpmfile.js in the classpath");
             }
             FileUtils.copyInputStreamToFile(content, pnpmFile);
-            packageUpdater.log().info("Generated pnpmfile hook file: '{}'",
+            packageUpdater.log().debug("Generated pnpmfile hook file: '{}'",
                     pnpmFile);
 
             FileUtils.writeLines(pnpmFile,
@@ -523,7 +525,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                             "Couldn't find template npmrc in the classpath");
                 }
                 FileUtils.copyInputStreamToFile(content, npmrcFile);
-                packageUpdater.log().info("Generated pnpm configuration: '{}'",
+                packageUpdater.log().debug("Generated pnpm configuration: '{}'",
                         npmrcFile);
             }
         }

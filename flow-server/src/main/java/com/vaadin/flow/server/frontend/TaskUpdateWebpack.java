@@ -149,7 +149,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
             URL resource = this.getClass().getClassLoader()
                     .getResource(webpackTemplate);
             FileUtils.copyURLToFile(resource, configFile);
-            log().info("Created webpack configuration file: '{}'", configFile);
+            log().debug("Created webpack configuration file: '{}'", configFile);
         }
 
         // Generated file is always re-written
