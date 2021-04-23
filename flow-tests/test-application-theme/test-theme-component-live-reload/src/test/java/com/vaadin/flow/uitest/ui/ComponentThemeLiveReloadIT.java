@@ -26,7 +26,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
@@ -34,14 +33,12 @@ import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
-import com.vaadin.flow.testcategory.ThemeLiveReloadTests;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.uitest.ui.ComponentThemeLiveReloadView.ATTACH_IDENTIFIER;
 import static com.vaadin.flow.uitest.ui.ComponentThemeLiveReloadView.THEMED_COMPONENT_ID;
 
-@Category(ThemeLiveReloadTests.class)
 @NotThreadSafe
 public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
 
