@@ -53,7 +53,7 @@ class ThemeLiveReloadPlugin {
         if (changedFilesMap !== {}) {
           let themeGeneratedFileChanged = false;
           let themeGeneratedFileDeleted = false;
-          let componentStyleFileDeleted = false;
+          let deletedComponentStyleFile = undefined;
           const changedFilesPaths = Object.keys(changedFilesMap);
           logger.debug("Detected changes in the following files " + changedFilesPaths);
           changedFilesPaths.forEach(changedFilePath => {
@@ -77,20 +77,23 @@ class ThemeLiveReloadPlugin {
               if (themeGeneratedFileChangedNow) {
                 themeGeneratedFileDeleted = true;
               }
-              componentStyleFileDeleted = file.match(this.componentStyleFileRegexp);
+              if (file.match(this.componentStyleFileRegexp)) {
+                deletedComponentStyleFile = file;
+              }
             }
           });
           // This is considered as a workaround for
           // https://github.com/vaadin/flow/issues/9948: delete component
           // styles and theme generated file in one run to not have webpack
           // compile error
-          if (componentStyleFileDeleted && !themeGeneratedFileDeleted) {
-            logger.warn("Custom theme component stylesheet file has been " +
-              "deleted, but it is still referenced in 'generated/theme-" + this.themeName + ".generated.js' file.\n" +
-              "This causes webpack compilation error.\n" +
-              "Please refresh your app page in the browser, or, if it doesn't help, please restart your app.\n" +
-              "In your further work, please delete 'generated/theme-" + this.themeName + ".generated.js' " +
-              "in one run (simultaneously) with component stylesheet file.");
+          if (deletedComponentStyleFile && !themeGeneratedFileDeleted) {
+            logger.warn("Custom theme component style sheet '" + deletedComponentStyleFile + "' has been deleted.\n" +
+              "Be sure you've also deleted 'generated/theme-" + this.themeName + ".generated.js' in one run (simultaneously) with the component stylesheet'.\n" +
+              "Otherwise, it would cause webpack 'no such file or directory' compilation error, because component style sheets are referenced in " +
+              "'generated/theme-" + this.themeName + ".generated.js'.\n" +
+              "If you encounter a 'no such file or directory' error shown on the overlay in your application, " +
+              "click on the overlay (or refresh the browser page), and it should disappear.\n" +
+              "You can then continue working on your application and theming.\nIf it doesn't help, you need to restart the application.");
           }
 
           if (themeGeneratedFileDeleted || !themeGeneratedFileChanged) {

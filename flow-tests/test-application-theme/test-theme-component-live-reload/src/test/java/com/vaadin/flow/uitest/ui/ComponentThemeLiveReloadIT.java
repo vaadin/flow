@@ -209,7 +209,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     private void waitUntilWithMessage(ExpectedCondition<?> condition,
             String message) {
         try {
-            waitUntil(condition);
+            waitUntil(condition, 20);
         } catch (TimeoutException te) {
             Assert.fail(message);
         }
