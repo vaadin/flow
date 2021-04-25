@@ -61,8 +61,8 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
         componentCSSFile = new File(new File(themeFolder, "components"),
                 "vaadin-text-field.css");
 
-        themeGeneratedFile = new File("frontend/generated/theme-app-theme" +
-                                      ".generated.js");
+        themeGeneratedFile = new File(baseDir,
+                "frontend/generated/theme-app-theme.generated.js");
     }
 
     @After
@@ -209,7 +209,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     private void waitUntilWithMessage(ExpectedCondition<?> condition,
             String message) {
         try {
-            waitUntil(condition, 20);
+            waitUntil(condition);
         } catch (TimeoutException te) {
             Assert.fail(message);
         }
