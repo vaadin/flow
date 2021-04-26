@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
+import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -106,6 +107,50 @@ public abstract class VaadinWebSecurityConfigurerAdapter
         return new OrRequestMatcher(Stream
                 .of(HandlerHelper.getPublicResources())
                 .map(AntPathRequestMatcher::new).collect(Collectors.toList()));
+    }
+
+    /**
+     * Sets up login for the application using form login with the given path
+     * for the login view.
+     * <p>
+     * This is used when your application uses a Fusion based login view
+     * available at the given path.
+     * 
+     * @param http
+     *            the http security from {@link #configure(HttpSecurity)}
+     * @param fusionLoginViewPath
+     *            the path to the login view
+     * @throws Exception
+     *             if something goes wrong
+     */
+    protected void setLoginView(HttpSecurity http, String fusionLoginViewPath)
+            throws Exception {
+        setLoginView(http, fusionLoginViewPath, "/");
+    }
+
+    /**
+     * Sets up login for the application using form login with the given path
+     * for the login view.
+     * <p>
+     * This is used when your application uses a Fusion based login view
+     * available at the given path.
+     * 
+     * @param http
+     *            the http security from {@link #configure(HttpSecurity)}
+     * @param fusionLoginViewPath
+     *            the path to the login view
+     * @param logoutUrl
+     *            the URL to redirect the user to after logging out
+     * @throws Exception
+     *             if something goes wrong
+     */
+    protected void setLoginView(HttpSecurity http, String fusionLoginViewPath,
+            String logoutUrl) throws Exception {
+        FormLoginConfigurer<HttpSecurity> formLogin = http.formLogin();
+        formLogin.loginPage(fusionLoginViewPath).permitAll();
+        formLogin.successHandler(
+                new VaadinSavedRequestAwareAuthenticationSuccessHandler());
+        http.logout().logoutSuccessUrl(logoutUrl);
     }
 
 }
