@@ -48,8 +48,10 @@ class ThemeLiveReloadPlugin {
     apply(compiler) {
       // Adds a hook for theme files change event
       compiler.hooks.watchRun.tapAsync("ThemeLiveReloadPlugin", (compilation, callback) => {
+        console.log("Enter ThemeLiveReloadPlugin");
         const logger = compiler.getInfrastructureLogger("ThemeLiveReloadPlugin");
         const changedFilesMap = compiler.watchFileSystem.watcher.mtimes;
+        console.log("Changed files: " + Object.keys(changedFilesMap));
         if (changedFilesMap !== {}) {
           let themeGeneratedFileChanged = false;
           let themeGeneratedFileDeleted = false;
@@ -68,6 +70,7 @@ class ThemeLiveReloadPlugin {
             // theme name
             const themeGeneratedFileChangedNow = file.match(this.themeGeneratedFileRegexp);
             if (!themeGeneratedFileChanged && themeGeneratedFileChangedNow) {
+              console.log("Theme generated file changed");
               themeGeneratedFileChanged = true;
             }
 
@@ -75,9 +78,11 @@ class ThemeLiveReloadPlugin {
             // null or negative timestamp means file delete
             if (timestamp === null || timestamp < 0) {
               if (themeGeneratedFileChangedNow) {
+                console.log("Theme generated file deleted");
                 themeGeneratedFileDeleted = true;
               }
               if (file.match(this.componentStyleFileRegexp)) {
+                console.log("Component style sheet file deleted");
                 deletedComponentStyleFile = file;
               }
             }
@@ -87,6 +92,7 @@ class ThemeLiveReloadPlugin {
           // styles and theme generated file in one run to not have webpack
           // compile error
           if (deletedComponentStyleFile && !themeGeneratedFileDeleted) {
+            console.log("Component style sheet delete warning");
             logger.warn("Custom theme component style sheet '" + deletedComponentStyleFile + "' has been deleted.\n" +
               "Be sure you've also deleted 'generated/theme-" + this.themeName + ".generated.js' in one run (simultaneously) with the component stylesheet'.\n" +
               "Otherwise, it would cause webpack 'no such file or directory' compilation error, because component style sheets are referenced in " +
@@ -97,8 +103,13 @@ class ThemeLiveReloadPlugin {
           }
 
           if (themeGeneratedFileDeleted || !themeGeneratedFileChanged) {
+            console.log("Starting theme resources processing...");
             this.processThemeResourcesCallback(logger);
           }
+
+          console.log("themeGeneratedFileChanged = " + themeGeneratedFileChanged);
+          console.log("themeGeneratedFileDeleted = " + themeGeneratedFileDeleted);
+          console.log("deletedComponentStyleFile = " + deletedComponentStyleFile);
         }
         callback();
       });
