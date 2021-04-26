@@ -86,6 +86,10 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
                 isComponentCustomStyle(BORDER_RADIUS)
                         || isComponentCustomStyle(OTHER_BORDER_RADIUS));
 
+        // Create an empty component directory
+        doActionAndWaitUntilLiveReloadComplete(
+                () -> createDirectoryIfAbsent(componentsDir));
+
         // Live reload upon adding a new component styles file
         doActionAndWaitUntilLiveReloadComplete(
                 () -> createOrUpdateComponentCSSFile(BORDER_RADIUS));
@@ -136,7 +140,6 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
                     "    border-radius: " + borderRadius + ";\n" +
                     "}";
             // @formatter:on
-            createDirectoryIfAbsent(componentsDir);
             FileUtils.write(componentCSSFile, componentStyles,
                     StandardCharsets.UTF_8.name());
             waitUntil(driver -> componentCSSFile.exists());
