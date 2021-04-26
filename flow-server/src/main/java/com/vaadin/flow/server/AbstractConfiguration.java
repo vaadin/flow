@@ -121,9 +121,4 @@ public interface AbstractConfiguration extends Serializable {
     default boolean useSnowpack() {
         return getBooleanProperty(InitParameters.USE_SNOWPACK, false);
     }
-
-    default boolean useSnowpackBuildWatch() {
-        return getBooleanProperty(InitParameters.USE_SNOWPACK_BUILD_WATCH, false);
-
-    }
 }

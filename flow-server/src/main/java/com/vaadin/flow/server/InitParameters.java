@@ -160,7 +160,4 @@ public class InitParameters implements Serializable {
     public static final String COMPILED_WEB_COMPONENTS_PATH = "compiled.web.components.path";
 
     public static final String USE_SNOWPACK = "useSnowpack";
-
-    public static final String USE_SNOWPACK_BUILD_WATCH = "useSnowpackBuildWatch";
-
 }
