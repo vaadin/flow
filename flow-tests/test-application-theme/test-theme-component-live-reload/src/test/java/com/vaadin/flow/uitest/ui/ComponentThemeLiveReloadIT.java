@@ -46,7 +46,6 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     private static final String OTHER_BORDER_RADIUS = "6px";
     private static final String THEME_FOLDER = "frontend/themes/app-theme/";
 
-    private File componentsDir;
     private File componentCSSFile;
     private File themeGeneratedFile;
 
@@ -54,7 +53,6 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     public void init() {
         File baseDir = new File(System.getProperty("user.dir", "."));
         final File themeFolder = new File(baseDir, THEME_FOLDER);
-        componentsDir = new File(themeFolder, "components");
         componentCSSFile = new File(new File(themeFolder, "components"),
                 "vaadin-text-field.css");
         themeGeneratedFile = new File(baseDir,
@@ -69,12 +67,6 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
             // (if any appear in the future)
             doActionAndWaitUntilLiveReloadComplete(this::deleteComponentStyles);
         }
-        if (componentsDir.exists()) {
-            // Same here: wait until live reload complete to not leave the
-            // server in transient state.
-            doActionAndWaitUntilLiveReloadComplete(
-                    () -> deleteFile(componentsDir));
-        }
     }
 
     @Test
@@ -85,10 +77,6 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
                         + "applying the styles",
                 isComponentCustomStyle(BORDER_RADIUS)
                         || isComponentCustomStyle(OTHER_BORDER_RADIUS));
-
-        // Create an empty component directory
-        doActionAndWaitUntilLiveReloadComplete(
-                () -> createDirectoryIfAbsent(componentsDir));
 
         // Live reload upon adding a new component styles file
         doActionAndWaitUntilLiveReloadComplete(
@@ -190,12 +178,6 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
         }
         Assert.fail("Attach Identifier Element waiting timeout");
         return null;
-    }
-
-    private void createDirectoryIfAbsent(File dir) {
-        if (!dir.exists() && !dir.mkdir()) {
-            Assert.fail("Unable to create folder " + dir);
-        }
     }
 
     private void waitForLiveReload(final String initialAttachId) {
