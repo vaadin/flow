@@ -19,6 +19,7 @@ package com.vaadin.flow.uitest.ui;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
@@ -30,6 +31,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
@@ -91,7 +93,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
         // Live reload upon file deletion
         doActionAndWaitUntilLiveReloadComplete(this::deleteComponentStyles);
         waitUntilComponentInitialStyle();
-        checkLogsForErrors();
+        checkNoWebpackErrors();
     }
 
     private void waitUntilComponentInitialStyle() {
@@ -197,6 +199,27 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
             waitUntil(condition);
         } catch (TimeoutException te) {
             Assert.fail(message);
+        }
+    }
+
+    private void checkNoWebpackErrors() {
+        getLogEntries(Level.ALL).forEach(logEntry -> {
+            if (logEntry.getMessage().contains("Module build failed")) {
+                Assert.fail(
+                        "Webpack error detected in the browser console after "
+                                + "deleting component style sheet:\n\n"
+                                + logEntry.getMessage());
+            }
+        });
+
+        final By byErrorOverlayClass = By.className("v-system-error");
+        try {
+            waitForElementNotPresent(byErrorOverlayClass);
+        } catch (TimeoutException e) {
+            WebElement error = findElement(byErrorOverlayClass);
+            Assert.fail(
+                    "Webpack error overlay detected after deleting component "
+                            + "style sheet:\n\n" + error.getText());
         }
     }
 }
