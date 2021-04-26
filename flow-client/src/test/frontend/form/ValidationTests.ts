@@ -16,7 +16,7 @@ import {
   ValidationError,
   Validator,
   ValueError
-} from "../../../main/resources/META-INF/resources/frontend/form";
+} from "../../../main/frontend/form";
 
 import { IdEntity, IdEntityModel,  Order, OrderModel, TestEntity, TestModel } from "./TestModels";
 

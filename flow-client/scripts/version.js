@@ -20,7 +20,7 @@ const fs = require('fs');
 // when it copies resources from `src/main/resources` into `target/classes`
 const versionFile = 'target/classes/version.txt';
 const replaceVersionInFiles = [
-  'src/main/resources/META-INF/resources/frontend/form/index.ts'
+  'src/main/frontend/form/index.ts'
 ];
 
 const version = fs.readFileSync(versionFile, 'utf8');

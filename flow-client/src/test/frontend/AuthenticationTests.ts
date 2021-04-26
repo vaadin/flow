@@ -3,7 +3,7 @@ const {expect} = intern.getPlugin('chai');
 const {fetchMock} = intern.getPlugin('fetchMock');
 const {sinon} = intern.getPlugin('sinon');
 
-import { ConnectClient, InvalidSessionMiddleware, login, logout } from "../../main/resources/META-INF/resources/frontend";
+import { ConnectClient, InvalidSessionMiddleware, login, logout } from "../../main/frontend";
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
