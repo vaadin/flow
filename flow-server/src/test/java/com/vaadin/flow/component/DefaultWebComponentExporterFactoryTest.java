@@ -63,12 +63,15 @@ public class DefaultWebComponentExporterFactoryTest {
 
     @Test
     public void createInnerClass_throws() {
-        exception.expect(IllegalArgumentException.class);
+        exception.expect(RuntimeException.class);
+        exception.expectCause(
+                CoreMatchers.instanceOf(IllegalArgumentException.class));
         exception.expectMessage(
                 CoreMatchers.containsString(InnerClass.class.getName()));
         exception.expectMessage(CoreMatchers.containsString("inner"));
         DefaultWebComponentExporterFactory<Component> factory = new DefaultWebComponentExporterFactory<>(
                 InnerClass.class);
+
         factory.create();
     }
 
