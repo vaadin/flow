@@ -16,13 +16,9 @@
 
 package com.vaadin.flow.server.communication;
 
-import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.function.Function;
-
-import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
@@ -30,20 +26,22 @@ import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.Location;
-import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 
 /**
  * Processes a 'start' request type from the client to initialize server session
@@ -110,7 +108,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     }
 
     protected String getRequestUrl(VaadinRequest request) {
-        return ((HttpServletRequest) request).getRequestURL().toString();
+        return ((VaadinServletRequest) request).getRequestURL().toString();
     }
 
     @Override

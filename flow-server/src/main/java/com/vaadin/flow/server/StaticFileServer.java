@@ -59,7 +59,7 @@ public class StaticFileServer implements StaticFileHandler {
             .compile("^/frontend[-\\w/]*/webjars/");
 
     private final ResponseWriter responseWriter;
-    private final VaadinService vaadinService;
+    private final VaadinServletService servletService;
     private DeploymentConfiguration deploymentConfiguration;
     private final List<String> manifestPaths;
 
@@ -70,12 +70,12 @@ public class StaticFileServer implements StaticFileHandler {
     /**
      * Constructs a file server.
      *
-     * @param vaadinService
-     *            vaadin service for the deployment, not <code>null</code>
+     * @param servletService
+     *            servlet service for the deployment, not <code>null</code>
      */
-    public StaticFileServer(VaadinService vaadinService) {
-        this.vaadinService = vaadinService;
-        deploymentConfiguration = vaadinService.getDeploymentConfiguration();
+    public StaticFileServer(VaadinServletService servletService) {
+        this.servletService = servletService;
+        deploymentConfiguration = servletService.getDeploymentConfiguration();
         responseWriter = new ResponseWriter(deploymentConfiguration);
         manifestPaths = getManifestPathsFromJson();
     }
@@ -131,16 +131,15 @@ public class StaticFileServer implements StaticFileHandler {
         URL resourceUrl = null;
         if (isAllowedVAADINBuildOrStaticUrl(filenameWithPath)
                 || manifestPaths.contains(filenameWithPath)) {
-            if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
-                resourceUrl = vaadinService.getClassLoader()
-                        .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
-                                + filenameWithPath.replaceFirst("^/", ""));
-
+            if(APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
+                resourceUrl = servletService.getClassLoader()
+                    .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/" 
+                            + filenameWithPath.replaceFirst("^/", ""));
+                    
             } else {
-                resourceUrl = vaadinService.getClassLoader()
-                        .getResource(VAADIN_WEBAPP_RESOURCES
-                                + filenameWithPath.replaceFirst("^/", ""));
-
+                resourceUrl = servletService.getClassLoader()
+                    .getResource(VAADIN_WEBAPP_RESOURCES
+                            + filenameWithPath.replaceFirst("^/", ""));
             }
         }
         if (resourceUrl == null) {
@@ -149,8 +148,7 @@ public class StaticFileServer implements StaticFileHandler {
         if (resourceUrl == null && shouldFixIncorrectWebjarPaths()
                 && isIncorrectWebjarPath(filenameWithPath)) {
             // Flow issue #4601
-            resourceUrl = getStaticResource(
-                    fixIncorrectWebjarPath(filenameWithPath));
+            resourceUrl = getStaticResource(fixIncorrectWebjarPath(filenameWithPath));
         }
 
         if (resourceUrl == null) {
@@ -195,7 +193,7 @@ public class StaticFileServer implements StaticFileHandler {
      * @see VaadinService#getStaticResource(String)
      */
     protected URL getStaticResource(String path) {
-        return vaadinService.getStaticResource(path);
+        return servletService.getStaticResource(path);
     }
 
     // When referring to webjar resources from application stylesheets (loaded
@@ -432,8 +430,9 @@ public class StaticFileServer implements StaticFileHandler {
      * @return list of paths mapped to static webapp resources, or empty list
      */
     private List<String> getManifestPathsFromJson() {
-        InputStream stream = vaadinService.getClassLoader()
-                .getResourceAsStream(VAADIN_WEBAPP_RESOURCES + "manifest.json");
+        InputStream stream = servletService.getClassLoader()
+                .getResourceAsStream(
+                        VAADIN_WEBAPP_RESOURCES + "manifest.json");
         if (stream == null) {
             // manifest.json resource does not exist, probably dev mode
             return new ArrayList<>();

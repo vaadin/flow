@@ -140,7 +140,7 @@ public class VaadinServletTest {
 
             @Override
             protected StaticFileHandler createStaticFileHandler(
-                    VaadinService servletService) {
+                    VaadinServletService servletService) {
                 return Mockito.mock(StaticFileHandler.class);
             }
 
@@ -179,7 +179,7 @@ public class VaadinServletTest {
 
                 @Override
                 protected StaticFileHandler createStaticFileHandler(
-                        VaadinService servletService) {
+                        VaadinServletService servletService) {
                     return Mockito.mock(StaticFileHandler.class);
                 }
 

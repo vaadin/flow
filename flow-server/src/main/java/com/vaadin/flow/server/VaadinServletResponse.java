@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletResponseWrapper;
 public class VaadinServletResponse extends HttpServletResponseWrapper
         implements VaadinResponse {
 
-    private VaadinService vaadinService;
+    private VaadinServletService vaadinService;
 
     /**
      * Wraps a http servlet response and an associated vaadin service.
@@ -42,7 +42,7 @@ public class VaadinServletResponse extends HttpServletResponseWrapper
      *            the associated vaadin service
      */
     public VaadinServletResponse(HttpServletResponse response,
-            VaadinService vaadinService) {
+            VaadinServletService vaadinService) {
         super(response);
         this.vaadinService = vaadinService;
     }
@@ -78,7 +78,7 @@ public class VaadinServletResponse extends HttpServletResponseWrapper
     }
 
     @Override
-    public VaadinService getService() {
+    public VaadinServletService getService() {
         return vaadinService;
     }
 
@@ -95,7 +95,8 @@ public class VaadinServletResponse extends HttpServletResponseWrapper
         VaadinResponse currentResponse = VaadinResponse.getCurrent();
         if (currentResponse instanceof VaadinServletResponse) {
             return (VaadinServletResponse) currentResponse;
+        } else {
+            return null;
         }
-        return null;
     }
 }

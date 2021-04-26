@@ -32,7 +32,7 @@ import javax.servlet.http.HttpSession;
 public class VaadinServletRequest extends HttpServletRequestWrapper
         implements VaadinRequest {
 
-    private final VaadinService vaadinService;
+    private final VaadinServletService vaadinService;
 
     /**
      * Wraps a http servlet request and associates with a vaadin service.
@@ -43,7 +43,7 @@ public class VaadinServletRequest extends HttpServletRequestWrapper
      *            the associated vaadin service
      */
     public VaadinServletRequest(HttpServletRequest request,
-            VaadinService vaadinService) {
+            VaadinServletService vaadinService) {
         super(request);
         this.vaadinService = vaadinService;
     }
@@ -73,7 +73,7 @@ public class VaadinServletRequest extends HttpServletRequestWrapper
     }
 
     @Override
-    public VaadinService getService() {
+    public VaadinServletService getService() {
         return vaadinService;
     }
 
@@ -91,7 +91,8 @@ public class VaadinServletRequest extends HttpServletRequestWrapper
         VaadinRequest currentRequest = VaadinRequest.getCurrent();
         if (currentRequest instanceof VaadinServletRequest) {
             return (VaadinServletRequest) currentRequest;
+        } else {
+            return null;
         }
-        return null;
     }
 }
