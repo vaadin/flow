@@ -54,27 +54,26 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     public void init() {
         File baseDir = new File(System.getProperty("user.dir", "."));
         final File themeFolder = new File(baseDir, THEME_FOLDER);
-
         componentsDir = new File(themeFolder, "components");
-        createDirectoryIfAbsent(componentsDir);
-
         componentCSSFile = new File(new File(themeFolder, "components"),
                 "vaadin-text-field.css");
-
         themeGeneratedFile = new File(baseDir,
                 "frontend/generated/theme-app-theme.generated.js");
     }
 
     @After
     public void cleanUp() {
-        if (componentsDir.exists()) {
+        if (componentCSSFile.exists()) {
             // This waits until live reload complete to not affect the second
             // re-run in CI (if any) and to not affect other @Test methods
             // (if any appear in the future)
-            doActionAndWaitUntilLiveReloadComplete(() -> {
-                deleteComponentStyles();
-                deleteFile(componentsDir);
-            });
+            doActionAndWaitUntilLiveReloadComplete(this::deleteComponentStyles);
+        }
+        if (componentsDir.exists()) {
+            // Same here: wait until live reload complete to not leave the
+            // server in transient state.
+            doActionAndWaitUntilLiveReloadComplete(
+                    () -> deleteFile(componentsDir));
         }
     }
 
@@ -137,6 +136,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
                     "    border-radius: " + borderRadius + ";\n" +
                     "}";
             // @formatter:on
+            createDirectoryIfAbsent(componentsDir);
             FileUtils.write(componentCSSFile, componentStyles,
                     StandardCharsets.UTF_8.name());
             waitUntil(driver -> componentCSSFile.exists());
