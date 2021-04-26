@@ -459,14 +459,6 @@ public class ExplicitNullableTypeCheckerTest {
      * Method for testing
      */
     @Nonnull
-    public String stringNotNull() {
-        return "";
-    }
-
-    /**
-     * Method for testing
-     */
-    @Nonnull
     public String stringNonnull() {
         return "";
     }
