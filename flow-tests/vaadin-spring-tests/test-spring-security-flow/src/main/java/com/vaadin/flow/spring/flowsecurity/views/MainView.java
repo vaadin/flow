@@ -32,6 +32,7 @@ public class MainView extends AppLayout {
     private UserInfo userInfo;
 
     public MainView(@Autowired SecurityUtils securityUtils) {
+        setId("main-view");
         this.securityUtils = securityUtils;
         userInfo = securityUtils.getAuthenticatedUserInfo();
 
