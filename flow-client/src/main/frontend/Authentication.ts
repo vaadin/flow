@@ -40,6 +40,9 @@ export async function login(username: string, password: string, options?: LoginO
       headers
     });
 
+    // This code assumes that a VaadinSavedRequestAwareAuthenticationSuccessHandler is used on the server side,
+    // setting these header values based on the "source=typescript" header set above
+
     const result = response.headers.get('Result');
     const savedUrl = response.headers.get('Saved-url') || undefined;
     const defaultUrl = response.headers.get('Default-url') || undefined;
@@ -47,6 +50,17 @@ export async function login(username: string, password: string, options?: LoginO
 
     if (loginSuccessful) {
       const vaadinCsrfToken = response.headers.get('Vaadin-CSRF') || undefined;
+      updateVaadinCsrfToken(vaadinCsrfToken);
+
+      const springCsrfHeader = response.headers.get('Spring-CSRF-header') || undefined;
+      const springCsrfToken = response.headers.get('Spring-CSRF-token') || undefined;
+      if (springCsrfHeader && springCsrfToken) {
+        const springCsrfTokenInfo: Record<string, string> = {};
+        springCsrfTokenInfo._csrf = springCsrfToken;
+        springCsrfTokenInfo._csrf_header = springCsrfHeader;
+        updateSpringCsrfMetaTags(springCsrfTokenInfo);
+      }
+
       return {
         error: false,
         token: vaadinCsrfToken,
@@ -104,12 +118,16 @@ async function doLogout(logoutUrl: string, headers: Record<string, string>) {
   await updateCsrfTokensBasedOnResponse(response);
 }
 
-function updateSpringCsrfMetaTag(body: string) {
-  const doc = new DOMParser().parseFromString(body, 'text/html');
+function updateSpringCsrfMetaTags(springCsrfInfo: Record<string, string>) {
   clearSpringCsrfMetaTags();
-  Array.from(doc.head.querySelectorAll('meta[name="_csrf"], meta[name="_csrf_header"]')).forEach((el) =>
-    document.head.appendChild(document.importNode(el, true))
-  );
+  const headerNameMeta: HTMLMetaElement = document.createElement('meta');
+  headerNameMeta.name = '_csrf_header';
+  headerNameMeta.content = springCsrfInfo._csrf_header;
+  document.head.appendChild(headerNameMeta);
+  const tokenMeta: HTMLMetaElement = document.createElement('meta');
+  tokenMeta.name = '_csrf';
+  tokenMeta.content = springCsrfInfo._csrf;
+  document.head.appendChild(tokenMeta);
 }
 
 function clearSpringCsrfMetaTags() {
@@ -118,30 +136,49 @@ function clearSpringCsrfMetaTags() {
   );
 }
 
-const getCsrfTokenFromResponseBody = (body: string): string | undefined => {
+const getVaadinCsrfTokenFromResponseBody = (body: string): string | undefined => {
   const match = body.match(/window\.Vaadin = \{TypeScript: \{"csrfToken":"([0-9a-zA-Z\\-]{36})"}};/i);
   return match ? match[1] : undefined;
 };
 
 const getSpringCsrfTokenHeadersFromDocument = (doc: Document): Record<string, string> => {
+  const csrfInfo = getSpringCsrfInfoFromDocument(doc);
+  const headers: Record<string, string> = {};
+  if (csrfInfo._csrf && csrfInfo._csrf_header) {
+    headers[csrfInfo._csrf_header] = csrfInfo._csrf;
+  }
+  return headers;
+};
+const getSpringCsrfInfoFromDocument = (doc: Document): Record<string, string> => {
   const csrf = doc.head.querySelector('meta[name="_csrf"]');
   const csrfHeader = doc.head.querySelector('meta[name="_csrf_header"]');
   const headers: Record<string, string> = {};
   if (csrf !== null && csrfHeader !== null) {
-    headers[(csrfHeader as HTMLMetaElement).content] = (csrf as HTMLMetaElement).content;
+    headers._csrf = (csrf as HTMLMetaElement).content;
+    headers._csrf_header = (csrfHeader as HTMLMetaElement).content;
   }
   return headers;
 };
 
+const getSpringCsrfTokenFromResponseBody = (body: string): Record<string, string> => {
+  const doc = new DOMParser().parseFromString(body, 'text/html');
+  return getSpringCsrfInfoFromDocument(doc);
+};
+
 async function updateCsrfTokensBasedOnResponse(response: Response): Promise<string | undefined> {
   const responseText = await response.text();
-  const token = getCsrfTokenFromResponseBody(responseText);
-  $wnd.Vaadin.TypeScript = $wnd.Vaadin.TypeScript || {};
-  $wnd.Vaadin.TypeScript.csrfToken = token;
-  updateSpringCsrfMetaTag(responseText);
+  const token = getVaadinCsrfTokenFromResponseBody(responseText);
+  updateVaadinCsrfToken(token);
+  const springCsrfTokenInfo = getSpringCsrfTokenFromResponseBody(responseText);
+  updateSpringCsrfMetaTags(springCsrfTokenInfo);
+
   return token;
 }
 
+function updateVaadinCsrfToken(token: string | undefined) {
+  $wnd.Vaadin.TypeScript = $wnd.Vaadin.TypeScript || {};
+  $wnd.Vaadin.TypeScript.csrfToken = token;
+}
 /**
  * It defines what to do when it detects a session is invalid. E.g.,
  * show a login view.

@@ -27,7 +27,24 @@ describe('Authentication', () => {
     vaadinCsrfToken +
     '"}};</script>';
   const happyCaseLoginResponseText = '';
-  const happyCaseResponseHeaders = { 'Vaadin-CSRF': vaadinCsrfToken, Result: 'success', 'Default-url': '/' };
+  const happyCaseResponseHeaders = {
+    'Vaadin-CSRF': vaadinCsrfToken,
+    Result: 'success',
+    'Default-url': '/',
+    'Spring-CSRF-header': springCsrfHeaderName,
+    'Spring-CSRF-token': springCsrfToken
+  };
+
+  function verifySpringCsrfToken(token: string) {
+    expect(document.head.querySelector('meta[name="_csrf"]')!.getAttribute('content')).to.equal(token);
+    expect(document.head.querySelector('meta[name="_csrf_header"]')!.getAttribute('content')).to.equal(
+      springCsrfHeaderName
+    );
+  }
+  function verifySpringCsrfTokenIsCleared() {
+    expect(document.head.querySelector('meta[name="_csrf"]')).to.be.null;
+    expect(document.head.querySelector('meta[name="_csrf_header"]')).to.be.null;
+  }
 
   function clearSpringCsrfMetaTags() {
     Array.from(document.head.querySelectorAll('meta[name="_csrf"], meta[name="_csrf_header"]')).forEach((el) =>
@@ -101,6 +118,25 @@ describe('Authentication', () => {
       expect(result).to.deep.equal(expectedResult);
     });
 
+    it('should set the csrf tokens on login', async () => {
+      fetchMock.post(
+        '/login',
+        {
+          body: happyCaseLoginResponseText,
+          headers: {
+            ...happyCaseResponseHeaders,
+            'Vaadin-CSRF': 'some-new-token',
+            'Spring-CSRF-header': 'X-CSRF-TOKEN',
+            'Spring-CSRF-token': 'some-new-spring-token'
+          }
+        },
+        { headers: requestHeaders }
+      );
+      await login('valid-username', 'valid-password');
+      expect($wnd.Vaadin.TypeScript.csrfToken).to.equal('some-new-token');
+      verifySpringCsrfToken('some-new-spring-token');
+    });
+
     it('should redirect based on request cache after login', async () => {
       // An unthenticated request attempt would be captured by the default
       // request cache, so after login, it should redirect the user to that
@@ -134,11 +170,6 @@ describe('Authentication', () => {
       $wnd.Vaadin.TypeScript.csrfToken = vaadinCsrfToken;
     });
     afterEach(() => fetchMock.restore());
-
-    function verifySpringCsrfTokenIsCleared() {
-      expect(document.head.querySelector('meta[name="_csrf"]')).to.be.null;
-      expect(document.head.querySelector('meta[name="_csrf_header"]')).to.be.null;
-    }
 
     it('should set the csrf token on logout', async () => {
       fetchMock.post(
@@ -196,18 +227,15 @@ describe('Authentication', () => {
       await logout();
       expect(fetchMock.calls()).to.have.lengthOf(3);
       expect($wnd.Vaadin.TypeScript.csrfToken).to.equal(vaadinCsrfToken);
-      expect(document.head.querySelector('meta[name="_csrf"]')?.getAttribute('content')).to.equal(springCsrfToken);
-      expect(document.head.querySelector('meta[name="_csrf_header"]')?.getAttribute('content')).to.equal(
-        springCsrfHeaderName
-      );
+      verifySpringCsrfToken(springCsrfToken);
     });
 
     // when started the app offline, the spring csrf meta tags are not available
     it('should retry when no spring csrf metas in the doc and clear the csrf token on failed server logout with the retry', async () => {
       clearSpringCsrfMetaTags();
 
-      expect(document.head.querySelector('meta[name="_csrf"]')).to.be.null;
-      expect(document.head.querySelector('meta[name="_csrf_header"]')).to.be.null;
+      verifySpringCsrfTokenIsCleared();
+
       fetchMock.post('/logout', 403, { repeat: 1 });
       fetchMock.get('?nocache', {
         body: happyCaseLogoutResponseText
@@ -256,10 +284,7 @@ describe('Authentication', () => {
       await logout();
       expect(fetchMock.calls()).to.have.lengthOf(3);
       expect($wnd.Vaadin.TypeScript.csrfToken).to.equal(vaadinCsrfToken);
-      expect(document.head.querySelector('meta[name="_csrf"]')?.getAttribute('content')).to.equal(springCsrfToken);
-      expect(document.head.querySelector('meta[name="_csrf_header"]')?.getAttribute('content')).to.equal(
-        springCsrfHeaderName
-      );
+      verifySpringCsrfToken(springCsrfToken);
     });
   });
 
