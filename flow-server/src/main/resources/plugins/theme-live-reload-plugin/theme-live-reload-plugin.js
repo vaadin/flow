@@ -76,8 +76,7 @@ class ThemeLiveReloadPlugin {
             if (timestamp === null || timestamp < 0) {
               if (themeGeneratedFileChangedNow) {
                 themeGeneratedFileDeleted = true;
-              }
-              if (file.match(this.componentStyleFileRegexp)) {
+              } else if (file.match(this.componentStyleFileRegexp)) {
                 deletedComponentStyleFile = file;
               }
             }
