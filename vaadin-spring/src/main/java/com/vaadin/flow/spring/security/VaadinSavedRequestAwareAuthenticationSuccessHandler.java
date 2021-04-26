@@ -12,6 +12,7 @@ import com.vaadin.flow.server.VaadinService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
@@ -57,6 +58,16 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler extends SavedRe
     private static final String SAVED_URL_HEADER = "Saved-url";
 
     /**
+     * This header contains the name of the request header Spring uses for its
+     * CSRF token
+     */
+    private static final String SPRING_CSRF_HEADER = "Spring-CSRF-header";
+    /**
+     * This header contains the current Spring CSRF token
+     */
+    private static final String SPRING_CSRF_TOKEN = "Spring-CSRF-token";
+
+    /**
      * Redirect strategy used by
      * {@link VaadinSavedRequestAwareAuthenticationSuccessHandler}.
      */
@@ -77,6 +88,15 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler extends SavedRe
                 if (csrfToken != null) {
                     response.setHeader(VAADIN_CSRF_HEADER, csrfToken);
                 }
+            }
+            Object springCsrfTokenObject = request
+                    .getAttribute(CsrfToken.class.getName());
+            if (springCsrfTokenObject instanceof CsrfToken) {
+                CsrfToken springCsrfToken = (CsrfToken) springCsrfTokenObject;
+                response.setHeader(SPRING_CSRF_HEADER,
+                        springCsrfToken.getHeaderName());
+                response.setHeader(SPRING_CSRF_TOKEN,
+                        springCsrfToken.getToken());
             }
         }
     }
