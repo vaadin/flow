@@ -306,7 +306,6 @@ public class AccessAnnotationCheckerTest {
                 adminRoleRequest, true);
         verifyClassAccessAllowed(RolesAllowedUserEndpoint.class,
                 adminRoleRequest, false);
-
     }
 
     private HttpServletRequest createRequest(Principal userPrincipal,

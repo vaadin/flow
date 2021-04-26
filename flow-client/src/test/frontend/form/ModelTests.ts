@@ -16,7 +16,7 @@ import {
   NumberModel,
   Positive,
   Size
-} from "../../../main/resources/META-INF/resources/frontend/form";
+} from "../../../main/frontend/form";
 
 import {IdEntity, IdEntityModel, TestEntity, TestModel} from "./TestModels";
 

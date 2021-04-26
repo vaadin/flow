@@ -46,6 +46,7 @@ import com.vaadin.flow.utils.FlowFileUtils;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
@@ -155,7 +156,17 @@ public class BuildFrontendUtil {
             builder.copyResources(adapter.getJarFiles());
         }
 
-        builder.build().execute();
+        try {
+            builder.build().execute();
+        } catch (ExecutionFailedException exception) {
+            throw exception;
+        } catch (Throwable throwable) {
+            throw new ExecutionFailedException(
+                    "Error occured during goal execution: "
+                            + throwable.getMessage()
+                            + "Please run Maven with the -e switch (or Gradle with the --stacktrace switch), to learn the full stack trace.",
+                    throwable);
+        }
 
     }
 
@@ -252,38 +263,51 @@ public class BuildFrontendUtil {
         ClassFinder classFinder = adapter.getClassFinder();
         Lookup lookup = adapter.createLookup(classFinder);
 
-        new NodeTasks.Builder(lookup, adapter.npmFolder(),
-                adapter.generatedFolder(), adapter.frontendDirectory(),
-                adapter.buildFolder())
-                        .runNpmInstall(adapter.runNpmInstall())
-                        .withWebpack(adapter.webpackOutputDirectory(),
-                                adapter.servletResourceOutputDirectory(),
-                                adapter.webpackTemplate(),
-                                adapter.webpackGeneratedTemplate())
-                        .useV14Bootstrap(
-                                adapter.isUseDeprecatedV14Bootstrapping())
-                        .enablePackagesUpdate(true)
-                        .useByteCodeScanner(adapter.optimizeBundle())
-                        .withFlowResourcesFolder(flowResourcesFolder)
-                        .copyResources(jarFiles)
-                        .copyLocalResources(
-                                adapter.frontendResourcesDirectory())
-                        .enableImportsUpdate(true)
-                        .withEmbeddableWebComponents(
-                                adapter.generateEmbeddableWebComponents())
-                        .withTokenFile(BuildFrontendUtil.getTokenFile(adapter))
-                        .enablePnpm(adapter.pnpmEnable())
-                        .withConnectApplicationProperties(
-                                adapter.applicationProperties())
-                        .withConnectJavaSourceFolder(adapter.javaSourceFolder())
-                        .withConnectGeneratedOpenApiJson(
-                                adapter.openApiJsonFile())
-                        .withConnectClientTsApiFolder(
-                                adapter.generatedTsFolder())
-                        .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
-                        .withNodeVersion(adapter.nodeVersion())
-                        .withNodeDownloadRoot(nodeDownloadRootURI).build()
-                        .execute();
+        try {
+            new NodeTasks.Builder(lookup, adapter.npmFolder(),
+                    adapter.generatedFolder(), adapter.frontendDirectory(),
+                    adapter.buildFolder())
+                            .runNpmInstall(adapter.runNpmInstall())
+                            .withWebpack(adapter.webpackOutputDirectory(),
+                                    adapter.servletResourceOutputDirectory(),
+                                    adapter.webpackTemplate(),
+                                    adapter.webpackGeneratedTemplate())
+                            .useV14Bootstrap(
+                                    adapter.isUseDeprecatedV14Bootstrapping())
+                            .enablePackagesUpdate(true)
+                            .useByteCodeScanner(adapter.optimizeBundle())
+                            .withFlowResourcesFolder(flowResourcesFolder)
+                            .copyResources(jarFiles)
+                            .copyLocalResources(
+                                    adapter.frontendResourcesDirectory())
+                            .enableImportsUpdate(true)
+                            .withEmbeddableWebComponents(
+                                    adapter.generateEmbeddableWebComponents())
+                            .withTokenFile(
+                                    BuildFrontendUtil.getTokenFile(adapter))
+                            .enablePnpm(adapter.pnpmEnable())
+                            .withConnectApplicationProperties(
+                                    adapter.applicationProperties())
+                            .withConnectJavaSourceFolder(
+                                    adapter.javaSourceFolder())
+                            .withConnectGeneratedOpenApiJson(
+                                    adapter.openApiJsonFile())
+                            .withConnectClientTsApiFolder(
+                                    adapter.generatedTsFolder())
+                            .withHomeNodeExecRequired(
+                                    adapter.requireHomeNodeExec())
+                            .withNodeVersion(adapter.nodeVersion())
+                            .withNodeDownloadRoot(nodeDownloadRootURI).build()
+                            .execute();
+        } catch (ExecutionFailedException exception) {
+            throw exception;
+        } catch (Throwable throwable) {
+            throw new ExecutionFailedException(
+                    "Error occured during goal execution: "
+                            + throwable.getMessage()
+                            + "Please run Maven with the -e switch (or Gradle with the --stacktrace switch), to learn the full stack trace.",
+                    throwable);
+        }
     }
 
     /**

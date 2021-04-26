@@ -26,7 +26,7 @@ import {
   Required,
   Size
 }
-  from "../../../main/resources/META-INF/resources/frontend/form";
+  from "../../../main/frontend/form";
 
 suite("form/Validators", () => {
 

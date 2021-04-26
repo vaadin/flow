@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.data.provider;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.dom.Element;
@@ -81,6 +83,13 @@ public class ComponentDataGenerator<T>
             nodeId = oldRenderedComponent.getElement().getNode().getId();
         } else {
             Component renderedComponent = createComponent(item);
+            if (renderedComponent.getParent().isPresent()) {
+                LoggerFactory.getLogger(ComponentDataGenerator.class).warn(
+                        "The 'createComponent' method returned a component '{}' which already has a parent."
+                                + " It means that most likely your component renderer '{}' class is implemented incorrectly",
+                        renderedComponent.getClass().getName(),
+                        componentRenderer.getClass().getName());
+            }
             registerRenderedComponent(itemKey, renderedComponent);
 
             nodeId = renderedComponent.getElement().getNode().getId();

@@ -190,12 +190,17 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void should_useSystemNode() {
+    public void homeNodeIsNotForced_useGlobalNode() throws IOException {
+        createStubNode(true, true, vaadinHomeDir);
+
         assertThat(tools.getNodeExecutable(), containsString("node"));
         assertThat(tools.getNodeExecutable(),
                 not(containsString(DEFAULT_NODE)));
         assertThat(tools.getNodeExecutable(),
                 not(containsString(NPM_CLI_STRING)));
+        assertThat(tools.getNodeExecutable(),
+                not(containsString(vaadinHomeDir)));
+        assertThat(tools.getNodeExecutable(), not(containsString(baseDir)));
 
         assertEquals(4, tools.getNpmExecutable().size());
         assertThat(tools.getNpmExecutable().get(0), containsString("npm"));
@@ -434,14 +439,6 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void should_useHomeFirst() throws Exception {
-        Assume.assumeFalse(
-                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
-                FrontendUtils.isWindows());
-        assertNodeCommand(() -> vaadinHomeDir);
-    }
-
-    @Test
     public void should_useProjectNpmFirst() throws Exception {
         Assume.assumeFalse(
                 "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
@@ -452,10 +449,13 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void should_useHomeNpmFirst() throws Exception {
+    public void forceHomeNode_useHomeNpmFirst() throws Exception {
         Assume.assumeFalse(
                 "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
                 FrontendUtils.isWindows());
+        tools = new FrontendTools(baseDir, () -> vaadinHomeDir, true);
+
+        createStubNode(true, true, vaadinHomeDir);
         assertNpmCommand(() -> vaadinHomeDir);
     }
 
@@ -485,7 +485,7 @@ public class FrontendToolsTest {
             throws Exception {
         tools = new FrontendTools(baseDir, () -> vaadinHomeDir,
                 FrontendTools.DEFAULT_NODE_VERSION, new File(baseDir).toURI(),
-                true);
+                true, false);
         Assume.assumeFalse(tools.getNodeExecutable().isEmpty());
         createStubNode(false, true, baseDir);
         createFakePnpm("4.5.0");

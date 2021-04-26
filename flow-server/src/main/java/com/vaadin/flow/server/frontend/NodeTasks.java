@@ -585,7 +585,8 @@ public class NodeTasks implements FallibleCommand {
                 || enableWebpackConfigUpdate) {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(!builder.useByteCodeScanner, classFinder,
-                            builder.generateEmbeddableWebComponents);
+                            builder.generateEmbeddableWebComponents,
+                            builder.useDeprecatedV14Bootstrapping);
 
             if (builder.generateEmbeddableWebComponents) {
                 FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
@@ -623,8 +624,14 @@ public class NodeTasks implements FallibleCommand {
             commands.add(packageCreator);
         }
 
+        if (frontendDependencies != null) {
+            addGenerateServiceWorkerTask(builder,
+                    frontendDependencies.getPwaConfiguration());
+            addGenerateTsConfigTask(builder);
+        }
+
         if (!builder.useDeprecatedV14Bootstrapping) {
-            addBootstrapTasks(builder, frontendDependencies);
+            addBootstrapTasks(builder);
 
             if (builder.connectJavaSourceFolder != null
                     && builder.connectJavaSourceFolder.exists()
@@ -676,8 +683,7 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
-    private void addBootstrapTasks(Builder builder,
-            FrontendDependenciesScanner frontendDependencies) {
+    private void addBootstrapTasks(Builder builder) {
         File outputDirectory = new File(builder.npmFolder,
                 builder.buildDirectory);
         TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
@@ -688,7 +694,10 @@ public class NodeTasks implements FallibleCommand {
                 new File(builder.generatedFolder, IMPORTS_NAME),
                 outputDirectory);
         commands.add(taskGenerateIndexTs);
+    }
 
+
+    private void addGenerateTsConfigTask(Builder builder) {
         TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
                 builder.npmFolder);
         commands.add(taskGenerateTsConfig);
@@ -697,13 +706,16 @@ public class NodeTasks implements FallibleCommand {
                 builder.npmFolder);
         commands.add(taskGenerateTsDefinitions);
 
-        if (frontendDependencies != null) {
-            PwaConfiguration pwaConfiguration = frontendDependencies
-                    .getPwaConfiguration();
-            if (pwaConfiguration.isEnabled()) {
-                commands.add(new TaskGenerateServiceWorker(
-                        builder.frontendDirectory, outputDirectory));
-            }
+    }
+
+    private void addGenerateServiceWorkerTask(Builder builder,
+            PwaConfiguration pwaConfiguration) {
+        File outputDirectory = new File(builder.npmFolder,
+                builder.buildDirectory);
+        if (pwaConfiguration.isEnabled()) {
+            commands.add(
+                    new TaskGenerateServiceWorker(builder.frontendDirectory,
+                            outputDirectory));
         }
     }
 
@@ -738,7 +750,8 @@ public class NodeTasks implements FallibleCommand {
         if (builder.useByteCodeScanner) {
             return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(true, finder,
-                            builder.generateEmbeddableWebComponents);
+                            builder.generateEmbeddableWebComponents,
+                            builder.useDeprecatedV14Bootstrapping);
         } else {
             return null;
         }

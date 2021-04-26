@@ -112,7 +112,6 @@
                         </webdriver.chrome.driver>
                     </systemPropertyVariables>
                     <excludedGroups>${test.excludegroup}</excludedGroups>
-                    <groups>${test.includegroup}</groups>
                     <excludes>
                         <exclude>**/*$*</exclude>
                         <exclude>${exclude.it.tests}</exclude>
@@ -310,14 +309,6 @@
             </modules>
         </profile>
         <profile>
-            <id>theme-live-reload-tests</id>
-            <properties>
-                <test.includegroup>
-                    com.vaadin.flow.testcategory.ThemeLiveReloadTests
-                </test.includegroup>
-            </properties>
-        </profile>
-        <profile>
             <id>run-tests</id>
             <activation>
                 <property>
@@ -339,7 +330,6 @@
                 <module>test-scalability</module>
                 <module>test-memory-leaks</module>
                 <module>test-servlet</module>
-                <module>test-application-theme</module>
                 <module>test-themes</module>
                 <module>servlet-containers</module>
 
@@ -359,9 +349,15 @@
                 <module>test-ccdm-flow-navigation/pom-production.xml</module>
 
                 <module>test-root-context</module>
-
+				
+                <module>test-v14-bootstrap</module>
+                <module>test-v14-bootstrap/pom-production.xml</module>
+				
                 <!-- tests are disabled in this module, this reference is for maven version plugin -->
                 <module>test-no-theme</module>
+                <!-- move theme tests to the end, because theme switch live reload-->
+                <!-- test impacts startup test-->
+                <module>test-application-theme</module>
             </modules>
         </profile>
         <profile>
@@ -410,9 +406,6 @@
             <id>validation</id>
             <properties>
                 <maven.javadoc.skip>true</maven.javadoc.skip>
-                <test.excludegroup>
-                    com.vaadin.flow.testcategory.ThemeLiveReloadTests
-                </test.excludegroup>
             </properties>
         </profile>
         <profile>
@@ -422,8 +415,7 @@
             </activation>
             <properties>
                 <test.excludegroup>com.vaadin.flow.testcategory.ScreenshotTests,
-                    com.vaadin.flow.testcategory.PushTests,
-                    com.vaadin.flow.testcategory.ThemeLiveReloadTests
+                    com.vaadin.flow.testcategory.PushTests
                 </test.excludegroup>
             </properties>
         </profile>
@@ -447,8 +439,7 @@
             </activation>
             <properties>
                 <test.excludegroup>com.vaadin.flow.testcategory.IgnoreIE11,
-                    com.vaadin.flow.testcategory.PushTests,
-                    com.vaadin.flow.testcategory.ThemeLiveReloadTests
+                    com.vaadin.flow.testcategory.PushTests
                 </test.excludegroup>
             </properties>
         </profile>

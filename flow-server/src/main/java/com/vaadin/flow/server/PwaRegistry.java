@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.communication.PwaHandler;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import elemental.json.Json;
@@ -95,20 +96,28 @@ public class PwaRegistry implements Serializable {
             System.setProperty(HEADLESS_PROPERTY, Boolean.TRUE.toString());
         }
 
+        boolean useV14Bootstrap = false;
+        ApplicationConfiguration applicationConfiguration = (ApplicationConfiguration) servletContext
+                .getAttribute(ApplicationConfiguration.class.getName());
+        if (applicationConfiguration != null) {
+            useV14Bootstrap = applicationConfiguration.useV14Bootstrap();
+        }
+
         // set basic configuration by given PWA annotation
         // fall back to defaults if unavailable
-        pwaConfiguration = pwa == null ? new PwaConfiguration()
-                : new PwaConfiguration(pwa);
+        pwaConfiguration = pwa == null ? new PwaConfiguration(useV14Bootstrap)
+                : new PwaConfiguration(pwa, useV14Bootstrap);
 
         // Build pwa elements only if they are enabled
         if (pwaConfiguration.isEnabled()) {
             URL logo = getResourceUrl(servletContext,
                     pwaConfiguration.relIconPath());
 
-            URL offlinePage = pwaConfiguration.isOfflinePathEnabled()
-                    ? getResourceUrl(servletContext,
-                            pwaConfiguration.relOfflinePath())
-                    : null;
+            URL offlinePage = pwaConfiguration.isOfflinePathEnabled() ?
+                    getResourceUrl(servletContext,
+                            pwaConfiguration.relOfflinePath()) :
+                    null;
+
             // Load base logo from servlet context if available
             // fall back to local image if unavailable
             BufferedImage baseImage = getBaseImage(logo);
