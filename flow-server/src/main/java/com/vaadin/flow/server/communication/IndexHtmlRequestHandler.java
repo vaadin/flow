@@ -68,7 +68,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static final String SPRING_CSRF_TOKEN_PROPERTY = "token";
     private static final String SPRING_CSRF_PARAMETER_NAME_ATTRIBUTE = "_csrf_parameter";
     private static final String SPRING_CSRF_HEADER_NAME_ATTRIBUTE = "_csrf_header";
-    private static final String SPRING_CSRF_TOKEN_ATTRIBUTE = "_csrf";
+    private static final String SPRING_CSRF_TOKEN_ATTRIBUTE = "org.springframework.security.web.csrf.CsrfToken";
     private static final String META_TAG = "meta";
 
     @Override
