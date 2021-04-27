@@ -59,7 +59,7 @@ public class StaticFileServer implements StaticFileHandler {
             .compile("^/frontend[-\\w/]*/webjars/");
 
     private final ResponseWriter responseWriter;
-    private final VaadinServletService servletService;
+    private final VaadinService vaadinService;
     private DeploymentConfiguration deploymentConfiguration;
     private final List<String> manifestPaths;
 
@@ -70,12 +70,12 @@ public class StaticFileServer implements StaticFileHandler {
     /**
      * Constructs a file server.
      *
-     * @param servletService
-     *            servlet service for the deployment, not <code>null</code>
+     * @param vaadinService
+     *            vaadin service for the deployment, not <code>null</code>
      */
-    public StaticFileServer(VaadinServletService servletService) {
-        this.servletService = servletService;
-        deploymentConfiguration = servletService.getDeploymentConfiguration();
+    public StaticFileServer(VaadinService vaadinService) {
+        this.vaadinService = vaadinService;
+        deploymentConfiguration = vaadinService.getDeploymentConfiguration();
         responseWriter = new ResponseWriter(deploymentConfiguration);
         manifestPaths = getManifestPathsFromJson();
     }
@@ -132,12 +132,12 @@ public class StaticFileServer implements StaticFileHandler {
         if (isAllowedVAADINBuildOrStaticUrl(filenameWithPath)
                 || manifestPaths.contains(filenameWithPath)) {
             if(APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
-                resourceUrl = servletService.getClassLoader()
+                resourceUrl = vaadinService.getClassLoader()
                     .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/" 
                             + filenameWithPath.replaceFirst("^/", ""));
                     
             } else {
-                resourceUrl = servletService.getClassLoader()
+                resourceUrl = vaadinService.getClassLoader()
                     .getResource(VAADIN_WEBAPP_RESOURCES
                             + filenameWithPath.replaceFirst("^/", ""));
             }
@@ -193,7 +193,7 @@ public class StaticFileServer implements StaticFileHandler {
      * @see VaadinService#getStaticResource(String)
      */
     protected URL getStaticResource(String path) {
-        return servletService.getStaticResource(path);
+        return vaadinService.getStaticResource(path);
     }
 
     // When referring to webjar resources from application stylesheets (loaded
@@ -430,7 +430,7 @@ public class StaticFileServer implements StaticFileHandler {
      * @return list of paths mapped to static webapp resources, or empty list
      */
     private List<String> getManifestPathsFromJson() {
-        InputStream stream = servletService.getClassLoader()
+        InputStream stream = vaadinService.getClassLoader()
                 .getResourceAsStream(
                         VAADIN_WEBAPP_RESOURCES + "manifest.json");
         if (stream == null) {
