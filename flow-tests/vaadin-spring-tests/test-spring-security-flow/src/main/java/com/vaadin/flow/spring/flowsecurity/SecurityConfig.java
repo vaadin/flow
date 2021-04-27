@@ -19,7 +19,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @EnableWebSecurity
 @Configuration
@@ -49,9 +48,8 @@ public class SecurityConfig extends VaadinWebSecurityConfigurerAdapter {
         formLogin.loginPage("/login").permitAll();
         http.csrf().ignoringAntMatchers("/login");
 
-        // allow non-interactive logout via /logout and redirect to / after logout
+        // redirect to / after logout
         http.logout().logoutSuccessUrl(LOGOUT_SUCCESS_URL);
-        http.logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout"));
     }
 
     @Override
