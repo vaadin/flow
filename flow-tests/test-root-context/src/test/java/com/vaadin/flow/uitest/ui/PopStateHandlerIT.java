@@ -1,6 +1,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -76,6 +77,7 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore("Ignored because if the issue https://github.com/vaadin/flow/issues/10825")
     public void testSamePathHashChanges_tripleeBack_noServerSideEvent() {
         open();
 
