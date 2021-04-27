@@ -76,7 +76,8 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 
 public class IndexHtmlRequestHandlerTest {
-    private static final String SPRING_CSRF_ATTRIBUTE = "org.springframework.security.web.csrf.CsrfToken";
+    private static final String SPRING_CSRF_ATTRIBUTE_IN_SESSION = "org.springframework.security.web.csrf.CsrfToken";
+    private static final String SPRING_CSRF_ATTRIBUTE = "_csrf";
     private MockServletServiceSessionSetup mocks;
     private MockServletServiceSessionSetup.TestVaadinServletService service;
     private VaadinSession session;
@@ -410,12 +411,12 @@ public class IndexHtmlRequestHandlerTest {
         VaadinRequest request = Mockito.spy(createVaadinRequest("/"));
         String springTokenString = UUID.randomUUID().toString();
         String springTokenHeaderName = "x-CSRF-TOKEN";
-        String springTokenParamName = SPRING_CSRF_ATTRIBUTE;
+        String springTokenParamName = SPRING_CSRF_ATTRIBUTE_IN_SESSION;
         Map<String, String> csrfJsonMap = new HashMap<>();
         csrfJsonMap.put("token", springTokenString);
         csrfJsonMap.put("headerName", springTokenHeaderName);
         csrfJsonMap.put("parameterName", springTokenParamName);
-        Mockito.when(request.getAttribute(SPRING_CSRF_ATTRIBUTE)).thenReturn(csrfJsonMap);
+        Mockito.when(request.getAttribute(SPRING_CSRF_ATTRIBUTE_IN_SESSION)).thenReturn(csrfJsonMap);
         indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
                 response);
 
@@ -501,7 +502,7 @@ public class IndexHtmlRequestHandlerTest {
         csrfJsonMap.put("token", springTokenString);
         csrfJsonMap.put("headerName", springTokenHeaderName);
         Object springCsrfToken = JsonUtils.mapToJson(csrfJsonMap);
-        Mockito.when(request.getAttribute(SPRING_CSRF_ATTRIBUTE)).thenReturn(springCsrfToken);
+        Mockito.when(request.getAttribute(SPRING_CSRF_ATTRIBUTE_IN_SESSION)).thenReturn(springCsrfToken);
         VaadinServletRequest vaadinRequest = createVaadinRequest("/");
         Mockito.when(((HttpServletRequest) vaadinRequest.getRequest())
                 .getHeader("referer"))
