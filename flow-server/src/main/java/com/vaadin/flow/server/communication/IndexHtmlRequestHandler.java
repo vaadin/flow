@@ -63,6 +63,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static final String CONTENT_ATTRIBUTE = "content";
     private static final String NAME_ATTRIBUTE = "name";
+    private static final String SPRING_CSRF_TOKEN_ATTRIBUTE_IN_SESSION = "org.springframework.security.web.csrf.CsrfToken";
     private static final String SPRING_CSRF_HEADER_PROPERTY = "headerName";
     private static final String SPRING_CSRF_PARAMETER_PROPERTY = "parameterName";
     private static final String SPRING_CSRF_TOKEN_PROPERTY = "token";
@@ -189,7 +190,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 initialJson.put(CSRF_TOKEN, csrfToken);
             }
             Object springCsrfToken = request
-                    .getAttribute(SPRING_CSRF_TOKEN_ATTRIBUTE);
+                    .getAttribute(SPRING_CSRF_TOKEN_ATTRIBUTE_IN_SESSION);
             if (springCsrfToken != null) {
                 JsonObject springCsrfTokenJson = JsonUtils
                         .beanToJson(springCsrfToken);
