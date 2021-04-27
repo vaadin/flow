@@ -19,6 +19,7 @@ package com.vaadin.flow.uitest.ui;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
@@ -30,6 +31,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
@@ -46,31 +48,26 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     private static final String OTHER_BORDER_RADIUS = "6px";
     private static final String THEME_FOLDER = "frontend/themes/app-theme/";
 
-    private File componentsDir;
     private File componentCSSFile;
+    private File themeGeneratedFile;
 
     @Before
     public void init() {
         File baseDir = new File(System.getProperty("user.dir", "."));
         final File themeFolder = new File(baseDir, THEME_FOLDER);
-
-        componentsDir = new File(themeFolder, "components");
-        createDirectoryIfAbsent(componentsDir);
-
         componentCSSFile = new File(new File(themeFolder, "components"),
                 "vaadin-text-field.css");
+        themeGeneratedFile = new File(baseDir,
+                "frontend/generated/theme-app-theme.generated.js");
     }
 
     @After
     public void cleanUp() {
-        if (componentsDir.exists()) {
+        if (componentCSSFile.exists()) {
             // This waits until live reload complete to not affect the second
             // re-run in CI (if any) and to not affect other @Test methods
             // (if any appear in the future)
-            doActionAndWaitUntilLiveReloadComplete(() -> {
-                deleteComponentStyles();
-                deleteFile(componentsDir);
-            }, true);
+            doActionAndWaitUntilLiveReloadComplete(this::deleteComponentStyles);
         }
     }
 
@@ -79,9 +76,9 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
         open();
         Assert.assertFalse(
                 "Border radius for themed component is not expected before "
-                + "applying the styles",
+                        + "applying the styles",
                 isComponentCustomStyle(BORDER_RADIUS)
-                || isComponentCustomStyle(OTHER_BORDER_RADIUS));
+                        || isComponentCustomStyle(OTHER_BORDER_RADIUS));
 
         // Live reload upon adding a new component styles file
         doActionAndWaitUntilLiveReloadComplete(
@@ -94,14 +91,15 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
         waitUntilComponentCustomStyle(OTHER_BORDER_RADIUS);
 
         // Live reload upon file deletion
-        doActionAndWaitUntilLiveReloadComplete(this::deleteComponentStyles,
-                true);
+        doActionAndWaitUntilLiveReloadComplete(this::deleteComponentStyles);
         waitUntilComponentInitialStyle();
+        checkNoWebpackErrors();
     }
 
     private void waitUntilComponentInitialStyle() {
-        waitUntilWithMessage(driver -> !isComponentCustomStyle(BORDER_RADIUS)
-                            && !isComponentCustomStyle(OTHER_BORDER_RADIUS),
+        waitUntilWithMessage(
+                driver -> !isComponentCustomStyle(BORDER_RADIUS)
+                        && !isComponentCustomStyle(OTHER_BORDER_RADIUS),
                 "Wait for component initial styles timeout");
     }
 
@@ -141,25 +139,25 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void deleteComponentStyles() {
+        Assert.assertTrue("Expected theme generated file to be present",
+                themeGeneratedFile.exists());
+        // workaround for https://github.com/vaadin/flow/issues/9948
+        // delete theme generated with component styles in one run
+        deleteFile(themeGeneratedFile);
         deleteFile(componentCSSFile);
     }
 
     private void deleteFile(File fileToDelete) {
         if (fileToDelete != null && fileToDelete.exists()
-            && !fileToDelete.delete()) {
+                && !fileToDelete.delete()) {
             Assert.fail("Unable to delete " + fileToDelete);
         }
     }
 
     private void doActionAndWaitUntilLiveReloadComplete(Runnable action) {
-        doActionAndWaitUntilLiveReloadComplete(action, false);
-    }
-
-    private void doActionAndWaitUntilLiveReloadComplete(Runnable action,
-                                                        boolean deleted) {
         final String initialAttachId = getAttachIdentifier();
         action.run();
-        waitForLiveReload(initialAttachId, deleted);
+        waitForLiveReload(initialAttachId);
     }
 
     private String getAttachIdentifier() {
@@ -184,21 +182,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
         return null;
     }
 
-    private void createDirectoryIfAbsent(File dir) {
-        if (!dir.exists() && !dir.mkdir()) {
-            Assert.fail("Unable to create folder " + dir);
-        }
-    }
-
-    private void waitForLiveReload(final String initialAttachId,
-                                   boolean deleted) {
-        if (deleted) {
-            // TODO: workaround for https://github.com/vaadin/flow/issues/9948.
-            //  one more page update is needed when a first webpack
-            //  re-compilation fails due to issue above.
-            getDriver().navigate().refresh();
-            getCommandExecutor().waitForVaadin();
-        }
+    private void waitForLiveReload(final String initialAttachId) {
         waitUntilWithMessage(d -> {
             try {
                 final String newViewId = getAttachIdentifier();
@@ -210,11 +194,32 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void waitUntilWithMessage(ExpectedCondition<?> condition,
-                                      String message) {
+            String message) {
         try {
             waitUntil(condition);
         } catch (TimeoutException te) {
             Assert.fail(message);
+        }
+    }
+
+    private void checkNoWebpackErrors() {
+        getLogEntries(Level.ALL).forEach(logEntry -> {
+            if (logEntry.getMessage().contains("Module build failed")) {
+                Assert.fail(
+                        "Webpack error detected in the browser console after "
+                                + "deleting component style sheet:\n\n"
+                                + logEntry.getMessage());
+            }
+        });
+
+        final By byErrorOverlayClass = By.className("v-system-error");
+        try {
+            waitForElementNotPresent(byErrorOverlayClass);
+        } catch (TimeoutException e) {
+            WebElement error = findElement(byErrorOverlayClass);
+            Assert.fail(
+                    "Webpack error overlay detected after deleting component "
+                            + "style sheet:\n\n" + error.getText());
         }
     }
 }
