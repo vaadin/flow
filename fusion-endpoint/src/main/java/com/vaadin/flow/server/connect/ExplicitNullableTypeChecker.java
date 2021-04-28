@@ -39,7 +39,7 @@ public class ExplicitNullableTypeChecker {
      */
     public String checkValueForAnnotatedElement(Object value,
             AnnotatedElement annotatedElement) {
-        if (!Annotation.isElementRequired(annotatedElement)) {
+        if (!NonnullAnnotationChecker.isElementRequired(annotatedElement)) {
             return null;
         }
         if (annotatedElement instanceof Method) {

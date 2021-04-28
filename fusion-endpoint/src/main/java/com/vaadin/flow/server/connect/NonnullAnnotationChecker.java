@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
 
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 
-public final class Annotation {
+public final class NonnullAnnotationChecker {
     public static boolean isElementRequired(AnnotatedElement element) {
         return element.isAnnotationPresent(Nonnull.class);
     }

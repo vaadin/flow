@@ -16,9 +16,7 @@
 
 package com.vaadin.flow.server.connect.generator.endpoints;
 
-import javax.annotation.Nonnull;
 import javax.annotation.security.DenyAll;
-import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -80,6 +78,7 @@ import org.junit.Assert;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.connect.EndpointExposed;
+import com.vaadin.flow.server.connect.NonnullAnnotationChecker;
 import com.vaadin.flow.server.connect.auth.CsrfChecker;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.server.connect.generator.OpenApiObjectGenerator;
@@ -352,8 +351,7 @@ public abstract class AbstractEndpointGenerationTest
             assertSchema(stringSchemaEntry.getValue(), parameterTypes[index],
                     parameterTypeArguments.get(index));
             List requiredList = requestSchema.getRequired();
-            if (parameters[index].isAnnotationPresent(NotNull.class)
-                    || parameters[index].isAnnotationPresent(Nonnull.class)) {
+            if (NonnullAnnotationChecker.isElementRequired(parameters[index])) {
                 assertTrue(requiredList.contains(stringSchemaEntry.getKey()));
             } else {
                 boolean notRequired = requiredList == null
@@ -510,8 +508,8 @@ public abstract class AbstractEndpointGenerationTest
             Type type = expectedSchemaField.getGenericType();
             assertSchema(propertySchema, expectedSchemaField.getType(),
                     extractTypeArguments(type, typeArguments));
-            if (expectedSchemaField.isAnnotationPresent(NotNull.class)
-                    || expectedSchemaField.isAnnotationPresent(Nonnull.class)) {
+            if (NonnullAnnotationChecker
+                    .isElementRequired(expectedSchemaField)) {
                 assertTrue(schema.getRequired()
                         .contains(expectedSchemaField.getName()));
             } else {

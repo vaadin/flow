@@ -469,6 +469,7 @@ public class ExplicitNullableTypeCheckerTest {
         public String ignoreProperty;
         public String description;
         transient String transientProperty;
+        @Nonnull
         private String title;
 
         public Bean() {

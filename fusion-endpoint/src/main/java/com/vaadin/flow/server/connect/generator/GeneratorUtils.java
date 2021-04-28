@@ -116,5 +116,4 @@ final class GeneratorUtils {
         }
         return false;
     }
-
 }
