@@ -6,7 +6,7 @@ import javax.annotation.security.RolesAllowed;
 
 public class AccessControlTestClasses {
 
-    public static class NoAnnotationEndpoint {
+    public static class NoAnnotationClass {
 
         public void noAnnotation() {
 
@@ -44,7 +44,7 @@ public class AccessControlTestClasses {
     }
 
     @AnonymousAllowed
-    public static class AnonymousAllowedEndpoint {
+    public static class AnonymousAllowedClass {
 
         public void noAnnotation() {
 
@@ -82,7 +82,7 @@ public class AccessControlTestClasses {
     }
 
     @PermitAll
-    public static class PermitAllEndpoint {
+    public static class PermitAllClass {
 
         public void noAnnotation() {
 
@@ -120,7 +120,7 @@ public class AccessControlTestClasses {
     }
 
     @DenyAll
-    public static class DenyAllEndpoint {
+    public static class DenyAllClass {
 
         public void noAnnotation() {
 
@@ -158,7 +158,7 @@ public class AccessControlTestClasses {
     }
 
     @RolesAllowed("user")
-    public static class RolesAllowedUserEndpoint {
+    public static class RolesAllowedUserClass {
 
         public void noAnnotation() {
 
@@ -196,7 +196,7 @@ public class AccessControlTestClasses {
     }
 
     @RolesAllowed("admin")
-    public static class RolesAllowedAdminEndpoint {
+    public static class RolesAllowedAdminClass {
 
         public void noAnnotation() {
 
