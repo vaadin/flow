@@ -85,7 +85,7 @@ public final class DataViewUtils {
      *            items type
      */
     public static <T> void setComponentFilter(Component component,
-                                              SerializablePredicate<T> filter) {
+            SerializablePredicate<T> filter) {
         ComponentUtil.setData(component, COMPONENT_IN_MEMORY_FILTER_KEY,
                 filter);
     }
@@ -104,7 +104,7 @@ public final class DataViewUtils {
      *            items type
      */
     public static <T> void setComponentSortComparator(Component component,
-                                                      SerializableComparator<T> sortComparator) {
+            SerializableComparator<T> sortComparator) {
         ComponentUtil.setData(component, COMPONENT_IN_MEMORY_SORTING_KEY,
                 sortComparator);
     }

@@ -42,7 +42,8 @@ public class CssLoadingView extends Div {
         UI.getCurrent().getPage().addStyleSheet("/styles/page-stylesheet.css",
                 LoadMode.INLINE);
 
-        Paragraph p1 = new Paragraph("Having @CssImport and Page.addStylesheet()");
+        Paragraph p1 = new Paragraph(
+                "Having @CssImport and Page.addStylesheet()");
         p1.setId("p1");
         p1.addClassNames("css-import", "page-add-stylesheet");
 
@@ -54,7 +55,8 @@ public class CssLoadingView extends Div {
         Paragraph p3 = new Paragraph(
                 "Having App Theme, @CssImport, Page.addStylesheet() and @Stylesheet");
         p3.setId("p3");
-        p3.addClassNames("css-import", "page-add-stylesheet", "stylesheet", "global");
+        p3.addClassNames("css-import", "page-add-stylesheet", "stylesheet",
+                "global");
 
         add(p1, p2, p3);
         setId("styled-components");

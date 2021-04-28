@@ -62,7 +62,8 @@ public class FrontendUtilsTest {
 
     static {
         try {
-            CACHE_KEY = Class.forName("com.vaadin.flow.server.frontend.FrontendUtils$Stats");
+            CACHE_KEY = Class.forName(
+                    "com.vaadin.flow.server.frontend.FrontendUtils$Stats");
         } catch (ClassNotFoundException e) {
             Assert.fail("Could not access cache key for stats.json!");
         }
@@ -289,11 +290,11 @@ public class FrontendUtilsTest {
 
     @Test
     public void parseManifestJson_returnsValidPaths() {
-        String manifestJson = "{\"index.html\": \"index.html\", \"sw.js\": " +
-                "\"sw.js\", \"favicon.ico\": \"favicon.ico\", \"index.ts\": " +
-                "\"VAADIN/build/vaadin-bundle-index.js\"}";
-        List<String> manifestPaths =
-                FrontendUtils.parseManifestPaths(manifestJson);
+        String manifestJson = "{\"index.html\": \"index.html\", \"sw.js\": "
+                + "\"sw.js\", \"favicon.ico\": \"favicon.ico\", \"index.ts\": "
+                + "\"VAADIN/build/vaadin-bundle-index.js\"}";
+        List<String> manifestPaths = FrontendUtils
+                .parseManifestPaths(manifestJson);
         Assert.assertTrue("Should list bundle path",
                 manifestPaths.contains("/VAADIN/build/vaadin-bundle-index.js"));
         Assert.assertTrue("Should list /sw.js",
@@ -334,41 +335,41 @@ public class FrontendUtilsTest {
 
     @Test
     public void getStatsContent_getStatsFromClassPath_populatesStatsCache()
-      throws IOException, ServiceException {
+            throws IOException, ServiceException {
         VaadinService service = setupStatsAssetMocks("ValidStats.json");
 
         assertNull("Stats cache should not be present",
-          service.getContext().getAttribute(CACHE_KEY));
+                service.getContext().getAttribute(CACHE_KEY));
 
         // Populates cache
         FrontendUtils.getStatsContent(service);
 
         assertNotNull("Stats cache should be created",
-          service.getContext().getAttribute(CACHE_KEY));
+                service.getContext().getAttribute(CACHE_KEY));
     }
 
     @Test
     public void getStatsAssetsByChunkName_getStatsFromClassPath_populatesStatsCache()
-      throws IOException, ServiceException {
+            throws IOException, ServiceException {
         VaadinService service = setupStatsAssetMocks("ValidStats.json");
 
         assertNull("Stats cache should not be present",
-          service.getContext().getAttribute(CACHE_KEY));
+                service.getContext().getAttribute(CACHE_KEY));
 
         // Populates cache
         FrontendUtils.getStatsAssetsByChunkName(service);
 
         assertNotNull("Stats cache should be created",
-          service.getContext().getAttribute(CACHE_KEY));
+                service.getContext().getAttribute(CACHE_KEY));
     }
 
     @Test
     public void clearCachedStatsContent_clearsCache()
-      throws IOException, ServiceException {
+            throws IOException, ServiceException {
         VaadinService service = setupStatsAssetMocks("ValidStats.json");
 
         assertNull("Stats cache should not be present",
-          service.getContext().getAttribute(CACHE_KEY));
+                service.getContext().getAttribute(CACHE_KEY));
         // Can be invoked without cache - throws no exception
         FrontendUtils.clearCachedStatsContent(service);
 
@@ -379,7 +380,7 @@ public class FrontendUtilsTest {
         FrontendUtils.clearCachedStatsContent(service);
 
         assertNull("Stats cache should not be present",
-          service.getContext().getAttribute(CACHE_KEY));
+                service.getContext().getAttribute(CACHE_KEY));
     }
 
     private ResourceProvider mockResourceProvider(VaadinService service) {

@@ -93,5 +93,5 @@ public class BasicTextElementStateProvider
 
     protected Object readResolve() throws ObjectStreamException {
         return INSTANCE;
-    }    
+    }
 }

@@ -29,7 +29,8 @@ public class HelloWorldView extends Span {
 
     public HelloWorldView() {
         setId("hello-world-view");
-        NativeButton toAbout = new NativeButton("Say hello", e -> getUI().get().navigate("about"));
+        NativeButton toAbout = new NativeButton("Say hello",
+                e -> getUI().get().navigate("about"));
         toAbout.setId(NAVIGATE_ABOUT);
         add(toAbout);
     }

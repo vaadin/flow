@@ -128,9 +128,11 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Download node.js from this URL. Handy in heavily firewalled corporate
          * environments where the node.js download can be provided from an
-         * intranet mirror. Defaults to {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
+         * intranet mirror. Defaults to
+         * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
          */
-        private URI nodeDownloadRoot = URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
+        private URI nodeDownloadRoot = URI
+                .create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
 
         private Lookup lookup;
 
@@ -157,11 +159,9 @@ public class NodeTasks implements FallibleCommand {
          * @param generatedPath
          *            folder where flow generated files will be placed.
          */
-        public Builder(Lookup lookup, File npmFolder,
-                File generatedPath) {
-            this(lookup, npmFolder, generatedPath,
-                    new File(npmFolder, System.getProperty(PARAM_FRONTEND_DIR,
-                            DEFAULT_FRONTEND_DIR)));
+        public Builder(Lookup lookup, File npmFolder, File generatedPath) {
+            this(lookup, npmFolder, generatedPath, new File(npmFolder, System
+                    .getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR)));
         }
 
         /**
@@ -176,8 +176,8 @@ public class NodeTasks implements FallibleCommand {
          * @param frontendDirectory
          *            a directory with project's frontend files
          */
-        public Builder(Lookup lookup, File npmFolder,
-                File generatedPath, File frontendDirectory) {
+        public Builder(Lookup lookup, File npmFolder, File generatedPath,
+                File frontendDirectory) {
             this.lookup = lookup;
             this.classFinder = lookup.lookup(ClassFinder.class);
             this.npmFolder = npmFolder;
@@ -498,7 +498,8 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Sets the download node.js URL. Handy in heavily firewalled corporate
          * environments where the node.js download can be provided from an
-         * intranet mirror. Defaults to {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
+         * intranet mirror. Defaults to
+         * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
          *
          * @param nodeDownloadRoot
          *            the new download URL to set, not null.
@@ -514,25 +515,17 @@ public class NodeTasks implements FallibleCommand {
 
     // This list keeps the tasks in order so that they are executed
     // without depending on when they are added.
-    private static final List<Class<? extends FallibleCommand>> commandOrder = Collections.unmodifiableList(Arrays.asList(
-        TaskGeneratePackageJson.class,
-        TaskGenerateIndexHtml.class,
-        TaskGenerateIndexTs.class,
-        TaskGenerateTsConfig.class,
-        TaskGenerateTsDefinitions.class,
-        TaskGenerateServiceWorker.class,
-        TaskGenerateOpenApi.class,
-        TaskGenerateConnect.class,
-        TaskGenerateBootstrap.class,
-        TaskUpdatePackages.class,
-        TaskRunNpmInstall.class,
-        TaskInstallWebpackPlugins.class,
-        TaskCopyFrontendFiles.class,
-        TaskCopyLocalFrontendFiles.class,
-        TaskUpdateWebpack.class,
-        TaskUpdateImports.class,
-        TaskUpdateThemeImport.class
-    ));
+    private static final List<Class<? extends FallibleCommand>> commandOrder = Collections
+            .unmodifiableList(Arrays.asList(TaskGeneratePackageJson.class,
+                    TaskGenerateIndexHtml.class, TaskGenerateIndexTs.class,
+                    TaskGenerateTsConfig.class, TaskGenerateTsDefinitions.class,
+                    TaskGenerateServiceWorker.class, TaskGenerateOpenApi.class,
+                    TaskGenerateConnect.class, TaskGenerateBootstrap.class,
+                    TaskUpdatePackages.class, TaskRunNpmInstall.class,
+                    TaskInstallWebpackPlugins.class,
+                    TaskCopyFrontendFiles.class,
+                    TaskCopyLocalFrontendFiles.class, TaskUpdateWebpack.class,
+                    TaskUpdateImports.class, TaskUpdateThemeImport.class));
 
     private NodeTasks(Builder builder) {
 
@@ -552,25 +545,27 @@ public class NodeTasks implements FallibleCommand {
             if (builder.generateEmbeddableWebComponents) {
                 FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
                         classFinder);
-                generator.generateWebComponents(builder.generatedFolder, frontendDependencies.getThemeDefinition());
+                generator.generateWebComponents(builder.generatedFolder,
+                        frontendDependencies.getThemeDefinition());
             }
 
             TaskUpdatePackages packageUpdater = null;
-            if (builder.enablePackagesUpdate && builder.flowResourcesFolder != null) {
+            if (builder.enablePackagesUpdate
+                    && builder.flowResourcesFolder != null) {
                 packageUpdater = new TaskUpdatePackages(classFinder,
-                    frontendDependencies, builder.npmFolder,
-                    builder.generatedFolder, builder.flowResourcesFolder,
-                    builder.cleanNpmFiles, builder.enablePnpm);
+                        frontendDependencies, builder.npmFolder,
+                        builder.generatedFolder, builder.flowResourcesFolder,
+                        builder.cleanNpmFiles, builder.enablePnpm);
                 commands.add(packageUpdater);
 
             }
             if (packageUpdater != null && builder.runNpmInstall) {
                 commands.add(new TaskRunNpmInstall(classFinder, packageUpdater,
-                    builder.enablePnpm, builder.requireHomeNodeExec,
-                    builder.nodeVersion, builder.nodeDownloadRoot));
+                        builder.enablePnpm, builder.requireHomeNodeExec,
+                        builder.nodeVersion, builder.nodeDownloadRoot));
 
                 commands.add(new TaskInstallWebpackPlugins(
-                    new File(builder.npmFolder, NODE_MODULES)));
+                        new File(builder.npmFolder, NODE_MODULES)));
             }
 
         }
@@ -591,7 +586,8 @@ public class NodeTasks implements FallibleCommand {
                 addConnectServicesTasks(builder);
             }
 
-            commands.add(new TaskGenerateBootstrap(frontendDependencies, builder.frontendDirectory));
+            commands.add(new TaskGenerateBootstrap(frontendDependencies,
+                    builder.frontendDirectory));
         }
 
         if (builder.jarFiles != null && builder.flowResourcesFolder != null) {
@@ -599,10 +595,10 @@ public class NodeTasks implements FallibleCommand {
                     builder.jarFiles));
         }
 
-        if (builder.localResourcesFolder != null && builder.flowResourcesFolder != null) {
-            commands.add(
-                new TaskCopyLocalFrontendFiles(builder.flowResourcesFolder,
-                    builder.localResourcesFolder));
+        if (builder.localResourcesFolder != null
+                && builder.flowResourcesFolder != null) {
+            commands.add(new TaskCopyLocalFrontendFiles(
+                    builder.flowResourcesFolder, builder.localResourcesFolder));
         }
 
         if (enableWebpackConfigUpdate) {
@@ -627,12 +623,14 @@ public class NodeTasks implements FallibleCommand {
                             builder.tokenFileData, builder.enablePnpm));
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
-                frontendDependencies.getThemeDefinition(),
-                builder.frontendDirectory, builder.connectClientTsApiFolder));
+                    frontendDependencies.getThemeDefinition(),
+                    builder.frontendDirectory,
+                    builder.connectClientTsApiFolder));
         }
     }
 
-    private void addBootstrapTasks(Builder builder, FrontendDependenciesScanner frontendDependencies) {
+    private void addBootstrapTasks(Builder builder,
+            FrontendDependenciesScanner frontendDependencies) {
         File outputDirectory = new File(builder.npmFolder,
                 FrontendUtils.TARGET);
         TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
@@ -653,27 +651,36 @@ public class NodeTasks implements FallibleCommand {
         commands.add(taskGenerateTsDefinitions);
 
         if (frontendDependencies != null) {
-            PwaConfiguration pwaConfiguration = frontendDependencies.getPwaConfiguration();
+            PwaConfiguration pwaConfiguration = frontendDependencies
+                    .getPwaConfiguration();
             if (pwaConfiguration.isEnabled()) {
-                commands.add(new TaskGenerateServiceWorker(builder.frontendDirectory, outputDirectory));
+                commands.add(new TaskGenerateServiceWorker(
+                        builder.frontendDirectory, outputDirectory));
             }
         }
     }
 
     private void addConnectServicesTasks(Builder builder) {
         Lookup lookup = builder.lookup;
-        EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup.lookup(EndpointGeneratorTaskFactory.class);
+        EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
+                .lookup(EndpointGeneratorTaskFactory.class);
 
         if (endpointGeneratorTaskFactory != null) {
-            TaskGenerateOpenApi taskGenerateOpenApi = endpointGeneratorTaskFactory.createTaskGenerateOpenApi(
-                    builder.connectApplicationProperties, builder.connectJavaSourceFolder,
-                    builder.classFinder.getClassLoader(), builder.connectGeneratedOpenApiFile);
+            TaskGenerateOpenApi taskGenerateOpenApi = endpointGeneratorTaskFactory
+                    .createTaskGenerateOpenApi(
+                            builder.connectApplicationProperties,
+                            builder.connectJavaSourceFolder,
+                            builder.classFinder.getClassLoader(),
+                            builder.connectGeneratedOpenApiFile);
             commands.add(taskGenerateOpenApi);
 
             if (builder.connectClientTsApiFolder != null) {
-                TaskGenerateConnect taskGenerateConnectTs = endpointGeneratorTaskFactory.createTaskGenerateConnect(
-                        builder.connectApplicationProperties, builder.connectGeneratedOpenApiFile,
-                        builder.connectClientTsApiFolder, builder.frontendDirectory);
+                TaskGenerateConnect taskGenerateConnectTs = endpointGeneratorTaskFactory
+                        .createTaskGenerateConnect(
+                                builder.connectApplicationProperties,
+                                builder.connectGeneratedOpenApiFile,
+                                builder.connectClientTsApiFolder,
+                                builder.frontendDirectory);
                 commands.add(taskGenerateConnectTs);
             }
         }
@@ -702,7 +709,8 @@ public class NodeTasks implements FallibleCommand {
     /**
      * Sort command list so we always execute commands in a pre-defined order.
      *
-     * @param commandList list of FallibleCommands to sort
+     * @param commandList
+     *            list of FallibleCommands to sort
      */
     private void sortCommands(List<FallibleCommand> commandList) {
         commandList.sort((c1, c2) -> {
@@ -717,13 +725,16 @@ public class NodeTasks implements FallibleCommand {
 
     /**
      * Find index of command for which it is assignable to.
-     * @param command command to find execution index for
+     * 
+     * @param command
+     *            command to find execution index for
      * @return index of command or -1 if not available
      */
     private int getIndex(FallibleCommand command) {
         return IntStream.range(0, commandOrder.size())
                 .filter(i -> commandOrder.get(i)
-                        .isAssignableFrom(command.getClass())).findFirst()
+                        .isAssignableFrom(command.getClass()))
+                .findFirst()
                 .orElseThrow(() -> new UnknownTaskException(command));
     }
 }

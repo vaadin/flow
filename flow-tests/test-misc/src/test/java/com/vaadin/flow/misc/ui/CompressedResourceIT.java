@@ -15,17 +15,19 @@ public class CompressedResourceIT extends AbstractParallelTestBenchTest {
     @Test
     public void compressedResourcesAreServedCompressed() throws IOException {
         URL textFileUrl = new URL(getRootURL() + "/textfile.txt");
-        HttpURLConnection connection = (HttpURLConnection) textFileUrl.openConnection();
+        HttpURLConnection connection = (HttpURLConnection) textFileUrl
+                .openConnection();
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Accept-Encoding", "gzip");
 
         int status = connection.getResponseCode();
         Assert.assertEquals(200, status);
-        Assert.assertEquals("gzip", connection.getHeaderField("Content-Encoding"));
+        Assert.assertEquals("gzip",
+                connection.getHeaderField("Content-Encoding"));
 
         byte[] bytes = new byte[1024];
-        int count = new GZIPInputStream(connection.getInputStream())
-                .read(bytes, 0, bytes.length);
+        int count = new GZIPInputStream(connection.getInputStream()).read(bytes,
+                0, bytes.length);
         String content = new String(bytes, 0, count, StandardCharsets.UTF_8);
         Assert.assertEquals("Text file contents.\n", content);
     }

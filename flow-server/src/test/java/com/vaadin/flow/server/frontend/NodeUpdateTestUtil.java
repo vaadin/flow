@@ -109,7 +109,8 @@ public class NodeUpdateTestUtil {
     // for a while and output arguments passed to a file, so as tests can check
     // it
     public static void createStubWebpackServer(String readyString,
-            int milliSecondsToRun, String baseDir, boolean enableListening) throws IOException {
+            int milliSecondsToRun, String baseDir, boolean enableListening)
+            throws IOException {
         File serverFile = new File(baseDir, WEBPACK_SERVER);
         FileUtils.forceMkdirParent(serverFile);
 
@@ -125,17 +126,21 @@ public class NodeUpdateTestUtil {
                 .append("', args);\n");
         if (enableListening) {
             sb.append("const port = Number.parseInt(process.argv[")
-                    .append("process.argv.indexOf('--port') + 1").append("]);\n");
+                    .append("process.argv.indexOf('--port') + 1")
+                    .append("]);\n");
             sb.append("const server = new http.Server((req, res) => {\n");
             sb.append("  res.writeHead(200, {")
-                    .append("'Content-Type': 'application/json',").append("});\n");
+                    .append("'Content-Type': 'application/json',")
+                    .append("});\n");
             sb.append("  res.write('{}');\n");
             sb.append("  res.end();\n");
             sb.append("});\n");
             sb.append("server.listen(port);\n");
-            sb.append("setTimeout(() => server.close(), ").append(milliSecondsToRun).append(");\n");
+            sb.append("setTimeout(() => server.close(), ")
+                    .append(milliSecondsToRun).append(");\n");
         } else {
-            sb.append("setTimeout(() => {}, ").append(milliSecondsToRun).append(");\n");
+            sb.append("setTimeout(() => {}, ").append(milliSecondsToRun)
+                    .append(");\n");
         }
         sb.append("console.log(args);\n");
         sb.append("console.log('[wps]: ").append(readyString).append(".');\n");

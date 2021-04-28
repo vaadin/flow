@@ -63,8 +63,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURC
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
- * This goal checks that node and npm tools are installed and creates
- * or updates `package.json` and `webpack.config.json` files.
+ * This goal checks that node and npm tools are installed and creates or updates
+ * `package.json` and `webpack.config.json` files.
  * <p>
  * Copies frontend resources available inside `.jar` dependencies to
  * `node_modules` when building a jar package.
@@ -89,11 +89,13 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         try {
             nodeDownloadRootURI = new URI(nodeDownloadRoot);
         } catch (URISyntaxException e) {
-            throw new MojoExecutionException("Failed to parse " + nodeDownloadRoot, e);
+            throw new MojoExecutionException(
+                    "Failed to parse " + nodeDownloadRoot, e);
         }
         try {
             FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
-                    () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
+                    () -> FrontendUtils.getVaadinHomeDirectory()
+                            .getAbsolutePath(),
                     nodeVersion, nodeDownloadRootURI);
             tools.validateNodeAndNpmVersion();
         } catch (IllegalStateException exception) {
@@ -110,16 +112,14 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
             File flowResourcesFolder = new File(npmFolder,
                     DEFAULT_FLOW_RESOURCES_FOLDER);
             ClassFinder classFinder = getClassFinder(project);
-            Lookup lookup= createLookup(classFinder);
-            NodeTasks.Builder builder = new NodeTasks.Builder(
-                    lookup, npmFolder, generatedFolder,
-                    frontendDirectory)
+            Lookup lookup = createLookup(classFinder);
+            NodeTasks.Builder builder = new NodeTasks.Builder(lookup, npmFolder,
+                    generatedFolder, frontendDirectory)
                             .useV14Bootstrap(useDeprecatedV14Bootstrapping())
                             .withFlowResourcesFolder(flowResourcesFolder)
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
-                            .enablePackagesUpdate(false)
-                            .runNpmInstall(false)
+                            .enablePackagesUpdate(false).runNpmInstall(false)
                             .withNodeVersion(nodeVersion)
                             .withNodeDownloadRoot(nodeDownloadRootURI)
                             .withHomeNodeExecRequired(requireHomeNodeExec);

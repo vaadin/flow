@@ -121,9 +121,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     private boolean optimizeBundle;
 
     /**
-     * Copy the `webpack.config.js` from the specified URL if missing. Default is
-     * the template provided by this plugin. Set it to empty string to disable
-     * the feature.
+     * Copy the `webpack.config.js` from the specified URL if missing. Default
+     * is the template provided by this plugin. Set it to empty string to
+     * disable the feature.
      */
     @Parameter(defaultValue = FrontendUtils.WEBPACK_CONFIG)
     private String webpackTemplate;
@@ -162,7 +162,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         getLog().info("update-frontend took " + ms + "ms.");
     }
 
-    private void runNodeUpdater() throws ExecutionFailedException, MojoExecutionException {
+    private void runNodeUpdater()
+            throws ExecutionFailedException, MojoExecutionException {
         Set<File> jarFiles = project.getArtifacts().stream()
                 .filter(artifact -> "jar".equals(artifact.getType()))
                 .map(Artifact::getFile).collect(Collectors.toSet());
@@ -173,11 +174,12 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         try {
             nodeDownloadRootURI = new URI(nodeDownloadRoot);
         } catch (URISyntaxException e) {
-            throw new MojoExecutionException("Failed to parse " + nodeDownloadRoot, e);
+            throw new MojoExecutionException(
+                    "Failed to parse " + nodeDownloadRoot, e);
         }
-        
+
         ClassFinder classFinder = getClassFinder(project);
-        Lookup lookup= createLookup(classFinder);
+        Lookup lookup = createLookup(classFinder);
         // @formatter:off
         new NodeTasks.Builder(lookup,
                 npmFolder, generatedFolder, frontendDirectory)

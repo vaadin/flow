@@ -39,7 +39,9 @@ public class Select extends AbstractSinglePropertyField<Select, String> {
      */
     public Select() {
         super(VALUE_PROPERTY, "", false);
-        getElement().addPropertyChangeListener(VALUE_PROPERTY, "change", event -> {});
+        getElement().addPropertyChangeListener(VALUE_PROPERTY, "change",
+                event -> {
+                });
     }
 
     public void addItem(Object item, String name) {
@@ -50,7 +52,7 @@ public class Select extends AbstractSinglePropertyField<Select, String> {
 
     public Optional<Object> getItem() {
         Optional<Option> selectedValue = getSelectedValue();
-        if(selectedValue.isPresent()) {
+        if (selectedValue.isPresent()) {
             return Optional.of(items.get(selectedValue.get()));
         }
 
@@ -61,7 +63,7 @@ public class Select extends AbstractSinglePropertyField<Select, String> {
      * Adds an option to this select.
      *
      * @param option
-     *         A not <code>null</code> Option
+     *            A not <code>null</code> Option
      */
     private void addOption(Option option) {
         if (option != null) {

@@ -175,8 +175,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         // closing
         // Notify the service
         if (service == null) {
-            getLogger()
-                    .warn("A VaadinSession instance not associated to any service is getting unbound. "
+            getLogger().warn(
+                    "A VaadinSession instance not associated to any service is getting unbound. "
                             + "Session destroy events will not be fired and UIs in the session will not get detached. "
                             + "This might happen if a session is deserialized but never used before it expires.");
         } else if (VaadinService.getCurrentRequest() != null
@@ -215,7 +215,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Set the web browser associated with this session.
      *
-     * @param browser the web browser object
+     * @param browser
+     *            the web browser object
      */
     public void setBrowser(WebBrowser browser) {
         checkHasLock();
