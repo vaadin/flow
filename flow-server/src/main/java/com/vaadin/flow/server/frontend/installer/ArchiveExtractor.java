@@ -21,6 +21,8 @@ import java.io.File;
  * Handle extracting file archives.
  * <p>
  * Derived from eirslett/frontend-maven-plugin
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since
  */

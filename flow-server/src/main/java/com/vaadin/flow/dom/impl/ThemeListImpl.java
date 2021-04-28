@@ -32,6 +32,8 @@ import com.vaadin.flow.dom.ThemeList;
  * of the corresponding element. Makes sure that each change to the collection
  * is reflected in the corresponding element attribute name,
  * {@link ThemeListImpl#THEME_ATTRIBUTE_NAME}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @author Vaadin Ltd
  * @since 1.0.

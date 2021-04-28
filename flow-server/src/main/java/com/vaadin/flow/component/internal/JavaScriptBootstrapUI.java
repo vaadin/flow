@@ -46,6 +46,9 @@ import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 /**
  * Custom UI for {@link JavaScriptBootstrapHandler}. This class is intended for
  * internal use in client side bootstrapping.
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class JavaScriptBootstrapUI extends UI {
     public static final String SERVER_ROUTING = "clientRoutingMode";

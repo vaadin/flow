@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.communication;
 
+import javax.servlet.http.HttpServletRequest;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -59,6 +61,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Bootstrap handler for WebComponent requests.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
  * @since 2.0

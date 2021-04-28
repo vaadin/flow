@@ -30,6 +30,8 @@ import com.vaadin.flow.internal.StateNode;
  * <p>
  * The data is going to be destroyed once the response from the client side is
  * received.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

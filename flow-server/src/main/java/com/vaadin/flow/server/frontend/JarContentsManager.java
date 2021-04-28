@@ -36,6 +36,8 @@ import org.apache.commons.io.IOUtils;
 
 /**
  * Shared code for managing contents of jar files.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0.

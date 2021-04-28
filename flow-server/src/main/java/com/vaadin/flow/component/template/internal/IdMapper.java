@@ -32,6 +32,8 @@ import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 
 /**
  * Creates or maps Element instances to fields mapped using {@link Id @Id}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since
  */

@@ -46,6 +46,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 
@@ -54,6 +55,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
  * or when flow-maven-plugin goals are run in order to update Flow imports file
  * and <code>node_module/@vaadin/flow-frontend</code> contents by visiting all
  * classes with {@link JsModule} and {@link Theme} annotations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */

@@ -36,6 +36,8 @@ import com.vaadin.flow.shared.util.UniqueSerializable;
 
 /**
  * A state node feature that structures data as a map.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

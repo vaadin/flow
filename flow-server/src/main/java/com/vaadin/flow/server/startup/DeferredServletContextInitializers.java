@@ -30,6 +30,8 @@ import com.vaadin.flow.server.VaadinContext;
  * requires a {@link Lookup} instance which will be set in the
  * {@link VaadinContext} ({@link ServletContext}) only when
  * {@link LookupServletContainerInitializer} completed.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @author Vaadin Ltd
  * @since

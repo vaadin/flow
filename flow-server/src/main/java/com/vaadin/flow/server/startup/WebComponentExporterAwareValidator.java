@@ -32,6 +32,8 @@ import com.vaadin.flow.server.VaadinContext;
  * Checks that specific annotations are not configured wrong.
  * <p>
  * The validation is run during servlet container initialization.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
  * @since 2.0

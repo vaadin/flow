@@ -31,12 +31,15 @@ import org.slf4j.LoggerFactory;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Utility class for Flow Webpack plugins.
  *
  * Unifies getting the list of available plugins.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 class WebpackPluginsUtil {
 

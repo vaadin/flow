@@ -47,6 +47,8 @@ import elemental.json.JsonArray;
 /**
  * Template data analyzer which produces immutable data required for template
  * initializer using provided template class and a parser.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

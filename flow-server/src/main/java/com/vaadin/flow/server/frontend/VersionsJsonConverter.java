@@ -25,6 +25,8 @@ import elemental.json.JsonValue;
  * <p>
  * The result contains all framework dependencies as keys and their versions as
  * value.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  */

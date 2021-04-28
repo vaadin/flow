@@ -33,6 +33,8 @@ import com.vaadin.flow.shared.Registration;
  * Encapsulates all the logic required for a typical field implementation. This
  * reduces the risk of implementing logic changes in {@link AbstractField} but
  * not in {@link AbstractCompositeField}, or vice versa.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
