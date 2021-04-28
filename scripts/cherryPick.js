@@ -45,7 +45,7 @@ async function getAllCommits(){
     
     res = await axios.get(url, options);
     data = res.data;
-    data = data.filter(da => da.labels.length > 0);
+    data = data.filter(da => da.labels.length > 0 && da.merged_at !== null);
     
     if (data.length === 0) {
       console.log("No commits needs to be picked.");
@@ -106,12 +106,12 @@ async function cherryPickCommits(){
     try{
       let {stdout, stderr} = await exec(`git cherry-pick ${arrSHA[i]}`);
     } catch (err) {
-      await exec(`git cherry-pick --abort`);
       console.error(`Cannot Pick the Commit:${arrSHA[i]} to ${arrBranch[i]}, error :${err}`);
+      await labelCommit(arrURL[i], `need to pick manually ${arrBranch[i]}`);
+      await postComment(arrURL[i], arrUser[i], arrBranch[i], err);
+      await exec(`git cherry-pick --abort`);
       await exec(`git checkout master`);
       await exec(`git branch -D ${branchName}`);
-      await labelCommit(arrURL[i], `need to pick manually ${arrBranch[i]}`);
-      await postComment(arrURL[i], arrUser[i], arrBranch[i]);
       continue;
     }
     await exec(`git push origin HEAD:${branchName}`);
@@ -135,7 +135,7 @@ async function labelCommit(url, label){
   await axios.post(issueURL, {"labels":[label]}, options);
 }
 
-async function postComment(url, userName, branch){
+async function postComment(url, userName, branch, message){
   let issueURL = url.replace("pulls", "issues") + "/comments";
   const options = {
     headers:{
@@ -144,7 +144,7 @@ async function postComment(url, userName, branch){
     }
   };
 
-  await axios.post(issueURL, {"body":`Hi ${userName} , this commit cannot be picked to ${branch} by this bot, can you take a look and pick it manually?`}, options);
+  await axios.post(issueURL, {"body":`Hi ${userName} , this commit cannot be picked to ${branch} by this bot, can you take a look and pick it manually?\n Error Message: ${message}`}, options);
 }
 
 

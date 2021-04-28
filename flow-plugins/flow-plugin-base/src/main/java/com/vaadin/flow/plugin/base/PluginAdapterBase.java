@@ -98,13 +98,13 @@ public interface PluginAdapterBase {
      * @return {@link Set} of {@link File}
      */
     Set<File> getJarFiles();
-    
+
     /**
      * Indicates that it is a Jar Project.
      *
      * @return boolean - indicates that it is a Jar Project
      */
-   boolean isJarProject();
+    boolean isJarProject();
 
     /**
      * Whether or not we are running in legacy V14 bootstrap mode. True if
@@ -184,8 +184,10 @@ public interface PluginAdapterBase {
     /**
      * Delegates a error-Message to a logger.
      *
-     * @param warning to be logged.
-     * @param e to be logged.
+     * @param warning
+     *            to be logged.
+     * @param e
+     *            to be logged.
      */
     void logError(CharSequence warning, Throwable e);
 
@@ -198,7 +200,8 @@ public interface PluginAdapterBase {
      * Example: <code>"https://nodejs.org/dist/"</code>.
      *
      * @return nodeDownloadRoot
-     * @throws URISyntaxException - Could not build an URI from nodeDownloadRoot().
+     * @throws URISyntaxException
+     *             - Could not build an URI from nodeDownloadRoot().
      */
     URI nodeDownloadRoot() throws URISyntaxException;
 
@@ -274,5 +277,10 @@ public interface PluginAdapterBase {
      */
     File webpackOutputDirectory();
 
-
+    /**
+     * The folder where everything is built into.
+     *
+     * @return build folder
+     */
+    String buildFolder();
 }

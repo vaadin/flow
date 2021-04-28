@@ -11,6 +11,7 @@ const { InjectManifest } = require('workbox-webpack-plugin');
 const { DefinePlugin } = require('webpack');
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 // Flow plugins
 const StatsPlugin = require('@vaadin/stats-plugin');
@@ -67,6 +68,8 @@ const themeProjectFolders = projectStaticAssetsFolders.map((folder) =>
   path.resolve(folder, 'themes')
 );
 
+const tsconfigJsonFile = path.resolve(__dirname, 'tsconfig.json');
+const enableTypeScript = fs.existsSync(tsconfigJsonFile);
 
 // Target flow-fronted auto generated to be the actual target folder
 const flowFrontendFolder = '[to-be-generated-by-flow]';
@@ -126,50 +129,57 @@ let appShellManifestEntry = undefined;
 const swManifestTransform = (manifestEntries) => {
   const warnings = [];
   const manifest = manifestEntries;
-
-  // `index.html` is a special case: in contrast with the JS bundles produced by webpack
-  // it's not served as-is directly from the webpack output at `/index.html`.
-  // It goes through IndexHtmlRequestHandler and is served at `/`.
-  //
-  // TODO: calculate the revision based on the IndexHtmlRequestHandler-processed content
-  // of the index.html file
-  const indexEntryIdx = manifest.findIndex(entry => entry.url === 'index.html');
-  if (indexEntryIdx !== -1) {
-    manifest[indexEntryIdx].url = appShellUrl;
-    appShellManifestEntry = manifest[indexEntryIdx];
-  } else {
-    // Index entry is only emitted on first compilation. Make sure it is cached also for incremental builds
-    manifest.push(appShellManifestEntry);
+  if (useClientSideIndexFileForBootstrapping) {
+    // `index.html` is a special case: in contrast with the JS bundles produced by webpack
+    // it's not served as-is directly from the webpack output at `/index.html`.
+    // It goes through IndexHtmlRequestHandler and is served at `/`.
+    //
+    // TODO: calculate the revision based on the IndexHtmlRequestHandler-processed content
+    // of the index.html file
+    const indexEntryIdx = manifest.findIndex(entry => entry.url === 'index.html');
+    if (indexEntryIdx !== -1) {
+      manifest[indexEntryIdx].url = appShellUrl;
+      appShellManifestEntry = manifest[indexEntryIdx];
+    } else {
+      // Index entry is only emitted on first compilation. Make sure it is cached also for incremental builds
+      manifest.push(appShellManifestEntry);
+    }
   }
-
   return { manifest, warnings };
 };
 
-const serviceWorkerPlugin = new InjectManifest({
-  swSrc: clientServiceWorkerEntryPoint,
-  swDest: serviceWorkerPath,
-  manifestTransforms: [swManifestTransform],
-  maximumFileSizeToCacheInBytes: 100 * 1024 * 1024,
-  dontCacheBustURLsMatching: /.*-[a-z0-9]{20}\.cache\.js/,
-  include: [
-    (chunk) => {
-      return true;
-    },
-  ],
-  webpackCompilationPlugins: [
-    new DefinePlugin({
-      OFFLINE_PATH_ENABLED: offlinePathEnabled,
-      OFFLINE_PATH: JSON.stringify(offlinePath)
-    }),
-  ],
-});
+const createServiceWorkerPlugin = function() {
+  return new InjectManifest({
+    swSrc: clientServiceWorkerEntryPoint,
+    swDest: serviceWorkerPath,
+    manifestTransforms: [swManifestTransform],
+    maximumFileSizeToCacheInBytes: 100 * 1024 * 1024,
+    dontCacheBustURLsMatching: /.*-[a-z0-9]{20}\.cache\.js/,
+    include: [
+      (chunk) => {
+        return true;
+      },
+    ],
+    webpackCompilationPlugins: [
+      new DefinePlugin({
+        OFFLINE_PATH_ENABLED: offlinePathEnabled,
+        OFFLINE_PATH: JSON.stringify(offlinePath)
+      }),
+    ],
+  });
+}
 
 if (devMode) {
   webPackEntries.devmodeGizmo = devmodeGizmoJS;
 }
 
 const flowFrontendThemesFolder = path.resolve(flowFrontendFolder, 'themes');
-const themeName = extractThemeName(flowFrontendThemesFolder);
+let themeName = undefined;
+if (devMode) {
+  // Current theme name is being extracted from theme.js located in frontend
+  // generated folder
+  themeName = extractThemeName(frontendGeneratedFolder);
+}
 const themeOptions = {
   devMode: devMode,
   // The following matches folder 'target/flow-frontend/themes/'
@@ -205,7 +215,7 @@ module.exports = {
       ...projectStaticAssetsFolders,
     ],
     extensions: [
-      useClientSideIndexFileForBootstrapping && '.ts',
+      enableTypeScript && '.ts',
       '.js'
     ].filter(Boolean),
     alias: {
@@ -236,9 +246,13 @@ module.exports = {
 
   module: {
     rules: [
-      useClientSideIndexFileForBootstrapping && {
+      enableTypeScript && {
         test: /\.ts$/,
-        loader: 'ts-loader'
+        loader: 'ts-loader',
+        options: {
+          transpileOnly: true,
+          experimentalWatchApi: true
+        }
       },
       {
         test: /\.css$/i,
@@ -303,14 +317,15 @@ module.exports = {
 
     new ApplicationThemePlugin(themeOptions),
 
-    devMode && themeName && new ExtraWatchWebpackPlugin({
+    ...(devMode && themeName ? [new ExtraWatchWebpackPlugin({
       files: [],
-      dirs: [path.resolve(__dirname, 'frontend', 'themes', themeName),
-        path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources', 'themes', themeName),
-        path.resolve(__dirname, 'src', 'main', 'resources', 'static', 'themes', themeName)]
-    }),
-
-    devMode && themeName && new ThemeLiveReloadPlugin(themeName, processThemeResourcesCallback),
+      // Watch the components folder for component styles update.
+      // Other folders or CSS files except 'styles.css' should be
+      // referenced from `styles.css` anyway, so no need to watch them.
+      dirs: [path.resolve(__dirname, 'frontend', 'themes', themeName, 'components'),
+        path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources', 'themes', themeName, 'components'),
+        path.resolve(__dirname, 'src', 'main', 'resources', 'static', 'themes', themeName, 'components')]
+    }), new ThemeLiveReloadPlugin(processThemeResourcesCallback)] : []),
 
     new StatsPlugin({
       devMode: devMode,
@@ -330,9 +345,15 @@ module.exports = {
     }),
 
     // Service worker for offline
-    pwaEnabled && serviceWorkerPlugin,
+    pwaEnabled && createServiceWorkerPlugin(),
 
     // Generate compressed bundles when not devMode
     !devMode && new CompressionPlugin(),
+
+    enableTypeScript && new ForkTsCheckerWebpackPlugin({
+      typescript: {
+        configFile: tsconfigJsonFile
+      }
+    }),
   ].filter(Boolean)
 };

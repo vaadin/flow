@@ -76,14 +76,14 @@ public class FrontendDependenciesTest {
         Mockito.when(classFinder.loadClass(FrontendDependencies.LUMO))
                 .thenReturn((Class) FakeLumo.class);
 
-        Mockito
-            .when(classFinder.loadClass(AppShellConfigurator.class.getName()))
-            .thenReturn((Class) AppShellConfigurator.class);
+        Mockito.when(
+                classFinder.loadClass(AppShellConfigurator.class.getName()))
+                .thenReturn((Class) AppShellConfigurator.class);
 
-        Mockito.doAnswer(invocation ->
-            FrontendDependenciesTest.class.getClassLoader()
-                    .getResource(invocation.getArgumentAt(0, String.class))
-        ).when(classFinder).getResource(Mockito.anyString());
+        Mockito.doAnswer(
+                invocation -> FrontendDependenciesTest.class.getClassLoader()
+                        .getResource(invocation.getArgumentAt(0, String.class)))
+                .when(classFinder).getResource(Mockito.anyString());
     }
 
     @Test
@@ -103,14 +103,14 @@ public class FrontendDependenciesTest {
 
     @Test
     public void appShellConfigurator_collectedAsEndpoint()
-        throws ClassNotFoundException {
+            throws ClassNotFoundException {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
-            .thenReturn(Collections.singleton(MyAppShell.class));
+                .thenReturn(Collections.singleton(MyAppShell.class));
         Mockito.when(classFinder.loadClass(FakeLumo.class.getName()))
-            .thenReturn((Class) FakeLumo.class);
+                .thenReturn((Class) FakeLumo.class);
 
         FrontendDependencies dependencies = new FrontendDependencies(
-            classFinder, false);
+                classFinder, false);
 
         Assert.assertEquals(1, dependencies.getEndPoints().size());
 
@@ -119,55 +119,54 @@ public class FrontendDependenciesTest {
 
         ThemeDefinition themeDefinition = dependencies.getThemeDefinition();
         Assert.assertNotNull("ThemeDefinition is not filled", themeDefinition);
-        Assert.assertEquals(FakeLumo.class,
-            themeDefinition.getTheme());
+        Assert.assertEquals(FakeLumo.class, themeDefinition.getTheme());
     }
 
     @Test
     public void themeDefiningClassAndName_throwsException()
-        throws ClassNotFoundException {
+            throws ClassNotFoundException {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
-            .thenReturn(Collections.singleton(FaultyThemeAnnotation.class));
+                .thenReturn(Collections.singleton(FaultyThemeAnnotation.class));
         Mockito.when(classFinder.loadClass(FakeLumo.class.getName()))
-            .thenReturn((Class) FakeLumo.class);
+                .thenReturn((Class) FakeLumo.class);
 
-        IllegalStateException exception = Assert
-            .assertThrows(IllegalStateException.class,
+        IllegalStateException exception = Assert.assertThrows(
+                IllegalStateException.class,
                 () -> new FrontendDependencies(classFinder, false));
 
         Assert.assertEquals("Unexpected message for the thrown exception",
-            "Theme name and theme class can not both be specified. "
-                + "Theme name uses Lumo and can not be used in combination with custom theme class.",
-            exception.getMessage());
+                "Theme name and theme class can not both be specified. "
+                        + "Theme name uses Lumo and can not be used in combination with custom theme class.",
+                exception.getMessage());
     }
 
     @Test
     public void noDefaultThemeAvailable_throwsException()
-        throws ClassNotFoundException {
+            throws ClassNotFoundException {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
-            .thenReturn(Collections.singleton(MyAppThemeShell.class));
+                .thenReturn(Collections.singleton(MyAppThemeShell.class));
         Mockito.when(classFinder.loadClass(FrontendDependencies.LUMO))
-            .thenThrow(ClassNotFoundException.class);
+                .thenThrow(ClassNotFoundException.class);
 
-        IllegalStateException exception = Assert
-            .assertThrows(IllegalStateException.class,
+        IllegalStateException exception = Assert.assertThrows(
+                IllegalStateException.class,
                 () -> new FrontendDependencies(classFinder, false));
 
         Assert.assertEquals("Thrown exception didn't contain correct message",
-            "Lumo dependency needs to be available on the classpath when using a theme name.",
-            exception.getMessage());
+                "Lumo dependency needs to be available on the classpath when using a theme name.",
+                exception.getMessage());
     }
 
     @Test
     public void appThemeDefined_getsLumoAsTheme() {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
-            .thenReturn(Collections.singleton(MyAppThemeShell.class));
+                .thenReturn(Collections.singleton(MyAppThemeShell.class));
 
-        FrontendDependencies dependencies = new FrontendDependencies(classFinder, false);
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false);
 
-        Assert.assertEquals("Faulty default theme received",
-            FakeLumo.class, dependencies.getThemeDefinition().getTheme());
-
+        Assert.assertEquals("Faulty default theme received", FakeLumo.class,
+                dependencies.getThemeDefinition().getTheme());
 
     }
 
@@ -309,7 +308,6 @@ public class FrontendDependenciesTest {
     @Theme("my-theme")
     public static class MyAppThemeShell implements AppShellConfigurator {
     }
-
 
     @Theme(value = "my-theme", themeClass = FakeLumo.class)
     public static class FaultyThemeAnnotation implements AppShellConfigurator {

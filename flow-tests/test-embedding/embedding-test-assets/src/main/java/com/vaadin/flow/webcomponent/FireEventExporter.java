@@ -31,7 +31,7 @@ public class FireEventExporter
 
     @Override
     public void configureInstance(WebComponent<FireEventComponent> webComponent,
-                                  FireEventComponent component) {
+            FireEventComponent component) {
         component.setSumConsumer(number -> webComponent
                 .fireEvent("sum-calculated", Json.create(number)));
         component.setErrorConsumer(err -> webComponent

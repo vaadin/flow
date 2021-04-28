@@ -23,8 +23,8 @@ const path = require('path');
 const generateThemeFile = require('./theme-generator');
 const {copyStaticAssets, copyThemeResources} = require('./theme-copy');
 
-// matches theme folder name in 'themes/my-theme/my-theme.generated.js'
-const nameRegex = /themes\/(.*)\/\1.generated.js/;
+// matches theme name in './theme-my-theme.generated.js'
+const nameRegex = /theme-(.*)\.generated\.js/;
 
 /**
  * Looks up for a theme resources in a current project and in jar dependencies,
@@ -121,7 +121,7 @@ function handleThemes(themeName, themesFolder, options, logger) {
     copyThemeResources(themeFolder, options.projectStaticAssetsOutputFolder, logger);
     const themeFile = generateThemeFile(themeFolder, themeName, themeProperties, !options.devMode);
 
-    fs.writeFileSync(path.resolve(themeFolder, themeName + '.generated.js'), themeFile);
+    fs.writeFileSync(path.resolve(options.frontendGeneratedFolder, 'theme-' + themeName + '.generated.js'), themeFile);
     return true;
   }
   return false;

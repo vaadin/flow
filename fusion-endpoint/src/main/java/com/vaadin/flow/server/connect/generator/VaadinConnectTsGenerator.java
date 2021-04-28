@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,7 +36,6 @@ import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Helper;
 import com.github.jknack.handlebars.Options;
 import com.github.jknack.handlebars.Template;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import io.swagger.codegen.v3.ClientOptInput;
 import io.swagger.codegen.v3.CodegenModel;
 import io.swagger.codegen.v3.CodegenOperation;
@@ -70,6 +70,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.connect.EndpointNameChecker;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.connect.generator.OpenApiObjectGenerator.CONSTRAINT_ANNOTATIONS;
 
@@ -102,10 +103,10 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
             "(" + JAVA_NAME_PATTERN + "(\\." + JAVA_NAME_PATTERN + ")*)");
     private static final Pattern ARRAY_TYPE_NAME_PATTERN = Pattern
             .compile("Array<(.*)>");
-    private static final Pattern MAPPED_TYPE_NAME_PATTERN = Pattern.compile(
-            "\\{ \\[key: string\\]: (.*); \\}");
-    private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN =
-            Pattern.compile("^(string|number|boolean)");
+    private static final Pattern MAPPED_TYPE_NAME_PATTERN = Pattern
+            .compile("\\{ \\[key: string\\]: (.*); \\}");
+    private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern
+            .compile("^(string|number|boolean)");
     private static final String OPERATION = "operation";
     private static final String IMPORT = "import";
 
@@ -151,8 +152,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
          * Reserved words copied from
          * https://www.w3schools.com/js/js_reserved.asp
          */
-        reservedWords
-                .addAll(EndpointNameChecker.ECMA_SCRIPT_RESERVED_WORDS);
+        reservedWords.addAll(EndpointNameChecker.ECMA_SCRIPT_RESERVED_WORDS);
         reservedWords.addAll(languageSpecificPrimitives);
         typeMapping.put("BigDecimal", "number");
         typeMapping.put("map", "Map");
@@ -311,6 +311,10 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
             for (File child : children) {
                 emptyFolders.addAll(getEmptyFolders(child));
             }
+            // Include parent when all children are empty
+            if (emptyFolders.containsAll(Arrays.asList(children))) {
+                emptyFolders.add(file);
+            }
         }
         return emptyFolders;
     }
@@ -326,10 +330,30 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     }
 
     private static boolean shouldDelete(Set<File> generatedFiles, File file) {
-        return !generatedFiles.contains(file)
-                && !VaadinConnectClientGenerator.CONNECT_CLIENT_NAME
-                        .equals(file.getName())
-                && !FrontendUtils.BOOTSTRAP_FILE_NAME.equals(file.getName());
+        // Keep TypeScript files generated here
+        if (generatedFiles.contains(file)) {
+            return false;
+        }
+
+        // Keep default connect client
+        final String fileName = file.getName();
+        if (fileName.equals(VaadinConnectClientGenerator.CONNECT_CLIENT_NAME)) {
+            return false;
+        }
+
+        // Keep boostrap entrypoint
+        if (fileName.equals(FrontendUtils.BOOTSTRAP_FILE_NAME)) {
+            return false;
+        }
+
+        // Keep generated theme imports
+        if (fileName.equals(FrontendUtils.THEME_IMPORTS_NAME)
+                || fileName.equals(FrontendUtils.THEME_IMPORTS_D_TS_NAME)
+                || fileName.endsWith(".generated.js")) {
+            return false;
+        }
+
+        return true;
     }
 
     private static IllegalStateException getUnexpectedOpenAPIException(
@@ -487,7 +511,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     @Override
     public String getSchemaType(Schema schema) {
-        if (isNullableWrapperSchema(schema) && schema instanceof ComposedSchema) {
+        if (isNullableWrapperSchema(schema)
+                && schema instanceof ComposedSchema) {
             Schema wrappedSchema = ((ComposedSchema) schema).getAllOf().get(0);
             return super.getSchemaType(wrappedSchema);
         }
@@ -571,8 +596,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
             String arrayTypeName = matcher.group(1);
             boolean arrayTypeOptional = arrayTypeName.endsWith(OPTIONAL_SUFFIX);
             arrayTypeName = removeOptionalSuffix(arrayTypeName);
-            arguments.add(getModelVariableArguments(arrayTypeName, arrayTypeOptional, 
-                Collections.emptyList()));
+            arguments.add(getModelVariableArguments(arrayTypeName,
+                    arrayTypeOptional, Collections.emptyList()));
         }
         if (!constrainArguments.isEmpty()) {
             arguments.addAll(constrainArguments);
@@ -594,7 +619,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         name = removeOptionalSuffix(name);
         if (ARRAY_TYPE_NAME_PATTERN.matcher(name).find()) {
             name = "Array";
-        } else if ("any".equals(name) || MAPPED_TYPE_NAME_PATTERN.matcher(name).find()) {
+        } else if ("any".equals(name)
+                || MAPPED_TYPE_NAME_PATTERN.matcher(name).find()) {
             name = "Object";
         } else if (PRIMITIVE_TYPE_NAME_PATTERN.matcher(name).find()) {
             name = GeneratorUtils.capitalize(name);
@@ -731,7 +757,6 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         return codegenModel;
     }
 
-
     private void printDebugMessage(Object data, String message) {
         if (isDebugConnectMavenPlugin()) {
             getLogger().info(message);
@@ -803,7 +828,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     private String getUniqueNameFromQualifiedName(Set<String> usedNames,
             String qualifiedName) {
-        String[] packageSegments = qualifiedName == null ? null : qualifiedName.split("\\.");
+        String[] packageSegments = qualifiedName == null ? null
+                : qualifiedName.split("\\.");
         StringBuilder classNameBuilder = new StringBuilder();
         String newClassName = "";
         if (packageSegments != null && packageSegments.length > 1) {
@@ -1029,8 +1055,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
                 getClassNameFromImportsHelper());
         handlebars.registerHelper("getModelArguments",
                 getModelArgumentsHelper());
-        handlebars.registerHelper("getModelFullType",
-                getModelFullTypeHelper());
+        handlebars.registerHelper("getModelFullType", getModelFullTypeHelper());
     }
 
     private Helper<String> getMultipleLinesHelper() {
@@ -1115,6 +1140,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
             return isRequired;
         }
     }
+
     @Override
     public String toEnumVarName(String name, String datatype) {
         // Keep the same Java enum name in TS

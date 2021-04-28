@@ -35,7 +35,7 @@ import com.vaadin.flow.function.SerializableEventListener;
  */
 @FunctionalInterface
 public interface BindingValidationStatusHandler
-extends SerializableEventListener {
+        extends SerializableEventListener {
 
     /**
      * Invoked when the validation status has changed in a binding.

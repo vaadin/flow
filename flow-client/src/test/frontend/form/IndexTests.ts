@@ -27,7 +27,7 @@ suite("form/Index", () => {
   });
 
   test("should add registration", async () => {
-    await import("../../../main/resources/META-INF/resources/frontend/form");
+    await import("../../../main/frontend/form");
     assert.isDefined($wnd.Vaadin);
     assert.isArray($wnd.Vaadin.registrations);
     const formRegistrations = $wnd.Vaadin.registrations.filter((r: any) => r.is === "@vaadin/form");

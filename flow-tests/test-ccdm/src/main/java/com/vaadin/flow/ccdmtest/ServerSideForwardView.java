@@ -54,7 +54,8 @@ public class ServerSideForwardView extends Div
     }
 
     @Override
-    public void setParameter(BeforeEvent event, @OptionalParameter Boolean parameter) {
+    public void setParameter(BeforeEvent event,
+            @OptionalParameter Boolean parameter) {
         this.parameter = parameter;
     }
 

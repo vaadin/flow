@@ -581,39 +581,6 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void start_twoInstances_secondInstanceUsesAnotherPort()
-            throws Exception {
-
-        // start the first instance
-        DevModeHandler handler = DevModeHandler.start(0, createDevModeLookup(),
-                npmFolder, CompletableFuture.completedFuture(null));
-
-        // remove the "singleton" instance to be able to start another one
-        removeDevModeHandlerInstance();
-        
-        // since the timeout is quite big the server port still should be
-        // available and the second instance should try to reuse it
-        DevModeHandler anotherHandler = DevModeHandler.start(0,
-                createDevModeLookup(), npmFolder,
-                CompletableFuture.completedFuture(null));
-
-        while (handler.getPort() == 0) {
-            Thread.sleep(100);
-        }
-
-        int firstPort = handler.getPort();
-
-        anotherHandler.join();
-
-        int secondPort = anotherHandler.getPort();
-
-        // the second instance was able to start with another port value
-        // even though the first port number is not bound to webpack server
-        // instance
-        Assert.assertNotEquals(firstPort, secondPort);
-    }
-
-    @Test
     public void start_serverPortDoesNotWork_throws() throws Exception {
         exception.expect(CompletionException.class);
         exception.expectCause(Matchers.instanceOf(IllegalStateException.class));

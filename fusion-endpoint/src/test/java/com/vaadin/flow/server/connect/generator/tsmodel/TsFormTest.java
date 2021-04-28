@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.server.connect.generator.endpoints.AbstractEndpointGeneratorBaseTest;
@@ -56,16 +57,17 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
         assertFalse(props.getObject("foo").hasKey(CONSTRAINT_ANNOTATIONS));
         assertEquals("AssertFalse()", props.getObject("assertFalse")
                 .getArray(CONSTRAINT_ANNOTATIONS).getString(0));
-        assertEquals("AssertTrue()",
-                props.getObject("assertTrue").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
+        assertEquals("AssertTrue()", props.getObject("assertTrue")
+                .getArray(CONSTRAINT_ANNOTATIONS).getString(0));
         assertEquals("Digits({integer:5, fraction:2})",
-                props.getObject("digits").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
-        assertEquals("NotEmpty()",
-                props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
-        assertEquals("NotNull()",
-                props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(1));
-        assertEquals("NotNull()",
-                props.getObject("notNullEntity").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
+                props.getObject("digits").getArray(CONSTRAINT_ANNOTATIONS)
+                        .getString(0));
+        assertEquals("NotEmpty()", props.getObject("notEmpty")
+                .getArray(CONSTRAINT_ANNOTATIONS).getString(0));
+        assertEquals("NotNull()", props.getObject("notEmpty")
+                .getArray(CONSTRAINT_ANNOTATIONS).getString(1));
+        assertEquals("NotNull()", props.getObject("notNullEntity")
+                .getArray(CONSTRAINT_ANNOTATIONS).getString(0));
     }
 
     @Test
@@ -74,13 +76,19 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
 
         generateTsEndpoints();
 
-        String entityIdPath = MyEntityId.class.getName().replaceAll("[\\.\\$]", "/");
-        String entityPath = MyEntity.class.getName().replaceAll("[\\.\\$]", "/");
+        String entityIdPath = MyEntityId.class.getName().replaceAll("[\\.\\$]",
+                "/");
+        String entityPath = MyEntity.class.getName().replaceAll("[\\.\\$]",
+                "/");
 
-        File entityIdFile = new File(outputDirectory.getRoot(), entityIdPath + ".ts");
-        File formModelIdFile = new File(outputDirectory.getRoot(), entityIdPath + "Model.ts");
-        File entityFile = new File(outputDirectory.getRoot(), entityPath + ".ts");
-        File formModelFile = new File(outputDirectory.getRoot(), entityPath + "Model.ts");
+        File entityIdFile = new File(outputDirectory.getRoot(),
+                entityIdPath + ".ts");
+        File formModelIdFile = new File(outputDirectory.getRoot(),
+                entityIdPath + "Model.ts");
+        File entityFile = new File(outputDirectory.getRoot(),
+                entityPath + ".ts");
+        File formModelFile = new File(outputDirectory.getRoot(),
+                entityPath + "Model.ts");
 
         assertTrue(entityIdFile.exists());
         assertTrue(formModelIdFile.exists());
@@ -91,18 +99,33 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
                 .collect(Collectors.toList());
         final List<String> expected = Files.lines(new File(
                 getClass().getResource("expected-TsFormEndpoint.ts").getFile())
-                .toPath()).collect(Collectors.toList());
+                        .toPath())
+                .collect(Collectors.toList());
 
+        // Path separators for files need to be changed on windows.
+        content.replaceAll(line -> {
+            if (line.contains("file://")) {
+                return line.replace('\\', '/').replaceAll(
+                        "file://.*/fusion-endpoint",
+                        "file:///.../fusion-endpoint");
+            }
+            return line;
+        });
         assertEquals("Rows in generated and expected files differ",
                 expected.size(), content.size());
 
         int line = 0;
         List<String> faultyLines = new ArrayList<>();
         for (String expectedLine : expected) {
-            if (!expectedLine.equals(content.get(line))) {
-                faultyLines.add(String
-                        .format("L%d :: expected: [%s] got [%s]", line + 1,
-                                expectedLine, content.get(line)));
+            String actualLine = content.get(line);
+            // ignore the line for file reference, as the file path syntax is
+            // different on Windows
+            if (isFileRefenreceLine(expectedLine)) {
+                Assert.assertTrue("should have the file reference",
+                        isFileRefenreceLine(actualLine));
+            } else if (!expectedLine.equals(actualLine)) {
+                faultyLines.add(String.format("L%d :: expected: [%s] got [%s]",
+                        line + 1, expectedLine, actualLine));
             }
             line++;
         }
@@ -110,5 +133,9 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
                 "Found differences in generated file: " + faultyLines.stream()
                         .collect(Collectors.joining("\n")),
                 faultyLines.isEmpty());
+    }
+
+    private boolean isFileRefenreceLine(String line) {
+        return line.contains("@see {@link file:");
     }
 }

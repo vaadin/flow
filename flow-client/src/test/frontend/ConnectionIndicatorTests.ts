@@ -16,12 +16,12 @@
 const {suite, test, beforeEach, afterEach} = intern.getInterface("tdd");
 const {assert} = intern.getPlugin("chai");
 
-import {ConnectionIndicator} from "../../main/resources/META-INF/resources/frontend";
+import {ConnectionIndicator} from "../../main/frontend";
 
 import {
   ConnectionState,
   ConnectionStateStore
-} from "../../main/resources/META-INF/resources/frontend/ConnectionState";
+} from "../../main/frontend/ConnectionState";
 
 const $wnd = (window as any);
 

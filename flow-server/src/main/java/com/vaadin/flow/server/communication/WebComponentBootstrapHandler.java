@@ -83,7 +83,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         public <T extends Annotation> Optional<T> getPageConfigurationAnnotation(
                 Class<T> annotationType) {
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                    .getInstance(getRequest().getService().getContext());
+                    .getInstance(getService().getContext());
             return registry.getEmbeddedApplicationAnnotation(annotationType);
         }
 
@@ -97,7 +97,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             extends BootstrapPageBuilder {
         @Override
         protected List<String> getChunkKeys(JsonObject chunks) {
-            return Collections.singletonList(EXPORT_CHUNK);
+            if (chunks.hasKey(EXPORT_CHUNK)) {
+                return Collections.singletonList(EXPORT_CHUNK);
+            } else {
+                return super.getChunkKeys(chunks);
+            }
         }
     }
 
@@ -280,6 +284,12 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         ArrayList<com.vaadin.flow.dom.Element> elementsForShadows = new ArrayList<>();
         try (BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
+            writer.write("(function () {\n"
+                    + "var hasScript = function(src) {\n"
+                    + "  var scriptTags = Array.from(document.head.querySelectorAll('script'));\n"
+                    + "  return scriptTags.some(script => script.src.endsWith(src))\n"
+                    + "};\n");
+
             String varName = "headElem"; // generated head element
             writer.append("var ").append(varName).append("=null;");
             for (Element element : head.children()) {
@@ -287,6 +297,12 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     getElementForShadowDom(element)
                             .ifPresent(elementsForShadows::add);
                     continue;
+                }
+                String conditionalFilename = getVaadinFilenameIfVaadinScript(
+                        element);
+                if (conditionalFilename != null) {
+                    writer.append("if (!hasScript(\"" + conditionalFilename
+                            + "\")) {\n");
                 }
                 writer.append(varName).append("=");
                 writer.append("document.createElement('")
@@ -300,12 +316,33 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 }
                 writer.append("document.head.appendChild(").append(varName)
                         .append(");");
+                if (conditionalFilename != null) {
+                    writer.append("}\n");
+                }
             }
+            writer.append("})();");
         }
 
         WebComponentConfigurationRegistry
                 .getInstance(response.getService().getContext())
                 .setShadowDomElements(elementsForShadows);
+    }
+
+    private static String getVaadinFilenameIfVaadinScript(Element element) {
+        if (!"script".equalsIgnoreCase(element.tagName())) {
+            return null;
+        }
+        // Injecting a webpack bundle twice can never work.
+        // The bundle contains web components that register
+        // themselves and loading twice will always cause
+        // custom element conflicts
+        String src = element.attr("src");
+        int index = src.indexOf("/VAADIN/");
+        if (index != -1) {
+            return src.substring(index);
+        }
+
+        return null;
     }
 
     private static boolean elementShouldNotBeTransferred(Element element) {

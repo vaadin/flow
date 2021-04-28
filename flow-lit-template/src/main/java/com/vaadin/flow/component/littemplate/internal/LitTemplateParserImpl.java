@@ -154,17 +154,17 @@ public class LitTemplateParserImpl implements LitTemplateParser {
     }
 
     /**
-     * Dependency should match the tag name  ignoring the extension of the file.
+     * Dependency should match the tag name ignoring the extension of the file.
      *
      * @param dependency
-     *     dependency to check
+     *            dependency to check
      * @param tag
-     *     tag name for element
+     *            tag name for element
      * @return true if dependency file matches the tag name.
      */
     private boolean dependencyHasTagName(Dependency dependency, String tag) {
         String url = FilenameUtils.removeExtension(dependency.getUrl())
-            .toLowerCase(Locale.ENGLISH);
+                .toLowerCase(Locale.ENGLISH);
         return url.endsWith("/" + tag);
     }
 
@@ -206,7 +206,7 @@ public class LitTemplateParserImpl implements LitTemplateParser {
             }
             if (!cache.containsKey(url) && jsonStats != null) {
                 cache.put(url, BundleLitParser.getSourceFromStatistics(url,
-                        jsonStats));
+                        jsonStats, service));
             }
             return cache.get(url);
         } finally {

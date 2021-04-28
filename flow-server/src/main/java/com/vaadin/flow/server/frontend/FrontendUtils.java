@@ -130,11 +130,6 @@ public class FrontendUtils {
     public static final String SERVICE_WORKER_SRC_JS = "sw.js";
 
     /**
-     * Default target folder for the java project.
-     */
-    public static final String TARGET = "target/";
-
-    /**
      * The NPM package name that will be used for the javascript files present
      * in jar resources that will to be copied to the npm folder so as they are
      * accessible to webpack.
@@ -151,15 +146,15 @@ public class FrontendUtils {
             + "/";
 
     /**
-     * Default folder for copying front-end resources present in the classpath
-     * jars.
+     * Default folder where front-end resources present in the classpath jars
+     * are copied to. Relative to the
+     * {@link com.vaadin.flow.server.InitParameters#BUILD_FOLDER}.
      */
-    public static final String DEFAULT_FLOW_RESOURCES_FOLDER = TARGET
-            + "flow-frontend";
+    public static final String DEFAULT_FLOW_RESOURCES_FOLDER = "flow-frontend";
 
     /**
-     * Default folder for copying front-end resources present in the classpath
-     * jars.
+     * Default folder under build folder for copying front-end resources present
+     * in the classpath jars.
      *
      * @deprecated This is deprecated due to a typo. Use
      *             DEFAULT_FLOW_RESOURCES_FOLDER instead.
@@ -170,9 +165,9 @@ public class FrontendUtils {
 
     /**
      * Default folder name for flow generated stuff relative to the
-     * {@link FrontendUtils#TARGET}.
+     * {@link com.vaadin.flow.server.InitParameters#BUILD_FOLDER}.
      */
-    public static final String DEFAULT_GENERATED_DIR = TARGET + FRONTEND;
+    public static final String DEFAULT_GENERATED_DIR = FRONTEND;
 
     /**
      * Name of the file that contains application imports, javascript, theme and
@@ -192,7 +187,8 @@ public class FrontendUtils {
 
     /**
      * File name of the bootstrap file that is generated in frontend
-     * {@link #GENERATED} folder. The bootstrap file is always executed in a Vaadin app.
+     * {@link #GENERATED} folder. The bootstrap file is always executed in a
+     * Vaadin app.
      */
     public static final String BOOTSTRAP_FILE_NAME = "vaadin.ts";
 
@@ -224,14 +220,13 @@ public class FrontendUtils {
     /**
      * Default generated path for OpenAPI spec file.
      */
-    public static final String DEFAULT_CONNECT_OPENAPI_JSON_FILE = TARGET
-            + "generated-resources/openapi.json";
+    public static final String DEFAULT_CONNECT_OPENAPI_JSON_FILE = "generated-resources/openapi.json";
 
     /**
      * Default generated path for generated frontend files.
      */
-    public static final String DEFAULT_PROJECT_FRONTEND_GENERATED_DIR =
-        DEFAULT_FRONTEND_DIR + GENERATED;
+    public static final String DEFAULT_PROJECT_FRONTEND_GENERATED_DIR = DEFAULT_FRONTEND_DIR
+            + GENERATED;
 
     /**
      * Name of the file that contains all application imports, javascript, theme
@@ -444,8 +439,8 @@ public class FrontendUtils {
     /**
      * Gets the content of the <code>stats.json</code> file produced by webpack.
      *
-     * Note: Caches the <code>stats.json</code> when external stats is enabled or
-     * <code>stats.json</code> is provided from the class path. To clear the
+     * Note: Caches the <code>stats.json</code> when external stats is enabled
+     * or <code>stats.json</code> is provided from the class path. To clear the
      * cache use {@link #clearCachedStatsContent(VaadinService)}.
      *
      * @param service
@@ -459,25 +454,30 @@ public class FrontendUtils {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         InputStream content = null;
 
-        if (!config.isProductionMode() && config.enableDevServer()) {
-            content = getStatsFromWebpack();
-        }
+        try {
+            if (!config.isProductionMode() && config.enableDevServer()) {
+                content = getStatsFromWebpack();
+            }
 
-        if (config.isStatsExternal()) {
-            content = getStatsFromExternalUrl(config.getExternalStatsUrl(),
-                    service.getContext());
-        }
+            if (config.isStatsExternal()) {
+                content = getStatsFromExternalUrl(config.getExternalStatsUrl(),
+                        service.getContext());
+            }
 
-        if (content == null) {
-            content = getStatsFromClassPath(service);
+            if (content == null) {
+                content = getStatsFromClassPath(service);
+            }
+            return content != null
+                    ? IOUtils.toString(content, StandardCharsets.UTF_8)
+                    : null;
+        } finally {
+            IOUtils.closeQuietly(content);
         }
-        return content != null
-                ? IOUtils.toString(content, StandardCharsets.UTF_8)
-                : null;
     }
 
     /**
-     * Clears the <code>stats.json</code> cache within this {@link VaadinContext}.
+     * Clears the <code>stats.json</code> cache within this
+     * {@link VaadinContext}.
      *
      * @param service
      *            the vaadin service.
@@ -507,20 +507,23 @@ public class FrontendUtils {
         return getFileContent(service, INDEX_HTML);
     }
 
-    private static String getFileContent(VaadinService service,
-            String path)
+    private static String getFileContent(VaadinService service, String path)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         InputStream content = null;
 
-        if (!config.isProductionMode() && config.enableDevServer()) {
-            content = config.useSnowpack() ? getFileFromSnowpack(path) : getFileFromWebpack(path);
-        }
+        try {
+            if (!config.isProductionMode() && config.enableDevServer()) {
+                content = config.useSnowpack() ? getFileFromSnowpack(path) : getFileFromWebpack(path);
+            }
 
-        if (content == null) {
-            content = getFileFromClassPath(service, path);
+            if (content == null) {
+                content = getFileFromClassPath(service, path);
+            }
+            return content != null ? streamToString(content) : null;
+        } finally {
+            IOUtils.closeQuietly(content);
         }
-        return content != null ? streamToString(content) : null;
     }
 
     private static InputStream getFileFromClassPath(VaadinService service,
@@ -608,8 +611,8 @@ public class FrontendUtils {
                                 DateTimeFormatter.RFC_1123_DATE_TIME)
                         .toLocalDateTime();
                 Stats statistics = context.getAttribute(Stats.class);
-                if (statistics == null
-                  || modified.isAfter(statistics.getLastModified().orElse(LocalDateTime.MIN))) {
+                if (statistics == null || modified.isAfter(statistics
+                        .getLastModified().orElse(LocalDateTime.MIN))) {
                     statistics = new Stats(
                             streamToString(connection.getInputStream()),
                             lastModified);
@@ -645,7 +648,7 @@ public class FrontendUtils {
 
         if (statistics != null) {
             return new ByteArrayInputStream(
-              statistics.statsJson.getBytes(StandardCharsets.UTF_8));
+                    statistics.statsJson.getBytes(StandardCharsets.UTF_8));
         }
 
         String stats = service.getDeploymentConfiguration()
@@ -663,7 +666,7 @@ public class FrontendUtils {
                 statistics = new Stats(streamToString(stream), null);
                 service.getContext().setAttribute(statistics);
                 stream = new ByteArrayInputStream(
-                  statistics.statsJson.getBytes(StandardCharsets.UTF_8));
+                        statistics.statsJson.getBytes(StandardCharsets.UTF_8));
             }
         } catch (IOException exception) {
             getLogger().warn("Couldn't read content of stats file {}", stats,
@@ -681,7 +684,8 @@ public class FrontendUtils {
     private static InputStream getFileFromWebpack(String filePath)
             throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        return handler.prepareConnection("/" + filePath, "GET").getInputStream();
+        return handler.prepareConnection("/" + filePath, "GET")
+                .getInputStream();
     }
 
     private static InputStream getFileFromSnowpack(String filePath)
@@ -711,9 +715,9 @@ public class FrontendUtils {
      * file until we have reached the assetsByChunkName json and return that as
      * a json object string.
      *
-     * Note: The <code>stats.json</code> is cached when external stats is enabled
-     * or <code>stats.json</code> is provided from the class path. To clear the
-     * cache use {@link #clearCachedStatsContent(VaadinService)}.
+     * Note: The <code>stats.json</code> is cached when external stats is
+     * enabled or <code>stats.json</code> is provided from the class path. To
+     * clear the cache use {@link #clearCachedStatsContent(VaadinService)}.
      *
      * @param service
      *            the Vaadin service.
@@ -1131,8 +1135,8 @@ public class FrontendUtils {
     }
 
     /**
-     * Parse "manifest.json" file contents obtained from webpack and extract
-     * the list of request paths to handle as static resources.
+     * Parse "manifest.json" file contents obtained from webpack and extract the
+     * list of request paths to handle as static resources.
      *
      * @param manifestJson
      *            "manifest.json" file contents

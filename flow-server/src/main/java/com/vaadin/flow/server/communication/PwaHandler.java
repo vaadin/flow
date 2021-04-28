@@ -18,7 +18,9 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.vaadin.flow.function.SerializableSupplier;
@@ -43,6 +45,7 @@ import com.vaadin.flow.server.VaadinSession;
  */
 public class PwaHandler implements RequestHandler {
     public static final String SW_RUNTIME_PRECACHE_PATH = "/sw-runtime-resources-precache.js";
+    public static final String DEFAULT_OFFLINE_STUB_PATH = "offline-stub.html";
 
     private final Map<String, RequestHandler> requestHandlerMap = new HashMap<>();
     private final SerializableSupplier<PwaRegistry> pwaRegistryGetter;
@@ -79,17 +82,22 @@ public class PwaHandler implements RequestHandler {
                     });
         }
 
+        // Assume that offline page and offline stub (for display within app)
+        // are the same. This may change in the future.
+        List<String> offlinePaths = new ArrayList<>();
         if (pwaRegistry.getPwaConfiguration().isOfflinePathEnabled()) {
-            // Offline page handling
-            requestHandlerMap.put(
-                    pwaRegistry.getPwaConfiguration().relOfflinePath(),
-                    (session, request, response) -> {
-                        response.setContentType("text/html");
-                        try (PrintWriter writer = response.getWriter()) {
-                            writer.write(pwaRegistry.getOfflineHtml());
-                        }
-                        return true;
-                    });
+            offlinePaths
+                    .add(pwaRegistry.getPwaConfiguration().relOfflinePath());
+        }
+        offlinePaths.add("/" + DEFAULT_OFFLINE_STUB_PATH);
+        for (String offlinePath : offlinePaths) {
+            requestHandlerMap.put(offlinePath, (session, request, response) -> {
+                response.setContentType("text/html");
+                try (PrintWriter writer = response.getWriter()) {
+                    writer.write(pwaRegistry.getOfflineHtml());
+                }
+                return true;
+            });
         }
 
         // manifest.webmanifest handling
@@ -105,8 +113,7 @@ public class PwaHandler implements RequestHandler {
 
         // sw-runtime.js handling (service worker import for precaching runtime
         // generated assets)
-        requestHandlerMap.put(
-                SW_RUNTIME_PRECACHE_PATH,
+        requestHandlerMap.put(SW_RUNTIME_PRECACHE_PATH,
                 (session, request, response) -> {
                     response.setContentType("application/javascript");
                     try (PrintWriter writer = response.getWriter()) {

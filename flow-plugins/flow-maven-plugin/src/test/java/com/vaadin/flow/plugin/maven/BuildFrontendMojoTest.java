@@ -17,15 +17,18 @@
 package com.vaadin.flow.plugin.maven;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FALLBACK_IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
@@ -98,7 +101,7 @@ public class BuildFrontendMojoTest {
     private File webpackOutputDirectory;
     private File resourceOutputDirectory;
     private File defaultJavaSource;
-    private String openApiJsonFile;
+    private File openApiJsonFile;
     private File generatedTsFolder;
 
     private File tokenFile;
@@ -117,18 +120,19 @@ public class BuildFrontendMojoTest {
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
 
         File npmFolder = temporaryFolder.getRoot();
-        generatedFolder = new File(npmFolder, DEFAULT_GENERATED_DIR);
+        generatedFolder = new File(npmFolder,
+                "target/" + DEFAULT_GENERATED_DIR);
         importsFile = new File(generatedFolder, IMPORTS_NAME);
         nodeModulesPath = new File(npmFolder, NODE_MODULES);
-        flowResourcesFolder = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
+        flowResourcesFolder = new File(npmFolder,
+                "target/" + DEFAULT_FLOW_RESOURCES_FOLDER);
         File frontendDirectory = new File(npmFolder, DEFAULT_FRONTEND_DIR);
 
         packageJson = new File(npmFolder, PACKAGE_JSON).getAbsolutePath();
         webpackConfig = new File(npmFolder, WEBPACK_CONFIG).getAbsolutePath();
-        webpackGenerated =
-                new File(npmFolder, WEBPACK_GENERATED).getAbsolutePath();
-        webpackOutputDirectory = new File(projectBase,
-                VAADIN_WEBAPP_RESOURCES);
+        webpackGenerated = new File(npmFolder, WEBPACK_GENERATED)
+                .getAbsolutePath();
+        webpackOutputDirectory = new File(projectBase, VAADIN_WEBAPP_RESOURCES);
         resourceOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
 
@@ -137,7 +141,7 @@ public class BuildFrontendMojoTest {
 
         defaultJavaSource = new File(".", "src/test/java");
         openApiJsonFile = new File(npmFolder,
-                "target/generated-resources/openapi.json").getAbsolutePath();
+                "target/generated-resources/openapi.json");
         generatedTsFolder = new File(npmFolder, "frontend/generated");
 
         Assert.assertTrue("Failed to create a test project resources",
@@ -171,7 +175,7 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle", true);
 
         ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
-                new File(npmFolder, "target/generated-resources/openapi.json"));
+                openApiJsonFile);
         ReflectionUtils.setVariableValueInObject(mojo, "applicationProperties",
                 new File(npmFolder,
                         "src/main/resources/application.properties"));
@@ -183,6 +187,10 @@ public class BuildFrontendMojoTest {
                 FrontendTools.DEFAULT_NODE_VERSION);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeDownloadRoot",
                 NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
+        ReflectionUtils.setVariableValueInObject(mojo, "projectBasedir",
+                projectBase);
+        ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
+                Paths.get(projectBase.toString(), "target").toString());
 
         flowResourcesFolder.mkdirs();
         generatedFolder.mkdirs();
@@ -196,10 +204,12 @@ public class BuildFrontendMojoTest {
                 TestUtils.getInitalPackageJson().toJson());
 
         Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(new EndpointGeneratorTaskFactoryImpl()).when(lookup).lookup(EndpointGeneratorTaskFactory.class);
+        Mockito.doReturn(new EndpointGeneratorTaskFactoryImpl()).when(lookup)
+                .lookup(EndpointGeneratorTaskFactory.class);
         Mockito.doAnswer(invocation -> {
-            Mockito.doReturn((ClassFinder)invocation.getArguments()[0]).when(lookup).lookup(ClassFinder.class);
-            return lookup;    
+            Mockito.doReturn((ClassFinder) invocation.getArguments()[0])
+                    .when(lookup).lookup(ClassFinder.class);
+            return lookup;
         }).when(mojo).createLookup(Mockito.any(ClassFinder.class));
     }
 
@@ -256,14 +266,75 @@ public class BuildFrontendMojoTest {
                 .map(File::getName).collect(Collectors.toSet());
 
         Set<String> filesInFlowResourcesFolder = Stream
-                .of(flowResourcesFolder.listFiles())
-                .map(File::getName).collect(Collectors.toSet());
+                .of(flowResourcesFolder.listFiles()).map(File::getName)
+                .collect(Collectors.toSet());
 
         projectFrontendResources.forEach(fileName -> {
             Assert.assertTrue(String.format(
-                    "Expected the copied file '%s' to be in the project resources", fileName),
-                    filesInFlowResourcesFolder.contains(fileName));
+                    "Expected the copied file '%s' to be in the project resources",
+                    fileName), filesInFlowResourcesFolder.contains(fileName));
         });
+    }
+
+    @Test
+    public void changedBuildDirectory_resourcesCopiedNoTargetFolderExists()
+            throws MojoExecutionException, MojoFailureException,
+            IllegalAccessException, IOException {
+        // Clean generated target folders.
+        File target = new File(projectBase, TARGET);
+        if (FileUtils.fileExists(target.toString())) {
+            FileUtils.deleteDirectory(target);
+        }
+        openApiJsonFile = new File(projectBase,
+                "build/generated-resources/openapi.json");
+        generatedFolder = new File(projectBase,
+                "build/" + DEFAULT_GENERATED_DIR);
+        importsFile = new File(generatedFolder, IMPORTS_NAME);
+        flowResourcesFolder = new File(projectBase,
+                "build/" + DEFAULT_FLOW_RESOURCES_FOLDER);
+
+        ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
+                openApiJsonFile);
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder",
+                generatedFolder);
+        ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
+                "build");
+
+        List<File> initialFiles = gatherFiles(flowResourcesFolder);
+        initialFiles.forEach(file -> Assert.assertFalse(String.format(
+                "Test resource shouldn't exist before running mojo.", file),
+                TEST_PROJECT_RESOURCE_JS.equals(file.getName())));
+        mojo.execute();
+
+        Set<String> projectFrontendResources = Stream
+                .of(projectFrontendResourcesDirectory.listFiles())
+                .map(File::getName).collect(Collectors.toSet());
+
+        Set<String> filesInFlowResourcesFolder = Stream
+                .of(flowResourcesFolder.listFiles()).map(File::getName)
+                .collect(Collectors.toSet());
+
+        projectFrontendResources.forEach(fileName -> {
+            Assert.assertTrue(String.format(
+                    "Expected the copied file '%s' to be in the project resources",
+                    fileName), filesInFlowResourcesFolder.contains(fileName));
+        });
+
+        final Set<String> generatedFiles = Stream
+                .of(generatedFolder.listFiles()).map(File::getName)
+                .collect(Collectors.toSet());
+
+        String generated = "'%s' should have been generated into 'build/frontend'";
+
+        Assert.assertTrue(String.format(generated, IMPORTS_NAME),
+                generatedFiles.contains(IMPORTS_NAME));
+        Assert.assertTrue(String.format(generated, IMPORTS_D_TS_NAME),
+                generatedFiles.contains(IMPORTS_D_TS_NAME));
+        Assert.assertTrue(String.format(generated, FALLBACK_IMPORTS_NAME),
+                generatedFiles.contains(FALLBACK_IMPORTS_NAME));
+
+        Assert.assertFalse("No 'target' directory should exist after build.",
+                target.exists());
     }
 
     @Test
@@ -407,8 +478,7 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
                 webpackOutputDirectory);
         ReflectionUtils.setVariableValueInObject(mojo,
-                "resourceOutputDirectory",
-                resourceOutputDirectory);
+                "resourceOutputDirectory", resourceOutputDirectory);
 
         JsonObject initialBuildInfo = Json.createObject();
         initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
@@ -467,9 +537,11 @@ public class BuildFrontendMojoTest {
     @Test
     public void mavenGoal_generateOpenApiJson_when_itIsInClientSideMode()
             throws Exception {
-        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+        Assert.assertFalse(
+                FileUtils.fileExists(openApiJsonFile.getAbsolutePath()));
         mojo.execute();
-        Assert.assertTrue(FileUtils.fileExists(openApiJsonFile));
+        Assert.assertTrue(
+                FileUtils.fileExists(openApiJsonFile.getAbsolutePath()));
     }
 
     @Test
@@ -490,9 +562,11 @@ public class BuildFrontendMojoTest {
             throws Exception {
         ReflectionUtils.setVariableValueInObject(mojo,
                 "useDeprecatedV14Bootstrapping", "true");
-        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+        Assert.assertFalse(
+                FileUtils.fileExists(openApiJsonFile.getAbsolutePath()));
         mojo.execute();
-        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+        Assert.assertFalse(
+                FileUtils.fileExists(openApiJsonFile.getAbsolutePath()));
     }
 
     static void assertContainsPackage(JsonObject dependencies,

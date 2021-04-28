@@ -230,6 +230,11 @@ public final class Constants implements Serializable {
     public static final String PACKAGE_JSON = "package.json";
 
     /**
+     * Target folder constant.
+     */
+    public static final String TARGET = "target";
+
+    /**
      * Location for the frontend resources in jar files for compatibility mode
      * (also obsolete but supported for NPM mode).
      */
@@ -253,7 +258,8 @@ public final class Constants implements Serializable {
     /**
      * Location for the theme resources in jar files.
      */
-    public static final String RESOURCES_THEME_JAR_DEFAULT = RESOURCES_JAR_DEFAULT + APPLICATION_THEME_ROOT + "/";
+    public static final String RESOURCES_THEME_JAR_DEFAULT = RESOURCES_JAR_DEFAULT
+            + APPLICATION_THEME_ROOT + "/";
 
     /**
      * @deprecated Use

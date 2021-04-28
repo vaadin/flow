@@ -34,6 +34,7 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamReceiver;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.StreamVariable;
+import com.vaadin.flow.server.UploadException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -71,6 +72,8 @@ public class StreamReceiverHandlerTest {
     private StreamReceiver streamReceiver;
     @Mock
     private StreamResourceRegistry registry;
+    @Mock
+    private ErrorHandler errorHandler;
 
     private VaadinServletService mockService;
 
@@ -84,6 +87,8 @@ public class StreamReceiverHandlerTest {
     private OutputStream outputStream;
     private String contentType;
     private List<Part> parts;
+
+    private boolean isGetContentLengthLongCalled;
 
     @Before
     public void setup() throws Exception {
@@ -171,6 +176,12 @@ public class StreamReceiverHandlerTest {
             public Collection<Part> getParts()
                     throws IOException, ServletException {
                 return parts;
+            }
+
+            @Override
+            public long getContentLengthLong() {
+                isGetContentLengthLongCalled = true;
+                return 0;
             }
         };
     }
@@ -271,7 +282,7 @@ public class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleMultipartFileUpload_noPart_uploadFailed_responseStatusIs500()
+    public void doHandleMultipartFileUpload_noPart_uploadFailed_responseStatusIs500_getContentLengthLongCalled()
             throws IOException {
 
         handler.doHandleMultipartFileUpload(session, request, response,
@@ -279,6 +290,7 @@ public class StreamReceiverHandlerTest {
 
         Mockito.verify(response)
                 .setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        Assert.assertTrue(isGetContentLengthLongCalled);
     }
 
     @Test
@@ -391,4 +403,32 @@ public class StreamReceiverHandlerTest {
                 ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
         Mockito.verify(response, Mockito.times(0)).setStatus(Mockito.anyInt());
     }
+
+    @Test
+    public void handleFileUploadValidationAndData_inputStreamThrowsIOException_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
+            throws UploadException {
+        InputStream inputStream = new InputStream() {
+
+            @Override
+            public int read() throws IOException {
+                throw new IOException();
+            }
+        };
+        handler.handleFileUploadValidationAndData(session, inputStream,
+                streamReceiver, null, null, 0, stateNode);
+
+        verifyZeroInteractions(errorHandler);
+        verify(streamVariable).streamingFailed(Mockito.any());
+    }
+
+    @Test
+    public void doHandleMultipartFileUpload_IOExceptionIsThrown_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
+            throws IOException, ServletException {
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+        Mockito.doThrow(IOException.class).when(request).getParts();
+        handler.doHandleMultipartFileUpload(session, request, response,
+                streamReceiver, stateNode);
+        verifyZeroInteractions(errorHandler);
+    }
+
 }

@@ -59,7 +59,7 @@ public class NavigationTriggerView extends AbstractDivView
     }
 
     public static String buildMessage(String path, NavigationTrigger trigger,
-                                      String parameter) {
+            String parameter) {
         return "Navigated to " + path + " with trigger " + trigger.name()
                 + " and parameter " + parameter;
     }

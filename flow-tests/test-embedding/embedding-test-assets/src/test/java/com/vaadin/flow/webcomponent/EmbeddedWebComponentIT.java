@@ -22,7 +22,8 @@ import org.openqa.selenium.By;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-public class EmbeddedWebComponentIT extends ChromeBrowserTest implements HasById {
+public class EmbeddedWebComponentIT extends ChromeBrowserTest
+        implements HasById {
 
     @Override
     protected String getTestPath() {

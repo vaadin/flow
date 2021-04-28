@@ -81,8 +81,8 @@ public final class StringUtil {
                 }
                 break;
             case IN_BLOCK_COMMENT:
-                if (character.equals("*") && scanner.hasNext()
-                        && scanner.next().equals("/")) {
+                if (character.equals("*") && scanner.hasNext("/")) {
+                    scanner.next();
                     state = State.NORMAL;
                     break;
                 }

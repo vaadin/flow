@@ -40,7 +40,8 @@ import com.vaadin.flow.server.AppShellSettings;
  *
  * <p>
  * There is a single application shell for the entire Vaadin application, and
- * therefore there can be at max one class implementing {@link AppShellConfigurator}.
+ * therefore there can be at max one class implementing
+ * {@link AppShellConfigurator}.
  * </p>
  *
  * <p>

@@ -7,5 +7,4 @@ public class SubContextNoEndingSlashIT extends SubContextIT {
         return "/sub-context";
     }
 
-
 }
