@@ -21,7 +21,7 @@
             <artifactId>jext-apt</artifactId>
             <version>1.0.0-2104282</version>
             <scope>compile</scope>
-        </dependency>
+        </dependency> 
     </dependencies>
 
 </project>
