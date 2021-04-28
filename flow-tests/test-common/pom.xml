@@ -22,7 +22,7 @@
             <version>1.0.0-2104282</version>
             <scope>compile</scope>
         </dependency>
-    </dependencies>
+    </dependencies> 
 
 </project>
 
