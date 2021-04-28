@@ -44,7 +44,7 @@ public class MainView extends AppLayout {
 
     private Component createHeaderContent() {
         HorizontalLayout layout = new HorizontalLayout();
-        layout.setId("header");
+        layout.addClassName("header");
         layout.getThemeList().set("dark", true);
         layout.setWidthFull();
         layout.setSpacing(false);
@@ -69,7 +69,7 @@ public class MainView extends AppLayout {
         layout.getThemeList().set("spacing-s", true);
         layout.setAlignItems(FlexComponent.Alignment.STRETCH);
         HorizontalLayout logoLayout = new HorizontalLayout();
-        logoLayout.setId("logo");
+        logoLayout.addClassName("logo");
         logoLayout.setAlignItems(FlexComponent.Alignment.CENTER);
         logoLayout.add(new Image("public/images/logo.jpg", "Bank of Flow logo"));
         logoLayout.add(new H1("Bank of Flow"));

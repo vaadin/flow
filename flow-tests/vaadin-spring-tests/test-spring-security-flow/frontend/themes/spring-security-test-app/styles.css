@@ -1,8 +1,8 @@
-#header {
+.header {
   height: var(--lumo-size-xl);
   box-shadow: var(--lumo-box-shadow-s);
 }
-#header vaadin-avatar {
+.header vaadin-avatar {
   margin-left: auto;
   margin-right: var(--lumo-space-m);
 }
@@ -10,19 +10,19 @@ vaadin-app-layout[dir="rtl"] #header vaadin-avatar {
   margin-left: var(--lumo-space-m);
   margin-right: auto;
 }
-#header h1 {
+.header h1 {
   font-size: var(--lumo-font-size-l);
   margin: 0;
 }
-#logo {
+.logo {
   box-sizing: border-box;
   box-shadow: inset 0 -1px var(--lumo-contrast-10pct);
   padding: var(--lumo-space-s) var(--lumo-space-m);
 }
-#logo img {
+.logo img {
   height: calc(var(--lumo-size-l) * 1.5);
 }
-#logo h1 {
+.logo h1 {
   font-size: var(--lumo-font-size-xl);
   font-weight: 600;
   margin: 0 var(--lumo-space-s);
