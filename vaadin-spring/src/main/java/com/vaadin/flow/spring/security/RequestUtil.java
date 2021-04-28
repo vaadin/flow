@@ -4,6 +4,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.connect.EndpointUtil;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
 
@@ -71,7 +72,7 @@ public class RequestUtil {
 
     /**
      * Checks whether the request targets an endpoint that is public, i.e. marked
-     * as @{@link com.vaadin.flow.server.connect.auth.AnonymousAllowed}.
+     * as @{@link AnonymousAllowed}.
      *
      * @param request the servlet request
      * @return {@code true} if the request is targeting an anonymous enpoint,
