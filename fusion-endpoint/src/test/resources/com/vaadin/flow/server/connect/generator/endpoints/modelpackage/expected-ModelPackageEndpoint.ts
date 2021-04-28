@@ -19,7 +19,7 @@ function _getListOfUserName(): Promise<Array<string> | undefined> {
 export {_getListOfUserName as getListOfUserName};
 
 /**
- * Get a collection by author name. The generator should not mix this type with the Java's Collection type.
+ * Get a collection by author name. The generator should not mix this type  with the Java's Collection type.
  *
  * @param name author name
  * Return a collection

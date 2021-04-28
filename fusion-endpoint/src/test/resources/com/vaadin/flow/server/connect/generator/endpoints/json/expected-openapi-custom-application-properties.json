@@ -586,7 +586,6 @@
         "x-vaadin-file-path" : "com/vaadin/flow/server/connect/generator/endpoints/json/JsonTestEndpoint.java"
       },
       "com.vaadin.flow.server.connect.generator.endpoints.json.JsonTestEndpoint.User" : {
-        "required" : [ "name", "password", "roles" ],
         "type" : "object",
         "properties" : {
           "name" : {
