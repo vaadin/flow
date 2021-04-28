@@ -66,5 +66,11 @@ public class ReusableThemeView extends Div {
 
         add(new Div());
         add(new MyLitField().withId(MY_LIT_ID));
+
+        Div badge = new Div();
+        badge.setText("This is a badge");
+        badge.getElement().setAttribute("theme", "badge");
+
+        add(badge);
     }
 }

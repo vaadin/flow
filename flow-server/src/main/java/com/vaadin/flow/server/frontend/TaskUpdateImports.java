@@ -61,7 +61,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 public class TaskUpdateImports extends NodeUpdater {
 
     private static final String THEME_PREPARE = "const div = document.createElement('div');";
-    private static final String THEME_LINE_TPL = "div.innerHTML = '%s';%n"
+    private static final String THEME_LINE_TPL = "%sdiv.innerHTML = '%s';%n"
             + "document.head.insertBefore(div.firstElementChild, document.head.firstChild);";
     private static final String THEME_VARIANT_TPL = "document.documentElement.setAttribute('%s', '%s');";
     // Trim and remove new lines.
@@ -138,19 +138,26 @@ public class TaskUpdateImports extends NodeUpdater {
             Collection<String> lines = new ArrayList<>();
             AbstractTheme theme = getTheme();
             ThemeDefinition themeDef = getThemeDefinition();
+            final boolean hasApplicationTheme =
+                    themeDef != null && !"".equals(themeDef.getName());
 
-            if (themeDef != null && !"".equals(themeDef.getName())) {
+            if (hasApplicationTheme) {
                 // If we define a theme name we need to import theme/theme-generated.js
                 lines.add("import {applyTheme} from 'themes/theme-generated.js';");
                 lines.add("applyTheme(document);");
             }
 
             if (theme != null) {
+                // There is no application theme in use, write theme includes here.
+                // Otherwise they are written by the theme
                 if (!theme.getHeaderInlineContents().isEmpty()) {
                     lines.add(THEME_PREPARE);
+                    if (hasApplicationTheme) {
+                        lines.add("// Handled in the application theme");
+                    }
                     theme.getHeaderInlineContents()
                             .forEach(html -> addLines(lines,
-                                    String.format(THEME_LINE_TPL, NEW_LINE_TRIM
+                                    String.format(THEME_LINE_TPL, hasApplicationTheme ? "// ":"", NEW_LINE_TRIM
                                             .matcher(html).replaceAll(""))));
                 }
                 if (themeDef != null) {

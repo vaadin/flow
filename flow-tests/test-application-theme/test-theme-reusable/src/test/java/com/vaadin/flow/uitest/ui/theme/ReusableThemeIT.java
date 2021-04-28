@@ -21,6 +21,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.ImageElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -162,6 +163,16 @@ public class ReusableThemeIT extends ChromeBrowserTest {
         getDriver().get(getRootURL() + "/octopuss.jpg");
         Assert.assertFalse("root resource should be served",
             driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
+    }
+
+    @Test
+    public void lumoBadgeIsRenderedCorrectly() {
+        open();
+        checkLogsForErrors();
+
+        DivElement badge = $(DivElement.class).attribute("theme", "badge").first();
+        String badgeBackgroundColor = badge.getCssValue("backgroundColor");
+        Assert.assertEquals("rgba(22, 118, 243, 0.1)", badgeBackgroundColor);
     }
 
     @Override
