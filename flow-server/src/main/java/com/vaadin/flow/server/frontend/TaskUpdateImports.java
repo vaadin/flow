@@ -60,9 +60,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
  */
 public class TaskUpdateImports extends NodeUpdater {
 
-    private static final String THEME_PREPARE = "const div = document.createElement('div');";
+    private static final String THEME_PREPARE = "%sconst div = document.createElement('div');";
     private static final String THEME_LINE_TPL = "%sdiv.innerHTML = '%s';%n"
-            + "document.head.insertBefore(div.firstElementChild, document.head.firstChild);";
+            + "%sdocument.head.insertBefore(div.firstElementChild, document.head.firstChild);";
     private static final String THEME_VARIANT_TPL = "document.documentElement.setAttribute('%s', '%s');";
     // Trim and remove new lines.
     private static final Pattern NEW_LINE_TRIM = Pattern
@@ -151,14 +151,15 @@ public class TaskUpdateImports extends NodeUpdater {
                 // There is no application theme in use, write theme includes here.
                 // Otherwise they are written by the theme
                 if (!theme.getHeaderInlineContents().isEmpty()) {
-                    lines.add(THEME_PREPARE);
                     if (hasApplicationTheme) {
                         lines.add("// Handled in the application theme");
                     }
+                    String commentToken = hasApplicationTheme ? "// " : "";
+                    lines.add(String.format(THEME_PREPARE, commentToken));
                     theme.getHeaderInlineContents()
                             .forEach(html -> addLines(lines,
-                                    String.format(THEME_LINE_TPL, hasApplicationTheme ? "// ":"", NEW_LINE_TRIM
-                                            .matcher(html).replaceAll(""))));
+                                    String.format(THEME_LINE_TPL, commentToken, NEW_LINE_TRIM
+                                            .matcher(html).replaceAll(""), commentToken)));
                 }
                 if (themeDef != null) {
                     theme.getHtmlAttributes(themeDef.getVariant()).forEach(
