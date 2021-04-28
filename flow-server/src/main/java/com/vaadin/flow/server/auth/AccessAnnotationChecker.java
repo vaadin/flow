@@ -13,8 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.connect.auth;
+package com.vaadin.flow.server.auth;
 
+import java.io.Serializable;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -49,7 +50,7 @@ import javax.servlet.http.HttpServletRequest;
  * <li>{@link DenyAll} - denies access.</li>
  * </ul>
  */
-public class AccessAnnotationChecker {
+public class AccessAnnotationChecker implements Serializable {
 
     /**
      * 
