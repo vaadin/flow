@@ -3,8 +3,8 @@ package com.vaadin.flow.connect;
 import javax.annotation.Nullable;
 import javax.annotation.security.PermitAll;
 
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.connect.Endpoint;
-import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 
 /**
  * Simple Vaadin Connect Service definition.

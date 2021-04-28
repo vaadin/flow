@@ -11,7 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.connect.Endpoint;
-import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 /**
  * Simple Vaadin Connect Service definition.
@@ -30,9 +30,8 @@ public class AppEndpoint {
     }
 
     @AnonymousAllowed
-    public String echoWithOptional(@Nullable String first,
-            @Nullable String second,
-            Optional<String> third, Optional<String> fourth) {
+    public String echoWithOptional(@Nullable String first, @Nullable String second, Optional<String> third,
+            Optional<String> fourth) {
         String result = "";
         if (first != null) {
             result += "1. " + first + " ";
@@ -70,7 +69,7 @@ public class AppEndpoint {
 
     @PermitAll
     public String checkUserFromVaadinRequest() {
-        return "Hello, "+VaadinRequest.getCurrent().getUserPrincipal().getName()+"!";
+        return "Hello, " + VaadinRequest.getCurrent().getUserPrincipal().getName() + "!";
     }
 
 }
