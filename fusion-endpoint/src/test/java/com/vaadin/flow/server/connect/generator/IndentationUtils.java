@@ -6,21 +6,27 @@ import java.util.List;
 import java.util.Stack;
 
 public final class IndentationUtils {
-    static String unifyIndentation(String code, int indentation)
+    public static String unifyIndentation(String code, int indentation)
             throws IndentationSyntaxException {
         Token[] tokens = Token.process(code);
         Node ast = Node.process(tokens);
         StringBuilder indentedCodeBuilder = new StringBuilder();
 
         Node currentNode = ast;
-        int level = 1;
+        // Our initial `ast` container is virtual, so nesting level is not
+        // applicable.
+        int level = -1;
 
         while (currentNode != null) {
             if (currentNode instanceof TextNode) {
-                indentedCodeBuilder.append('\n')
-                        .append(String.join("",
-                                Collections.nCopies(level * indentation, " ")))
-                        .append(((TextNode) currentNode).getText());
+                String currentNodeText = ((TextNode) currentNode).getText();
+
+                if (!currentNodeText.matches("[,:|;].*")) {
+                    indentedCodeBuilder.append('\n')
+                            .append(repeat(" ", level * indentation));
+                }
+
+                indentedCodeBuilder.append(((TextNode) currentNode).getText());
 
                 currentNode.setVisited(true);
                 currentNode = currentNode.getParent();
@@ -39,11 +45,22 @@ public final class IndentationUtils {
                     level += 1;
                 } else {
                     if (currentNode instanceof ContainerNodeWithBraces) {
-                        indentedCodeBuilder.append('\n')
-                                .append(((ContainerNodeWithBraces) currentNode)
-                                        .getBrace(false));
+                        // If there is nothing in parenthesis or braces.
+                        if (((ContainerNode) currentNode).isEmpty()) {
+                            indentedCodeBuilder.append(
+                                    ((ContainerNodeWithBraces) currentNode)
+                                            .getBrace(true))
+                                    .append(((ContainerNodeWithBraces) currentNode)
+                                            .getBrace(false));
+                        } else {
+                            indentedCodeBuilder.append('\n')
+                                    .append(repeat(" ", level * indentation))
+                                    .append(((ContainerNodeWithBraces) currentNode)
+                                            .getBrace(false));
+                        }
                     }
 
+                    currentNode.setVisited(true);
                     currentNode = currentNode.getParent();
                     level -= 1;
                 }
@@ -53,7 +70,12 @@ public final class IndentationUtils {
         return indentedCodeBuilder.toString();
     }
 
+    static String repeat(String part, int times) {
+        return String.join("", Collections.nCopies(times, part));
+    }
+
     abstract static class Token {
+
         static Token[] process(String str) {
             TextToken currentTextToken = null;
             List<Token> tokens = new ArrayList<>();
@@ -88,6 +110,7 @@ public final class IndentationUtils {
     }
 
     static class BraceToken extends Token {
+
         private final boolean open;
         private final BraceType type;
 
@@ -105,6 +128,7 @@ public final class IndentationUtils {
         }
 
         public enum BraceType {
+
             CURVE_BRACE, PARENTHESIS, ROUND_BRACE;
 
             static BraceType getBraceType(char symbol) {
@@ -136,10 +160,13 @@ public final class IndentationUtils {
                     throw new IllegalArgumentException("Unexpected argument");
                 }
             }
+
         }
+
     }
 
     static class TextToken extends Token {
+
         private final StringBuilder content = new StringBuilder();
 
         public void addSymbol(char symbol) {
@@ -149,9 +176,23 @@ public final class IndentationUtils {
         public String getContent() {
             return content.toString().trim();
         }
+
+        public boolean isEmpty() {
+            int nonWhiteSpaceSymbolCount = 0;
+
+            for (int i = 0; i < content.length(); i++) {
+                if (content.charAt(i) != ' ') {
+                    nonWhiteSpaceSymbolCount += 1;
+                }
+            }
+
+            return nonWhiteSpaceSymbolCount == 0;
+        }
+
     }
 
     abstract static class Node {
+
         private final ContainerNode parent;
         private boolean visited = false;
 
@@ -182,7 +223,7 @@ public final class IndentationUtils {
 
                         unclosedNodes.pop();
                     }
-                } else {
+                } else if (!((TextToken) token).isEmpty()) {
                     container.addChild(new TextNode(container,
                             ((TextToken) token).getContent()));
                 }
@@ -202,9 +243,11 @@ public final class IndentationUtils {
         public void setVisited(boolean visited) {
             this.visited = visited;
         }
+
     }
 
     static class ContainerNode extends Node {
+
         private final List<Node> children = new ArrayList<>();
 
         ContainerNode(ContainerNode parent) {
@@ -219,6 +262,10 @@ public final class IndentationUtils {
             return children.stream().noneMatch(Node::isVisited);
         }
 
+        public boolean isEmpty() {
+            return children.isEmpty();
+        }
+
         public boolean hasUnvisitedChildren() {
             return children.stream().anyMatch(node -> !node.isVisited());
         }
@@ -227,9 +274,11 @@ public final class IndentationUtils {
             return children.stream().filter(node -> !node.isVisited())
                     .findFirst().orElse(null);
         }
+
     }
 
     static class ContainerNodeWithBraces extends ContainerNode {
+
         private final BraceToken.BraceType braceType;
 
         ContainerNodeWithBraces(ContainerNode parent,
@@ -241,9 +290,11 @@ public final class IndentationUtils {
         public char getBrace(boolean open) {
             return BraceToken.BraceType.getBraceByType(braceType, open);
         }
+
     }
 
     static class TextNode extends Node {
+
         private final String text;
 
         public TextNode(ContainerNode parent, String text) {
@@ -254,11 +305,14 @@ public final class IndentationUtils {
         public String getText() {
             return text;
         }
+
     }
 
     public static class IndentationSyntaxException extends Exception {
+
         public IndentationSyntaxException(String message) {
             super(message);
         }
+
     }
 }
