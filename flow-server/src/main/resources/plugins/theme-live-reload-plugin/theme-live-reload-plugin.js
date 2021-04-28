@@ -35,6 +35,12 @@ class ThemeLiveReloadPlugin {
           " callback as a ThemeLiveReloadPlugin constructor parameter.");
       }
       this.processThemeResourcesCallback = processThemeResourcesCallback;
+      // Component style sheet might be deleted from parent theme folder, so
+      // the regexp does not contain the exact theme name
+      this.componentStyleFileRegexp = /(\\|\/)themes\1([\s\S]*)\1components\1(.*)\.css$/;
+      // There might be several theme generated files in the generated
+      // folder, so the regexp does not contain the exact theme name
+      this.themeGeneratedFileRegexp = /theme-[\s\S]*?\.generated\.js$/;
     }
 
     apply(compiler) {
@@ -43,23 +49,52 @@ class ThemeLiveReloadPlugin {
         const logger = compiler.getInfrastructureLogger("ThemeLiveReloadPlugin");
         const changedFilesMap = compiler.watchFileSystem.watcher.mtimes;
         if (changedFilesMap !== {}) {
+          let themeName = undefined;
           let themeGeneratedFileChanged = false;
+          let themeGeneratedFileDeleted = false;
+          let deletedComponentStyleFile = undefined;
           const changedFilesPaths = Object.keys(changedFilesMap);
           logger.debug("Detected changes in the following files " + changedFilesPaths);
-          changedFilesPaths.map(file => `${file}`).forEach(file => {
-              // Webpack watches to the changes in theme-[my-theme].generated.js
-              // because it is referenced from theme.js. Changes in this file
-              // should not trigger the theme handling callback (which
-              // re-generates theme-[my-theme].generated.js),
-              // otherwise it will get into infinite re-compilation loop.
-              // There might be several theme generated files in the
-              // generated folder, so the condition does not contain the exact
-              // theme name
-              if (file.match(/theme-[\s\S]*?\.generated\.js$/)) {
-                themeGeneratedFileChanged = true;
+          changedFilesPaths.forEach(changedFilePath => {
+            const file = `${changedFilePath}`;
+            const themeGeneratedFileChangedNow = file.match(this.themeGeneratedFileRegexp);
+            const timestamp = changedFilesMap[changedFilePath];
+            // null or negative timestamp means file delete
+            const fileRemoved = timestamp === null || timestamp < 0;
+
+            if (themeGeneratedFileChangedNow) {
+              themeGeneratedFileChanged = true;
+              if (fileRemoved) {
+                themeGeneratedFileDeleted = true;
               }
-            });
-          if (!themeGeneratedFileChanged) {
+            } else if (fileRemoved) {
+              const matchResult = file.match(this.componentStyleFileRegexp);
+              if (matchResult) {
+                themeName = matchResult[2];
+                deletedComponentStyleFile = file;
+              }
+            }
+          });
+          // This is considered as a workaround for
+          // https://github.com/vaadin/flow/issues/9948: delete component
+          // styles and theme generated file in one run to not have webpack
+          // compile error
+          if (deletedComponentStyleFile && !themeGeneratedFileDeleted) {
+            logger.warn("Custom theme component style sheet '" + deletedComponentStyleFile + "' has been deleted.\n\n" +
+              "You should also delete './frontend/generated/theme-" + themeName + ".generated.js' (simultaneously) with the component stylesheet'.\n" +
+              "Otherwise it will cause a webpack compilation error 'no such file or directory', as component style sheets are referenced from " +
+              "'./frontend/generated/theme-" + themeName + ".generated.js'.\n\n" +
+              "If you encounter a 'no such file or directory' error in your application, just click on the overlay (or refresh the browser page), and it should disappear.\n\n" +
+              "It should then be possible to continue working on the application and theming.\n" +
+              "If it doesn't help, you need to restart the application.");
+          }
+
+          // Webpack watches to the changes in theme-[my-theme].generated.js
+          // because it is referenced from theme.js. Changes in this file
+          // should not trigger the theme handling callback (which
+          // re-generates theme-[my-theme].generated.js),
+          // otherwise it will get into infinite re-compilation loop.
+          if (themeGeneratedFileDeleted || !themeGeneratedFileChanged) {
             this.processThemeResourcesCallback(logger);
           }
         }
