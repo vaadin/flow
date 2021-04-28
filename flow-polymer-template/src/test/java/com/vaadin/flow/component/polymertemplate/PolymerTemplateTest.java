@@ -59,6 +59,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -856,10 +857,11 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Test
-    public void attachExistingElementWithoutChidlrenWithText_elementHasText() {
+    public void attachExistingElementWithoutChidlrenWithText_elementHasNoText() {
         ElementWithTextTemplate template = new ElementWithTextTemplate();
 
-        Assert.assertEquals("foo bar", template.label.getText());
+        // see #10106
+        Assert.assertEquals("", template.label.getText());
     }
 
     @Test
