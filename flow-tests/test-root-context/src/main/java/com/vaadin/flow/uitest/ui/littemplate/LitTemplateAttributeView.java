@@ -34,10 +34,5 @@ public class LitTemplateAttributeView extends LitTemplate
                 + injectedDiv.getElement().getProperty("baz"));
         div.setId("info");
         add(div);
-
-        div = new Div();
-        div.setText(hasText.getText() + " " + hasTextAndChild.getText() + "|");
-        div.setId("text-info");
-        add(div);
     }
 }
