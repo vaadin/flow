@@ -41,7 +41,8 @@ public class ElementUtil {
      * https://www.w3.org/TR/html-markup/syntax.html#tag-name "HTML elements all
      * have names that only use characters in the range 0–9, a–z, and A–Z."
      */
-    private static Pattern tagNamePattern = Pattern.compile("^[a-zA-Z0-9-]+$");
+    private static Pattern tagNamePattern = Pattern
+            .compile("^[a-zA-Z][a-zA-Z0-9-_\\.]*$");
 
     private ElementUtil() {
         // Util methods only

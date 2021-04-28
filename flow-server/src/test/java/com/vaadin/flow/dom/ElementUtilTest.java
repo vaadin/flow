@@ -124,4 +124,25 @@ public class ElementUtilTest {
                 EXPECTED_TEXT_2,
                 recreatedElement.getChild(0).getChild(1).getText());
     }
+
+    @Test
+    public void isValidTagName_validTagNames() {
+        Assert.assertTrue(ElementUtil.isValidTagName("foo"));
+        Assert.assertTrue(ElementUtil.isValidTagName("foo-bar"));
+        Assert.assertTrue(ElementUtil.isValidTagName("foo_bar"));
+        Assert.assertTrue(ElementUtil.isValidTagName("foo_bar-baz"));
+        Assert.assertTrue(ElementUtil.isValidTagName("foo12.bar3"));
+        Assert.assertTrue(ElementUtil.isValidTagName("foo-._"));
+        Assert.assertTrue(ElementUtil.isValidTagName("x"));
+    }
+
+    @Test
+    public void isValidTagName_invalidTagNames() {
+        Assert.assertFalse(ElementUtil.isValidTagName("1foo"));
+        Assert.assertFalse(ElementUtil.isValidTagName("-foo"));
+        Assert.assertFalse(ElementUtil.isValidTagName("_foo"));
+        Assert.assertFalse(ElementUtil.isValidTagName(".foo"));
+        Assert.assertFalse(ElementUtil.isValidTagName("foo>"));
+        Assert.assertFalse(ElementUtil.isValidTagName("foo$bar"));
+    }
 }

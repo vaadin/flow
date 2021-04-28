@@ -77,6 +77,7 @@ import io.swagger.v3.parser.OpenAPIV3Parser;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 
+import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.connect.EndpointExposed;
 import com.vaadin.flow.server.connect.auth.CsrfChecker;
@@ -108,7 +109,7 @@ public abstract class AbstractEndpointGenerationTest
     private static final List<Class> DENY_LIST_CHECKING_ABSOLUTE_PATH = Arrays
             .asList(Model.class, ParentModel.class, GrandParentModel.class);
     private static final VaadinConnectAccessChecker accessChecker = new VaadinConnectAccessChecker(
-            new CsrfChecker());
+            new AccessAnnotationChecker(), new CsrfChecker());
     private final Set<String> schemaReferences = new HashSet<>();
 
     public AbstractEndpointGenerationTest(List<Class<?>> testClasses) {
@@ -231,7 +232,8 @@ public abstract class AbstractEndpointGenerationTest
         for (Method expectedEndpointMethod : testMethodsClass
                 .getDeclaredMethods()) {
             if (!Modifier.isPublic(expectedEndpointMethod.getModifiers())
-                    || accessChecker.getSecurityTarget(expectedEndpointMethod)
+                    || accessChecker.getAccessAnnotationChecker()
+                            .getSecurityTarget(expectedEndpointMethod)
                             .isAnnotationPresent(DenyAll.class)) {
                 continue;
             }

@@ -90,11 +90,11 @@ import io.swagger.v3.oas.models.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.connect.Annotation;
 import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.connect.EndpointExposed;
 import com.vaadin.flow.server.connect.EndpointNameChecker;
-import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 
 /**
  * Java parser class which scans for all {@link Endpoint} classes and produces
@@ -131,7 +131,7 @@ public class OpenApiObjectGenerator {
      * Adds the source path to the generator to process.
      *
      * @param sourcePath
-     *            the source path to generate the medatata from
+     *            the source path to generate the metadata from
      */
     public void addSourcePath(Path sourcePath) {
         if (sourcePath == null) {
@@ -218,12 +218,12 @@ public class OpenApiObjectGenerator {
 
         javaSourcePaths.stream()
                 .map(path -> new SourceRoot(path, parserConfiguration))
-                .forEach(soureRoot -> parseSourceRoot(soureRoot,
+                .forEach(sourceRoot -> parseSourceRoot(sourceRoot,
                         this::findEndpointExposed));
 
         javaSourcePaths.stream()
                 .map(path -> new SourceRoot(path, parserConfiguration)).forEach(
-                        soureRoot -> parseSourceRoot(soureRoot, this::process));
+                        sourceRoot -> parseSourceRoot(sourceRoot, this::process));
 
         for (Map.Entry<String, ResolvedReferenceType> entry : usedTypes
                 .entrySet()) {
@@ -335,9 +335,9 @@ public class OpenApiObjectGenerator {
                 .map(BodyDeclaration::asClassOrInterfaceDeclaration)
                 .filter(declaration -> GeneratorUtils.hasAnnotation(declaration,
                         compilationUnit, EndpointExposed.class))
-                .map(delcaration -> endpointExposedMap.put(
-                        delcaration.resolve().getQualifiedName(),
-                        delcaration)));
+                .map(declaration -> endpointExposedMap.put(
+                        declaration.resolve().getQualifiedName(),
+                        declaration)));
         return SourceRoot.Callback.Result.DONT_SAVE;
     }
 

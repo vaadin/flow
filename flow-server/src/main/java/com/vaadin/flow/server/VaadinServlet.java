@@ -52,7 +52,7 @@ import com.vaadin.flow.shared.JsonConstants;
  * @since 1.0
  */
 public class VaadinServlet extends HttpServlet {
-    private VaadinService vaadinService;
+    private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
 
     private volatile boolean isServletInitialized;
@@ -89,12 +89,12 @@ public class VaadinServlet extends HttpServlet {
              * its "init" method is called from the {@code
              * ServletContextListener} with the same ServletConfig instance.
              */
-            VaadinContext vaadinContext = null;
+            VaadinServletContext vaadinServletContext = null;
             if (getServletConfig() == null) {
                 isServletInitialized = true;
                 super.init(servletConfig);
 
-                vaadinContext = initializeContext();
+                vaadinServletContext = initializeContext();
             }
 
             if (getServletConfig() != servletConfig) {
@@ -103,18 +103,18 @@ public class VaadinServlet extends HttpServlet {
                                 + "instance which has been used for the initial method call");
             }
 
-            if (vaadinContext == null) {
-                vaadinContext = new VaadinServletContext(
+            if (vaadinServletContext == null) {
+                vaadinServletContext = new VaadinServletContext(
                         getServletConfig().getServletContext());
             }
 
-            if (vaadinService != null
-                    || vaadinContext.getAttribute(Lookup.class) == null) {
+            if (servletService != null || vaadinServletContext
+                    .getAttribute(Lookup.class) == null) {
                 return;
             }
 
             try {
-                vaadinService = createServletService();
+                servletService = createServletService();
             } catch (ServiceException e) {
                 throw new ServletException("Could not initialize VaadinServlet",
                         e);
@@ -122,9 +122,9 @@ public class VaadinServlet extends HttpServlet {
 
             // Sets current service as it is needed in static file server even
             // though there are no request and response.
-            vaadinService.setCurrentInstances(null, null);
+            servletService.setCurrentInstances(null, null);
 
-            staticFileHandler = createStaticFileHandler(vaadinService);
+            staticFileHandler = createStaticFileHandler(servletService);
 
             servletInitialized();
         } finally {
@@ -142,12 +142,12 @@ public class VaadinServlet extends HttpServlet {
 
     /**
      * Creates a new instance of {@link StaticFileHandler}, that is responsible
-     * to find and serve static resources.
-     * 
+     * to find and serve static resources. By default it returns a
+     * {@link StaticFileServer} instance.
+     *
      * @param vaadinService
      *            the vaadinService created at {@link #createServletService()}
-     * @return the file handler to be used by this servlet, not
-     *         <code>null</code>
+     * @return the file server to be used by this servlet, not <code>null</code>
      */
     protected StaticFileHandler createStaticFileHandler(
             VaadinService vaadinService) {
@@ -289,8 +289,8 @@ public class VaadinServlet extends HttpServlet {
 
         CurrentInstance.clearAll();
 
-        VaadinRequest vaadinRequest = createVaadinRequest(request);
-        VaadinResponse vaadinResponse = createVaadinResponse(response);
+        VaadinServletRequest vaadinRequest = createVaadinRequest(request);
+        VaadinServletResponse vaadinResponse = createVaadinResponse(response);
         if (!ensureCookiesEnabled(vaadinRequest, vaadinResponse)) {
             return;
         }
@@ -421,7 +421,8 @@ public class VaadinServlet extends HttpServlet {
         }
     }
 
-    private VaadinResponse createVaadinResponse(HttpServletResponse response) {
+    private VaadinServletResponse createVaadinResponse(
+            HttpServletResponse response) {
         return new VaadinServletResponse(response, getService());
     }
 
@@ -443,8 +444,8 @@ public class VaadinServlet extends HttpServlet {
      *
      * @return the Vaadin service
      */
-    public VaadinService getService() {
-        return vaadinService;
+    public VaadinServletService getService() {
+        return servletService;
     }
 
     /**
@@ -458,15 +459,13 @@ public class VaadinServlet extends HttpServlet {
      * @return false if cookies are disabled, true otherwise
      * @throws IOException
      */
-    private boolean ensureCookiesEnabled(VaadinRequest request,
-            VaadinResponse response) throws IOException {
+    private boolean ensureCookiesEnabled(VaadinServletRequest request,
+            VaadinServletResponse response) throws IOException {
         if (HandlerHelper.isRequestType(request, RequestType.UIDL)) {
             // In all other but the first UIDL request a cookie should be
             // returned by the browser.
             // This can be removed if cookieless mode (#3228) is supported
-            if (request instanceof HttpServletRequest
-                    && ((HttpServletRequest) request)
-                            .getRequestedSessionId() == null) {
+            if (request.getRequestedSessionId() == null) {
                 // User has cookies disabled
                 SystemMessages systemMessages = getService().getSystemMessages(
                         HandlerHelper.findLocale(null, request), request);
@@ -538,7 +537,7 @@ public class VaadinServlet extends HttpServlet {
         }
     }
 
-    private VaadinContext initializeContext() {
+    private VaadinServletContext initializeContext() {
         ServletContext servletContext = getServletConfig().getServletContext();
         VaadinServletContext vaadinServletContext = new VaadinServletContext(
                 servletContext);
