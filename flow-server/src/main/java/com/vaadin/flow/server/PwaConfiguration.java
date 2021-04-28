@@ -179,9 +179,9 @@ public class PwaConfiguration implements Serializable {
         this.themeColor = themeColor;
         this.iconPath = iconPath;
         this.manifestPath = manifestPath;
-        this.offlinePath = offlinePath.isEmpty() && useV14Bootstrap ?
-                DEFAULT_OFFLINE_PATH :
-                offlinePath;
+        this.offlinePath = offlinePath.isEmpty() && useV14Bootstrap
+                ? DEFAULT_OFFLINE_PATH
+                : offlinePath;
         this.display = display;
         this.startPath = startPath;
         this.enabled = enabled;

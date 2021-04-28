@@ -450,10 +450,10 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
             Class<?> hopefullyAppShellClass = annotatedClasses.iterator()
                     .next();
-            if (!useV14Bootstrap && !Arrays
-                    .stream(hopefullyAppShellClass.getInterfaces())
-                    .map(Class::getName).collect(Collectors.toList())
-                    .contains(AppShellConfigurator.class.getName())) {
+            if (!useV14Bootstrap
+                    && !Arrays.stream(hopefullyAppShellClass.getInterfaces())
+                            .map(Class::getName).collect(Collectors.toList())
+                            .contains(AppShellConfigurator.class.getName())) {
                 throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
             }
 
