@@ -264,6 +264,11 @@ public class PropertyDeploymentConfiguration
                 && enableDevServer(); // gizmo excluded from prod bundle
     }
 
+    @Override
+    public boolean useSnowpack() {
+        return getBooleanProperty(InitParameters.USE_SNOWPACK, false);
+    }
+
     /**
      * Checks whether the given {@code property} is the property explicitly set
      * in this deployment configuration (not in it's parent config).
