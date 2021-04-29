@@ -599,12 +599,12 @@ public final class DevModeHandler implements RequestHandler {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
 
-        FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
-        tools.validateNodeAndNpmVersion();
-
         boolean useHomeNodeExec = config.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
+        FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
+                useHomeNodeExec);
+        tools.validateNodeAndNpmVersion();
 
         String nodeExec = null;
         if (useHomeNodeExec) {
