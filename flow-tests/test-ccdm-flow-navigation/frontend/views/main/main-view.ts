@@ -14,7 +14,8 @@
  * the License.
  */
 
-import { css, customElement, html, LitElement } from 'lit-element';
+import { css, html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators';
 
 import { router } from 'Frontend/index';
 

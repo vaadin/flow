@@ -1,4 +1,4 @@
-import {html, LitElement} from 'lit-element';
+import {html, LitElement} from 'lit';
 import './lit-template-inner.js';
 
 class TemplateOuter extends LitElement {
