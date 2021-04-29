@@ -13,7 +13,8 @@ import {
 
 import {Employee, EmployeeModel, Order, OrderModel, TestEntity, TestModel} from "./TestModels";
 
-import {customElement, LitElement} from 'lit-element';
+import {LitElement} from 'lit';
+import {customElement} from 'lit/decorators';
 
 @customElement('lit-order-view')
 class LitOrderView extends LitElement {}
