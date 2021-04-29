@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -41,6 +42,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * <p>
  * This should preferably be executed after npm installation to not make it skip
  * or have the plugins deleted by {@link TaskRunNpmInstall}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since
  */

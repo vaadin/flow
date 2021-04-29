@@ -25,6 +25,8 @@ import com.vaadin.flow.internal.nodefeature.ModelList;
 /**
  * A list implementation which uses a {@link ModelList} in a {@link StateNode}
  * as the data source.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

@@ -23,6 +23,8 @@ import java.util.UUID;
 
 /**
  * Utility class for special string handling.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.1.4
  */

@@ -15,15 +15,18 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.File;
 import java.io.IOException;
+
+import org.apache.commons.io.IOUtils;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Generate <code>types.d.ts</code> if it is missing in project folder and
  * <code>tsconfig.json</code> exists in project folder.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 3.0
  */

@@ -33,6 +33,8 @@ import elemental.json.JsonValue;
 /**
  * Wrapper component for a web component that exposes {@link ClientCallable}
  * methods that the client-side components expect to be available.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
  * @since 2.0

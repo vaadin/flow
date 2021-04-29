@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
  * <p>
  * If this socket is closed then there is no anymore Java "client" for the
  * webpack dev server and it should be stopped.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 2.0

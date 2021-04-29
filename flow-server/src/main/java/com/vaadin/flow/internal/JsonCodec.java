@@ -42,6 +42,9 @@ import elemental.json.JsonValue;
  * <li>{@link Element} (encoded as a reference to the element)
  * <li>{@link Component} (encoded as a reference to the root element)
  * </ul>
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

@@ -23,6 +23,8 @@ import com.vaadin.flow.component.UI;
  * Context of a callback execution when
  * {@link UI#beforeClientResponse(com.vaadin.flow.component.Component, com.vaadin.flow.function.SerializableConsumer)}
  * is invoked.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @author Vaadin Ltd
  * @since 1.0.

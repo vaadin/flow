@@ -23,6 +23,8 @@ import com.vaadin.flow.internal.StringUtil;
 
 /**
  * Extracts import statements from the JS Polymer 3 source code.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 2.0

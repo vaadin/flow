@@ -21,6 +21,8 @@ package com.vaadin.flow.server.frontend;
  *
  * This exception usually means that webpack-dev-server failed compilation of
  * the frontend bundle and any error in the output should be fixed.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class WebpackConnectionException extends RuntimeException {
 

@@ -21,6 +21,7 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -85,6 +86,7 @@ import com.vaadin.flow.theme.Theme;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
@@ -107,6 +109,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 /**
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
  * server.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */

@@ -51,6 +51,8 @@ import com.vaadin.flow.router.internal.RouteUtil;
 
 /**
  * Utility methods used by the BootstrapHandler.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */
