@@ -41,7 +41,7 @@ fs.writeFileSync(sourceDir + toFile, clientSource, 'utf8');
 // Write to target (copy '.d.ts' and '.js' files from sourceDir)
 mkdirp(targetDir);
 fs.readdirSync(sourceDir)
-  .filter(s => s.endsWith('.d.ts') ||s.endsWith('.js'))
+  .filter(s => s.endsWith('.d.ts') || s.endsWith('.js') || s.endsWith('.map'))
   .forEach(file => fs.copyFileSync(sourceDir + file, targetDir + file));
 
 // Check that chromedriver version matches in flow and intern
