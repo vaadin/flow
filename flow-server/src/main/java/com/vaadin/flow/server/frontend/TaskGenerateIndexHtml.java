@@ -18,12 +18,15 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.io.IOUtils;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import org.apache.commons.io.IOUtils;
 
 /**
  * Generate <code>index.html</code> if it is missing in frontend folder.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @since 3.0
  */

@@ -15,18 +15,20 @@
  */
 package com.vaadin.flow.server.startup;
 
-import com.vaadin.flow.server.VaadinContext;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import java.lang.reflect.Method;
 import java.util.Set;
 
+import com.vaadin.flow.server.VaadinContext;
+
 /**
  * Verify the servlet version on container initialization.
  * <p>
  * In cases of non compatible servlet version application deployment will fail.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */

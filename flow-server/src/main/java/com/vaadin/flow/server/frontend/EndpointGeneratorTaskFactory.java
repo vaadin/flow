@@ -19,7 +19,9 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 
 /**
- * A factory for creating Vaadin Endpoint generator tasks
+ * A factory for creating Vaadin Endpoint generator tasks.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
  * @since 6.0

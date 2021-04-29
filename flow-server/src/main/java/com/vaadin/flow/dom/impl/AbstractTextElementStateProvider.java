@@ -36,6 +36,8 @@ import com.vaadin.flow.shared.Registration;
 /**
  * Abstract element state provider for text nodes. Operations that are not
  * applicable for text nodes throw {@link UnsupportedOperationException}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

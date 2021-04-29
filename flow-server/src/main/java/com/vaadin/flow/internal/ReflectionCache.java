@@ -30,6 +30,8 @@ import com.vaadin.flow.shared.Registration;
  * A thread-safe cache for the result of doing some reflection lookup based on a
  * class. Cached values never expire since it's assumed that the there is a
  * finite number of classes for which reflection results are used.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

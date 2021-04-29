@@ -15,15 +15,18 @@
  */
 package com.vaadin.flow.router.internal;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteResolver;
 import com.vaadin.flow.server.RouteRegistry;
-import org.slf4j.LoggerFactory;
 
 /**
  * Default implementation of the {@link RouteResolver} interface.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0.

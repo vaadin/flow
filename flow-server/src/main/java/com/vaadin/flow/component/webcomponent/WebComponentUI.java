@@ -49,6 +49,8 @@ import elemental.json.JsonObject;
 
 /**
  * Custom UI for use with WebComponents served from the server.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
  * @since 2.0

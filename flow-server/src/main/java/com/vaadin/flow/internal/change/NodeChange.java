@@ -27,6 +27,8 @@ import elemental.json.JsonObject;
 
 /**
  * Base class describing a change to a state node.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

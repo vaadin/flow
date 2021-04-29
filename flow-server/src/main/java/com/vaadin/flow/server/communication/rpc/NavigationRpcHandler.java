@@ -30,6 +30,8 @@ import elemental.json.JsonValue;
 
 /**
  * RPC handler for Navigation.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @see JsonConstants#RPC_TYPE_NAVIGATION
  * @author Vaadin Ltd

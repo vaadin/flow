@@ -28,6 +28,8 @@ import com.vaadin.flow.server.VaadinServlet;
  * this interface may be available as an attribute in a {@link VaadinContext}.
  * In the latter case {@link VaadinServlet#init()} method will run
  * {@link #initialize(VaadinContext)} method.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @author Vaadin Ltd
  * @since

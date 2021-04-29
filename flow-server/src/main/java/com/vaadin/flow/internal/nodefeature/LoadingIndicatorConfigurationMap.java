@@ -20,6 +20,8 @@ import com.vaadin.flow.internal.StateNode;
 
 /**
  * Map for storing configuration for the loading indicator.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

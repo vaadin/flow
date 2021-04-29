@@ -26,6 +26,8 @@ import com.vaadin.flow.internal.change.NodeChange;
 /**
  * A node feature represents a group of related values and functionality in a
  * state node.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

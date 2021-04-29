@@ -19,6 +19,8 @@ import java.lang.reflect.Field;
 
 /**
  * Three argument consumer.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since

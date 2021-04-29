@@ -33,6 +33,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 /**
  * A task for generating the bootstrap file
  * {@link FrontendUtils#BOOTSTRAP_FILE_NAME} during `package` Maven goal.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  */

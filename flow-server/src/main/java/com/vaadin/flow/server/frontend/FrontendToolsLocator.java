@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Helps to locate the tools in the system by their names.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.2
  */

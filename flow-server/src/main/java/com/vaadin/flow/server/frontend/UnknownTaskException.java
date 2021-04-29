@@ -18,6 +18,8 @@ package com.vaadin.flow.server.frontend;
 /**
  * Exception thrown for when a node task that is not in the task list is
  * encountered.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class UnknownTaskException extends RuntimeException {
 

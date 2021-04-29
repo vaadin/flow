@@ -20,6 +20,8 @@ import com.vaadin.flow.theme.AbstractTheme;
 
 /**
  * Common scanner functionality.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since

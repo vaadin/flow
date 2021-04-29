@@ -26,6 +26,8 @@ import com.vaadin.flow.component.ComponentEvent;
 /**
  * Cache for tracking global information related to {@link ComponentEvent}
  * types.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

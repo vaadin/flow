@@ -28,6 +28,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Abstract class for generating client files.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 3.0
  */

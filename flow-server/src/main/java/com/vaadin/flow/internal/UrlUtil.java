@@ -18,6 +18,8 @@ package com.vaadin.flow.internal;
 
 /**
  * Internal utility class for URL handling.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 2.0

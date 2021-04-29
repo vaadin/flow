@@ -17,6 +17,8 @@ package com.vaadin.flow.server.frontend;
 
 /**
  * Generate the Vaadin TS files for endpoints, and the Client API file.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public interface TaskGenerateConnect extends FallibleCommand {
 
