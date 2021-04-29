@@ -84,7 +84,8 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
             relativizedImport = relativizedImport
                     // replace `./frontend/` with `../target/frontend/`
                     // so as it can be copied to `frontend` without changes.
-                    .replaceFirst("^./", "../" + outputDirectory.getName() + "/")
+                    .replaceFirst("^./",
+                            "../" + outputDirectory.getName() + "/")
                     // remove extension
                     .replaceFirst("\\.(ts|js)$", "");
         }

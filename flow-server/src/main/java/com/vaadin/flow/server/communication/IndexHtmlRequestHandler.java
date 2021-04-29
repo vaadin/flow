@@ -137,13 +137,14 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         if (config.useSnowpack()) {
             Element indexModule = new Element("script");
-            indexModule.attr("src","/VAADIN/index.js");
+            indexModule.attr("src", "/VAADIN/index.js");
             indexModule.attr("type", "module");
             indexDocument.body().appendChild(indexModule);
 
             if (config.isDevModeLiveReloadEnabled()) {
                 Element gizmoModule = new Element("script");
-                gizmoModule.attr("src","/VAADIN/flow-frontend/VaadinDevmodeGizmo.js");
+                gizmoModule.attr("src",
+                        "/VAADIN/flow-frontend/VaadinDevmodeGizmo.js");
                 gizmoModule.attr("type", "module");
                 indexDocument.body().appendChild(gizmoModule);
             }

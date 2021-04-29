@@ -279,7 +279,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
     }
 
     private void createSnowpackConfig() throws IOException {
-        File configFile = new File(webpackConfigPath.toFile(), "snowpack.config.js");
+        File configFile = new File(webpackConfigPath.toFile(),
+                "snowpack.config.js");
 
         if (!configFile.exists()) {
             URL resource = this.getClass().getClassLoader()

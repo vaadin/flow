@@ -476,7 +476,8 @@ public final class DevModeHandler implements RequestHandler {
         }
 
         // remove color escape codes for console
-        String cleanLine = line; //line.replaceAll("(\u001b\\[[;\\d]*m|[\b\r]+)", "");
+        String cleanLine = line; // line.replaceAll("(\u001b\\[[;\\d]*m|[\b\r]+)",
+                                 // "");
 
         // save output so as it can be used to alert user in browser.
         cumulativeOutput.append(cleanLine);
@@ -640,7 +641,8 @@ public final class DevModeHandler implements RequestHandler {
         // here the port == 0
         Pair<File, File> webPackFiles = validateFiles(config, npmFolder);
 
-        String displayName = useSnowpack ? "snowpack dev" : "webpack-dev-server";
+        String displayName = useSnowpack ? "snowpack dev"
+                : "webpack-dev-server";
         long start = System.nanoTime();
         getLogger().info("Starting {}", displayName);
 
@@ -662,7 +664,8 @@ public final class DevModeHandler implements RequestHandler {
     }
 
     private boolean doStartWebpack(ApplicationConfiguration config,
-            Pair<File, File> webPackFiles, long start) throws ExecutionFailedException {
+            Pair<File, File> webPackFiles, long start)
+            throws ExecutionFailedException {
         String displayName = useSnowpack ? "snowpack" : "webpack";
 
         ProcessBuilder processBuilder = new ProcessBuilder()
@@ -711,9 +714,10 @@ public final class DevModeHandler implements RequestHandler {
             // servlet context is destroyed.
             Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
 
-            final Pattern succeed ;
+            final Pattern succeed;
             if (config.useSnowpack()) {
-                succeed = Pattern.compile("Watching for changes|Server started|File changed\\.\\.\\.");
+                succeed = Pattern.compile(
+                        "Watching for changes|Server started|File changed\\.\\.\\.");
             } else {
                 succeed = Pattern.compile(config.getStringProperty(
                         SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN,
@@ -723,8 +727,8 @@ public final class DevModeHandler implements RequestHandler {
             Pattern failure = // TODO: fixme
                     config.useSnowpack() ? Pattern.compile("Error")
                             : Pattern.compile(config.getStringProperty(
-                            SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN,
-                            DEFAULT_ERROR_PATTERN));
+                                    SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN,
+                                    DEFAULT_ERROR_PATTERN));
 
             logStream(webpackProcess.get().getInputStream(), succeed, failure);
 
@@ -736,7 +740,8 @@ public final class DevModeHandler implements RequestHandler {
             }
 
             if (!webpackProcess.get().isAlive()) {
-                throw new ExecutionFailedException(displayName + " exited prematurely");
+                throw new ExecutionFailedException(
+                        displayName + " exited prematurely");
             }
 
             long ms = (System.nanoTime() - start) / 1000000;
@@ -745,7 +750,8 @@ public final class DevModeHandler implements RequestHandler {
         } catch (IOException e) {
             getLogger().error("Failed to start the {} process", displayName, e);
         } catch (InterruptedException e) {
-            getLogger().debug("{} process start has been interrupted", displayName, e);
+            getLogger().debug("{} process start has been interrupted",
+                    displayName, e);
         }
         return false;
     }
@@ -762,12 +768,9 @@ public final class DevModeHandler implements RequestHandler {
     private List<String> makeCommands(ApplicationConfiguration config,
             File webpack, File webpackConfig, String nodeExec) {
         if (useSnowpack) {
-            return Arrays.asList(
-                    nodeExec,
-                    webpack.getAbsolutePath(),
-                    "dev",
-                    "--config", webpackConfig.getAbsolutePath(),
-                    "--port", String.valueOf(port));
+            return Arrays.asList(nodeExec, webpack.getAbsolutePath(), "dev",
+                    "--config", webpackConfig.getAbsolutePath(), "--port",
+                    String.valueOf(port));
         } else {
             List<String> command = new ArrayList<>();
             command.add(nodeExec);
@@ -778,16 +781,15 @@ public final class DevModeHandler implements RequestHandler {
             command.add(String.valueOf(port));
             command.add("--env");
             command.add("watchDogPort=" + watchDog.get().getWatchDogPort());
-            command.addAll(Arrays.asList(config
-                    .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
-                            "-d --inline=false")
-                    .split(" +")));
+            command.addAll(Arrays.asList(config.getStringProperty(
+                    SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
+                    "-d --inline=false").split(" +")));
             return command;
         }
     }
 
-    private Pair<File, File> validateFiles(ApplicationConfiguration config, File npmFolder)
-            throws ExecutionFailedException {
+    private Pair<File, File> validateFiles(ApplicationConfiguration config,
+            File npmFolder) throws ExecutionFailedException {
         assert port == 0;
         // Skip checks if we have a webpack-dev-server already running
         File webpack, webpackConfig;

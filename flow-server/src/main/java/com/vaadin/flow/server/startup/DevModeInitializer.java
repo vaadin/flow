@@ -376,8 +376,7 @@ public class DevModeInitializer
                 .populateTokenFileData(tokenFileData)
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec)
-                .useSnowpack(config.useSnowpack())
-                .build();
+                .useSnowpack(config.useSnowpack()).build();
 
         Runnable runnable = () -> runNodeTasks(context, tokenFileData, tasks);
 
