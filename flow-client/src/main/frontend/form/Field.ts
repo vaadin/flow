@@ -27,7 +27,7 @@ export abstract class AbstractFieldStrategy implements FieldStrategy {
   set value(value) {
     this.element.value = value;
   }
-  set errorMessage(_: string) {}
+  set errorMessage(_: string) {} // eslint-disable-line @typescript-eslint/no-empty-function
   setAttribute(key: string, val: any) {
     if (val) {
       this.element.setAttribute(key, '');
@@ -69,7 +69,7 @@ export class CheckedFieldStrategy extends GenericFieldStrategy {
 
 export class ComboBoxFieldStrategy extends VaadinFieldStrategy {
   get value() {
-    const selectedItem = (this.element as any).selectedItem;
+    const { selectedItem } = this.element as any;
     return selectedItem === null ? undefined : selectedItem;
   }
   set value(val: any) {
@@ -97,18 +97,18 @@ export function getDefaultFieldStrategy(elm: any): FieldStrategy {
       return new SelectedFieldStrategy(elm);
     case 'vaadin-rich-text-editor':
       return new GenericFieldStrategy(elm);
-    case 'input':
-      if (/^(checkbox|radio)$/.test(elm.type)) {
+    default:
+      if (elm.localName === 'input' && /^(checkbox|radio)$/.test(elm.type)) {
         return new CheckedFieldStrategy(elm);
       }
+      return elm.constructor.version ? new VaadinFieldStrategy(elm) : new GenericFieldStrategy(elm);
   }
-  return elm.constructor.version ? new VaadinFieldStrategy(elm) : new GenericFieldStrategy(elm);
 }
 
 /**
  * Binds a form field component into a model.
  *
- * Exmaple usage:
+ * Example usage:
  *
  * ```
  * <vaadin-text-field ...="${field(model.name)}">
@@ -151,7 +151,7 @@ export const field = directive(
       }
     };
 
-    render(model: AbstractModel<any>, effect?: (element: Element) => void) {
+    render(model: AbstractModel<any>, effect?: (element: Element) => void): void {
       this.element = (this.partInfo as any).element as HTMLInputElement & Field;
       this.model = model;
       this.effect = effect;
@@ -164,40 +164,46 @@ export const field = directive(
           this.updateValueFromElement(binderNode);
         };
 
-        this.element.onchange = this.element.onblur = () => {
+        const changeBlurHandler = () => {
           this.updateValueFromElement(binderNode);
           binderNode.visited = true;
         };
+        this.element.onblur = changeBlurHandler;
+        this.element.onchange = changeBlurHandler;
 
         this.element.checkValidity = () => !this.fieldState.invalid;
       }
 
-      const name = binderNode.name;
+      const { name } = binderNode;
       if (name !== this.fieldState.name) {
         this.fieldState.name = name;
         this.element.setAttribute('name', name);
       }
 
-      const value = binderNode.value;
+      const { value } = binderNode;
       const valueFromField = this.convertFieldValue(this.fieldState.value);
       if (value !== valueFromField && !(Number.isNaN(value) && Number.isNaN(valueFromField))) {
-        this.fieldState.strategy.value = this.fieldState.value = value;
+        this.fieldState.value = value;
+        this.fieldState.strategy.value = value;
       }
 
-      const required = binderNode.required;
+      const { required } = binderNode;
       if (required !== this.fieldState.required) {
-        this.fieldState.strategy.required = this.fieldState.required = required;
+        this.fieldState.required = required;
+        this.fieldState.strategy.required = required;
       }
 
       const firstError = binderNode.ownErrors ? binderNode.ownErrors[0] : undefined;
       const errorMessage = (firstError && firstError.message) || '';
       if (errorMessage !== this.fieldState.errorMessage) {
-        this.fieldState.strategy.errorMessage = this.fieldState.errorMessage = errorMessage;
+        this.fieldState.errorMessage = errorMessage;
+        this.fieldState.strategy.errorMessage = errorMessage;
       }
 
-      const invalid = binderNode.invalid;
+      const { invalid } = binderNode;
       if (invalid !== this.fieldState.invalid) {
-        this.fieldState.strategy.invalid = this.fieldState.invalid = invalid;
+        this.fieldState.invalid = invalid;
+        this.fieldState.strategy.invalid = invalid;
       }
     }
   }
