@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
-public final class IndentationUtils {
-    public static String unifyIndentation(String code, int indentation)
+final class IndentationUtils {
+    static String unifyIndentation(String code, int indentation)
             throws IndentationSyntaxException {
         Token[] tokens = Token.process(code);
         Node ast = Node.process(tokens);
@@ -126,15 +126,15 @@ public final class IndentationUtils {
             this.type = type;
         }
 
-        public boolean isOpen() {
+        boolean isOpen() {
             return open;
         }
 
-        public BraceType getType() {
+        BraceType getType() {
             return type;
         }
 
-        public enum BraceType {
+        enum BraceType {
 
             CURVE_BRACE, PARENTHESIS, ROUND_BRACE;
 
@@ -176,15 +176,15 @@ public final class IndentationUtils {
 
         private final StringBuilder content = new StringBuilder();
 
-        public void addSymbol(char symbol) {
+        void addSymbol(char symbol) {
             content.append(symbol);
         }
 
-        public String getContent() {
+        String getContent() {
             return content.toString().trim();
         }
 
-        public boolean isEmpty() {
+        boolean isEmpty() {
             int nonWhiteSpaceSymbolCount = 0;
 
             for (int i = 0; i < content.length(); i++) {
@@ -239,15 +239,15 @@ public final class IndentationUtils {
             return unclosedNodes.pop();
         }
 
-        public ContainerNode getParent() {
+        ContainerNode getParent() {
             return parent;
         }
 
-        public boolean isVisited() {
+        boolean isVisited() {
             return visited;
         }
 
-        public void setVisited(boolean visited) {
+        void setVisited(boolean visited) {
             this.visited = visited;
         }
 
@@ -261,23 +261,23 @@ public final class IndentationUtils {
             super(parent);
         }
 
-        public void addChild(Node node) {
+        void addChild(Node node) {
             children.add(node);
         }
 
-        public boolean isFirstVisit() {
+        boolean isFirstVisit() {
             return children.stream().noneMatch(Node::isVisited);
         }
 
-        public boolean isEmpty() {
+        boolean isEmpty() {
             return children.isEmpty();
         }
 
-        public boolean hasUnvisitedChildren() {
+        boolean hasUnvisitedChildren() {
             return children.stream().anyMatch(node -> !node.isVisited());
         }
 
-        public Node getNextUnvisited() {
+        Node getNextUnvisited() {
             return children.stream().filter(node -> !node.isVisited())
                     .findFirst().orElse(null);
         }
@@ -294,7 +294,7 @@ public final class IndentationUtils {
             this.braceType = braceType;
         }
 
-        public char getBrace(boolean open) {
+        char getBrace(boolean open) {
             return BraceToken.BraceType.getBraceByType(braceType, open);
         }
 
@@ -304,20 +304,20 @@ public final class IndentationUtils {
 
         private final String text;
 
-        public TextNode(ContainerNode parent, String text) {
+        TextNode(ContainerNode parent, String text) {
             super(parent);
             this.text = text;
         }
 
-        public String getText() {
+        String getText() {
             return text;
         }
 
     }
 
-    public static class IndentationSyntaxException extends Exception {
+    static class IndentationSyntaxException extends Exception {
 
-        public IndentationSyntaxException(String message) {
+        IndentationSyntaxException(String message) {
             super(message);
         }
 

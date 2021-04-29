@@ -16,15 +16,34 @@
 
 package com.vaadin.flow.server.connect;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+
+import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 
 /**
  * A checker for TypeScript null compatibility in Vaadin endpoint methods
  * parameter and return types.
  */
 public class ExplicitNullableTypeChecker {
+
+    /**
+     * Checks if the element should be required (not nullable) in the generated
+     * Typescript code.
+     * 
+     * @param element
+     *            an element to be required
+     * @return a result of check
+     */
+    public static boolean isRequired(AnnotatedElement element) {
+        return element.isAnnotationPresent(Nonnull.class);
+    }
+
+    public static boolean isRequired(NodeWithAnnotations<?> node) {
+        return node.isAnnotationPresent(Nonnull.class);
+    }
 
     /**
      * Validates the given value for the given expected method return value
@@ -39,7 +58,7 @@ public class ExplicitNullableTypeChecker {
      */
     public String checkValueForAnnotatedElement(Object value,
             AnnotatedElement annotatedElement) {
-        if (!NonnullAnnotationChecker.isElementRequired(annotatedElement)) {
+        if (!isRequired(annotatedElement)) {
             return null;
         }
         if (annotatedElement instanceof Method) {

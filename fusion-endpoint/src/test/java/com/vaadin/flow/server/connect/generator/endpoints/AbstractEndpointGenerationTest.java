@@ -78,7 +78,7 @@ import org.junit.Assert;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.connect.EndpointExposed;
-import com.vaadin.flow.server.connect.NonnullAnnotationChecker;
+import com.vaadin.flow.server.connect.ExplicitNullableTypeChecker;
 import com.vaadin.flow.server.connect.auth.CsrfChecker;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.server.connect.generator.OpenApiObjectGenerator;
@@ -351,7 +351,7 @@ public abstract class AbstractEndpointGenerationTest
             assertSchema(stringSchemaEntry.getValue(), parameterTypes[index],
                     parameterTypeArguments.get(index));
             List requiredList = requestSchema.getRequired();
-            if (NonnullAnnotationChecker.isElementRequired(parameters[index])) {
+            if (ExplicitNullableTypeChecker.isRequired(parameters[index])) {
                 assertTrue(requiredList.contains(stringSchemaEntry.getKey()));
             } else {
                 boolean notRequired = requiredList == null
@@ -508,8 +508,7 @@ public abstract class AbstractEndpointGenerationTest
             Type type = expectedSchemaField.getGenericType();
             assertSchema(propertySchema, expectedSchemaField.getType(),
                     extractTypeArguments(type, typeArguments));
-            if (NonnullAnnotationChecker
-                    .isElementRequired(expectedSchemaField)) {
+            if (ExplicitNullableTypeChecker.isRequired(expectedSchemaField)) {
                 assertTrue(schema.getRequired()
                         .contains(expectedSchemaField.getName()));
             } else {
