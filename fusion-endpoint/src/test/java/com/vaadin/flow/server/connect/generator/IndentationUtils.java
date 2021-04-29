@@ -19,14 +19,21 @@ public final class IndentationUtils {
 
         while (currentNode != null) {
             if (currentNode instanceof TextNode) {
-                String currentNodeText = ((TextNode) currentNode).getText();
+                String text = ((TextNode) currentNode).getText();
 
-                if (!currentNodeText.matches("[,:|;].*")) {
+                // Workaround for the whitespace issue
+                // https://github.com/vaadin/flow/issues/10843
+                if (text.startsWith("*") || text.startsWith("//")) {
+                    // Applies only for comments
+                    text = text.replaceAll("\\s+", " ");
+                }
+
+                if (!text.matches("[,:|;].*")) {
                     indentedCodeBuilder.append('\n')
                             .append(repeat(" ", level * indentation));
                 }
 
-                indentedCodeBuilder.append(((TextNode) currentNode).getText());
+                indentedCodeBuilder.append(text);
 
                 currentNode.setVisited(true);
                 currentNode = currentNode.getParent();

@@ -9,7 +9,7 @@ import client from './connect-client.default';
 import Collection from './com/vaadin/flow/server/connect/generator/endpoints/collectionendpoint/CollectionEndpoint/Collection';
 
 /**
- * Get a collection by author name. The generator should not mix this type  with the Java's Collection type.
+ * Get a collection by author name. The generator should not mix this type with the Java's Collection type.
  *
  * @param name author name
  * Return a collection
