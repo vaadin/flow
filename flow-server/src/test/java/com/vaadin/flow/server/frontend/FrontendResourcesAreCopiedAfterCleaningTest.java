@@ -81,10 +81,12 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
                 FrontendResourcesAreCopiedAfterCleaningTest.class
                         .getClassLoader());
         Lookup mockLookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(classFinder).when(mockLookup).lookup(ClassFinder.class);
+        Mockito.doReturn(classFinder).when(mockLookup)
+                .lookup(ClassFinder.class);
         NodeTasks.Builder builder = new NodeTasks.Builder(mockLookup,
                 npmFolder);
-        File resourcesFolder = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
+        File resourcesFolder = new File(npmFolder,
+                DEFAULT_FLOW_RESOURCES_FOLDER);
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
                 .runNpmInstall(false).enablePackagesUpdate(true)
@@ -98,10 +100,12 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
                 FrontendResourcesAreCopiedAfterCleaningTest.class
                         .getClassLoader());
         Lookup mockLookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(classFinder).when(mockLookup).lookup(ClassFinder.class);
+        Mockito.doReturn(classFinder).when(mockLookup)
+                .lookup(ClassFinder.class);
         NodeTasks.Builder builder = new NodeTasks.Builder(mockLookup,
                 npmFolder);
-        File resourcesFolder = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
+        File resourcesFolder = new File(npmFolder,
+                DEFAULT_FLOW_RESOURCES_FOLDER);
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
                 .runNpmInstall(false).enableNpmFileCleaning(true)

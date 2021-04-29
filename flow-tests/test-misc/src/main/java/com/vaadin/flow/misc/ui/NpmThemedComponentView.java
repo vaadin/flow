@@ -26,8 +26,9 @@ import com.vaadin.flow.router.Route;
 @JsModule("./src/npm-themed-component.js")
 /*
  * Note that this is using component instead of polymer template, because
- * otherwise the themed module would have to import the original /src module, and
- * that would make testing the actual feature here (theme rewrite) more complex.
+ * otherwise the themed module would have to import the original /src module,
+ * and that would make testing the actual feature here (theme rewrite) more
+ * complex.
  */
 public class NpmThemedComponentView extends Component {
 

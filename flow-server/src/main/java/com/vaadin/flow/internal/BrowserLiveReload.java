@@ -44,7 +44,7 @@ public interface BrowserLiveReload {
      * Sets the live reload backend technology explicitly.
      *
      * @param backend
-     *      enabling technology, not <code>null</code>.
+     *            enabling technology, not <code>null</code>.
      */
     void setBackend(Backend backend);
 
@@ -69,7 +69,7 @@ public interface BrowserLiveReload {
      * connection.
      * 
      * @param resource
-     *            a web socket connection resource,  not <code>null</code>.
+     *            a web socket connection resource, not <code>null</code>.
      * @return whether the web socket connection is for live reload
      */
     boolean isLiveReload(AtmosphereResource resource);

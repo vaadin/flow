@@ -241,9 +241,9 @@ public class StreamReceiverHandler implements Serializable {
         return success;
     }
 
-    private boolean handleMultipartFileUploadFromInputStream(VaadinSession session,
-            VaadinRequest request, StreamReceiver streamReceiver,
-            StateNode owner) throws IOException {
+    private boolean handleMultipartFileUploadFromInputStream(
+            VaadinSession session, VaadinRequest request,
+            StreamReceiver streamReceiver, StateNode owner) throws IOException {
         boolean success = true;
         long contentLength = getContentLength(request);
         // Parse the request
@@ -339,26 +339,26 @@ public class StreamReceiverHandler implements Serializable {
     }
 
     /**
-     * Validate that stream target is in a valid state for receiving data
-     * and send stream to receiver. Handles cleanup and error in reading stream
+     * Validate that stream target is in a valid state for receiving data and
+     * send stream to receiver. Handles cleanup and error in reading stream
      *
      * @param session
-     *         The session containing the stream variable
+     *            The session containing the stream variable
      * @param inputStream
-     *         the request content input stream
+     *            the request content input stream
      * @param streamReceiver
-     *         the receiver containing the destination stream variable
+     *            the receiver containing the destination stream variable
      * @param filename
-     *         name of the streamed file
+     *            name of the streamed file
      * @param mimeType
-     *         file mime type
+     *            file mime type
      * @param contentLength
-     *         The length of the request content
+     *            The length of the request content
      * @param node
-     *         The owner of the stream
+     *            The owner of the stream
      * @return true if upload successful, else false
      * @throws UploadException
-     *         Thrown for illegal target node state
+     *             Thrown for illegal target node state
      */
     protected boolean handleFileUploadValidationAndData(VaadinSession session,
             InputStream inputStream, StreamReceiver streamReceiver,

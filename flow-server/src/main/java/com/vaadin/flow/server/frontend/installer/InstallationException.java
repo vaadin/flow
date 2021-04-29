@@ -27,7 +27,7 @@ public class InstallationException extends Exception {
      * Exception with message.
      *
      * @param message
-     *         exception message
+     *            exception message
      */
     public InstallationException(String message) {
         super(message);
@@ -37,9 +37,9 @@ public class InstallationException extends Exception {
      * Exceptioon with message and cause.
      *
      * @param message
-     *         exception message
+     *            exception message
      * @param cause
-     *         cause for exception
+     *            cause for exception
      */
     public InstallationException(String message, Throwable cause) {
         super(message, cause);

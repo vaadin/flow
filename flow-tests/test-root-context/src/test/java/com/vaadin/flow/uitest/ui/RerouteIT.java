@@ -33,8 +33,8 @@ public class RerouteIT extends ChromeBrowserTest {
 
         findElement(By.id("navigate")).click();
 
-        Assert.assertTrue(getDriver().getPageSource()
-                .contains("Could not navigate to "));
+        Assert.assertTrue(
+                getDriver().getPageSource().contains("Could not navigate to "));
     }
 
     @Test

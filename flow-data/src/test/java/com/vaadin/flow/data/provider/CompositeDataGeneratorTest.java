@@ -30,7 +30,6 @@ import elemental.json.JsonObject;
 
 import static org.junit.Assert.assertEquals;
 
-
 /**
  * 
  * @author Vaadin Ltd
@@ -203,11 +202,13 @@ public class CompositeDataGeneratorTest {
     @Test
     public void addDataGenerator_orderIsPreserved() {
         CompositeDataGenerator<String> cdg = new CompositeDataGenerator<>();
-        DataGenerator<String> dg1 = (String, JsonObject) -> {};
-        DataGenerator<String> dg2 = (String, JsonObject) -> {};
+        DataGenerator<String> dg1 = (String, JsonObject) -> {
+        };
+        DataGenerator<String> dg2 = (String, JsonObject) -> {
+        };
         List<DataGenerator<String>> expected = Arrays.asList(dg1, dg2);
         cdg.addDataGenerator(dg1);
         cdg.addDataGenerator(dg2);
-        assertEquals(expected,new ArrayList<>(cdg.dataGenerators));
-    }    
+        assertEquals(expected, new ArrayList<>(cdg.dataGenerators));
+    }
 }

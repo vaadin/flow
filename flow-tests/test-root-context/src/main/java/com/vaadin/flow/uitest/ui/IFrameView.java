@@ -47,10 +47,10 @@ public class IFrameView extends AbstractDivView {
     public IFrameView() {
         content = "A";
         /*
-         * The test consists of creating a view with an IFrame and a button.
-         * The IFrame contains a span, which contains text "A". Upon pressing the button,
-         * "B" is loaded into the span. The test then verifies that
-         * "B" is visible in the span.
+         * The test consists of creating a view with an IFrame and a button. The
+         * IFrame contains a span, which contains text "A". Upon pressing the
+         * button, "B" is loaded into the span. The test then verifies that "B"
+         * is visible in the span.
          */
         frame.setSrc("/view/iframecontent");
         frame.setId("frame1");

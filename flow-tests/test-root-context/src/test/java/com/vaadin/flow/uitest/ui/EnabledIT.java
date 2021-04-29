@@ -35,7 +35,8 @@ public class EnabledIT extends ChromeBrowserTest {
         // check that disabled update property button is present.
         Assert.assertTrue(isElementPresent(By.id("updateProperty")));
         // Validate that button has the default disabled attribute
-        Assert.assertTrue(findElement(By.id("updateProperty")).getAttribute("disabled") != null);
+        Assert.assertTrue(findElement(By.id("updateProperty"))
+                .getAttribute("disabled") != null);
 
         WebElement main = findElement(By.id("main"));
         WebElement div = main.findElement(By.tagName("div"));

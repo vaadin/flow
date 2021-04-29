@@ -110,7 +110,8 @@ class SchemaResolver {
         } else {
             ComposedSchema nullableSchema = new ComposedSchema();
             nullableSchema.setNullable(true);
-            nullableSchema.setAllOf(Collections.singletonList(nestedTypeSchema));
+            nullableSchema
+                    .setAllOf(Collections.singletonList(nestedTypeSchema));
             return nullableSchema;
         }
     }
@@ -141,8 +142,8 @@ class SchemaResolver {
     }
 
     private boolean isDateTimeType(ResolvedType resolvedType) {
-        return resolvedType.isReferenceType()
-                && isTypeOf(resolvedType, LocalDateTime.class, Instant.class, LocalTime.class);
+        return resolvedType.isReferenceType() && isTypeOf(resolvedType,
+                LocalDateTime.class, Instant.class, LocalTime.class);
     }
 
     private boolean isDateType(ResolvedType resolvedType) {
@@ -198,8 +199,8 @@ class SchemaResolver {
 
     private Schema createEnumTypeSchema(ResolvedType resolvedType) {
         ResolvedReferenceType type = resolvedType.asReferenceType();
-        List<String> entries = type
-                .getTypeDeclaration().asEnum().getEnumConstants().stream()
+        List<String> entries = type.getTypeDeclaration().asEnum()
+                .getEnumConstants().stream()
                 .map(ResolvedEnumConstantDeclaration::getName)
                 .collect(Collectors.toList());
         String qualifiedName = type.getQualifiedName();

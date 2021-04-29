@@ -48,8 +48,8 @@ public class PropertyUpdateComponent extends Div {
     }
 
     private void publishNumber() {
-        listenerSet.forEach(numberListener -> numberListener.handleNumber(
-                clickCounter));
+        listenerSet.forEach(
+                numberListener -> numberListener.handleNumber(clickCounter));
     }
 
     public JsonValue getNumberJson() {

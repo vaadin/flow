@@ -80,8 +80,10 @@ public class TaskGenerateBootstrapTest {
     }
 
     @Test
-    public void should_load_AppTheme() throws MalformedURLException, ExecutionFailedException {
-        taskGenerateBootstrap = new TaskGenerateBootstrap(getThemedDependency(), frontendFolder);
+    public void should_load_AppTheme()
+            throws MalformedURLException, ExecutionFailedException {
+        taskGenerateBootstrap = new TaskGenerateBootstrap(getThemedDependency(),
+                frontendFolder);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
 

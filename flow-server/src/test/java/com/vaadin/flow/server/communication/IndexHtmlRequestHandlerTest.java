@@ -417,20 +417,24 @@ public class IndexHtmlRequestHandlerTest {
         csrfJsonMap.put("token", springTokenString);
         csrfJsonMap.put("headerName", springTokenHeaderName);
         Mockito.when(request.getAttribute("_csrf")).thenReturn(csrfJsonMap);
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                request, response);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
+                response);
 
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
         Document document = Jsoup.parse(indexHtml);
 
-        Elements csrfMetaEelement = document.head().getElementsByAttributeValue("name", "_csrf");
+        Elements csrfMetaEelement = document.head()
+                .getElementsByAttributeValue("name", "_csrf");
         Assert.assertEquals(1, csrfMetaEelement.size());
-        Assert.assertEquals(springTokenString, csrfMetaEelement.first().attr("content"));
+        Assert.assertEquals(springTokenString,
+                csrfMetaEelement.first().attr("content"));
 
-        Elements csrfHeaderMetaEelement = document.head().getElementsByAttributeValue("name", "_csrf_header");
+        Elements csrfHeaderMetaEelement = document.head()
+                .getElementsByAttributeValue("name", "_csrf_header");
         Assert.assertEquals(1, csrfHeaderMetaEelement.size());
-        Assert.assertEquals(springTokenHeaderName, csrfHeaderMetaEelement.first().attr("content"));
+        Assert.assertEquals(springTokenHeaderName,
+                csrfHeaderMetaEelement.first().attr("content"));
     }
 
     @Test
@@ -454,15 +458,17 @@ public class IndexHtmlRequestHandlerTest {
     public void should_not_include_spring_csrf_token_in_meta_tags_when_return_null_spring_csrf_in_request()
             throws IOException {
         VaadinRequest request = createVaadinRequest("/");
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                request, response);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
+                response);
 
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
         Document document = Jsoup.parse(indexHtml);
 
-        Assert.assertEquals(0, document.head().getElementsByAttribute("_csrf").size());
-        Assert.assertEquals(0, document.head().getElementsByAttribute("_csrf_header").size());
+        Assert.assertEquals(0,
+                document.head().getElementsByAttribute("_csrf").size());
+        Assert.assertEquals(0,
+                document.head().getElementsByAttribute("_csrf_header").size());
     }
 
     @Test
@@ -500,8 +506,10 @@ public class IndexHtmlRequestHandlerTest {
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
         Document document = Jsoup.parse(indexHtml);
-        Assert.assertEquals(0, document.head().getElementsByAttribute("_csrf").size());
-        Assert.assertEquals(0, document.head().getElementsByAttribute("_csrf_header").size());
+        Assert.assertEquals(0,
+                document.head().getElementsByAttribute("_csrf").size());
+        Assert.assertEquals(0,
+                document.head().getElementsByAttribute("_csrf_header").size());
     }
 
     @Test

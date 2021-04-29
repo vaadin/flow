@@ -165,9 +165,9 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         File file = new File(getNodeUpdater().npmFolder, "pnpmfile.js");
         Assert.assertTrue(file.exists());
         String content = FileUtils.readFileToString(file,
-            StandardCharsets.UTF_8);
+                StandardCharsets.UTF_8);
         Assert.assertThat(content,
-            CoreMatchers.containsString("JSON.parse(fs.readFileSync"));
+                CoreMatchers.containsString("JSON.parse(fs.readFileSync"));
     }
 
     @Test
@@ -265,16 +265,15 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                      + "}", StandardCharsets.UTF_8);
         // @formatter:on
 
-        JsonObject versionsJson = getGeneratedVersionsContent(versions, devDeps);
-        Assert.assertEquals("Generated versions json should have 2 keys",
-                2,
+        JsonObject versionsJson = getGeneratedVersionsContent(versions,
+                devDeps);
+        Assert.assertEquals("Generated versions json should have 2 keys", 2,
                 versionsJson.keys().length);
         Assert.assertEquals("Overlay should be pinned to user version",
                 customOverlayVersion,
                 versionsJson.getString("@vaadin/vaadin-overlay"));
         Assert.assertEquals("Notification should be pinned to user version",
-                "1.4.0",
-                versionsJson.getString("@vaadin/vaadin-notification"));
+                "1.4.0", versionsJson.getString("@vaadin/vaadin-notification"));
     }
 
     @Test
@@ -330,16 +329,15 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                      + "}", StandardCharsets.UTF_8);
         // @formatter:on
 
-        JsonObject versionsJson = getGeneratedVersionsContent(versions, devDeps);
-        Assert.assertEquals("Generated versions json should have 2 keys",
-                2,
+        JsonObject versionsJson = getGeneratedVersionsContent(versions,
+                devDeps);
+        Assert.assertEquals("Generated versions json should have 2 keys", 2,
                 versionsJson.keys().length);
         Assert.assertEquals("Overlay should be pinned to user version",
                 customOverlayVersion,
                 versionsJson.getString("@vaadin/vaadin-overlay"));
         Assert.assertEquals("Notification should be pinned to user version",
-                "1.3.9",
-                versionsJson.getString("@vaadin/vaadin-notification"));
+                "1.3.9", versionsJson.getString("@vaadin/vaadin-notification"));
     }
 
     @Test
@@ -443,9 +441,10 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         final String versions = task.generateVersionsJson();
         Assert.assertNotNull(versions);
 
-        File generatedVersionsFile = new File(getNodeUpdater().npmFolder, versions);
-        final JsonObject versionsJson = Json.parse(FileUtils
-            .readFileToString(generatedVersionsFile, StandardCharsets.UTF_8));
+        File generatedVersionsFile = new File(getNodeUpdater().npmFolder,
+                versions);
+        final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
+                generatedVersionsFile, StandardCharsets.UTF_8));
         Assert.assertEquals("{}", versionsJson.toJson());
     }
 
@@ -488,18 +487,17 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         final String versions = task.generateVersionsJson();
         Assert.assertNotNull(versions);
 
-        File generatedVersionsFile = new File(getNodeUpdater().npmFolder, versions);
-        final JsonObject versionsJson = Json.parse(FileUtils
-            .readFileToString(generatedVersionsFile, StandardCharsets.UTF_8));
+        File generatedVersionsFile = new File(getNodeUpdater().npmFolder,
+                versions);
+        final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
+                generatedVersionsFile, StandardCharsets.UTF_8));
         Assert.assertEquals(
-            "{"
-                + "\"lit-element\":\"2.3.1\","
-                + "\"@vaadin/router\":\"1.7.2\","
-                + "\"@polymer/polymer\":\"3.2.0\","
-                + "\"css-loader\":\"4.2.1\","
-                + "\"file-loader\":\"6.1.0\""
-                + "}",
-            versionsJson.toJson());
+                "{" + "\"lit-element\":\"2.3.1\","
+                        + "\"@vaadin/router\":\"1.7.2\","
+                        + "\"@polymer/polymer\":\"3.2.0\","
+                        + "\"css-loader\":\"4.2.1\","
+                        + "\"file-loader\":\"6.1.0\"" + "}",
+                versionsJson.toJson());
     }
 
     @Test

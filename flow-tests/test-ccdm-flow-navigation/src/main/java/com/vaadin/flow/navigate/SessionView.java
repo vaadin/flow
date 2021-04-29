@@ -23,7 +23,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
-@Route(value="session")
+@Route(value = "session")
 @PageTitle("Session")
 public class SessionView extends Div {
     public SessionView() {

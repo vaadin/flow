@@ -54,16 +54,17 @@ public class TaskInstallWebpackPluginsTest {
     @Test
     public void getPluginsReturnsExpectedList() {
         String[] expectedPlugins = new String[] { "stats-plugin",
-                "application-theme-plugin", "theme-loader", "theme-live-reload-plugin" };
+                "application-theme-plugin", "theme-loader",
+                "theme-live-reload-plugin" };
         final List<String> plugins = task.getPlugins();
         Assert.assertEquals(
-            "Unexpected amount of plugins in 'webpack-plugins.json'",
-            expectedPlugins.length, plugins.size());
+                "Unexpected amount of plugins in 'webpack-plugins.json'",
+                expectedPlugins.length, plugins.size());
 
         for (String plugin : expectedPlugins) {
             Assert.assertTrue(
-                "'webpack-plugins.json' didn't contain '" + plugin + "'",
-                plugins.contains(plugin));
+                    "'webpack-plugins.json' didn't contain '" + plugin + "'",
+                    plugins.contains(plugin));
         }
     }
 
@@ -83,7 +84,7 @@ public class TaskInstallWebpackPluginsTest {
 
     private void assertPlugins() throws IOException {
         Assert.assertTrue("No @vaadin folder created",
-            new File(nodeModulesFolder, "@vaadin").exists());
+                new File(nodeModulesFolder, "@vaadin").exists());
         for (String plugin : task.getPlugins()) {
             assertPlugin(plugin);
         }
@@ -95,32 +96,34 @@ public class TaskInstallWebpackPluginsTest {
         final JsonArray files = getPluginFiles(pluginFolder);
         for (int i = 0; i < files.length(); i++) {
             Assert.assertTrue(
-                "Missing plugin file " + files.getString(i) + " for " + plugin,
-                new File(pluginFolder, files.getString(i)).exists());
+                    "Missing plugin file " + files.getString(i) + " for "
+                            + plugin,
+                    new File(pluginFolder, files.getString(i)).exists());
         }
     }
 
     private void verifyPluginScriptFilesAreDefined(String plugin)
-        throws IOException {
-        final File pluginFolder = new File(
-            this.getClass().getClassLoader().getResource("plugins/" + plugin)
-                .getFile());
+            throws IOException {
+        final File pluginFolder = new File(this.getClass().getClassLoader()
+                .getResource("plugins/" + plugin).getFile());
 
         final JsonArray files = getPluginFiles(pluginFolder);
         List<String> fileNames = new ArrayList<>(files.length());
         for (int i = 0; i < files.length(); i++) {
             Assert.assertTrue(
-                "Missing plugin file " + files.getString(i) + " for " + plugin,
-                new File(pluginFolder, files.getString(i)).exists());
+                    "Missing plugin file " + files.getString(i) + " for "
+                            + plugin,
+                    new File(pluginFolder, files.getString(i)).exists());
             fileNames.add(files.getString(i));
         }
-        final List<String> pluginFiles = Arrays.stream(pluginFolder.listFiles(
-            (dir, name) -> FilenameUtils.getExtension(name).equals("js")))
-            .map(file -> file.getName()).collect(Collectors.toList());
+        final List<String> pluginFiles = Arrays
+                .stream(pluginFolder.listFiles((dir, name) -> FilenameUtils
+                        .getExtension(name).equals("js")))
+                .map(file -> file.getName()).collect(Collectors.toList());
         for (String fileName : pluginFiles) {
             Assert.assertTrue(String.format(
-                "Plugin '%s' doesn't define script file '%s' in package.json files",
-                plugin, fileName), fileNames.contains(fileName));
+                    "Plugin '%s' doesn't define script file '%s' in package.json files",
+                    plugin, fileName), fileNames.contains(fileName));
         }
     }
 
@@ -132,8 +135,8 @@ public class TaskInstallWebpackPluginsTest {
      * @throws IOException
      */
     private JsonArray getPluginFiles(File pluginFolder) throws IOException {
-        final JsonObject packageJson = Json.parse(FileUtils
-            .readFileToString(new File(pluginFolder, "package.json"), UTF_8));
+        final JsonObject packageJson = Json.parse(FileUtils.readFileToString(
+                new File(pluginFolder, "package.json"), UTF_8));
         return packageJson.getArray("files");
     }
 
@@ -142,9 +145,9 @@ public class TaskInstallWebpackPluginsTest {
         final File pluginFolder = new File(nodeModulesFolder, pluginString);
 
         Assert.assertTrue("Missing plugin folder for " + plugin,
-            pluginFolder.exists());
+                pluginFolder.exists());
         Assert.assertTrue("Missing package.json for " + plugin,
-            new File(pluginFolder, "package.json").exists());
+                new File(pluginFolder, "package.json").exists());
         return pluginFolder;
     }
 

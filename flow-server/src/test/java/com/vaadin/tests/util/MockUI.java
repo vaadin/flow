@@ -65,7 +65,7 @@ public class MockUI extends UI {
     private static VaadinSession createSession() {
         return createSession(null);
     }
-    
+
     private static VaadinSession createSession(Router router) {
         VaadinService service = Mockito.mock(VaadinService.class);
 

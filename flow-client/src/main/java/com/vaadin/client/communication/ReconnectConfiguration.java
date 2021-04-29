@@ -92,7 +92,7 @@ public class ReconnectConfiguration {
     public String getDialogTextGaveUp() {
         return getProperty(
                 ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_KEY)
-                .getValueOrDefault(null);
+                        .getValueOrDefault(null);
     }
 
     /**

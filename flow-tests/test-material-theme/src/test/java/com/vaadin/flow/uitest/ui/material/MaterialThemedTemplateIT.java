@@ -34,11 +34,13 @@ public class MaterialThemedTemplateIT extends ChromeBrowserTest {
         Assert.assertEquals("Material themed Template", div.getText());
 
         // this is silly, but a concrete way to test that the material files are
-        // imported by verifying that the material css variables introduced in the
+        // imported by verifying that the material css variables introduced in
+        // the
         // files work
         Assert.assertEquals("color variable not applied", "rgba(176, 0, 32, 1)",
                 div.getCssValue("color"));
-        Assert.assertEquals("typography variable not applied","16px", div.getCssValue("font-size"));
+        Assert.assertEquals("typography variable not applied", "16px",
+                div.getCssValue("font-size"));
 
     }
 

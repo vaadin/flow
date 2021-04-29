@@ -77,7 +77,6 @@ public abstract class AbstractNodeUpdatePackagesTest
     private File packageLock;
     private File appNodeModules;
 
-
     @Before
     public void setup() throws Exception {
         baseDir = temporaryFolder.getRoot();
@@ -88,11 +87,13 @@ public abstract class AbstractNodeUpdatePackagesTest
         NodeUpdateTestUtil.createStubNode(true, true,
                 baseDir.getAbsolutePath());
 
-        packageCreator = new TaskGeneratePackageJson(baseDir, generatedDir, resourcesDir);
+        packageCreator = new TaskGeneratePackageJson(baseDir, generatedDir,
+                resourcesDir);
 
         classFinder = getClassFinder();
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, resourcesDir, false, false);
+                getScanner(classFinder), baseDir, generatedDir, resourcesDir,
+                false, false);
         packageJson = new File(baseDir, PACKAGE_JSON);
 
         mainNodeModules = new File(baseDir, FrontendUtils.NODE_MODULES);
@@ -173,7 +174,8 @@ public abstract class AbstractNodeUpdatePackagesTest
             throws IOException {
         // use package updater with disabled PNPM
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, resourcesDir, false, false);
+                getScanner(classFinder), baseDir, generatedDir, resourcesDir,
+                false, false);
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
@@ -181,12 +183,14 @@ public abstract class AbstractNodeUpdatePackagesTest
         // Add flowDeps
         JsonObject json = packageUpdater.getPackageJson();
         getDependencies(json).put(DEP_NAME_FLOW_DEPS, "target/frontend");
-        json.put(VAADIN_APP_PACKAGE_HASH, "e05bfd4b6c6bd20c806b3a0ad1be521bfd775c9b6f8f9c997b0ad1fda834805b");
+        json.put(VAADIN_APP_PACKAGE_HASH,
+                "e05bfd4b6c6bd20c806b3a0ad1be521bfd775c9b6f8f9c997b0ad1fda834805b");
         Files.write(packageJson.toPath(),
                 Collections.singletonList(json.toJson()));
 
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, resourcesDir, false, true);
+                getScanner(classFinder), baseDir, generatedDir, resourcesDir,
+                false, true);
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -197,7 +201,8 @@ public abstract class AbstractNodeUpdatePackagesTest
             throws IOException {
         // use package updater with disabled PNPM
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, resourcesDir, false, false);
+                getScanner(classFinder), baseDir, generatedDir, resourcesDir,
+                false, false);
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
@@ -205,7 +210,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         Files.write(packageLock.toPath(), Collections.singletonList("{}"));
 
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, resourcesDir, false, true);
+                getScanner(classFinder), baseDir, generatedDir, resourcesDir,
+                false, true);
         packageUpdater.execute();
         Assert.assertFalse(packageLock.exists());
     }
@@ -214,7 +220,8 @@ public abstract class AbstractNodeUpdatePackagesTest
     public void pnpmIsInUse_packageJsonModified_removePnpmLock()
             throws IOException {
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, resourcesDir, false, true);
+                getScanner(classFinder), baseDir, generatedDir, resourcesDir,
+                false, true);
         packageCreator.execute();
         File pnpmLock = new File(baseDir, "pnpm-lock.yaml");
         pnpmLock.createNewFile();
@@ -328,8 +335,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         final String key = "webpack";
         final String version = packageUpdater.getDefaultDevDependencies()
                 .get(key);
-        json.getObject(VAADIN_DEP_KEY).getObject(DEV_DEPENDENCIES)
-                .put(key, "4.42.0");
+        json.getObject(VAADIN_DEP_KEY).getObject(DEV_DEPENDENCIES).put(key,
+                "4.42.0");
         json.getObject(DEV_DEPENDENCIES).put(key, version);
 
         Files.write(packageJson.toPath(),
@@ -339,12 +346,12 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageCreator.execute();
 
         json = packageUpdater.getPackageJson();
-        Assert.assertEquals("Vaadin dependency should be updated to latest DevDependency",
-                version, json.getObject(VAADIN_DEP_KEY).getObject(DEV_DEPENDENCIES)
-                        .getString(key));
         Assert.assertEquals(
-                "DevDependency should stay the same as it was", version,
-                json.getObject(DEV_DEPENDENCIES).getString(key));
+                "Vaadin dependency should be updated to latest DevDependency",
+                version, json.getObject(VAADIN_DEP_KEY)
+                        .getObject(DEV_DEPENDENCIES).getString(key));
+        Assert.assertEquals("DevDependency should stay the same as it was",
+                version, json.getObject(DEV_DEPENDENCIES).getString(key));
     }
 
     @Test
@@ -426,7 +433,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         ClassFinder classFinder = getClassFinder();
         // create a new package updater, with forced clean up enabled
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, resourcesDir, true, false);
+                getScanner(classFinder), baseDir, generatedDir, resourcesDir,
+                true, false);
         packageUpdater.execute();
 
         // clean up happened
@@ -656,8 +664,8 @@ public abstract class AbstractNodeUpdatePackagesTest
                 Collections.singletonList(legacyPackageContent));
 
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, resourcesDir, false,
-                true);
+                getScanner(classFinder), baseDir, generatedDir, resourcesDir,
+                false, true);
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -671,8 +679,8 @@ public abstract class AbstractNodeUpdatePackagesTest
                 Collections.singletonList(legacyPackageContent));
 
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, resourcesDir, false,
-                false);
+                getScanner(classFinder), baseDir, generatedDir, resourcesDir,
+                false, false);
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -752,9 +760,9 @@ public abstract class AbstractNodeUpdatePackagesTest
         Assert.assertTrue("vaadin-checkbox is missing from the dependencies",
                 dependencies.hasKey("@vaadin/vaadin-checkbox"));
 
-        dependencies = getPackageJson(packageJson).getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES);
-        Assert.assertTrue(
-                "vaadin-checkbox is missing from vaadin.dependencies",
+        dependencies = getPackageJson(packageJson).getObject(VAADIN_DEP_KEY)
+                .getObject(DEPENDENCIES);
+        Assert.assertTrue("vaadin-checkbox is missing from vaadin.dependencies",
                 dependencies.hasKey("@vaadin/vaadin-checkbox"));
 
         // generate it one more time, this should remove the checkbox
@@ -765,7 +773,8 @@ public abstract class AbstractNodeUpdatePackagesTest
                 "vaadin-checkbox is still available in the dependencies",
                 dependencies.hasKey("@vaadin/vaadin-checkbox"));
 
-        dependencies = getPackageJson(packageJson).getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES);
+        dependencies = getPackageJson(packageJson).getObject(VAADIN_DEP_KEY)
+                .getObject(DEPENDENCIES);
         Assert.assertFalse(
                 "vaadin-checkbox is still available in vaadin.dependencies",
                 dependencies.hasKey("@vaadin/vaadin-checkbox"));
@@ -904,9 +913,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         // Contains initially generated default polymer dep
         Assert.assertTrue(deps.hasKey("@polymer/polymer"));
         // Contains new hash
-        Assert.assertTrue(
-                packJsonObject.getObject("vaadin")
-                        .hasKey("hash"));
+        Assert.assertTrue(packJsonObject.getObject("vaadin").hasKey("hash"));
     }
 
     JsonObject getPackageJson(File packageFile) throws IOException {

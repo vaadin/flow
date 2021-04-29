@@ -139,7 +139,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      * environments where the node.js download can be provided from an intranet
      * mirror. Defaults to null which will cause the downloader to use
      * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
-     * <p></p>
+     * <p>
+     * </p>
      * Example: <code>"https://nodejs.org/dist/"</code>.
      */
     @Parameter(property = "node.download.root", defaultValue = NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
@@ -168,7 +169,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
         return Boolean.parseBoolean(useDeprecatedV14Bootstrapping);
     }
 
-    protected Lookup createLookup(ClassFinder classFinder){
-        return Lookup.compose(Lookup.of(classFinder, ClassFinder.class), new LookupImpl(classFinder)) ;
+    protected Lookup createLookup(ClassFinder classFinder) {
+        return Lookup.compose(Lookup.of(classFinder, ClassFinder.class),
+                new LookupImpl(classFinder));
     }
 }

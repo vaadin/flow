@@ -26,7 +26,7 @@ import com.vaadin.flow.function.SerializableFunction;
  */
 @FunctionalInterface
 public interface ErrorMessageProvider
-extends SerializableFunction<ValueContext, String> {
+        extends SerializableFunction<ValueContext, String> {
 
     /**
      * Returns a generated error message for given {@code ValueContext}.

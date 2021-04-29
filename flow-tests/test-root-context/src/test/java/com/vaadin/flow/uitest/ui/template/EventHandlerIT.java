@@ -74,8 +74,7 @@ public class EventHandlerIT extends ChromeBrowserTest {
                 template.$("span").id("status").getText());
 
         template.$("button").id("clientError").click();
-        Assert.assertEquals(
-                "Message from awaiting exception should be present",
+        Assert.assertEquals("Message from awaiting exception should be present",
                 "Error: Something went wrong. Check server-side logs for more information.",
                 template.$("span").id("status").getText());
     }
