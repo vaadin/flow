@@ -74,7 +74,7 @@ public class DirectionChangeView extends AbstractDivView
 
     @Override
     public void localeChange(LocaleChangeEvent event) {
-        if (event.getLocale()== Locale.SIMPLIFIED_CHINESE) {
+        if (event.getLocale() == Locale.SIMPLIFIED_CHINESE) {
             event.getUI().setDirection(Direction.RIGHT_TO_LEFT);
         }
         locale.setText(event.getLocale().toString());

@@ -52,7 +52,7 @@ public class DirectionChangeIT extends ChromeBrowserTest {
 
         // due to #8028 / 8029 need to wait for JS execution to complete
         waitUntil(webDriver -> ((JavascriptExecutor) driver)
-                        .executeScript(RETURN_DIR_SCRIPT), 2);
+                .executeScript(RETURN_DIR_SCRIPT), 2);
 
         verifyDirection(Direction.RIGHT_TO_LEFT);
 

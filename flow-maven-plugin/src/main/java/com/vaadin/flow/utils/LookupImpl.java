@@ -24,8 +24,8 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
- * An implementation of Lookup, which could be used to find service(s) of a given
- * type.
+ * An implementation of Lookup, which could be used to find service(s) of a
+ * given type.
  */
 public class LookupImpl implements Lookup {
 

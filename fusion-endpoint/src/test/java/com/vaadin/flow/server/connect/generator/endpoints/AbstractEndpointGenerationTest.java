@@ -91,7 +91,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGeneratorBaseTest {
+public abstract class AbstractEndpointGenerationTest
+        extends AbstractEndpointGeneratorBaseTest {
     private static final List<Class<?>> JSON_NUMBER_CLASSES = Arrays.asList(
             Number.class, byte.class, char.class, short.class, int.class,
             long.class, float.class, double.class);
@@ -121,7 +122,6 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
                 expectedOpenApiJsonResourceUrl,
                 "Full verification requires an expected open api spec file"));
     }
-
 
     private void generateAndVerify(URL customApplicationProperties,
             URL expectedOpenApiJsonResourceUrl) {
@@ -174,8 +174,8 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
                 actualPaths.size());
     }
 
-    private Class<?> applyTypeArguments(Type type, HashMap<String,
-            Class<?>> typeArguments) {
+    private Class<?> applyTypeArguments(Type type,
+            HashMap<String, Class<?>> typeArguments) {
         if (type instanceof Class) {
             return (Class) type;
         } else if (type instanceof ParameterizedType) {
@@ -221,7 +221,8 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
         }
 
         int pathCount = 0;
-        for (Method expectedEndpointMethod : testMethodsClass.getDeclaredMethods()) {
+        for (Method expectedEndpointMethod : testMethodsClass
+                .getDeclaredMethods()) {
             if (!Modifier.isPublic(expectedEndpointMethod.getModifiers())
                     || accessChecker.getSecurityTarget(expectedEndpointMethod)
                             .isAnnotationPresent(DenyAll.class)) {
@@ -245,8 +246,7 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
                 applyTypeArguments(genericSuperClass, typeArguments),
                 extractTypeArguments(genericSuperClass, typeArguments));
 
-        for (Type genericInterface : testMethodsClass
-                .getGenericInterfaces()) {
+        for (Type genericInterface : testMethodsClass.getGenericInterfaces()) {
             pathCount += assertClassPathsRecursive(actualPaths,
                     testEndpointClass,
                     applyTypeArguments(genericInterface, typeArguments),
@@ -284,10 +284,9 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
         if (expectedEndpointMethod.getParameterCount() > 0) {
             Schema requestSchema = extractSchema(
                     actualOperation.getRequestBody().getContent());
-            Type[] genericParameterTypes =
-                    expectedEndpointMethod.getGenericParameterTypes();
-            Class<?>[] parameterTypes =
-                    new Class<?>[genericParameterTypes.length];
+            Type[] genericParameterTypes = expectedEndpointMethod
+                    .getGenericParameterTypes();
+            Class<?>[] parameterTypes = new Class<?>[genericParameterTypes.length];
             for (int i = 0; i < genericParameterTypes.length; i++) {
                 parameterTypes[i] = applyTypeArguments(genericParameterTypes[i],
                         typeArguments);
@@ -335,12 +334,13 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
                 .entrySet()) {
             assertSchema(stringSchemaEntry.getValue(), parameterTypes[index]);
             List requiredList = requestSchema.getRequired();
-            if (parameters[index].isAnnotationPresent(Nullable.class) ||
-                    Optional.class.isAssignableFrom(parameters[index].getType())) {
-                boolean notRequired = requiredList == null ||
-                        !requiredList.contains(stringSchemaEntry.getKey());
-                assertTrue("@Nullable or Optional request parameter " +
-                        "should not be required", notRequired);
+            if (parameters[index].isAnnotationPresent(Nullable.class)
+                    || Optional.class
+                            .isAssignableFrom(parameters[index].getType())) {
+                boolean notRequired = requiredList == null
+                        || !requiredList.contains(stringSchemaEntry.getKey());
+                assertTrue("@Nullable or Optional request parameter "
+                        + "should not be required", notRequired);
 
             } else {
                 assertTrue(requiredList.contains(stringSchemaEntry.getKey()));
@@ -406,7 +406,8 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
                 assertTrue(Instant.class.isAssignableFrom(expectedSchemaClass)
                         || LocalDateTime.class
                                 .isAssignableFrom(expectedSchemaClass)
-                        || LocalTime.class.isAssignableFrom(expectedSchemaClass));
+                        || LocalTime.class
+                                .isAssignableFrom(expectedSchemaClass));
             } else if (actualSchema instanceof DateSchema) {
                 assertTrue(Date.class.isAssignableFrom(expectedSchemaClass)
                         || LocalDate.class
@@ -477,12 +478,11 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
             assertNotNull(String.format("Property schema is not found %s",
                     expectedSchemaField.getName()), propertySchema);
             assertSchema(propertySchema, expectedSchemaField.getType());
-            if (Optional.class
-                    .isAssignableFrom(expectedSchemaField.getType()) ||
-                    expectedSchemaField.isAnnotationPresent(Nullable.class)) {
-                boolean notRequired = schema.getRequired() == null ||
-                        !schema.getRequired()
-                                .contains(expectedSchemaField.getName());
+            if (Optional.class.isAssignableFrom(expectedSchemaField.getType())
+                    || expectedSchemaField
+                            .isAnnotationPresent(Nullable.class)) {
+                boolean notRequired = schema.getRequired() == null || !schema
+                        .getRequired().contains(expectedSchemaField.getName());
                 assertTrue(notRequired);
             } else {
                 assertTrue(schema.getRequired()
@@ -509,8 +509,8 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
                 .read(openApiJsonOutput.toAbsolutePath().toString());
         try {
             OpenAPI expected = parser
-                    .read(new File(expectedOpenApiJsonResourceUrl.toURI()).toPath()
-                            .toAbsolutePath().toString());
+                    .read(new File(expectedOpenApiJsonResourceUrl.toURI())
+                            .toPath().toAbsolutePath().toString());
 
             removeAndCompareFilePathExtensionInTags(generated, expected);
             removeAndCompareFilePathExtensionInSchemas(generated, expected);
@@ -589,9 +589,8 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
             String key = generatedEntrySet.getKey();
             boolean isBothNull = value == null
                     && expectedFilePath.get(key) == null;
-            String errorMessage = String.format(
-                    "File path doesn't match for tag '%s'",
-                    key);
+            String errorMessage = String
+                    .format("File path doesn't match for tag '%s'", key);
             String ending = expectedFilePath.get(key).replace('/',
                     File.separatorChar);
             Assert.assertTrue(errorMessage,
@@ -702,7 +701,8 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
             declaringClass = declaringClass.getDeclaringClass();
         }
         String expectedEndingJavaFilePath = StringUtils.replaceChars(
-                declaringClass.getCanonicalName(), '.', File.separatorChar) + ".java";
+                declaringClass.getCanonicalName(), '.', File.separatorChar)
+                + ".java";
         String wrongPathMessage = String.format(
                 "The generated model class '%s' refers to Java path '%s'. The path should end with '%s'",
                 expectedClass, actualJavaFileReference,

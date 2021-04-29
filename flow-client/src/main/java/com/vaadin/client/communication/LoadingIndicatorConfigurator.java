@@ -59,7 +59,8 @@ public class LoadingIndicatorConfigurator {
                 LoadingIndicatorConfigurator::setThirdDelay,
                 LoadingIndicatorConfigurationMap.THIRD_DELAY_DEFAULT);
 
-        MapProperty defaultThemeProperty = configMap.getProperty(LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_KEY);
+        MapProperty defaultThemeProperty = configMap.getProperty(
+                LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_KEY);
         defaultThemeProperty.addChangeListener(event -> setApplyDefaultTheme(
                 event.getSource().getValueOrDefault(
                         LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_DEFAULT)));
@@ -79,7 +80,7 @@ public class LoadingIndicatorConfigurator {
      *            the value to use if the property value is removed
      */
     private static void bindInteger(NodeMap map, String key,
-                                    Consumer<Integer> setter, int defaultValue) {
+            Consumer<Integer> setter, int defaultValue) {
         MapProperty property = map.getProperty(key);
         property.addChangeListener(e -> setter
                 .accept(e.getSource().getValueOrDefault(defaultValue)));

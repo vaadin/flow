@@ -36,7 +36,8 @@ public class UrlValidationIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void devModeUriValidation_uriWithDirectoryChange_statusForbidden() throws Exception {
+    public void devModeUriValidation_uriWithDirectoryChange_statusForbidden()
+            throws Exception {
         // open a view and wait till the expected label is displayed
         open();
         waitUntil(input -> $(LabelElement.class).id("elementId").isDisplayed());
@@ -46,7 +47,8 @@ public class UrlValidationIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void staticResourceUriValidation_uriWithDirectoryChange_statusForbidden() throws Exception {
+    public void staticResourceUriValidation_uriWithDirectoryChange_statusForbidden()
+            throws Exception {
         // open a view and wait till the expected label is displayed
         open();
         waitUntil(input -> $(LabelElement.class).id("elementId").isDisplayed());
@@ -55,15 +57,18 @@ public class UrlValidationIT extends ChromeBrowserTest {
                 "/VAADIN/build/%252E%252E/some-resource.css");
     }
 
-    private void sendRequestAndValidateResponseStatusForbidden(String pathToResource) throws Exception {
+    private void sendRequestAndValidateResponseStatusForbidden(
+            String pathToResource) throws Exception {
         final String urlString = getRootURL() + "/view" + pathToResource;
         URL url = new URL(urlString);
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         int responseCode = connection.getResponseCode();
-        Assert.assertEquals("HTTP 403 Forbidden expected for urls with " +
-                "directory change", HttpURLConnection.HTTP_FORBIDDEN, responseCode);
+        Assert.assertEquals(
+                "HTTP 403 Forbidden expected for urls with "
+                        + "directory change",
+                HttpURLConnection.HTTP_FORBIDDEN, responseCode);
     }
 
     private void waitForFrontendCompilation(URL url) throws Exception {
@@ -86,8 +91,10 @@ public class UrlValidationIT extends ChromeBrowserTest {
                     "Timeout while waiting for frontend compilation");
     }
 
-    private String getResponseBody(HttpURLConnection connection) throws IOException {
-        String body = String.join("\n", IOUtils.readLines(connection.getInputStream(), StandardCharsets.UTF_8));
+    private String getResponseBody(HttpURLConnection connection)
+            throws IOException {
+        String body = String.join("\n", IOUtils.readLines(
+                connection.getInputStream(), StandardCharsets.UTF_8));
         connection.getInputStream().close();
         return body;
     }

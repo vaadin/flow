@@ -38,12 +38,13 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
         WebElement codeField = findElement(
                 By.id(FrontendLiveReloadView.FRONTEND_CODE_TEXT));
         String oldCode = codeField.getAttribute("value");
-        String newCode = oldCode.replace(
-                "Custom component contents", "Updated component contents");
+        String newCode = oldCode.replace("Custom component contents",
+                "Updated component contents");
         codeField.clear();
         codeField.sendKeys(newCode);
 
-        waitForElementPresent(By.id(FrontendLiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
+        waitForElementPresent(
+                By.id(FrontendLiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
         WebElement liveReloadTrigger = findElement(
                 By.id(FrontendLiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
         liveReloadTrigger.click();

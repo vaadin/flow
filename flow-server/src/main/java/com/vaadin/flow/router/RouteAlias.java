@@ -36,8 +36,8 @@ import com.vaadin.flow.component.UI;
  * called. Thus {@code @RouteAlias} route path is used only to resolve the
  * component during navigation.
  * <p>
- * The route template of the navigation target is composed of the values of
- * all {@link RoutePrefix} annotated on the {@link #layout()} and
+ * The route template of the navigation target is composed of the values of all
+ * {@link RoutePrefix} annotated on the {@link #layout()} and
  * {@link ParentLayout} class values, starting from the root parent and joined
  * together using slash delimiter to form a path form string.
  * <p>

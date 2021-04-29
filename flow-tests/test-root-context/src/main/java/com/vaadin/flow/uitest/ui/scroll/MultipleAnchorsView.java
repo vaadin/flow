@@ -27,7 +27,8 @@ public class MultipleAnchorsView extends AbstractDivView {
     static final int NUMBER_OF_ANCHORS = 6;
     static final String ANCHOR_URL_ID_BASE = "anchorUrlId";
     static final String ANCHOR_DIV_ID_BASE = "anchorDivId";
-    static final String ANCHOR_URL_BASE = MultipleAnchorsView.class.getCanonicalName() + '#' + ANCHOR_DIV_ID_BASE;
+    static final String ANCHOR_URL_BASE = MultipleAnchorsView.class
+            .getCanonicalName() + '#' + ANCHOR_DIV_ID_BASE;
 
     public MultipleAnchorsView() {
         boolean isRouterLink = true;
@@ -50,6 +51,7 @@ public class MultipleAnchorsView extends AbstractDivView {
             anchorDivContainer.add(ScrollView.createSpacerDiv(200), anchorDiv);
         }
 
-        add(ScrollView.createSpacerDiv(1000), anchorDivContainer, ScrollView.createSpacerDiv(1000));
+        add(ScrollView.createSpacerDiv(1000), anchorDivContainer,
+                ScrollView.createSpacerDiv(1000));
     }
 }

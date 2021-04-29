@@ -61,7 +61,7 @@ public final class DefaultFileDownloader implements FileDownloader {
      * Construct file downloader with given proxy configuration.
      *
      * @param proxyConfig
-     *         proxy configuration to use for file download
+     *            proxy configuration to use for file download
      */
     public DefaultFileDownloader(ProxyConfig proxyConfig) {
         this.proxyConfig = proxyConfig;
@@ -104,11 +104,11 @@ public final class DefaultFileDownloader implements FileDownloader {
         }
         new File(
                 FilenameUtils.getFullPathNoEndSeparator(destination.toString()))
-                .mkdirs();
+                        .mkdirs();
 
-        try (ReadableByteChannel rbc = Channels.newChannel(response.getEntity()
-                .getContent()); FileOutputStream fos = new FileOutputStream(
-                destination)) {
+        try (ReadableByteChannel rbc = Channels
+                .newChannel(response.getEntity().getContent());
+                FileOutputStream fos = new FileOutputStream(destination)) {
             fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
         }
     }
@@ -144,9 +144,8 @@ public final class DefaultFileDownloader implements FileDownloader {
             URI requestUri) throws IOException {
         final CloseableHttpClient proxyClient;
         if (proxy.useAuthentication()) {
-            proxyClient = buildHttpClient(
-                    makeCredentialsProvider(proxy.host, proxy.port,
-                            proxy.username, proxy.password));
+            proxyClient = buildHttpClient(makeCredentialsProvider(proxy.host,
+                    proxy.port, proxy.username, proxy.password));
         } else {
             proxyClient = buildHttpClient(null);
         }

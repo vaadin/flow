@@ -40,8 +40,7 @@ public class ClientSideExceptionHandlingView extends Div {
          */
         NativeButton causeExternalException = new NativeButton(
                 "Cause external client side exception", e -> {
-                    getUI().get().getPage()
-                            .executeJs("externalErrorTrigger()");
+                    getUI().get().getPage().executeJs("externalErrorTrigger()");
                 });
 
         add(causeException, causeExternalException);

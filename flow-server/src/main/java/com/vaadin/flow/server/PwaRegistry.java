@@ -245,7 +245,8 @@ public class PwaRegistry implements Serializable {
         // When custom offlinePath is in use, it is also an offline resource to
         // precache
         if (pwaConfiguration.isOfflinePathEnabled()) {
-            filesToCache.add(offlinePageCache(pwaConfiguration.getOfflinePath()));
+            filesToCache
+                    .add(offlinePageCache(pwaConfiguration.getOfflinePath()));
         }
         // Offline stub to be shown within an <iframe> in the app shell
         filesToCache
@@ -410,8 +411,7 @@ public class PwaRegistry implements Serializable {
     }
 
     private String offlinePageCache(String offlinePath) {
-        return String.format(WORKBOX_CACHE_FORMAT,
-                offlinePath, offlineHash);
+        return String.format(WORKBOX_CACHE_FORMAT, offlinePath, offlineHash);
     }
 
     private String manifestCache() {

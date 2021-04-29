@@ -37,8 +37,7 @@ public class FlowPluginFrontendUtils {
     /**
      * Additionally include compile-time-only dependencies matching the pattern.
      */
-    private static final String INCLUDE_FROM_COMPILE_DEPS_REGEX =
-            ".*(/|\\\\)(portlet-api|javax\\.servlet-api)-.+jar$";
+    private static final String INCLUDE_FROM_COMPILE_DEPS_REGEX = ".*(/|\\\\)(portlet-api|javax\\.servlet-api)-.+jar$";
 
     private FlowPluginFrontendUtils() {
     }
@@ -56,8 +55,8 @@ public class FlowPluginFrontendUtils {
         try {
             classpathElements = Stream.concat(
                     project.getRuntimeClasspathElements().stream(),
-                    project.getCompileClasspathElements().stream()
-                        .filter(s -> s.matches(INCLUDE_FROM_COMPILE_DEPS_REGEX)));
+                    project.getCompileClasspathElements().stream().filter(
+                            s -> s.matches(INCLUDE_FROM_COMPILE_DEPS_REGEX)));
         } catch (DependencyResolutionRequiredException e) {
             throw new IllegalStateException(String.format(
                     "Failed to retrieve runtime classpath elements from project '%s'",

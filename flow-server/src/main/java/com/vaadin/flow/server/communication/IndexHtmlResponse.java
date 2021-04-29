@@ -48,7 +48,7 @@ public class IndexHtmlResponse {
      *            the UI for the bootstrap
      */
     public IndexHtmlResponse(VaadinRequest vaadinRequest,
-                             VaadinResponse vaadinResponse, Document document, UI ui) {
+            VaadinResponse vaadinResponse, Document document, UI ui) {
         this.vaadinRequest = vaadinRequest;
         this.vaadinResponse = vaadinResponse;
         this.document = document;
@@ -65,7 +65,7 @@ public class IndexHtmlResponse {
      *            the {@link Document} object of the response page
      */
     public IndexHtmlResponse(VaadinRequest vaadinRequest,
-                             VaadinResponse vaadinResponse, Document document) {
+            VaadinResponse vaadinResponse, Document document) {
         this.vaadinRequest = vaadinRequest;
         this.vaadinResponse = vaadinResponse;
         this.document = document;
@@ -105,8 +105,8 @@ public class IndexHtmlResponse {
      * @return the UI
      */
     public Optional<UI> getUI() {
-        if(!this.vaadinRequest.getService()
-                .getDeploymentConfiguration().isEagerServerLoad()) {
+        if (!this.vaadinRequest.getService().getDeploymentConfiguration()
+                .isEagerServerLoad()) {
             return Optional.empty();
         } else {
             return Optional.ofNullable(UI.getCurrent());

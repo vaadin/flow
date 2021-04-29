@@ -150,8 +150,8 @@ public class UIInternalsTest {
         Mockito.when(deploymentConfiguration.getPushMode())
                 .thenReturn(PushMode.AUTOMATIC);
 
-        internals.showRouteTarget(Mockito.mock(Location.class),
-                new Text(""), Collections.emptyList());
+        internals.showRouteTarget(Mockito.mock(Location.class), new Text(""),
+                Collections.emptyList());
 
         Mockito.verify(pushConfig).setPushMode(PushMode.AUTOMATIC);
         Mockito.verify(pushConfig, Mockito.times(0))

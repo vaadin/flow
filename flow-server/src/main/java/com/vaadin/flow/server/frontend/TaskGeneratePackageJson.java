@@ -42,7 +42,8 @@ public class TaskGeneratePackageJson extends NodeUpdater {
      *            folder where flow resources taken from jars will be placed.
      *            default)
      */
-    TaskGeneratePackageJson(File npmFolder, File generatedPath, File flowResourcesPath) {
+    TaskGeneratePackageJson(File npmFolder, File generatedPath,
+            File flowResourcesPath) {
         super(null, null, npmFolder, generatedPath, flowResourcesPath);
     }
 
@@ -54,17 +55,17 @@ public class TaskGeneratePackageJson extends NodeUpdater {
             modified = updateDefaultDependencies(mainContent);
             writePackageFile(mainContent);
 
-            if(flowResourcesFolder == null) {
+            if (flowResourcesFolder == null) {
                 return;
             }
 
             if (!new File(npmFolder, NODE_MODULES + FLOW_NPM_PACKAGE_NAME)
-                .equals(flowResourcesFolder)) {
+                    .equals(flowResourcesFolder)) {
                 writeResourcesPackageFile(getResourcesPackageJson());
             }
 
             if (!new File(npmFolder, NODE_MODULES + FORM_NPM_PACKAGE_NAME)
-                .equals(formResourcesFolder)) {
+                    .equals(formResourcesFolder)) {
                 writeFormResourcesPackageFile(getFormResourcesPackageJson());
             }
         } catch (IOException e) {

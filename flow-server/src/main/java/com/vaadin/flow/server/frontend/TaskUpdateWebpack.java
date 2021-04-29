@@ -86,7 +86,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
      * @param generatedFlowImports
      *            name of the JS file to update with the Flow project imports
      * @param useV14Bootstrapping
-     *            whether the application running with deprecated V14 bootstrapping
+     *            whether the application running with deprecated V14
+     *            bootstrapping
      * @param flowResourcesFolder
      *            relative path to `flow-frontend` package
      * @param frontendGeneratedFolder
@@ -162,7 +163,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
 
     private List<String> modifyWebpackConfig(File generatedFile)
             throws IOException {
-    List<String> lines = FileUtils.readLines(generatedFile, StandardCharsets.UTF_8);
+        List<String> lines = FileUtils.readLines(generatedFile,
+                StandardCharsets.UTF_8);
         List<Pair<String, String>> replacements = getReplacements();
         String declaration = "%s = %s;";
 
@@ -185,7 +187,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
                                 frontendDirectory))),
                 new Pair<>("const frontendGeneratedFolder",
                         formatPathResolve(getEscapedRelativeWebpackPath(
-                            frontendGeneratedFolder))),
+                                frontendGeneratedFolder))),
                 new Pair<>("const mavenOutputFolderForFlowBundledFiles",
                         formatPathResolve(getEscapedRelativeWebpackPath(
                                 webpackOutputPath))),
@@ -205,13 +207,13 @@ public class TaskUpdateWebpack implements FallibleCommand {
                                 flowResourcesFolder
                                         .resolve("VaadinDevmodeGizmo.js")))),
                 new Pair<>("const pwaEnabled",
-                        Boolean.toString(
-                                pwaConfiguration.isEnabled())),
+                        Boolean.toString(pwaConfiguration.isEnabled())),
                 new Pair<>("const offlinePathEnabled",
                         Boolean.toString(
                                 pwaConfiguration.isOfflinePathEnabled())),
                 new Pair<>("const offlinePath", getOfflinePath()),
-                new Pair<>("const clientServiceWorkerEntryPoint", getClientServiceWorker()),
+                new Pair<>("const clientServiceWorkerEntryPoint",
+                        getClientServiceWorker()),
                 new Pair<>("const flowFrontendFolder",
                         formatPathResolve(getEscapedRelativeWebpackPath(
                                 flowResourcesFolder))),
@@ -229,7 +231,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
                     INDEX_HTML);
             return formatPathResolve(getEscapedRelativeWebpackPath(path));
         } else {
-            return "'./" + INDEX_HTML +"'";
+            return "'./" + INDEX_HTML + "'";
         }
     }
 
@@ -240,16 +242,16 @@ public class TaskUpdateWebpack implements FallibleCommand {
     }
 
     private String getClientServiceWorker() {
-        boolean exists = new File(frontendDirectory.toFile(), SERVICE_WORKER_SRC)
-                .exists()
-                || new File(frontendDirectory.toFile(), SERVICE_WORKER_SRC_JS).exists();
+        boolean exists = new File(frontendDirectory.toFile(),
+                SERVICE_WORKER_SRC).exists()
+                || new File(frontendDirectory.toFile(), SERVICE_WORKER_SRC_JS)
+                        .exists();
         if (!exists) {
             Path path = Paths.get(
                     getEscapedRelativeWebpackPath(webpackConfigPath), TARGET,
                     SERVICE_WORKER_SRC);
-            return formatPathResolve(
-                    getEscapedRelativeWebpackPath(path)
-                            .replaceFirst("\\.[tj]s$", ""));
+            return formatPathResolve(getEscapedRelativeWebpackPath(path)
+                    .replaceFirst("\\.[tj]s$", ""));
         } else {
             return "'./sw'";
         }
