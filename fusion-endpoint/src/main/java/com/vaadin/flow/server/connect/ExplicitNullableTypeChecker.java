@@ -41,6 +41,14 @@ public class ExplicitNullableTypeChecker {
         return element.isAnnotationPresent(Nonnull.class);
     }
 
+    /**
+     * Checks if the element should be required (not nullable) in the generated
+     * Typescript code.
+     *
+     * @param node
+     *            an element to be required
+     * @return a result of check
+     */
     public static boolean isRequired(NodeWithAnnotations<?> node) {
         return node.isAnnotationPresent(Nonnull.class);
     }
