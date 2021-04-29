@@ -167,41 +167,47 @@ function extractThemeName(frontendGeneratedFolder) {
 }
 
 /**
- * Finds all the parent themes located in the project themes folders for the
- * given custom theme {@code themeName}.
+ * Finds all the parent themes located in the project themes folders with
+ * respect to the given custom theme with {@code themeName}.
  * @param {string} themeName given custom theme name to look parents for
  * @param {object} options application theme plugin mandatory options,
  * @see {@link ApplicationThemePlugin}
- * @param {string[]} foundParentThemes array of parent themes already found
- * @param {boolean} parent {@code true} if the given theme name corresponds
- * to parent theme, {@code false} if it corresponds to current (active) theme
- * @returns {string[]} array of parent themes in the project folders
+ * @returns {string[]} array of paths to found parent themes with respect to the
+ * given custom theme
  */
-function findParentThemes(themeName, options, foundParentThemes, parent) {
-  if (!foundParentThemes){
-    foundParentThemes = [];
-  }
-  const parentsFoundBefore = foundParentThemes.length;
+function findParentThemes(themeName, options) {
+  return findParentThemesInternal(themeName, options, false);
+}
+
+function findParentThemesInternal(themeName, options, isParent) {
+  let foundParentThemes = [];
+  let themeFound = false;
   for (let i = 0; i < options.themeProjectFolders.length; i++) {
     const themeProjectFolder = options.themeProjectFolders[i];
     if (fs.existsSync(themeProjectFolder)) {
       const themeFolder = path.resolve(themeProjectFolder, themeName);
       if (fs.existsSync(themeFolder)) {
-        if (parent) {
-          foundParentThemes.push(themeFolder);
+        if (themeFound) {
+          throw new Error("Found theme files in '" + themeProjectFolder + "' and '"
+            + themeFound + "'. Theme should only be available in one folder");
         }
         const themeProperties = getThemeProperties(themeFolder);
         const parentTheme = themeProperties.parent;
-
         if (parentTheme) {
-          foundParentThemes = findParentThemes(parentTheme, options, foundParentThemes, true);
+          foundParentThemes = findParentThemesInternal(parentTheme, options, true);
+          if (!foundParentThemes.length) {
+            throw new Error("Could not locate files for defined parent theme '" + parentTheme + "'.\n" +
+              "Please verify that dependency is added or theme folder exists.")
+          }
         }
+        // Add a theme path to result collection only if a given themeName
+        // is supposed to be a parent theme
+        if (isParent) {
+          foundParentThemes.push(themeFolder);
+        }
+        themeFound = themeProjectFolder;
       }
     }
-  }
-  if (parent && foundParentThemes.length === parentsFoundBefore) {
-    throw new Error("Could not locate files for defined parent theme '" + themeName + "'.\n" +
-      "Please verify that dependency is added or theme folder exists.")
   }
   return foundParentThemes;
 }
