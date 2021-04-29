@@ -585,7 +585,7 @@ public class FrontendTools {
     List<String> getSuitablePnpm() {
         List<String> pnpmCommand = Stream
                 // first try default pnpm, followed by known supported version
-                .of("pnpm", "pnpm@" + DEFAULT_PNPM_VERSION)
+                .of("pnpm@5", "pnpm@" + DEFAULT_PNPM_VERSION)
                 // do NOT modify the order of the --yes and --quiet flags, as it
                 // changes the behavior of npx
                 .map(pnpm -> getNpmCliToolExecutable(NpmCliTool.NPX, "--yes",
