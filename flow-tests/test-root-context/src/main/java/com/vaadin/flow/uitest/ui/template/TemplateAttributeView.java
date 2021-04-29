@@ -22,11 +22,6 @@ public class TemplateAttributeView extends PolymerTemplate<TemplateModel>
 
     @Id("disabled")
     private Div disabledDiv;
-    @Id("hasText")
-    private Div hasText;
-
-    @Id("hasTextAndChild")
-    private Div hasTextAndChild;
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {

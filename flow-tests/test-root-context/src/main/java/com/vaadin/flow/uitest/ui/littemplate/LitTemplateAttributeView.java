@@ -19,12 +19,6 @@ public class LitTemplateAttributeView extends LitTemplate
     @Id("div")
     private Div injectedDiv;
 
-    @Id("hasText")
-    private Div hasText;
-
-    @Id("hasTextAndChild")
-    private Div hasTextAndChild;
-
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         setId("template");
