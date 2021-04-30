@@ -42,14 +42,14 @@ const clientServiceWorkerEntryPoint = '[to-be-generated-by-flow]';
 // public path for resources, must match Flow VAADIN_BUILD
 const VAADIN = 'VAADIN';
 const build = 'build';
-// public path for resources, must match the request used in flow to get the
-const config = '../config';
+// public path for resources, must match the request used in flow to get the /build/stats.json file
+const config = 'config';
 const outputFolder = mavenOutputFolderForFlowBundledFiles;
 const indexHtmlPath = 'index.html';
 // folder for outputting vaadin-bundle and other fragments
 const buildFolder = path.resolve(outputFolder, VAADIN, build);
 // folder for outputting stats.json
-const confFolder = path.resolve(mavenOutputFolderForResourceFiles, 'config');
+const confFolder = path.resolve(mavenOutputFolderForResourceFiles, config);
 const serviceWorkerPath = 'sw.js';
 // file which is used by flow to read templates for server `@Id` binding
 const statsFile = `${confFolder}/stats.json`;
@@ -73,9 +73,6 @@ const enableTypeScript = fs.existsSync(tsconfigJsonFile);
 
 // Target flow-fronted auto generated to be the actual target folder
 const flowFrontendFolder = '[to-be-generated-by-flow]';
-
-// make sure that build folder exists before outputting anything
-const mkdirp = require('mkdirp');
 
 const devMode = process.argv.find(v => v.indexOf('webpack-dev-server') >= 0);
 if (!devMode) {
