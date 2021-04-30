@@ -30,7 +30,8 @@ public class AppEndpoint {
     }
 
     @AnonymousAllowed
-    public String echoWithOptional(@Nullable String first, @Nullable String second, Optional<String> third,
+    public String echoWithOptional(@Nullable String first,
+            @Nullable String second, Optional<String> third,
             Optional<String> fourth) {
         String result = "";
         if (first != null) {
@@ -63,13 +64,15 @@ public class AppEndpoint {
 
     @AnonymousAllowed
     public String checkUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth = SecurityContextHolder.getContext()
+                .getAuthentication();
         return auth == null ? null : auth.getName();
     }
 
     @PermitAll
     public String checkUserFromVaadinRequest() {
-        return "Hello, " + VaadinRequest.getCurrent().getUserPrincipal().getName() + "!";
+        return "Hello, "
+                + VaadinRequest.getCurrent().getUserPrincipal().getName() + "!";
     }
 
 }

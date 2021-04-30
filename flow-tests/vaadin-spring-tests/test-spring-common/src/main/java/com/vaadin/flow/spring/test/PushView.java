@@ -23,7 +23,8 @@ public class PushView extends Div {
 
         @Override
         public void run() {
-            // We can acquire the lock after the request started this thread is processed
+            // We can acquire the lock after the request started this thread is
+            // processed
             // Needed to make sure that this is sent as a push message
             Lock lockInstance = ui.getSession().getLockInstance();
             lockInstance.lock();

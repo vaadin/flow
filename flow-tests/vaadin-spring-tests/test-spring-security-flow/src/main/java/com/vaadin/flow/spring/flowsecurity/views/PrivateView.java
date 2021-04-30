@@ -32,7 +32,8 @@ public class PrivateView extends VerticalLayout {
     private void updateBalanceText() {
         String name = utils.getAuthenticatedUserInfo().getFullName();
         BigDecimal balance = bankService.getBalance();
-        this.balanceSpan.setText(String.format("Hello %s, your bank account balance is $%s.", name, balance));
+        this.balanceSpan.setText(String.format(
+                "Hello %s, your bank account balance is $%s.", name, balance));
 
     }
 

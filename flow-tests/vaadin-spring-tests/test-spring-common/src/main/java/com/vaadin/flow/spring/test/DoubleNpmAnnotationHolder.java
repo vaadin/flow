@@ -19,8 +19,8 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 
 /**
  * Since @NpmPackage annotations should be discovered without a @Route
- * annotation, they have been separated here for the scanner to find (and
- * avoid being found some other way)
+ * annotation, they have been separated here for the scanner to find (and avoid
+ * being found some other way)
  *
  * @see com.vaadin.flow.spring.test.DoubleNpmAnnotationView
  */

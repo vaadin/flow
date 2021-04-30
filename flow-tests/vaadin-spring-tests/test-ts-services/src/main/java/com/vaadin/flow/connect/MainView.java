@@ -29,7 +29,8 @@ public class MainView extends Div implements HasUrlParameter<String> {
     }
 
     @Override
-    public void setParameter(BeforeEvent event, @WildcardParameter String parameter) {
+    public void setParameter(BeforeEvent event,
+            @WildcardParameter String parameter) {
         // no op. Implement HasUrlParameter to test deeper levels of url.
     }
 }

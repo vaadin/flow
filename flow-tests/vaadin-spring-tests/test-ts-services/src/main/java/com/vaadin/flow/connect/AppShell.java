@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 @PWA(name = "My App", shortName = "app")
 public class AppShell implements AppShellConfigurator {
     private TitleService titleService;
-    
-    public AppShell(@Autowired TitleService titleService){
+
+    public AppShell(@Autowired TitleService titleService) {
         this.titleService = titleService;
     }
 
@@ -23,8 +23,8 @@ public class AppShell implements AppShellConfigurator {
     }
 
     @Service
-    public static class TitleService{
-        public String getTitle(){
+    public static class TitleService {
+        public String getTitle() {
             return "titleRetrievedFromAService";
         }
     }

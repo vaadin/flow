@@ -22,7 +22,8 @@ public class PublicView extends FlexLayout {
         Image image = new Image("public/images/bank.jpg", "Bank");
         image.getStyle().set("max-width", "100%").set("min-height", "0");
         add(image);
-        add(new Paragraph("We are very great and have great amounts of money."));
+        add(new Paragraph(
+                "We are very great and have great amounts of money."));
     }
 
 }
