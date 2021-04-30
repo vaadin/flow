@@ -60,7 +60,6 @@ export const injectGlobalCss = (css, target, first) => {
 };
 `;
 
-// This is copied from flow-generated-import
 const addCssBlockMethod = `
 const addCssBlock = function (block, before = false) {
   const tpl = document.createElement("template");
