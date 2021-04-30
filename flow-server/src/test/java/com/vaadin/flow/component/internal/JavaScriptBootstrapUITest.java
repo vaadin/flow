@@ -5,6 +5,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
@@ -24,16 +30,15 @@ import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.InternalServerError;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinRequest;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.CLIENT_NAVIGATE_TO;
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
@@ -606,6 +611,39 @@ public class JavaScriptBootstrapUITest {
                 "There was an exception while trying to navigate to '%s' with the exception message '%s'",
                 location, validationMessage);
         assertExceptionComponent(InternalServerError.class, errorMessage);
+    }
+
+    @Test
+    public void navigate_firsClientSideRoutingThrows_navigationInProgressIsReset_secondClientSideRoutingWorks() {
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(session.getService()).thenReturn(service);
+        Router router = Mockito.mock(Router.class);
+        Mockito.when(service.getRouter()).thenReturn(router);
+
+        Mockito.doThrow(RuntimeException.class).when(router)
+                .resolveNavigationTarget(Mockito.any());
+
+        JavaScriptBootstrapUI ui = new JavaScriptBootstrapUI();
+
+        ui.getInternals().setSession(session);
+
+        try {
+            ui.navigate("foo", QueryParameters.empty());
+        } catch (RuntimeException expected) {
+            router = Mockito.mock(Router.class);
+            Mockito.when(service.getRouter()).thenReturn(router);
+
+            Mockito.when(router.resolveNavigationTarget(Mockito.any()))
+                    .thenReturn(Optional.empty());
+            ui.navigate("foo", QueryParameters.empty());
+
+            Mockito.verify(router).resolveNavigationTarget(Mockito.any());
+            return;
+        }
+        // self control: code inside catch should be invoked
+        Assert.fail();
     }
 
     private void assertExceptionComponent(Class<?> errorClass,
