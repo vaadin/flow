@@ -308,8 +308,8 @@ public class AccessAnnotationCheckerTest {
 
     @Test(expected = IllegalStateException.class)
     public void hasMethodAccessNoCurrentRequest() throws Exception {
-        accessAnnotationChecker.hasAccess(
-                AnonymousAllowedClass.class.getMethod("permitAll"));
+        accessAnnotationChecker
+                .hasAccess(AnonymousAllowedClass.class.getMethod("permitAll"));
     }
 
     @Test
