@@ -190,7 +190,19 @@ public class HandlerHelper implements Serializable {
         return false;
     }
 
-    private static Optional<String> getPathIfInsideServlet(
+    /**
+     * Returns the path inside the servlet if the requested path targets a path
+     * inside the servlet.
+     * 
+     * @param servletMappingPath
+     *            the servlet mapping from the servlet configuration
+     * @param requestedPath
+     *            the request path relative to the context root
+     * @return an optional containing the path relative to the servlet if the
+     *         request is inside the servlet mapping, an empty optional
+     *         otherwise
+     */
+    public static Optional<String> getPathIfInsideServlet(
             String servletMappingPath, String requestedPath) {
         if (servletMappingPath.endsWith("/*")) {
             servletMappingPath = servletMappingPath.substring(0,
