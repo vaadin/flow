@@ -5,6 +5,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
+import com.vaadin.flow.component.ClientCallable;
+import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class PopStateHandlerIT extends ChromeBrowserTest {
@@ -147,7 +149,8 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
         goBack();
 
         verifyPopStateEvent(FORUM);
-        verifyInsideServletLocation(EMPTY_HASH);
+        // NOTE: see https://github.com/vaadin/flow/issues/10865
+        verifyInsideServletLocation(isClientRouter() ? FORUM : EMPTY_HASH);
 
         goBack();
 
@@ -157,7 +160,8 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
         goBack();
 
         verifyPopStateEvent(FORUM);
-        verifyInsideServletLocation(EMPTY_HASH);
+        // NOTE: see https://github.com/vaadin/flow/issues/10865
+        verifyInsideServletLocation(isClientRouter() ? FORUM : EMPTY_HASH);
 
         goBack();
 
@@ -173,9 +177,15 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
         findElement(By.id(id)).click();
     }
 
+    private String trimPathForClientRouter(String path) {
+        // NOTE: see https://github.com/vaadin/flow/issues/10865
+        return isClientRouter() ? PathUtil.trimPath(path) : path;
+    }
+
     private void verifyInsideServletLocation(String pathAfterServletMapping) {
-        Assert.assertEquals("Invalid URL", getDriver().getCurrentUrl(),
-                getRootURL() + "/view/" + pathAfterServletMapping);
+        Assert.assertEquals("Invalid URL",
+                trimPathForClientRouter(getRootURL() + "/view/" + pathAfterServletMapping),
+                trimPathForClientRouter(getDriver().getCurrentUrl()));
     }
 
     private void verifyNoServerVisit() {
@@ -184,6 +194,7 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
 
     private void verifyPopStateEvent(String location) {
         Assert.assertEquals("Invalid server side event location",
-                findElement(By.id("location")).getText(), location);
+                trimPathForClientRouter(findElement(By.id("location")).getText()),
+                trimPathForClientRouter(location));
     }
 }

@@ -119,6 +119,14 @@ public class JavaScriptBootstrapUI extends UI {
         if (appShellTitle != null && !appShellTitle.isEmpty()) {
             getInternals().setAppShellTitle(appShellTitle);
         }
+
+        final String trimmedRoute = PathUtil.trimPath(flowRoute);
+        if (!trimmedRoute.equals(flowRoute)) {
+            // See InternalRedirectHandler invoked via Router.
+            getPage().getHistory().replaceState(null, trimmedRoute);
+        }
+        final Location location = new Location(trimmedRoute);
+
         if (wrapperElement == null) {
             // Create flow reference for the client outlet element
             wrapperElement = new Element(clientElementTag);
@@ -128,26 +136,18 @@ public class JavaScriptBootstrapUI extends UI {
                     getElement().getNode(), wrapperElement,
                     NodeProperties.INJECT_BY_ID, clientElementId);
 
-            final String trimmedRoute = PathUtil.trimPath(flowRoute);
-            if (!trimmedRoute.equals(flowRoute)) {
-                // See InternalRedirectHandler invoked via Router.
-                getPage().getHistory().replaceState(null, trimmedRoute);
-                flowRoute = trimmedRoute;
-            }
-
             getPage().getHistory().setHistoryStateChangeHandler(
                     event -> renderViewForRoute(event.getLocation(),
                             NavigationTrigger.CLIENT_SIDE));
 
             // Render the flow view that the user wants to navigate to.
-            renderViewForRoute(new Location(flowRoute),
-                    NavigationTrigger.CLIENT_SIDE);
+            renderViewForRoute(location, NavigationTrigger.CLIENT_SIDE);
         } else {
             History.HistoryStateChangeHandler handler = getPage().getHistory()
                     .getHistoryStateChangeHandler();
             handler.onHistoryStateChange(new History.HistoryStateChangeEvent(
-                    getPage().getHistory(), historyState,
-                    new Location(flowRoute), NavigationTrigger.CLIENT_SIDE));
+                    getPage().getHistory(), historyState, location,
+                    NavigationTrigger.CLIENT_SIDE));
         }
 
         // true if the target is client-view and the push mode is disable
