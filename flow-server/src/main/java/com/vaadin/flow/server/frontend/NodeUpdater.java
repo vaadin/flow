@@ -53,6 +53,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * Base abstract class for frontend updaters that needs to be run when in
  * dev-mode or from the flow maven plugin.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */

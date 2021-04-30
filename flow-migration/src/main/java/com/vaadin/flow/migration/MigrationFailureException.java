@@ -25,3 +25,4 @@ public class MigrationFailureException extends Exception {
         super(message);
     }
 }
+

@@ -39,6 +39,8 @@ import com.vaadin.flow.internal.StateNode;
 /**
  * Abstract class for collecting Methods which are published as
  * <code>serverObject.&lt;name&gt;</code> on the client side.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @param <T>
  *            Component type for setComponent(T component)

@@ -25,6 +25,8 @@ import com.vaadin.flow.router.Router;
 /**
  * Handles navigation by redirecting the user to some location in the
  * application.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

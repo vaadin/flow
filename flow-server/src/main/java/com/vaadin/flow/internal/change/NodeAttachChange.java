@@ -24,6 +24,8 @@ import elemental.json.JsonObject;
 
 /**
  * Change describing that a node has been attached.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

@@ -25,6 +25,8 @@ import elemental.json.JsonValue;
  * <p>
  * This decoder is applicable to any {@link JsonValue} which is
  * {@link JsonString} and any {@link Enum} sublcass
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

@@ -43,6 +43,8 @@ import com.vaadin.flow.theme.Theme;
  * Writes web components generated from
  * {@link com.vaadin.flow.component.WebComponentExporter} implementation classes
  * to a target directory.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 2.0

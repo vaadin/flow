@@ -24,6 +24,8 @@ import com.vaadin.flow.server.VaadinRequest;
 
 /**
  * Utility class for locale handling.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */

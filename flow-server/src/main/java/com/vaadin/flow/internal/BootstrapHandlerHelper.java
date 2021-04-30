@@ -26,6 +26,8 @@ import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Helper methods for use in bootstrapping.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  */
 public final class BootstrapHandlerHelper implements Serializable {

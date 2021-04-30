@@ -22,6 +22,8 @@ import com.vaadin.flow.internal.nodefeature.NodeList;
 /**
  * Change describing an operation (add/remove) in a {@link NodeList list} node
  * feature.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @author Vaadin Ltd
  * @since 1.0

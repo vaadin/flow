@@ -60,6 +60,8 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS
 /**
  * A class for static methods and definitions that might be used in different
  * locations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */

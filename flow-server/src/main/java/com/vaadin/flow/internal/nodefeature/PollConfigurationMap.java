@@ -20,6 +20,8 @@ import com.vaadin.flow.internal.StateNode;
 
 /**
  * A node map for storing configuration for polling.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

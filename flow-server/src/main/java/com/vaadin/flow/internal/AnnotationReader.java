@@ -33,6 +33,8 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 
 /**
  * Helper class for reading annotation data.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */

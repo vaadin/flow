@@ -75,6 +75,8 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
  * had been mapped to the same path already or if
  * {@link InitParameters#DISABLE_AUTOMATIC_SERVLET_REGISTRATION} system property
  * is set to {@code true}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @see VaadinServletConfiguration#disableAutomaticServletRegistration()

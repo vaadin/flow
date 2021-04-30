@@ -19,6 +19,9 @@ import com.vaadin.flow.server.WebBrowser;
 
 /**
  * Browser instance targeted for server side resolving of resources.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
  *
  * @since 1.0
  */
@@ -37,7 +40,6 @@ public abstract class FakeBrowser extends WebBrowser {
             return false;
         }
     };
-
 
     /**
      * Gets the es6 singleton instance.

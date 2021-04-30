@@ -23,6 +23,8 @@ package com.vaadin.flow.server.communication.rpc;
  * (e.g. "1.1" can't be converted to {@link Integer} even though the
  * {@link StringToNumberDecoder} is able to decode a {@link String} to
  * {@link Integer}).
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

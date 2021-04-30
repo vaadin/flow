@@ -79,6 +79,9 @@ import static java.net.HttpURLConnection.HTTP_OK;
  *
  * By default it keeps updated npm dependencies and node imports before running
  * webpack server
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */

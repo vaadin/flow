@@ -26,10 +26,13 @@ import java.util.Set;
  * Verify the servlet version on container initialization.
  * <p>
  * In cases of non compatible servlet version application deployment will fail.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */
-public class ServletVerifier implements ClassLoaderAwareServletContainerInitializer {
+public class ServletVerifier
+        implements ClassLoaderAwareServletContainerInitializer {
     @Override
     public void process(Set<Class<?>> c, ServletContext ctx)
             throws ServletException {

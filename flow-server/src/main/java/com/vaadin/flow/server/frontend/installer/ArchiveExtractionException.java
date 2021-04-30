@@ -19,6 +19,8 @@ package com.vaadin.flow.server.frontend.installer;
  * Exception indicating a failure during extraction of an archive file.
  * <p>
  * Derived from eirslett/frontend-maven-plugin
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since
  */
