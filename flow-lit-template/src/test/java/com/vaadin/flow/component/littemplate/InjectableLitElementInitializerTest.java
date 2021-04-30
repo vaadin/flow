@@ -28,7 +28,6 @@ import org.junit.rules.ExpectedException;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.template.internal.AbstractInjectableElementInitializer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 
@@ -133,14 +132,6 @@ public class InjectableLitElementInitializerTest {
         attributes.put("id", "labelId");
 
         initializer.accept(attributes);
-    }
-
-    @Test
-    public void initializeElement_setText_textIsSet() {
-        initializer.accept(Collections.singletonMap(
-                AbstractInjectableElementInitializer.TEXT_DATA, "foo bar"));
-
-        Assert.assertEquals("foo bar", element.getText());
     }
 
     @Tag(Tag.DIV)

@@ -856,10 +856,11 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Test
-    public void attachExistingElementWithoutChidlrenWithText_elementHasText() {
+    public void attachExistingElementWithoutChidlrenWithText_elementHasNoText() {
         ElementWithTextTemplate template = new ElementWithTextTemplate();
 
-        Assert.assertEquals("foo bar", template.label.getText());
+        // see #10106
+        Assert.assertEquals("", template.label.getText());
     }
 
     @Test

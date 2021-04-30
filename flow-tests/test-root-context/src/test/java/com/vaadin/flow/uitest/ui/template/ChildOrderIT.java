@@ -163,28 +163,29 @@ public class ChildOrderIT extends ChromeBrowserTest {
         assertNodeOrder(container, "Client text");
 
         clickAndWaitForContainerToChange(container, "prependChildToContainer2");
-        assertNodeOrder(container, "Server text 1Client text");
+        assertNodeOrder(container, "Client text", "Server text 1");
 
         clickAndWaitForContainerToChange(container, "prependChildToContainer2");
-        assertNodeOrder(container, "Server text 2", "Server text 1Client text");
+        assertNodeOrder(container, "Client text", "Server text 2",
+                "Server text 1");
 
         clickAndWaitForContainerToChange(container,
                 "addClientSideChildToContainer2");
-        assertNodeOrder(container, "Server text 2", "Server text 1Client text",
-                "Client text");
-
-        clickAndWaitForContainerToChange(container, "prependChildToContainer2");
-        assertNodeOrder(container, "Server text 3", "Server text 2",
-                "Server text 1Client text", "Client text");
-
-        clickAndWaitForContainerToChange(container,
-                "removeChildFromContainer2");
-        assertNodeOrder(container, "Server text 3", "Server text 2",
+        assertNodeOrder(container, "Client text", "Server text 2",
                 "Server text 1", "Client text");
 
+        clickAndWaitForContainerToChange(container, "prependChildToContainer2");
+        assertNodeOrder(container, "Client text", "Server text 3",
+                "Server text 2", "Server text 1", "Client text");
+
         clickAndWaitForContainerToChange(container,
                 "removeChildFromContainer2");
-        assertNodeOrder(container, "Server text 3", "Server text 2",
+        assertNodeOrder(container, "Client text", "Server text 3",
+                "Server text 2", "Client text");
+
+        clickAndWaitForContainerToChange(container,
+                "removeChildFromContainer2");
+        assertNodeOrder(container, "Client text", "Server text 3",
                 "Client text");
     }
 

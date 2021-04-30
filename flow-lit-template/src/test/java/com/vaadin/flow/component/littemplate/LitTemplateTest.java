@@ -160,11 +160,12 @@ public class LitTemplateTest {
     }
 
     @Test
-    public void attachExistingElementWithoutChildrenWithText_elementHasText() {
+    public void attachExistingElementWithoutChildrenWithText_elementHasNoText() {
         ElementWithTextLitTemplate template = new ElementWithTextLitTemplate(
                 service);
 
-        Assert.assertEquals("foo bar", template.label.getText());
+        // see #10106
+        Assert.assertEquals("", template.label.getText());
     }
 
     @Test
