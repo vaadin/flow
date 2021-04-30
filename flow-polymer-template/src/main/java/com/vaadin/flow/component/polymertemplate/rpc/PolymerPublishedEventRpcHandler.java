@@ -33,7 +33,9 @@ import elemental.json.JsonValue;
  * Polymer utilitiy class for handling polymer rpc events for @EventHandler.
  *
  * Registers {@link PolymerPublishedEventRpcHandler} as a service to make it
- * available in {@link Lookup} in an OSGi container. *
+ * available in {@link Lookup} in an OSGi container.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @since
  */

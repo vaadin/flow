@@ -35,6 +35,8 @@ import com.vaadin.flow.router.RouterLayout;
 
 /**
  * Handles error navigation rendering in the target UI.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @see HasErrorParameter
  * @since 1.0

@@ -21,6 +21,9 @@ import java.util.Deque;
 
 /**
  * Container class for containing left over listeners on postponed navigation.
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */

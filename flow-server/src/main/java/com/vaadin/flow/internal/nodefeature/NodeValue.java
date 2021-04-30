@@ -28,6 +28,8 @@ import com.vaadin.flow.shared.util.UniqueSerializable;
 /**
  * A node feature that carries a single value. Represented as a map containing
  * the key returned by {@link #getKey()} on the client.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

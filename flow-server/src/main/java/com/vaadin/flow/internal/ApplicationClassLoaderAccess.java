@@ -24,6 +24,8 @@ import com.vaadin.flow.server.VaadinContext;
  * this interface may be set as an attribute in {@link VaadinContext} so that
  * the classloader may be used in other place where {@link VaadinContext} is
  * available.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @author Vaadin Ltd
  * @since

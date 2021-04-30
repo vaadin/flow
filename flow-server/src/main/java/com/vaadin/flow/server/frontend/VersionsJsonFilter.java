@@ -25,6 +25,8 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 /**
  * Filters out versions based on package json (if user has defined a custom
  * version then this version is not included into the result).
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  */

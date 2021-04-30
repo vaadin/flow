@@ -43,6 +43,8 @@ import elemental.json.JsonValue;
 
 /**
  * Helpers for using <code>elemental.json</code>.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

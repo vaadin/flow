@@ -39,6 +39,8 @@ import elemental.json.JsonObject;
 
 /**
  * Map for element attribute values.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

@@ -22,6 +22,8 @@ import com.vaadin.flow.component.Component;
 /**
  * A pair of a navigation target for handling exceptions and the exception type
  * handled by the navigation target.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.3
  */

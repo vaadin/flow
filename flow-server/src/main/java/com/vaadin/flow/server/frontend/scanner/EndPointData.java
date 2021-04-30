@@ -28,6 +28,8 @@ import com.vaadin.flow.router.Route;
 /**
  * A simple container with the information related to an application end-point,
  * i.e. those classes annotated with the {@link Route} annotation.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */

@@ -31,6 +31,8 @@ import elemental.json.JsonValue;
  * with the required server-side parameter type via the
  * {@link #isApplicable(JsonValue, Class)} method. Decoder is applied to the
  * received value and required type if it's applicable.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
