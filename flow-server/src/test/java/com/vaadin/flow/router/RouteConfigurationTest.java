@@ -46,7 +46,6 @@ public class RouteConfigurationTest {
         registry = ApplicationRouteRegistry.getInstance(vaadinContext);
 
         vaadinService = Mockito.mock(MockService.class);
-        Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
         Mockito.when(vaadinService.getContext()).thenReturn(vaadinContext);
 
         VaadinService.setCurrent(vaadinService);
@@ -600,9 +599,5 @@ public class RouteConfigurationTest {
      */
     private static class MockService extends VaadinServletService {
 
-        @Override
-        public RouteRegistry getRouteRegistry() {
-            return super.getRouteRegistry();
-        }
     }
 }

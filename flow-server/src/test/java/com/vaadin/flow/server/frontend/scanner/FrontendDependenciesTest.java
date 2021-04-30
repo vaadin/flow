@@ -39,8 +39,6 @@ import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.ErrorComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.JsOrderComponent;
-import com.vaadin.flow.server.frontend.scanner.samples.MyServiceListener;
-import com.vaadin.flow.server.frontend.scanner.samples.MyUIInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponentWithLayout;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponentWithMethodReference;
@@ -183,36 +181,6 @@ public class FrontendDependenciesTest {
         Set<String> scripts = dependencies.getScripts();
         Assert.assertEquals(1, scripts.size());
         Assert.assertEquals("./src/baz.js", scripts.iterator().next());
-    }
-
-    @Test
-    public void componentInsideUiInitListener_endpointsAreCollected() {
-        Mockito.when(classFinder.getSubTypesOf(UIInitListener.class))
-                .thenReturn(Collections.singleton(MyUIInitListener.class));
-        FrontendDependencies dependencies = new FrontendDependencies(
-                classFinder, false);
-        List<String> modules = dependencies.getModules();
-        Assert.assertTrue(1 <= modules.size());
-        Assert.assertTrue(modules.contains("baz.js"));
-
-        Set<String> scripts = dependencies.getScripts();
-        Assert.assertEquals(1, scripts.size());
-        Assert.assertEquals("foobar.js", scripts.iterator().next());
-    }
-
-    @Test
-    public void componentInsideUiInitListenerInsideServiceInitListener_endpointsAreCollected() {
-        Mockito.when(classFinder.getSubTypesOf(VaadinServiceInitListener.class))
-                .thenReturn(Collections.singleton(MyServiceListener.class));
-        FrontendDependencies dependencies = new FrontendDependencies(
-                classFinder, false);
-        List<String> modules = dependencies.getModules();
-        Assert.assertTrue(1 <= modules.size());
-        Assert.assertTrue(modules.contains("baz.js"));
-
-        Set<String> scripts = dependencies.getScripts();
-        Assert.assertEquals(1, scripts.size());
-        Assert.assertEquals("foobar.js", scripts.iterator().next());
     }
 
     @Test

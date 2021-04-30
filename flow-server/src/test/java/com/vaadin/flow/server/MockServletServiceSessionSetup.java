@@ -76,22 +76,6 @@ public class MockServletServiceSessionSetup {
             this.routeRegistry = routeRegistry;
         }
 
-        @Override
-        protected RouteRegistry getRouteRegistry() {
-            if (routeRegistry != null) {
-                return routeRegistry;
-            }
-            return super.getRouteRegistry();
-        }
-
-        @Override
-        public Router getRouter() {
-            if (router != null) {
-                return router;
-            }
-            return super.getRouter();
-        }
-
         public void setRouter(Router router) {
             this.router = router;
         }

@@ -62,7 +62,6 @@ public class SessionRouteRegistryTest {
                 new VaadinServletContext(Mockito.mock(ServletContext.class)));
 
         vaadinService = Mockito.mock(MockService.class);
-        Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
 
         VaadinService.setCurrent(vaadinService);
 
@@ -961,37 +960,6 @@ public class SessionRouteRegistryTest {
     }
 
     @Test
-    public void serialize_deserialize_parentRegistryIsANewOne()
-            throws Throwable {
-        session = new MockVaadinSession(vaadinService);
-
-        TestSessionRouteRegistry registry = new TestSessionRouteRegistry(
-                session);
-
-        TestSessionRouteRegistry deserialized = serializeAndDeserialize(
-                registry);
-
-        VaadinService service = new TestService();
-        RouteRegistry newAppRegistry = service.getRouteRegistry();
-
-        Mockito.when(newAppRegistry.getNavigationTarget("foo",
-                Collections.emptyList()))
-                .thenReturn(Optional.of(HtmlContainer.class));
-
-        WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
-        deserialized.session.refreshTransients(wrappedSession, service);
-
-        // The original registry doesn't contain "foo" navigation target
-        Assert.assertEquals(Optional.empty(),
-                registry.getNavigationTarget("foo", Collections.emptyList()));
-        // The deserialized one (after refreshing transients) contains "foo"
-        // navigation target
-        Assert.assertEquals(Optional.of(HtmlContainer.class), deserialized
-                .getNavigationTarget("foo", Collections.emptyList()));
-
-    }
-
-    @Test
     public void getTargetUrl_annotatedRoute_rootIsAlias_mainRouteIsNotRoot_mainRouteIsReturned() {
         SessionRouteRegistry registry = getRegistry(session);
         RouteConfiguration configuration = RouteConfiguration
@@ -1105,10 +1073,6 @@ public class SessionRouteRegistryTest {
      */
     private static class MockService extends VaadinServletService {
 
-        @Override
-        public RouteRegistry getRouteRegistry() {
-            return super.getRouteRegistry();
-        }
     }
 
     private static class TestSessionRouteRegistry extends SessionRouteRegistry {
@@ -1136,11 +1100,6 @@ public class SessionRouteRegistryTest {
         @Override
         protected Lock getSessionLock(WrappedSession wrappedSession) {
             return lock;
-        }
-
-        @Override
-        protected RouteRegistry getRouteRegistry() {
-            return appRegistry;
         }
     }
 }

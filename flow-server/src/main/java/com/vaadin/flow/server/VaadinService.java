@@ -67,21 +67,12 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
-import com.vaadin.flow.server.communication.AtmospherePushConnection;
-import com.vaadin.flow.server.communication.HeartbeatHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.IndexHtmlResponse;
-import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 import com.vaadin.flow.server.communication.PwaHandler;
-import com.vaadin.flow.server.communication.SessionRequestHandler;
-import com.vaadin.flow.server.communication.StreamRequestHandler;
-import com.vaadin.flow.server.communication.UidlRequestHandler;
-import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
-import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.shared.communication.PushMode;
 
 import elemental.json.Json;
 import elemental.json.JsonException;
@@ -100,22 +91,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public abstract class VaadinService implements Serializable {
 
     private static final String SEPARATOR = "\n=================================================================";
-
-    public static final String INVALID_ATMOSPHERE_VERSION_WARNING = SEPARATOR
-            + "\nVaadin depends on Atmosphere {} but version {} was found.\n"
-            + "This might cause compatibility problems if push is used."
-            + SEPARATOR;
-
-    public static final String ATMOSPHERE_MISSING_ERROR = SEPARATOR
-            + "\nAtmosphere could not be loaded. When using push with Vaadin, the\n"
-            + "Atmosphere framework must be present on the classpath.\n"
-            + "If using a dependency management system, please add a dependency\n"
-            + "to vaadin-push.\n"
-            + "If managing dependencies manually, please make sure Atmosphere\n"
-            + Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION
-            + " is included on the classpath.\n" + "Will fall back to using "
-            + PushMode.class.getSimpleName() + "." + PushMode.DISABLED.name()
-            + "." + SEPARATOR;
 
     public static final String CANNOT_ACQUIRE_CLASSLOADER_SEVERE = SEPARATOR
             + "Vaadin was unable to acquire class loader from servlet container\n"
@@ -154,7 +129,6 @@ public abstract class VaadinService implements Serializable {
             .newSetFromMap(new ConcurrentHashMap<>());
 
     private final List<SessionInitListener> sessionInitListeners = new CopyOnWriteArrayList<>();
-    private final List<UIInitListener> uiInitListeners = new CopyOnWriteArrayList<>();
     private final List<SessionDestroyListener> sessionDestroyListeners = new CopyOnWriteArrayList<>();
 
     private SystemMessagesProvider systemMessagesProvider = DefaultSystemMessagesProvider
@@ -170,8 +144,6 @@ public abstract class VaadinService implements Serializable {
 
     private Iterable<DependencyFilter> dependencyFilters;
 
-    private boolean atmosphereAvailable = checkAtmosphereSupport();
-
     private BootstrapInitialPredicate bootstrapInitialPredicate;
     private BootstrapUrlPredicate bootstrapUrlPredicate;
 
@@ -186,8 +158,6 @@ public abstract class VaadinService implements Serializable {
      * Set to true when {@link #init()} has been run.
      */
     private boolean initialized = false;
-
-    private Router router;
 
     private Instantiator instantiator;
 
@@ -248,10 +218,6 @@ public abstract class VaadinService implements Serializable {
     public void init() throws ServiceException {
         instantiator = createInstantiator();
 
-        // init the router now so that registry will be available for
-        // modifications
-        router = new Router(getRouteRegistry());
-
         List<RequestHandler> handlers = createRequestHandlers();
 
         ServiceInitEvent event = new ServiceInitEvent(this);
@@ -280,44 +246,12 @@ public abstract class VaadinService implements Serializable {
                     .collect(Collectors.toList());
         });
 
-        DeploymentConfiguration configuration = getDeploymentConfiguration();
-        if (!configuration.isProductionMode()) {
-            Logger logger = getLogger();
-            logger.debug("The application has the following routes: ");
-            List<RouteData> routeDataList = getRouteRegistry()
-                    .getRegisteredRoutes();
-            if (!routeDataList.isEmpty()) {
-                addRouterUsageStatistics();
-            }
-            routeDataList.stream().map(Object::toString).forEach(logger::debug);
-        }
         if (getDeploymentConfiguration().isPnpmEnabled()) {
             UsageStatistics.markAsUsed("flow/pnpm", null);
         }
 
         initialized = true;
     }
-
-    private void addRouterUsageStatistics() {
-        if (UsageStatistics.getEntries().anyMatch(
-                e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName()))) {
-            UsageStatistics.removeEntry(Constants.STATISTIC_ROUTING_CLIENT);
-            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_HYBRID,
-                    Version.getFullVersion());
-        } else if (UsageStatistics.getEntries()
-                .noneMatch(e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER
-                        .equals(e.getName()))) {
-            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_SERVER,
-                    Version.getFullVersion());
-        }
-    }
-
-    /**
-     * Find a route registry to use for this service.
-     *
-     * @return the route registry to use, not <code>null</code>
-     */
-    protected abstract RouteRegistry getRouteRegistry();
 
     protected abstract PwaRegistry getPwaRegistry();
 
@@ -345,16 +279,9 @@ public abstract class VaadinService implements Serializable {
     protected List<RequestHandler> createRequestHandlers()
             throws ServiceException {
         List<RequestHandler> handlers = new ArrayList<>();
-        handlers.add(new JavaScriptBootstrapHandler());
-        handlers.add(new SessionRequestHandler());
-        handlers.add(new HeartbeatHandler());
-        handlers.add(new UidlRequestHandler());
-        handlers.add(new UnsupportedBrowserHandler());
-        handlers.add(new StreamRequestHandler());
-        handlers.add(new PwaHandler(() -> getPwaRegistry()));
 
-        handlers.add(new WebComponentProvider());
-        handlers.add(new WebComponentBootstrapHandler());
+        handlers.add(new UnsupportedBrowserHandler());
+        handlers.add(new PwaHandler(() -> getPwaRegistry()));
 
         return handlers;
     }
@@ -573,18 +500,6 @@ public abstract class VaadinService implements Serializable {
      */
     public Registration addSessionInitListener(SessionInitListener listener) {
         return Registration.addAndRemove(sessionInitListeners, listener);
-    }
-
-    /**
-     * Adds a listener that gets notified when a new UI has been initialized.
-     *
-     * @param listener
-     *            the UI initialization listener
-     * @return a handle that can be used for removing the listener
-     * @see UIInitListener
-     */
-    public Registration addUIInitListener(UIInitListener listener) {
-        return Registration.addAndRemove(uiInitListeners, listener);
     }
 
     /**
@@ -1848,52 +1763,6 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Enables push if push support is available and push has not yet been
-     * enabled.
-     *
-     * If push support is not available, a warning explaining the situation will
-     * be logged at least the first time this method is invoked.
-     *
-     * @return <code>true</code> if push can be used; <code>false</code> if push
-     *         is not available.
-     */
-    public boolean ensurePushAvailable() {
-        if (atmosphereAvailable) {
-            return true;
-        } else {
-            if (!pushWarningEmitted) {
-                pushWarningEmitted = true;
-                getLogger().warn(ATMOSPHERE_MISSING_ERROR);
-            }
-            return false;
-        }
-    }
-
-    private static boolean checkAtmosphereSupport() {
-        String rawVersion = AtmospherePushConnection.getAtmosphereVersion();
-        if (rawVersion == null) {
-            return false;
-        }
-
-        if (!Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION.equals(rawVersion)) {
-            getLogger().warn(INVALID_ATMOSPHERE_VERSION_WARNING,
-                    new Object[] {
-                            Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION,
-                            rawVersion });
-        }
-        return true;
-    }
-
-    /**
-     * Checks whether Atmosphere is available for use.
-     *
-     * @return true if Atmosphere is available, false otherwise
-     */
-    protected boolean isAtmosphereAvailable() {
-        return atmosphereAvailable;
-    }
-
-    /**
      * Checks that another {@link VaadinSession} instance is not locked. This is
      * internally used by {@link VaadinSession#accessSynchronously(Command)} and
      * {@link UI#accessSynchronously(Command)} to help avoid causing deadlocks.
@@ -2217,26 +2086,6 @@ public abstract class VaadinService implements Serializable {
      */
     protected String getSessionAttributeName() {
         return VaadinSession.class.getName() + "." + getServiceName();
-    }
-
-    /**
-     * Gets the router used for UIs served by this service.
-     *
-     * @return the router, not <code>null</code>
-     */
-    public Router getRouter() {
-        return router;
-    }
-
-    /**
-     * Fire UI initialization event to all registered {@link UIInitListener}s.
-     *
-     * @param ui
-     *            the initialized {@link UI}
-     */
-    public void fireUIInitListeners(UI ui) {
-        UIInitEvent initEvent = new UIInitEvent(ui, this);
-        uiInitListeners.forEach(listener -> listener.uiInit(initEvent));
     }
 
     /**

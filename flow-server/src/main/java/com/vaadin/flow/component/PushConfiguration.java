@@ -214,8 +214,7 @@ class PushConfigurationImpl implements PushConfiguration {
 
         session.checkHasLock();
 
-        if (pushMode.isEnabled()
-                && !session.getService().ensurePushAvailable()) {
+        if (pushMode.isEnabled()) {
             throw new IllegalStateException(
                     "Push is not available. See previous log messages for more information.");
         }

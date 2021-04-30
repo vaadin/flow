@@ -336,9 +336,6 @@ public class RouterLink extends Component implements HasText, HasComponents,
             router = tree.getUI().getInternals().getRouter();
         }
         if (router == null) {
-            router = VaadinService.getCurrent().getRouter();
-        }
-        if (router == null) {
             throw new IllegalStateException(
                     "Implicit router instance is not available. "
                             + "Use overloaded method with explicit router parameter.");

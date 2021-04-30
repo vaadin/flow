@@ -280,21 +280,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          */
         public PushMode getPushMode() {
             if (pushMode == null) {
-
-                pushMode = getUI().getPushConfiguration().getPushMode();
-                if (pushMode == null) {
-                    pushMode = getService().getDeploymentConfiguration()
-                            .getPushMode();
-                }
-
-                if (pushMode.isEnabled()
-                        && !getService().ensurePushAvailable()) {
-                    /*
-                     * Fall back if not supported (ensurePushAvailable will log
-                     * information to the developer the first time this happens)
-                     */
-                    pushMode = PushMode.DISABLED;
-                }
+                pushMode = PushMode.DISABLED;
             }
             return pushMode;
         }
@@ -1325,9 +1311,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         UI.setCurrent(ui);
         ui.doInit(request, session.getNextUIid());
         session.addUI(ui);
-
-        // After init and adding UI to session fire init listeners.
-        session.getService().fireUIInitListeners(ui);
 
         initializeUIWithRouter(context, ui);
 

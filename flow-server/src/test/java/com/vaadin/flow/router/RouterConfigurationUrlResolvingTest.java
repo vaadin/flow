@@ -58,7 +58,6 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
 
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(configuration);
-        Mockito.when(service.getRouter()).thenReturn(router);
 
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         routeConfiguration = RouteConfiguration

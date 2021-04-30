@@ -383,7 +383,6 @@ public class NavigationStateRendererTest {
         session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to PreservedNestedView
-        Router router = session.getService().getRouter();
         NavigationStateRenderer renderer = new NavigationStateRenderer(
                 new NavigationStateBuilder(router)
                         .withTarget(PreservedNestedView.class)

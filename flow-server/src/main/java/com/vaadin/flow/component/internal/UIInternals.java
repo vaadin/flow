@@ -993,9 +993,7 @@ public class UIInternals implements Serializable {
      *         router or the UI doesn't support navigation.
      */
     public Router getRouter() {
-        return ui.isNavigationSupported()
-                ? getSession().getService().getRouter()
-                : null;
+        return null;
     }
 
     /**

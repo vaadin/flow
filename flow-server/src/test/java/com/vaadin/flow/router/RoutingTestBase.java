@@ -98,7 +98,6 @@ public class RoutingTestBase {
             VaadinService service = Mockito.mock(VaadinService.class);
 
             Mockito.when(session.getService()).thenReturn(service);
-            Mockito.when(service.getRouter()).thenReturn(router);
 
             return session;
         }

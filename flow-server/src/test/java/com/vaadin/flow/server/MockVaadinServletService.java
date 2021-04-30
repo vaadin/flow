@@ -80,11 +80,6 @@ public class MockVaadinServletService extends VaadinServletService {
     }
 
     @Override
-    public Router getRouter() {
-        return router != null ? router : super.getRouter();
-    }
-
-    @Override
     protected List<RequestHandler> createRequestHandlers()
             throws ServiceException {
         return Collections.emptyList();

@@ -68,11 +68,6 @@ public class MockUI extends UI {
 
     private static VaadinSession createSession(Router router) {
         VaadinService service = Mockito.mock(VaadinService.class);
-
-        if (router != null) {
-            Mockito.when(service.getRouter()).thenReturn(router);
-        }
-
         VaadinSession session = new AlwaysLockedVaadinSession(service);
         VaadinSession.setCurrent(session);
         return session;

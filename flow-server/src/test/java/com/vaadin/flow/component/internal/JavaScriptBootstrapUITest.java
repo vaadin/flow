@@ -161,44 +161,6 @@ public class JavaScriptBootstrapUITest {
         }
     }
 
-    @Before
-    public void setup() throws Exception {
-        mocks = new MockServletServiceSessionSetup();
-        mocks.getService().getRouter().getRegistry().setRoute("clean",
-                Clean.class, Collections.emptyList());
-        mocks.getService().getRouter().getRegistry().setRoute("clean/1",
-                Clean.class, Collections.emptyList());
-        mocks.getService().getRouter().getRegistry().setRoute("dirty",
-                Dirty.class, Collections.emptyList());
-        mocks.getService().getRouter().getRegistry().setRoute("product",
-                ProductView.class, Collections.emptyList());
-        mocks.getService().getRouter().getRegistry().setRoute("exception",
-                FailOnException.class, Collections.emptyList());
-        mocks.getService().getRouter().getRegistry().setRoute(
-                "forwardToClientSideViewOnBeforeEnter",
-                ForwardToClientSideViewOnBeforeEnter.class,
-                Collections.emptyList());
-        mocks.getService().getRouter().getRegistry().setRoute(
-                "forwardToClientSideViewOnBeforeLeave",
-                ForwardToClientSideViewOnBeforeLeave.class,
-                Collections.emptyList());
-        mocks.getService().getRouter().getRegistry().setRoute(
-                "rerouteToClientSideViewOnReroute",
-                ForwardToClientSideViewOnReroute.class,
-                Collections.emptyList());
-        mocks.getService().getRouter().getRegistry().setRoute(
-                "forwardToServerSideViewOnBeforeEnter",
-                ForwardToServerViewOnBeforeEnter.class,
-                Collections.emptyList());
-        ui = new JavaScriptBootstrapUI();
-        ui.getInternals().setSession(mocks.getSession());
-
-        Mockito.when(mocks.getSession().getAttribute(SERVER_ROUTING))
-                .thenReturn(Boolean.FALSE);
-
-        CurrentInstance.setCurrent(ui);
-    }
-
     @Test
     public void should_allow_navigation() {
         ui.connectClient("foo", "bar", "/clean", "");
@@ -619,7 +581,6 @@ public class JavaScriptBootstrapUITest {
         VaadinService service = Mockito.mock(VaadinService.class);
         Mockito.when(session.getService()).thenReturn(service);
         Router router = Mockito.mock(Router.class);
-        Mockito.when(service.getRouter()).thenReturn(router);
 
         Mockito.doThrow(RuntimeException.class).when(router)
                 .resolveNavigationTarget(Mockito.any());
@@ -632,7 +593,6 @@ public class JavaScriptBootstrapUITest {
             ui.navigate("foo", QueryParameters.empty());
         } catch (RuntimeException expected) {
             router = Mockito.mock(Router.class);
-            Mockito.when(service.getRouter()).thenReturn(router);
 
             Mockito.when(router.resolveNavigationTarget(Mockito.any()))
                     .thenReturn(Optional.empty());
@@ -675,9 +635,6 @@ public class JavaScriptBootstrapUITest {
     private UIInternals mockUIInternals() {
         UIInternals internals = Mockito.mock(UIInternals.class);
         Mockito.when(ui.getInternals()).thenReturn(internals);
-
-        Mockito.when(internals.getRouter())
-                .thenReturn(mocks.getService().getRouter());
 
         return internals;
     }

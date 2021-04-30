@@ -83,18 +83,7 @@ public class VaadinServletService extends VaadinService {
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new FaviconHandler());
-        if (isAtmosphereAvailable()) {
-            try {
-                handlers.add(new PushRequestHandler(this));
-            } catch (ServiceException e) {
-                // Atmosphere init failed. Push won't work but we don't throw a
-                // service exception as we don't want to prevent non-push
-                // applications from working
-                getLogger().warn(
-                        "Error initializing Atmosphere. Push will not work.",
-                        e);
-            }
-        }
+
         if (getDeploymentConfiguration().enableDevServer()) {
             DevModeHandler handler = DevModeHandler.getDevModeHandler();
             if (handler != null) {
@@ -106,18 +95,9 @@ public class VaadinServletService extends VaadinService {
     }
 
     private void addBootstrapHandler(List<RequestHandler> handlers) {
-        if (getDeploymentConfiguration().useV14Bootstrap()) {
-            handlers.add(0, new BootstrapHandler());
-            getLogger().debug("Using '{}' in deprecated V14 bootstrapping",
-                    BootstrapHandler.class.getName());
-            UsageStatistics.markAsUsed(
-                    Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER,
-                    Version.getFullVersion());
-        } else {
-            handlers.add(0, new IndexHtmlRequestHandler());
-            getLogger().debug("Using '{}' in client mode bootstrapping",
-                    IndexHtmlRequestHandler.class.getName());
-        }
+        handlers.add(0, new IndexHtmlRequestHandler());
+        getLogger().debug("Using '{}' in client mode bootstrapping",
+                IndexHtmlRequestHandler.class.getName());
     }
 
     /**
@@ -209,11 +189,6 @@ public class VaadinServletService extends VaadinService {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(VaadinServletService.class.getName());
-    }
-
-    @Override
-    protected RouteRegistry getRouteRegistry() {
-        return ApplicationRouteRegistry.getInstance(getContext());
     }
 
     @Override

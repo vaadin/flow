@@ -172,12 +172,6 @@ public class BootstrapHandlerPushConfigurationTest {
             throws InvalidRouteConfigurationException {
         BootstrapHandler bootstrapHandler = new BootstrapHandler();
         VaadinResponse response = mock(VaadinResponse.class);
-        RouteConfiguration routeConfiguration = RouteConfiguration
-                .forRegistry(service.getRouteRegistry());
-        routeConfiguration.update(() -> {
-            routeConfiguration.getHandledRegistry().clean();
-            routeConfiguration.setAnnotatedRoute(annotatedClazz);
-        });
 
         final BootstrapHandler.BootstrapContext context = bootstrapHandler
                 .createAndInitUI(UI.class, createVaadinRequest(), response,

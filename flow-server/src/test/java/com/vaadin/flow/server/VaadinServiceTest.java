@@ -315,12 +315,6 @@ public class VaadinServiceTest {
             Assert.assertNotNull("service init should have set thread local",
                     VaadinService.getCurrent());
 
-            Router router = event.getSource().getRouter();
-            Assert.assertNotNull("Router should be initialized", router);
-
-            Assert.assertNotNull("registry should be initialized",
-                    router.getRegistry());
-
             RouteConfiguration.forApplicationScope().setRoute("test",
                     TestView.class);
         };

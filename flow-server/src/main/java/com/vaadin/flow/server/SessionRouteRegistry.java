@@ -246,6 +246,6 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     private RouteRegistry getParentRegistry() {
-        return session.getService().getRouteRegistry();
+        return null;
     }
 }
