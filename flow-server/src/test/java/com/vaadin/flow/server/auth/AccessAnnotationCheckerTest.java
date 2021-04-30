@@ -303,29 +303,39 @@ public class AccessAnnotationCheckerTest {
 
     @Test(expected = IllegalStateException.class)
     public void hasClassAccessNoCurrentRequest() {
+        CurrentInstance.clearAll();
         accessAnnotationChecker.hasAccess(AnonymousAllowedClass.class);
     }
 
     @Test(expected = IllegalStateException.class)
     public void hasMethodAccessNoCurrentRequest() throws Exception {
+        CurrentInstance.clearAll();
         accessAnnotationChecker
                 .hasAccess(AnonymousAllowedClass.class.getMethod("permitAll"));
     }
 
     @Test
     public void hasClassAccessUsingCurrentRequest() {
-        CurrentInstance.set(VaadinRequest.class,
-                new VaadinServletRequest(createRequest(USER_PRINCIPAL), null));
-        Assert.assertTrue(
-                accessAnnotationChecker.hasAccess(PermitAllClass.class));
+        try {
+            CurrentInstance.set(VaadinRequest.class, new VaadinServletRequest(
+                    createRequest(USER_PRINCIPAL), null));
+            Assert.assertTrue(
+                    accessAnnotationChecker.hasAccess(PermitAllClass.class));
+        } finally {
+            CurrentInstance.clearAll();
+        }
     }
 
     @Test
     public void hasMethodAccessUsingCurrentRequest() throws Exception {
-        CurrentInstance.set(VaadinRequest.class,
-                new VaadinServletRequest(createRequest(USER_PRINCIPAL), null));
-        Assert.assertTrue(accessAnnotationChecker
-                .hasAccess(PermitAllClass.class.getMethod("permitAll")));
+        try {
+            CurrentInstance.set(VaadinRequest.class, new VaadinServletRequest(
+                    createRequest(USER_PRINCIPAL), null));
+            Assert.assertTrue(accessAnnotationChecker
+                    .hasAccess(PermitAllClass.class.getMethod("permitAll")));
+        } finally {
+            CurrentInstance.clearAll();
+        }
     }
 
     private HttpServletRequest createRequest(Principal userPrincipal,
