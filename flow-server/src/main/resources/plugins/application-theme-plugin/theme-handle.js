@@ -176,17 +176,9 @@ function extractThemeName(frontendGeneratedFolder) {
  * given custom theme
  */
 function findParentThemes(themeName, options) {
-  return collectParentThemes(themeName, getThemeProjectFolders(options), false);
-}
-
-function getThemeProjectFolders(options) {
-  const folders = options.themeProjectFolders.filter(
+  const existingThemeFolders = options.themeProjectFolders.filter(
     (folder) => fs.existsSync(folder));
-
-  if (fs.existsSync(options.themeResourceFolder)) {
-    folders.put(options.themeResourceFolder);
-  }
-  return folders;
+  return collectParentThemes(themeName, existingThemeFolders, false);
 }
 
 function collectParentThemes(themeName, themeFolders, isParent) {
