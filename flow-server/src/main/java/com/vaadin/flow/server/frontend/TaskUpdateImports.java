@@ -138,15 +138,19 @@ public class TaskUpdateImports extends NodeUpdater {
             Collection<String> lines = new ArrayList<>();
             AbstractTheme theme = getTheme();
             ThemeDefinition themeDef = getThemeDefinition();
+            final boolean hasApplicationTheme =
+                    themeDef != null && !"".equals(themeDef.getName());
 
-            if (themeDef != null && !"".equals(themeDef.getName())) {
+            if (hasApplicationTheme) {
                 // If we define a theme name we need to import theme/theme-generated.js
                 lines.add("import {applyTheme} from 'themes/theme-generated.js';");
                 lines.add("applyTheme(document);");
             }
 
             if (theme != null) {
-                if (!theme.getHeaderInlineContents().isEmpty()) {
+                // There is no application theme in use, write theme includes here.
+                // Otherwise they are written by the application theme
+                if (!theme.getHeaderInlineContents().isEmpty() && !hasApplicationTheme) {
                     lines.add(THEME_PREPARE);
                     theme.getHeaderInlineContents()
                             .forEach(html -> addLines(lines,
