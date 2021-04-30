@@ -18,6 +18,10 @@ package com.vaadin.flow.server.frontend;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.slf4j.LoggerFactory;
+
+import elemental.json.JsonObject;
+
 /**
  * Version object for frontend versions comparison and handling.
  * <p>
@@ -116,9 +120,45 @@ public class FrontendVersion
      *            version string as "major.minor.revision[.build]"
      */
     public FrontendVersion(String version) {
+        this(null, version);
+    }
+
+    /**
+     * Parse version numbers from version string with the format
+     * "major.minor.revision[.build]". The build part is optional.
+     * <p>
+     * Versions are normalized and any caret or tildes will not be considered.
+     *
+     * @param name
+     *            the name of the artifact which version is to be parsed, used
+     *            in error message to help discover the issue
+     * @param version
+     *            version string as "major.minor.revision[.build]"
+     */
+    public FrontendVersion(String name, String version) {
+        this(name, version, null);
+    }
+
+    /**
+     * Parse version numbers from version string with the format
+     * "major.minor.revision[.build]". The build part is optional.
+     * <p>
+     * Versions are normalized and any caret or tildes will not be considered.
+     *
+     * @param name
+     *            the name of the artifact which version is to be parsed, used
+     *            in error message to help discover the issue
+     * @param version
+     *            version string as "major.minor.revision[.build]"
+     * @param location
+     *            the location (like file) the version comes from, giving an
+     *            better error message if the parsing failes
+     */
+    public FrontendVersion(String name, String version, String location) {
         Objects.requireNonNull(version);
         if (version.isEmpty()) {
-            throw new NumberFormatException(getInvalidVersionMessage(version));
+            throw new NumberFormatException(
+                    getInvalidVersionMessage(name, version, location));
         }
         if (!Character.isDigit(version.charAt(0))) {
             this.version = version.substring(1).trim();
@@ -130,14 +170,15 @@ public class FrontendVersion
         try {
             majorVersion = Integer.parseInt(digits[0]);
         } catch (NumberFormatException nfe) {
-            throw new NumberFormatException(getInvalidVersionMessage(version));
+            throw new NumberFormatException(
+                    getInvalidVersionMessage(name, version, location));
         }
         if (digits.length >= 2) {
             try {
                 minorVersion = Integer.parseInt(digits[1]);
             } catch (NumberFormatException nfe) {
                 throw new NumberFormatException(
-                        getInvalidVersionMessage(version));
+                        getInvalidVersionMessage(name, version, location));
             }
         } else {
             minorVersion = 0;
@@ -293,8 +334,49 @@ public class FrontendVersion
         return 0;
     }
 
-    private String getInvalidVersionMessage(String version) {
-        return String.format("'%s' is not a valid version!", version);
+    /**
+     * Tries to parse the given package's frontend version or if it doesn't
+     * exist, returns {@code null}. In case the value cannot be parsed, logs an
+     * error and returns {@code null}.
+     * 
+     * @param sourceJson
+     *            json object that has the package
+     * @param pkg
+     *            the package name
+     * @param sourceLocation
+     *            the location of the json, used in error message
+     * @return the frontend versior the package or {@code null}
+     */
+    public static FrontendVersion tryParseVersion(JsonObject sourceJson,
+            String pkg, String sourceLocation) {
+        if (!sourceJson.hasKey(pkg)) {
+            return null;
+        }
+        try {
+            final String versionString = sourceJson.getString(pkg);
+            return new FrontendVersion(pkg, versionString, sourceLocation);
+        } catch (ClassCastException classCastException) {
+            LoggerFactory.getLogger(FrontendVersion.class).error(
+                    "Could not parse frontend dependency version for package '{}' from '{}'",
+                    pkg, sourceLocation);
+        } catch (NumberFormatException nfe) {
+            // intentionally not failing the build at this point
+            LoggerFactory.getLogger(FrontendVersion.class)
+                    .error(nfe.getMessage());
+        }
+        return null;
+    }
+
+    private String getInvalidVersionMessage(String name, String version,
+            String location) {
+        if (location != null) {
+            return String.format(
+                    "'%s' is not a valid version for '%s' in '%s'!", version,
+                    name, location);
+        } else {
+            return String.format("'%s' is not a valid version for '%s'!",
+                    version, name);
+        }
     }
 
 }
