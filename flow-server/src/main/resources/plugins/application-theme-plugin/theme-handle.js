@@ -189,7 +189,7 @@ function collectParentThemes(themeName, themeFolders, isParent) {
       const themeProperties = getThemeProperties(themeFolder);
 
       if (themeProperties.parent) {
-        foundParentThemes.push(collectParentThemes(themeProperties.parent, themeFolders, true));
+        foundParentThemes.push(...collectParentThemes(themeProperties.parent, themeFolders, true));
         if (!foundParentThemes.length) {
           throw new Error("Could not locate files for defined parent theme '" + themeProperties.parent + "'.\n" +
             "Please verify that dependency is added or theme folder exists.")
