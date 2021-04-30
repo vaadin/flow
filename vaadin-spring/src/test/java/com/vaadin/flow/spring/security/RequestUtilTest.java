@@ -118,14 +118,16 @@ public class RequestUtilTest {
     }
 
     static MockHttpServletRequest createRequest(String pathInfo) {
-            return createRequest(pathInfo, null);
+        return createRequest(pathInfo, null);
     }
-    static MockHttpServletRequest createRequest(String pathInfo, RequestType type) {
+
+    static MockHttpServletRequest createRequest(String pathInfo,
+            RequestType type) {
         return createRequest(pathInfo, type, Collections.emptyMap());
     }
 
-    static MockHttpServletRequest createRequest(String pathInfo, RequestType type,
-            Map<String, String> headers) {
+    static MockHttpServletRequest createRequest(String pathInfo,
+            RequestType type, Map<String, String> headers) {
         String uri = (pathInfo == null ? "/" : pathInfo);
         MockHttpServletRequest r = new MockHttpServletRequest("GET", uri);
         r.setPathInfo(pathInfo);

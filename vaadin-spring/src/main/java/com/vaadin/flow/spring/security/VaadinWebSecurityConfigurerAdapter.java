@@ -63,22 +63,29 @@ public abstract class VaadinWebSecurityConfigurerAdapter
     protected void configure(HttpSecurity http) throws Exception {
         // Vaadin has its own CSRF protection.
         // Spring CSRF is not compatible with Vaadin internal requests
-        http.csrf().ignoringRequestMatchers(requestUtil::isFrameworkInternalRequest);
+        http.csrf().ignoringRequestMatchers(
+                requestUtil::isFrameworkInternalRequest);
         // nor with endpoints
         http.csrf().ignoringRequestMatchers(requestUtil::isEndpointRequest);
 
-        // Ensure automated requests to e.g. closing push channels, service workers,
-        // endpoints are not counted as valid targets to redirect user to on login
+        // Ensure automated requests to e.g. closing push channels, service
+        // workers,
+        // endpoints are not counted as valid targets to redirect user to on
+        // login
         http.requestCache().requestCache(vaadinDefaultRequestCache);
 
         ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlRegistry = http
                 .authorizeRequests();
-                // Vaadin internal requests must always be allowed to allow public Flow pages
-                // and/or login page implemented using Flow.
-        urlRegistry.requestMatchers(requestUtil::isFrameworkInternalRequest).permitAll();
+        // Vaadin internal requests must always be allowed to allow public Flow
+        // pages
+        // and/or login page implemented using Flow.
+        urlRegistry.requestMatchers(requestUtil::isFrameworkInternalRequest)
+                .permitAll();
         // Public endpoints are OK to access
-        urlRegistry.requestMatchers(requestUtil::isAnonymousEndpoint).permitAll();
-        urlRegistry.requestMatchers(getDefaultHttpSecurityPermitMatcher()).permitAll();
+        urlRegistry.requestMatchers(requestUtil::isAnonymousEndpoint)
+                .permitAll();
+        urlRegistry.requestMatchers(getDefaultHttpSecurityPermitMatcher())
+                .permitAll();
 
         // all other requests require authentication
         urlRegistry.anyRequest().authenticated();

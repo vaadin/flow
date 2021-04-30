@@ -25,10 +25,12 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
 
     @Test
     public void standard_result_for_non_typescript_Clients() throws Exception {
-        MockHttpServletRequest loginRequest = RequestUtilTest.createRequest("/login");
+        MockHttpServletRequest loginRequest = RequestUtilTest
+                .createRequest("/login");
         MockHttpServletResponse loginResponse = new MockHttpServletResponse();
-        vaadinSavedRequestAwareAuthenticationSuccessHandler.onAuthenticationSuccess(loginRequest, loginResponse,
-                new UsernamePasswordAuthenticationToken("foo", "bar"));
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .onAuthenticationSuccess(loginRequest, loginResponse,
+                        new UsernamePasswordAuthenticationToken("foo", "bar"));
 
         Assert.assertNull(loginResponse.getHeader("Result"));
         Assert.assertEquals(302, loginResponse.getStatus());
@@ -36,11 +38,13 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
 
     @Test
     public void success_result_for_typescript_client() throws Exception {
-        MockHttpServletRequest loginRequest = RequestUtilTest.createRequest("/login");
+        MockHttpServletRequest loginRequest = RequestUtilTest
+                .createRequest("/login");
         loginRequest.addHeader("source", "typescript");
         MockHttpServletResponse loginResponse = new MockHttpServletResponse();
-        vaadinSavedRequestAwareAuthenticationSuccessHandler.onAuthenticationSuccess(loginRequest, loginResponse,
-                new UsernamePasswordAuthenticationToken("foo", "bar"));
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .onAuthenticationSuccess(loginRequest, loginResponse,
+                        new UsernamePasswordAuthenticationToken("foo", "bar"));
 
         Assert.assertEquals("success", loginResponse.getHeader("Result"));
         Assert.assertEquals(200, loginResponse.getStatus());
@@ -51,20 +55,24 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
     @Test
     public void saved_url_sent_to_typescript_client() throws Exception {
         HttpSessionRequestCache cache = new HttpSessionRequestCache();
-        MockHttpServletRequest firstRequest = RequestUtilTest.createRequest("/the-saved-url");
+        MockHttpServletRequest firstRequest = RequestUtilTest
+                .createRequest("/the-saved-url");
         HttpSession session = firstRequest.getSession();
         cache.saveRequest(firstRequest, new MockHttpServletResponse());
 
-        MockHttpServletRequest loginRequest = RequestUtilTest.createRequest("/login");
+        MockHttpServletRequest loginRequest = RequestUtilTest
+                .createRequest("/login");
         loginRequest.addHeader("source", "typescript");
         loginRequest.setSession(session);
         MockHttpServletResponse loginResponse = new MockHttpServletResponse();
-        vaadinSavedRequestAwareAuthenticationSuccessHandler.onAuthenticationSuccess(loginRequest, loginResponse,
-                new UsernamePasswordAuthenticationToken("foo", "bar"));
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .onAuthenticationSuccess(loginRequest, loginResponse,
+                        new UsernamePasswordAuthenticationToken("foo", "bar"));
 
         Assert.assertEquals("success", loginResponse.getHeader("Result"));
         Assert.assertEquals(200, loginResponse.getStatus());
-        Assert.assertEquals("http://localhost/the-saved-url", loginResponse.getHeader("Saved-url"));
+        Assert.assertEquals("http://localhost/the-saved-url",
+                loginResponse.getHeader("Saved-url"));
         Assert.assertEquals("/", loginResponse.getHeader("Default-url"));
     }
 

@@ -23,7 +23,8 @@ public class VaadinDefaultRequestCache extends HttpSessionRequestCache {
     private RequestUtil requestUtil;
 
     @Override
-    public void saveRequest(HttpServletRequest request, HttpServletResponse response) {
+    public void saveRequest(HttpServletRequest request,
+            HttpServletResponse response) {
         if (requestUtil.isFrameworkInternalRequest(request)) {
             return;
         }

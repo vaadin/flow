@@ -44,10 +44,11 @@ public class RequestUtil {
      * An internal request is one that is needed for all Vaadin applications to
      * function, e.g. UIDL or init requests.
      *
-     * Note that bootstrap requests for any route or static resource requests are
-     * not internal, neither are resource requests for the JS bundle.
+     * Note that bootstrap requests for any route or static resource requests
+     * are not internal, neither are resource requests for the JS bundle.
      *
-     * @param request the servlet request
+     * @param request
+     *            the servlet request
      * @return {@code true} if the request is Vaadin internal, {@code false}
      *         otherwise
      */
@@ -59,9 +60,10 @@ public class RequestUtil {
     /**
      * Checks whether the request targets an endpoint.
      *
-     * @param request the servlet request
-     * @return {@code true} if the request is targeting an enpoint, {@code false}
-     *         otherwise
+     * @param request
+     *            the servlet request
+     * @return {@code true} if the request is targeting an enpoint,
+     *         {@code false} otherwise
      */
     public boolean isEndpointRequest(HttpServletRequest request) {
         if (endpointUtil != null) {
@@ -71,10 +73,11 @@ public class RequestUtil {
     }
 
     /**
-     * Checks whether the request targets an endpoint that is public, i.e. marked
-     * as @{@link AnonymousAllowed}.
+     * Checks whether the request targets an endpoint that is public, i.e.
+     * marked as @{@link AnonymousAllowed}.
      *
-     * @param request the servlet request
+     * @param request
+     *            the servlet request
      * @return {@code true} if the request is targeting an anonymous enpoint,
      *         {@code false} otherwise
      */
