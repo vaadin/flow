@@ -268,11 +268,10 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     private void checkNoWebpackErrors(String theme) {
         getLogEntries(Level.ALL).forEach(logEntry -> {
             if (logEntry.getMessage().contains("Module build failed")) {
-                Assert.fail(
-                        String.format(
+                Assert.fail(String.format(
                         "Webpack error detected in the browser console after "
-                                        + "deleting '%s' component style sheet: %s\n\n",
-                                theme, logEntry.getMessage()));
+                                + "deleting '%s' component style sheet: %s\n\n",
+                        theme, logEntry.getMessage()));
             }
         });
 
@@ -281,11 +280,10 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
             waitForElementNotPresent(byErrorOverlayClass);
         } catch (TimeoutException e) {
             WebElement error = findElement(byErrorOverlayClass);
-            Assert.fail(
-                    String.format(
-                            "Webpack error overlay detected after deleting '%s' "
-                                    + "component style sheet: %s\n\n",
-                            theme, error.getText()));
+            Assert.fail(String.format(
+                    "Webpack error overlay detected after deleting '%s' "
+                            + "component style sheet: %s\n\n",
+                    theme, error.getText()));
         }
     }
 }
