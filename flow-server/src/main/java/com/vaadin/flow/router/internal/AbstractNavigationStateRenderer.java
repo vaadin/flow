@@ -143,7 +143,8 @@ public abstract class AbstractNavigationStateRenderer
         final RouteTarget routeTarget = navigationState.getRouteTarget();
 
         routeLayoutTypes = routeTarget != null ? routeTarget.getParentLayouts()
-                : getRouterLayoutTypes(routeTargetType, ui.getInternals().getRouter());
+                : getRouterLayoutTypes(routeTargetType,
+                        ui.getInternals().getRouter());
 
         assert routeTargetType != null;
         assert routeLayoutTypes != null;
@@ -250,7 +251,7 @@ public abstract class AbstractNavigationStateRenderer
                 event.getState().ifPresent(s -> ui.getPage().executeJs(
                         "this.scrollPositionHandlerAfterServerNavigation($0);",
                         s));
-            } 
+            }
         } else if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
             /*
              * When the event trigger is a RouterLink, pushing history state
@@ -671,7 +672,7 @@ public abstract class AbstractNavigationStateRenderer
                         beforeEvent.getRerouteTargetRouteParameters())) {
             return Optional.of(reroute(event, beforeEvent));
         }
-        
+
         return Optional.empty();
     }
 

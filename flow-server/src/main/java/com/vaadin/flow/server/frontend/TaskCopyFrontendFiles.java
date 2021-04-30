@@ -35,7 +35,7 @@ import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
  */
 public class TaskCopyFrontendFiles implements FallibleCommand {
     private static final String[] WILDCARD_INCLUSIONS = new String[] {
-            "**/*.js", "**/*.css", "**/*.ts" };
+            "**/*.js", "**/*.css", "**/*.ts", "**/*.map" };
     private static final String WILDCARD_INCLUSION_APP_THEME_JAR = "**/themes/**/*";
     private File targetDirectory;
     private Set<File> resourceLocations = null;

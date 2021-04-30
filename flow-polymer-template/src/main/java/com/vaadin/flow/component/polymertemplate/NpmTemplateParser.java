@@ -223,14 +223,14 @@ public class NpmTemplateParser implements TemplateParser {
                     resetCache(content);
                 }
             }
+            if (!cache.containsKey(url) && jsonStats != null) {
+                cache.put(url, BundleParser.getSourceFromStatistics(url,
+                        jsonStats, service));
+            }
+            return cache.get(url);
         } finally {
             lock.unlock();
         }
-        if (!cache.containsKey(url) && jsonStats != null) {
-            cache.put(url,
-                    BundleParser.getSourceFromStatistics(url, jsonStats));
-        }
-        return cache.get(url);
     }
 
     /**
@@ -247,6 +247,7 @@ public class NpmTemplateParser implements TemplateParser {
      */
     protected boolean isStatsFileReadNeeded(VaadinService service)
             throws IOException {
+        assert lock.isHeldByCurrentThread();
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         if (jsonStats == null) {
             return true;
@@ -270,6 +271,7 @@ public class NpmTemplateParser implements TemplateParser {
     }
 
     private void resetCache(String fileContents) {
+        assert lock.isHeldByCurrentThread();
         cache.clear();
         jsonStats = BundleParser.parseJsonStatistics(fileContents);
     }

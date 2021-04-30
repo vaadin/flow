@@ -31,8 +31,7 @@ import com.vaadin.flow.function.ValueProvider;
  *            the type of the input item, from which the number is extracted
  *
  */
-public class NumberRenderer<SOURCE>
-        extends BasicRenderer<SOURCE, Number> {
+public class NumberRenderer<SOURCE> extends BasicRenderer<SOURCE, Number> {
 
     private Locale locale;
     private NumberFormat numberFormat;

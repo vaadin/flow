@@ -66,8 +66,7 @@ public class PolymerEventListenerMap extends NodeMap {
      *            the event data expressions
      * @return handler to remove eventType data
      */
-    public Registration add(String methodName,
-            String[] eventDataExpressions) {
+    public Registration add(String methodName, String[] eventDataExpressions) {
         assert methodName != null;
         assert eventDataExpressions != null;
 

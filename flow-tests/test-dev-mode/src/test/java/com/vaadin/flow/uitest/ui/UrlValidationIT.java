@@ -32,7 +32,8 @@ public class UrlValidationIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void devModeUriValidation_uriWithDirectoryChange_statusForbidden() throws Exception {
+    public void devModeUriValidation_uriWithDirectoryChange_statusForbidden()
+            throws Exception {
         // open a view and wait till the expected label is displayed
         open();
         waitUntil(input -> $(LabelElement.class).id("elementId").isDisplayed());
@@ -42,7 +43,8 @@ public class UrlValidationIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void staticResourceUriValidation_uriWithDirectoryChange_statusForbidden() throws Exception {
+    public void staticResourceUriValidation_uriWithDirectoryChange_statusForbidden()
+            throws Exception {
         // open a view and wait till the expected label is displayed
         open();
         waitUntil(input -> $(LabelElement.class).id("elementId").isDisplayed());
@@ -59,8 +61,9 @@ public class UrlValidationIT extends ChromeBrowserTest {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         int responseCode = connection.getResponseCode();
-        Assert.assertEquals("HTTP 403 Forbidden expected for urls with " +
-                "directory change", HttpURLConnection.HTTP_FORBIDDEN,
-                responseCode);
+        Assert.assertEquals(
+                "HTTP 403 Forbidden expected for urls with "
+                        + "directory change",
+                HttpURLConnection.HTTP_FORBIDDEN, responseCode);
     }
 }

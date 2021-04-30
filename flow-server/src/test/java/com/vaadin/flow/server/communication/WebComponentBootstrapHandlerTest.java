@@ -31,7 +31,6 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.PwaConfiguration;
@@ -50,6 +49,8 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 
@@ -198,7 +199,7 @@ public class WebComponentBootstrapHandlerTest {
     }
 
     @Test
-    public void writeBootstrapPage_devmodeGizmoIsDisabled()
+    public void writeBootstrapPage_scriptGuadedAndGizmoDisabled()
             throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService();
@@ -223,6 +224,18 @@ public class WebComponentBootstrapHandlerTest {
         handler.synchronizedHandleRequest(session, request, response);
 
         String result = stream.toString(StandardCharsets.UTF_8.name());
+
+        int scriptIndex = result.indexOf("var hasScript = function(src)");
+        Assert.assertTrue(scriptIndex >= 0);
+
+        int guardIndex = result.indexOf(
+                "if (!hasScript(\"/VAADIN/build/vaadin-export-2222.cache.js\")) {");
+        Assert.assertTrue(guardIndex > scriptIndex);
+
+        int createScriptIndex = result
+                .indexOf("document.createElement('script')");
+        Assert.assertTrue(createScriptIndex > guardIndex);
+
         Assert.assertTrue(
                 result.contains("\\\"devmodeGizmoEnabled\\\": false"));
     }
@@ -255,6 +268,71 @@ public class WebComponentBootstrapHandlerTest {
 
         VaadinRequest request = mockRequest(true);
         Assert.assertTrue(handler.canHandleRequest(request));
+    }
+
+    @Test
+    public void writeBootstrapPage_withExportChunk()
+            throws IOException, ServiceException {
+        TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
+        VaadinServletService service = new MockVaadinServletService();
+
+        initLookup(service);
+
+        VaadinSession session = new MockVaadinSession(service);
+        session.lock();
+        session.setConfiguration(service.getDeploymentConfiguration());
+        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
+                .getDeploymentConfiguration();
+        config.setEnableDevServer(false);
+
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+        Mockito.when(request.getService()).thenReturn(service);
+        Mockito.when(request.getServletPath()).thenReturn("/");
+        VaadinResponse response = getMockResponse(null);
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(stream);
+
+        handler.synchronizedHandleRequest(session, request, response);
+
+        String result = stream.toString(StandardCharsets.UTF_8.name());
+        Assert.assertTrue(
+                result.contains("VAADIN/build/vaadin-export-2222.cache.js"));
+        Assert.assertFalse(
+                result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
+    }
+
+    @Test
+    public void writeBootstrapPage_noExportChunk()
+            throws IOException, ServiceException {
+        TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
+        VaadinServletService service = new MockVaadinServletService();
+
+        initLookup(service);
+
+        VaadinSession session = new MockVaadinSession(service);
+        session.lock();
+        session.setConfiguration(service.getDeploymentConfiguration());
+        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
+                .getDeploymentConfiguration();
+        config.setApplicationOrSystemProperty(SERVLET_PARAMETER_STATISTICS_JSON,
+                VAADIN_SERVLET_RESOURCES + "config/stats_no_export.json");
+        config.setEnableDevServer(false);
+
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+        Mockito.when(request.getService()).thenReturn(service);
+        Mockito.when(request.getServletPath()).thenReturn("/");
+        VaadinResponse response = getMockResponse(null);
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(stream);
+
+        handler.synchronizedHandleRequest(session, request, response);
+
+        // no "export" chunk, expect "bundle" in result instead
+        String result = stream.toString(StandardCharsets.UTF_8.name());
+        Assert.assertTrue(
+                result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
     }
 
     private VaadinRequest mockRequest(boolean hasConfig) {
@@ -290,13 +368,10 @@ public class WebComponentBootstrapHandlerTest {
         Class<? extends VaadinServlet> servletClass = service.getServlet()
                 .getClass();
 
-        Mockito.when(provider
-                .getApplicationResource(Constants.VAADIN_SERVLET_RESOURCES
-                        + Constants.STATISTICS_JSON_DEFAULT))
-                .thenReturn(
-                        WebComponentBootstrapHandlerTest.class.getClassLoader()
-                                .getResource(Constants.VAADIN_SERVLET_RESOURCES
-                                        + Constants.STATISTICS_JSON_DEFAULT));
+        Mockito.when(provider.getApplicationResource(Mockito.anyString()))
+                .thenAnswer(answer -> WebComponentBootstrapHandlerTest.class
+                        .getClassLoader()
+                        .getResource(answer.getArgumentAt(0, String.class)));
 
         Mockito.when(provider.getClientResourceAsStream(
                 "META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH

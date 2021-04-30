@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -52,7 +53,7 @@ public class FrontendTools {
 
     public static final String DEFAULT_NODE_VERSION = "v14.15.4";
 
-    public static final String DEFAULT_PNPM_VERSION = "5.15.1";
+    public static final String DEFAULT_PNPM_VERSION = "5";
 
     public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm "
             + "-DnodeVersion=\"" + DEFAULT_NODE_VERSION + "\" ";
@@ -154,6 +155,33 @@ public class FrontendTools {
 
     private final boolean ignoreVersionChecks;
 
+    private final boolean forceAlternativeNode;
+
+    /**
+     * Creates an instance of the class using the {@code baseDir} as a base
+     * directory to locate the tools and the directory returned by the
+     * {@code alternativeDirGetter} as a directory to install tools if they are
+     * not found and use it as an alternative tools location.
+     * <p>
+     * If {@code alternativeDir} is {@code null} tools won't be installed.
+     *
+     *
+     * @param baseDir
+     *            the base directory to locate the tools, not {@code null}
+     * @param alternativeDirGetter
+     *            the getter for a directory where tools will be installed if
+     *            they are not found globally or in the {@code baseDir}, may be
+     *            {@code null}
+     * @param forceAlternativeNode
+     *            force usage of node executable from alternative directory
+     */
+    public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
+            boolean forceAlternativeNode) {
+        this(baseDir, alternativeDirGetter, DEFAULT_NODE_VERSION,
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
+                forceAlternativeNode);
+    }
+
     /**
      * Creates an instance of the class using the {@code baseDir} as a base
      * directory to locate the tools and the directory returned by the
@@ -173,7 +201,43 @@ public class FrontendTools {
     public FrontendTools(String baseDir,
             Supplier<String> alternativeDirGetter) {
         this(baseDir, alternativeDirGetter, DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false);
+    }
+
+    /**
+     * Creates an instance of the class using the {@code baseDir} as a base
+     * directory to locate the tools and the directory returned by the
+     * {@code alternativeDirGetter} as a directory to install tools if they are
+     * not found and use it as an alternative tools location.
+     * <p>
+     * If {@code alternativeDir} is {@code null} tools won't be installed.
+     *
+     *
+     * @param baseDir
+     *            the base directory to locate the tools, not {@code null}
+     * @param alternativeDirGetter
+     *            the getter for a directory where tools will be installed if
+     *            they are not found globally or in the {@code baseDir}, may be
+     *            {@code null}
+     * @param nodeVersion
+     *            The node.js version to be used when node.js is installed
+     *            automatically by Vaadin, for example <code>"v14.15.4"</code>.
+     *            Use {@value #DEFAULT_NODE_VERSION} by default.
+     * @param nodeDownloadRoot
+     *            Download node.js from this URL. Handy in heavily firewalled
+     *            corporate environments where the node.js download can be
+     *            provided from an intranet mirror. Use
+     *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
+     * @param forceAlternativeNode
+     *            force usage of node executable from alternative directory
+     */
+    public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
+            String nodeVersion, URI nodeDownloadRoot,
+            boolean forceAlternativeNode) {
+        this(baseDir, alternativeDirGetter, nodeVersion, nodeDownloadRoot,
+                "true".equalsIgnoreCase(System.getProperty(
+                        FrontendUtils.PARAM_IGNORE_VERSION_CHECKS)),
+                forceAlternativeNode);
     }
 
     /**
@@ -204,18 +268,18 @@ public class FrontendTools {
     public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
             String nodeVersion, URI nodeDownloadRoot) {
         this(baseDir, alternativeDirGetter, nodeVersion, nodeDownloadRoot,
-                "true".equalsIgnoreCase(System.getProperty(
-                        FrontendUtils.PARAM_IGNORE_VERSION_CHECKS)));
+                false);
     }
 
     FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
             String nodeVersion, URI nodeDownloadRoot,
-            boolean ignoreVersionChecks) {
+            boolean ignoreVersionChecks, boolean forceAlternativeNode) {
         this.baseDir = Objects.requireNonNull(baseDir);
         this.alternativeDirGetter = alternativeDirGetter;
         this.nodeVersion = Objects.requireNonNull(nodeVersion);
         this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
         this.ignoreVersionChecks = ignoreVersionChecks;
+        this.forceAlternativeNode = forceAlternativeNode;
     }
 
     /**
@@ -225,8 +289,23 @@ public class FrontendTools {
      */
     public String getNodeExecutable() {
         Pair<String, String> nodeCommands = getNodeCommands();
-        return getExecutable(nodeCommands.getFirst(), nodeCommands.getSecond(),
-                alternativeDirGetter != null).getAbsolutePath();
+        File file = getExecutable(baseDir, nodeCommands.getSecond());
+        if (file == null) {
+            file = frontendToolsLocator.tryLocateTool(nodeCommands.getFirst())
+                    .orElse(null);
+        }
+        if (file == null) {
+            file = getExecutable(getAlternativeDir(), nodeCommands.getSecond());
+        }
+        if (file == null && alternativeDirGetter != null) {
+            getLogger().info("Couldn't find {}. Installing Node and NPM to {}.",
+                    nodeCommands.getFirst(), getAlternativeDir());
+            file = new File(installNode(nodeVersion, nodeDownloadRoot));
+        }
+        if (file == null) {
+            throw new IllegalStateException(String.format(NODE_NOT_FOUND));
+        }
+        return file.getAbsolutePath();
     }
 
     /**
@@ -299,7 +378,7 @@ public class FrontendTools {
         }
         try {
             List<String> nodeVersionCommand = new ArrayList<>();
-            nodeVersionCommand.add(getNodeExecutable());
+            nodeVersionCommand.add(doGetNodeExecutable());
             nodeVersionCommand.add("--version"); // NOSONAR
             FrontendVersion foundNodeVersion = FrontendUtils.getVersion("node",
                     nodeVersionCommand);
@@ -385,28 +464,12 @@ public class FrontendTools {
         }
     }
 
-    private File getExecutable(String cmd, String defaultLocation,
-            boolean installNode) {
-        File file = null;
-        if (defaultLocation == null) {
-            file = frontendToolsLocator.tryLocateTool(cmd).orElse(null);
-        } else {
-            file = Arrays.asList(() -> baseDir, alternativeDirGetter).stream()
-                    .map(Supplier::get)
-                    .map(dir -> new File(dir, defaultLocation))
-                    .filter(frontendToolsLocator::verifyTool).findFirst()
-                    .orElseGet(() -> frontendToolsLocator.tryLocateTool(cmd)
-                            .orElse(null));
+    private File getExecutable(String dir, String location) {
+        File file = new File(dir, location);
+        if (frontendToolsLocator.verifyTool(file)) {
+            return file;
         }
-        if (file == null && installNode) {
-            getLogger().info("Couldn't find {}. Installing Node and NPM to {}.",
-                    cmd, getAlternativeDir());
-            return new File(installNode(nodeVersion, nodeDownloadRoot));
-        }
-        if (file == null) {
-            throw new IllegalStateException(String.format(NODE_NOT_FOUND));
-        }
-        return file;
+        return null;
     }
 
     private Pair<String, String> getNodeCommands() {
@@ -550,17 +613,30 @@ public class FrontendTools {
         // First look for *-cli.js script in project/node_modules
         List<String> returnCommand = getNpmScriptCommand(baseDir,
                 cliTool.getScript());
-        if (returnCommand.isEmpty()) {
+        boolean alternativeDirChecked = false;
+        if (returnCommand.isEmpty() && forceAlternativeNode) {
             // First look for *-cli.js script in ~/.vaadin/node/node_modules
+            // only if alternative node takes precedence over all other location
             returnCommand = getNpmScriptCommand(getAlternativeDir(),
                     cliTool.getScript());
+            alternativeDirChecked = true;
         }
         if (returnCommand.isEmpty()) {
             // Otherwise look for regular `npm`/`npx` global search path
-            returnCommand = Collections.singletonList(
-                    getExecutable(cliTool.getCommand(), null, true)
-                            .getAbsolutePath());
+            Optional<String> command = frontendToolsLocator
+                    .tryLocateTool(cliTool.getCommand())
+                    .map(File::getAbsolutePath);
+            if (command.isPresent()) {
+                returnCommand = Collections.singletonList(command.get());
+            }
         }
+        if (!alternativeDirChecked && returnCommand.isEmpty()) {
+            // Use alternative if global is not found and alternative location
+            // is not yet checked
+            returnCommand = getNpmScriptCommand(getAlternativeDir(),
+                    cliTool.getScript());
+        }
+
         if (flags.length > 0) {
             returnCommand = new ArrayList<>(returnCommand);
             Collections.addAll(returnCommand, flags);
@@ -576,22 +652,24 @@ public class FrontendTools {
         List<String> returnCommand = new ArrayList<>();
         if (file.canRead()) {
             // We return a two element list with node binary and npm-cli script
-            returnCommand.add(getNodeExecutable());
+            returnCommand.add(doGetNodeExecutable());
             returnCommand.add(file.getAbsolutePath());
         }
         return returnCommand;
     }
 
     List<String> getSuitablePnpm() {
-        List<String> pnpmCommand = Stream
-                // first try default pnpm, followed by known supported version
-                .of("pnpm", "pnpm@" + DEFAULT_PNPM_VERSION)
+        // install pnpm version < 6.0.0, later requires ensuring
+        // NodeJS >= 12.17
+        final String pnpmSpecifier = ignoreVersionChecks ? "pnpm"
+                : "pnpm@" + DEFAULT_PNPM_VERSION;
+        List<String> pnpmCommand = Stream.of(pnpmSpecifier)
                 // do NOT modify the order of the --yes and --quiet flags, as it
                 // changes the behavior of npx
                 .map(pnpm -> getNpmCliToolExecutable(NpmCliTool.NPX, "--yes",
                         "--quiet", pnpm))
-                .filter(this::validatePnpmVersion)
-                .findFirst().orElseThrow(() -> new IllegalStateException(
+                .filter(this::validatePnpmVersion).findFirst()
+                .orElseThrow(() -> new IllegalStateException(
                         "Found too old 'pnpm'. If installed into the project "
                                 + "'node_modules', upgrade 'pnpm' to at least "
                                 + SUPPORTED_PNPM_VERSION.getFullVersion()));
@@ -605,16 +683,16 @@ public class FrontendTools {
         try {
             List<String> versionCmd = new ArrayList<>(pnpmCommand);
             versionCmd.add("--version"); // NOSONAR
-            FrontendVersion pnpmVersion = FrontendUtils
-                    .getVersion("pnpm", versionCmd);
+            FrontendVersion pnpmVersion = FrontendUtils.getVersion("pnpm",
+                    versionCmd);
             boolean versionNewEnough = FrontendUtils
                     .isVersionAtLeast(pnpmVersion, SUPPORTED_PNPM_VERSION);
             boolean versionAccepted = ignoreVersionChecks || versionNewEnough;
             if (!versionAccepted) {
-                getLogger()
-                        .info("pnpm '{}' is version {} which is not supported (expected >={})",
-                                commandLine, pnpmVersion.getFullVersion(),
-                                SUPPORTED_PNPM_VERSION.getFullVersion());
+                getLogger().info(
+                        "pnpm '{}' is version {} which is not supported (expected >={})",
+                        commandLine, pnpmVersion.getFullVersion(),
+                        SUPPORTED_PNPM_VERSION.getFullVersion());
             }
             return versionAccepted;
         } catch (UnknownVersionException e) {
@@ -636,5 +714,13 @@ public class FrontendTools {
 
     private String getAlternativeDir() {
         return alternativeDirGetter.get();
+    }
+
+    private String doGetNodeExecutable() {
+        if (forceAlternativeNode) {
+            return forceAlternativeNodeExecutable();
+        } else {
+            return getNodeExecutable();
+        }
     }
 }

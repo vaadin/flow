@@ -38,6 +38,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
@@ -59,6 +60,8 @@ public class NpmTemplateParserTest {
                 Mockito.anyString()))
                 .thenAnswer(invocation -> invocation.getArgumentAt(1,
                         String.class));
+        Mockito.when(configuration.getFlowResourcesFolder()).thenReturn(
+                "target/" + FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER);
 
         Properties properties = new Properties();
         Mockito.when(configuration.getInitParameters()).thenReturn(properties);

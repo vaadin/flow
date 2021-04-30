@@ -87,10 +87,10 @@ public class FrontendLiveReloadView extends AbstractLiveReloadView
     }
 
     public static void replaceFrontendFile(VaadinService vaadinService,
-                                           String code) {
+            String code) {
         File frontendFile = getFrontendFile(vaadinService);
         try {
-            if (frontendFileBackup==null) {
+            if (frontendFileBackup == null) {
                 // make a backup so it can be restored at teardown
                 frontendFileBackup = File.createTempFile("frontend", "ts");
                 FileUtils.copyFile(frontendFile, frontendFileBackup);

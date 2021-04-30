@@ -48,7 +48,8 @@ public class RequestParametersHistoryView extends AbstractDivView
 
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
-        List<String> params = event.getLocation().getQueryParameters().getParameters().get(REQUEST_PARAM_NAME);
+        List<String> params = event.getLocation().getQueryParameters()
+                .getParameters().get(REQUEST_PARAM_NAME);
         if (params == null || params.isEmpty()) {
             requestParamLabel.setText(NO_INPUT_TEXT);
         } else {

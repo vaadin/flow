@@ -32,7 +32,8 @@ public class PreserveOnRefreshExporter
     }
 
     @Override
-    public void configureInstance(WebComponent<PreserveOnRefreshComponent> webComponent,
-                                  PreserveOnRefreshComponent component) {
+    public void configureInstance(
+            WebComponent<PreserveOnRefreshComponent> webComponent,
+            PreserveOnRefreshComponent component) {
     }
 }

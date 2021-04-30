@@ -23,7 +23,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_J
 import static java.nio.charset.StandardCharsets.UTF_8;
 import org.apache.commons.io.IOUtils;
 
-
 /**
  * Generate <code>index.html</code> if it is missing in frontend folder.
  * 
@@ -50,8 +49,8 @@ public class TaskGenerateServiceWorker extends AbstractTaskClientGenerator {
 
     @Override
     protected String getFileContent() throws IOException {
-        return IOUtils
-                .toString(getClass().getResourceAsStream(SERVICE_WORKER_SRC), UTF_8);
+        return IOUtils.toString(
+                getClass().getResourceAsStream(SERVICE_WORKER_SRC), UTF_8);
     }
 
     @Override
@@ -62,7 +61,8 @@ public class TaskGenerateServiceWorker extends AbstractTaskClientGenerator {
     @Override
     protected boolean shouldGenerate() {
         File serviceWorker = new File(frontendDirectory, SERVICE_WORKER_SRC);
-        File serviceWorkerJs = new File(frontendDirectory, SERVICE_WORKER_SRC_JS);
+        File serviceWorkerJs = new File(frontendDirectory,
+                SERVICE_WORKER_SRC_JS);
         return !serviceWorker.exists() && !serviceWorkerJs.exists();
     }
 }

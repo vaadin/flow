@@ -54,7 +54,8 @@ public class CCDMTest extends ChromeBrowserTest {
         return null;
     }
 
-    protected final void assertView(String viewId, String assertViewText, String assertViewRoute) {
+    protected final void assertView(String viewId, String assertViewText,
+            String assertViewRoute) {
         waitForElementPresent(By.id(viewId));
         final WebElement serverViewDiv = findElement(By.id(viewId));
 

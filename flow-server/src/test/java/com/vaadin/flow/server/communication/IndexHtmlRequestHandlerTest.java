@@ -22,7 +22,11 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -30,6 +34,8 @@ import com.sun.net.httpserver.HttpServer;
 import org.jsoup.Jsoup;
 import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Assert;
@@ -44,9 +50,12 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.AppShellRegistry;
+import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -62,6 +71,8 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.impl.JreJsonFactory;
+import elemental.json.impl.JreJsonObject;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static com.vaadin.flow.server.DevModeHandlerTest.createStubWebpackTcpListener;
@@ -399,6 +410,44 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
+    public void should_include_spring_csrf_token_in_meta_tags_when_return_not_null_spring_csrf_in_request()
+            throws IOException {
+        VaadinRequest request = Mockito.spy(createVaadinRequest("/"));
+        String springTokenString = UUID.randomUUID().toString();
+        String springTokenHeaderName = "x-CSRF-TOKEN";
+        String springTokenParamName = "_csrf";
+        Map<String, String> csrfJsonMap = new HashMap<>();
+        csrfJsonMap.put("token", springTokenString);
+        csrfJsonMap.put("headerName", springTokenHeaderName);
+        csrfJsonMap.put("parameterName", springTokenParamName);
+        Mockito.when(request.getAttribute("_csrf")).thenReturn(csrfJsonMap);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
+                response);
+
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements csrfMetaEelement = document.head()
+                .getElementsByAttributeValue("name", "_csrf");
+        Assert.assertEquals(1, csrfMetaEelement.size());
+        Assert.assertEquals(springTokenString,
+                csrfMetaEelement.first().attr("content"));
+
+        Elements csrfHeaderMetaElement = document.head()
+                .getElementsByAttributeValue("name", "_csrf_header");
+        Assert.assertEquals(1, csrfHeaderMetaElement.size());
+        Assert.assertEquals(springTokenHeaderName,
+                csrfHeaderMetaElement.first().attr("content"));
+
+        Elements csrfParameterMetaElement = document.head()
+                .getElementsByAttributeValue("name", "_csrf_parameter");
+        Assert.assertEquals(1, csrfParameterMetaElement.size());
+        Assert.assertEquals(springTokenParamName,
+                csrfParameterMetaElement.first().attr("content"));
+    }
+
+    @Test
     public void should_not_include_token_in_dom_when_return_null_csrfToken_in_session()
             throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
@@ -416,6 +465,23 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
+    public void should_not_include_spring_csrf_token_in_meta_tags_when_return_null_spring_csrf_in_request()
+            throws IOException {
+        VaadinRequest request = createVaadinRequest("/");
+        indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
+                response);
+
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        Assert.assertEquals(0,
+                document.head().getElementsByAttribute("_csrf").size());
+        Assert.assertEquals(0,
+                document.head().getElementsByAttribute("_csrf_header").size());
+    }
+
+    @Test
     public void should_not_include_token_in_dom_when_referer_is_service_worker()
             throws IOException {
         Mockito.when(session.getCsrfToken()).thenReturn("foo");
@@ -428,6 +494,32 @@ public class IndexHtmlRequestHandlerTest {
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
         Assert.assertFalse(indexHtml.contains("csrfToken"));
+    }
+
+    @Test
+    public void should_not_include_spring_token_in_dom_when_referer_is_service_worker()
+            throws IOException {
+        VaadinRequest request = Mockito.spy(createVaadinRequest("/"));
+        String springTokenString = UUID.randomUUID().toString();
+        String springTokenHeaderName = "x-CSRF-TOKEN";
+        Map<String, String> csrfJsonMap = new HashMap<>();
+        csrfJsonMap.put("token", springTokenString);
+        csrfJsonMap.put("headerName", springTokenHeaderName);
+        Object springCsrfToken = JsonUtils.mapToJson(csrfJsonMap);
+        Mockito.when(request.getAttribute("_csrf")).thenReturn(springCsrfToken);
+        VaadinServletRequest vaadinRequest = createVaadinRequest("/");
+        Mockito.when(((HttpServletRequest) vaadinRequest.getRequest())
+                .getHeader("referer"))
+                .thenReturn("http://somewhere.test/sw.js");
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                vaadinRequest, response);
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+        Assert.assertEquals(0,
+                document.head().getElementsByAttribute("_csrf").size());
+        Assert.assertEquals(0,
+                document.head().getElementsByAttribute("_csrf_header").size());
     }
 
     @Test
@@ -700,4 +792,18 @@ public class IndexHtmlRequestHandlerTest {
                 .thenAnswer(invocation -> invocation.getArgumentAt(1,
                         Boolean.class));
     }
+
+    @Test
+    public void internal_request_no_bootstrap_page() {
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+        Mockito.when(request.getPathInfo()).thenReturn(null);
+        Mockito.when(request.getParameter("v-r")).thenReturn("hello-foo-bar");
+        Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
+        Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(request));
+
+        Mockito.when(request.getParameter("v-r")).thenReturn("init");
+        Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
+        Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(request));
+    }
+
 }

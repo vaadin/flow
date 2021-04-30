@@ -1,6 +1,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -31,9 +32,17 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
         verifyNoServerVisit();
 
         goBack();
-        if (hasClientIssue("7572")) {
-            return;
-        }
+    }
+
+    @Test
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/10485")
+    public void testDifferentPath_doubleBack_ServerSideEvent() {
+        open();
+
+        pushState(FORUM);
+        pushState(ANOTHER_PATH);
+
+        goBack();
 
         verifyPopStateEvent(FORUM);
         verifyInsideServletLocation(FORUM);
@@ -66,9 +75,20 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
         verifyNoServerVisit();
 
         goBack();
-        if (hasClientIssue("7572")) {
-            return;
-        }
+    }
+
+    @Test
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/10485")
+    public void testSamePathHashChanges_tripleeBack_noServerSideEvent() {
+        open();
+
+        pushState(FORUM);
+
+        pushState(FORUM_SUBCATEGORY);
+
+        pushState(FORUM_SUBCATEGORY2);
+
+        goBack();
 
         verifyNoServerVisit();
         verifyInsideServletLocation(FORUM_SUBCATEGORY);
@@ -111,9 +131,22 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
         verifyNoServerVisit();
 
         goBack();
-        if (hasClientIssue("7572")) {
-            return;
-        }
+    }
+
+    @Test
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/10485")
+    public void testEmptyHash_quadrupleBack_noHashServerToServer() {
+        open();
+
+        pushState(EMPTY_HASH);
+
+        pushState(FORUM);
+
+        pushState(EMPTY_HASH);
+
+        pushState(ANOTHER_PATH);
+
+        goBack();
 
         verifyPopStateEvent(FORUM);
         verifyInsideServletLocation(EMPTY_HASH);

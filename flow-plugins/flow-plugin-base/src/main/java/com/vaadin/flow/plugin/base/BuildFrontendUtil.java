@@ -15,21 +15,6 @@
  */
 package com.vaadin.flow.plugin.base;
 
-import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
-import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
-import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
-import static com.vaadin.flow.server.Constants.NPM_TOKEN;
-import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_INITIAL_UIDL;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -37,6 +22,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -49,6 +35,7 @@ import org.zeroturnaround.exec.ProcessExecutor;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
@@ -59,6 +46,21 @@ import com.vaadin.flow.utils.FlowFileUtils;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
+import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
+import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
+import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
+import static com.vaadin.flow.server.Constants.NPM_TOKEN;
+import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
  * Util class provides all methods a Plugin will need.
@@ -130,12 +132,13 @@ public class BuildFrontendUtil {
                     e);
         }
         File flowResourcesFolder = new File(adapter.npmFolder(),
-                FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER);
+                Paths.get(adapter.buildFolder(), DEFAULT_FLOW_RESOURCES_FOLDER)
+                        .toString());
         ClassFinder classFinder = adapter.getClassFinder();
         Lookup lookup = adapter.createLookup(classFinder);
         NodeTasks.Builder builder = new NodeTasks.Builder(lookup,
                 adapter.npmFolder(), adapter.generatedFolder(),
-                adapter.frontendDirectory())
+                adapter.frontendDirectory(), adapter.buildFolder())
                         .useV14Bootstrap(
                                 adapter.isUseDeprecatedV14Bootstrapping())
                         .withFlowResourcesFolder(flowResourcesFolder)
@@ -153,7 +156,17 @@ public class BuildFrontendUtil {
             builder.copyResources(adapter.getJarFiles());
         }
 
-        builder.build().execute();
+        try {
+            builder.build().execute();
+        } catch (ExecutionFailedException exception) {
+            throw exception;
+        } catch (Throwable throwable) {
+            throw new ExecutionFailedException(
+                    "Error occured during goal execution: "
+                            + throwable.getMessage()
+                            + "Please run Maven with the -e switch (or Gradle with the --stacktrace switch), to learn the full stack trace.",
+                    throwable);
+        }
 
     }
 
@@ -191,10 +204,12 @@ public class BuildFrontendUtil {
         buildInfo.put(PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
                 adapter.generatedTsFolder().getAbsolutePath());
 
-        buildInfo.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM,
+        buildInfo.put(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
                 adapter.pnpmEnable());
-        buildInfo.put(Constants.REQUIRE_HOME_NODE_EXECUTABLE,
+        buildInfo.put(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE,
                 adapter.requireHomeNodeExec());
+
+        buildInfo.put(InitParameters.BUILD_FOLDER, adapter.buildFolder());
 
         try {
             FileUtils.forceMkdir(token.getParentFile());
@@ -239,7 +254,8 @@ public class BuildFrontendUtil {
 
         Set<File> jarFiles = adapter.getJarFiles();
         File flowResourcesFolder = new File(adapter.npmFolder(),
-                DEFAULT_FLOW_RESOURCES_FOLDER);
+                Paths.get(adapter.buildFolder(), DEFAULT_FLOW_RESOURCES_FOLDER)
+                        .toString());
         final URI nodeDownloadRootURI;
 
         nodeDownloadRootURI = adapter.nodeDownloadRoot();
@@ -247,37 +263,51 @@ public class BuildFrontendUtil {
         ClassFinder classFinder = adapter.getClassFinder();
         Lookup lookup = adapter.createLookup(classFinder);
 
-        new NodeTasks.Builder(lookup, adapter.npmFolder(),
-                adapter.generatedFolder(), adapter.frontendDirectory())
-                        .runNpmInstall(adapter.runNpmInstall())
-                        .withWebpack(adapter.webpackOutputDirectory(),
-                                adapter.servletResourceOutputDirectory(),
-                                adapter.webpackTemplate(),
-                                adapter.webpackGeneratedTemplate())
-                        .useV14Bootstrap(
-                                adapter.isUseDeprecatedV14Bootstrapping())
-                        .enablePackagesUpdate(true)
-                        .useByteCodeScanner(adapter.optimizeBundle())
-                        .withFlowResourcesFolder(flowResourcesFolder)
-                        .copyResources(jarFiles)
-                        .copyLocalResources(
-                                adapter.frontendResourcesDirectory())
-                        .enableImportsUpdate(true)
-                        .withEmbeddableWebComponents(
-                                adapter.generateEmbeddableWebComponents())
-                        .withTokenFile(BuildFrontendUtil.getTokenFile(adapter))
-                        .enablePnpm(adapter.pnpmEnable())
-                        .withConnectApplicationProperties(
-                                adapter.applicationProperties())
-                        .withConnectJavaSourceFolder(adapter.javaSourceFolder())
-                        .withConnectGeneratedOpenApiJson(
-                                adapter.openApiJsonFile())
-                        .withConnectClientTsApiFolder(
-                                adapter.generatedTsFolder())
-                        .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
-                        .withNodeVersion(adapter.nodeVersion())
-                        .withNodeDownloadRoot(nodeDownloadRootURI).build()
-                        .execute();
+        try {
+            new NodeTasks.Builder(lookup, adapter.npmFolder(),
+                    adapter.generatedFolder(), adapter.frontendDirectory(),
+                    adapter.buildFolder())
+                            .runNpmInstall(adapter.runNpmInstall())
+                            .withWebpack(adapter.webpackOutputDirectory(),
+                                    adapter.servletResourceOutputDirectory(),
+                                    adapter.webpackTemplate(),
+                                    adapter.webpackGeneratedTemplate())
+                            .useV14Bootstrap(
+                                    adapter.isUseDeprecatedV14Bootstrapping())
+                            .enablePackagesUpdate(true)
+                            .useByteCodeScanner(adapter.optimizeBundle())
+                            .withFlowResourcesFolder(flowResourcesFolder)
+                            .copyResources(jarFiles)
+                            .copyLocalResources(
+                                    adapter.frontendResourcesDirectory())
+                            .enableImportsUpdate(true)
+                            .withEmbeddableWebComponents(
+                                    adapter.generateEmbeddableWebComponents())
+                            .withTokenFile(
+                                    BuildFrontendUtil.getTokenFile(adapter))
+                            .enablePnpm(adapter.pnpmEnable())
+                            .withConnectApplicationProperties(
+                                    adapter.applicationProperties())
+                            .withConnectJavaSourceFolder(
+                                    adapter.javaSourceFolder())
+                            .withConnectGeneratedOpenApiJson(
+                                    adapter.openApiJsonFile())
+                            .withConnectClientTsApiFolder(
+                                    adapter.generatedTsFolder())
+                            .withHomeNodeExecRequired(
+                                    adapter.requireHomeNodeExec())
+                            .withNodeVersion(adapter.nodeVersion())
+                            .withNodeDownloadRoot(nodeDownloadRootURI).build()
+                            .execute();
+        } catch (ExecutionFailedException exception) {
+            throw exception;
+        } catch (Throwable throwable) {
+            throw new ExecutionFailedException(
+                    "Error occured during goal execution: "
+                            + throwable.getMessage()
+                            + "Please run Maven with the -e switch (or Gradle with the --stacktrace switch), to learn the full stack trace.",
+                    throwable);
+        }
     }
 
     /**
@@ -294,9 +324,8 @@ public class BuildFrontendUtil {
      * @throws URISyntaxException
      *             - while parsing nodeDownloadRoot()) to URI
      */
-    public static void runWebpack(PluginAdapterBase adapter)
-            throws IOException, InterruptedException,
-            TimeoutException, URISyntaxException {
+    public static void runWebpack(PluginAdapterBase adapter) throws IOException,
+            InterruptedException, TimeoutException, URISyntaxException {
 
         String webpackCommand = "webpack/bin/webpack.js";
         File webpackExecutable = new File(adapter.npmFolder(),
@@ -381,6 +410,7 @@ public class BuildFrontendUtil {
             buildInfo.remove(Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
             buildInfo.remove(Constants.CONNECT_OPEN_API_FILE_TOKEN);
             buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
+            buildInfo.remove(InitParameters.BUILD_FOLDER);
 
             buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",

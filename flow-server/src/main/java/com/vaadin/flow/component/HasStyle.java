@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import java.util.Arrays;
 import java.util.Set;
 
 import com.vaadin.flow.dom.ClassList;
@@ -63,7 +62,7 @@ public interface HasStyle extends HasElement {
      *            <code>null</code> to remove all class names
      */
     default void setClassName(String className) {
-        if(className == null) {
+        if (className == null) {
             getElement().removeAttribute("class");
         } else {
             getElement().setAttribute("class", className);
@@ -133,22 +132,35 @@ public interface HasStyle extends HasElement {
     }
 
     /**
-     * Adds one or more CSS class names to this component. Multiple class names can be
-     * specified by using multiple parameters.
+     * Adds one or more CSS class names to this component. Multiple class names
+     * can be specified by using spaces or by giving multiple parameters.
      *
-     * @param classNames the CSS class name or class names to be added to the component
+     * @param classNames
+     *            the CSS class name or class names to be added to the component
      */
     default void addClassNames(String... classNames) {
-        getClassNames().addAll(Arrays.asList(classNames));
+        for (String rawClassName : classNames) {
+            String[] parts = rawClassName.split(" ");
+            for (String part : parts) {
+                getClassNames().add(part);
+            }
+        }
     }
 
     /**
-     * Removes one or more CSS class names from component. Multiple class names can be
-     * specified by using multiple parameters.
+     * Removes one or more CSS class names from component. Multiple class names
+     * can be specified by using spaces or by giving multiple parameters.
      *
-     * @param classNames the CSS class name or class names to be removed from the component
+     * @param classNames
+     *            the CSS class name or class names to be removed from the
+     *            component
      */
     default void removeClassNames(String... classNames) {
-        getClassNames().removeAll(Arrays.asList(classNames));
+        for (String rawClassName : classNames) {
+            String[] parts = rawClassName.split(" ");
+            for (String part : parts) {
+                getClassNames().remove(part);
+            }
+        }
     }
 }

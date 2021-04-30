@@ -18,8 +18,11 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -37,6 +40,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.Json;
+import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -114,6 +118,8 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     protected final FrontendDependenciesScanner frontDeps;
 
+    protected String buildDir;
+
     final ClassFinder finder;
 
     boolean modified;
@@ -131,10 +137,12 @@ public abstract class NodeUpdater implements FallibleCommand {
      *            folder where flow generated files will be placed.
      * @param flowResourcesPath
      *            folder where flow dependencies will be copied to.
+     * @param buildDir
+     *            the used build directory
      */
     protected NodeUpdater(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, File flowResourcesPath) {
+            File generatedPath, File flowResourcesPath, String buildDir) {
         this.frontDeps = frontendDependencies;
         this.finder = finder;
         this.npmFolder = npmFolder;
@@ -142,6 +150,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         this.generatedFolder = generatedPath;
         this.flowResourcesFolder = flowResourcesPath;
         this.formResourcesFolder = new File(flowResourcesPath, FORM_FOLDER);
+        this.buildDir = buildDir;
     }
 
     private File getPackageJsonFile() {
@@ -208,8 +217,32 @@ public abstract class NodeUpdater implements FallibleCommand {
         }
 
         addVaadinDefaultsToJson(packageJson);
+        addWebpackPlugins(packageJson);
 
         return packageJson;
+    }
+
+    private void addWebpackPlugins(JsonObject packageJson) {
+        final List<String> plugins = WebpackPluginsUtil.getPlugins();
+
+        Path targetFolder = Paths.get(npmFolder.toString(), buildDir,
+                WebpackPluginsUtil.PLUGIN_TARGET);
+
+        JsonObject devDependencies;
+        if (packageJson.hasKey(DEV_DEPENDENCIES)) {
+            devDependencies = packageJson.getObject(DEV_DEPENDENCIES);
+        } else {
+            devDependencies = Json.createObject();
+            packageJson.put(DEV_DEPENDENCIES, devDependencies);
+        }
+
+        plugins.stream().filter(plugin -> targetFolder.toFile().exists())
+                .forEach(plugin -> {
+                    String pluginTarget = "./" + (npmFolder.toPath()
+                            .relativize(targetFolder).toString() + "/" + plugin)
+                                    .replace('\\', '/');
+                    devDependencies.put("@vaadin/" + plugin, pluginTarget);
+                });
     }
 
     JsonObject getResourcesPackageJson() throws IOException {
@@ -244,7 +277,12 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (packageFile.exists()) {
             String fileContent = FileUtils.readFileToString(packageFile,
                     UTF_8.name());
-            jsonContent = Json.parse(fileContent);
+            try {
+                jsonContent = Json.parse(fileContent);
+            } catch (JsonException e) {
+                throw new JsonException(String
+                        .format("Cannot parse package file '%s'", packageFile));
+            }
         }
         return jsonContent;
     }
@@ -292,8 +330,9 @@ public abstract class NodeUpdater implements FallibleCommand {
         Map<String, String> defaults = new HashMap<>();
 
         defaults.put("html-webpack-plugin", "4.5.1");
-        defaults.put("typescript", "4.1.5");
+        defaults.put("typescript", "4.2.3");
         defaults.put("ts-loader", "8.0.12");
+        defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");
 
         defaults.put("webpack", "4.46.0");
         defaults.put("webpack-cli", "3.3.11");
@@ -320,13 +359,11 @@ public abstract class NodeUpdater implements FallibleCommand {
         // polyfill needed for FireFox et.al. at the moment
         defaults.put("construct-style-sheets-polyfill", "2.4.16");
 
-        defaults.put("snowpack", "3.0.13");
+        defaults.put("snowpack", "3.2.2");
 
         // Forcing chokidar version for now until new babel version is available
         // check out https://github.com/babel/babel/issues/11488
         defaults.put("chokidar", "^3.5.0");
-
-        defaults.put("idb", "5.0.6");
 
         return defaults;
     }
@@ -444,7 +481,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     String writePackageFile(JsonObject json, File packageFile)
             throws IOException {
-        log().info("writing file {}.", packageFile.getAbsolutePath());
+        log().debug("writing file {}.", packageFile.getAbsolutePath());
         FileUtils.forceMkdirParent(packageFile);
         String content = stringify(json, 2) + "\n";
         FileUtils.writeStringToFile(packageFile, content, UTF_8.name());

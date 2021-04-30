@@ -34,6 +34,7 @@ import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.TARGET;
 
 public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     @Rule
@@ -68,7 +69,8 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
 
     @Test
     public void should_createPackageJson() throws IOException {
-        TaskGeneratePackageJson task = new TaskGeneratePackageJson(npmFolder, generatedFolder, frontendDepsFolder);
+        TaskGeneratePackageJson task = new TaskGeneratePackageJson(npmFolder,
+                generatedFolder, frontendDepsFolder, TARGET);
         task.execute();
         Assert.assertTrue(new File(npmFolder, PACKAGE_JSON).exists());
         Assert.assertFalse(new File(generatedFolder, PACKAGE_JSON).exists());
@@ -88,8 +90,8 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         // - resourceInFolder.js
         File dir = TestUtils.getTestFolder(fsDir);
 
-        TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(frontendDepsFolder,
-                jars(jar, dir));
+        TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(
+                frontendDepsFolder, jars(jar, dir));
 
         task.execute();
 
@@ -101,7 +103,6 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
 
         Assert.assertTrue("Css resource should have been copied from jar file",
                 files.contains("inline.css"));
-
 
         Assert.assertTrue(
                 "Js resource should have been copied from resource folder",

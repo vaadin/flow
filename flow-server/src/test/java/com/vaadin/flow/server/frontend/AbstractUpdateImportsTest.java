@@ -63,6 +63,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -186,7 +187,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
-        generatedPath = new File(tmpRoot, DEFAULT_GENERATED_DIR);
+        generatedPath = new File(tmpRoot,
+                Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
         File tokenFile = new File(tmpRoot, TOKEN_FILE);
 
         ClassFinder classFinder = getClassFinder();
@@ -268,7 +270,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void getModuleLines_oneFrontendDependencyAndFrontendDirectoryDontExist_throwExceptionAdvisingUserToRunPrepareFrontend() throws Exception {
+    public void getModuleLines_oneFrontendDependencyAndFrontendDirectoryDontExist_throwExceptionAdvisingUserToRunPrepareFrontend()
+            throws Exception {
         ClassFinder classFinder = getClassFinder();
         updater = new UpdateImports(classFinder, getScanner(classFinder),
                 tmpRoot, null);
@@ -281,7 +284,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         try {
             updater.run();
-            Assert.fail("Execute should have failed with advice to run `prepare-frontend`");
+            Assert.fail(
+                    "Execute should have failed with advice to run `prepare-frontend`");
         } catch (IllegalStateException e) {
             assertThat(e.getMessage(), CoreMatchers.containsString(
                     "Unable to locate frontend resources and missing token file. "
@@ -331,7 +335,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 + "(e.g. set '%s' property)", frontendDirectory.getPath(),
                 Constants.RESOURCES_FRONTEND_DEFAULT,
                 FrontendUtils.PARAM_FRONTEND_DIR);
-         
+
         return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix,
                 String.join("\n      - ", resourcesNotFound), suffix);
     }
@@ -457,8 +461,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         // fail the import visitor and should be ignored
         File newFile = resolveImportFile(frontendDirectory, nodeModulesPath,
                 "./common-js-file.js");
-        Files.copy(Paths.get(
-                getClass().getClassLoader().getResource("dice.jpg").toURI()),
+        Files.copy(
+                Paths.get(getClass().getClassLoader().getResource("dice.jpg")
+                        .toURI()),
                 new File(newFile.getParentFile(), "dice.jpg").toPath());
         Files.write(newFile.toPath(),
                 Collections.singleton("import './dice.jpg'"));
@@ -478,8 +483,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class[] testClasses = { MainView.class,
                 NodeTestComponents.TranslatedImports.class,
                 NodeTestComponents.LocalP3Template.class,
-                NodeTestComponents.JavaScriptOrder.class,
-                UI.class};
+                NodeTestComponents.JavaScriptOrder.class, UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
 
         updater = new UpdateImports(classFinder, getScanner(classFinder),

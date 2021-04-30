@@ -96,13 +96,11 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OP
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_APPLICATION_PROPERTIES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 
 /**
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
@@ -198,7 +196,9 @@ public class DevModeInitializer
     // This attribute helps to avoid Dev Mode running twice.
     //
     // Addresses the issue https://github.com/vaadin/spring/issues/502
-    private static final class DevModeHandlerAlreadyStartedAttribute implements Serializable { }
+    private static final class DevModeHandlerAlreadyStartedAttribute
+            implements Serializable {
+    }
 
     @Override
     public void initialize(Set<Class<?>> classes, VaadinContext context)
@@ -209,7 +209,8 @@ public class DevModeInitializer
     }
 
     private void setDevModeStarted(VaadinContext context) {
-        context.setAttribute(DevModeHandlerAlreadyStartedAttribute.class, new DevModeHandlerAlreadyStartedAttribute());
+        context.setAttribute(DevModeHandlerAlreadyStartedAttribute.class,
+                new DevModeHandlerAlreadyStartedAttribute());
     }
 
     /**
@@ -217,7 +218,8 @@ public class DevModeInitializer
      * mode.
      *
      * @deprecated Use {@link #initDevModeHandler(Set, VaadinContext)} instead
-     *            by wrapping {@link ServletContext} with {@link VaadinServletContext}.
+     *             by wrapping {@link ServletContext} with
+     *             {@link VaadinServletContext}.
      *
      * @param classes
      *            classes to check for npm- and js modules
@@ -247,13 +249,12 @@ public class DevModeInitializer
      *            VaadinContext we are running in
      *
      * @throws VaadinInitializerException
-     *            if dev mode can't be initialized
+     *             if dev mode can't be initialized
      */
     public static void initDevModeHandler(Set<Class<?>> classes,
-           VaadinContext context) throws VaadinInitializerException {
+            VaadinContext context) throws VaadinInitializerException {
 
-        ApplicationConfiguration config = ApplicationConfiguration
-                .get(context);
+        ApplicationConfiguration config = ApplicationConfiguration.get(context);
         if (config.isProductionMode()) {
             log().debug("Skipping DEV MODE because PRODUCTION MODE is set.");
             return;
@@ -271,42 +272,43 @@ public class DevModeInitializer
         }
 
         String generatedDir = System.getProperty(PARAM_GENERATED_DIR,
-                DEFAULT_GENERATED_DIR);
+                Paths.get(config.getBuildFolder(), DEFAULT_GENERATED_DIR)
+                        .toString());
         String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
                 System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
 
         File flowResourcesFolder = new File(baseDir,
-                DEFAULT_FLOW_RESOURCES_FOLDER);
+                config.getFlowResourcesFolder());
 
         Lookup lookupFromContext = context.getAttribute(Lookup.class);
         Lookup lookupForClassFinder = Lookup.of(new DevModeClassFinder(classes),
                 ClassFinder.class);
-        Lookup lookup = Lookup.compose(lookupForClassFinder,
-                lookupFromContext);
+        Lookup lookup = Lookup.compose(lookupForClassFinder, lookupFromContext);
         Builder builder = new NodeTasks.Builder(lookup, new File(baseDir),
-                new File(generatedDir), new File(frontendFolder));
+                new File(generatedDir), new File(frontendFolder),
+                config.getBuildFolder());
 
         log().info("Starting dev-mode updaters in {} folder.",
-                builder.npmFolder);
+                builder.getNpmFolder());
 
-        if (!builder.generatedFolder.exists()) {
+        if (!builder.getGeneratedFolder().exists()) {
             try {
-                FileUtils.forceMkdir(builder.generatedFolder);
+                FileUtils.forceMkdir(builder.getGeneratedFolder());
             } catch (IOException e) {
                 throw new UncheckedIOException(
                         String.format("Failed to create directory '%s'",
-                                builder.generatedFolder),
+                                builder.getGeneratedFolder()),
                         e);
             }
         }
 
-        File generatedPackages = new File(builder.generatedFolder,
+        File generatedPackages = new File(builder.getGeneratedFolder(),
                 PACKAGE_JSON);
 
         // Regenerate webpack configuration, as it may be necessary to update it
         // TODO: make sure target directories are aligned with build config,
         // see https://github.com/vaadin/flow/issues/9082
-        File target = new File(baseDir, TARGET);
+        File target = new File(baseDir, config.getBuildFolder());
         builder.withWebpack(new File(target, VAADIN_WEBAPP_RESOURCES),
                 new File(target, VAADIN_SERVLET_RESOURCES),
                 FrontendUtils.WEBPACK_CONFIG, FrontendUtils.WEBPACK_GENERATED);
@@ -322,10 +324,11 @@ public class DevModeInitializer
                     CONNECT_APPLICATION_PROPERTIES_TOKEN,
                     Paths.get(baseDir, DEFAULT_CONNECT_APPLICATION_PROPERTIES)
                             .toString());
-            String connectOpenApiJsonFile = config.getStringProperty(
-                    CONNECT_OPEN_API_FILE_TOKEN,
-                    Paths.get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE)
-                            .toString());
+            String connectOpenApiJsonFile = config
+                    .getStringProperty(CONNECT_OPEN_API_FILE_TOKEN,
+                            Paths.get(baseDir, config.getBuildFolder(),
+                                    DEFAULT_CONNECT_OPENAPI_JSON_FILE)
+                                    .toString());
 
             builder.withConnectJavaSourceFolder(
                     new File(connectJavaSourceFolder))
@@ -337,7 +340,7 @@ public class DevModeInitializer
 
         // If we are missing either the base or generated package json files
         // generate those
-        if (!new File(builder.npmFolder, PACKAGE_JSON).exists()
+        if (!new File(builder.getNpmFolder(), PACKAGE_JSON).exists()
                 || !generatedPackages.exists()) {
             builder.createMissingPackageJson(true);
         }
@@ -373,8 +376,7 @@ public class DevModeInitializer
                 .populateTokenFileData(tokenFileData)
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec)
-                .useSnowpack(config.useSnowpack())
-                .build();
+                .useSnowpack(config.useSnowpack()).build();
 
         Runnable runnable = () -> runNodeTasks(context, tokenFileData, tasks);
 
@@ -384,7 +386,7 @@ public class DevModeInitializer
         DevModeHandler.start(
                 Lookup.compose(lookup,
                         Lookup.of(config, ApplicationConfiguration.class)),
-                builder.npmFolder, nodeTasksFuture);
+                builder.getNpmFolder(), nodeTasksFuture);
     }
 
     private static boolean isEndpointServiceAvailable(Lookup lookup) {
@@ -398,7 +400,8 @@ public class DevModeInitializer
      * Shows whether {@link DevModeHandler} has been already started or not.
      *
      * @deprecated Use {@link #isDevModeAlreadyStarted(VaadinContext)} instead
-     *            by wrapping {@link ServletContext} with {@link VaadinServletContext}.
+     *             by wrapping {@link ServletContext} with
+     *             {@link VaadinServletContext}.
      *
      * @param servletContext
      *            The servlet context, not <code>null</code>
@@ -408,7 +411,8 @@ public class DevModeInitializer
     @Deprecated
     public static boolean isDevModeAlreadyStarted(
             ServletContext servletContext) {
-        return isDevModeAlreadyStarted(new VaadinServletContext(servletContext));
+        return isDevModeAlreadyStarted(
+                new VaadinServletContext(servletContext));
     }
 
     /**
@@ -419,10 +423,10 @@ public class DevModeInitializer
      * @return <code>true</code> if {@link DevModeHandler} has already been
      *         started, <code>false</code> - otherwise
      */
-    public static boolean isDevModeAlreadyStarted(
-            VaadinContext context) {
+    public static boolean isDevModeAlreadyStarted(VaadinContext context) {
         assert context != null;
-        return context.getAttribute(DevModeHandlerAlreadyStartedAttribute.class) != null;
+        return context.getAttribute(
+                DevModeHandlerAlreadyStartedAttribute.class) != null;
     }
 
     private static Logger log() {
@@ -468,8 +472,8 @@ public class DevModeInitializer
 
     /*
      * This method returns all folders of jar files having files in the
-     * META-INF/resources/frontend and META-INF/resources/themes folder.
-     * We don't use URLClassLoader because will fail in Java 9+
+     * META-INF/resources/frontend and META-INF/resources/themes folder. We
+     * don't use URLClassLoader because will fail in Java 9+
      */
     static Set<File> getFrontendLocationsFromClassloader(
             ClassLoader classLoader) throws VaadinInitializerException {
@@ -479,7 +483,7 @@ public class DevModeInitializer
         frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
                 Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT));
         frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
-            Constants.RESOURCES_THEME_JAR_DEFAULT));
+                Constants.RESOURCES_THEME_JAR_DEFAULT));
         return frontendFiles;
     }
 
@@ -589,7 +593,8 @@ public class DevModeInitializer
             return rootDirectory;
         } catch (NoSuchMethodException | IllegalAccessException
                 | InvocationTargetException exc) {
-            throw new VaadinInitializerException("Failed to invoke JBoss VFS API.", exc);
+            throw new VaadinInitializerException(
+                    "Failed to invoke JBoss VFS API.", exc);
         }
     }
 
@@ -612,7 +617,8 @@ public class DevModeInitializer
             return tempJarFile;
         } catch (NoSuchMethodException | IllegalAccessException
                 | InvocationTargetException exc) {
-            throw new VaadinInitializerException("Failed to invoke JBoss VFS API.", exc);
+            throw new VaadinInitializerException(
+                    "Failed to invoke JBoss VFS API.", exc);
         }
     }
 

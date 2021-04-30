@@ -42,6 +42,7 @@ import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
@@ -206,12 +207,12 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     /**
      * If we do not have the platform versions to lock we should lock any
-     * versions in the package.json so we do not get multiple versions
-     * for defined packages.
+     * versions in the package.json so we do not get multiple versions for
+     * defined packages.
      *
      * @return versions Json based on package.json
      * @throws IOException
-     *     If reading package.json fails
+     *             If reading package.json fails
      */
     private JsonObject generateVersionsFromPackageJson() throws IOException {
         JsonObject versionsJson = Json.createObject();
@@ -219,7 +220,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
         final JsonObject packageJson = packageUpdater.getPackageJson();
         final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
         final JsonObject devDependencies = packageJson
-            .getObject(DEV_DEPENDENCIES);
+                .getObject(DEV_DEPENDENCIES);
         if (dependencies != null) {
             for (String key : dependencies.keys()) {
                 versionsJson.put(key, dependencies.getString(key));
@@ -374,7 +375,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         FrontendTools tools = new FrontendTools(baseDir,
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
-                nodeVersion, nodeDownloadRoot);
+                nodeVersion, nodeDownloadRoot, requireHomeNodeExec);
         try {
             if (requireHomeNodeExec) {
                 tools.forceAlternativeNodeExecutable();
@@ -417,7 +418,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
             Runtime.getRuntime()
                     .addShutdownHook(new Thread(finalProcess::destroyForcibly));
 
-
             packageUpdater.log().debug("Output of `{}`:", commandString);
             StringBuilder toolOutput = new StringBuilder();
             try (BufferedReader reader = new BufferedReader(
@@ -426,7 +426,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 String stdoutLine;
                 while ((stdoutLine = reader.readLine()) != null) {
                     packageUpdater.log().debug(stdoutLine);
-                    toolOutput.append(stdoutLine);
+                    toolOutput.append(stdoutLine)
+                            .append(System.lineSeparator());
                 }
             }
 
@@ -481,7 +482,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                         "Couldn't find template pnpmfile.js in the classpath");
             }
             FileUtils.copyInputStreamToFile(content, pnpmFile);
-            packageUpdater.log().info("Generated pnpmfile hook file: '{}'",
+            packageUpdater.log().debug("Generated pnpmfile hook file: '{}'",
                     pnpmFile);
 
             FileUtils.writeLines(pnpmFile,
@@ -524,8 +525,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
                             "Couldn't find template npmrc in the classpath");
                 }
                 FileUtils.copyInputStreamToFile(content, npmrcFile);
-                packageUpdater.log()
-                        .info("Generated pnpm configuration: '{}'", npmrcFile);
+                packageUpdater.log().debug("Generated pnpm configuration: '{}'",
+                        npmrcFile);
             }
         }
     }

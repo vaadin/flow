@@ -23,6 +23,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -180,6 +181,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private File webpackOutputDirectory;
 
     /**
+     * Build directory for the project.
+     */
+    @Parameter(property = "build.folder", defaultValue = "${project.build.directory}")
+    private String projectBuildDir;
+
+    /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
      * MavenProject.
      *
@@ -294,7 +301,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         getLog().warn(warning, e);
 
     }
-    
+
     @Override
     public void logError(CharSequence warning, Throwable e) {
 
@@ -371,5 +378,14 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Override
     public boolean isJarProject() {
         return "jar".equals(project.getPackaging());
+    }
+
+    @Override
+    public String buildFolder() {
+        if (projectBuildDir.startsWith(projectBasedir.toString())) {
+            return projectBaseDirectory().relativize(Paths.get(projectBuildDir))
+                    .toString();
+        }
+        return projectBuildDir;
     }
 }

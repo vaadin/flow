@@ -9,7 +9,7 @@ const {sinon} = intern.getPlugin('sinon');
 import {
   Binder,
   BinderConfiguration,
-} from "../../../main/resources/META-INF/resources/frontend/form";
+} from "../../../main/frontend/form";
 
 import {Employee, EmployeeModel, Order, OrderModel, TestEntity, TestModel} from "./TestModels";
 

@@ -15,12 +15,13 @@
  */
 
 const fs = require('fs');
+const mkdirp = require('mkdirp');
 
 const fromDir = "target/classes/META-INF/resources/VAADIN/static/client/";
 const fromFileRegex = /^client-.*\.cache\.js$/;
 
-const toSourceDir = "src/main/resources/META-INF/resources/frontend/";
-const toTargetDir = "target/classes/META-INF/resources/frontend/";
+const sourceDir = "src/main/frontend/";
+const targetDir = "target/classes/META-INF/resources/frontend/";
 const toFile  = "FlowClient.js";
 
 const fromFileName = fs.readdirSync(fromDir)
@@ -35,10 +36,13 @@ ${clientSource}
 };`;
 
 // Write to source
-fs.writeFileSync(toSourceDir + toFile, clientSource, 'utf8');
+fs.writeFileSync(sourceDir + toFile, clientSource, 'utf8');
 
-// Write to target
-fs.writeFileSync(toTargetDir + toFile, clientSource, 'utf8');
+// Write to target (copy '.d.ts' and '.js' files from sourceDir)
+mkdirp(targetDir);
+fs.readdirSync(sourceDir)
+  .filter(s => s.endsWith('.d.ts') || s.endsWith('.js') || s.endsWith('.map'))
+  .forEach(file => fs.copyFileSync(sourceDir + file, targetDir + file));
 
 // Check that chromedriver version matches in flow and intern
 const driversContent = fs.readFileSync('../drivers.xml', 'utf8');

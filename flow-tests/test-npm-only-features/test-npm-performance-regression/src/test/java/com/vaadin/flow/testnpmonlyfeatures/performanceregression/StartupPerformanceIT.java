@@ -43,7 +43,7 @@ public class StartupPerformanceIT extends ChromeBrowserTest {
 
         int startupTime = measureLogEntryTimeDistance(
                 "- Starting dev-mode updaters in",
-                "- (Started|Reusing) webpack-dev-server", true);
+                "- (Started|Reusing) frontend dev-server", true);
 
         int npmInstallTime = measureLogEntryTimeDistance(
                 "- Running `pnpm install`",
@@ -55,8 +55,7 @@ public class StartupPerformanceIT extends ChromeBrowserTest {
         final int thresholdMs = Boolean.getBoolean(
                 System.getProperty("vaadin.useDeprecatedV14Bootstrapping"))
                         ? 5500
-                        : 15000;
-
+                        : 12000;
 
         Assert.assertTrue(
                 String.format("startup time expected <= %d but was %d",

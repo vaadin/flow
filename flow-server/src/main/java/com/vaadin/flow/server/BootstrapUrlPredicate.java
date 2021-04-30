@@ -20,8 +20,8 @@ import java.io.Serializable;
 import java.util.EventListener;
 
 /**
- * The callback used by bootstrap handlers in order to know when a request
- * is a valid URL to render the page.
+ * The callback used by bootstrap handlers in order to know when a request is a
+ * valid URL to render the page.
  *
  * @since 3.0
  */

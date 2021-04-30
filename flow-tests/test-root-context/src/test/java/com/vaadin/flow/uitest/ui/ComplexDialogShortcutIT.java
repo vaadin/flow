@@ -1,22 +1,27 @@
 package com.vaadin.flow.uitest.ui;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
+import static com.vaadin.flow.uitest.ui.DialogShortcutView.REUSABLE_DIALOG_ID;
+
+@Ignore("Flaky test #10481, #10487, #10491")
 public class ComplexDialogShortcutIT extends DialogShortcutIT {
 
     @Test
     public void dialogWithShortcutListenOnAndPreserveOnRefresh_refreshWhenDialogOpened_shortcutScopingWorks() {
-        openNewDialog();
+        final int firstDialogIndex = openNewDialog();
 
-        listenToShortcutOnDialog(0);
-        pressShortcutKey(getFirstDialogInput());
+        listenToShortcutOnDialog(firstDialogIndex);
+        pressShortcutKey(getDialogInput(firstDialogIndex));
         // focus on dialog -> only dialog shortcut occurs
-        validateLatestShortcutEvent(0, DialogShortcutView.DIALOG_ID + 0);
+        validateLatestShortcutEvent(0,
+                DialogShortcutView.DIALOG_ID + firstDialogIndex);
 
         init(); // need to reset elements too
 
-        pressShortcutKey(getFirstDialogInput());
+        pressShortcutKey(getDialogInput(firstDialogIndex));
         // focus on dialog -> only dialog shortcut occurs
         validateLatestShortcutEvent(1, DialogShortcutView.DIALOG_ID + 0);
     }
@@ -24,13 +29,14 @@ public class ComplexDialogShortcutIT extends DialogShortcutIT {
     @Override
     protected void openReusedDialog() {
         super.openReusedDialog();
-        waitForTransport(0);
+        waitForTransport(REUSABLE_DIALOG_ID);
     }
 
     @Override
-    protected void openNewDialog() {
-        super.openNewDialog();
-        waitForTransport(dialogCounter);
+    protected int openNewDialog() {
+        final int dialogId = super.openNewDialog();
+        waitForTransport(dialogId);
+        return dialogId;
     }
 
     private void waitForTransport(int expectedDialogCounter) {

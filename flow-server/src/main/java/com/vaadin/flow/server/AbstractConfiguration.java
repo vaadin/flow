@@ -16,6 +16,9 @@
 package com.vaadin.flow.server;
 
 import java.io.Serializable;
+import java.nio.file.Paths;
+
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
@@ -117,13 +120,16 @@ public interface AbstractConfiguration extends Serializable {
                 false);
     }
 
+    default String getBuildFolder() {
+        return getStringProperty(InitParameters.BUILD_FOLDER, Constants.TARGET);
+    }
+
+    default String getFlowResourcesFolder() {
+        return Paths.get(getBuildFolder(),
+                FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER).toString();
+    }
 
     default boolean useSnowpack() {
         return getBooleanProperty(InitParameters.USE_SNOWPACK, false);
-    }
-
-    default boolean useSnowpackBuildWatch() {
-        return getBooleanProperty(InitParameters.USE_SNOWPACK_BUILD_WATCH, false);
-
     }
 }

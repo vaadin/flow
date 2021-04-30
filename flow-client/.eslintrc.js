@@ -19,6 +19,13 @@ module.exports = {
     },
 
     {
+      "files": ["**/.eslintrc.js"],
+      "globals": {
+        "module": "readonly",
+      },
+    },
+
+    {
       "files": ["**/*.ts"],
 
       "extends": "vaadin",
@@ -50,6 +57,6 @@ module.exports = {
         "no-restricted-globals": 0,
         "no-restricted-syntax": 0,
       },
-    }
+    },
   ]
 };

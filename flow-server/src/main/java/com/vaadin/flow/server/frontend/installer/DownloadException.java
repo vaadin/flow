@@ -28,7 +28,7 @@ final class DownloadException extends Exception {
      * Exceptioon with message.
      *
      * @param message
-     *         exception message
+     *            exception message
      */
     public DownloadException(String message) {
         super(message);
@@ -38,9 +38,9 @@ final class DownloadException extends Exception {
      * Exceptioon with message and cause.
      *
      * @param message
-     *         exception message
+     *            exception message
      * @param cause
-     *         cause for exception
+     *            cause for exception
      */
     DownloadException(String message, Throwable cause) {
         super(message, cause);

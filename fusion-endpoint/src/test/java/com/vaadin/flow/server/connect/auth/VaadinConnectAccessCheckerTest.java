@@ -8,15 +8,19 @@ import javax.servlet.http.HttpSession;
 import java.lang.reflect.Method;
 import java.security.Principal;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinService;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -24,24 +28,22 @@ import static org.mockito.Mockito.when;
 public class VaadinConnectAccessCheckerTest {
     private static final String ROLE_USER = "ROLE_USER";
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
     private VaadinConnectAccessChecker checker;
     private HttpServletRequest requestMock;
     private HttpSession sessionMock;
 
     @Before
     public void before() {
-        checker = new VaadinConnectAccessChecker();
+        checker = new VaadinConnectAccessChecker(new AccessAnnotationChecker(),
+                new CsrfChecker());
         requestMock = mock(HttpServletRequest.class);
         sessionMock = mock(HttpSession.class);
-        when(sessionMock.getAttribute(VaadinService.getCsrfTokenAttributeName()))
-                .thenReturn("Vaadin CCDM");
+        when(sessionMock
+                .getAttribute(VaadinService.getCsrfTokenAttributeName()))
+                        .thenReturn("Vaadin CCDM");
         when(requestMock.getSession(false)).thenReturn(sessionMock);
         when(requestMock.getUserPrincipal()).thenReturn(mock(Principal.class));
-        when(requestMock.getHeader("X-CSRF-Token"))
-                .thenReturn("Vaadin CCDM");
+        when(requestMock.getHeader("X-CSRF-Token")).thenReturn("Vaadin CCDM");
         when(requestMock.isUserInRole("ROLE_USER")).thenReturn(true);
     }
 
@@ -50,17 +52,19 @@ public class VaadinConnectAccessCheckerTest {
     }
 
     private void createDifferentSessionToken() {
-        when(sessionMock.getAttribute(VaadinService.getCsrfTokenAttributeName()))
-                .thenReturn("CCDM Token");
+        when(sessionMock
+                .getAttribute(VaadinService.getCsrfTokenAttributeName()))
+                        .thenReturn("CCDM Token");
     }
 
     private void createNullTokenContextInHeaderRequest() {
-        when(requestMock.getHeader("X-CSRF-Token"))
-                .thenReturn(null);
+        when(requestMock.getHeader("X-CSRF-Token")).thenReturn(null);
     }
 
     private void createNullTokenSession() {
-        when(sessionMock.getAttribute(VaadinService.getCsrfTokenAttributeName())).thenReturn(null);
+        when(sessionMock
+                .getAttribute(VaadinService.getCsrfTokenAttributeName()))
+                        .thenReturn(null);
     }
 
     private void createNullSession() {
@@ -79,7 +83,8 @@ public class VaadinConnectAccessCheckerTest {
     }
 
     @Test
-    public void should_fail_When_not_having_token_in_headerRequest() throws Exception {
+    public void should_fail_When_not_having_token_in_headerRequest()
+            throws Exception {
         class Test {
             public void test() {
             }
@@ -89,7 +94,8 @@ public class VaadinConnectAccessCheckerTest {
     }
 
     @Test
-    public void should_fail_When_not_having_token_in_session_but_have_token_in_request_header() throws Exception {
+    public void should_fail_When_not_having_token_in_session_but_have_token_in_request_header()
+            throws Exception {
         class Test {
             public void test() {
             }
@@ -99,7 +105,8 @@ public class VaadinConnectAccessCheckerTest {
     }
 
     @Test
-    public void should_fail_When_not_having_token_in_session_but_have_token_in_request_header_And_AnonymousAllowed() throws Exception {
+    public void should_fail_When_not_having_token_in_session_but_have_token_in_request_header_And_AnonymousAllowed()
+            throws Exception {
         @AnonymousAllowed
         class Test {
             public void test() {
@@ -110,7 +117,9 @@ public class VaadinConnectAccessCheckerTest {
     }
 
     @Test
-    public void should_pass_When_not_having_session_And_not_having_token_in_request_header() throws Exception {
+    public void should_pass_When_not_having_session_And_not_having_token_in_request_header()
+            throws Exception {
+        @PermitAll
         class Test {
             public void test() {
             }
@@ -121,7 +130,8 @@ public class VaadinConnectAccessCheckerTest {
     }
 
     @Test
-    public void should_pass_When_not_having_session_And_not_having_token_in_request_header_And_AnonymousAllowed() throws Exception {
+    public void should_pass_When_not_having_session_And_not_having_token_in_request_header_And_AnonymousAllowed()
+            throws Exception {
         @AnonymousAllowed
         class Test {
             public void test() {
@@ -135,6 +145,7 @@ public class VaadinConnectAccessCheckerTest {
     @Test
     public void should_pass_When_csrf_disabled() throws Exception {
         class Test {
+            @PermitAll
             public void test() {
             }
         }
@@ -144,7 +155,8 @@ public class VaadinConnectAccessCheckerTest {
     }
 
     @Test
-    public void should_fail_When_having_different_token_between_session_and_headerRequest() throws Exception {
+    public void should_fail_When_having_different_token_between_session_and_headerRequest()
+            throws Exception {
         class Test {
             public void test() {
             }
@@ -154,7 +166,8 @@ public class VaadinConnectAccessCheckerTest {
     }
 
     @Test
-    public void should_fail_When_having_different_token_between_session_and_headerRequest_and_NoAuthentication_AnonymousAllowed() throws Exception {
+    public void should_fail_When_having_different_token_between_session_and_headerRequest_and_NoAuthentication_AnonymousAllowed()
+            throws Exception {
         class Test {
             @AnonymousAllowed
             public void test() {
@@ -176,7 +189,18 @@ public class VaadinConnectAccessCheckerTest {
     }
 
     @Test
-    public void should_Pass_When_Authentication_And_matching_token() throws Exception {
+    public void should_Fail_When_Authentication_And_matching_token()
+            throws Exception {
+        class Test {
+            public void test() {
+            }
+        }
+        shouldFail(Test.class);
+    }
+
+    @Test
+    public void should_Pass_When_PermitAll() throws Exception {
+        @PermitAll
         class Test {
             public void test() {
             }
@@ -441,63 +465,58 @@ public class VaadinConnectAccessCheckerTest {
     }
 
     @Test
-    public void should_Throw_When_PrivateMethodIsPassed() throws Exception {
-        class Test {
-            private void test() {
+    public void should_showHelpfulMessage_When_accessDeniedInDevMode()
+            throws Exception {
+        VaadinService mockService = Mockito.mock(VaadinService.class);
+        DeploymentConfiguration mockDeploymentConfiguration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(mockService.getDeploymentConfiguration())
+                .thenReturn(mockDeploymentConfiguration);
+        Mockito.when(mockDeploymentConfiguration.isProductionMode())
+                .thenReturn(false);
+        CurrentInstance.set(VaadinService.class, mockService);
+        try {
+            class Test {
+                public void test() {
+                }
             }
+            Method method = Test.class.getMethod("test");
+            String accessDeniedMessage = checker.check(method, requestMock);
+            assertEquals(VaadinConnectAccessChecker.ACCESS_DENIED_MSG_DEV_MODE,
+                    accessDeniedMessage);
+            assertTrue(accessDeniedMessage
+                    .contains(PermitAll.class.getSimpleName()));
+            assertTrue(accessDeniedMessage
+                    .contains(RolesAllowed.class.getSimpleName()));
+            assertTrue(accessDeniedMessage
+                    .contains(AnonymousAllowed.class.getSimpleName()));
+        } finally {
+            CurrentInstance.clearAll();
         }
-
-        Method method = Test.class.getDeclaredMethod("test");
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(method.toString());
-        checker.getSecurityTarget(method);
     }
 
     @Test
-    public void should_ReturnEnclosingClassAsSecurityTarget_When_NoSecurityAnnotationsPresent()
+    public void should_notShowHelpfulMessage_When_accessDeniedInProductionMode()
             throws Exception {
-        class Test {
-            public void test() {
+        VaadinService mockService = Mockito.mock(VaadinService.class);
+        DeploymentConfiguration mockDeploymentConfiguration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(mockService.getDeploymentConfiguration())
+                .thenReturn(mockDeploymentConfiguration);
+        Mockito.when(mockDeploymentConfiguration.isProductionMode())
+                .thenReturn(true);
+        CurrentInstance.set(VaadinService.class, mockService);
+        try {
+            class Test {
+                public void test() {
+                }
             }
+            Method method = Test.class.getMethod("test");
+            String accessDeniedMessage = checker.check(method, requestMock);
+            assertEquals(VaadinConnectAccessChecker.ACCESS_DENIED_MSG,
+                    accessDeniedMessage);
+        } finally {
+            CurrentInstance.clearAll();
         }
-        assertEquals(Test.class,
-                checker.getSecurityTarget(Test.class.getMethod("test")));
-    }
-
-    @Test
-    public void should_ReturnEnclosingClassAsSecurityTarget_When_OnlyClassHasSecurityAnnotations()
-            throws Exception {
-        @AnonymousAllowed
-        class Test {
-            public void test() {
-            }
-        }
-        assertEquals(Test.class,
-                checker.getSecurityTarget(Test.class.getMethod("test")));
-    }
-
-    @Test
-    public void should_ReturnMethodAsSecurityTarget_When_OnlyMethodHasSecurityAnnotations()
-            throws Exception {
-        class Test {
-            @AnonymousAllowed
-            public void test() {
-            }
-        }
-        Method securityMethod = Test.class.getMethod("test");
-        assertEquals(securityMethod, checker.getSecurityTarget(securityMethod));
-    }
-
-    @Test
-    public void should_ReturnMethodAsSecurityTarget_When_BothClassAndMethodHaveSecurityAnnotations()
-            throws Exception {
-        @AnonymousAllowed
-        class Test {
-            @AnonymousAllowed
-            public void test() {
-            }
-        }
-        Method securityMethod = Test.class.getMethod("test");
-        assertEquals(securityMethod, checker.getSecurityTarget(securityMethod));
     }
 }
