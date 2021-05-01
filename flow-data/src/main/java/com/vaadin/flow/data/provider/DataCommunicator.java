@@ -110,6 +110,14 @@ public class DataCommunicator<T> implements Serializable {
     private SerializableConsumer<ExecutionContext> flushRequest;
     private SerializableConsumer<ExecutionContext> flushUpdatedDataRequest;
 
+    private int oldOffset = -1;
+    private List<T> oldData = null;
+    private long timeStamp;
+    private Object oldFilter;
+    private long cacheTime;
+    private ArrayList<QuerySortOrder> oldBackEndSorting;
+    private SerializableComparator<T> oldinMemorySorting;
+    
     private CallbackDataProvider.CountCallback<T, ?> countCallback;
     private int itemCountEstimate = -1;
     private int itemCountEstimateIncrease = -1;
@@ -907,6 +915,16 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
+     * Set the time to cache the last fetched range of data in seconds.
+     * 
+     * @param cacheTime Time in seconds. 0 to disable caching (default).
+     * 
+     */
+    public void setCacheTime(int cacheTime) {
+        this.cacheTime = cacheTime*1000;
+    }
+    
+    /**
      * Fetches a list of items from the DataProvider.
      * <p>
      * <em>NOTE:</em> the {@code limit} parameter shows how many items the
@@ -923,6 +941,20 @@ public class DataCommunicator<T> implements Serializable {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Stream<T> fetchFromProvider(int offset, int limit) {
         Stream<T> stream;
+
+        if (cacheTime > 0) {
+            if (offset == oldOffset && filter == oldFilter
+                    && oldBackEndSorting == backEndSorting
+                    && oldinMemorySorting == inMemorySorting
+                    && (System.currentTimeMillis() - timeStamp) < cacheTime) {
+                return oldData.stream();
+            }
+            timeStamp = System.currentTimeMillis();
+            oldOffset = offset;
+            oldFilter = filter;
+            oldBackEndSorting = backEndSorting;
+            oldinMemorySorting = inMemorySorting;
+        }
 
         if (pagingEnabled) {
             /*
@@ -977,7 +1009,14 @@ public class DataCommunicator<T> implements Serializable {
         }
 
         SizeVerifier verifier = new SizeVerifier<>(limit);
-        return stream.peek(verifier);
+        stream = stream.peek(verifier);
+
+        if (cacheTime > 0) {
+            oldData = stream.collect(Collectors.toList());
+            return oldData.stream();
+        } else {
+            return stream;
+        }
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
