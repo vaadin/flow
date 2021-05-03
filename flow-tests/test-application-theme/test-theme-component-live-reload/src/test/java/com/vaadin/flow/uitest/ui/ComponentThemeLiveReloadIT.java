@@ -46,28 +46,57 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
 
     private static final String BORDER_RADIUS = "3px";
     private static final String OTHER_BORDER_RADIUS = "6px";
-    private static final String THEME_FOLDER = "frontend/themes/app-theme/";
+    private static final String PARENT_BORDER_RADIUS = "9px";
 
-    private File componentCSSFile;
-    private File themeGeneratedFile;
+    private static final String THEMES_FOLDER = "frontend/themes/";
+    private static final String CURRENT_THEME = "app-theme";
+    private static final String PARENT_THEME = "parent-theme";
+    private static final String CURRENT_THEME_FOLDER = THEMES_FOLDER
+            + CURRENT_THEME + "/";
+    private static final String PARENT_THEME_FOLDER = THEMES_FOLDER
+            + PARENT_THEME + "/";
+    private static final String THEME_GENERATED_PATTERN = "%s.generated.js";
+    private static final String COMPONENT_STYLE_SHEET = "components/vaadin-text-field.css";
+
+    private File currentThemeComponentCSSFile;
+    private File currentThemeGeneratedFile;
+
+    private File parentThemeComponentCSSFile;
+    private File parentThemeGeneratedFile;
 
     @Before
     public void init() {
         File baseDir = new File(System.getProperty("user.dir", "."));
-        final File themeFolder = new File(baseDir, THEME_FOLDER);
-        componentCSSFile = new File(new File(themeFolder, "components"),
-                "vaadin-text-field.css");
-        themeGeneratedFile = new File(themeFolder,
-                "app-theme.generated.js");
+
+        final File currentThemeFolder = new File(baseDir, CURRENT_THEME_FOLDER);
+        currentThemeComponentCSSFile = new File(currentThemeFolder,
+                COMPONENT_STYLE_SHEET);
+        currentThemeGeneratedFile = new File(currentThemeFolder,
+                String.format(THEME_GENERATED_PATTERN, CURRENT_THEME));
+
+        final File parentThemeFolder = new File(baseDir, PARENT_THEME_FOLDER);
+        parentThemeComponentCSSFile = new File(parentThemeFolder,
+                COMPONENT_STYLE_SHEET);
+        parentThemeGeneratedFile = new File(parentThemeFolder,
+                String.format(THEME_GENERATED_PATTERN, PARENT_THEME));
     }
 
     @After
     public void cleanUp() {
-        if (componentCSSFile.exists()) {
+        if (currentThemeComponentCSSFile.exists()) {
             // This waits until live reload complete to not affect the second
             // re-run in CI (if any) and to not affect other @Test methods
             // (if any appear in the future)
-            doActionAndWaitUntilLiveReloadComplete(this::deleteComponentStyles);
+            doActionAndWaitUntilLiveReloadComplete(
+                    this::deleteCurrentThemeComponentStyles);
+        }
+
+        if (parentThemeComponentCSSFile.exists()) {
+            // This waits until live reload complete to not affect the second
+            // re-run in CI (if any) and to not affect other @Test methods
+            // (if any appear in the future)
+            doActionAndWaitUntilLiveReloadComplete(
+                    this::deleteParentThemeComponentStyles);
         }
     }
 
@@ -80,27 +109,49 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
                 isComponentCustomStyle(BORDER_RADIUS)
                         || isComponentCustomStyle(OTHER_BORDER_RADIUS));
 
+        // Test current theme live reload:
+
         // Live reload upon adding a new component styles file
         doActionAndWaitUntilLiveReloadComplete(
-                () -> createOrUpdateComponentCSSFile(BORDER_RADIUS));
+                () -> createOrUpdateComponentCSSFile(BORDER_RADIUS,
+                        currentThemeComponentCSSFile));
         waitUntilComponentCustomStyle(BORDER_RADIUS);
 
         // Live reload upon updating component styles file
         doActionAndWaitUntilLiveReloadComplete(
-                () -> createOrUpdateComponentCSSFile(OTHER_BORDER_RADIUS));
+                () -> createOrUpdateComponentCSSFile(OTHER_BORDER_RADIUS,
+                        currentThemeComponentCSSFile));
         waitUntilComponentCustomStyle(OTHER_BORDER_RADIUS);
 
         // Live reload upon file deletion
-        doActionAndWaitUntilLiveReloadComplete(this::deleteComponentStyles);
-        waitUntilComponentInitialStyle();
-        checkNoWebpackErrors();
+        doActionAndWaitUntilLiveReloadComplete(
+                this::deleteCurrentThemeComponentStyles);
+        waitUntilComponentInitialStyle(
+                "Wait for current theme component initial styles timeout");
+        checkNoWebpackErrors(CURRENT_THEME);
+
+        // Test parent theme live reload:
+
+        // Live reload upon adding a new component styles file to parent theme
+        doActionAndWaitUntilLiveReloadComplete(
+                () -> createOrUpdateComponentCSSFile(PARENT_BORDER_RADIUS,
+                        parentThemeComponentCSSFile));
+        waitUntilComponentCustomStyle(PARENT_BORDER_RADIUS);
+
+        // Live reload upon parent theme file deletion
+        doActionAndWaitUntilLiveReloadComplete(
+                this::deleteParentThemeComponentStyles);
+        waitUntilComponentInitialStyle(
+                "Wait for parent theme component initial styles timeout");
+        checkNoWebpackErrors(PARENT_THEME);
     }
 
-    private void waitUntilComponentInitialStyle() {
+    private void waitUntilComponentInitialStyle(String errMessage) {
         waitUntilWithMessage(
                 driver -> !isComponentCustomStyle(BORDER_RADIUS)
-                        && !isComponentCustomStyle(OTHER_BORDER_RADIUS),
-                "Wait for component initial styles timeout");
+                        && !isComponentCustomStyle(OTHER_BORDER_RADIUS)
+                        && !isComponentCustomStyle(PARENT_BORDER_RADIUS),
+                errMessage);
     }
 
     private void waitUntilComponentCustomStyle(String borderRadius) {
@@ -122,7 +173,8 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
         }
     }
 
-    private void createOrUpdateComponentCSSFile(String borderRadius) {
+    private void createOrUpdateComponentCSSFile(String borderRadius,
+            File componentCssFile) {
         try {
             // @formatter:off
             final String componentStyles =
@@ -130,21 +182,32 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
                     "    border-radius: " + borderRadius + ";\n" +
                     "}";
             // @formatter:on
-            FileUtils.write(componentCSSFile, componentStyles,
+            FileUtils.write(componentCssFile, componentStyles,
                     StandardCharsets.UTF_8.name());
-            waitUntil(driver -> componentCSSFile.exists());
+            waitUntil(driver -> componentCssFile.exists());
         } catch (IOException e) {
-            throw new RuntimeException("Failed to apply component styles", e);
+            throw new RuntimeException(
+                    "Failed to apply component styles in " + componentCssFile,
+                    e);
         }
     }
 
-    private void deleteComponentStyles() {
+    private void deleteCurrentThemeComponentStyles() {
         Assert.assertTrue("Expected theme generated file to be present",
-                themeGeneratedFile.exists());
+                currentThemeGeneratedFile.exists());
         // workaround for https://github.com/vaadin/flow/issues/9948
         // delete theme generated with component styles in one run
-        deleteFile(themeGeneratedFile);
-        deleteFile(componentCSSFile);
+        deleteFile(currentThemeGeneratedFile);
+        deleteFile(currentThemeComponentCSSFile);
+    }
+
+    private void deleteParentThemeComponentStyles() {
+        Assert.assertTrue("Expected parent theme generated file to be present",
+                parentThemeGeneratedFile.exists());
+        // workaround for https://github.com/vaadin/flow/issues/9948
+        // delete theme generated with component styles in one run
+        deleteFile(parentThemeGeneratedFile);
+        deleteFile(parentThemeComponentCSSFile);
     }
 
     private void deleteFile(File fileToDelete) {
@@ -202,13 +265,13 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
         }
     }
 
-    private void checkNoWebpackErrors() {
+    private void checkNoWebpackErrors(String theme) {
         getLogEntries(Level.ALL).forEach(logEntry -> {
             if (logEntry.getMessage().contains("Module build failed")) {
-                Assert.fail(
+                Assert.fail(String.format(
                         "Webpack error detected in the browser console after "
-                                + "deleting component style sheet:\n\n"
-                                + logEntry.getMessage());
+                                + "deleting '%s' component style sheet: %s\n\n",
+                        theme, logEntry.getMessage()));
             }
         });
 
@@ -217,9 +280,10 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
             waitForElementNotPresent(byErrorOverlayClass);
         } catch (TimeoutException e) {
             WebElement error = findElement(byErrorOverlayClass);
-            Assert.fail(
-                    "Webpack error overlay detected after deleting component "
-                            + "style sheet:\n\n" + error.getText());
+            Assert.fail(String.format(
+                    "Webpack error overlay detected after deleting '%s' "
+                            + "component style sheet: %s\n\n",
+                    theme, error.getText()));
         }
     }
 }
