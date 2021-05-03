@@ -206,6 +206,7 @@ public class PushHandlerTest {
         mockConnectionLost(new MockVaadinSession(), false);
 
         Assert.assertNull(VaadinSession.getCurrent());
+        VaadinSession.setCurrent(null);
     }
 
     @Test
@@ -215,10 +216,6 @@ public class PushHandlerTest {
 
         mockConnectionLost(session, true);
         Assert.assertNotNull(VaadinSession.getCurrent());
-    }
-
-    @After
-    public void cleanup() {
         VaadinSession.setCurrent(null);
     }
     
