@@ -1,2 +1,0 @@
-com.vaadin.flow.server.startup.RouteRegistryInitializerTest$TestRouteFilter
-com.vaadin.flow.server.startup.RouteRegistryInitializerTest$AlwaysTrueRouterFilter
