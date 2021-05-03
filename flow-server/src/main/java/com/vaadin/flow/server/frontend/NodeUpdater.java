@@ -289,7 +289,8 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("@polymer/polymer", POLYMER_VERSION);
 
-        defaults.put("lit-element", "2.3.1");
+        defaults.put("lit-element", "2.5.0");
+        defaults.put("lit-html", "1.4.0");
 
         return defaults;
     }
@@ -313,8 +314,6 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("lit-css-loader", "0.0.4");
         defaults.put("file-loader", "6.2.0");
         defaults.put("loader-utils", "2.0.0");
-        defaults.put("lit-element", "2.4.0");
-        defaults.put("lit-html", "1.3.0");
         final String WORKBOX_VERSION = "5.1.4";
         defaults.put("workbox-webpack-plugin", WORKBOX_VERSION);
         defaults.put("workbox-core", WORKBOX_VERSION);
