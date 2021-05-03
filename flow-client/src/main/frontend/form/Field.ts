@@ -1,6 +1,6 @@
-import { AttributePartInfo, directive, Directive, ElementPartInfo, PartInfo, PartType } from 'lit/directive';
-import { BinderNode } from './BinderNode';
-import { AbstractModel, getBinderNode, _fromString } from './Models';
+import { ElementPart, noChange, nothing, PropertyPart } from 'lit';
+import { directive, Directive, DirectiveParameters, PartInfo, PartType } from 'lit/directive';
+import { _fromString, AbstractModel, getBinderNode } from './Models';
 
 interface Field {
   required: boolean;
@@ -117,94 +117,101 @@ export function getDefaultFieldStrategy(elm: any): FieldStrategy {
  */
 export const field = directive(
   class extends Directive {
-    fieldState: FieldState = {
-      name: '',
-      value: '',
-      required: false,
-      invalid: false,
-      errorMessage: '',
-      // @ts-ignore
-      strategy: undefined
-    };
-    partInfo: AttributePartInfo | ElementPartInfo;
-    model!: AbstractModel<any>;
-    element!: HTMLInputElement & Field;
-    elementInited = false;
-    effect: ((element: Element) => void) | undefined;
+    fieldState?: FieldState;
 
     constructor(partInfo: PartInfo) {
       super(partInfo);
       if (partInfo.type !== PartType.PROPERTY && partInfo.type !== PartType.ELEMENT) {
         throw new Error('Use as "<element {field(...)}" or <element ...={field(...)}"');
       }
-      this.partInfo = partInfo;
     }
-    convertFieldValue(fieldValue: any) {
-      const fromString = (this.model as any)[_fromString];
-      return typeof fieldValue === 'string' && fromString ? fromString(fieldValue) : fieldValue;
-    }
-    updateValueFromElement = (binderNode: BinderNode<any, any>) => {
-      this.fieldState.value = this.fieldState.strategy.value;
-      binderNode.value = this.convertFieldValue(this.fieldState.value);
-      if (this.effect !== undefined) {
-        this.effect.call(this.element, this.element);
-      }
-    };
 
-    render(model: AbstractModel<any>, effect?: (element: Element) => void): void {
-      this.element = (this.partInfo as any).element as HTMLInputElement & Field;
-      this.model = model;
-      this.effect = effect;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    render(model: AbstractModel<any>, effect?: (element: Element) => void) {
+      return nothing;
+    }
+
+    update(part: PropertyPart | ElementPart, [model, effect]: DirectiveParameters<this>) {
+      const element = part.element as HTMLInputElement & Field;
+
       const binderNode = getBinderNode(model);
-      this.fieldState.strategy = binderNode.binder.getFieldStrategy(this.element);
-      if (!this.elementInited) {
-        this.elementInited = true;
+      const fieldStrategy = binderNode.binder.getFieldStrategy(element);
 
-        this.element.oninput = () => {
-          this.updateValueFromElement(binderNode);
+      const convertFieldValue = (fieldValue: any) => {
+        const fromString = (model as any)[_fromString];
+        return typeof fieldValue === 'string' && fromString ? fromString(fieldValue) : fieldValue;
+      };
+
+      if (!this.fieldState) {
+        this.fieldState = {
+          name: '',
+          value: '',
+          required: false,
+          invalid: false,
+          errorMessage: '',
+          strategy: fieldStrategy
+        };
+
+        const { fieldState } = this;
+
+        const updateValueFromElement = () => {
+          fieldState.value = fieldState.strategy.value;
+          binderNode.value = convertFieldValue(fieldState.value);
+          if (effect !== undefined) {
+            effect.call(element, element);
+          }
+        };
+
+        element.oninput = () => {
+          updateValueFromElement();
         };
 
         const changeBlurHandler = () => {
-          this.updateValueFromElement(binderNode);
+          updateValueFromElement();
           binderNode.visited = true;
         };
-        this.element.onblur = changeBlurHandler;
-        this.element.onchange = changeBlurHandler;
+        element.onblur = changeBlurHandler;
+        element.onchange = changeBlurHandler;
 
-        this.element.checkValidity = () => !this.fieldState.invalid;
+        element.checkValidity = () => !fieldState.invalid;
       }
 
+      const { fieldState } = this;
       const { name } = binderNode;
-      if (name !== this.fieldState.name) {
-        this.fieldState.name = name;
-        this.element.setAttribute('name', name);
+      if (name !== fieldState.name) {
+        fieldState.name = name;
+        element.setAttribute('name', name);
       }
 
       const { value } = binderNode;
-      const valueFromField = this.convertFieldValue(this.fieldState.value);
+      const valueFromField = convertFieldValue(fieldState.value);
       if (value !== valueFromField && !(Number.isNaN(value) && Number.isNaN(valueFromField))) {
-        this.fieldState.value = value;
-        this.fieldState.strategy.value = value;
+        fieldState.value = value;
+        fieldState.strategy.value = value;
       }
 
       const { required } = binderNode;
-      if (required !== this.fieldState.required) {
-        this.fieldState.required = required;
-        this.fieldState.strategy.required = required;
+      if (required !== fieldState.required) {
+        fieldState.required = required;
+        fieldState.strategy.required = required;
       }
 
       const firstError = binderNode.ownErrors ? binderNode.ownErrors[0] : undefined;
       const errorMessage = (firstError && firstError.message) || '';
-      if (errorMessage !== this.fieldState.errorMessage) {
-        this.fieldState.errorMessage = errorMessage;
-        this.fieldState.strategy.errorMessage = errorMessage;
+      if (errorMessage !== fieldState.errorMessage) {
+        fieldState.errorMessage = errorMessage;
+        fieldState.strategy.errorMessage = errorMessage;
       }
 
       const { invalid } = binderNode;
-      if (invalid !== this.fieldState.invalid) {
-        this.fieldState.invalid = invalid;
-        this.fieldState.strategy.invalid = invalid;
+      if (invalid !== fieldState.invalid) {
+        fieldState.invalid = invalid;
+        fieldState.strategy.invalid = invalid;
       }
+
+      return noChange;
     }
   }
 );
