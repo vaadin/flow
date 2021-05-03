@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.server.communication;
 
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.WebListener;
+
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.atmosphere.cpr.AtmosphereFramework;
 import org.slf4j.Logger;
@@ -44,6 +44,8 @@ import com.vaadin.flow.server.VaadinServlet;
  * Note that {@link WebListener} is Servlet 3.0 API so this will not be run for
  * older servers (unless added to web.xml), but these servers do not support JSR
  * 356 websockets either.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

@@ -22,6 +22,8 @@ import java.util.Optional;
 /**
  * A map for items that are looked up by hierarchical keys made up of period
  * separated strings.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

@@ -20,6 +20,8 @@ import com.vaadin.flow.internal.StateNode;
 
 /**
  * List of nodes describing the child elements of an element.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

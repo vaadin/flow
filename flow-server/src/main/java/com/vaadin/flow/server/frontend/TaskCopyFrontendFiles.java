@@ -33,6 +33,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 
 /**
  * Copies JavaScript and CSS files from JAR files into a given folder.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
@@ -62,7 +64,7 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
         resourceLocations = resourcesToScan.stream().filter(File::exists)
                 .collect(Collectors.toSet());
         String generatedDir = System.getProperty(PARAM_GENERATED_DIR,
-            DEFAULT_GENERATED_DIR);
+                DEFAULT_GENERATED_DIR);
         this.themeJarTargetDirectory = new File(npmFolder, generatedDir);
     }
 
@@ -91,7 +93,8 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                         targetDirectory, WILDCARD_INCLUSIONS);
                 jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
                         location, RESOURCES_JAR_DEFAULT,
-                        themeJarTargetDirectory, WILDCARD_INCLUSION_APP_THEME_JAR);
+                        themeJarTargetDirectory,
+                        WILDCARD_INCLUSION_APP_THEME_JAR);
             }
         }
         long ms = (System.nanoTime() - start) / 1000000;

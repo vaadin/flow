@@ -29,6 +29,8 @@ import com.vaadin.flow.server.Version;
  * <p>
  * For details and to opt-out, see
  * https://github.com/vaadin/vaadin-usage-statistics.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

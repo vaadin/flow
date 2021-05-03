@@ -48,6 +48,8 @@ import elemental.json.JsonValue;
  * Map of DOM events with server-side listeners. The key set of this map
  * describes the event types for which listeners are present. The values
  * associated with the keys are currently not used.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

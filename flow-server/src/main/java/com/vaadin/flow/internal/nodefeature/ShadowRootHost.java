@@ -20,6 +20,8 @@ import com.vaadin.flow.internal.StateNode;
 /**
  * Marker feature for a {@link StateNode} which is a shadow root for some
  * element.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @author Vaadin Ltd
  * @since 1.0

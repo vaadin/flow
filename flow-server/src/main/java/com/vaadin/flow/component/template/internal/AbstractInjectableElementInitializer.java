@@ -26,6 +26,8 @@ import com.vaadin.flow.dom.Element;
 
 /**
  * Generic initializer logic.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @author Vaadin Ltd
  * @since

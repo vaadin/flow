@@ -18,6 +18,8 @@ package com.vaadin.flow.server;
 /**
  * Exception thrown for failures in the generation of a deployment configuration
  * object.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class VaadinConfigurationException extends Exception {
 
@@ -25,9 +27,9 @@ public class VaadinConfigurationException extends Exception {
      * Exception constructor.
      *
      * @param message
-     *         exception message
+     *            exception message
      * @param exception
-     *         exception cause
+     *            exception cause
      */
     public VaadinConfigurationException(String message, Exception exception) {
         super(message, exception);

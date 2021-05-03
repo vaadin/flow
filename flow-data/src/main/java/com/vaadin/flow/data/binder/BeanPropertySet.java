@@ -37,6 +37,8 @@ import com.vaadin.flow.internal.BeanUtil;
 
 /**
  * A {@link PropertySet} that uses reflection to find bean properties.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

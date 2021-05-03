@@ -53,7 +53,9 @@ import com.vaadin.flow.shared.communication.PushConstants;
  * Handles requests to open a push (bidirectional) communication channel between
  * the client and the server. After the initial request, communication through
  * the push channel is managed by {@link PushAtmosphereHandler} and
- * {@link PushHandler}
+ * {@link PushHandler}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

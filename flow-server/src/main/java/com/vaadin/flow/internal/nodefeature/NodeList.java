@@ -42,6 +42,8 @@ import com.vaadin.flow.internal.change.NodeChange;
  * <p>
  * Should not be used directly, use one of the extending classes instead, which
  * provide a type safe API while ensuring the list is {@link Serializable}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

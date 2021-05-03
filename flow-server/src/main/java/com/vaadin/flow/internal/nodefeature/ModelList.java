@@ -21,6 +21,8 @@ import com.vaadin.flow.internal.StateNode;
 
 /**
  * List for model values used in data binding in templates.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

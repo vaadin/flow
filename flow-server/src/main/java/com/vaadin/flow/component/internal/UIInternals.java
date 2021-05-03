@@ -89,6 +89,9 @@ import com.vaadin.flow.theme.ThemeDefinition;
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
  * framework.
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

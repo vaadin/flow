@@ -19,6 +19,8 @@ import com.vaadin.flow.internal.ReflectionCache;
 
 /**
  * Describes the model type of a template class.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

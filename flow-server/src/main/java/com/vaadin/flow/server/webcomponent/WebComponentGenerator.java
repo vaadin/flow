@@ -38,6 +38,7 @@ import elemental.json.JsonValue;
 /**
  * Generates a client-side web component from a Java class.
  * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
  * @since 2.0

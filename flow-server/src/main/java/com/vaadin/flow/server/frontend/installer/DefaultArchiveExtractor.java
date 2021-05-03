@@ -35,6 +35,8 @@ import org.apache.commons.io.IOUtils;
  * Default implementation for file archive extraction.
  * <p>
  * Derived from eirslett/frontend-maven-plugin
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since
  */

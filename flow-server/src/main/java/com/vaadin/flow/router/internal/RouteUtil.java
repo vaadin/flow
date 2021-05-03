@@ -32,6 +32,8 @@ import com.vaadin.flow.router.RouterLayout;
 
 /**
  * Utility class with methods for route handling.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.3
  */

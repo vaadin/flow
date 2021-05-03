@@ -39,7 +39,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
  * @since
  */
 public class TaskUpdateThemeImport implements FallibleCommand {
-    
+
     public static final String APPLICATION_META_INF_RESOURCES = "src/main/resources/META-INF/resources";
     public static final String APPLICATION_STATIC_RESOURCES = "src/main/resources/static";
 
@@ -50,10 +50,11 @@ public class TaskUpdateThemeImport implements FallibleCommand {
 
     TaskUpdateThemeImport(File npmFolder, ThemeDefinition theme,
             File frontendDirectory) {
-        File generatedDir = new File(npmFolder, System.getProperty(PARAM_GENERATED_DIR,
-            DEFAULT_GENERATED_DIR));
-        this.themeImportFile = new File(new File(generatedDir, APPLICATION_THEME_ROOT),
-            "theme-generated.js");
+        File generatedDir = new File(npmFolder,
+                System.getProperty(PARAM_GENERATED_DIR, DEFAULT_GENERATED_DIR));
+        this.themeImportFile = new File(
+                new File(generatedDir, APPLICATION_THEME_ROOT),
+                "theme-generated.js");
         this.theme = theme;
         this.frontendDirectory = frontendDirectory;
         this.npmFolder = npmFolder;
@@ -62,7 +63,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
     @Override
     public void execute() throws ExecutionFailedException {
         if (theme == null || theme.getName().isEmpty()) {
-            if(themeImportFile.exists()) {
+            if (themeImportFile.exists()) {
                 themeImportFile.delete();
             }
             return;
@@ -72,19 +73,19 @@ public class TaskUpdateThemeImport implements FallibleCommand {
 
         if (!themeImportFile.getParentFile().mkdirs()) {
             LoggerFactory.getLogger(getClass()).debug(
-                "Didn't create folders as they probably already exist. "
-                    + "If there is a problem check access rights for folder {}",
-                themeImportFile.getParentFile().getAbsolutePath());
+                    "Didn't create folders as they probably already exist. "
+                            + "If there is a problem check access rights for folder {}",
+                    themeImportFile.getParentFile().getAbsolutePath());
         }
 
         try {
             FileUtils.write(themeImportFile, String.format(
-                "import {applyTheme as _applyTheme} from 'themes/%s/%s.generated.js';%n"
-                    + "export const applyTheme = _applyTheme;%n",
-                theme.getName(), theme.getName()), StandardCharsets.UTF_8);
+                    "import {applyTheme as _applyTheme} from 'themes/%s/%s.generated.js';%n"
+                            + "export const applyTheme = _applyTheme;%n",
+                    theme.getName(), theme.getName()), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new ExecutionFailedException(
-                "Unable to write theme import file", e);
+                    "Unable to write theme import file", e);
         }
     }
 
@@ -97,8 +98,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         List<String> appThemePossiblePaths = getAppThemePossiblePaths(
                 themePath);
         List<File> existingAppThemeDirectories = appThemePossiblePaths.stream()
-                .map(path -> new File(npmFolder, path))
-                .filter(File::exists)
+                .map(path -> new File(npmFolder, path)).filter(File::exists)
                 .collect(Collectors.toList());
 
         if (existingAppThemeDirectories.isEmpty()) {
@@ -110,15 +110,17 @@ public class TaskUpdateThemeImport implements FallibleCommand {
             throw new ExecutionFailedException(
                     String.format(errorMessage, themeName,
                             new File(frontendDirectory, APPLICATION_THEME_ROOT)
-                                    .getPath(), themeName));
+                                    .getPath(),
+                            themeName));
         }
         if (existingAppThemeDirectories.size() >= 2) {
 
-            final String expectedDirectory = System.getProperty(PARAM_GENERATED_DIR,
-                DEFAULT_GENERATED_DIR).replace('/', File.separatorChar);
+            final String expectedDirectory = System
+                    .getProperty(PARAM_GENERATED_DIR, DEFAULT_GENERATED_DIR)
+                    .replace('/', File.separatorChar);
             boolean themeFoundInJar = existingAppThemeDirectories.stream()
-                .map(File::getPath)
-                .anyMatch(path -> path.contains(expectedDirectory));
+                    .map(File::getPath)
+                    .anyMatch(path -> path.contains(expectedDirectory));
 
             if (themeFoundInJar) {
                 String errorMessage = "Theme '%s' should not exist inside a "
@@ -144,8 +146,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
     }
 
     private List<String> getAppThemePossiblePaths(String themePath) {
-        String frontendTheme = String.join("/",
-                npmFolder.toPath()
+        String frontendTheme = String.join("/", npmFolder.toPath()
                 .relativize(frontendDirectory.toPath()).toString(), themePath);
 
         String themePathInMetaInfResources = String.join("/",
@@ -156,11 +157,11 @@ public class TaskUpdateThemeImport implements FallibleCommand {
 
         String generatedDir = System.getProperty(PARAM_GENERATED_DIR,
                 DEFAULT_GENERATED_DIR);
-        String themePathInClassPathResources = String.join("",
-                generatedDir, themePath);
-
+        String themePathInClassPathResources = String.join("", generatedDir,
+                themePath);
 
         return Arrays.asList(frontendTheme, themePathInMetaInfResources,
-            themePathInStaticResources, themePathInClassPathResources);
+                themePathInStaticResources, themePathInClassPathResources);
     }
 }
+

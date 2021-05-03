@@ -38,6 +38,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * no UIDL requests for a prolonged period of time. UIs that do not receive
  * either heartbeat or UIDL requests are eventually removed from the session and
  * garbage collected.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

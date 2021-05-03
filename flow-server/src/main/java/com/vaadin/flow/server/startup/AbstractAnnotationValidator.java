@@ -34,6 +34,8 @@ import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 /**
  * Validation class that contains common logic to checks that specific
  * annotations are not configured wrong.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */

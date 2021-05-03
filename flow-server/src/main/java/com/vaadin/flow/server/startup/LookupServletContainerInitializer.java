@@ -43,6 +43,8 @@ import com.vaadin.flow.server.VaadinServletContext;
 
 /**
  * Standard servlet initializer for collecting all SPI implementations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @author Vaadin Ltd
  * @since

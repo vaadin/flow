@@ -20,6 +20,8 @@ import org.atmosphere.cpr.AtmosphereResource;
 /**
  * Provides a way to reload browser tabs via web socket connection passed as a
  * {@link AtmosphereResource}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  *

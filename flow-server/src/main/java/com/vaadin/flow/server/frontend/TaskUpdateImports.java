@@ -47,6 +47,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 
 /**
@@ -55,6 +56,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
  * and <code>node_module/@vaadin/flow-frontend</code> contents by visiting all
  * classes with {@link JsModule} {@link HtmlImport} and {@link Theme}
  * annotations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
@@ -138,19 +141,23 @@ public class TaskUpdateImports extends NodeUpdater {
             Collection<String> lines = new ArrayList<>();
             AbstractTheme theme = getTheme();
             ThemeDefinition themeDef = getThemeDefinition();
-            final boolean hasApplicationTheme =
-                    themeDef != null && !"".equals(themeDef.getName());
+            final boolean hasApplicationTheme = themeDef != null
+                    && !"".equals(themeDef.getName());
 
             if (hasApplicationTheme) {
-                // If we define a theme name we need to import theme/theme-generated.js
-                lines.add("import {applyTheme} from 'themes/theme-generated.js';");
+                // If we define a theme name we need to import
+                // theme/theme-generated.js
+                lines.add(
+                        "import {applyTheme} from 'themes/theme-generated.js';");
                 lines.add("applyTheme(document);");
             }
 
             if (theme != null) {
-                // There is no application theme in use, write theme includes here.
+                // There is no application theme in use, write theme includes
+                // here.
                 // Otherwise they are written by the application theme
-                if (!theme.getHeaderInlineContents().isEmpty() && !hasApplicationTheme) {
+                if (!theme.getHeaderInlineContents().isEmpty()
+                        && !hasApplicationTheme) {
                     lines.add(THEME_PREPARE);
                     theme.getHeaderInlineContents()
                             .forEach(html -> addLines(lines,
@@ -158,9 +165,9 @@ public class TaskUpdateImports extends NodeUpdater {
                                             .matcher(html).replaceAll(""))));
                 }
                 if (themeDef != null) {
-                    theme.getHtmlAttributes(themeDef.getVariant()).forEach(
-                        (key, value) -> addLines(lines,
-                            String.format(THEME_VARIANT_TPL, key, value)));
+                    theme.getHtmlAttributes(themeDef.getVariant())
+                            .forEach((key, value) -> addLines(lines, String
+                                    .format(THEME_VARIANT_TPL, key, value)));
                 }
                 lines.add("");
             }

@@ -24,6 +24,8 @@ import com.vaadin.flow.function.SerializableFunction;
 /**
  * Retrieves web component tag from a
  * {@link com.vaadin.flow.component.WebComponentExporterFactory} object.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
  * @since 2.0

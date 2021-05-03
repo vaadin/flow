@@ -87,6 +87,7 @@ import com.vaadin.flow.theme.Theme;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -98,6 +99,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 /**
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
  * server.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
@@ -411,8 +414,8 @@ public class DevModeInitializer
 
     /*
      * This method returns all folders of jar files having files in the
-     * META-INF/resources/frontend and META-INF/resources/themes folder.
-     * We don't use URLClassLoader because will fail in Java 9+
+     * META-INF/resources/frontend and META-INF/resources/themes folder. We
+     * don't use URLClassLoader because will fail in Java 9+
      */
     static Set<File> getFrontendLocationsFromClassloader(
             ClassLoader classLoader) throws ServletException {
@@ -422,7 +425,7 @@ public class DevModeInitializer
         frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
                 Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT));
         frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
-            Constants.RESOURCES_THEME_JAR_DEFAULT));
+                Constants.RESOURCES_THEME_JAR_DEFAULT));
         return frontendFiles;
     }
 

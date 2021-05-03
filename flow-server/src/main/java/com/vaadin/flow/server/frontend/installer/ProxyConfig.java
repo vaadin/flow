@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
  * Proxy configuration used for downloads and executions.
  * <p>
  * Derived from eirslett/frontend-maven-plugin
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since
  */
