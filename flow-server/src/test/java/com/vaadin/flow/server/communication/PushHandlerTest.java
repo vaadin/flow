@@ -216,13 +216,13 @@ public class PushHandlerTest {
     public void connectionLost_sessionIsSetViaCurrent_currentInstancesAreCleared()
             throws SessionExpiredException {
         try {
-            mockConnectionLost( new MockVaadinSession(), true);
+            mockConnectionLost(new MockVaadinSession(), true);
             Assert.assertNotNull(VaadinSession.getCurrent());
         } finally {
             VaadinSession.setCurrent(null);
         }
     }
-    
+
     private void mockConnectionLost(VaadinSession session, boolean setSession) {
         AtomicBoolean sessionIsSet = new AtomicBoolean();
         MockVaadinServletService service = new MockVaadinServletService() {
