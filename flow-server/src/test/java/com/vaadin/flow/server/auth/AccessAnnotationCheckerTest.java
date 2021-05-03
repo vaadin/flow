@@ -14,6 +14,9 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.AnonymousAllowedClass;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.DenyAllClass;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationClass;
@@ -145,8 +148,7 @@ public class AccessAnnotationCheckerTest {
         verifyClassAccessAllowed(AnonymousAllowedClass.class, anonRequest,
                 true);
         verifyClassAccessAllowed(DenyAllClass.class, anonRequest, false);
-        verifyClassAccessAllowed(NoAnnotationClass.class, anonRequest,
-                false);
+        verifyClassAccessAllowed(NoAnnotationClass.class, anonRequest, false);
         verifyClassAccessAllowed(PermitAllClass.class, anonRequest, false);
         verifyClassAccessAllowed(RolesAllowedAdminClass.class, anonRequest,
                 false);
@@ -158,9 +160,8 @@ public class AccessAnnotationCheckerTest {
     public void loggedInUserAccessAllowed() throws Exception {
         HttpServletRequest loggedInURequest = createRequest(USER_PRINCIPAL);
 
-        verifyMethodAccessAllowed(AnonymousAllowedClass.class,
-                loggedInURequest, "noAnnotation", "anonymousAllowed",
-                "permitAll");
+        verifyMethodAccessAllowed(AnonymousAllowedClass.class, loggedInURequest,
+                "noAnnotation", "anonymousAllowed", "permitAll");
         verifyMethodAccessAllowed(DenyAllClass.class, loggedInURequest,
                 "anonymousAllowed", "permitAll");
         verifyMethodAccessAllowed(NoAnnotationClass.class, loggedInURequest,
@@ -169,21 +170,19 @@ public class AccessAnnotationCheckerTest {
                 "noAnnotation", "anonymousAllowed", "permitAll");
         verifyMethodAccessAllowed(RolesAllowedAdminClass.class,
                 loggedInURequest, "anonymousAllowed", "permitAll");
-        verifyMethodAccessAllowed(RolesAllowedUserClass.class,
-                loggedInURequest, "anonymousAllowed", "permitAll");
+        verifyMethodAccessAllowed(RolesAllowedUserClass.class, loggedInURequest,
+                "anonymousAllowed", "permitAll");
         // Class level access
-        verifyClassAccessAllowed(AnonymousAllowedClass.class,
-                loggedInURequest, true);
-        verifyClassAccessAllowed(DenyAllClass.class, loggedInURequest,
-                false);
+        verifyClassAccessAllowed(AnonymousAllowedClass.class, loggedInURequest,
+                true);
+        verifyClassAccessAllowed(DenyAllClass.class, loggedInURequest, false);
         verifyClassAccessAllowed(NoAnnotationClass.class, loggedInURequest,
                 false);
-        verifyClassAccessAllowed(PermitAllClass.class, loggedInURequest,
-                true);
-        verifyClassAccessAllowed(RolesAllowedAdminClass.class,
-                loggedInURequest, false);
-        verifyClassAccessAllowed(RolesAllowedUserClass.class,
-                loggedInURequest, false);
+        verifyClassAccessAllowed(PermitAllClass.class, loggedInURequest, true);
+        verifyClassAccessAllowed(RolesAllowedAdminClass.class, loggedInURequest,
+                false);
+        verifyClassAccessAllowed(RolesAllowedUserClass.class, loggedInURequest,
+                false);
     }
 
     @Test
@@ -191,9 +190,9 @@ public class AccessAnnotationCheckerTest {
         HttpServletRequest userRoleRequest = createRequest(USER_PRINCIPAL,
                 "user");
 
-        verifyMethodAccessAllowed(AnonymousAllowedClass.class,
-                userRoleRequest, "noAnnotation", "anonymousAllowed",
-                "permitAll", "rolesAllowedUser", "rolesAllowedUserAdmin");
+        verifyMethodAccessAllowed(AnonymousAllowedClass.class, userRoleRequest,
+                "noAnnotation", "anonymousAllowed", "permitAll",
+                "rolesAllowedUser", "rolesAllowedUserAdmin");
         verifyMethodAccessAllowed(DenyAllClass.class, userRoleRequest,
                 "anonymousAllowed", "permitAll", "rolesAllowedUser",
                 "rolesAllowedUserAdmin");
@@ -203,24 +202,23 @@ public class AccessAnnotationCheckerTest {
         verifyMethodAccessAllowed(PermitAllClass.class, userRoleRequest,
                 "noAnnotation", "anonymousAllowed", "permitAll",
                 "rolesAllowedUser", "rolesAllowedUserAdmin");
-        verifyMethodAccessAllowed(RolesAllowedAdminClass.class,
-                userRoleRequest, "anonymousAllowed", "permitAll",
+        verifyMethodAccessAllowed(RolesAllowedAdminClass.class, userRoleRequest,
+                "anonymousAllowed", "permitAll", "rolesAllowedUser",
+                "rolesAllowedUserAdmin");
+        verifyMethodAccessAllowed(RolesAllowedUserClass.class, userRoleRequest,
+                "noAnnotation", "anonymousAllowed", "permitAll",
                 "rolesAllowedUser", "rolesAllowedUserAdmin");
-        verifyMethodAccessAllowed(RolesAllowedUserClass.class,
-                userRoleRequest, "noAnnotation", "anonymousAllowed",
-                "permitAll", "rolesAllowedUser", "rolesAllowedUserAdmin");
         // Class level access
-        verifyClassAccessAllowed(AnonymousAllowedClass.class,
-                userRoleRequest, true);
+        verifyClassAccessAllowed(AnonymousAllowedClass.class, userRoleRequest,
+                true);
         verifyClassAccessAllowed(DenyAllClass.class, userRoleRequest, false);
         verifyClassAccessAllowed(NoAnnotationClass.class, userRoleRequest,
                 false);
-        verifyClassAccessAllowed(PermitAllClass.class, userRoleRequest,
+        verifyClassAccessAllowed(PermitAllClass.class, userRoleRequest, true);
+        verifyClassAccessAllowed(RolesAllowedAdminClass.class, userRoleRequest,
+                false);
+        verifyClassAccessAllowed(RolesAllowedUserClass.class, userRoleRequest,
                 true);
-        verifyClassAccessAllowed(RolesAllowedAdminClass.class,
-                userRoleRequest, false);
-        verifyClassAccessAllowed(RolesAllowedUserClass.class,
-                userRoleRequest, true);
     }
 
     @Test
@@ -230,9 +228,9 @@ public class AccessAnnotationCheckerTest {
 
         // Method level access
 
-        verifyMethodAccessAllowed(AnonymousAllowedClass.class,
-                adminRoleRequest, "noAnnotation", "anonymousAllowed",
-                "permitAll", "rolesAllowedUser", "rolesAllowedAdmin",
+        verifyMethodAccessAllowed(AnonymousAllowedClass.class, adminRoleRequest,
+                "noAnnotation", "anonymousAllowed", "permitAll",
+                "rolesAllowedUser", "rolesAllowedAdmin",
                 "rolesAllowedUserAdmin");
         verifyMethodAccessAllowed(DenyAllClass.class, adminRoleRequest,
                 "anonymousAllowed", "permitAll", "rolesAllowedUser",
@@ -248,24 +246,22 @@ public class AccessAnnotationCheckerTest {
                 adminRoleRequest, "noAnnotation", "anonymousAllowed",
                 "permitAll", "rolesAllowedUser", "rolesAllowedAdmin",
                 "rolesAllowedUserAdmin");
-        verifyMethodAccessAllowed(RolesAllowedUserClass.class,
-                adminRoleRequest, "noAnnotation", "anonymousAllowed",
-                "permitAll", "rolesAllowedUser", "rolesAllowedAdmin",
+        verifyMethodAccessAllowed(RolesAllowedUserClass.class, adminRoleRequest,
+                "noAnnotation", "anonymousAllowed", "permitAll",
+                "rolesAllowedUser", "rolesAllowedAdmin",
                 "rolesAllowedUserAdmin");
 
         // Class level access
-        verifyClassAccessAllowed(AnonymousAllowedClass.class,
-                adminRoleRequest, true);
-        verifyClassAccessAllowed(DenyAllClass.class, adminRoleRequest,
-                false);
+        verifyClassAccessAllowed(AnonymousAllowedClass.class, adminRoleRequest,
+                true);
+        verifyClassAccessAllowed(DenyAllClass.class, adminRoleRequest, false);
         verifyClassAccessAllowed(NoAnnotationClass.class, adminRoleRequest,
                 false);
-        verifyClassAccessAllowed(PermitAllClass.class, adminRoleRequest,
+        verifyClassAccessAllowed(PermitAllClass.class, adminRoleRequest, true);
+        verifyClassAccessAllowed(RolesAllowedAdminClass.class, adminRoleRequest,
                 true);
-        verifyClassAccessAllowed(RolesAllowedAdminClass.class,
-                adminRoleRequest, true);
-        verifyClassAccessAllowed(RolesAllowedUserClass.class,
-                adminRoleRequest, true);
+        verifyClassAccessAllowed(RolesAllowedUserClass.class, adminRoleRequest,
+                true);
     }
 
     @Test
@@ -273,9 +269,9 @@ public class AccessAnnotationCheckerTest {
         HttpServletRequest adminRoleRequest = createRequest(USER_PRINCIPAL,
                 "admin");
 
-        verifyMethodAccessAllowed(AnonymousAllowedClass.class,
-                adminRoleRequest, "noAnnotation", "anonymousAllowed",
-                "permitAll", "rolesAllowedAdmin", "rolesAllowedUserAdmin");
+        verifyMethodAccessAllowed(AnonymousAllowedClass.class, adminRoleRequest,
+                "noAnnotation", "anonymousAllowed", "permitAll",
+                "rolesAllowedAdmin", "rolesAllowedUserAdmin");
         verifyMethodAccessAllowed(DenyAllClass.class, adminRoleRequest,
                 "anonymousAllowed", "permitAll", "rolesAllowedAdmin",
                 "rolesAllowedUserAdmin");
@@ -288,23 +284,58 @@ public class AccessAnnotationCheckerTest {
         verifyMethodAccessAllowed(RolesAllowedAdminClass.class,
                 adminRoleRequest, "noAnnotation", "anonymousAllowed",
                 "permitAll", "rolesAllowedAdmin", "rolesAllowedUserAdmin");
-        verifyMethodAccessAllowed(RolesAllowedUserClass.class,
-                adminRoleRequest, "anonymousAllowed", "permitAll",
-                "rolesAllowedAdmin", "rolesAllowedUserAdmin");
+        verifyMethodAccessAllowed(RolesAllowedUserClass.class, adminRoleRequest,
+                "anonymousAllowed", "permitAll", "rolesAllowedAdmin",
+                "rolesAllowedUserAdmin");
 
         // Class level access
-        verifyClassAccessAllowed(AnonymousAllowedClass.class,
-                adminRoleRequest, true);
-        verifyClassAccessAllowed(DenyAllClass.class, adminRoleRequest,
-                false);
+        verifyClassAccessAllowed(AnonymousAllowedClass.class, adminRoleRequest,
+                true);
+        verifyClassAccessAllowed(DenyAllClass.class, adminRoleRequest, false);
         verifyClassAccessAllowed(NoAnnotationClass.class, adminRoleRequest,
                 false);
-        verifyClassAccessAllowed(PermitAllClass.class, adminRoleRequest,
+        verifyClassAccessAllowed(PermitAllClass.class, adminRoleRequest, true);
+        verifyClassAccessAllowed(RolesAllowedAdminClass.class, adminRoleRequest,
                 true);
-        verifyClassAccessAllowed(RolesAllowedAdminClass.class,
-                adminRoleRequest, true);
-        verifyClassAccessAllowed(RolesAllowedUserClass.class,
-                adminRoleRequest, false);
+        verifyClassAccessAllowed(RolesAllowedUserClass.class, adminRoleRequest,
+                false);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void hasClassAccessNoCurrentRequest() {
+        CurrentInstance.clearAll();
+        accessAnnotationChecker.hasAccess(AnonymousAllowedClass.class);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void hasMethodAccessNoCurrentRequest() throws Exception {
+        CurrentInstance.clearAll();
+        accessAnnotationChecker
+                .hasAccess(AnonymousAllowedClass.class.getMethod("permitAll"));
+    }
+
+    @Test
+    public void hasClassAccessUsingCurrentRequest() {
+        try {
+            CurrentInstance.set(VaadinRequest.class, new VaadinServletRequest(
+                    createRequest(USER_PRINCIPAL), null));
+            Assert.assertTrue(
+                    accessAnnotationChecker.hasAccess(PermitAllClass.class));
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    @Test
+    public void hasMethodAccessUsingCurrentRequest() throws Exception {
+        try {
+            CurrentInstance.set(VaadinRequest.class, new VaadinServletRequest(
+                    createRequest(USER_PRINCIPAL), null));
+            Assert.assertTrue(accessAnnotationChecker
+                    .hasAccess(PermitAllClass.class.getMethod("permitAll")));
+        } finally {
+            CurrentInstance.clearAll();
+        }
     }
 
     private HttpServletRequest createRequest(Principal userPrincipal,
@@ -332,8 +363,8 @@ public class AccessAnnotationCheckerTest {
             Assert.assertEquals("Expected " + endpointClass.getSimpleName()
                     + "." + endpointMethod + " to "
                     + (expectedResult ? "be" : "NOT to be") + " accessible",
-                    expectedResult, accessAnnotationChecker
-                            .annotationAllowsAccess(method, request));
+                    expectedResult,
+                    accessAnnotationChecker.hasAccess(method, request));
         }
     }
 
@@ -344,7 +375,7 @@ public class AccessAnnotationCheckerTest {
                 "Expected " + cls.getSimpleName() + " to "
                         + (expectedResult ? "be" : "NOT to be") + " accessible",
                 expectedResult,
-                accessAnnotationChecker.annotationAllowsAccess(cls, request));
+                accessAnnotationChecker.hasAccess(cls, request));
     }
 
 }

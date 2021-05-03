@@ -17,6 +17,8 @@ package com.vaadin.flow.server.frontend;
 
 /**
  * Generate OpenAPI json file for Vaadin Endpoints.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public interface TaskGenerateOpenApi extends FallibleCommand {
 

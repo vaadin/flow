@@ -19,12 +19,6 @@ public class LitTemplateAttributeView extends LitTemplate
     @Id("div")
     private Div injectedDiv;
 
-    @Id("hasText")
-    private Div hasText;
-
-    @Id("hasTextAndChild")
-    private Div hasTextAndChild;
-
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         setId("template");
@@ -33,11 +27,6 @@ public class LitTemplateAttributeView extends LitTemplate
                 + injectedDiv.getElement().getProperty("foo") + " "
                 + injectedDiv.getElement().getProperty("baz"));
         div.setId("info");
-        add(div);
-
-        div = new Div();
-        div.setText(hasText.getText() + " " + hasTextAndChild.getText() + "|");
-        div.setId("text-info");
         add(div);
     }
 }

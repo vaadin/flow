@@ -42,6 +42,8 @@ import elemental.json.JsonObject;
 
 /**
  * Model map synchronization RPC handler.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @see JsonConstants#RPC_TYPE_MAP_SYNC
  *

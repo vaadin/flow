@@ -44,7 +44,8 @@ import com.vaadin.flow.server.frontend.installer.ProxyConfig;
  * Provides access to frontend tools (node.js and npm, pnpm) and optionally
  * installs the tools if needed.
  * <p>
- * <b>WARNING:</b> This class is intended for internal usage only.
+ * <b>WARNING:</b> This class is intended for internal usage only. May be
+ * renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  *

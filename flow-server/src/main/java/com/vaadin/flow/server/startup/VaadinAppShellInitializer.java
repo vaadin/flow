@@ -56,6 +56,8 @@ import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_PWA
 
 /**
  * Servlet initializer visiting {@link AppShellConfigurator} configuration.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 3.0
  */

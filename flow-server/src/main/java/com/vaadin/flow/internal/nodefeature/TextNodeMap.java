@@ -19,6 +19,8 @@ import com.vaadin.flow.internal.StateNode;
 
 /**
  * Map holding the data of a text node.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

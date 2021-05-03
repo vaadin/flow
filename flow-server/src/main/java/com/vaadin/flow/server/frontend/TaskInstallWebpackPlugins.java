@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.WebpackPluginsUtil.PLUGIN_TARGET;
 
@@ -36,6 +37,8 @@ import static com.vaadin.flow.server.frontend.WebpackPluginsUtil.PLUGIN_TARGET;
  * <p>
  * Plugins are copied to <code>{build directory}/plugins</code> and linked to
  * <code>@vaadin/{plugin name}</code> in node_modules by using (p)npm install.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since
  */

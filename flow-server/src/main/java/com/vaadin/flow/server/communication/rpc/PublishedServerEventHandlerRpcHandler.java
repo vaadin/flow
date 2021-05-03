@@ -52,6 +52,8 @@ import elemental.json.JsonValue;
 /**
  * RPC handler for events triggered through <code>element.$server</code> or
  * simply <code>$server</code> in template event handlers.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @see JsonConstants#RPC_PUBLISHED_SERVER_EVENT_HANDLER

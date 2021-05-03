@@ -31,6 +31,8 @@ import com.vaadin.flow.function.SerializableFunction;
  * class must be listed on a separate line in a
  * META-INF/services/com.vaadin.flow.server.communication.PushConnectionFactory
  * file present in the jar file containing the implementation class.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */

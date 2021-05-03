@@ -54,6 +54,8 @@ import elemental.json.JsonObject;
  * <p>
  * The class is Singleton. Use {@link NpmTemplateParser#getInstance()} to get
  * its instance.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  *
  * @author Vaadin Ltd

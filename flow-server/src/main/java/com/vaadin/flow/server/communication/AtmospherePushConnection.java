@@ -40,6 +40,8 @@ import elemental.json.JsonObject;
 /**
  * A {@link PushConnection} implementation using the Atmosphere push support
  * that is by default included in Vaadin.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

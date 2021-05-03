@@ -30,6 +30,8 @@ import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * A caching tree traverser for collecting and parsing dependencies.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.2
