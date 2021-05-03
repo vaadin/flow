@@ -261,6 +261,7 @@ public class VaadinAppShellInitializerTest {
     public void teardown() throws Exception {
         AppShellRegistry.getInstance(context).reset();
         clearIlogger();
+        mocks.cleanup();
     }
 
     @Test
