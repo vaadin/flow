@@ -30,4 +30,3 @@ public class StyledComponent<T extends List<?> & Serializable>
         extends GenericComponent<T, String> {
 
 }
-

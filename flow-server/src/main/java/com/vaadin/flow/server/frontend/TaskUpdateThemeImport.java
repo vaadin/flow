@@ -164,3 +164,4 @@ public class TaskUpdateThemeImport implements FallibleCommand {
                 themePathInStaticResources, themePathInClassPathResources);
     }
 }
+

@@ -21,4 +21,3 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 public class NonVaadinComponent {
 
 }
-
