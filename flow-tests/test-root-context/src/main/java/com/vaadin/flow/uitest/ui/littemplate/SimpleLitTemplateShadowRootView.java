@@ -12,7 +12,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Tag("simple-lit-template-shadow-root")
-@JsModule("lit/simple-lit-template-shadow-root.js")
+@JsModule("lit-templates/simple-lit-template-shadow-root.js")
 @NpmPackage(value = "lit", version = "2.0.0-rc.1")
 @Route(value = "com.vaadin.flow.uitest.ui.littemplate.SimpleLitTemplateShadowRootView", layout = ViewTestLayout.class)
 public class SimpleLitTemplateShadowRootView extends LitTemplate {
