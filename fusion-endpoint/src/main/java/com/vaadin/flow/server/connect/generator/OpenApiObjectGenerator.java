@@ -222,8 +222,9 @@ public class OpenApiObjectGenerator {
                         this::findEndpointExposed));
 
         javaSourcePaths.stream()
-                .map(path -> new SourceRoot(path, parserConfiguration)).forEach(
-                        sourceRoot -> parseSourceRoot(sourceRoot, this::process));
+                .map(path -> new SourceRoot(path, parserConfiguration))
+                .forEach(sourceRoot -> parseSourceRoot(sourceRoot,
+                        this::process));
 
         for (Map.Entry<String, ResolvedReferenceType> entry : usedTypes
                 .entrySet()) {

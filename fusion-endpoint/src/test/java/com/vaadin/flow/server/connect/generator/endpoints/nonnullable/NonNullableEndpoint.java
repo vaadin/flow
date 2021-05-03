@@ -32,12 +32,14 @@ public class NonNullableEndpoint {
         return "";
     }
 
-    public NonNullableModel echoNonNullMode(@Nonnull NonNullableModel[] nonNullableModels) {
+    public NonNullableModel echoNonNullMode(
+            @Nonnull NonNullableModel[] nonNullableModels) {
         return new NonNullableModel();
     }
 
     @Nonnull
-    public Map<String, NonNullableModel> echoMap(@Nonnull boolean shouldBeNotNull) {
+    public Map<String, NonNullableModel> echoMap(
+            @Nonnull boolean shouldBeNotNull) {
         return Collections.emptyMap();
     }
 
