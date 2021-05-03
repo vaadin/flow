@@ -35,6 +35,9 @@ import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
  * {@link com.vaadin.flow.component.WebComponentExporter} or
  * {@link WebComponentExporterFactory} implementations found by
  * {@link ClassFinder}.
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
  * @since 2.0

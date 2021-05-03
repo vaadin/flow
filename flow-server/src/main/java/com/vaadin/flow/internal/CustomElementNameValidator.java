@@ -25,6 +25,8 @@ import java.util.stream.Stream;
  * Validates custom-element name according to definition in <a href=
  * "https://www.w3.org/TR/custom-elements/#prod-potentialcustomelementname">Custom
  * element name</a>
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */

@@ -47,7 +47,9 @@ import elemental.json.JsonValue;
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations
  * found in the classpath. It also visits classes annotated with
- * {@link NpmPackage}
+ * {@link NpmPackage}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */

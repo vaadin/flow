@@ -99,6 +99,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 /**
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
  * server.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */

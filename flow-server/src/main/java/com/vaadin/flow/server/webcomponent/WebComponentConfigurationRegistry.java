@@ -44,6 +44,8 @@ import com.vaadin.flow.theme.Theme;
 
 /**
  * Registry for storing available web component configuration implementations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
  * @since 2.0

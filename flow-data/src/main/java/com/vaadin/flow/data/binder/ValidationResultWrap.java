@@ -27,6 +27,8 @@ import com.vaadin.flow.function.SerializableFunction;
  * Internal implementation of a {@code Result} that collects all possible
  * ValidationResults into one list. This class intercepts the normal chaining of
  * Converters and Validators, catching and collecting results.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @param <R>
  *            the result data type

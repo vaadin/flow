@@ -33,6 +33,8 @@ import com.vaadin.flow.internal.ReflectTools;
 /**
  * Internal utility methods for {@link WebComponentExporter} and
  * {@link WebComponentExporterFactory} classes.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  *

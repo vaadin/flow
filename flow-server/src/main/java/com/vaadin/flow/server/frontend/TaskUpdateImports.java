@@ -56,6 +56,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
  * and <code>node_module/@vaadin/flow-frontend</code> contents by visiting all
  * classes with {@link JsModule} {@link HtmlImport} and {@link Theme}
  * annotations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */

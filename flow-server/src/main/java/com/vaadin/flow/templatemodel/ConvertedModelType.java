@@ -26,6 +26,8 @@ import elemental.json.JsonValue;
 /**
  * A {@link ModelType} implementation that wraps a model type for performing
  * type conversions on together with a {@link ModelEncoder}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

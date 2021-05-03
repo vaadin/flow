@@ -22,11 +22,6 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.internal.ReflectionCache;
-import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
-
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.method.ParameterList;
@@ -40,8 +35,15 @@ import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import net.bytebuddy.implementation.bind.annotation.This;
 
+import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
+
 /**
  * Invocation handler for {@link TemplateModel} proxy objects.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

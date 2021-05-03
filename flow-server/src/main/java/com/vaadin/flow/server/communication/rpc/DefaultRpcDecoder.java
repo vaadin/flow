@@ -24,6 +24,8 @@ import elemental.json.JsonValue;
  * <p>
  * Delegates to the standard JSON deserializer method
  * {@link JsonCodec#decodeAs(JsonValue, Class)}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @see JsonCodec#decodeAs(JsonValue, Class)
  *

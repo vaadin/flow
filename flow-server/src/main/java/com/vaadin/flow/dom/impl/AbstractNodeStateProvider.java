@@ -33,6 +33,8 @@ import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 /**
  * Abstract implementation of the {@link ElementStateProvider} related to the
  * composition essence of the provider.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

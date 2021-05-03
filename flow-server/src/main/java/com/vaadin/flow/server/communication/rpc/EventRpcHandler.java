@@ -28,6 +28,8 @@ import elemental.json.JsonObject;
 
 /**
  * RPC handler for events.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @see JsonConstants#RPC_EVENT_TYPE
  * @author Vaadin Ltd

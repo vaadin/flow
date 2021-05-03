@@ -73,6 +73,8 @@ import elemental.json.JsonValue;
  * Serializes pending server-side changes to UI state to JSON. This includes
  * shared state, client RPC invocations, connector hierarchy changes, connector
  * type information among others.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

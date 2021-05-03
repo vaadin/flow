@@ -28,6 +28,7 @@ import com.vaadin.flow.component.UI;
  * the transport mechanism.
  * <p>
  * This interface is an internal API, only meant to be used by the framework.
+ * May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

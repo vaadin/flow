@@ -25,6 +25,8 @@ import com.vaadin.flow.internal.StateNode;
 /**
  * Abstract class to be used as a parent for node maps which supports setting
  * properties in a map.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

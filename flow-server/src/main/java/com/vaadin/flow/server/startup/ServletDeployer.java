@@ -60,9 +60,8 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
  * annotation.</li>
  * <li>Frontend files servlet, mapped to '/frontend/*' <br>
  * The servlet is registered when the application is started in the development
- * mode or has
- * {@link InitParameters#USE_ORIGINAL_FRONTEND_RESOURCES}
- * parameter set to {@code true}.</li>
+ * mode or has {@link InitParameters#USE_ORIGINAL_FRONTEND_RESOURCES} parameter
+ * set to {@code true}.</li>
  * <li>Static files servlet, mapped to '/VAADIN/static' responsible to resolve
  * files placed in the '[webcontext]/VAADIN/static' folder or in the
  * '[classpath]/META-INF/static' location. It prevents sensible files like
@@ -73,8 +72,10 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
  * <p>
  * In addition to the rules above, a servlet won't be registered, if any servlet
  * had been mapped to the same path already or if
- * {@link InitParameters#DISABLE_AUTOMATIC_SERVLET_REGISTRATION}
- * system property is set to {@code true}.
+ * {@link InitParameters#DISABLE_AUTOMATIC_SERVLET_REGISTRATION} system property
+ * is set to {@code true}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @see VaadinServletConfiguration#disableAutomaticServletRegistration()
@@ -293,7 +294,8 @@ public class ServletDeployer implements ServletContextListener {
     }
 
     /**
-     * Prints to sysout a notification to the user that the application has been deployed.
+     * Prints to sysout a notification to the user that the application has been
+     * deployed.
      * <p>
      * This method is public so that it can be called in add-ons that map
      * servlet automatically but don't use this class for that.

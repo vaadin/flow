@@ -45,6 +45,8 @@ import com.vaadin.flow.server.VaadinSession;
  * <li>offline fallback page
  * <li>icons
  * </ul>
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.2
  */

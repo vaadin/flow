@@ -31,6 +31,8 @@ import com.vaadin.flow.internal.nodefeature.BasicTypeValue;
  * There is a similar class {@link BasicModelType} which do the same but it
  * keeps handles the values as is. This class wraps them into {@link StateNode}
  * to be able to use them in side lists.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @see BasicModelType
  *

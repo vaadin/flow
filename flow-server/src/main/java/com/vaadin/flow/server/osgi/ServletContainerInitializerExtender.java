@@ -22,6 +22,9 @@ import org.osgi.util.tracker.BundleTracker;
 
 /**
  * Bundle activator which starts bundle tracker.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
  * 
  * @author Vaadin Ltd
  * @since 1.2

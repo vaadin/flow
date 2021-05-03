@@ -20,6 +20,8 @@ import com.vaadin.flow.dom.Element;
 /**
  * Defines the strategy to set the template attribute value to the server side
  * element.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @author Vaadin Ltd
  * @since

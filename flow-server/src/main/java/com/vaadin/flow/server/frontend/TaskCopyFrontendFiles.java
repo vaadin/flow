@@ -30,6 +30,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
  * Copies JavaScript and CSS files from JAR files into a given folder.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */

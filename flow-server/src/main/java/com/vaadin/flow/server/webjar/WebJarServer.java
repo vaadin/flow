@@ -17,6 +17,7 @@ package com.vaadin.flow.server.webjar;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
@@ -36,6 +37,9 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * By default, webJars are enabled for development mode and disabled for
  * production mode. There is a way to override this behavior by setting
  * {@link InitParameters#DISABLE_WEBJARS} param.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
  *
  * @author Vaadin Ltd
  * @since 1.0.

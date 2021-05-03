@@ -22,6 +22,8 @@ import com.vaadin.flow.server.ExecutionFailedException;
  * <p>
  * Note that this interface is not serializable and should not be used in a web
  * application.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since

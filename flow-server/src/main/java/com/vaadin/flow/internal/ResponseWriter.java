@@ -44,6 +44,8 @@ import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
 
 /**
  * The class that handles writing the response data into the response.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0.

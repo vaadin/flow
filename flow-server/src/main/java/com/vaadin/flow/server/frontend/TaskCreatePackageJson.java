@@ -23,6 +23,8 @@ import elemental.json.JsonObject;
 
 /**
  * Creates the <code>package.json</code> if missing.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
