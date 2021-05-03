@@ -19,12 +19,15 @@ package com.vaadin.flow.internal;
 import java.io.Serializable;
 import java.util.stream.Collectors;
 
+import org.jsoup.nodes.Document;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import org.jsoup.nodes.Document;
 
 /**
  * A class for exporting {@link UsageStatistics} entries.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 3.0

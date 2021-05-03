@@ -26,6 +26,8 @@ import com.vaadin.flow.dom.Element;
 /**
  * The implementation of this interface is responsible for updating the UI with
  * given content.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public interface UIInternalUpdater extends Serializable {
 

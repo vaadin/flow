@@ -22,6 +22,8 @@ import java.util.Optional;
 /**
  * A model type representing an immutable leaf value, e.g. strings, numbers or
  * booleans.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

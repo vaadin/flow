@@ -46,6 +46,9 @@ import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 /**
  * Custom UI for {@link JavaScriptBootstrapHandler}. This class is intended for
  * internal use in client side bootstrapping.
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class JavaScriptBootstrapUI extends UI {
     public static final String SERVER_ROUTING = "clientRoutingMode";
@@ -190,28 +193,29 @@ public class JavaScriptBootstrapUI extends UI {
             }
 
             navigationInProgress = true;
-            Optional<NavigationState> navigationState = getInternals()
-                    .getRouter().resolveNavigationTarget(location);
+            try {
+                Optional<NavigationState> navigationState = getInternals()
+                        .getRouter().resolveNavigationTarget(location);
 
-            if (navigationState.isPresent()) {
-                // Navigation can be done in server side without extra
-                // round-trip
-                handleNavigation(location, navigationState.get(),
-                        NavigationTrigger.UI_NAVIGATE);
-                if (getForwardToClientUrl() != null) {
-                    navigationInProgress = false;
-                    // Server is forwarding to a client route from a
-                    // BeforeEnter.
-                    navigateToClient(getForwardToClientUrl());
-                    return;
+                if (navigationState.isPresent()) {
+                    // Navigation can be done in server side without extra
+                    // round-trip
+                    handleNavigation(location, navigationState.get(),
+                            NavigationTrigger.UI_NAVIGATE);
+                    if (getForwardToClientUrl() != null) {
+                        // Server is forwarding to a client route from a
+                        // BeforeEnter.
+                        navigateToClient(getForwardToClientUrl());
+                    }
+                } else {
+                    // Server cannot resolve navigation, let client-side to
+                    // handle it.
+                    navigateToClient(location.getPathWithQueryParameters());
                 }
-            } else {
-                // Server cannot resolve navigation, let client-side to handle
-                // it.
-                navigateToClient(location.getPathWithQueryParameters());
+            } finally {
+                navigationInProgress = false;
             }
 
-            navigationInProgress = false;
         }
     }
 

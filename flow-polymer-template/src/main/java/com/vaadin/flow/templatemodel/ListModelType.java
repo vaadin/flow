@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
@@ -33,6 +34,8 @@ import elemental.json.JsonValue;
 
 /**
  * A model type corresponding to a list of bean types.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

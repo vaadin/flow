@@ -32,6 +32,8 @@ import elemental.json.JsonValue;
 /**
  * RPC handler for a client-side response on attach existing element by id
  * request.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @see JsonConstants#RPC_ATTACH_EXISTING_ELEMENT_BY_ID
  * @see JsonConstants#RPC_ATTACH_ASSIGNED_ID

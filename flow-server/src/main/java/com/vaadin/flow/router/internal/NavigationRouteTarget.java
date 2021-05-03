@@ -27,6 +27,8 @@ import com.vaadin.flow.router.RouteParameters;
  * The result of the search contains the target itself if found, and the url
  * parameter values extracted from the input path according with the route
  * configuration.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class NavigationRouteTarget implements Serializable {
 

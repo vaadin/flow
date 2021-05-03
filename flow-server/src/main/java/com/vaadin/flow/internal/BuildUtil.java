@@ -24,6 +24,9 @@ import java.util.Properties;
  *
  * Reads {@code "build.properties"} file in the classpath which contains
  * property values which may be set during build.
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  *

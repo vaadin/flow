@@ -60,6 +60,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Uses {@link ServerRpcHandler} to execute client-to-server RPC invocations and
  * {@link UidlWriter} to write state changes and client RPC calls back to the
  * client.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

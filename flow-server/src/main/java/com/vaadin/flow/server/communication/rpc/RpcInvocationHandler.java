@@ -28,6 +28,8 @@ import elemental.json.JsonObject;
  * Each instance must return unique rpc type (see {@link #getRpcType()} and
  * handle a {@link JsonObject} RPC data using {@link #handle(UI, JsonObject)}
  * method.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @author Vaadin Ltd
  * @since 1.0

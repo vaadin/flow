@@ -199,8 +199,7 @@ public class NodeTasksTest {
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
-                .enablePackagesUpdate(false)
-                .useV14Bootstrap(true)
+                .enablePackagesUpdate(false).useV14Bootstrap(true)
                 .enableImportsUpdate(true).runNpmInstall(false)
                 .withEmbeddableWebComponents(false).useV14Bootstrap(false);
         builder.build().execute();
