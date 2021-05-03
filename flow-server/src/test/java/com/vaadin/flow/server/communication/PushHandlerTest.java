@@ -23,6 +23,7 @@ import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -202,20 +203,26 @@ public class PushHandlerTest {
     @Test
     public void connectionLost_noSession_currentInstancesAreCleared()
             throws SessionExpiredException {
-        mockConnectionLost(new MockVaadinSession(), false);
+        try {
+            mockConnectionLost(new MockVaadinSession(), false);
 
-        Assert.assertNull(VaadinSession.getCurrent());
+            Assert.assertNull(VaadinSession.getCurrent());
+        } finally {
+            VaadinSession.setCurrent(null);
+        }
     }
 
     @Test
     public void connectionLost_sessionIsSetViaCurrent_currentInstancesAreCleared()
             throws SessionExpiredException {
-        VaadinSession session = new MockVaadinSession();
-
-        mockConnectionLost(session, true);
-        Assert.assertNotNull(VaadinSession.getCurrent());
+        try {
+            mockConnectionLost( new MockVaadinSession(), true);
+            Assert.assertNotNull(VaadinSession.getCurrent());
+        } finally {
+            VaadinSession.setCurrent(null);
+        }
     }
-
+    
     private void mockConnectionLost(VaadinSession session, boolean setSession) {
         AtomicBoolean sessionIsSet = new AtomicBoolean();
         MockVaadinServletService service = new MockVaadinServletService() {
