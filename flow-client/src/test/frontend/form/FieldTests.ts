@@ -1,8 +1,8 @@
 /* eslint-disable no-unused-expressions, no-shadow */
 
 import { expect } from 'chai';
-import { html, LitElement } from 'lit';
-import type { PropertyPart } from 'lit';
+import { LitElement, nothing, render } from 'lit';
+import { html, unsafeStatic } from 'lit/static-html';
 import { customElement, query } from 'lit/decorators';
 import { BinderNode } from '../../../main/frontend/form/BinderNode';
 
@@ -477,24 +477,47 @@ suite('form/Field', () => {
       await binderNode.validate();
     }
 
+    @customElement('any-vaadin-element-tag')
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    class AnyVaadinElement extends LitElement {
+      static get version() {
+        return '1.0';
+      }
+
+      render() {
+        return html``;
+      }
+    }
+
+    beforeEach(() => {
+      render(nothing, div);
+    });
+
     ['div', 'input', 'vaadin-rich-text-editor'].forEach((tag) => {
       test(`GenericFieldStrategy ${tag}`, async () => {
-        const element: Element & { value?: any } = document.createElement(tag);
+        /* eslint-disable lit/binding-positions, lit/no-invalid-html */
+        const tagName = unsafeStatic(tag);
+
         const model = binder.model.fieldString;
         const binderNode = binder.for(model);
         binderNode.value = 'foo';
         await resetBinderNodeValidation(binderNode);
 
+        const renderElement = () => {
+          render(html`<${tagName} ${field(model)}></${tagName}>`, div);
+          return div.firstElementChild as Element & { value?: any };
+        };
+
         binderNode.validators = [{ message: 'any-err-msg', validate: () => false }];
 
-        const part = new PropertyPart(new AttributeCommitter(element, '..', []));
-        field(model)(part);
+        renderElement();
 
         expect(currentStrategy instanceof GenericFieldStrategy).to.be.true;
         expect(currentStrategy.value).to.be.equal('foo');
 
         await binderNode.validate();
-        field(model)(part);
+        const element = renderElement();
+
         expect(element.hasAttribute('invalid')).to.be.true;
         expect(element.hasAttribute('errorMessage')).to.be.false;
       });
@@ -507,18 +530,27 @@ suite('form/Field', () => {
       { tag: 'vaadin-radio-button', type: '' }
     ].forEach(({ tag, type }) => {
       test(`CheckedFieldStrategy ${tag} ${type}`, async () => {
-        const element: Element & { checked?: boolean } = document.createElement(tag);
-        type && element.setAttribute('type', type);
+        const tagName = unsafeStatic(tag);
+
         const model = binder.model.fieldBoolean;
         const binderNode = binder.for(model);
+
+        let element;
+        const renderElement = () => {
+          if (type) {
+            render(html`<${tagName} type="${type}" ${field(model)}></${tagName}>`, div);
+          } else {
+            render(html`<${tagName} ${field(model)}></${tagName}>`, div);
+          }
+          return div.firstElementChild as Element & { checked?: boolean };
+        };
 
         binderNode.value = true;
         await resetBinderNodeValidation(binderNode);
 
         binderNode.validators = [{ message: 'any-err-msg', validate: () => false }];
 
-        const part = new PropertyPart(new AttributeCommitter(element, '..', []));
-        field(model)(part);
+        element = renderElement();
 
         expect(currentStrategy instanceof CheckedFieldStrategy).to.be.true;
         expect(currentStrategy.value).to.be.true;
@@ -526,29 +558,33 @@ suite('form/Field', () => {
         expect(element.checked).to.be.true;
 
         await binderNode.validate();
-        field(model)(part);
+        element = renderElement();
         expect(element.hasAttribute('invalid')).to.be.true;
         expect(element.hasAttribute('errorMessage')).to.be.false;
       });
     });
 
     test(`SelectedFieldStrategy`, async () => {
-      const element: Element & { selected?: boolean } = document.createElement('vaadin-list-box');
       const model = binder.model.fieldBoolean;
       const binderNode = binder.for(model);
+
+      let element;
+      const renderElement = () => {
+        render(html`<vaadin-list-box ${field(model)}></vaadin-list-box>`, div);
+        return div.firstElementChild as Element & { selected?: boolean };
+      };
 
       binderNode.value = true;
       binderNode.validators = [{ message: 'any-err-msg', validate: () => false }];
 
-      const part = new PropertyPart(new AttributeCommitter(element, '..', []));
-      field(model)(part);
+      element = renderElement();
 
       expect(currentStrategy instanceof SelectedFieldStrategy).to.be.true;
       expect(currentStrategy.value).to.be.true;
       expect(element.selected).to.be.true;
 
       await binderNode.validate();
-      field(model)(part);
+      element = renderElement();
       expect(element.hasAttribute('invalid')).to.be.true;
       expect(element.hasAttribute('errorMessage')).to.be.false;
     });
@@ -562,13 +598,18 @@ suite('form/Field', () => {
       { model: binder.model.fieldArrayModel as AbstractModel<any>, value: [{ idString: 'id' }] }
     ].forEach(async ({ model, value }, idx) => {
       test(`VaadinFieldStrategy ${model.constructor.name} ${idx}`, async () => {
-        const element: Element & {
-          value?: any;
-          invalid?: boolean;
-          required?: boolean;
-          errorMessage?: string;
-        } = document.createElement('any-vaadin-element-tag');
-        (element.constructor as any).version = '1.0';
+        let element;
+        const renderElement = () => {
+          render(html`<any-vaadin-element-tag ${field(model)}></any-vaadin-element-tag>`, div);
+          const result = div.firstElementChild as Element & {
+            value?: any;
+            invalid?: boolean;
+            required?: boolean;
+            errorMessage?: string;
+          };
+          return result;
+        };
+
         const binderNode = binder.for(model);
 
         binderNode.value = value;
@@ -579,9 +620,7 @@ suite('form/Field', () => {
 
         binderNode.validators = [{ message: 'any-err-msg', validate: () => false }, new Required()];
 
-        const part = new PropertyPart(new AttributeCommitter(element, '..', []));
-        field(model)(part);
-        delete (element.constructor as any).version;
+        element = renderElement();
 
         expect(currentStrategy instanceof VaadinFieldStrategy).to.be.true;
         expect(currentStrategy.value).to.be.equal(value);
@@ -591,7 +630,7 @@ suite('form/Field', () => {
         expect(element.errorMessage).to.be.undefined;
 
         await binderNode.validate();
-        field(model)(part);
+        element = renderElement();
         expect(element.invalid).to.be.true;
         expect(element.errorMessage).to.be.equal('any-err-msg');
       });
@@ -617,8 +656,7 @@ suite('form/Field', () => {
       const binder = new MyBinder(element);
       const { model } = binder;
 
-      const part = new PropertyPart(new AttributeCommitter(element, '..', []));
-      field(model)(part);
+      render(html`<div ${field(model)}></div>`, element);
       expect(currentStrategy instanceof MyStrategy).to.be.true;
     });
   });
