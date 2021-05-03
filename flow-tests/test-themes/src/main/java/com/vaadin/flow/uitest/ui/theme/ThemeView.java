@@ -66,8 +66,8 @@ public class ThemeView extends Div {
                 "url('themes/app-theme/img/dice.jpg')");
         diceImageSpan.setId(DICE_ID);
 
-        add(textSpan, snowFlake, subCss, butterfly, octopuss, cssSnowflake,
-                faText, diceImageSpan);
+        add(textSpan, snowFlake, subCss, butterfly, octopuss, cssSnowflake, faText,
+                diceImageSpan);
 
         add(new Div());
         add(new MyPolymerField().withId(MY_POLYMER_ID));

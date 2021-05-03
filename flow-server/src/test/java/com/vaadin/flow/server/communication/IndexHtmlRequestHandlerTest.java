@@ -416,8 +416,7 @@ public class IndexHtmlRequestHandlerTest {
         csrfJsonMap.put("token", springTokenString);
         csrfJsonMap.put("headerName", springTokenHeaderName);
         csrfJsonMap.put("parameterName", springTokenParamName);
-        Mockito.when(request.getAttribute(SPRING_CSRF_ATTRIBUTE_IN_SESSION))
-                .thenReturn(csrfJsonMap);
+        Mockito.when(request.getAttribute(SPRING_CSRF_ATTRIBUTE_IN_SESSION)).thenReturn(csrfJsonMap);
         indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
                 response);
 
@@ -472,8 +471,8 @@ public class IndexHtmlRequestHandlerTest {
                 .toString(StandardCharsets.UTF_8.name());
         Document document = Jsoup.parse(indexHtml);
 
-        Assert.assertEquals(0, document.head()
-                .getElementsByAttribute(SPRING_CSRF_ATTRIBUTE).size());
+        Assert.assertEquals(0,
+                document.head().getElementsByAttribute(SPRING_CSRF_ATTRIBUTE).size());
         Assert.assertEquals(0,
                 document.head().getElementsByAttribute("_csrf_header").size());
     }
@@ -503,8 +502,7 @@ public class IndexHtmlRequestHandlerTest {
         csrfJsonMap.put("token", springTokenString);
         csrfJsonMap.put("headerName", springTokenHeaderName);
         Object springCsrfToken = JsonUtils.mapToJson(csrfJsonMap);
-        Mockito.when(request.getAttribute(SPRING_CSRF_ATTRIBUTE_IN_SESSION))
-                .thenReturn(springCsrfToken);
+        Mockito.when(request.getAttribute(SPRING_CSRF_ATTRIBUTE_IN_SESSION)).thenReturn(springCsrfToken);
         VaadinServletRequest vaadinRequest = createVaadinRequest("/");
         Mockito.when(((HttpServletRequest) vaadinRequest.getRequest())
                 .getHeader("referer"))
@@ -514,8 +512,8 @@ public class IndexHtmlRequestHandlerTest {
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
         Document document = Jsoup.parse(indexHtml);
-        Assert.assertEquals(0, document.head()
-                .getElementsByAttribute(SPRING_CSRF_ATTRIBUTE).size());
+        Assert.assertEquals(0,
+                document.head().getElementsByAttribute(SPRING_CSRF_ATTRIBUTE).size());
         Assert.assertEquals(0,
                 document.head().getElementsByAttribute("_csrf_header").size());
     }

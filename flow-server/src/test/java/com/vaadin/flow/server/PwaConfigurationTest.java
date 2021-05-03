@@ -12,7 +12,7 @@ public class PwaConfigurationTest {
                 pwaConfiguration.getStartUrl());
     }
 
-    @PWA(name = "name", shortName = "shortName")
+    @PWA(name="name", shortName="shortName")
     static class App {
     }
 
@@ -24,10 +24,10 @@ public class PwaConfigurationTest {
         Assert.assertEquals("", pwaConfiguration.getOfflinePath());
     }
 
-    @Test
+        @Test
     public void pwaOfflinePathEmptyInV14BootstrapMode_should_equalDefault() {
-        PwaConfiguration pwaConfiguration = new PwaConfiguration(
-                App.class.getAnnotation(PWA.class), true);
+            PwaConfiguration pwaConfiguration = new PwaConfiguration(
+                    App.class.getAnnotation(PWA.class), true);
         Assert.assertTrue(pwaConfiguration.isOfflinePathEnabled());
         Assert.assertEquals(PwaConfiguration.DEFAULT_OFFLINE_PATH,
                 pwaConfiguration.getOfflinePath());

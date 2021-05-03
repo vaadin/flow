@@ -22,11 +22,12 @@ import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.AppShellSettings;
 
 /**
- * An interface to configure application features and the host page where the
- * Vaadin application is running. It automatically configures the index.html
- * page. Configuration can be done using a class implementing this interface
- * with following annotations that affect the generated index.html page (also
- * known as 'application shell'):
+ * An interface to configure application features and the host page where the 
+ * Vaadin application is running. 
+ * It automatically configures the index.html page. 
+ * Configuration can be done using a class implementing this interface with 
+ * following annotations that affect the generated index.html page (also known
+ * as 'application shell'):
  *
  * <ul>
  * <li>{@link Meta}: appends an HTML {@code <meta>} tag to the bottom of the
@@ -42,8 +43,8 @@ import com.vaadin.flow.server.AppShellSettings;
  *
  * <p>
  * There is a single application shell for the entire Vaadin application, and
- * there can only be one class implementing {@link AppShellConfigurator} per
- * Application.
+ * there can only be one class implementing
+ * {@link AppShellConfigurator} per Application.
  * </p>
  *
  * <p>

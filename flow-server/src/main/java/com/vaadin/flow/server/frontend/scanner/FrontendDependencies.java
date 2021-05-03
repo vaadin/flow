@@ -101,15 +101,12 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * Tertiary constructor, which allows declaring whether embeddable web
      * components should be checked for resource dependencies.
      *
-     * @param finder
-     *            the class finder
-     * @param generateEmbeddableWebComponents
-     *            {@code true} checks the
-     *            {@link com.vaadin.flow.component.WebComponentExporter} classes
-     *            for dependencies. {@code true} is default for
-     *            {@link FrontendDependencies#FrontendDependencies(ClassFinder)}
-     * @param useV14Bootstrap
-     *            whether we are in legacy V14 bootstrap mode
+     * @param finder                          the class finder
+     * @param generateEmbeddableWebComponents {@code true} checks the
+     *                                        {@link com.vaadin.flow.component.WebComponentExporter} classes
+     *                                        for dependencies. {@code true} is default for
+     *                                        {@link FrontendDependencies#FrontendDependencies(ClassFinder)}
+     * @param useV14Bootstrap                 whether we are in legacy V14 bootstrap mode
      */
     public FrontendDependencies(ClassFinder finder,
             boolean generateEmbeddableWebComponents, boolean useV14Bootstrap) {
@@ -496,12 +493,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * annotations. However, if no theme is found, {@code Lumo} is used, if
      * available.
      *
-     * @param clazz
-     *            the exporter endpoint class
-     * @throws ClassNotFoundException
-     *             if unable to load a class by class name
-     * @throws IOException
-     *             if unable to scan the class byte code
+     * @param clazz the exporter endpoint class
+     * @throws ClassNotFoundException if unable to load a class by class name
+     * @throws IOException            if unable to scan the class byte code
      */
     @SuppressWarnings("unchecked")
     private void computeExporterEndpoints(Class<?> clazz)

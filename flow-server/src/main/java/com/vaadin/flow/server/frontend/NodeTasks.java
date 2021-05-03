@@ -696,6 +696,7 @@ public class NodeTasks implements FallibleCommand {
         commands.add(taskGenerateIndexTs);
     }
 
+
     private void addGenerateTsConfigTask(Builder builder) {
         TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
                 builder.npmFolder);
@@ -712,8 +713,9 @@ public class NodeTasks implements FallibleCommand {
         File outputDirectory = new File(builder.npmFolder,
                 builder.buildDirectory);
         if (pwaConfiguration.isEnabled()) {
-            commands.add(new TaskGenerateServiceWorker(
-                    builder.frontendDirectory, outputDirectory));
+            commands.add(
+                    new TaskGenerateServiceWorker(builder.frontendDirectory,
+                            outputDirectory));
         }
     }
 

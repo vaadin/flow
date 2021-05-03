@@ -131,15 +131,15 @@ public class StaticFileServer implements StaticFileHandler {
         URL resourceUrl = null;
         if (isAllowedVAADINBuildOrStaticUrl(filenameWithPath)
                 || manifestPaths.contains(filenameWithPath)) {
-            if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
+            if(APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
                 resourceUrl = vaadinService.getClassLoader()
-                        .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
-                                + filenameWithPath.replaceFirst("^/", ""));
-
+                    .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/" 
+                            + filenameWithPath.replaceFirst("^/", ""));
+                    
             } else {
                 resourceUrl = vaadinService.getClassLoader()
-                        .getResource(VAADIN_WEBAPP_RESOURCES
-                                + filenameWithPath.replaceFirst("^/", ""));
+                    .getResource(VAADIN_WEBAPP_RESOURCES
+                            + filenameWithPath.replaceFirst("^/", ""));
             }
         }
         if (resourceUrl == null) {
@@ -148,8 +148,7 @@ public class StaticFileServer implements StaticFileHandler {
         if (resourceUrl == null && shouldFixIncorrectWebjarPaths()
                 && isIncorrectWebjarPath(filenameWithPath)) {
             // Flow issue #4601
-            resourceUrl = getStaticResource(
-                    fixIncorrectWebjarPath(filenameWithPath));
+            resourceUrl = getStaticResource(fixIncorrectWebjarPath(filenameWithPath));
         }
 
         if (resourceUrl == null) {
@@ -432,7 +431,8 @@ public class StaticFileServer implements StaticFileHandler {
      */
     private List<String> getManifestPathsFromJson() {
         InputStream stream = vaadinService.getClassLoader()
-                .getResourceAsStream(VAADIN_WEBAPP_RESOURCES + "manifest.json");
+                .getResourceAsStream(
+                        VAADIN_WEBAPP_RESOURCES + "manifest.json");
         if (stream == null) {
             // manifest.json resource does not exist, probably dev mode
             return new ArrayList<>();
