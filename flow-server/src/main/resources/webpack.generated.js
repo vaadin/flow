@@ -13,7 +13,7 @@ const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 // Flow plugins
 const StatsPlugin = require('@vaadin/stats-plugin');
 const ThemeLiveReloadPlugin = require('@vaadin/theme-live-reload-plugin');
-const { ApplicationThemePlugin, processThemeResources, extractThemeName } = require('@vaadin/application-theme-plugin');
+const { ApplicationThemePlugin, processThemeResources, extractThemeName, findParentThemes } = require('@vaadin/application-theme-plugin');
 
 const path = require('path');
 const baseDir = path.resolve(__dirname);
@@ -95,12 +95,6 @@ if (watchDogPort) {
 }
 
 const flowFrontendThemesFolder = path.resolve(flowFrontendFolder, 'themes');
-let themeName = undefined;
-if (devMode) {
-  // Current theme name is being extracted from theme-generated.js located in
-  // target/frontend/themes folder
-  themeName = extractThemeName(flowFrontendThemesFolder);
-}
 const themeOptions = {
   devMode: devMode,
   // The following matches target/frontend/themes/theme-generated.js
@@ -109,6 +103,23 @@ const themeOptions = {
   themeProjectFolders: themeProjectFolders,
   projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
 };
+let themeName = undefined;
+let themeWatchFolders = undefined;
+if (devMode) {
+  // Current theme name is being extracted from theme-generated.js located in
+  // target/frontend/themes folder
+  themeName = extractThemeName(flowFrontendThemesFolder);
+  const parentThemePaths = findParentThemes(themeName, themeOptions);
+  const currentThemeFolders = projectStaticAssetsFolders
+    .map((folder) => path.resolve(folder, "themes", themeName));
+  // Watch the components folders for component styles update in both
+  // current theme and parent themes. Other folders or CSS files except
+  // 'styles.css' should be referenced from `styles.css` anyway, so no need
+  // to watch them.
+  themeWatchFolders = [...currentThemeFolders, ...parentThemePaths]
+    .map((themeFolder) => path.resolve(themeFolder, "components"));
+}
+
 const processThemeResourcesCallback = (logger) => processThemeResources(themeOptions, logger);
 
 exports = {
@@ -267,12 +278,7 @@ module.exports = {
 
     ...(devMode && themeName ? [new ExtraWatchWebpackPlugin({
       files: [],
-      // Watch the components folder for component styles update.
-      // Other folders or CSS files except 'styles.css' should be
-      // referenced from `styles.css` anyway, so no need to watch them.
-      dirs: [path.resolve(__dirname, 'frontend', 'themes', themeName, 'components'),
-        path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources', 'themes', themeName, 'components'),
-        path.resolve(__dirname, 'src', 'main', 'resources', 'static', 'themes', themeName, 'components')]
+      dirs: [...themeWatchFolders]
     }), new ThemeLiveReloadPlugin(processThemeResourcesCallback)] : []),
 
     new StatsPlugin({
