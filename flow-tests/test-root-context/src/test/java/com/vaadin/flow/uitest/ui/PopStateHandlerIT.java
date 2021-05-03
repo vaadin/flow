@@ -184,7 +184,8 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
 
     private void verifyInsideServletLocation(String pathAfterServletMapping) {
         Assert.assertEquals("Invalid URL",
-                trimPathForClientRouter(getRootURL() + "/view/" + pathAfterServletMapping),
+                trimPathForClientRouter(
+                        getRootURL() + "/view/" + pathAfterServletMapping),
                 trimPathForClientRouter(getDriver().getCurrentUrl()));
     }
 
@@ -194,7 +195,8 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
 
     private void verifyPopStateEvent(String location) {
         Assert.assertEquals("Invalid server side event location",
-                trimPathForClientRouter(findElement(By.id("location")).getText()),
+                trimPathForClientRouter(
+                        findElement(By.id("location")).getText()),
                 trimPathForClientRouter(location));
     }
 }

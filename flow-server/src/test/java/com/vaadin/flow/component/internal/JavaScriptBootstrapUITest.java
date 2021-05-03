@@ -384,7 +384,8 @@ public class JavaScriptBootstrapUITest {
 
     @Test
     public void should_not_handle_forward_to_client_side_view_on_reroute() {
-        ui.connectClient("foo", "bar", "/forwardToClientSideViewOnReroute", "", null);
+        ui.connectClient("foo", "bar", "/forwardToClientSideViewOnReroute", "",
+                null);
 
         assertNull(ui.getForwardToClientUrl());
     }
@@ -590,7 +591,8 @@ public class JavaScriptBootstrapUITest {
         String anotherDynamicTitle = UUID.randomUUID().toString();
         JavaScriptBootstrapUI anotherUI = new JavaScriptBootstrapUI();
         anotherUI.getInternals().setSession(mocks.getSession());
-        anotherUI.connectClient("foo", "bar", "clean", anotherDynamicTitle, null);
+        anotherUI.connectClient("foo", "bar", "clean", anotherDynamicTitle,
+                null);
         assertEquals(anotherDynamicTitle, anotherUI.getInternals().getTitle());
 
         ui.navigate("dirty");

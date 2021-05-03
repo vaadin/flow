@@ -205,9 +205,9 @@ public class JavaScriptBootstrapUI extends UI {
 
         // There is an in-progress navigation or there are no changes,
         // prevent looping
-        if (navigationInProgress || getInternals().hasLastHandledLocation()
-                && sameLocation(getInternals().getLastHandledLocation(),
-                location)) {
+        if (navigationInProgress
+                || getInternals().hasLastHandledLocation() && sameLocation(
+                        getInternals().getLastHandledLocation(), location)) {
             return;
         }
 
