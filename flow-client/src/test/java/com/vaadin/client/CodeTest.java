@@ -82,6 +82,7 @@ public class CodeTest {
                 packageName = node.getName().toString();
                 return false;
             }
+
             @Override
             public boolean visit(ImportDeclaration node) {
                 imports.add(node.getName().toString());
@@ -93,7 +94,8 @@ public class CodeTest {
                 for (Object frament : node.fragments()) {
                     if (frament instanceof VariableDeclarationFragment) {
                         VariableDeclarationFragment variableDeclaration = (VariableDeclarationFragment) frament;
-                        Expression expression = variableDeclaration.getInitializer();
+                        Expression expression = variableDeclaration
+                                .getInitializer();
                         if (expression instanceof ClassInstanceCreation) {
                             ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) expression;
                             Class<?> typeClass = getClass(node.getType());

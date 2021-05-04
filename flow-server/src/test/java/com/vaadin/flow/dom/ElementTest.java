@@ -2056,6 +2056,12 @@ public class ElementTest extends AbstractNodeTest {
     }
 
     @Test
+    public void textNodeTransformsNullToEmptyAndDoesNotThrowException() {
+        Element e = Element.createText(null);
+        Assert.assertEquals("", e.getText());
+    }
+
+    @Test
     public void textNodeOuterHtml() {
         Element e = Element.createText("foobar");
         Assert.assertEquals("foobar", e.getOuterHTML());

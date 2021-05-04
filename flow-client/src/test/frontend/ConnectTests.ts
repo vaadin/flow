@@ -11,8 +11,8 @@ import {
   EndpointError,
   EndpointResponseError,
   EndpointValidationError,
-} from "../../main/resources/META-INF/resources/frontend/Connect";
-import {ConnectionState, ConnectionStateStore} from "../../main/resources/META-INF/resources/frontend/ConnectionState";
+} from "../../main/frontend/Connect";
+import {ConnectionState, ConnectionStateStore} from "../../main/frontend/ConnectionState";
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock

@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>7.0-SNAPSHOT</version>
+        <version>8.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-tests</artifactId>
     <name>Flow tests</name>
@@ -330,7 +330,6 @@
                 <module>test-scalability</module>
                 <module>test-memory-leaks</module>
                 <module>test-servlet</module>
-                <module>test-application-theme</module>
                 <module>test-themes</module>
                 <module>servlet-containers</module>
 
@@ -350,9 +349,15 @@
                 <module>test-ccdm-flow-navigation/pom-production.xml</module>
 
                 <module>test-root-context</module>
-
+				
+                <module>test-v14-bootstrap</module>
+                <module>test-v14-bootstrap/pom-production.xml</module>
+				
                 <!-- tests are disabled in this module, this reference is for maven version plugin -->
                 <module>test-no-theme</module>
+                <!-- move theme tests to the end, because theme switch live reload-->
+                <!-- test impacts startup test-->
+                <module>test-application-theme</module>
             </modules>
         </profile>
         <profile>

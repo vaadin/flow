@@ -23,9 +23,11 @@ public class SetParameterForwardToView extends Div
     }
 
     @Override
-    public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
+    public void setParameter(BeforeEvent event,
+            @OptionalParameter String parameter) {
         if (parameter != null && parameter.equals("one")) {
-            event.forwardTo("com.vaadin.flow.uitest.ui.SetParameterForwardToView",
+            event.forwardTo(
+                    "com.vaadin.flow.uitest.ui.SetParameterForwardToView",
                     "two");
         }
     }

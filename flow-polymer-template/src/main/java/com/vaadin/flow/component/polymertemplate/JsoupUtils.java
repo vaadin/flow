@@ -24,6 +24,8 @@ import org.jsoup.nodes.Node;
 
 /**
  * Utilities for JSOUP DOM manipulations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @deprecated This class is internal and used only for Polymer templates.

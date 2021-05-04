@@ -16,8 +16,10 @@
 package com.vaadin.flow.server.frontend;
 
 /**
- * Exception thrown for when a node task that is not in the
- * task list is encountered.
+ * Exception thrown for when a node task that is not in the task list is
+ * encountered.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class UnknownTaskException extends RuntimeException {
 
@@ -25,7 +27,7 @@ public class UnknownTaskException extends RuntimeException {
      * Exception constructor.
      *
      * @param command
-     *         command that was not found
+     *            command that was not found
      */
     public UnknownTaskException(FallibleCommand command) {
         super("Could not find position for task " + command.getClass());

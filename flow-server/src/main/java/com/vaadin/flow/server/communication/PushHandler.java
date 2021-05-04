@@ -41,6 +41,7 @@ import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -51,7 +52,9 @@ import elemental.json.JsonException;
 
 /**
  * Handles incoming push connections and messages and dispatches them to the
- * correct {@link UI}/ {@link AtmospherePushConnection}
+ * correct {@link UI}/ {@link AtmospherePushConnection}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -147,7 +150,7 @@ public class PushHandler {
         }
     };
 
-    private VaadinService service;
+    private VaadinServletService service;
 
     /**
      * Creates an instance connected to the given service.
@@ -155,7 +158,7 @@ public class PushHandler {
      * @param service
      *            the service this handler belongs to
      */
-    public PushHandler(VaadinService service) {
+    public PushHandler(VaadinServletService service) {
         this.service = service;
     }
 

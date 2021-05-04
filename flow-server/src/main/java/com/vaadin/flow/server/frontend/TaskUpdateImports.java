@@ -46,6 +46,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 
@@ -54,6 +55,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
  * or when flow-maven-plugin goals are run in order to update Flow imports file
  * and <code>node_module/@vaadin/flow-frontend</code> contents by visiting all
  * classes with {@link JsModule} and {@link Theme} annotations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
@@ -133,22 +136,26 @@ public class TaskUpdateImports extends NodeUpdater {
             ThemeDefinition themeDef = getThemeDefinition();
 
             if (theme != null) {
-                boolean hasApplicationTheme = themeDef != null && !"".equals(themeDef.getName());
-                // There is no application theme in use, write theme includes here. Otherwise they are written by the theme
+                boolean hasApplicationTheme = themeDef != null
+                        && !"".equals(themeDef.getName());
+                // There is no application theme in use, write theme includes
+                // here. Otherwise they are written by the theme
                 if (!theme.getHeaderInlineContents().isEmpty()) {
                     lines.add("");
                     if (hasApplicationTheme) {
                         lines.add("// Handled in the application theme");
                     }
                     theme.getHeaderInlineContents()
-                    .forEach(html -> addLines(lines,
-                    String.format(THEME_LINE_TPL, hasApplicationTheme ? "// ":"" ,NEW_LINE_TRIM
-                    .matcher(html).replaceAll(""))));
+                            .forEach(html -> addLines(lines,
+                                    String.format(THEME_LINE_TPL,
+                                            hasApplicationTheme ? "// " : "",
+                                            NEW_LINE_TRIM.matcher(html)
+                                                    .replaceAll(""))));
                 }
                 if (themeDef != null) {
-                    theme.getHtmlAttributes(themeDef.getVariant()).forEach(
-                        (key, value) -> addLines(lines,
-                            String.format(THEME_VARIANT_TPL, key, value)));
+                    theme.getHtmlAttributes(themeDef.getVariant())
+                            .forEach((key, value) -> addLines(lines, String
+                                    .format(THEME_VARIANT_TPL, key, value)));
                 }
                 lines.add("");
             }
@@ -321,13 +328,17 @@ public class TaskUpdateImports extends NodeUpdater {
      * @param disablePnpm
      *            if {@code true} then npm is used instead of pnpm, otherwise
      *            pnpm is used
+     * @param buildDir
+     *            the used build directory
      */
     TaskUpdateImports(ClassFinder finder,
             FrontendDependenciesScanner frontendDepScanner,
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
-            File tokenFile, JsonObject tokenFileData, boolean disablePnpm) {
-        super(finder, frontendDepScanner, npmFolder, generatedPath, null);
+            File tokenFile, JsonObject tokenFileData, boolean disablePnpm,
+            String buildDir) {
+        super(finder, frontendDepScanner, npmFolder, generatedPath, null,
+                buildDir);
         this.frontendDirectory = frontendDirectory;
         fallbackScanner = fallBackScannerProvider.apply(finder);
         this.tokenFile = tokenFile;

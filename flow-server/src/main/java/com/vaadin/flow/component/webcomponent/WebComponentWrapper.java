@@ -33,6 +33,8 @@ import elemental.json.JsonValue;
 /**
  * Wrapper component for a web component that exposes {@link ClientCallable}
  * methods that the client-side components expect to be available.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
  * @since 2.0
@@ -90,7 +92,6 @@ public class WebComponentWrapper extends Component {
         getElement().getShadowRoot().ifPresent(shadow -> shadow
                 .appendChild(bootstrapElements.toArray(new Element[0])));
     }
-    
 
     /**
      * Synchronize method for client side to send property value updates to the
@@ -106,7 +107,8 @@ public class WebComponentWrapper extends Component {
         try {
             webComponentBinding.updateProperty(property, newValue);
         } catch (IllegalArgumentException e) {
-            LoggerFactory.getLogger(webComponentBinding.getComponent().getClass())
+            LoggerFactory
+                    .getLogger(webComponentBinding.getComponent().getClass())
                     .error("Failed to synchronise property '{}'", property, e);
         }
     }

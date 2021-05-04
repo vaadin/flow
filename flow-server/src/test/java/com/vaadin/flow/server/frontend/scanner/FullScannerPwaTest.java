@@ -34,12 +34,10 @@ public class FullScannerPwaTest extends AbstractScannerPwaTest {
         Mockito.doReturn(getPwaAnnotatedClasses(classes)).when(finder)
                 .getAnnotatedClasses(clazz);
 
-        FullDependenciesScanner fullDependenciesScanner =
-                new FullDependenciesScanner(finder,
-                        (type, annotation) -> findPwaAnnotations(type));
+        FullDependenciesScanner fullDependenciesScanner = new FullDependenciesScanner(
+                finder, (type, annotation) -> findPwaAnnotations(type), false);
         return fullDependenciesScanner.getPwaConfiguration();
     }
-
 
     private Set<Class<?>> getPwaAnnotatedClasses(Class<?>[] classes) {
         Set<Class<?>> result = new HashSet<>();

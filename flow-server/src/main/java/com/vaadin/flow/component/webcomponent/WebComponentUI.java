@@ -49,6 +49,8 @@ import elemental.json.JsonObject;
 
 /**
  * Custom UI for use with WebComponents served from the server.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
  * @since 2.0
@@ -288,8 +290,8 @@ public class WebComponentUI extends UI {
         WebComponentConfigurationRegistry registry = getConfigurationRegistry();
         Optional<Theme> theme = registry
                 .getEmbeddedApplicationAnnotation(Theme.class);
-        if (!theme.isPresent() || theme.get().themeClass()
-            .equals(AbstractTheme.class)) {
+        if (!theme.isPresent()
+                || theme.get().themeClass().equals(AbstractTheme.class)) {
             return;
         }
         AbstractTheme themeInstance = Instantiator.get(this)

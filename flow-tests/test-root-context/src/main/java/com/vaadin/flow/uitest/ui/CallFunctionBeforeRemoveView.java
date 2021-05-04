@@ -23,7 +23,7 @@ import com.vaadin.flow.router.Route;
 @Route(value = "com.vaadin.flow.uitest.ui.CallFunctionBeforeRemoveView", layout = ViewTestLayout.class)
 public class CallFunctionBeforeRemoveView extends AbstractDivView {
 
-    public CallFunctionBeforeRemoveView(){
+    public CallFunctionBeforeRemoveView() {
         Input input = new Input();
 
         add(input);

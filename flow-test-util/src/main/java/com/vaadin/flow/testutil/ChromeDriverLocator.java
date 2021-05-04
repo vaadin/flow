@@ -41,7 +41,8 @@ final class ChromeDriverLocator {
     // examples: driver\windows\googlechrome\64bit\chromedriver.exe
     private static final int MAX_DRIVER_SEARCH_DEPTH = 4;
 
-    private ChromeDriverLocator() {}
+    private ChromeDriverLocator() {
+    }
 
     /**
      * Fills {@link ChromeDriverLocator#WEBDRIVER_CHROME_DRIVER} system property

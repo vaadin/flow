@@ -6,7 +6,7 @@ const { assert } = intern.getPlugin("chai");
 import {
   ConnectionState,
   ConnectionStateStore
-} from "../../main/resources/META-INF/resources/frontend/ConnectionState";
+} from "../../main/frontend/ConnectionState";
 
 describe('ConnectionStateStore', () => {
 

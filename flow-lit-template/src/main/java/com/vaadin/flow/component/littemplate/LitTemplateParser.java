@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.component.littemplate;
 
-import com.vaadin.flow.component.littemplate.internal.LitTemplateParserImpl;
 import org.jsoup.nodes.Element;
 
+import com.vaadin.flow.component.littemplate.internal.LitTemplateParserImpl;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.server.VaadinService;
 
@@ -26,6 +26,8 @@ import com.vaadin.flow.server.VaadinService;
  * <p>
  * It returns a JSOUP element representing the content of template for the given
  * template class.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @see LitTemplateParserImpl
  *

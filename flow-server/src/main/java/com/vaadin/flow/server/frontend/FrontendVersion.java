@@ -20,6 +20,8 @@ import java.util.Objects;
 
 /**
  * Version object for frontend versions comparison and handling.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since
  */

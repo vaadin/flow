@@ -53,6 +53,8 @@ import com.vaadin.flow.shared.Registration;
  * A node in the state tree that is synchronized with the client-side. Data
  * stored in nodes is structured into different features to provide isolation.
  * The features available for a node are defined when the node is created.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @see StateTree
  * @author Vaadin Ltd

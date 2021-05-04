@@ -46,6 +46,9 @@ import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 /**
  * Custom UI for {@link JavaScriptBootstrapHandler}. This class is intended for
  * internal use in client side bootstrapping.
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class JavaScriptBootstrapUI extends UI {
     public static final String SERVER_ROUTING = "clientRoutingMode";
@@ -133,7 +136,7 @@ public class JavaScriptBootstrapUI extends UI {
         if (getForwardToClientUrl() != null) {
             navigateToClient(getForwardToClientUrl());
             acknowledgeClient();
-            
+
         } else if (isPostponed()) {
             cancelClient();
         } else {
@@ -185,33 +188,34 @@ public class JavaScriptBootstrapUI extends UI {
             // prevent looping
             if (navigationInProgress || getInternals().hasLastHandledLocation()
                     && sameLocation(getInternals().getLastHandledLocation(),
-                    location)) {
+                            location)) {
                 return;
             }
 
             navigationInProgress = true;
-            Optional<NavigationState> navigationState = getInternals()
-                    .getRouter().resolveNavigationTarget(location);
+            try {
+                Optional<NavigationState> navigationState = getInternals()
+                        .getRouter().resolveNavigationTarget(location);
 
-            if (navigationState.isPresent()) {
-                // Navigation can be done in server side without extra
-                // round-trip
-                handleNavigation(location, navigationState.get(),
-                        NavigationTrigger.UI_NAVIGATE);
-                if (getForwardToClientUrl() != null) {
-                    navigationInProgress = false;
-                    // Server is forwarding to a client route from a
-                    // BeforeEnter.
-                    navigateToClient(getForwardToClientUrl());
-                    return;
+                if (navigationState.isPresent()) {
+                    // Navigation can be done in server side without extra
+                    // round-trip
+                    handleNavigation(location, navigationState.get(),
+                            NavigationTrigger.UI_NAVIGATE);
+                    if (getForwardToClientUrl() != null) {
+                        // Server is forwarding to a client route from a
+                        // BeforeEnter.
+                        navigateToClient(getForwardToClientUrl());
+                    }
+                } else {
+                    // Server cannot resolve navigation, let client-side to
+                    // handle it.
+                    navigateToClient(location.getPathWithQueryParameters());
                 }
-            } else {
-                // Server cannot resolve navigation, let client-side to handle
-                // it.
-                navigateToClient(location.getPathWithQueryParameters());
+            } finally {
+                navigationInProgress = false;
             }
 
-            navigationInProgress = false;
         }
     }
 
@@ -243,7 +247,8 @@ public class JavaScriptBootstrapUI extends UI {
                 NavigationTrigger.CLIENT_SIDE);
     }
 
-    private void renderViewForRoute(Location location, NavigationTrigger trigger) {
+    private void renderViewForRoute(Location location,
+            NavigationTrigger trigger) {
         if (!shouldHandleNavigation(location)) {
             return;
         }
@@ -280,7 +285,8 @@ public class JavaScriptBootstrapUI extends UI {
                         .trimPath(oldLocation.getPathWithQueryParameters()));
     }
 
-    private void handleNavigation(Location location, NavigationState navigationState, NavigationTrigger trigger) {
+    private void handleNavigation(Location location,
+            NavigationState navigationState, NavigationTrigger trigger) {
         try {
             NavigationEvent navigationEvent = new NavigationEvent(
                     getInternals().getRouter(), location, this, trigger);
@@ -290,7 +296,8 @@ public class JavaScriptBootstrapUI extends UI {
 
             clientNavigationStateRenderer.handle(navigationEvent);
 
-            forwardToClientUrl = clientNavigationStateRenderer.getClientForwardRoute();
+            forwardToClientUrl = clientNavigationStateRenderer
+                    .getClientForwardRoute();
 
             adjustPageTitle();
 
@@ -337,7 +344,8 @@ public class JavaScriptBootstrapUI extends UI {
         // app shell title is computed from the title tag in index.html
         String appShellTitle = getInternals().getAppShellTitle();
         // restore the app shell title when there is no one for the route
-        if ((newTitle == null || newTitle.isEmpty()) && appShellTitle != null && !appShellTitle.isEmpty()) {
+        if ((newTitle == null || newTitle.isEmpty()) && appShellTitle != null
+                && !appShellTitle.isEmpty()) {
             getInternals().cancelPendingTitleUpdate();
             getInternals().setTitle(appShellTitle);
         }
@@ -354,8 +362,8 @@ public class JavaScriptBootstrapUI extends UI {
         ErrorParameter<NotFoundException> errorParameter = new ErrorParameter<>(
                 NotFoundException.class, notFoundException);
         ErrorNavigationEvent errorNavigationEvent = new ErrorNavigationEvent(
-                getInternals().getRouter(), location, this, NavigationTrigger.CLIENT_SIDE,
-                errorParameter);
+                getInternals().getRouter(), location, this,
+                NavigationTrigger.CLIENT_SIDE, errorParameter);
         errorStateRenderer.handle(errorNavigationEvent);
     }
 

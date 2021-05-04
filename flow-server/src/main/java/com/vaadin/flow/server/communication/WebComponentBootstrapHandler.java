@@ -29,8 +29,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -46,6 +44,7 @@ import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -60,6 +59,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Bootstrap handler for WebComponent requests.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
  * @since 2.0
@@ -83,7 +84,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         public <T extends Annotation> Optional<T> getPageConfigurationAnnotation(
                 Class<T> annotationType) {
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                    .getInstance(getRequest().getService().getContext());
+                    .getInstance(getService().getContext());
             return registry.getEmbeddedApplicationAnnotation(annotationType);
         }
 
@@ -97,7 +98,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             extends BootstrapPageBuilder {
         @Override
         protected List<String> getChunkKeys(JsonObject chunks) {
-            return Collections.singletonList(EXPORT_CHUNK);
+            if (chunks.hasKey(EXPORT_CHUNK)) {
+                return Collections.singletonList(EXPORT_CHUNK);
+            } else {
+                return super.getChunkKeys(chunks);
+            }
         }
     }
 
@@ -139,7 +144,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * @return Request's url.
      */
     protected String getRequestUrl(VaadinRequest request) {
-        return ((HttpServletRequest) request).getRequestURL().toString();
+        return ((VaadinServletRequest) request).getRequestURL().toString();
     }
 
     @Override
@@ -280,6 +285,12 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         ArrayList<com.vaadin.flow.dom.Element> elementsForShadows = new ArrayList<>();
         try (BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
+            writer.write("(function () {\n"
+                    + "var hasScript = function(src) {\n"
+                    + "  var scriptTags = Array.from(document.head.querySelectorAll('script'));\n"
+                    + "  return scriptTags.some(script => script.src.endsWith(src))\n"
+                    + "};\n");
+
             String varName = "headElem"; // generated head element
             writer.append("var ").append(varName).append("=null;");
             for (Element element : head.children()) {
@@ -287,6 +298,12 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     getElementForShadowDom(element)
                             .ifPresent(elementsForShadows::add);
                     continue;
+                }
+                String conditionalFilename = getVaadinFilenameIfVaadinScript(
+                        element);
+                if (conditionalFilename != null) {
+                    writer.append("if (!hasScript(\"" + conditionalFilename
+                            + "\")) {\n");
                 }
                 writer.append(varName).append("=");
                 writer.append("document.createElement('")
@@ -300,12 +317,33 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 }
                 writer.append("document.head.appendChild(").append(varName)
                         .append(");");
+                if (conditionalFilename != null) {
+                    writer.append("}\n");
+                }
             }
+            writer.append("})();");
         }
 
         WebComponentConfigurationRegistry
                 .getInstance(response.getService().getContext())
                 .setShadowDomElements(elementsForShadows);
+    }
+
+    private static String getVaadinFilenameIfVaadinScript(Element element) {
+        if (!"script".equalsIgnoreCase(element.tagName())) {
+            return null;
+        }
+        // Injecting a webpack bundle twice can never work.
+        // The bundle contains web components that register
+        // themselves and loading twice will always cause
+        // custom element conflicts
+        String src = element.attr("src");
+        int index = src.indexOf("/VAADIN/");
+        if (index != -1) {
+            return src.substring(index);
+        }
+
+        return null;
     }
 
     private static boolean elementShouldNotBeTransferred(Element element) {

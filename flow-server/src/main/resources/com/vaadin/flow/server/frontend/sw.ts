@@ -44,12 +44,31 @@ const appShellPath = '.';
 const offlinePath = OFFLINE_PATH_ENABLED ? OFFLINE_PATH : appShellPath;
 const networkOnly = new NetworkOnly();
 let connectionLost = false;
+
 const navigationFallback = new NavigationRoute(async (context: RouteHandlerCallbackOptions) => {
-  // Use offlinePath fallback if offline was detected
-  if (!self.navigator.onLine) {
+
+  const serveResourceFromCache = async () => {
+    // serve any file in the manifest directly from cache
+    const path = context.url.pathname;
+    const scopePath = new URL(self.registration.scope).pathname;
+    if (path.startsWith(scopePath)) {
+      const pathRelativeToScope = path.substr(scopePath.length);
+      if (manifestEntries.some(({url}) => url === pathRelativeToScope)) {
+        return await matchPrecache(pathRelativeToScope);
+      }
+    }
     const offlinePathPrecachedResponse = await matchPrecache(offlinePath);
     if (offlinePathPrecachedResponse) {
-      return rewriteBaseHref(offlinePathPrecachedResponse);
+      return await rewriteBaseHref(offlinePathPrecachedResponse);
+    }
+    return undefined;
+  };
+
+  // Use offlinePath fallback if offline was detected
+  if (!self.navigator.onLine) {
+    const precachedResponse = await serveResourceFromCache();
+    if (precachedResponse) {
+      return precachedResponse;
     }
   }
 
@@ -61,14 +80,14 @@ const navigationFallback = new NavigationRoute(async (context: RouteHandlerCallb
     return response;
   } catch (error) {
     connectionLost = true;
-    const precachedResponse = await matchPrecache(offlinePath);
-    return precachedResponse ? await rewriteBaseHref(precachedResponse) : error;
+    const precachedResponse = await serveResourceFromCache();
+    return precachedResponse || error;
   }
 });
 
 registerRoute(navigationFallback);
 
-let manifestEntries = self.__WB_MANIFEST;
+let manifestEntries: Array<PrecacheEntry> = self.__WB_MANIFEST;
 if (self.additionalManifestEntries && self.additionalManifestEntries.length) {
   manifestEntries = [...manifestEntries, ...self.additionalManifestEntries];
 }

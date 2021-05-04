@@ -13,6 +13,8 @@ import org.mockito.Mockito;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 
+import static com.vaadin.flow.server.Constants.TARGET;
+
 /**
  * Test that commands in NodeTasks are always executed in a predefined order.
  */
@@ -27,10 +29,9 @@ public class NodeTasksExecutionTest {
     @Before
     public void init() throws Exception {
 
-
         // Make a builder that doesn't add any commands.
         NodeTasks.Builder builder = new NodeTasks.Builder(
-                Mockito.mock(Lookup.class), null);
+                Mockito.mock(Lookup.class), null, TARGET);
         builder.useV14Bootstrap(true);
 
         nodeTasks = builder.build();
@@ -42,20 +43,17 @@ public class NodeTasksExecutionTest {
         commandsOrder = (List<Class<? extends FallibleCommand>>) commandOrderField
                 .get(nodeTasks);
 
-        executionOrder = new ArrayList<>(
-                commandsOrder.size());
-        commandsMock = mockCommandsRandomOrder(
-                commandsOrder, executionOrder);
+        executionOrder = new ArrayList<>(commandsOrder.size());
+        commandsMock = mockCommandsRandomOrder(commandsOrder, executionOrder);
 
         // get the private commands list
         final Field commandsField = NodeTasks.class
                 .getDeclaredField("commands");
         commandsField.setAccessible(true);
-        commands = (List<FallibleCommand>) commandsField
-                .get(nodeTasks);
+        commands = (List<FallibleCommand>) commandsField.get(nodeTasks);
 
         Assert.assertEquals("No commands should be added initially, "
-                        + "update mock builder so that we don't automatically add any tasks!",
+                + "update mock builder so that we don't automatically add any tasks!",
                 0, commands.size());
     }
 
@@ -80,7 +78,9 @@ public class NodeTasksExecutionTest {
         commands.add(commandsMock.get(0));
         commands.add(new NewTask());
 
-        Assert.assertThrows("NodeTasks execution should fail due to unknown task in execution list", UnknownTaskException.class, nodeTasks::execute);
+        Assert.assertThrows(
+                "NodeTasks execution should fail due to unknown task in execution list",
+                UnknownTaskException.class, nodeTasks::execute);
     }
 
     private class NewTask implements FallibleCommand {
@@ -94,12 +94,12 @@ public class NodeTasksExecutionTest {
      * add order in NodeTasks.
      *
      * @param commandsOrder
-     *         commands to execute array
+     *            commands to execute array
      * @param executionOrder
-     *         array to add execution into
+     *            array to add execution into
      * @return shuffled list of FallibleCommands to execute
      * @throws ExecutionFailedException
-     *         thrown by actual commands
+     *             thrown by actual commands
      */
     private List<FallibleCommand> mockCommandsRandomOrder(
             List<Class<? extends FallibleCommand>> commandsOrder,

@@ -1,6 +1,6 @@
 /* tslint:disable:max-classes-per-file */
 
-import {BinderNode} from "../../../main/resources/META-INF/resources/frontend/form/BinderNode";
+import {BinderNode} from "../../../main/frontend/form/BinderNode";
 
 const {suite, test, beforeEach, afterEach} = intern.getInterface("tdd");
 const {assert} = intern.getPlugin("chai");
@@ -20,7 +20,7 @@ import {
   AbstractModel,
   FieldStrategy,
   AbstractFieldStrategy
-} from "../../../main/resources/META-INF/resources/frontend/form";
+} from "../../../main/frontend/form";
 
 import {OrderModel, TestModel, TestEntity, Order} from "./TestModels";
 

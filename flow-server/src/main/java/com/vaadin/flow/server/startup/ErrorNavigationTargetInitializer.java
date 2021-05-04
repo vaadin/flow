@@ -28,6 +28,8 @@ import com.vaadin.flow.server.VaadinContext;
 /**
  * Servlet initializer for collecting all available error handler navigation
  * targets implementing {@link HasErrorParameter} on startup.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */
@@ -47,8 +49,7 @@ public class ErrorNavigationTargetInitializer
                 .map(clazz -> (Class<? extends Component>) clazz)
                 .collect(Collectors.toSet());
 
-        ApplicationRouteRegistry
-                .getInstance(context)
+        ApplicationRouteRegistry.getInstance(context)
                 .setErrorNavigationTargets(routes);
     }
 

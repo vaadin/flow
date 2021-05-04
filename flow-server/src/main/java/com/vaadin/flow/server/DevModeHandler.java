@@ -77,6 +77,9 @@ import static java.net.HttpURLConnection.HTTP_OK;
  *
  * By default it keeps updated npm dependencies and node imports before running
  * webpack server
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
@@ -497,8 +500,8 @@ public final class DevModeHandler implements RequestHandler {
             try {
                 readManifestPaths();
             } catch (IOException e) {
-                getLogger().error("Error when reading manifest.json " +
-                        "from webpack-dev-server", e);
+                getLogger().error("Error when reading manifest.json "
+                        + "from webpack-dev-server", e);
             }
 
             // Notify DevModeHandler to continue
@@ -551,11 +554,11 @@ public final class DevModeHandler implements RequestHandler {
     }
 
     /**
-     * Get and parse /manifest.json from webpack-dev-server, extracting
-     * paths to all resources in the webpack output.
+     * Get and parse /manifest.json from webpack-dev-server, extracting paths to
+     * all resources in the webpack output.
      *
-     * Those paths do not necessarily start with /VAADIN, as some resources
-     * must be served from the root directory, e. g., service worker JS.
+     * Those paths do not necessarily start with /VAADIN, as some resources must
+     * be served from the root directory, e. g., service worker JS.
      *
      * @throws IOException
      */
@@ -565,9 +568,10 @@ public final class DevModeHandler implements RequestHandler {
                 "GET");
         int responseCode = connection.getResponseCode();
         if (responseCode != HTTP_OK) {
-            getLogger().error("Unable to get manifest.json from " +
-                    "webpack-dev-server, got {} {}", responseCode,
-                    connection.getResponseMessage());
+            getLogger().error(
+                    "Unable to get manifest.json from "
+                            + "webpack-dev-server, got {} {}",
+                    responseCode, connection.getResponseMessage());
             return;
         }
 
@@ -575,8 +579,9 @@ public final class DevModeHandler implements RequestHandler {
                 .streamToString(connection.getInputStream());
         manifestPaths = FrontendUtils.parseManifestPaths(manifestJson);
         if (getLogger().isDebugEnabled()) {
-            getLogger().debug("Got asset paths from webpack manifest.json: \n    {}"
-                    , String.join("\n    ", manifestPaths));
+            getLogger().debug(
+                    "Got asset paths from webpack manifest.json: \n    {}",
+                    String.join("\n    ", manifestPaths));
         }
     }
 
@@ -657,12 +662,12 @@ public final class DevModeHandler implements RequestHandler {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
 
-        FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
-        tools.validateNodeAndNpmVersion();
-
         boolean useHomeNodeExec = config.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
+        FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
+                useHomeNodeExec);
+        tools.validateNodeAndNpmVersion();
 
         String nodeExec = null;
         if (useHomeNodeExec) {

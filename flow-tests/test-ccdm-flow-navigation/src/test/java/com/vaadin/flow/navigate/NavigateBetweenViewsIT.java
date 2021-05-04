@@ -71,7 +71,7 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
     }
 
     @Override
-    protected String getRootURL()  {
+    protected String getRootURL() {
         return super.getRootURL() + "/context-path";
     }
 }

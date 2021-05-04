@@ -255,8 +255,8 @@ public class PageTest {
                     public void then(
                             SerializableConsumer<JsonValue> resultHandler,
                             SerializableConsumer<String> errorHandler) {
-                        resultHandler.accept(Json
-                                .create("http://localhost:8080/home"));
+                        resultHandler.accept(
+                                Json.create("http://localhost:8080/home"));
                     }
                 };
             }

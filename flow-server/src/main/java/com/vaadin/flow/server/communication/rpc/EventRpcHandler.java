@@ -28,6 +28,8 @@ import elemental.json.JsonObject;
 
 /**
  * RPC handler for events.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @see JsonConstants#RPC_EVENT_TYPE
  * @author Vaadin Ltd
@@ -42,7 +44,8 @@ public class EventRpcHandler extends AbstractRpcInvocationHandler {
     }
 
     @Override
-    public Optional<Runnable> handleNode(StateNode node, JsonObject invocationJson) {
+    public Optional<Runnable> handleNode(StateNode node,
+            JsonObject invocationJson) {
         assert invocationJson.hasKey(JsonConstants.RPC_EVENT_TYPE);
 
         String eventType = invocationJson

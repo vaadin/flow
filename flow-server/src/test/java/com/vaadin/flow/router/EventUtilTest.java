@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -47,8 +46,9 @@ import static org.mockito.Mockito.when;
 /**
  * Test event util functionality.
  */
-@NotThreadSafe
 public class EventUtilTest {
+
+    private UI ui;
 
     @Tag(Tag.DIV)
     public static class Foo extends Component {
@@ -98,7 +98,7 @@ public class EventUtilTest {
     @Before
     public void setUp() {
         VaadinSession session = Mockito.mock(VaadinSession.class);
-        UI ui = new UI() {
+        ui = new UI() {
             @Override
             public VaadinSession getSession() {
                 return session;

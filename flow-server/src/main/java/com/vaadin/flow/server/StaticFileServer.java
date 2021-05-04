@@ -140,7 +140,6 @@ public class StaticFileServer implements StaticFileHandler {
                 resourceUrl = vaadinService.getClassLoader()
                         .getResource(VAADIN_WEBAPP_RESOURCES
                                 + filenameWithPath.replaceFirst("^/", ""));
-
             }
         }
         if (resourceUrl == null) {

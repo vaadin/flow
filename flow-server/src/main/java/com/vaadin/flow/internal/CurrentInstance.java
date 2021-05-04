@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +49,9 @@ import com.vaadin.flow.server.VaadinSession;
  * {@link VaadinService}, {@link VaadinSession}.
  * </p>
  *
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ * 
  * @author Vaadin Ltd
  * @since 1.0
  */

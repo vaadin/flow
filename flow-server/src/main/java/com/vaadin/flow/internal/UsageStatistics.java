@@ -29,6 +29,8 @@ import com.vaadin.flow.server.Version;
  * <p>
  * For details and to opt-out, see
  * https://github.com/vaadin/vaadin-usage-statistics.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -111,8 +113,7 @@ public class UsageStatistics {
      * Remove a entry of the current usage entries.
      *
      * @param name
-     *            the feature name
-     *            want to be removed, not <code>null</code>
+     *            the feature name want to be removed, not <code>null</code>
      */
     public static void removeEntry(String name) {
         entries.remove(name);

@@ -19,11 +19,19 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.communication.PwaHandler;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -87,6 +95,21 @@ public class HandlerHelper implements Serializable {
         }
     }
 
+    private static final String[] publicResources;
+    static {
+        List<String> resources = new ArrayList<>();
+        resources.add("/favicon.ico");
+        resources.add("/" + PwaConfiguration.DEFAULT_PATH);
+        resources.add("/" + FrontendUtils.SERVICE_WORKER_SRC_JS);
+        resources.add(PwaHandler.SW_RUNTIME_PRECACHE_PATH);
+        resources.add("/" + PwaConfiguration.DEFAULT_OFFLINE_PATH);
+        resources.add("/" + PwaHandler.DEFAULT_OFFLINE_STUB_PATH);
+        resources.add("/" + PwaConfiguration.DEFAULT_ICON);
+        resources.addAll(getIconVariants(PwaConfiguration.DEFAULT_ICON));
+        publicResources = resources.toArray(new String[resources.size()]);
+
+    }
+
     private HandlerHelper() {
         // Only utility methods
     }
@@ -105,6 +128,96 @@ public class HandlerHelper implements Serializable {
             RequestType requestType) {
         return requestType.getIdentifier().equals(request
                 .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
+    }
+
+    /**
+     * Checks whether the request is an internal request.
+     *
+     * The requests listed in {@link RequestType} are considered internal as
+     * they are needed for applications to work.
+     * <p>
+     * Requests for routes, static resources requests and similar are not
+     * considered internal requests.
+     *
+     * @param servletMappingPath
+     *            the path the Vaadin servlet is mapped to, with or without and
+     *            ending "/*"
+     * @param request
+     *            the servlet request
+     * @return {@code true} if the request is Vaadin internal, {@code false}
+     *         otherwise
+     */
+    public static boolean isFrameworkInternalRequest(String servletMappingPath,
+            HttpServletRequest request) {
+        return isFrameworkInternalRequest(servletMappingPath,
+                getRequestPathInsideContext(request), request.getParameter(
+                        ApplicationConstants.REQUEST_TYPE_PARAMETER));
+    }
+
+    private static boolean isFrameworkInternalRequest(String servletMappingPath,
+            String requestedPath, String requestTypeParameter) {
+        /*
+         * According to the spec, pathInfo should be null but not all servers
+         * implement it like that...
+         * 
+         * Additionally the spring servlet is mapped as /vaadinServlet right now
+         * it seems but requests are sent to /vaadinServlet/, causing a "/" path
+         * info
+         */
+
+        // This is only an internal request if it is for the Vaadin servlet
+        Optional<String> requestedPathWithoutServletMapping = getPathIfInsideServlet(
+                servletMappingPath, requestedPath);
+        if (!requestedPathWithoutServletMapping.isPresent()) {
+            return false;
+        } else if (isInternalRequestInsideServlet(
+                requestedPathWithoutServletMapping.get(),
+                requestTypeParameter)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    static boolean isInternalRequestInsideServlet(
+            String requestedPathWithoutServletMapping,
+            String requestTypeParameter) {
+        if (requestedPathWithoutServletMapping == null
+                || requestedPathWithoutServletMapping.isEmpty()
+                || "/".equals(requestedPathWithoutServletMapping)) {
+            return requestTypeParameter != null;
+        }
+        return false;
+    }
+
+    private static Optional<String> getPathIfInsideServlet(
+            String servletMappingPath, String requestedPath) {
+        if (servletMappingPath.endsWith("/*")) {
+            servletMappingPath = servletMappingPath.substring(0,
+                    servletMappingPath.length() - "/*".length());
+        }
+        if ("/".equals(servletMappingPath)) {
+            servletMappingPath = "";
+        }
+        if (!requestedPath.startsWith(servletMappingPath)) {
+            return Optional.empty();
+        }
+        return Optional
+                .of(requestedPath.substring(servletMappingPath.length()));
+    }
+
+    private static String getRequestPathInsideContext(
+            HttpServletRequest request) {
+        String servletPath = request.getServletPath();
+        String pathInfo = request.getPathInfo();
+        String url = "";
+        if (servletPath != null) {
+            url += servletPath;
+        }
+        if (pathInfo != null) {
+            url += pathInfo;
+        }
+        return url;
     }
 
     /**
@@ -209,6 +322,33 @@ public class HandlerHelper implements Serializable {
                     e);
         }
         return PARENT_DIRECTORY_REGEX.matcher(path).find();
+    }
+
+    /**
+     * URLs matching these patterns should be publicly available for
+     * applications to work. Can be used for defining a bypass for rules in e.g.
+     * Spring Security.
+     */
+    public static String[] getPublicResources() {
+        return publicResources;
+    }
+
+    private static List<String> getIconVariants(String iconPath) {
+        return PwaRegistry.getIconTemplates(iconPath).stream()
+                .map(PwaIcon::getRelHref).collect(Collectors.toList());
+    }
+
+    /**
+     * URLs matching these patterns should be publicly available for
+     * applications to work but might require a security context, i.e.
+     * authentication information.
+     */
+    public static String[] getPublicResourcesRequiringSecurityContext() {
+        return new String[] { //
+                "/VAADIN/**", // This contains static bundle files which
+                              // typically do not need a security
+                              // context but also uploads go here
+        };
     }
 
 }

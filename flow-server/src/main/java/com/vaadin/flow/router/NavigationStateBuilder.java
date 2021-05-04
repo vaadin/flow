@@ -44,8 +44,8 @@ public class NavigationStateBuilder {
     }
 
     /**
-     * Assigns the given navigation target with the given route parameters to the
-     * navigation state being built.
+     * Assigns the given navigation target with the given route parameters to
+     * the navigation state being built.
      *
      * @param navigationTarget
      *            the navigation target

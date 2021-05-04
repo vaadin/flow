@@ -24,6 +24,7 @@ import com.helger.css.decl.CSSDeclarationList;
 import com.helger.css.reader.CSSReaderDeclarationList;
 import com.helger.css.reader.errorhandler.CollectingCSSParseErrorHandler;
 import com.helger.css.writer.CSSWriterSettings;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.dom.StyleUtil;
@@ -31,6 +32,8 @@ import com.vaadin.flow.dom.StyleUtil;
 /**
  * Emulates the <code>style</code> attribute by delegating to
  * {@link Element#getStyle()}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */

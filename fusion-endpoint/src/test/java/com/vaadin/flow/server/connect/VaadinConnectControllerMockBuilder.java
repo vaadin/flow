@@ -14,8 +14,10 @@ import org.springframework.context.ApplicationContext;
 public class VaadinConnectControllerMockBuilder {
     private ApplicationContext applicationContext;
     private ObjectMapper objectMapper;
-    private EndpointNameChecker endpointNameChecker = mock(EndpointNameChecker.class);
-    private ExplicitNullableTypeChecker explicitNullableTypeChecker = mock(ExplicitNullableTypeChecker.class);
+    private EndpointNameChecker endpointNameChecker = mock(
+            EndpointNameChecker.class);
+    private ExplicitNullableTypeChecker explicitNullableTypeChecker = mock(
+            ExplicitNullableTypeChecker.class);
 
     public VaadinConnectControllerMockBuilder withApplicationContext(
             ApplicationContext applicationContext) {
@@ -42,9 +44,11 @@ public class VaadinConnectControllerMockBuilder {
     }
 
     public VaadinConnectController build() {
-        VaadinConnectController controller = Mockito.spy(
-            new VaadinConnectController(objectMapper, endpointNameChecker,
-                explicitNullableTypeChecker, applicationContext));
+        EndpointRegistry registry = new EndpointRegistry(endpointNameChecker);
+        VaadinConnectController controller = Mockito
+                .spy(new VaadinConnectController(objectMapper,
+                        explicitNullableTypeChecker, applicationContext,
+                        registry));
         Mockito.doReturn(mock(VaadinConnectAccessChecker.class))
                 .when(controller).getAccessChecker(Mockito.any());
         return controller;

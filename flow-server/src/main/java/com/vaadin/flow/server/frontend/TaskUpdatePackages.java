@@ -37,13 +37,16 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations
  * found in the classpath. It also visits classes annotated with
- * {@link NpmPackage}
+ * {@link NpmPackage}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
@@ -68,19 +71,22 @@ public class TaskUpdatePackages extends NodeUpdater {
      *            folder where flow generated files will be placed.
      * @param flowResourcesPath
      *            folder where flow dependencies taken from resources files will
-     *            be placed.
-     *         folder where flow generated files will be placed.
+     *            be placed. folder where flow generated files will be placed.
      * @param forceCleanUp
      *            forces the clean up process to be run. If {@code false}, clean
      *            up will be performed when platform version update is detected.
      * @param enablePnpm
      *            if {@code true} then pnpm is used instead of npm, otherwise
      *            npm is used
+     * @param buildDir
+     *            the used build directory
      */
     TaskUpdatePackages(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, File flowResourcesPath, boolean forceCleanUp, boolean enablePnpm) {
-        super(finder, frontendDependencies, npmFolder, generatedPath, flowResourcesPath);
+            File generatedPath, File flowResourcesPath, boolean forceCleanUp,
+            boolean enablePnpm, String buildDir) {
+        super(finder, frontendDependencies, npmFolder, generatedPath,
+                flowResourcesPath, buildDir);
         this.forceCleanUp = forceCleanUp;
         this.enablePnpm = enablePnpm;
     }
@@ -128,7 +134,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         if (added > 0) {
-            log().info("Added {} dependencies to main package.json", added);
+            log().debug("Added {} dependencies to main package.json", added);
         }
 
         // Remove obsolete dependencies
@@ -142,10 +148,9 @@ public class TaskUpdatePackages extends NodeUpdater {
         removed += cleanDependencies(dependencyCollection, packageJson,
                 DEPENDENCIES);
         if (dependencies != null) {
-            doCleanUp = doCleanUp || !enablePnpm && !ensureReleaseVersion(
-                    dependencies);
+            doCleanUp = doCleanUp
+                    || !enablePnpm && !ensureReleaseVersion(dependencies);
         }
-
 
         // Remove obsolete devDependencies
         dependencyCollection = getDefaultDevDependencies().entrySet().stream()
@@ -156,10 +161,10 @@ public class TaskUpdatePackages extends NodeUpdater {
                 DEV_DEPENDENCIES);
 
         if (removed > 0) {
-            log().info("Removed {} dependencies", removed);
+            log().debug("Removed {} dependencies", removed);
         }
-        if(removedDev > 0) {
-            log().info("Removed {} devDependencies", removedDev);
+        if (removedDev > 0) {
+            log().debug("Removed {} devDependencies", removedDev);
         }
 
         if (doCleanUp) {
@@ -172,19 +177,21 @@ public class TaskUpdatePackages extends NodeUpdater {
         // update packageJson hash value, if no changes it will not be written
         packageJson.getObject(VAADIN_DEP_KEY).put(HASH_KEY, newHash);
 
-        return added > 0 || removed > 0 || removedDev > 0 || !oldHash.equals(newHash);
+        return added > 0 || removed > 0 || removedDev > 0
+                || !oldHash.equals(newHash);
     }
 
-    private int cleanDependencies(List<String> dependencyCollection, JsonObject packageJson, String dependencyKey) {
+    private int cleanDependencies(List<String> dependencyCollection,
+            JsonObject packageJson, String dependencyKey) {
         int removed = 0;
 
         JsonObject dependencyObject = packageJson.getObject(dependencyKey);
-        JsonObject vaadinDependencyObject = packageJson.getObject(VAADIN_DEP_KEY)
-                .getObject(dependencyKey);
-        if(dependencyObject != null) {
+        JsonObject vaadinDependencyObject = packageJson
+                .getObject(VAADIN_DEP_KEY).getObject(dependencyKey);
+        if (dependencyObject != null) {
             for (String key : dependencyObject.keys()) {
-                if (!dependencyCollection.contains(key) && vaadinDependencyObject
-                        .hasKey(key)) {
+                if (!dependencyCollection.contains(key)
+                        && vaadinDependencyObject.hasKey(key)) {
                     dependencyObject.remove(key);
                     vaadinDependencyObject.remove(key);
                     log().debug("Removed \"{}\".", key);
@@ -196,16 +203,20 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private int updateFlowFrontendDependencies(JsonObject json) {
-        return updateNpmLocalDependency(json, DEP_NAME_FLOW_JARS, flowResourcesFolder)
-                + updateNpmLocalDependency(json, DEP_NAME_FORM_JARS, formResourcesFolder) ;
+        return updateNpmLocalDependency(json, DEP_NAME_FLOW_JARS,
+                flowResourcesFolder)
+                + updateNpmLocalDependency(json, DEP_NAME_FORM_JARS,
+                        formResourcesFolder);
     }
 
-    private int updateNpmLocalDependency(JsonObject json, String packageName, File folder) {
+    private int updateNpmLocalDependency(JsonObject json, String packageName,
+            File folder) {
         if (folder != null) {
             String depsPkg = "./" + FrontendUtils.getUnixRelativePath(
                     npmFolder.getAbsoluteFile().toPath(),
                     folder.getAbsoluteFile().toPath());
-            if (!json.hasKey(packageName) || !depsPkg.equals(json.getString(packageName))) {
+            if (!json.hasKey(packageName)
+                    || !depsPkg.equals(json.getString(packageName))) {
                 json.put(packageName, depsPkg);
                 return 1;
             }
@@ -244,10 +255,10 @@ public class TaskUpdatePackages extends NodeUpdater {
      * present.
      *
      * @param packageJson
-     *         JsonObject of current package.json contents
+     *            JsonObject of current package.json contents
      * @return amount of removed properties
      * @throws IOException
-     *         thrown if removal of package-lock.json fails
+     *             thrown if removal of package-lock.json fails
      */
     private int removeLegacyProperties(JsonObject packageJson)
             throws IOException {
@@ -297,7 +308,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         if (flowResourcesFolder != null && flowResourcesFolder.exists()) {
             // Clean all files but `package.json`
-            for (File file: flowResourcesFolder.listFiles()) {
+            for (File file : flowResourcesFolder.listFiles()) {
                 if (!file.getName().equals(PACKAGE_JSON)) {
                     file.delete();
                 }

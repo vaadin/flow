@@ -38,13 +38,14 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 
 /**
  * Updates the webpack config file according with current project settings.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
@@ -65,6 +66,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private final PwaConfiguration pwaConfiguration;
     private final Path resourceFolder;
     private final Path frontendGeneratedFolder;
+    private final String buildFolder;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -86,11 +88,14 @@ public class TaskUpdateWebpack implements FallibleCommand {
      * @param generatedFlowImports
      *            name of the JS file to update with the Flow project imports
      * @param useV14Bootstrapping
-     *            whether the application running with deprecated V14 bootstrapping
+     *            whether the application running with deprecated V14
+     *            bootstrapping
      * @param flowResourcesFolder
      *            relative path to `flow-frontend` package
      * @param frontendGeneratedFolder
      *            the folder with frontend auto-generated files
+     * @param buildFolder
+     *            build target forlder
      */
     @SuppressWarnings("squid:S00107")
     TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
@@ -98,7 +103,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
             String webpackTemplate, String webpackGeneratedTemplate,
             File generatedFlowImports, boolean useV14Bootstrapping,
             File flowResourcesFolder, PwaConfiguration pwaConfiguration,
-            File frontendGeneratedFolder) {
+            File frontendGeneratedFolder, String buildFolder) {
         this.frontendDirectory = frontendDirectory.toPath();
         this.webpackTemplate = webpackTemplate;
         this.webpackGeneratedTemplate = webpackGeneratedTemplate;
@@ -112,6 +117,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
         this.resourceFolder = new File(webpackOutputDirectory,
                 VAADIN_STATIC_FILES_PATH).toPath();
         this.frontendGeneratedFolder = frontendGeneratedFolder.toPath();
+        this.buildFolder = buildFolder;
     }
 
     @Override
@@ -145,7 +151,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
             URL resource = this.getClass().getClassLoader()
                     .getResource(webpackTemplate);
             FileUtils.copyURLToFile(resource, configFile);
-            log().info("Created webpack configuration file: '{}'", configFile);
+            log().debug("Created webpack configuration file: '{}'", configFile);
         }
 
         // Generated file is always re-written
@@ -162,7 +168,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
 
     private List<String> modifyWebpackConfig(File generatedFile)
             throws IOException {
-    List<String> lines = FileUtils.readLines(generatedFile, StandardCharsets.UTF_8);
+        List<String> lines = FileUtils.readLines(generatedFile,
+                StandardCharsets.UTF_8);
         List<Pair<String, String>> replacements = getReplacements();
         String declaration = "%s = %s;";
 
@@ -185,7 +192,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
                                 frontendDirectory))),
                 new Pair<>("const frontendGeneratedFolder",
                         formatPathResolve(getEscapedRelativeWebpackPath(
-                            frontendGeneratedFolder))),
+                                frontendGeneratedFolder))),
                 new Pair<>("const mavenOutputFolderForFlowBundledFiles",
                         formatPathResolve(getEscapedRelativeWebpackPath(
                                 webpackOutputPath))),
@@ -205,13 +212,13 @@ public class TaskUpdateWebpack implements FallibleCommand {
                                 flowResourcesFolder
                                         .resolve("VaadinDevmodeGizmo.js")))),
                 new Pair<>("const pwaEnabled",
-                        Boolean.toString(
-                                pwaConfiguration.isEnabled())),
+                        Boolean.toString(pwaConfiguration.isEnabled())),
                 new Pair<>("const offlinePathEnabled",
                         Boolean.toString(
                                 pwaConfiguration.isOfflinePathEnabled())),
                 new Pair<>("const offlinePath", getOfflinePath()),
-                new Pair<>("const clientServiceWorkerEntryPoint", getClientServiceWorker()),
+                new Pair<>("const clientServiceWorkerEntryPoint",
+                        getClientServiceWorker()),
                 new Pair<>("const flowFrontendFolder",
                         formatPathResolve(getEscapedRelativeWebpackPath(
                                 flowResourcesFolder))),
@@ -225,11 +232,11 @@ public class TaskUpdateWebpack implements FallibleCommand {
                 .exists();
         if (!exists) {
             Path path = Paths.get(
-                    getEscapedRelativeWebpackPath(webpackConfigPath), TARGET,
-                    INDEX_HTML);
+                    getEscapedRelativeWebpackPath(webpackConfigPath),
+                    buildFolder, INDEX_HTML);
             return formatPathResolve(getEscapedRelativeWebpackPath(path));
         } else {
-            return "'./" + INDEX_HTML +"'";
+            return "'./" + INDEX_HTML + "'";
         }
     }
 
@@ -240,16 +247,16 @@ public class TaskUpdateWebpack implements FallibleCommand {
     }
 
     private String getClientServiceWorker() {
-        boolean exists = new File(frontendDirectory.toFile(), SERVICE_WORKER_SRC)
-                .exists()
-                || new File(frontendDirectory.toFile(), SERVICE_WORKER_SRC_JS).exists();
+        boolean exists = new File(frontendDirectory.toFile(),
+                SERVICE_WORKER_SRC).exists()
+                || new File(frontendDirectory.toFile(), SERVICE_WORKER_SRC_JS)
+                        .exists();
         if (!exists) {
             Path path = Paths.get(
-                    getEscapedRelativeWebpackPath(webpackConfigPath), TARGET,
-                    SERVICE_WORKER_SRC);
-            return formatPathResolve(
-                    getEscapedRelativeWebpackPath(path)
-                            .replaceFirst("\\.[tj]s$", ""));
+                    getEscapedRelativeWebpackPath(webpackConfigPath),
+                    buildFolder, SERVICE_WORKER_SRC);
+            return formatPathResolve(getEscapedRelativeWebpackPath(path)
+                    .replaceFirst("\\.[tj]s$", ""));
         } else {
             return "'./sw'";
         }

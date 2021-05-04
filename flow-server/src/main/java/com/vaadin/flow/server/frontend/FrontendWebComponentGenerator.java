@@ -37,6 +37,9 @@ import com.vaadin.flow.theme.ThemeDefinition;
  * {@link com.vaadin.flow.component.WebComponentExporter} or
  * {@link WebComponentExporterFactory} implementations found by
  * {@link ClassFinder}.
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
  * @since 2.0
@@ -89,8 +92,9 @@ public class FrontendWebComponentGenerator implements Serializable {
                     .forEach(exporterRelatedClasses::add);
             final String themeName = theme == null ? "" : theme.getName();
             return WebComponentModulesWriter.DirectoryWriter
-                .generateWebComponentsToDirectory(writerClass,
-                    exporterRelatedClasses, outputDirectory, false, themeName);
+                    .generateWebComponentsToDirectory(writerClass,
+                            exporterRelatedClasses, outputDirectory, false,
+                            themeName);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(
                     "Unable to locate a required class using custom class "

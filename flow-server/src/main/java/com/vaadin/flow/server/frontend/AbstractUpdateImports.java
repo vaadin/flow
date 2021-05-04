@@ -54,6 +54,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS
 
 /**
  * Common logic for generate import file JS content.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  *
@@ -195,10 +197,11 @@ abstract class AbstractUpdateImports implements Runnable {
     protected abstract Logger getLogger();
 
     List<String> resolveModules(Collection<String> modules) {
-        return modules.stream().filter(module ->
-                !module.startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
-                        && !module
-                        .startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX))
+        return modules.stream()
+                .filter(module -> !module.startsWith(
+                        ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
+                        && !module.startsWith(
+                                ApplicationConstants.BASE_PROTOCOL_PREFIX))
                 .map(module -> resolveResource(module)).sorted()
                 .collect(Collectors.toList());
     }
@@ -249,16 +252,16 @@ abstract class AbstractUpdateImports implements Runnable {
                 : null;
 
         if (newContent.equals(oldContent)) {
-            if (getLogger().isInfoEnabled()) {
-                getLogger().info("No js modules to update '{}' file",
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug("No js modules to update '{}' file",
                         importsFile);
             }
         } else {
             FileUtils.forceMkdir(importsFile.getParentFile());
             FileUtils.writeStringToFile(importsFile,
                     String.join("\n", newContent), StandardCharsets.UTF_8);
-            if (getLogger().isInfoEnabled()) {
-                getLogger().info("Updated {}", importsFile);
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug("Updated {}", importsFile);
             }
         }
     }
@@ -513,16 +516,16 @@ abstract class AbstractUpdateImports implements Runnable {
             Set<String> visitedImports) throws IOException {
 
         String content = null;
-        try (final Stream<String> contentStream = Files
-                .lines(filePath, StandardCharsets.UTF_8)) {
+        try (final Stream<String> contentStream = Files.lines(filePath,
+                StandardCharsets.UTF_8)) {
             content = contentStream.collect(Collectors.joining("\n"));
         } catch (UncheckedIOException ioe) {
             if (ioe.getCause() instanceof MalformedInputException) {
-                getLogger()
-                        .trace("Failed to read file '{}' found from Es6 import statements. "
-                                        + "This is probably due to it being a binary file, "
-                                        + "in which case it doesn't matter as imports are only in js/ts files.",
-                                filePath.toString(), ioe);
+                getLogger().trace(
+                        "Failed to read file '{}' found from Es6 import statements. "
+                                + "This is probably due to it being a binary file, "
+                                + "in which case it doesn't matter as imports are only in js/ts files.",
+                        filePath.toString(), ioe);
                 return;
             }
             throw ioe;
@@ -544,7 +547,7 @@ abstract class AbstractUpdateImports implements Runnable {
                 // don't do anything if such file doesn't exist at all
                 continue;
             }
-            resolvedPath  = normalizePath(resolvedPath);
+            resolvedPath = normalizePath(resolvedPath);
             if (resolvedPath.contains(theme.getBaseUrl())) {
                 String translatedPath = theme.translateUrl(resolvedPath);
                 if (!visitedImports.contains(translatedPath)

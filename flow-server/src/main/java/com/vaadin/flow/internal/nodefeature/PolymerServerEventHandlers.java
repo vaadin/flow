@@ -32,6 +32,8 @@ import com.vaadin.flow.internal.StateNode;
 
 /**
  * Methods which are published as event-handlers on the client side.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

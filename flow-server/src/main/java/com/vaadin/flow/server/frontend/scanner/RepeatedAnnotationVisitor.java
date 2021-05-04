@@ -20,6 +20,8 @@ import net.bytebuddy.jar.asm.Opcodes;
 
 /**
  * An annotation visitor implementation that enables repeated annotations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
@@ -34,8 +36,7 @@ abstract class RepeatedAnnotationVisitor extends AnnotationVisitor {
     }
 
     @Override
-    public AnnotationVisitor visitAnnotation(String name,
-            String descriptor) {
+    public AnnotationVisitor visitAnnotation(String name, String descriptor) {
         return this;
     }
 

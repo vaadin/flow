@@ -26,6 +26,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
+import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
@@ -187,6 +188,19 @@ public class PropertyDeploymentConfiguration
             return super.isXsrfProtectionEnabled();
         }
         return parentConfig.isXsrfProtectionEnabled();
+    }
+
+    @Override
+    public String getBuildFolder() {
+        if (isOwnProperty(BUILD_FOLDER)) {
+            return super.getBuildFolder();
+        }
+        return parentConfig.getBuildFolder();
+    }
+
+    @Override
+    public String getFlowResourcesFolder() {
+        return super.getFlowResourcesFolder();
     }
 
     @Override

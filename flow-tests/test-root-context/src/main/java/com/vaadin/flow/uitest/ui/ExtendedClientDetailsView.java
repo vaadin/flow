@@ -40,10 +40,8 @@ public class ExtendedClientDetailsView extends AbstractDivView {
         NativeButton setValuesButton = new NativeButton("Set test values",
                 event -> {
                     getUI().ifPresent(ui -> ui.getPage()
-                            .executeJs("{"
-                                    + "window.devicePixelRatio = 2.0;"
-                                    + "navigator.msMaxTouchPoints = 1;"
-                                    + "}"));
+                            .executeJs("{" + "window.devicePixelRatio = 2.0;"
+                                    + "navigator.msMaxTouchPoints = 1;" + "}"));
                 });
         setValuesButton.setId("set-values");
 

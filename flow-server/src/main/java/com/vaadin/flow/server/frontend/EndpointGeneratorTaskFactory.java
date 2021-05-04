@@ -19,7 +19,9 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 
 /**
- * A factory for creating Vaadin Endpoint generator tasks
+ * A factory for creating Vaadin Endpoint generator tasks.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
  * @since 6.0
@@ -39,7 +41,8 @@ public interface EndpointGeneratorTaskFactory {
      *            the frontend folder.
      * @return an endpoint tasks for generating TypeScript files for endpoints.
      */
-    TaskGenerateConnect createTaskGenerateConnect(File applicationProperties, File openApi, File outputFolder, File frontendDirectory);
+    TaskGenerateConnect createTaskGenerateConnect(File applicationProperties,
+            File openApi, File outputFolder, File frontendDirectory);
 
     /**
      * Create a task for generating OpenAPI spec.
@@ -47,7 +50,8 @@ public interface EndpointGeneratorTaskFactory {
      * @param properties
      *            application properties file.
      * @param javaSourceFolder
-     *            source paths of the project containing Vaadin Endpoint. not {@code null}
+     *            source paths of the project containing Vaadin Endpoint. not
+     *            {@code null}
      * @param classLoader
      *            The class loader which should be used to resolved types in the
      *            source paths. not {@code null}
@@ -55,6 +59,7 @@ public interface EndpointGeneratorTaskFactory {
      *            the output path of the generated json file. not {@code null}
      * @return an endpoint task that generates open api json file.
      */
-    TaskGenerateOpenApi createTaskGenerateOpenApi(File properties, File javaSourceFolder, ClassLoader classLoader, File output);
+    TaskGenerateOpenApi createTaskGenerateOpenApi(File properties,
+            File javaSourceFolder, ClassLoader classLoader, File output);
 
 }

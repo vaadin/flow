@@ -48,7 +48,7 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
         configuration.getHandledRegistry().update(() -> {
             if (!configuration.isPathRegistered(DYNAMICALLY_REGISTERED_ROUTE)) {
                 configuration.setRoute(DYNAMICALLY_REGISTERED_ROUTE,
-                    DynamicallyRegisteredRoute.class);
+                        DynamicallyRegisteredRoute.class);
             }
         });
 

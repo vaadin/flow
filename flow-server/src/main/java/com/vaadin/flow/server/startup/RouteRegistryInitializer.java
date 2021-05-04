@@ -34,6 +34,8 @@ import com.vaadin.flow.server.VaadinContext;
 
 /**
  * Servlet initializer for collecting all available {@link Route}s on startup.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */
@@ -55,17 +57,16 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
                     .getInstance(context);
 
-            boolean needStaticRoutesRegistry = removePreviousRoutes(context,
-                    routeRegistry);
-
             Set<Class<? extends Component>> routes = validateRouteClasses(
                     routesSet.stream());
 
-            if (needStaticRoutesRegistry) {
-                configureStaticRoutesRegistry(context, routes);
-            }
+            routeRegistry.update(() -> {
+                if (removePreviousRoutes(context, routeRegistry)) {
+                    configureStaticRoutesRegistry(context, routes);
+                }
 
-            configureRoutes(routes, routeRegistry);
+                configureRoutes(routes, routeRegistry);
+            });
             routeRegistry.setPwaConfigurationClass(validatePwaClass(
                     routes.stream().map(clazz -> (Class<?>) clazz)));
         } catch (InvalidRouteConfigurationException irce) {

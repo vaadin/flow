@@ -24,6 +24,8 @@ import com.vaadin.flow.shared.VaadinUriResolver;
 
 /**
  * Helper methods for use in bootstrapping.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  */
 public final class BootstrapHandlerHelper implements Serializable {
@@ -63,7 +65,7 @@ public final class BootstrapHandlerHelper implements Serializable {
      * @return the relative push URL
      */
     public static String getPushURL(VaadinSession vaadinSession,
-                                    VaadinRequest vaadinRequest) {
+            VaadinRequest vaadinRequest) {
         String serviceUrl = getServiceUrl(vaadinRequest);
 
         String pushURL = vaadinSession.getConfiguration().getPushURL();

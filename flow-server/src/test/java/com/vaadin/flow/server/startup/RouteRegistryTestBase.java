@@ -280,12 +280,13 @@ public abstract class RouteRegistryTestBase {
     }
 
     @Tag("div")
-    public static abstract class AbstractErrorView<EXCEPTION_TYPE extends Exception> extends Component implements
-            HasErrorParameter<EXCEPTION_TYPE> {
+    public static abstract class AbstractErrorView<EXCEPTION_TYPE extends Exception>
+            extends Component implements HasErrorParameter<EXCEPTION_TYPE> {
     }
 
     @Tag("div")
-    public static class ErrorView extends AbstractErrorView<NullPointerException> {
+    public static class ErrorView
+            extends AbstractErrorView<NullPointerException> {
 
         @Override
         public int setErrorParameter(BeforeEnterEvent event,

@@ -38,6 +38,8 @@ import org.slf4j.LoggerFactory;
  * A class visitor for annotated classes. It's used to visit multiple classes
  * and extract all the properties of an specific annotation defined in the
  * constructor.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
@@ -231,7 +233,8 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     private static class DefaultsAnnotationClassVisitor extends ClassVisitor {
         private final Map<String, Object> defaults;
 
-        public DefaultsAnnotationClassVisitor(int api, Map<String, Object> defaults) {
+        public DefaultsAnnotationClassVisitor(int api,
+                Map<String, Object> defaults) {
             super(api);
             this.defaults = defaults;
         }
@@ -239,7 +242,8 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
         @Override
         public MethodVisitor visitMethod(int access, String methodName,
                 String descriptor, String signature, String[] exceptions) {
-            return new DefaultsAnnotationMethodVisitor(api, methodName, defaults);
+            return new DefaultsAnnotationMethodVisitor(api, methodName,
+                    defaults);
         }
     }
 
@@ -295,7 +299,8 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     /**
      * Collects data from possibly repeated annotations.
      */
-    private static class DataAnnotationVisitor extends RepeatedAnnotationVisitor {
+    private static class DataAnnotationVisitor
+            extends RepeatedAnnotationVisitor {
         private final List<HashMap<String, Object>> data;
         private final boolean isRepeatableContainer;
         // initialize for non repeated annotations

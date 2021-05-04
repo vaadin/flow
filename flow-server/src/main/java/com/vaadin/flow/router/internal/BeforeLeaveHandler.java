@@ -21,6 +21,8 @@ import com.vaadin.flow.router.BeforeLeaveEvent;
 
 /**
  * The base interface for every {@link BeforeLeaveEvent} handler.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */

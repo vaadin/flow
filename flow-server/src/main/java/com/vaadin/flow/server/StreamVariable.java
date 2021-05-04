@@ -37,8 +37,8 @@ public interface StreamVariable extends Serializable {
     /**
      * Invoked when a new upload arrives, after
      * {@link #streamingStarted(StreamingStartEvent)} method has been called.
-     * The implementation will write the streamed variable to the
-     * returned output stream.
+     * The implementation will write the streamed variable to the returned
+     * output stream.
      *
      * @return Stream to which the uploaded file should be written.
      */
@@ -61,8 +61,8 @@ public interface StreamVariable extends Serializable {
     boolean listenProgress();
 
     /**
-     * This method is called if {@link #listenProgress()}
-     * returns true when the streaming starts.
+     * This method is called if {@link #listenProgress()} returns true when the
+     * streaming starts.
      * 
      * @param event
      *            streaming progress event
@@ -103,9 +103,9 @@ public interface StreamVariable extends Serializable {
      * handler is told to stop receiving the current upload.
      * <p>
      * Note, the usage of this method is not synchronized over the Application
-     * instance like other methods. The implementation should
-     * only return a boolean field and especially not modify UI or implement a
-     * synchronization by itself.
+     * instance like other methods. The implementation should only return a
+     * boolean field and especially not modify UI or implement a synchronization
+     * by itself.
      *
      * @return true if the streaming should be interrupted as soon as possible.
      */
@@ -152,8 +152,8 @@ public interface StreamVariable extends Serializable {
     interface StreamingStartEvent extends StreamingEvent {
         /**
          * The owner of the StreamVariable can call this method to inform the
-         * implementation that this StreamVariable will not be used to
-         * accept more post.
+         * implementation that this StreamVariable will not be used to accept
+         * more post.
          */
         void disposeStreamVariable();
     }

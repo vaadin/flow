@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Copies JavaScript files from the given local frontend folder.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
@@ -40,9 +42,9 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
      * enables running jar projects locally.
      *
      * @param flowResourcesFolder
-     *     target directory for the discovered files
+     *            target directory for the discovered files
      * @param localResourcesFolder
-     *     local folder containing resources to copy
+     *            local folder containing resources to copy
      */
     TaskCopyLocalFrontendFiles(File flowResourcesFolder,
             File localResourcesFolder) {

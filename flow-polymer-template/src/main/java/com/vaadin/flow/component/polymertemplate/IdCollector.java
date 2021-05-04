@@ -21,6 +21,8 @@ import com.vaadin.flow.component.template.Id;
 
 /**
  * Collects information of {@link Id @Id} mapped fields in a template class.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  * @deprecated Use

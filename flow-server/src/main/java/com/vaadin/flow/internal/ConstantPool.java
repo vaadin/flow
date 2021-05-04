@@ -25,6 +25,9 @@ import elemental.json.JsonObject;
 /**
  * Keeps track of {@link ConstantPoolKey} values that have already been sent to
  * the client.
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

@@ -25,6 +25,8 @@ import elemental.json.JsonObject;
 /**
  * Empty change for the feature to report its presence for the client (send the
  * feature information even though its data is empty).
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @author Vaadin Ltd
  * @since 1.0

@@ -27,6 +27,8 @@ import com.vaadin.flow.internal.nodefeature.TextNodeMap;
 /**
  * Handles storing and retrieval of the state information for a text node using
  * a state node.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -93,5 +95,5 @@ public class BasicTextElementStateProvider
 
     protected Object readResolve() throws ObjectStreamException {
         return INSTANCE;
-    }    
+    }
 }

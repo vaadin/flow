@@ -165,10 +165,8 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
          * problem in this case since setupTemplateWhenAttached only sets
          * properties but doesn't execute any JS.
          */
-        container.getNode()
-                .runWhenAttached(ui -> setupTemplateWhenAttached(
-                        ui, container, rendering,
-                        keyMapper));
+        container.getNode().runWhenAttached(ui -> setupTemplateWhenAttached(ui,
+                container, rendering, keyMapper));
 
         return rendering;
     }

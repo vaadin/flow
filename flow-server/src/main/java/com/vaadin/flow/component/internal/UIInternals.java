@@ -79,6 +79,9 @@ import com.vaadin.flow.shared.communication.PushMode;
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
  * framework.
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -616,7 +619,7 @@ public class UIInternals implements Serializable {
      * @param appShellTitle
      *            the appShellTitle to set
      */
-    public void setAppShellTitle(String appShellTitle){
+    public void setAppShellTitle(String appShellTitle) {
         this.appShellTitle = appShellTitle;
     }
 
@@ -674,8 +677,8 @@ public class UIInternals implements Serializable {
      * @param layouts
      *            the parent layouts
      */
-    public void showRouteTarget(Location viewLocation,
-            Component target, List<RouterLayout> layouts) {
+    public void showRouteTarget(Location viewLocation, Component target,
+            List<RouterLayout> layouts) {
         assert target != null;
         assert viewLocation != null;
 

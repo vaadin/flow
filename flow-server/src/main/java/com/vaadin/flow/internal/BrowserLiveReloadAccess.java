@@ -23,6 +23,8 @@ import com.vaadin.flow.server.VaadinService;
 /**
  * Provides API to access to the {@link BrowserLiveReload} instance by a
  * {@link VaadinService}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since
@@ -42,13 +44,14 @@ public class BrowserLiveReloadAccess {
      */
     public BrowserLiveReload getLiveReload(VaadinService service) {
         if (service.getDeploymentConfiguration().isProductionMode()) {
-            LoggerFactory.getLogger(BrowserLiveReloadAccess.class)
-                    .debug("BrowserLiveReloadAccess::getLiveReload is called in production mode.");
+            LoggerFactory.getLogger(BrowserLiveReloadAccess.class).debug(
+                    "BrowserLiveReloadAccess::getLiveReload is called in production mode.");
             return null;
         }
-        if (!service.getDeploymentConfiguration().isDevModeLiveReloadEnabled()) {
-            LoggerFactory.getLogger(BrowserLiveReloadAccess.class)
-                    .debug("BrowserLiveReloadAccess::getLiveReload is called when live reload is disabled.");
+        if (!service.getDeploymentConfiguration()
+                .isDevModeLiveReloadEnabled()) {
+            LoggerFactory.getLogger(BrowserLiveReloadAccess.class).debug(
+                    "BrowserLiveReloadAccess::getLiveReload is called when live reload is disabled.");
             return null;
         }
         VaadinContext context = service.getContext();
