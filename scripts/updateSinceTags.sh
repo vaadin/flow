@@ -30,3 +30,4 @@ do
 	$sedCmd "s/@since\$/@since $version/g" $f
 	$sedCmd "s/@since \$/@since $version/g" $f
 done
+#
