@@ -35,7 +35,6 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import org.apache.commons.io.FileUtils;
 
-import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -232,8 +231,8 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     private boolean pinPlatformDependency(JsonObject packageJson,
             JsonObject platformPinnedVersions, String pkg) {
-        final FrontendVersion platformPinnedVersion = FrontendVersion
-                .tryParseVersion(platformPinnedVersions, pkg,
+        final FrontendVersion platformPinnedVersion = FrontendUtils
+                .getPackageVersionFromJson(platformPinnedVersions, pkg,
                         "vaadin_dependencies.json");
         if (platformPinnedVersion == null) {
             return false;
@@ -241,11 +240,9 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         final JsonObject vaadinDeps = packageJson.getObject(VAADIN_DEP_KEY)
                 .getObject(DEPENDENCIES);
-        assert vaadinDeps != null; // exists at this point
-        if (!packageJson.hasKey(DEPENDENCIES)) {
-            packageJson.put(DEPENDENCIES, Json.createObject());
-        }
         final JsonObject packageJsonDeps = packageJson.getObject(DEPENDENCIES);
+        assert vaadinDeps != null; // exists at this point
+        assert packageJsonDeps != null;
         packageJsonDeps.put(pkg, platformPinnedVersion.getFullVersion());
         vaadinDeps.put(pkg, platformPinnedVersion.getFullVersion());
         return true;

@@ -171,13 +171,14 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     /**
-     * Generate versions json file.
+     * Generate versions json file for pnpm.
      *
      * @return generated versions json file path
      * @throws IOException
      *             when file IO fails
      */
     protected String generateVersionsJson() throws IOException {
+        assert enablePnpm;
         File versions = new File(packageUpdater.generatedFolder,
                 "versions.json");
 
@@ -239,6 +240,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     private JsonObject getLockedVersions() throws IOException {
+        assert enablePnpm;
         JsonObject versionsJson = packageUpdater
                 .getPlatformPinnedDependencies();
 

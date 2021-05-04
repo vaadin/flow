@@ -166,14 +166,14 @@ public abstract class NodeUpdater implements FallibleCommand {
      * Gets the platform pinned versions that are not overridden by the user in
      * package.json.
      * 
-     * @return json object with the dependencies
+     * @return json object with the dependencies or {@code null}
      * @throws IOException
      *             when versions file could not be read
      */
     JsonObject getPlatformPinnedDependencies() throws IOException {
         URL resource = finder.getResource(Constants.VAADIN_VERSIONS_JSON);
         if (resource == null) {
-            log().warn("Couldn't find {} file to pin dependency versions."
+            log().info("Couldn't find {} file to pin dependency versions."
                     + " Transitive dependencies won't be pinned for pnpm.",
                     Constants.VAADIN_VERSIONS_JSON);
         }
@@ -251,8 +251,8 @@ public abstract class NodeUpdater implements FallibleCommand {
             packageJson = Json.createObject();
             packageJson.put(DEP_NAME_KEY, DEP_NAME_DEFAULT);
             packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
-            // added to not get NPEs
             packageJson.put(DEPENDENCIES, Json.createObject());
+            packageJson.put(DEV_DEPENDENCIES, Json.createObject());
         }
 
         addVaadinDefaultsToJson(packageJson);

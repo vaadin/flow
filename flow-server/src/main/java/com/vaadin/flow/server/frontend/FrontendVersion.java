@@ -136,29 +136,10 @@ public class FrontendVersion
      *            version string as "major.minor.revision[.build]"
      */
     public FrontendVersion(String name, String version) {
-        this(name, version, null);
-    }
-
-    /**
-     * Parse version numbers from version string with the format
-     * "major.minor.revision[.build]". The build part is optional.
-     * <p>
-     * Versions are normalized and any caret or tildes will not be considered.
-     *
-     * @param name
-     *            the name of the artifact which version is to be parsed, used
-     *            in error message to help discover the issue
-     * @param version
-     *            version string as "major.minor.revision[.build]"
-     * @param location
-     *            the location (like file) the version comes from, giving an
-     *            better error message if the parsing failes
-     */
-    public FrontendVersion(String name, String version, String location) {
         Objects.requireNonNull(version);
         if (version.isEmpty()) {
             throw new NumberFormatException(
-                    getInvalidVersionMessage(name, version, location));
+                    getInvalidVersionMessage(name, version));
         }
         if (!Character.isDigit(version.charAt(0))) {
             this.version = version.substring(1).trim();
@@ -171,14 +152,14 @@ public class FrontendVersion
             majorVersion = Integer.parseInt(digits[0]);
         } catch (NumberFormatException nfe) {
             throw new NumberFormatException(
-                    getInvalidVersionMessage(name, version, location));
+                    getInvalidVersionMessage(name, version));
         }
         if (digits.length >= 2) {
             try {
                 minorVersion = Integer.parseInt(digits[1]);
             } catch (NumberFormatException nfe) {
                 throw new NumberFormatException(
-                        getInvalidVersionMessage(name, version, location));
+                        getInvalidVersionMessage(name, version));
             }
         } else {
             minorVersion = 0;
@@ -334,48 +315,14 @@ public class FrontendVersion
         return 0;
     }
 
-    /**
-     * Tries to parse the given package's frontend version or if it doesn't
-     * exist, returns {@code null}. In case the value cannot be parsed, logs an
-     * error and returns {@code null}.
-     * 
-     * @param sourceJson
-     *            json object that has the package
-     * @param pkg
-     *            the package name
-     * @param sourceLocation
-     *            the location of the json, used in error message
-     * @return the frontend versior the package or {@code null}
-     */
-    public static FrontendVersion tryParseVersion(JsonObject sourceJson,
-            String pkg, String sourceLocation) {
-        if (!sourceJson.hasKey(pkg)) {
-            return null;
-        }
-        try {
-            final String versionString = sourceJson.getString(pkg);
-            return new FrontendVersion(pkg, versionString, sourceLocation);
-        } catch (ClassCastException classCastException) {
-            LoggerFactory.getLogger(FrontendVersion.class).error(
-                    "Could not parse frontend dependency version for package '{}' from '{}'",
-                    pkg, sourceLocation);
-        } catch (NumberFormatException nfe) {
-            // intentionally not failing the build at this point
-            LoggerFactory.getLogger(FrontendVersion.class)
-                    .error(nfe.getMessage());
-        }
-        return null;
-    }
-
-    private String getInvalidVersionMessage(String name, String version,
-            String location) {
-        if (location != null) {
+    private String getInvalidVersionMessage(String name, String version) {
+        if (name != null) {
             return String.format(
-                    "'%s' is not a valid version for '%s' in '%s'!", version,
-                    name, location);
+                    "'%s' is not a valid version for '%s'!", version,
+                    name);
         } else {
-            return String.format("'%s' is not a valid version for '%s'!",
-                    version, name);
+            return String.format("'%s' is not a valid version!",
+                    version);
         }
     }
 

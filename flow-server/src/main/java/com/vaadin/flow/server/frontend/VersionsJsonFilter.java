@@ -56,16 +56,17 @@ class VersionsJsonFilter {
     JsonObject getFilteredVersions(JsonObject versions) {
         JsonObject json = Json.createObject();
         for (String key : versions.keys()) {
-            final FrontendVersion version = FrontendVersion
-                    .tryParseVersion(versions, key, "vaadin_version.json");
+            final FrontendVersion version = FrontendUtils
+                    .getPackageVersionFromJson(versions, key,
+                            "vaadin_version.json");
             if (version == null) {
                 continue;
             }
-            final FrontendVersion userManagedVersion = FrontendVersion
-                    .tryParseVersion(userManagedDependencies, key,
+            final FrontendVersion userManagedVersion = FrontendUtils
+                    .getPackageVersionFromJson(userManagedDependencies, key,
                             "dependencies/package.json");
-            final FrontendVersion vaadinDepsVersion = FrontendVersion
-                    .tryParseVersion(vaadinVersions, key,
+            final FrontendVersion vaadinDepsVersion = FrontendUtils
+                    .getPackageVersionFromJson(vaadinVersions, key,
                             "vaadin-dependencies/package.json");
             if (userManagedVersion != null) {
                 if (version.isNewerThan(userManagedVersion)) {
@@ -118,8 +119,8 @@ class VersionsJsonFilter {
             FrontendVersion dep = new FrontendVersion(key,
                     dependencies.getString(key));
             return !vaadin.isEqualTo(dep);
-            // User changed if not in vaadin dependency
         }
+        // User changed if not in vaadin dependency
         return true;
     }
 

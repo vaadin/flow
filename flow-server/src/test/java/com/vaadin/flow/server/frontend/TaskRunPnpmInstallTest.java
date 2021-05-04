@@ -36,7 +36,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
-public class TaskRunPnpmInstallTest extends AbstractTaskRunNpmInstallTest {
+public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     private static final String PINNED_VERSION = "3.2.17";
 
