@@ -34,13 +34,12 @@ public class PushLongPollingWithPreserveOnRefreshView extends Div {
 
     public PushLongPollingWithPreserveOnRefreshView() {
         NativeButton button = new NativeButton("Open Dialog",
-                    e -> e.getSource().getUI().ifPresent(ui -> {
-                        Div div = new Div();
-                        div.setText(TEXT_IN_DIV);
-                        div.setId(TEST_DIV_ID);
-                        ui.add(div);
-                    })
-            );
+                e -> e.getSource().getUI().ifPresent(ui -> {
+                    Div div = new Div();
+                    div.setText(TEXT_IN_DIV);
+                    div.setId(TEST_DIV_ID);
+                    ui.add(div);
+                }));
         button.setId(ADD_BUTTON_ID);
         add(button);
     }

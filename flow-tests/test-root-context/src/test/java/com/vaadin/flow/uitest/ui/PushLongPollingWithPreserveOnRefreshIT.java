@@ -63,8 +63,8 @@ public class PushLongPollingWithPreserveOnRefreshIT extends ChromeBrowserTest {
     }
 
     private void ensureNoErrorIsDisplayed() {
-        Assert.assertThrows(NoSuchElementException.class, () ->
-            findElement(By.className("v-system-error")) );
+        Assert.assertThrows(NoSuchElementException.class,
+                () -> findElement(By.className("v-system-error")));
     }
 
     private void ensureDivIsPresent() {
