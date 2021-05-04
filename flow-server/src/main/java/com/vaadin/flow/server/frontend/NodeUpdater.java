@@ -281,7 +281,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                     UTF_8.name());
             try {
                 jsonContent = Json.parse(fileContent);
-            } catch (JsonException e) {
+            } catch (JsonException e) { // NOSONAR
                 throw new JsonException(String
                         .format("Cannot parse package file '%s'", packageFile));
             }
