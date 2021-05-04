@@ -26,6 +26,9 @@ const {copyStaticAssets, copyThemeResources} = require('./theme-copy');
 // matches theme name in './theme-my-theme.generated.js'
 const nameRegex = /theme-(.*)\.generated\.js/;
 
+let prevThemeName = undefined;
+let firstThemeName = undefined;
+
 /**
  * Looks up for a theme resources in a current project and in jar dependencies,
  * copies the found resources and generates/updates meta data for webpack
@@ -39,8 +42,26 @@ const nameRegex = /theme-(.*)\.generated\.js/;
 function processThemeResources(options, logger) {
   const themeName = extractThemeName(options.frontendGeneratedFolder);
   if (themeName) {
+    if (!prevThemeName && !firstThemeName) {
+      prevThemeName = themeName;
+      firstThemeName = themeName;
+    } else if ((prevThemeName && prevThemeName !== themeName && firstThemeName !== themeName)
+        || (!prevThemeName && firstThemeName !== themeName)) {
+      const warning = `Attention: Active theme is switched to '${themeName}'.`
+      const description = `
+      Note that adding new style sheet files to '/themes/${themeName}/components', 
+      may not be taken into effect until the next application is restart.
+      Changes to existing style sheet files are being reloaded as before.`;
+      logger.warn("*******************************************************************");
+      logger.warn(warning);
+      logger.warn(description);
+      logger.warn("*******************************************************************");
+    }
+    prevThemeName = themeName;
+
     findThemeFolderAndHandleTheme(themeName, options, logger);
   } else {
+    prevThemeName = undefined;
     logger.debug("Skipping Vaadin application theme handling.");
     logger.trace("Most likely no @Theme annotation for application or only themeClass used.");
   }
