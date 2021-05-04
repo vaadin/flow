@@ -251,7 +251,8 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("@polymer/polymer", POLYMER_VERSION);
         defaults.put("@webcomponents/webcomponentsjs", "^2.2.10");
-        defaults.put("lit-element", "2.4.0");
+        defaults.put("lit-element", "2.5.0");
+        defaults.put("lit-html", "1.4.0");
 
         return defaults;
     }
@@ -275,7 +276,6 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("file-loader", "6.1.0");
         defaults.put("extract-loader", "5.1.0");
         defaults.put("lit-css-loader", "0.0.4");
-
         // Constructable style sheets is only implemented for chrome,
         // polyfill needed for FireFox et.al. at the moment
         defaults.put("construct-style-sheets-polyfill", "2.4.6");
