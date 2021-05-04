@@ -14,8 +14,9 @@
  * the License.
  */
 
-import { css, html, LitElement, property } from 'lit-element';
-import { classMap } from 'lit-html/directives/class-map';
+import { html, LitElement } from 'lit';
+import { property } from 'lit/decorators';
+import { classMap } from 'lit/directives/class-map';
 import { ConnectionState, ConnectionStateStore } from './ConnectionState';
 
 const DEFAULT_STYLE_ID = 'css-loading-indicator';
@@ -246,7 +247,7 @@ export class ConnectionIndicator extends LitElement {
       if (!document.getElementById(DEFAULT_STYLE_ID)) {
         const style = document.createElement('style');
         style.id = DEFAULT_STYLE_ID;
-        style.textContent = this.getDefaultStyle().cssText;
+        style.textContent = this.getDefaultStyle();
         document.head.appendChild(style);
       }
     } else {
@@ -257,8 +258,8 @@ export class ConnectionIndicator extends LitElement {
     }
   }
 
-  private getDefaultStyle() {
-    return css`
+  private getDefaultStyle(): string {
+    return `
       @keyframes v-progress-start {
         0% {
           width: 0%;

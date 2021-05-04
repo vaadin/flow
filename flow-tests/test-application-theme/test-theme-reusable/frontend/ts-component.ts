@@ -1,4 +1,5 @@
-import { css, customElement, html, LitElement } from "lit-element";
+import { css, html, LitElement } from "lit";
+import { customElement } from "lit/decorators";
 import { applyTheme } from "./generated/theme";
 
 @customElement("ts-component")

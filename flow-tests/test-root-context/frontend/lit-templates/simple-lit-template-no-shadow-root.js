@@ -1,5 +1,4 @@
 
-import { LitElement, html } from "lit-element";
 import { SimpleLitTemplateShadowRoot } from "./simple-lit-template-shadow-root.js";
 
 export class SimpleLitTemplateNoShadowRoot extends SimpleLitTemplateShadowRoot {

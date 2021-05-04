@@ -12,7 +12,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.littemplate.SetInitialTextLitView", layout = ViewTestLayout.class)
 @Tag("set-initial-text-lit")
-@JsModule("lit/SetInitialText.js")
+@JsModule("lit-templates/SetInitialText.js")
 public class SetInitialTextLitView extends LitTemplate
         implements HasComponents {
 

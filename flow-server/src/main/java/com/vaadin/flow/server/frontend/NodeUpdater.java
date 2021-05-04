@@ -281,7 +281,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                     UTF_8.name());
             try {
                 jsonContent = Json.parse(fileContent);
-            } catch (JsonException e) {
+            } catch (JsonException e) { // NOSONAR
                 throw new JsonException(String
                         .format("Cannot parse package file '%s'", packageFile));
             }
@@ -323,8 +323,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("@polymer/polymer", POLYMER_VERSION);
 
-        defaults.put("lit-element", "2.5.0");
-        defaults.put("lit-html", "1.4.0");
+        defaults.put("lit", "2.0.0-rc.1");
 
         return defaults;
     }

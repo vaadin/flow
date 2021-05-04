@@ -43,7 +43,8 @@ module.exports = {
         "no-ex-assign": 1,
         "no-return-assign": 1,
         "no-use-before-define": 1,
-        "no-useless-constructor": 1,
+        "no-useless-constructor": 0,
+        "@typescript-eslint/no-useless-constructor": 1,
         "prefer-template": 1,
 
         "@typescript-eslint/explicit-module-boundary-types": 0,
