@@ -44,6 +44,8 @@ import com.vaadin.flow.shared.util.SharedUtil;
  * An util class with helpers for reflection operations. Used internally by
  * Vaadin and should not be used by application developers. Subject to change at
  * any time.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */

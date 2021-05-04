@@ -34,6 +34,8 @@ import elemental.json.JsonArray;
  * know which channels are registered - it only passes the channel id back to
  * the server. The server checks that the received channel id is (still) valid
  * and logs a warning if it isn't.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 2.0

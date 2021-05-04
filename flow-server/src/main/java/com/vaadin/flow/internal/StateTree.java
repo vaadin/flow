@@ -39,6 +39,8 @@ import com.vaadin.flow.shared.Registration;
 
 /**
  * The state tree that is synchronized with the client-side.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

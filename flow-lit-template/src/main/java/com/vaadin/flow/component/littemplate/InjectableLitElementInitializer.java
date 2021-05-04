@@ -26,6 +26,8 @@ import com.vaadin.flow.dom.Element;
 
 /**
  * Initialize a lit template element with data.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @author Vaadin Ltd
  * @since

@@ -23,6 +23,8 @@ import com.vaadin.flow.server.VaadinService;
 /**
  * Provides API to access to the {@link BrowserLiveReload} instance by a
  * {@link VaadinService}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since

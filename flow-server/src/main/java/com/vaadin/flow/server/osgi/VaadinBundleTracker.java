@@ -41,6 +41,9 @@ import org.slf4j.LoggerFactory;
  * The tracker scans for all classes in active bundles which have
  * <b>Vaadin-OSGi-Extender</b> header and report them to the {@link OSGiAccess}
  * instance.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
  *
  * @author Vaadin Ltd
  * @since 1.2

@@ -67,6 +67,8 @@ import elemental.json.JsonValue;
 
 /**
  * Base class for navigation handlers that target a navigation state.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

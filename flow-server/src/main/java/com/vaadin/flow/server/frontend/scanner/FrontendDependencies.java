@@ -53,6 +53,8 @@ import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSI
 
 /**
  * Represents the class dependency tree of the application.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */

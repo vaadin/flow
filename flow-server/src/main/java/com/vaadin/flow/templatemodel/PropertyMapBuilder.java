@@ -33,6 +33,8 @@ import com.vaadin.flow.templatemodel.BeanModelType.BeanModelTypeProperty;
 /**
  * Creates a property map builder that extracts all the properties' data from
  * the class given.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0.

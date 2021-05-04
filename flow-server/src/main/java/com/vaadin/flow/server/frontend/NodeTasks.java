@@ -41,6 +41,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 /**
  * An executor that it's run when the servlet context is initialised in dev-mode
  * or when flow-maven-plugin goals are run. It can chain a set of task to run.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
@@ -111,9 +113,11 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Download node.js from this URL. Handy in heavily firewalled corporate
          * environments where the node.js download can be provided from an
-         * intranet mirror. Defaults to {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
+         * intranet mirror. Defaults to
+         * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
          */
-        private URI nodeDownloadRoot = URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
+        private URI nodeDownloadRoot = URI
+                .create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
 
         /**
          * Create a builder instance given an specific npm folder.
@@ -411,7 +415,8 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Sets the download node.js URL. Handy in heavily firewalled corporate
          * environments where the node.js download can be provided from an
-         * intranet mirror. Defaults to {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
+         * intranet mirror. Defaults to
+         * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
          *
          * @param nodeDownloadRoot
          *            the new download URL to set, not null.
@@ -444,7 +449,8 @@ public class NodeTasks implements FallibleCommand {
                     .createScanner(!builder.useByteCodeScanner, classFinder,
                             builder.generateEmbeddableWebComponents);
 
-            commands.add(new TaskGenerateTsFiles(builder.npmFolder, frontendDependencies.getModules()));
+            commands.add(new TaskGenerateTsFiles(builder.npmFolder,
+                    frontendDependencies.getModules()));
         }
 
         if (builder.createMissingPackageJson) {
@@ -461,8 +467,7 @@ public class NodeTasks implements FallibleCommand {
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
-                commands.add(new TaskRunNpmInstall(
-                        classFinder, packageUpdater,
+                commands.add(new TaskRunNpmInstall(classFinder, packageUpdater,
                         builder.enablePnpm, builder.requireHomeNodeExec,
                         builder.nodeVersion, builder.nodeDownloadRoot));
             }

@@ -25,6 +25,8 @@ import com.vaadin.flow.server.RouteRegistry;
 
 /**
  * Default implementation of the {@link RouteResolver} interface.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0.

@@ -41,6 +41,8 @@ import static elemental.json.JsonType.STRING;
 
 /**
  * Parse statistics data provided by webpack.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 2.0

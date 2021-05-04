@@ -55,6 +55,8 @@ import elemental.json.impl.JsonUtil;
 
 /**
  * Handles a client-to-server message containing serialized RPC invocations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

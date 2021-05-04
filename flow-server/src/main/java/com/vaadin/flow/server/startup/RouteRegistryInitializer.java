@@ -33,6 +33,8 @@ import com.vaadin.flow.server.VaadinServletContext;
 
 /**
  * Servlet initializer for collecting all available {@link Route}s on startup.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */

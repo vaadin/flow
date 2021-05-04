@@ -22,6 +22,8 @@ import java.net.URI;
  * Handle file download from given url to target destination.
  * <p>
  * Derived from eirslett/frontend-maven-plugin
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since
  */

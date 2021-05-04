@@ -19,6 +19,8 @@ import java.io.Serializable;
 
 /**
  * Generic class representing an immutable pair of values.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

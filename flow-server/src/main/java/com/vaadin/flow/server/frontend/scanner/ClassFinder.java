@@ -28,6 +28,8 @@ import com.googlecode.gentyref.GenericTypeReflector;
 
 /**
  * Interface for annotated and subclass class searches.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
