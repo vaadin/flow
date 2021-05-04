@@ -62,6 +62,11 @@ class VersionsJsonFilter {
             if (version == null) {
                 continue;
             }
+            // for platform snapshots, snapshot is set to be the vaadin-core
+            // version
+            if (version.getFullVersion().contains("SNAPSHOT")) {
+                continue;
+            }
             final FrontendVersion userManagedVersion = FrontendUtils
                     .getPackageVersionFromJson(userManagedDependencies, key,
                             "dependencies/package.json");

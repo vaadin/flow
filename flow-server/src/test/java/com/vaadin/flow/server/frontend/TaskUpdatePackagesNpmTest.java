@@ -231,6 +231,21 @@ public class TaskUpdatePackagesNpmTest {
     }
 
     @Test
+    public void npmIsInUse_versionsJsonHasSnapshotVersions_notAddedToPackageJson()
+            throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
+                PLATFORM_ELEMENT_MIXIN_VERSION, "20.0-SNAPSHOT");
+
+        final TaskUpdatePackages task = createTask(
+                createApplicationDependencies());
+        task.execute();
+        Assert.assertTrue("Updates not picked", task.modified);
+
+        verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
+                null);
+    }
+
+    @Test
     public void npmIsInUse_packageJsonHasBadVersion_pinnedVersionUsed()
             throws IOException {
         final JsonObject packageJson = getOrCreatePackageJson();
@@ -327,22 +342,25 @@ public class TaskUpdatePackagesNpmTest {
         JsonObject dependencies = getOrCreatePackageJson()
                 .getObject(DEPENDENCIES);
         if (expectedDialogVersion == null) {
-            Assert.assertFalse(dependencies.hasKey(VAADIN_DIALOG));
+            Assert.assertNull("Dependency added when it should not have been",
+                    dependencies.get(VAADIN_DIALOG));
         } else {
             Assert.assertEquals(expectedDialogVersion,
-                    dependencies.get(VAADIN_DIALOG).asString());
+                    dependencies.getString(VAADIN_DIALOG));
         }
         if (expectedElementMixinVersion == null) {
-            Assert.assertFalse(dependencies.hasKey(VAADIN_ELEMENT_MIXIN));
+            Assert.assertNull("Dependency added when it should not have been",
+                    dependencies.get(VAADIN_ELEMENT_MIXIN));
         } else {
             Assert.assertEquals(expectedElementMixinVersion,
-                    dependencies.get(VAADIN_ELEMENT_MIXIN).asString());
+                    dependencies.getString(VAADIN_ELEMENT_MIXIN));
         }
         if (expectedOverlayVersion == null) {
-            Assert.assertFalse(dependencies.hasKey(VAADIN_OVERLAY));
+            Assert.assertNull("Dependency added when it should not have been",
+                    dependencies.get(VAADIN_OVERLAY));
         } else {
             Assert.assertEquals(expectedOverlayVersion,
-                    dependencies.get(VAADIN_OVERLAY).asString());
+                    dependencies.getString(VAADIN_OVERLAY));
         }
     }
 
