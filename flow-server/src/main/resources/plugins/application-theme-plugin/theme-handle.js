@@ -43,7 +43,6 @@ function processThemeResources(options, logger) {
   const themeName = extractThemeName(options.frontendGeneratedFolder);
   if (themeName) {
     if (!prevThemeName && !firstThemeName) {
-      prevThemeName = themeName;
       firstThemeName = themeName;
     } else if ((prevThemeName && prevThemeName !== themeName && firstThemeName !== themeName)
         || (!prevThemeName && firstThemeName !== themeName)) {
