@@ -317,12 +317,10 @@ public class FrontendVersion
 
     private String getInvalidVersionMessage(String name, String version) {
         if (name != null) {
-            return String.format(
-                    "'%s' is not a valid version for '%s'!", version,
-                    name);
+            return String.format("'%s' is not a valid version for '%s'!",
+                    version, name);
         } else {
-            return String.format("'%s' is not a valid version!",
-                    version);
+            return String.format("'%s' is not a valid version!", version);
         }
     }
 
