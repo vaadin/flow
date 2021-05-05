@@ -20,7 +20,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
@@ -30,9 +29,6 @@ import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
  * parameter and return types.
  */
 public class ExplicitNullableTypeChecker {
-    private static final Pattern nonNullPattern = Pattern.compile("nonnull",
-            Pattern.CASE_INSENSITIVE);
-
     /**
      * Checks if the element should be required (not nullable) in the generated
      * Typescript code.
@@ -45,8 +41,8 @@ public class ExplicitNullableTypeChecker {
         Annotation[] annotations = element.getAnnotations();
 
         // JetBrains NotNull annotation is not available at runtime.
-        return Stream.of(annotations).anyMatch(annotation -> nonNullPattern
-                .matcher(annotation.annotationType().getSimpleName()).find());
+        return Stream.of(annotations).anyMatch(annotation -> "nonnull"
+                .equalsIgnoreCase(annotation.annotationType().getSimpleName()));
     }
 
     /**
@@ -59,8 +55,8 @@ public class ExplicitNullableTypeChecker {
      */
     public static boolean isRequired(NodeWithAnnotations<?> node) {
         return node.getAnnotations().stream()
-                .anyMatch(annotation -> nonNullPattern
-                        .matcher(annotation.getName().getIdentifier()).find()
+                .anyMatch(annotation -> "nonnull"
+                        .equalsIgnoreCase(annotation.getName().getIdentifier())
                         || annotation.resolve().getQualifiedName()
                                 .equals("org.jetbrains.annotations.NotNull"));
     }
