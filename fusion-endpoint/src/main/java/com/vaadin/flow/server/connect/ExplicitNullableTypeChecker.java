@@ -16,10 +16,12 @@
 
 package com.vaadin.flow.server.connect;
 
-import javax.annotation.Nonnull;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 
@@ -28,6 +30,8 @@ import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
  * parameter and return types.
  */
 public class ExplicitNullableTypeChecker {
+    private static final Pattern nonNullPattern = Pattern.compile("nonnull",
+            Pattern.CASE_INSENSITIVE);
 
     /**
      * Checks if the element should be required (not nullable) in the generated
@@ -38,7 +42,13 @@ public class ExplicitNullableTypeChecker {
      * @return a result of check
      */
     public static boolean isRequired(AnnotatedElement element) {
-        return element.isAnnotationPresent(Nonnull.class);
+        Annotation[] annotations = element.getAnnotations();
+
+        // JetBrains NotNull annotation is not available at runtime.
+        return Stream.of(annotations)
+                .anyMatch(annotation -> nonNullPattern
+                        .matcher(annotation.annotationType().getSimpleName())
+                        .find());
     }
 
     /**
@@ -46,11 +56,16 @@ public class ExplicitNullableTypeChecker {
      * Typescript code.
      *
      * @param node
-     *            an element to be required
+     *            a node to be required
      * @return a result of check
      */
     public static boolean isRequired(NodeWithAnnotations<?> node) {
-        return node.isAnnotationPresent(Nonnull.class);
+        return node.getAnnotations().stream().anyMatch(annotation -> {
+            String qualifiedName = annotation.resolve().getQualifiedName();
+
+            return nonNullPattern.matcher(qualifiedName).find() || qualifiedName
+                    .equals("org.jetbrains.annotations.NotNull");
+        });
     }
 
     /**

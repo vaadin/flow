@@ -16,11 +16,12 @@
 package com.vaadin.flow.server.connect.generator.endpoints.nonnullable;
 
 import javax.annotation.Nonnull;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import org.jetbrains.annotations.NotNull;
 
 import com.vaadin.flow.server.connect.Endpoint;
 
@@ -43,13 +44,18 @@ public class NonNullableEndpoint {
         return Collections.emptyMap();
     }
 
+    @NotNull
+    public Map<String, JetBrainsNonNullableModel> echoMap1(
+            @NotNull String shouldBeNotNull) {
+        return Collections.emptyMap();
+    }
+
     public NonNullableEndpoint.ReturnType getNotNullReturnType() {
         return new ReturnType();
     }
 
     public void sendParameterType(
             NonNullableEndpoint.ParameterType parameterType) {
-
     }
 
     public String stringNullable() {
@@ -59,8 +65,6 @@ public class NonNullableEndpoint {
     public static class NonNullableModel {
         @Nonnull
         String foo;
-        @Nonnull
-        String bar;
         @Nonnull
         int shouldBeNotNullByDefault;
         Optional<Integer> nullableInteger;
@@ -76,5 +80,13 @@ public class NonNullableEndpoint {
     public static class ParameterType {
         @Nonnull
         String foo;
+    }
+
+    public static class JetBrainsNonNullableModel {
+        @NotNull
+        String foo;
+
+        @org.jetbrains.annotations.NotNull
+        int bar;
     }
 }
