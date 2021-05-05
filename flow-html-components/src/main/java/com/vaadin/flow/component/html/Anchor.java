@@ -17,7 +17,6 @@ package com.vaadin.flow.component.html;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Focusable;
@@ -41,7 +40,8 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
             .attributeWithDefault("href", "", false);
 
     private static final PropertyDescriptor<String, Optional<String>> targetDescriptor = PropertyDescriptors
-            .optionalAttributeWithDefault("target", AnchorTarget.DEFAULT.getValue());
+            .optionalAttributeWithDefault("target",
+                    AnchorTarget.DEFAULT.getValue());
 
     private static final String ROUTER_IGNORE_ATTRIBUTE = "router-ignore";
 
@@ -106,8 +106,8 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
     }
 
     /**
-     * Creates an anchor component with the given href and components
-     * as children of this component.
+     * Creates an anchor component with the given href and components as
+     * children of this component.
      *
      * @see #setHref(AbstractStreamResource)
      * @see #add(Component...)
@@ -206,22 +206,26 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
     }
 
     /**
-     * Sets the target window, tab or frame for this anchor. The target is one of these
-     * special values:
+     * Sets the target window, tab or frame for this anchor. The target may be
+     * the one of these special values:
      * <ul>
-     * <li><code>AnchorTarget.DEFAULT</code>: Removes the target value. This has the same effect as setting the target to <code>AnchorTarget.SELF</code>.
-     * <li><code>AnchorTarget.SELF</code>: Opens the link in the current context.
-     * <li><code>AnchorTarget.BLANK</code>: Opens the link in a new unnamed context.
-     * <li><code>AnchorTarget.PARENT</code>: Opens the link in the parent context, or the
-     * current context if there is no parent context.
-     * <li><code>AnchorTarget.TOP</code>: Opens the link in the top most grandparent
+     * <li><code>AnchorTarget.DEFAULT</code>: Removes the target value. This has
+     * the same effect as setting the target to <code>AnchorTarget.SELF</code>.
+     * <li><code>AnchorTarget.SELF</code>: Opens the link in the current
+     * context.
+     * <li><code>AnchorTarget.BLANK</code>: Opens the link in a new unnamed
+     * context.
+     * <li><code>AnchorTarget.PARENT</code>: Opens the link in the parent
      * context, or the current context if there is no parent context.
+     * <li><code>AnchorTarget.TOP</code>: Opens the link in the top most
+     * grandparent context, or the current context if there is no parent
+     * context.
      * </ul>
      *
      * @param target
      *            the target value, not null
      */
-    public void setTarget(AnchorTarget target) {
+    public void setTarget(AnchorTargetValue target) {
         Objects.requireNonNull(target, "target cannot be null.");
         setTarget(target.getValue());
     }
@@ -229,23 +233,19 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
     /**
      * Gets the target window, tab or frame value for this anchor.
      *
-     * @see #setTarget(AnchorTarget)
+     * @see #setTarget(AnchorTargetValue)
+     * @see #getTarget()
      *
-     * @return an optional target, or {@link AnchorTarget#DEFAULT} if no target has been
-     *         set
+     * @return the target window value , or {@link AnchorTarget#DEFAULT} if no
+     *         target has been set
      */
-    public Optional<AnchorTarget> getTargetEnum() {
-        Optional<AnchorTarget> anchorTarget = Optional.of(AnchorTarget.DEFAULT);
+    public AnchorTargetValue getTargetValue() {
+        Optional<String> target = getTarget();
 
-        Optional<String> strTarget = getTarget();
-
-        if (strTarget.isPresent()) {
-            String valueToFind = strTarget.get();
-            anchorTarget = Stream.of(AnchorTarget.values()).filter(type-> type.getValue().equals(valueToFind))
-                    .findFirst();
+        if (target.isPresent()) {
+            return AnchorTargetValue.forString(target.get());
         }
-
-        return anchorTarget;
+        return AnchorTarget.DEFAULT;
     }
 
 }
