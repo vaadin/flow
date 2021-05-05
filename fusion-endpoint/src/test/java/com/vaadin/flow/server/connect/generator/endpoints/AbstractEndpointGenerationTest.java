@@ -357,8 +357,8 @@ public abstract class AbstractEndpointGenerationTest
                 boolean notRequired = requiredList == null
                         || !requiredList.contains(stringSchemaEntry.getKey());
                 assertTrue(
-                        "Request parameter without @Nonnull or JetBrains"
-                                + " @NotNull annotation should not be required",
+                        "Request parameter without @Nonnull annotation" +
+                                " should not be required",
                         notRequired);
             }
             index++;
