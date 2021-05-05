@@ -182,11 +182,13 @@ public class History implements Serializable {
      *            to only change the JSON state
      */
     public void pushState(JsonValue state, Location location) {
+        final String pathWithQueryParameters = Optional.ofNullable(location)
+                .map(Location::getPathWithQueryParameters).orElse(null);
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
         ui.getPage().executeJs(
                 "setTimeout(() => window.history.pushState($0, '', $1))", state,
-                location.getPathWithQueryParameters());
+                pathWithQueryParameters);
     }
 
     /**
@@ -219,11 +221,13 @@ public class History implements Serializable {
      *            to only change the JSON state
      */
     public void replaceState(JsonValue state, Location location) {
+        final String pathWithQueryParameters = Optional.ofNullable(location)
+                .map(Location::getPathWithQueryParameters).orElse(null);
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
         ui.getPage().executeJs(
                 "setTimeout(() => window.history.replaceState($0, '', $1))",
-                state, location.getPathWithQueryParameters());
+                state, pathWithQueryParameters);
     }
 
     /**

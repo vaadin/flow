@@ -26,6 +26,7 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.router.ErrorNavigationEvent;
@@ -43,10 +44,12 @@ import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 
+import elemental.json.JsonValue;
+
 /**
  * Custom UI for {@link JavaScriptBootstrapHandler}. This class is intended for
  * internal use in client side bootstrapping.
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -105,13 +108,25 @@ public class JavaScriptBootstrapUI extends UI {
      *            client side element id
      * @param flowRoute
      *            flow route that should be attached to the client element
+     * @param appShellTitle
+     *            client side title of the application shell
+     * @param historyState
+     *            client side history state value
      */
     @ClientCallable
     public void connectClient(String clientElementTag, String clientElementId,
-            String flowRoute, String appShellTitle) {
+            String flowRoute, String appShellTitle, JsonValue historyState) {
         if (appShellTitle != null && !appShellTitle.isEmpty()) {
             getInternals().setAppShellTitle(appShellTitle);
         }
+
+        final String trimmedRoute = PathUtil.trimPath(flowRoute);
+        if (!trimmedRoute.equals(flowRoute)) {
+            // See InternalRedirectHandler invoked via Router.
+            getPage().getHistory().replaceState(null, trimmedRoute);
+        }
+        final Location location = new Location(trimmedRoute);
+
         if (wrapperElement == null) {
             // Create flow reference for the client outlet element
             wrapperElement = new Element(clientElementTag);
@@ -120,23 +135,25 @@ public class JavaScriptBootstrapUI extends UI {
             getElement().getStateProvider().appendVirtualChild(
                     getElement().getNode(), wrapperElement,
                     NodeProperties.INJECT_BY_ID, clientElementId);
-        }
 
-        final String trimmedRoute = PathUtil.trimPath(flowRoute);
-        if (!trimmedRoute.equals(flowRoute)) {
-            // See InternalRedirectHandler invoked via Router.
-            getPage().getHistory().replaceState(null, trimmedRoute);
-        }
+            getPage().getHistory().setHistoryStateChangeHandler(
+                    event -> renderViewForRoute(event.getLocation(),
+                            NavigationTrigger.CLIENT_SIDE));
 
-        // Render the flow view that the user wants to navigate to.
-        renderViewForRoute(new Location(trimmedRoute),
-                NavigationTrigger.CLIENT_SIDE);
+            // Render the flow view that the user wants to navigate to.
+            renderViewForRoute(location, NavigationTrigger.CLIENT_SIDE);
+        } else {
+            History.HistoryStateChangeHandler handler = getPage().getHistory()
+                    .getHistoryStateChangeHandler();
+            handler.onHistoryStateChange(new History.HistoryStateChangeEvent(
+                    getPage().getHistory(), historyState, location,
+                    NavigationTrigger.CLIENT_SIDE));
+        }
 
         // true if the target is client-view and the push mode is disable
         if (getForwardToClientUrl() != null) {
             navigateToClient(getForwardToClientUrl());
             acknowledgeClient();
-
         } else if (isPostponed()) {
             cancelClient();
         } else {
@@ -181,41 +198,41 @@ public class JavaScriptBootstrapUI extends UI {
         if (Boolean.TRUE.equals(getSession().getAttribute(SERVER_ROUTING))) {
             // server-side routing
             renderViewForRoute(location, NavigationTrigger.UI_NAVIGATE);
-        } else {
-            // client-side routing
+            return;
+        }
 
-            // There is an in-progress navigation or there are no changes,
-            // prevent looping
-            if (navigationInProgress || getInternals().hasLastHandledLocation()
-                    && sameLocation(getInternals().getLastHandledLocation(),
-                            location)) {
-                return;
-            }
+        // client-side routing
 
-            navigationInProgress = true;
-            try {
-                Optional<NavigationState> navigationState = getInternals()
-                        .getRouter().resolveNavigationTarget(location);
+        // There is an in-progress navigation or there are no changes,
+        // prevent looping
+        if (navigationInProgress
+                || getInternals().hasLastHandledLocation() && sameLocation(
+                        getInternals().getLastHandledLocation(), location)) {
+            return;
+        }
 
-                if (navigationState.isPresent()) {
-                    // Navigation can be done in server side without extra
-                    // round-trip
-                    handleNavigation(location, navigationState.get(),
-                            NavigationTrigger.UI_NAVIGATE);
-                    if (getForwardToClientUrl() != null) {
-                        // Server is forwarding to a client route from a
-                        // BeforeEnter.
-                        navigateToClient(getForwardToClientUrl());
-                    }
-                } else {
-                    // Server cannot resolve navigation, let client-side to
-                    // handle it.
-                    navigateToClient(location.getPathWithQueryParameters());
+        navigationInProgress = true;
+        try {
+            Optional<NavigationState> navigationState = getInternals()
+                    .getRouter().resolveNavigationTarget(location);
+
+            if (navigationState.isPresent()) {
+                // Navigation can be done in server side without extra
+                // round-trip
+                handleNavigation(location, navigationState.get(),
+                        NavigationTrigger.UI_NAVIGATE);
+                if (getForwardToClientUrl() != null) {
+                    // Server is forwarding to a client route from a
+                    // BeforeEnter.
+                    navigateToClient(getForwardToClientUrl());
                 }
-            } finally {
-                navigationInProgress = false;
+            } else {
+                // Server cannot resolve navigation, let client-side to
+                // handle it.
+                navigateToClient(location.getPathWithQueryParameters());
             }
-
+        } finally {
+            navigationInProgress = false;
         }
     }
 

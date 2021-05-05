@@ -2,12 +2,13 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.Route;
 
+import elemental.json.Json;
 import elemental.json.JsonObject;
 
 @Route("com.vaadin.flow.uitest.ui.RouterLinkView")
