@@ -25,11 +25,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.ApplicationClassLoaderAccess;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.VaadinContextInitializer;
 
 @NotThreadSafe
 public class VaadinServletTest {
@@ -137,7 +140,7 @@ public class VaadinServletTest {
 
             @Override
             protected StaticFileHandler createStaticFileHandler(
-                    VaadinServletService servletService) {
+                    VaadinService servletService) {
                 return Mockito.mock(StaticFileHandler.class);
             }
 
@@ -176,7 +179,7 @@ public class VaadinServletTest {
 
                 @Override
                 protected StaticFileHandler createStaticFileHandler(
-                        VaadinServletService servletService) {
+                        VaadinService servletService) {
                     return Mockito.mock(StaticFileHandler.class);
                 }
 
@@ -220,6 +223,104 @@ public class VaadinServletTest {
         } finally {
             CurrentInstance.clearAll();
         }
+    }
+
+    @Test
+    public void init_appClassLoaderIsSet() throws ServletException {
+        VaadinServlet servlet = new VaadinServlet();
+
+        ServletConfig config = mockConfig();
+        ServletContext servletContext = config.getServletContext();
+        ClassLoader loader = Mockito.mock(ClassLoader.class);
+        Mockito.when(servletContext.getClassLoader()).thenReturn(loader);
+        servlet.init(config);
+
+        ArgumentCaptor<ApplicationClassLoaderAccess> captor = ArgumentCaptor
+                .forClass(ApplicationClassLoaderAccess.class);
+        Mockito.verify(servletContext).setAttribute(
+                Mockito.eq(ApplicationClassLoaderAccess.class.getName()),
+                captor.capture());
+
+        ApplicationClassLoaderAccess access = captor.getValue();
+        Assert.assertSame(loader, access.getClassloader());
+    }
+
+    @Test
+    public void init_contextInitializationIsExecuted() throws ServletException {
+        VaadinServlet servlet = new VaadinServlet();
+
+        ServletConfig config = mockConfig();
+        ServletContext servletContext = config.getServletContext();
+        ClassLoader loader = Mockito.mock(ClassLoader.class);
+
+        VaadinContextInitializer initializer = Mockito
+                .mock(VaadinContextInitializer.class);
+
+        Mockito.when(servletContext
+                .getAttribute(VaadinContextInitializer.class.getName()))
+                .thenReturn(initializer);
+
+        Mockito.when(servletContext.getClassLoader()).thenReturn(loader);
+        servlet.init(config);
+
+        Mockito.verify(initializer)
+                .initialize(Mockito.any(VaadinContext.class));
+    }
+
+    @Test
+    public void init_initIsCalledAfterDestroy_passDifferentConfigInstance_servletIsInitialized()
+            throws ServletException {
+        VaadinServlet servlet = new VaadinServlet();
+
+        ServletConfig config = mockConfig();
+
+        servlet.init(config);
+
+        Assert.assertSame(config, servlet.getServletConfig());
+
+        servlet.destroy();
+
+        ServletConfig newConfig = mockConfig();
+        servlet.init(newConfig);
+        Assert.assertSame(newConfig, servlet.getServletConfig());
+    }
+
+    @Test
+    public void destroy_servletIsInitializedBeforeDestroy_servletConfigIsNullAfterDestroy()
+            throws ServletException {
+        VaadinServlet servlet = new VaadinServlet();
+
+        ServletConfig config = mockConfig();
+
+        servlet.init(config);
+
+        servlet.destroy();
+
+        Assert.assertNull(servlet.getServletConfig());
+    }
+
+    @Test
+    public void createStaticFileHandler_delegateToStaticFileHandlerFactory() {
+        VaadinServlet servlet = new VaadinServlet();
+        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        Mockito.when(service.getContext()).thenReturn(context);
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+
+        StaticFileHandlerFactory factory = Mockito
+                .mock(StaticFileHandlerFactory.class);
+
+        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
+                .thenReturn(factory);
+
+        StaticFileHandler handler = Mockito.mock(StaticFileHandler.class);
+        Mockito.when(factory.createHandler(service)).thenReturn(handler);
+
+        StaticFileHandler result = servlet.createStaticFileHandler(service);
+
+        Mockito.verify(factory).createHandler(service);
+        Assert.assertSame(handler, result);
     }
 
     private ServletConfig mockConfig() {

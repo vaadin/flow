@@ -18,7 +18,7 @@
     "skipLibCheck": true
   },
   "include": [
-    "src/main/resources/META-INF/resources/frontend/**/*.ts"
+    "src/main/frontend/**/*.ts"
   ],
   "exclude": []
 }

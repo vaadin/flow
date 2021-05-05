@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
@@ -43,11 +44,10 @@ public class AbstractDataViewTest {
 
     @Before
     public void init() {
-        items = new ArrayList<>(Arrays.asList(
-                new Item(1L, "first", "description1"),
-                new Item(2L, "middle", "description2"),
-                new Item(3L, "last", "description3")
-        ));
+        items = new ArrayList<>(
+                Arrays.asList(new Item(1L, "first", "description1"),
+                        new Item(2L, "middle", "description2"),
+                        new Item(3L, "last", "description3")));
         dataProvider = DataProvider.ofCollection(items);
         component = new TestComponent();
         dataView = new DataViewImpl(() -> dataProvider, component);
@@ -82,15 +82,27 @@ public class AbstractDataViewTest {
         dataView.addItemCountChangeListener(
                 event -> fired.compareAndSet(0, event.getItemCount()));
 
-        ComponentUtil
-                .fireEvent(component, new ItemCountChangeEvent<>(component, 10, false));
+        ComponentUtil.fireEvent(component,
+                new ItemCountChangeEvent<>(component, 10, false));
 
         Assert.assertEquals(10, fired.get());
     }
 
+    @Test
+    public void refreshAll_listenersNotified() {
+        AtomicReference<DataChangeEvent<Item>> refreshAllEvent = new AtomicReference<>();
+        dataProvider.addDataProviderListener(event -> {
+            Assert.assertNull(refreshAllEvent.get());
+            refreshAllEvent.set(event);
+        });
+        dataView.refreshAll();
+        Assert.assertNotNull(refreshAllEvent.get());
+        Assert.assertEquals(dataProvider, refreshAllEvent.get().getSource());
+    }
+
     /**
-     * setIdentifierProvider is tested in AbstractListDataView since it
-     * has the container(T item) method.
+     * setIdentifierProvider is tested in AbstractListDataView since it has the
+     * container(T item) method.
      */
 
     @Tag("test-component")

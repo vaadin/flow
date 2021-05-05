@@ -1,0 +1,6 @@
+/* This file is for testing CSS loading by `@StyleSheet` */
+
+p.stylesheet {
+    color: rgba(0, 0, 255, 1); /* blue */
+    font-size: 18px;
+}

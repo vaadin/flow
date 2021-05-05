@@ -25,24 +25,26 @@ import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-
+import static com.vaadin.flow.server.Constants.RESOURCES_JAR_DEFAULT;
 
 /**
  * Copies JavaScript and CSS files from JAR files into a given folder.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
 public class TaskCopyFrontendFiles implements FallibleCommand {
     private static final String[] WILDCARD_INCLUSIONS = new String[] {
             "**/*.js", "**/*.css", "**/*.ts" };
-
+    private static final String WILDCARD_INCLUSION_APP_THEME_JAR = "**/themes/**/*";
     private File targetDirectory;
     private Set<File> resourceLocations = null;
 
     /**
      * Scans the jar files given defined by {@code resourcesToScan}.
      *
-     * @param npmFolder
+     * @param targetDirectory
      *            target directory for the discovered files
      * @param resourcesToScan
      *            folders and jar files to scan.
@@ -79,6 +81,9 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                 jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
                         location, COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
                         targetDirectory, WILDCARD_INCLUSIONS);
+                jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
+                        location, RESOURCES_JAR_DEFAULT, targetDirectory,
+                        WILDCARD_INCLUSION_APP_THEME_JAR);
             }
         }
         long ms = (System.nanoTime() - start) / 1000000;

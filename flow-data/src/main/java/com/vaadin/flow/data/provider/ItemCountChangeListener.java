@@ -23,12 +23,12 @@ import java.io.Serializable;
  * Items count changes are mostly due to filtering of the data, but can also be
  * sent for changes in the dataset.
  * <p>
- * The {@link #itemCountChanged(ItemCountChangeEvent)} will be called
- * during the "before client response"-phase, so changes done during the
- * server round trip will only receive one event.
- * For example, this code will trigger only one
+ * The {@link #itemCountChanged(ItemCountChangeEvent)} will be called during the
+ * "before client response"-phase, so changes done during the server round trip
+ * will only receive one event. For example, this code will trigger only one
  * {@link #itemCountChanged(ItemCountChangeEvent)} method call, although there
  * are two methods called which cause the item count change:
+ * 
  * <pre>
  * {@code
  * dataView.addItemCountChangeListener(listener);
@@ -46,7 +46,7 @@ public interface ItemCountChangeListener extends Serializable {
      * Invoked for changes in the data size.
      *
      * @param event
-     *         Component event containing new data size
+     *            Component event containing new data size
      */
     void itemCountChanged(ItemCountChangeEvent event);
 

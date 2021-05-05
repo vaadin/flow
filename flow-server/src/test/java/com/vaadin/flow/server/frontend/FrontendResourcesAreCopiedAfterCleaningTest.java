@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,10 +28,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 
 public class FrontendResourcesAreCopiedAfterCleaningTest {
@@ -66,7 +70,8 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
 
     private void assertCopiedFrontendFileAmount(int fileCount)
             throws IOException {
-        File dir = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
+        File dir = new File(npmFolder,
+                Paths.get(TARGET, DEFAULT_FLOW_RESOURCES_FOLDER).toString());
         FileUtils.forceMkdir(dir);
         List<String> files = TestUtils.listFilesRecursively(dir);
 
@@ -78,9 +83,13 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
                 FrontendResourcesAreCopiedAfterCleaningTest.class
                         .getClassLoader());
-        NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
-                npmFolder);
-        File resourcesFolder = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
+        Lookup mockLookup = Mockito.mock(Lookup.class);
+        Mockito.doReturn(classFinder).when(mockLookup)
+                .lookup(ClassFinder.class);
+        NodeTasks.Builder builder = new NodeTasks.Builder(mockLookup, npmFolder,
+                TARGET);
+        File resourcesFolder = new File(npmFolder,
+                Paths.get(TARGET, DEFAULT_FLOW_RESOURCES_FOLDER).toString());
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
                 .runNpmInstall(false).enablePackagesUpdate(true)
@@ -93,9 +102,13 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
                 FrontendResourcesAreCopiedAfterCleaningTest.class
                         .getClassLoader());
-        NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
-                npmFolder);
-        File resourcesFolder = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
+        Lookup mockLookup = Mockito.mock(Lookup.class);
+        Mockito.doReturn(classFinder).when(mockLookup)
+                .lookup(ClassFinder.class);
+        NodeTasks.Builder builder = new NodeTasks.Builder(mockLookup, npmFolder,
+                TARGET);
+        File resourcesFolder = new File(npmFolder,
+                Paths.get(TARGET, DEFAULT_FLOW_RESOURCES_FOLDER).toString());
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
                 .runNpmInstall(false).enableNpmFileCleaning(true)

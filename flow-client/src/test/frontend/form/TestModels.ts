@@ -12,7 +12,7 @@ import {
   Required,
   Size,
   StringModel,
-} from "../../../main/resources/META-INF/resources/frontend/form";
+} from "../../../main/frontend/form";
 
 export interface IdEntity {
   idString: string;

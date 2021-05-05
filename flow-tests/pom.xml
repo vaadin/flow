@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>6.0-SNAPSHOT</version>
+        <version>8.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-tests</artifactId>
     <name>Flow tests</name>
@@ -276,11 +276,6 @@
                                 <value>${vaadin.useDeprecatedV14Bootstrapping}
                                 </value>
                             </systemProperty>
-                            <systemProperty>
-                                <name>vaadin.allow.appshell.annotations
-                                </name>
-                                <value>true</value>
-                            </systemProperty>
                         </systemProperties>
                     </configuration>
                 </plugin>
@@ -297,6 +292,7 @@
     <modules>
         <module>test-resources</module>
         <module>test-common</module>
+        <module>test-lumo</module>
     </modules>
 
     <profiles>
@@ -325,6 +321,7 @@
                 <module>test-mixed/pom-npm.xml</module>
                 <module>test-dev-mode</module>
                 <module>test-pwa</module>
+                <module>test-pwa/pom-production.xml</module>
                 <module>test-root-ui-context</module>
                 <module>test-router-custom-context</module>
                 <module>test-live-reload</module>
@@ -334,8 +331,6 @@
                 <module>test-memory-leaks</module>
                 <module>test-servlet</module>
                 <module>test-themes</module>
-                <module>test-lumo-theme</module>
-                <module>test-material-theme</module>
                 <module>servlet-containers</module>
 
                 <!-- web component embedding -->
@@ -351,11 +346,18 @@
                 <module>test-ccdm</module>
                 <module>test-ccdm/pom-production.xml</module>
                 <module>test-ccdm-flow-navigation</module>
+                <module>test-ccdm-flow-navigation/pom-production.xml</module>
 
                 <module>test-root-context</module>
-
+				
+                <module>test-v14-bootstrap</module>
+                <module>test-v14-bootstrap/pom-production.xml</module>
+				
                 <!-- tests are disabled in this module, this reference is for maven version plugin -->
                 <module>test-no-theme</module>
+                <!-- move theme tests to the end, because theme switch live reload-->
+                <!-- test impacts startup test-->
+                <module>test-application-theme</module>
             </modules>
         </profile>
         <profile>
@@ -440,6 +442,32 @@
                     com.vaadin.flow.testcategory.PushTests
                 </test.excludegroup>
             </properties>
+        </profile>
+        <profile>
+            <id>deepClean</id>
+            <build>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-clean-plugin</artifactId>
+                            <version>3.1.0</version>
+                            <configuration>
+                                <filesets>
+                                    <fileset>
+                                        <directory>${project.basedir}</directory>
+                                        <includes>
+                                            <include>package*.json</include>
+                                            <include>webpack.*.js</include>
+                                            <include>types.d.ts</include>
+                                            <include>tsconfig.json</include>
+                                            <include>pnpm-lock.yaml</include>
+                                            <include>node_modules/**</include>
+                                        </includes>
+                                    </fileset>
+                                </filesets>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+            </build>
         </profile>
     </profiles>
 

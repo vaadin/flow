@@ -15,12 +15,16 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -28,9 +32,11 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ResponseWriter;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 
 /**
@@ -53,19 +59,25 @@ public class StaticFileServer implements StaticFileHandler {
             .compile("^/frontend[-\\w/]*/webjars/");
 
     private final ResponseWriter responseWriter;
-    private final VaadinServletService servletService;
+    private final VaadinService vaadinService;
     private DeploymentConfiguration deploymentConfiguration;
+    private final List<String> manifestPaths;
+
+    // Matcher to match string starting with '/themes/[theme-name]/'
+    protected static final Pattern APP_THEME_PATTERN = Pattern
+            .compile("^\\/themes\\/[\\s\\S]+?\\/");
 
     /**
      * Constructs a file server.
      *
-     * @param servletService
-     *            servlet service for the deployment, not <code>null</code>
+     * @param vaadinService
+     *            vaadin service for the deployment, not <code>null</code>
      */
-    public StaticFileServer(VaadinServletService servletService) {
-        this.servletService = servletService;
-        deploymentConfiguration = servletService.getDeploymentConfiguration();
+    public StaticFileServer(VaadinService vaadinService) {
+        this.vaadinService = vaadinService;
+        deploymentConfiguration = vaadinService.getDeploymentConfiguration();
         responseWriter = new ResponseWriter(deploymentConfiguration);
+        manifestPaths = getManifestPathsFromJson();
     }
 
     @Override
@@ -80,13 +92,20 @@ public class StaticFileServer implements StaticFileHandler {
             return false;
         }
 
-        if (requestFilename.startsWith("/" + VAADIN_STATIC_FILES_PATH)
+        if (APP_THEME_PATTERN.matcher(requestFilename).find()
+                || requestFilename.startsWith("/" + VAADIN_STATIC_FILES_PATH)
                 || requestFilename.startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
             // The path is reserved for internal resources only
             // We rather serve 404 than let it fall through
             return true;
         }
-        resource = servletService.getStaticResource(requestFilename);
+
+        if (manifestPaths.contains(requestFilename)) {
+            // The path is on the webpack manifest list, so it is a static
+            // resource as well.
+            return true;
+        }
+        resource = getStaticResource(requestFilename);
 
         if (resource == null && shouldFixIncorrectWebjarPaths()
                 && isIncorrectWebjarPath(requestFilename)) {
@@ -110,17 +129,26 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         URL resourceUrl = null;
-        if (isAllowedVAADINBuildOrStaticUrl(filenameWithPath)) {
-            resourceUrl = servletService.getClassLoader()
-                    .getResource("META-INF" + filenameWithPath);
+        if (isAllowedVAADINBuildOrStaticUrl(filenameWithPath)
+                || manifestPaths.contains(filenameWithPath)) {
+            if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
+                resourceUrl = vaadinService.getClassLoader()
+                        .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
+                                + filenameWithPath.replaceFirst("^/", ""));
+
+            } else {
+                resourceUrl = vaadinService.getClassLoader()
+                        .getResource(VAADIN_WEBAPP_RESOURCES
+                                + filenameWithPath.replaceFirst("^/", ""));
+            }
         }
         if (resourceUrl == null) {
-            resourceUrl = servletService.getStaticResource(filenameWithPath);
+            resourceUrl = getStaticResource(filenameWithPath);
         }
         if (resourceUrl == null && shouldFixIncorrectWebjarPaths()
                 && isIncorrectWebjarPath(filenameWithPath)) {
             // Flow issue #4601
-            resourceUrl = servletService.getStaticResource(
+            resourceUrl = getStaticResource(
                     fixIncorrectWebjarPath(filenameWithPath));
         }
 
@@ -146,6 +174,27 @@ public class StaticFileServer implements StaticFileHandler {
         responseWriter.writeResponseContents(filenameWithPath, resourceUrl,
                 request, response);
         return true;
+    }
+
+    /**
+     * Returns a URL to the static Web resource at the given URI or null if no
+     * file found.
+     * <p>
+     * The resource will be exposed via HTTP (available as a static web
+     * resource). The {@code null} return value means that the resource won't be
+     * exposed as a Web resource even if it's a resource available via
+     * {@link ServletContext}.
+     * 
+     * @param path
+     *            the path for the resource
+     * @return the resource located at the named path to expose it via Web, or
+     *         {@code null} if there is no resource at that path or it should
+     *         not be exposed
+     * 
+     * @see VaadinService#getStaticResource(String)
+     */
+    protected URL getStaticResource(String path) {
+        return vaadinService.getStaticResource(path);
     }
 
     // When referring to webjar resources from application stylesheets (loaded
@@ -195,9 +244,10 @@ public class StaticFileServer implements StaticFileHandler {
      * @return true if we are ok to try serving the file
      */
     private boolean isAllowedVAADINBuildOrStaticUrl(String filenameWithPath) {
-        // Check that we target VAADIN/build
+        // Check that we target VAADIN/build | VAADIN/static | themes/theme-name
         return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-            || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH);
+                || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH)
+                || APP_THEME_PATTERN.matcher(filenameWithPath).find();
     }
 
     /**
@@ -288,7 +338,8 @@ public class StaticFileServer implements StaticFileHandler {
         // /VAADIN/folder/file.js
         if (request.getPathInfo() == null) {
             return request.getServletPath();
-        } else if (request.getPathInfo().startsWith("/" + VAADIN_MAPPING)) {
+        } else if (request.getPathInfo().startsWith("/" + VAADIN_MAPPING)
+                || APP_THEME_PATTERN.matcher(request.getPathInfo()).find()) {
             return request.getPathInfo();
         }
         return request.getServletPath() + request.getPathInfo();
@@ -369,6 +420,26 @@ public class StaticFileServer implements StaticFileHandler {
             getLogger().trace("Unable to parse If-Modified-Since", e);
         }
         return false;
+    }
+
+    /**
+     * Load manifest.json, if exists, and extract manifest paths.
+     *
+     * In development mode, this resource does not exist, an empty list is
+     * returned in that case.
+     *
+     * @return list of paths mapped to static webapp resources, or empty list
+     */
+    private List<String> getManifestPathsFromJson() {
+        InputStream stream = vaadinService.getClassLoader()
+                .getResourceAsStream(VAADIN_WEBAPP_RESOURCES + "manifest.json");
+        if (stream == null) {
+            // manifest.json resource does not exist, probably dev mode
+            return new ArrayList<>();
+        }
+
+        return FrontendUtils
+                .parseManifestPaths(FrontendUtils.streamToString(stream));
     }
 
     private static Logger getLogger() {

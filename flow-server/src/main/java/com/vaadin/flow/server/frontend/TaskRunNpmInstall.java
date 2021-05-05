@@ -42,8 +42,11 @@ import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static elemental.json.impl.JsonUtil.stringify;
@@ -51,6 +54,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Run <code>npm install</code> after dependencies have been updated.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
@@ -91,7 +96,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      *            whether vaadin home node executable has to be used
      * @param nodeVersion
      *            The node.js version to be used when node.js is installed
-     *            automatically by Vaadin, for example <code>"v12.18.3"</code>.
+     *            automatically by Vaadin, for example <code>"v14.15.4"</code>.
      *            Use {@value FrontendTools#DEFAULT_NODE_VERSION} by default.
      * @param nodeDownloadRoot
      *            Download node.js from this URL. Handy in heavily firewalled
@@ -188,7 +193,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
             JsonObject versionsJson = getVersions(content);
             if (versionsJson == null) {
-                return null;
+                versionsJson = generateVersionsFromPackageJson();
             }
             FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
                     StandardCharsets.UTF_8);
@@ -200,6 +205,36 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 return FrontendUtils.getUnixPath(versionsPath);
             }
         }
+    }
+
+    /**
+     * If we do not have the platform versions to lock we should lock any
+     * versions in the package.json so we do not get multiple versions for
+     * defined packages.
+     *
+     * @return versions Json based on package.json
+     * @throws IOException
+     *             If reading package.json fails
+     */
+    private JsonObject generateVersionsFromPackageJson() throws IOException {
+        JsonObject versionsJson = Json.createObject();
+        // if we don't have versionsJson lock package dependency versions.
+        final JsonObject packageJson = packageUpdater.getPackageJson();
+        final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        final JsonObject devDependencies = packageJson
+                .getObject(DEV_DEPENDENCIES);
+        if (dependencies != null) {
+            for (String key : dependencies.keys()) {
+                versionsJson.put(key, dependencies.getString(key));
+            }
+        }
+        if (devDependencies != null) {
+            for (String key : devDependencies.keys()) {
+                versionsJson.put(key, devDependencies.getString(key));
+            }
+        }
+
+        return versionsJson;
     }
 
     /**
@@ -328,6 +363,13 @@ public class TaskRunNpmInstall implements FallibleCommand {
                                 + "with npm by setting system variable -Dvaadin.pnpm.enable=false",
                         exception);
             }
+            try {
+                createNpmRcFile();
+            } catch (IOException exception) {
+                packageUpdater.log().warn(".npmrc generation failed; pnpm "
+                        + "package installation may require manaually passing "
+                        + "the --shamefully-hoist flag", exception);
+            }
         }
 
         List<String> executable;
@@ -335,7 +377,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         FrontendTools tools = new FrontendTools(baseDir,
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
-                nodeVersion, nodeDownloadRoot);
+                nodeVersion, nodeDownloadRoot, requireHomeNodeExec);
         try {
             if (requireHomeNodeExec) {
                 tools.forceAlternativeNodeExecutable();
@@ -378,7 +420,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
             Runtime.getRuntime()
                     .addShutdownHook(new Thread(finalProcess::destroyForcibly));
 
-
             packageUpdater.log().debug("Output of `{}`:", commandString);
             StringBuilder toolOutput = new StringBuilder();
             try (BufferedReader reader = new BufferedReader(
@@ -387,7 +428,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 String stdoutLine;
                 while ((stdoutLine = reader.readLine()) != null) {
                     packageUpdater.log().debug(stdoutLine);
-                    toolOutput.append(stdoutLine);
+                    toolOutput.append(stdoutLine)
+                            .append(System.lineSeparator());
                 }
             }
 
@@ -442,11 +484,52 @@ public class TaskRunNpmInstall implements FallibleCommand {
                         "Couldn't find template pnpmfile.js in the classpath");
             }
             FileUtils.copyInputStreamToFile(content, pnpmFile);
-            packageUpdater.log().info("Generated pnpmfile hook file: '{}'",
+            packageUpdater.log().debug("Generated pnpmfile hook file: '{}'",
                     pnpmFile);
 
             FileUtils.writeLines(pnpmFile,
                     modifyPnpmFile(pnpmFile, versionsPath));
+        }
+    }
+
+    /*
+     * Create an .npmrc file the project directory if there is none.
+     */
+    private void createNpmRcFile() throws IOException {
+        File npmrcFile = new File(packageUpdater.npmFolder.getAbsolutePath(),
+                ".npmrc");
+        boolean shouldWrite;
+        if (npmrcFile.exists()) {
+            List<String> lines = FileUtils.readLines(npmrcFile,
+                    StandardCharsets.UTF_8);
+            if (lines.stream().anyMatch(line -> line
+                    .contains("NOTICE: this is an auto-generated file"))) {
+                shouldWrite = true;
+            } else {
+                // Looks like this file was not generated by Vaadin
+                if (lines.stream()
+                        .noneMatch(line -> line.contains("shamefully-hoist"))) {
+                    String message = "Custom .npmrc file ({}) found in "
+                            + "project; pnpm package installation may "
+                            + "require passing the --shamefully-hoist flag";
+                    packageUpdater.log().info(message, npmrcFile);
+                }
+                shouldWrite = false;
+            }
+        } else {
+            shouldWrite = true;
+        }
+        if (shouldWrite) {
+            try (InputStream content = TaskRunNpmInstall.class
+                    .getResourceAsStream("/npmrc")) {
+                if (content == null) {
+                    throw new IOException(
+                            "Couldn't find template npmrc in the classpath");
+                }
+                FileUtils.copyInputStreamToFile(content, npmrcFile);
+                packageUpdater.log().debug("Generated pnpm configuration: '{}'",
+                        npmrcFile);
+            }
         }
     }
 

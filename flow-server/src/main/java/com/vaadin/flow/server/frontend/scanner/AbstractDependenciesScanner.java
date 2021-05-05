@@ -15,10 +15,13 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.theme.AbstractTheme;
 
 /**
  * Common scanner functionality.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since
@@ -27,6 +30,9 @@ abstract class AbstractDependenciesScanner
         implements FrontendDependenciesScanner {
 
     public static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
+
+    protected static final String ERROR_INVALID_PWA_ANNOTATION = "There can only be one @PWA annotation and it must be set on the "
+            + AppShellConfigurator.class.getSimpleName() + " implementor.";
 
     private final ClassFinder finder;
 

@@ -43,6 +43,7 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.BootstrapHandlerTest;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
@@ -328,7 +329,8 @@ public class UidlWriterTest {
                 .thenReturn(servletRequestMock);
 
         ui.doInit(vaadinRequestMock, 1);
-        ui.getInternals().getRouter().initializeUI(ui, vaadinRequestMock);
+        ui.getInternals().getRouter().initializeUI(ui,
+                BootstrapHandlerTest.requestToLocation(vaadinRequestMock));
 
         return ui;
     }

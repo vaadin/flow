@@ -15,13 +15,18 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.function.Function;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
+import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
@@ -29,7 +34,6 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REQUEST_TIMING;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_SYNC_ID_CHECK;
-import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 
 /**
  * The property handling implementation of {@link DeploymentConfiguration} based
@@ -40,12 +44,20 @@ import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 public class PropertyDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
 
-    private final Properties initParameters;
     private final Class<?> systemPropertyBaseClass;
 
     /**
+     * Contains properties from both: parent config and provided properties.
+     */
+    private final Properties allProperties;
+
+    private final ApplicationConfiguration parentConfig;
+
+    /**
      * Create a new property deployment configuration instance.
-     *
+     * 
+     * @param parentConfig
+     *            a parent application configuration
      * @param systemPropertyBaseClass
      *            the class that should be used as a basis when reading system
      *            properties
@@ -53,28 +65,13 @@ public class PropertyDeploymentConfiguration
      *            the init parameters that should make up the foundation for
      *            this configuration
      */
-    public PropertyDeploymentConfiguration(Class<?> systemPropertyBaseClass,
-            Properties initParameters) {
-        this.initParameters = initParameters;
+    public PropertyDeploymentConfiguration(
+            ApplicationConfiguration parentConfig,
+            Class<?> systemPropertyBaseClass, Properties initParameters) {
+        super(filterStringProperties(initParameters));
+        this.parentConfig = parentConfig;
+        allProperties = mergeProperties(parentConfig, initParameters);
         this.systemPropertyBaseClass = systemPropertyBaseClass;
-    }
-
-    @Override
-    public <T> T getApplicationOrSystemProperty(String propertyName,
-            T defaultValue, Function<String, T> converter) {
-        // Try system properties
-        String val = getSystemProperty(propertyName);
-        if (val != null) {
-            return converter.apply(val);
-        }
-
-        // Try application properties
-        val = getApplicationProperty(propertyName);
-        if (val != null) {
-            return converter.apply(val);
-        }
-
-        return defaultValue;
     }
 
     /**
@@ -84,6 +81,7 @@ public class PropertyDeploymentConfiguration
      *            the Name or the parameter.
      * @return String value or null if not found
      */
+    @Override
     protected String getSystemProperty(String parameterName) {
         String pkgName;
         final Package pkg = systemPropertyBaseClass.getPackage();
@@ -116,10 +114,7 @@ public class PropertyDeploymentConfiguration
             return val;
         }
 
-        // version prefixed with just "vaadin."
-        val = System.getProperty(VAADIN_PREFIX + parameterName);
-
-        return val;
+        return super.getSystemProperty(parameterName);
     }
 
     /**
@@ -129,23 +124,56 @@ public class PropertyDeploymentConfiguration
      *            the Name or the parameter.
      * @return String value or null if not found
      */
+    @Override
     public String getApplicationProperty(String parameterName) {
-
-        String val = initParameters.getProperty(parameterName);
-        if (val != null) {
-            return val;
+        String val = getApplicationProperty(getProperties()::get,
+                parameterName);
+        if (val == null) {
+            val = getApplicationProperty(
+                    prop -> parentConfig.getStringProperty(prop, null),
+                    parameterName);
         }
-
-        // Try lower case application properties for backward compatibility with
-        // 3.0.2 and earlier
-        val = initParameters.getProperty(parameterName.toLowerCase());
-
         return val;
     }
 
     @Override
     public boolean isProductionMode() {
-        return getBooleanProperty(SERVLET_PARAMETER_PRODUCTION_MODE, false);
+        if (isOwnProperty(SERVLET_PARAMETER_PRODUCTION_MODE)) {
+            return getBooleanProperty(SERVLET_PARAMETER_PRODUCTION_MODE, false);
+        }
+        return parentConfig.isProductionMode();
+    }
+
+    @Override
+    public boolean enableDevServer() {
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
+            return super.enableDevServer();
+        }
+        return parentConfig.enableDevServer();
+    }
+
+    @Override
+    public boolean useV14Bootstrap() {
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP)) {
+            return super.useV14Bootstrap();
+        }
+        return parentConfig.useV14Bootstrap();
+    }
+
+    @Override
+    public boolean isPnpmEnabled() {
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)) {
+            return super.isPnpmEnabled();
+        }
+        return parentConfig.isPnpmEnabled();
+    }
+
+    @Override
+    public boolean reuseDevServer() {
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
+            return super.reuseDevServer();
+        }
+        return parentConfig.reuseDevServer();
     }
 
     @Override
@@ -156,8 +184,23 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean isXsrfProtectionEnabled() {
-        return !getBooleanProperty(SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
-                false);
+        if (isOwnProperty(SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION)) {
+            return super.isXsrfProtectionEnabled();
+        }
+        return parentConfig.isXsrfProtectionEnabled();
+    }
+
+    @Override
+    public String getBuildFolder() {
+        if (isOwnProperty(BUILD_FOLDER)) {
+            return super.getBuildFolder();
+        }
+        return parentConfig.getBuildFolder();
+    }
+
+    @Override
+    public String getFlowResourcesFolder() {
+        return super.getFlowResourcesFolder();
     }
 
     @Override
@@ -203,7 +246,7 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public Properties getInitParameters() {
-        return initParameters;
+        return allProperties;
     }
 
     /**
@@ -215,8 +258,64 @@ public class PropertyDeploymentConfiguration
      */
     @Override
     public boolean isDevModeLiveReloadEnabled() {
-        return !isProductionMode() && getBooleanProperty(
-                SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD, true)
+        return !isProductionMode()
+                && getBooleanProperty(
+                        SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD, true)
                 && enableDevServer(); // gizmo excluded from prod bundle
     }
+
+    /**
+     * Checks whether the given {@code property} is the property explicitly set
+     * in this deployment configuration (not in it's parent config).
+     * <p>
+     * The deployment configuration consists of properties defined in the
+     * configuration itself and properties which are coming from the application
+     * configuration. The properties which are defined in the deployment
+     * configuration itself (own properties) should take precedence: their
+     * values should override the parent config properties values.
+     * 
+     * @param property
+     *            a property name
+     * @return whether the {@code property} is explicitly set in the
+     *         configuration
+     */
+    protected boolean isOwnProperty(String property) {
+        return getApplicationProperty(getProperties()::get, property) != null;
+    }
+
+    /**
+     * Returns parent application configuration;
+     * 
+     * @return the parent config
+     */
+    protected ApplicationConfiguration getParentConfiguration() {
+        return parentConfig;
+    }
+
+    private Properties mergeProperties(ApplicationConfiguration config,
+            Properties properties) {
+        Properties result = new Properties();
+        Enumeration<String> propertyNames = config.getPropertyNames();
+        while (propertyNames.hasMoreElements()) {
+            String property = propertyNames.nextElement();
+            result.put(property, config.getStringProperty(property, null));
+        }
+        result.putAll(properties);
+        return result;
+    }
+
+    private static Map<String, String> filterStringProperties(
+            Properties properties) {
+        Map<String, String> result = new HashMap<>();
+        for (Entry<Object, Object> entry : properties.entrySet()) {
+            Object key = entry.getKey();
+            Object value = entry.getValue();
+            // Hashtable doesn't allow null for key and value
+            if (key instanceof String && value instanceof String) {
+                result.put(key.toString(), value.toString());
+            }
+        }
+        return result;
+    }
+
 }

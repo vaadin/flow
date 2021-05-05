@@ -24,6 +24,8 @@ import com.vaadin.flow.dom.Element;
 /**
  * Emulates the <code>class</code> attribute by delegating to
  * {@link Element#getClassList()}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */

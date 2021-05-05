@@ -32,7 +32,6 @@ public class ClientServerCounterUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
-        getReconnectDialogConfiguration().setDialogModal(false);
         spacer();
 
         // Client counter

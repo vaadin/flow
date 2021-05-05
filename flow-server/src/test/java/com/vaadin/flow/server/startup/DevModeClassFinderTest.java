@@ -36,6 +36,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.SessionInitListener;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
@@ -55,27 +56,18 @@ public class DevModeClassFinderTest {
     public void applicableClasses_knownClasses() {
         Collection<Class<?>> classes = getApplicableClasses();
 
-        List<Class<?>> knownClasses = Arrays.asList(
-            Route.class,
-            UIInitListener.class,
-            VaadinServiceInitListener.class,
-            WebComponentExporter.class,
-            WebComponentExporterFactory.class,
-            NpmPackage.class,
-            NpmPackage.Container.class,
-            JsModule.class,
-            JsModule.Container.class,
-            JavaScript.class,
-            JavaScript.Container.class,
-            CssImport.class,
-            CssImport.Container.class,
-            Theme.class,
-            NoTheme.class,
-            HasErrorParameter.class,
-            AppShellConfigurator.class);
+        List<Class<?>> knownClasses = Arrays.asList(Route.class,
+                UIInitListener.class, VaadinServiceInitListener.class,
+                WebComponentExporter.class, WebComponentExporterFactory.class,
+                NpmPackage.class, NpmPackage.Container.class, JsModule.class,
+                JsModule.Container.class, JavaScript.class,
+                JavaScript.Container.class, CssImport.class,
+                CssImport.Container.class, Theme.class, NoTheme.class,
+                HasErrorParameter.class, PWA.class, AppShellConfigurator.class);
 
         for (Class<?> clz : classes) {
-            assertTrue("should be a known class " + clz.getName(), knownClasses.contains(clz));
+            assertTrue("should be a known class " + clz.getName(),
+                    knownClasses.contains(clz));
         }
         Assert.assertEquals(knownClasses.size(), classes.size());
     }

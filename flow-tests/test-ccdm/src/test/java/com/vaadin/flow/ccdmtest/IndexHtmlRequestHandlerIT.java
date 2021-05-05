@@ -18,9 +18,11 @@ package com.vaadin.flow.ccdmtest;
 import java.util.Optional;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.JavascriptExecutor;
 
 public class IndexHtmlRequestHandlerIT extends CCDMTest {
 
@@ -593,7 +595,8 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         waitForElementPresent(By.id("pushedContent"));
 
         String content = findElement(By.id("pushedContent")).getText();
-        Assert.assertEquals("Should have content sent from server using push mechanism",
+        Assert.assertEquals(
+                "Should have content sent from server using push mechanism",
                 "Message pushed from server", content);
     }
 }

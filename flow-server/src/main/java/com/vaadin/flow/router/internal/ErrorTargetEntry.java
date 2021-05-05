@@ -20,8 +20,10 @@ import java.io.Serializable;
 import com.vaadin.flow.component.Component;
 
 /**
- * A pair of a navigation target for handling exceptions and the exception
- * type handled by the navigation target.
+ * A pair of a navigation target for handling exceptions and the exception type
+ * handled by the navigation target.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.3
  */
@@ -34,10 +36,10 @@ public class ErrorTargetEntry implements Serializable {
      * exception type.
      *
      * @param navigationTarget
-     *         the navigation target type, not <code>null</code>
+     *            the navigation target type, not <code>null</code>
      * @param handledExceptionType
-     *         the exception type handled by the navigation target, not
-     *         <code>null</code>
+     *            the exception type handled by the navigation target, not
+     *            <code>null</code>
      */
     public ErrorTargetEntry(Class<? extends Component> navigationTarget,
             Class<? extends Exception> handledExceptionType) {

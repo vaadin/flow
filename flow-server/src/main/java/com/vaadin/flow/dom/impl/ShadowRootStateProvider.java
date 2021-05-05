@@ -46,6 +46,8 @@ import com.vaadin.flow.shared.Registration;
  * <p>
  * The data is stored directly in the state node but this should be considered
  * an implementation detail which can change.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -222,8 +224,8 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     public boolean isVisible(StateNode node) {
         throw new UnsupportedOperationException();
     }
-    
+
     protected Object readResolve() throws ObjectStreamException {
         return INSTANCE;
-    }    
+    }
 }

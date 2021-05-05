@@ -18,15 +18,19 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -48,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.impl.SimpleLogger;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
@@ -58,6 +63,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -181,7 +187,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
-        generatedPath = new File(tmpRoot, DEFAULT_GENERATED_DIR);
+        generatedPath = new File(tmpRoot,
+                Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
         File tokenFile = new File(tmpRoot, TOKEN_FILE);
 
         ClassFinder classFinder = getClassFinder();
@@ -263,7 +270,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void getModuleLines_oneFrontendDependencyAndFrontendDirectoryDontExist_throwExceptionAdvisingUserToRunPrepareFrontend() throws Exception {
+    public void getModuleLines_oneFrontendDependencyAndFrontendDirectoryDontExist_throwExceptionAdvisingUserToRunPrepareFrontend()
+            throws Exception {
         ClassFinder classFinder = getClassFinder();
         updater = new UpdateImports(classFinder, getScanner(classFinder),
                 tmpRoot, null);
@@ -276,7 +284,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         try {
             updater.run();
-            Assert.fail("Execute should have failed with advice to run `prepare-frontend`");
+            Assert.fail(
+                    "Execute should have failed with advice to run `prepare-frontend`");
         } catch (IllegalStateException e) {
             assertThat(e.getMessage(), CoreMatchers.containsString(
                     "Unable to locate frontend resources and missing token file. "
@@ -326,7 +335,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 + "(e.g. set '%s' property)", frontendDirectory.getPath(),
                 Constants.RESOURCES_FRONTEND_DEFAULT,
                 FrontendUtils.PARAM_FRONTEND_DIR);
-         
+
         return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix,
                 String.join("\n      - ", resourcesNotFound), suffix);
     }
@@ -445,6 +454,23 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 "javascript/c.js");
     }
 
+    @Test
+    public void importingBinaryFile_importVisitorShouldNotFail()
+            throws IOException, URISyntaxException {
+        // Add a binary image import to 'commmon-js-file.js' which should not
+        // fail the import visitor and should be ignored
+        File newFile = resolveImportFile(frontendDirectory, nodeModulesPath,
+                "./common-js-file.js");
+        Files.copy(
+                Paths.get(getClass().getClassLoader().getResource("dice.jpg")
+                        .toURI()),
+                new File(newFile.getParentFile(), "dice.jpg").toPath());
+        Files.write(newFile.toPath(),
+                Collections.singleton("import './dice.jpg'"));
+
+        updater.run();
+    }
+
     @Route(value = "")
     private static class MainView extends Component {
         NodeTestComponents.TranslatedImports translatedImports;
@@ -457,7 +483,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class[] testClasses = { MainView.class,
                 NodeTestComponents.TranslatedImports.class,
                 NodeTestComponents.LocalP3Template.class,
-                NodeTestComponents.JavaScriptOrder.class };
+                NodeTestComponents.JavaScriptOrder.class, UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
 
         updater = new UpdateImports(classFinder, getScanner(classFinder),

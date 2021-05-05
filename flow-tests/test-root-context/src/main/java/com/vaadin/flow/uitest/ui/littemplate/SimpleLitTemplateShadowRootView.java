@@ -12,8 +12,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Tag("simple-lit-template-shadow-root")
-@JsModule("lit/simple-lit-template-shadow-root.js")
-@NpmPackage(value = "lit-element", version = "2.1.0")
+@JsModule("lit-templates/simple-lit-template-shadow-root.js")
+@NpmPackage(value = "lit", version = "2.0.0-rc.1")
 @Route(value = "com.vaadin.flow.uitest.ui.littemplate.SimpleLitTemplateShadowRootView", layout = ViewTestLayout.class)
 public class SimpleLitTemplateShadowRootView extends LitTemplate {
 
@@ -21,6 +21,8 @@ public class SimpleLitTemplateShadowRootView extends LitTemplate {
     public NativeButton mappedButton;
     @Id
     public Div label;
+    @Id
+    public Div sort;
 
     public SimpleLitTemplateShadowRootView() {
         getElement().setProperty("text", "Client button");
@@ -28,6 +30,7 @@ public class SimpleLitTemplateShadowRootView extends LitTemplate {
         mappedButton.addClickListener(e -> {
             label.setText("Hello from server component event listener");
         });
+        sort.setText("Sort");
 
     }
 

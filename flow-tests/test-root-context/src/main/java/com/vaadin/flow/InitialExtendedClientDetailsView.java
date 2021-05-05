@@ -9,13 +9,13 @@ import com.vaadin.flow.router.Route;
 public class InitialExtendedClientDetailsView extends Div {
 
     public InitialExtendedClientDetailsView() {
-        UI.getCurrent().getPage().retrieveExtendedClientDetails(details ->{
+        UI.getCurrent().getPage().retrieveExtendedClientDetails(details -> {
             addSpan("screenWidth", details.getScreenWidth());
             addSpan("screenHeight", details.getScreenHeight());
-            addSpan("windowInnerWidth",details.getWindowInnerWidth());
-            addSpan("windowInnerHeight",details.getWindowInnerHeight());
-            addSpan("bodyClientWidth",details.getBodyClientWidth());
-            addSpan("bodyClientHeight",details.getBodyClientHeight());
+            addSpan("windowInnerWidth", details.getWindowInnerWidth());
+            addSpan("windowInnerHeight", details.getWindowInnerHeight());
+            addSpan("bodyClientWidth", details.getBodyClientWidth());
+            addSpan("bodyClientHeight", details.getBodyClientHeight());
             addSpan("timezoneOffset", details.getTimezoneOffset());
             addSpan("timeZoneId", details.getTimeZoneId());
             addSpan("rawTimezoneOffset", details.getRawTimezoneOffset());

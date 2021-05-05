@@ -30,7 +30,6 @@ public class LockingUI extends UI {
         NativeButton checkButton = new NativeButton("Test communication",
                 e -> message.setText(ALL_OK));
 
-
         lockButton.setId("lock");
         checkButton.setId("check");
 
@@ -48,8 +47,7 @@ public class LockingUI extends UI {
             }
 
         } catch (InterruptedException e1) {
-            throw new RuntimeException(
-                    "Timeout should not get interrupted.");
+            throw new RuntimeException("Timeout should not get interrupted.");
         }
     }
 }

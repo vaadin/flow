@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.Map;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 
@@ -26,8 +28,18 @@ import com.vaadin.flow.function.DeploymentConfiguration;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public abstract class AbstractDeploymentConfiguration
-        implements DeploymentConfiguration {
+public abstract class AbstractDeploymentConfiguration extends
+        AbstractPropertyConfiguration implements DeploymentConfiguration {
+
+    /**
+     * Creates a new configuration based on {@code properties}.
+     * 
+     * @param properties
+     *            configuration properties
+     */
+    protected AbstractDeploymentConfiguration(Map<String, String> properties) {
+        super(properties);
+    }
 
     @Override
     public String getUIClassName() {

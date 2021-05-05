@@ -17,6 +17,7 @@
 package com.vaadin.flow.component;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.Assert;
@@ -27,10 +28,12 @@ import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -273,7 +276,7 @@ public class ShortcutRegistrationTest {
         }, Key.KEY_A);
 
         UI newUI = Mockito.spy(UI.class);
-        // close the prevopus UI
+        // close the previous UI
         ui.close();
         components[0] = newUI;
 
@@ -360,6 +363,100 @@ public class ShortcutRegistrationTest {
         clientResponse();
 
         assertTrue(registration.isShortcutActive());
+    }
+
+    @Test
+    public void listenOnComponentHasElementLocatorJs_jsExecutionScheduled() {
+        final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture();
+        final Key key = Key.KEY_A;
+        fixture.createNewShortcut(key);
+
+        List<PendingJavaScriptInvocation> pendingJavaScriptInvocations = fixture
+                .writeResponse();
+
+        final PendingJavaScriptInvocation js = pendingJavaScriptInvocations
+                .get(0);
+        final String expression = js.getInvocation().getExpression();
+        Assert.assertTrue(
+                "element locator string " + fixture.elementLocatorJs
+                        + " missing from JS execution string " + expression,
+                expression.contains(
+                        "const delegate=" + fixture.elementLocatorJs + ";"));
+        Assert.assertTrue(
+                "JS execution string should have event.preventDefault() in it"
+                        + expression,
+                expression.contains("event.preventDefault();"));
+        Assert.assertTrue(
+                "JS execution string should always have event.stopPropagation() in it"
+                        + expression,
+                expression.contains("event.stopPropagation();"));
+        Assert.assertTrue("JS execution string missing the key" + key,
+                expression.contains(key.getKeys().get(0)));
+
+        fixture.registration.remove();
+
+        fixture.createNewShortcut(Key.KEY_X);
+
+        pendingJavaScriptInvocations = fixture.writeResponse();
+        Assert.assertEquals(0, pendingJavaScriptInvocations.size());
+    }
+
+    @Test
+    public void listenOnComponentHasElementLocatorJs_allowBrowserDefault_JsExecutionDoesNotPreventDefault() {
+        final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture();
+        final Key key = Key.KEY_A;
+        fixture.createNewShortcut(key).allowBrowserDefault();
+
+        List<PendingJavaScriptInvocation> pendingJavaScriptInvocations = fixture
+                .writeResponse();
+
+        final PendingJavaScriptInvocation js = pendingJavaScriptInvocations
+                .get(0);
+        final String expression = js.getInvocation().getExpression();
+        Assert.assertFalse(
+                "JS execution string should NOT have event.preventDefault() in it"
+                        + expression,
+                expression.contains("event.preventDefault();"));
+    }
+
+    class ElementLocatorTestFixture {
+
+        final Registration registration;
+        final Component owner;
+        private final String elementLocatorJs;
+        private final Component[] components;
+        private final UI ui;
+
+        ElementLocatorTestFixture() {
+            VaadinSession session = Mockito.mock(VaadinSession.class);
+            Mockito.when(session.hasLock()).thenReturn(true);
+            ui = Mockito.spy(UI.class);
+            ui.getInternals().setSession(session);
+
+            owner = new FakeComponent();
+            Component initialComponentToListenOn = new FakeComponent();
+            components = new Component[] { initialComponentToListenOn };
+
+            ui.add(owner);
+            ui.add(initialComponentToListenOn);
+
+            elementLocatorJs = "foobar";
+            registration = Shortcuts.setShortcutListenOnElement(
+                    elementLocatorJs, initialComponentToListenOn);
+        }
+
+        List<PendingJavaScriptInvocation> writeResponse() {
+            ui.getInternals().getStateTree()
+                    .runExecutionsBeforeClientResponse();
+
+            return ui.getInternals().dumpPendingJavaScriptInvocations();
+        }
+
+        ShortcutRegistration createNewShortcut(Key key) {
+            return new ShortcutRegistration(owner, () -> components, event -> {
+            }, key);
+        }
+
     }
 
     /**

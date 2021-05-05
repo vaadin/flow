@@ -1,7 +1,0 @@
-{
-  "assets": {
-    "@fortawesome/fontawesome-free": {
-      "svgs/regular/**": "fortawesome/icons"
-    }
-  }
-}

@@ -41,9 +41,12 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 
 import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 
 /**
  * The class that handles writing the response data into the response.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -51,18 +54,20 @@ import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
 public class ResponseWriter implements Serializable {
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
 
-    private static final Pattern RANGE_HEADER_PATTERN = Pattern.compile(
-            "^bytes=((\\d*-\\d*\\s*,\\s*)*\\d*-\\d*\\s*)$");
-    private static final Pattern BYTE_RANGE_PATTERN = Pattern.compile(
-            "(\\d*)-(\\d*)");
+    private static final Pattern RANGE_HEADER_PATTERN = Pattern
+            .compile("^bytes=((\\d*-\\d*\\s*,\\s*)*\\d*-\\d*\\s*)$");
+    private static final Pattern BYTE_RANGE_PATTERN = Pattern
+            .compile("(\\d*)-(\\d*)");
 
     /**
-     * Maximum number of ranges accepted in a single Range header. Remaining ranges will be ignored.
+     * Maximum number of ranges accepted in a single Range header. Remaining
+     * ranges will be ignored.
      */
     private static final int MAX_RANGE_COUNT = 16;
 
     /**
-     * Maximum number of overlapping ranges allowed. The request will be denied if above this threshold.
+     * Maximum number of overlapping ranges allowed. The request will be denied
+     * if above this threshold.
      */
     private static final int MAX_OVERLAPPING_RANGE_COUNT = 2;
 
@@ -168,7 +173,7 @@ public class ResponseWriter implements Serializable {
         } catch (IOException e) {
             getLogger().debug("Error writing static file to user", e);
         } finally {
-            if (dataStream !=null ) {
+            if (dataStream != null) {
                 closeStream(dataStream);
             }
         }
@@ -215,7 +220,8 @@ public class ResponseWriter implements Serializable {
             if (startGroup.isEmpty() && endGroup.isEmpty()) {
                 response.setContentLengthLong(0L);
                 response.setStatus(416); // Range Not Satisfiable
-                getLogger().info("received a malformed range: '{}'", rangeMatcher.group());
+                getLogger().info("received a malformed range: '{}'",
+                        rangeMatcher.group());
                 return;
             }
             long start = startGroup.isEmpty() ? 0L : Long.parseLong(startGroup);
@@ -224,7 +230,8 @@ public class ResponseWriter implements Serializable {
             if (end < start
                     || (resourceLength >= 0 && start >= resourceLength)) {
                 // illegal range -> 416
-                getLogger().info("received an illegal range '{}' for resource '{}'",
+                getLogger().info(
+                        "received an illegal range '{}' for resource '{}'",
                         rangeMatcher.group(), resourceURL);
                 response.setContentLengthLong(0L);
                 response.setStatus(416);
@@ -234,7 +241,8 @@ public class ResponseWriter implements Serializable {
 
             if (!verifyRangeLimits(ranges)) {
                 ranges.pop();
-                getLogger().info("serving only {} ranges for resource '{}' even though more were requested",
+                getLogger().info(
+                        "serving only {} ranges for resource '{}' even though more were requested",
                         ranges.size(), resourceURL);
                 break;
             }
@@ -258,7 +266,7 @@ public class ResponseWriter implements Serializable {
             final InputStream dataStream = connection.getInputStream();
             try {
                 long skipped = dataStream.skip(start);
-                assert(skipped == start);
+                assert (skipped == start);
                 writeStream(outputStream, dataStream, end - start + 1);
             } finally {
                 closeStream(dataStream);
@@ -312,7 +320,7 @@ public class ResponseWriter implements Serializable {
                     position = 0L;
                 }
                 long skipped = dataStream.skip(start - position);
-                assert(skipped == start - position);
+                assert (skipped == start - position);
                 writeStream(outputStream, dataStream, end - start + 1);
                 position = end + 1;
             }
@@ -321,12 +329,12 @@ public class ResponseWriter implements Serializable {
         }
         outputStream.write(String.format("\r\n--%s", partBoundary).getBytes());
     }
-    
+
     private String createContentRangeHeader(long start, long end, long size) {
         String lengthString = size >= 0 ? Long.toString(size) : "*";
         return String.format("bytes %d-%d/%s", start, end, lengthString);
     }
-    
+
     private void setContentLength(HttpServletResponse response,
             long contentLength) {
         try {
@@ -337,9 +345,10 @@ public class ResponseWriter implements Serializable {
     }
 
     /**
-     * Returns true if the number of ranges in <code>ranges</code> is less than the
-     * upper limit and the number that overlap (= have at least one byte in common)
-     * with the range <code>[start, end]</code> are less than the upper limit.
+     * Returns true if the number of ranges in <code>ranges</code> is less than
+     * the upper limit and the number that overlap (= have at least one byte in
+     * common) with the range <code>[start, end]</code> are less than the upper
+     * limit.
      */
     private boolean verifyRangeLimits(List<Pair<Long, Long>> ranges) {
         if (ranges.size() > MAX_RANGE_COUNT) {
@@ -350,13 +359,15 @@ public class ResponseWriter implements Serializable {
         for (int i = 0; i < ranges.size(); i++) {
             for (int j = i + 1; j < ranges.size(); j++) {
                 if (ranges.get(i).getFirst() <= ranges.get(j).getSecond()
-                        && ranges.get(j).getFirst() <= ranges.get(i).getSecond()) {
+                        && ranges.get(j).getFirst() <= ranges.get(i)
+                                .getSecond()) {
                     count++;
                 }
             }
         }
         if (count > MAX_OVERLAPPING_RANGE_COUNT) {
-            getLogger().info("more than {} overlapping ranges requested", MAX_OVERLAPPING_RANGE_COUNT);
+            getLogger().info("more than {} overlapping ranges requested",
+                    MAX_OVERLAPPING_RANGE_COUNT);
             return false;
         }
         return true;
@@ -369,8 +380,8 @@ public class ResponseWriter implements Serializable {
             return url;
         } else if (resource.startsWith("/" + VAADIN_BUILD_FILES_PATH)
                 && isAllowedVAADINBuildUrl(resource)) {
-            url = request.getServletContext().getClassLoader()
-                    .getResource("META-INF" + resource);
+            url = request.getServletContext().getClassLoader().getResource(
+                    VAADIN_WEBAPP_RESOURCES + resource.replaceFirst("^/", ""));
         }
         return url;
     }
@@ -404,7 +415,7 @@ public class ResponseWriter implements Serializable {
         long bytesTotal = 0L;
         int bytes;
         while (bytesTotal < count && (bytes = dataStream.read(buffer, 0,
-                (int)Long.min(bufferSize, count - bytesTotal))) >= 0) {
+                (int) Long.min(bufferSize, count - bytesTotal))) >= 0) {
             outputStream.write(buffer, 0, bytes);
             bytesTotal += bytes;
         }

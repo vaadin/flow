@@ -23,6 +23,8 @@ import java.util.UUID;
 
 /**
  * Utility class for special string handling.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.1.4
  */
@@ -81,8 +83,8 @@ public final class StringUtil {
                 }
                 break;
             case IN_BLOCK_COMMENT:
-                if (character.equals("*") && scanner.hasNext()
-                        && scanner.next().equals("/")) {
+                if (character.equals("*") && scanner.hasNext("/")) {
+                    scanner.next();
                     state = State.NORMAL;
                     break;
                 }

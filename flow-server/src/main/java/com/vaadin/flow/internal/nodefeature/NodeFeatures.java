@@ -20,6 +20,8 @@ import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurati
 /**
  * Registry of node feature id numbers and map keys shared between server and
  * client.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

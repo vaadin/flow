@@ -36,6 +36,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -57,6 +58,8 @@ public class LitTemplateParserImplTest {
 
         Properties properties = new Properties();
         Mockito.when(configuration.getInitParameters()).thenReturn(properties);
+        Mockito.when(configuration.getFlowResourcesFolder()).thenReturn(
+                "target/" + FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER);
 
         Instantiator instantiator = Mockito.mock(Instantiator.class);
         Mockito.when(instantiator.getServiceInitListeners())
@@ -72,7 +75,7 @@ public class LitTemplateParserImplTest {
 
         ResourceProvider resourceProvider = service.getContext()
                 .getAttribute(Lookup.class).lookup(ResourceProvider.class);
-        Mockito.when(resourceProvider.getApplicationResource(service,
+        Mockito.when(resourceProvider.getApplicationResource(
                 VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                 .thenReturn(LitTemplateParserImplTest.class.getResource(
                         "/" + VAADIN_SERVLET_RESOURCES + "config/stats.json"));

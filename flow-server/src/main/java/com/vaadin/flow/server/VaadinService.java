@@ -29,6 +29,8 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -76,7 +78,6 @@ import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
 import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
@@ -267,9 +268,9 @@ public abstract class VaadinService implements Serializable {
 
             requestHandlers = Collections.unmodifiableCollection(handlers);
 
-            dependencyFilters = instantiator
+            dependencyFilters = Collections.unmodifiableCollection(instantiator
                     .getDependencyFilters(event.getAddedDependencyFilters())
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toList()));
             bootstrapListeners = instantiator
                     .getBootstrapListeners(event.getAddedBootstrapListeners())
                     .collect(Collectors.toList());
@@ -350,24 +351,12 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new UidlRequestHandler());
         handlers.add(new UnsupportedBrowserHandler());
         handlers.add(new StreamRequestHandler());
-        PwaRegistry pwaRegistry = getPwaRegistry();
-        if (pwaRegistry != null
-                && pwaRegistry.getPwaConfiguration().isEnabled()) {
-            handlers.add(new PwaHandler(pwaRegistry));
-        }
+        handlers.add(new PwaHandler(() -> getPwaRegistry()));
 
-        if (hasWebComponentConfigurations()) {
-            handlers.add(new WebComponentProvider());
-            handlers.add(new WebComponentBootstrapHandler());
-        }
+        handlers.add(new WebComponentProvider());
+        handlers.add(new WebComponentBootstrapHandler());
 
         return handlers;
-    }
-
-    private boolean hasWebComponentConfigurations() {
-        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                .getInstance(getContext());
-        return registry.hasConfigurations();
     }
 
     /**
@@ -1715,7 +1704,17 @@ public abstract class VaadinService implements Serializable {
                  * endless loop. This can at least happen if refreshing a
                  * resource when the session has expired.
                  */
-                response.sendError(HttpServletResponse.SC_GONE,
+
+                // Ensure that the browser does not cache expired responses.
+                // iOS 6 Safari requires this
+                // (https://github.com/vaadin/framework/issues/3226)
+                response.setHeader("Cache-Control", "no-cache");
+                // If Content-Type is not set, browsers assume text/html and may
+                // complain about the empty response body
+                // (https://github.com/vaadin/framework/issues/4167)
+                response.setHeader("Content-Type", "text/plain");
+
+                response.sendError(HttpServletResponse.SC_FORBIDDEN,
                         "Session expired");
             }
         } catch (IOException e) {
@@ -1931,7 +1930,7 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Verifies that the given CSRF token (aka double submit cookie) is valid
+     * Verifies that the given CSRF token (synchronizer token pattern) is valid
      * for the given UI. This is used to protect against Cross Site Request
      * Forgery attacks.
      * <p>
@@ -1955,7 +1954,9 @@ public abstract class VaadinService implements Serializable {
                 .isXsrfProtectionEnabled()) {
             String uiToken = ui.getCsrfToken();
 
-            if (uiToken == null || !uiToken.equals(requestToken)) {
+            if (uiToken == null || !MessageDigest.isEqual(
+                    uiToken.getBytes(StandardCharsets.UTF_8),
+                    requestToken.getBytes(StandardCharsets.UTF_8))) {
                 return false;
             }
         }

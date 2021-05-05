@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>flow-project</artifactId>
     <name>Flow</name>
     <packaging>pom</packaging>
-    <version>6.0-SNAPSHOT</version>
+    <version>8.0-SNAPSHOT</version>
 
     <parent>
         <groupId>com.vaadin</groupId>
@@ -25,15 +25,15 @@
         <module>flow-client</module>
         <module>flow-html-components</module>
         <module>flow-html-components-testbench</module>
-        <module>flow-theme-integrations</module>
         <module>flow-dnd</module>
         <module>flow-test-util</module>
         <module>flow-tests</module>
         <module>flow-server-production-mode</module>
         <module>flow-component-demo-helpers</module>
-        <module>flow-maven-plugin</module>
+        <module>flow-plugins</module>
         <module>flow-test-generic</module>
         <module>flow-bom</module>
+        <module>fusion-endpoint</module>
         <module>build-tools</module>
     </modules>
 
@@ -92,14 +92,14 @@
         <driver.binary.downloader.maven.plugin.version>1.0.17
         </driver.binary.downloader.maven.plugin.version>
         <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
-        <maven.surefire.plugin.version>2.22.0</maven.surefire.plugin.version>
-        <maven.failsafe.plugin.version>2.22.0</maven.failsafe.plugin.version>
+        <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
+        <maven.failsafe.plugin.version>2.22.2</maven.failsafe.plugin.version>
         <maven.war.plugin.version>3.1.0</maven.war.plugin.version>
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-        <testbench.version>6.3.0</testbench.version>
+        <testbench.version>7.0.1</testbench.version>
         <jetty.version>9.4.27.v20200227</jetty.version>
         <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
 
@@ -129,12 +129,12 @@
         <maven.test.skip>false</maven.test.skip>
 
         <!-- This property is needed to allow some Win-specific unit tests -->
-        <!-- to be disabled via system property in CI until they got fixed-->
+        <!-- to be disabled via system property in CI until they got fixed -->
         <exclude.windows.failed.tests></exclude.windows.failed.tests>
     </properties>
 
     <repositories>
-        <!-- The order of definitions matters. Explicitly defining central
+        <!-- The order of definitions matters. Explicitly defining central 
             here to make sure it has the highest priority. -->
         <repository>
             <id>central</id>
@@ -160,7 +160,7 @@
     </repositories>
 
     <pluginRepositories>
-        <!-- The order of definitions matters. Explicitly defining central
+        <!-- The order of definitions matters. Explicitly defining central 
             here to make sure it has the highest priority. -->
         <pluginRepository>
             <id>central</id>
@@ -197,7 +197,7 @@
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>2.5</version>
+                <version>2.8.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -225,7 +225,7 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.10.9</version>
+                <version>1.10.21</version>
             </dependency>
 
 
@@ -360,7 +360,7 @@
             <plugin>
                 <groupId>org.commonjava.maven.plugins</groupId>
                 <artifactId>directory-maven-plugin</artifactId>
-                <version>0.1</version>
+                <version>0.3.1</version>
                 <executions>
                     <execution>
                         <id>set-root-dir-for-common-lifecycle</id>
@@ -433,6 +433,21 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.karaf.tooling</groupId>
+                    <artifactId>karaf-maven-plugin</artifactId>
+                    <version>4.3.0</version>
+                    <extensions>true</extensions>
+                    <executions>
+                        <execution>
+                            <id>generate-features-file</id>
+                            <phase>generate-resources</phase>
+                            <goals>
+                                <goal>features-generate-descriptor</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
                     <version>1.4.1</version>
@@ -454,7 +469,7 @@
                             <configuration>
                                 <rules>
                                     <restrictImports
-                                            implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
+                                        implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
                                         <reason>Use SLF4j for logging</reason>
                                         <bannedImport>java.util.logging.**
                                         </bannedImport>
@@ -490,7 +505,6 @@
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
                         <trimStackTrace>false</trimStackTrace>
-                        <reuseForks>false</reuseForks>
                         <excludes>
                             <exclude>${exclude.windows.failed.tests}</exclude>
                         </excludes>
@@ -507,7 +521,7 @@
                         <threadCount>2</threadCount>
                     </configuration>
                 </plugin>
-                <!--This plugin's configuration is used to store Eclipse
+                <!--This plugin's configuration is used to store Eclipse 
                     m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
@@ -599,7 +613,7 @@
         <profile>
             <id>java11</id>
             <activation>
-                <jdk>11</jdk>
+                <jdk>[9,)</jdk>
             </activation>
             <properties>
                 <maven.compiler.release>8</maven.compiler.release>

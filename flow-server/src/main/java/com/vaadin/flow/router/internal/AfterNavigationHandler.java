@@ -21,6 +21,8 @@ import com.vaadin.flow.router.AfterNavigationEvent;
 
 /**
  * The base interface for every {@link AfterNavigationEvent} handler.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */

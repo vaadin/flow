@@ -54,6 +54,8 @@ import elemental.json.JsonObject;
  * <p>
  * The class is Singleton. Use {@link NpmTemplateParser#getInstance()} to get
  * its instance.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  *
  * @author Vaadin Ltd
@@ -198,8 +200,7 @@ public class NpmTemplateParser implements TemplateParser {
                 .lookup(ResourceProvider.class);
         InputStream content = null;
         try {
-            URL appResource = resourceProvider.getApplicationResource(service,
-                    url);
+            URL appResource = resourceProvider.getApplicationResource(url);
             content = appResource == null ? null : appResource.openStream();
         } catch (IOException exception) {
             getLogger().warn("Coudln't get resource for the template '{}'", url,
@@ -224,14 +225,14 @@ public class NpmTemplateParser implements TemplateParser {
                     resetCache(content);
                 }
             }
+            if (!cache.containsKey(url) && jsonStats != null) {
+                cache.put(url, BundleParser.getSourceFromStatistics(url,
+                        jsonStats, service));
+            }
+            return cache.get(url);
         } finally {
             lock.unlock();
         }
-        if (!cache.containsKey(url) && jsonStats != null) {
-            cache.put(url,
-                    BundleParser.getSourceFromStatistics(url, jsonStats));
-        }
-        return cache.get(url);
     }
 
     /**
@@ -248,6 +249,7 @@ public class NpmTemplateParser implements TemplateParser {
      */
     protected boolean isStatsFileReadNeeded(VaadinService service)
             throws IOException {
+        assert lock.isHeldByCurrentThread();
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         if (jsonStats == null) {
             return true;
@@ -271,6 +273,7 @@ public class NpmTemplateParser implements TemplateParser {
     }
 
     private void resetCache(String fileContents) {
+        assert lock.isHeldByCurrentThread();
         cache.clear();
         jsonStats = BundleParser.parseJsonStatistics(fileContents);
     }

@@ -35,6 +35,8 @@ import com.vaadin.flow.internal.ReflectTools;
 
 /**
  * Collects information of {@link Id @Id} mapped fields in a template class.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since
  */
@@ -155,7 +157,6 @@ public class IdCollector {
                 Element domElement = element.get();
                 tagById.put(id, tagName.get());
                 fetchAttributes(id, domElement.attributes());
-                setText(id, domElement);
             }
 
             return element.isPresent();
@@ -216,13 +217,4 @@ public class IdCollector {
         return attributesById.computeIfAbsent(id, key -> new HashMap<>());
     }
 
-    private void setText(String id, Element domElement) {
-        if (domElement.children().isEmpty()) {
-            // the text can be set only if element has no any child except a
-            // text node
-            getAttributeData(id).put(
-                    AbstractInjectableElementInitializer.TEXT_DATA,
-                    domElement.ownText());
-        }
-    }
 }

@@ -22,7 +22,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.After;
+import org.apache.commons.io.FileUtils;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.core.StringContains;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,10 +37,13 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
 import elemental.json.Json;
+import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class NodeUpdaterTest {
 
@@ -63,19 +68,13 @@ public class NodeUpdaterTest {
         finder = Mockito.mock(ClassFinder.class);
         nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                new File(""), resourceFolder) {
+                new File(""), resourceFolder, TARGET) {
 
             @Override
             public void execute() {
             }
 
         };
-    }
-
-    @After
-    public void tearDown() throws IOException {
-        npmFolder.delete();
-        resourceFolder.delete();
     }
 
     @Test
@@ -173,7 +172,7 @@ public class NodeUpdaterTest {
                 "3.3.10");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("4.42.0", packageJson
+        Assert.assertEquals("4.46.0", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
     }
 
@@ -194,19 +193,16 @@ public class NodeUpdaterTest {
     @Test
     public void assertFormResourcesPackageJson() throws IOException {
         JsonObject formPackageJson = nodeUpdater.getFormResourcesPackageJson();
-        Assert.assertEquals("@vaadin/form", formPackageJson
-                .getString("name"));
-        Assert.assertEquals("UNLICENSED", formPackageJson
-                .getString("license"));
-        Assert.assertEquals("index", formPackageJson
-                .getString("main"));
-        Assert.assertEquals("1.0.0", formPackageJson
-                .getString("version"));
+        Assert.assertEquals("@vaadin/form", formPackageJson.getString("name"));
+        Assert.assertEquals("UNLICENSED", formPackageJson.getString("license"));
+        Assert.assertEquals("index", formPackageJson.getString("main"));
+        Assert.assertEquals("1.0.0", formPackageJson.getString("version"));
     }
 
     @Test
     public void assertWriteFormResourcesPackageFile() throws IOException {
-        File formPackageJsonFile = new File(nodeUpdater.formResourcesFolder, Constants.PACKAGE_JSON);
+        File formPackageJsonFile = new File(nodeUpdater.formResourcesFolder,
+                Constants.PACKAGE_JSON);
         Assert.assertFalse(formPackageJsonFile.exists());
 
         JsonObject formPackageJson = Json.createObject();
@@ -215,9 +211,26 @@ public class NodeUpdaterTest {
         nodeUpdater.writeFormResourcesPackageFile(formPackageJson);
 
         Assert.assertTrue(formPackageJsonFile.exists());
-        JsonObject packageJson = NodeUpdater.getJsonFileContent(
-                formPackageJsonFile);
+        JsonObject packageJson = NodeUpdater
+                .getJsonFileContent(formPackageJsonFile);
         Assert.assertEquals("bar", packageJson.getString("foo"));
+    }
+
+    @Test
+    public void getJsonFileContent_incorrectPackageJsonContent_throwsExceptionWithFileName()
+            throws IOException {
+        File brokenPackageJsonFile = temporaryFolder
+                .newFile("broken-package.json");
+        FileUtils.writeStringToFile(brokenPackageJsonFile,
+                "{ some broken json ", UTF_8);
+
+        JsonException exception = Assert.assertThrows(JsonException.class,
+                () -> NodeUpdater.getJsonFileContent(brokenPackageJsonFile));
+
+        MatcherAssert.assertThat(exception.getMessage(),
+                StringContains.containsString("Cannot parse package file "));
+        MatcherAssert.assertThat(exception.getMessage(),
+                StringContains.containsString("broken-package.json"));
     }
 
     private String getPolymerVersion(JsonObject object) {

@@ -16,12 +16,16 @@
 package com.vaadin.flow.server.communication;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -42,22 +46,28 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.AppShellRegistry;
+import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.AppShellWithPWA;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithConfigurator;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static com.vaadin.flow.server.DevModeHandlerTest.createStubWebpackTcpListener;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -66,6 +76,8 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 
 public class IndexHtmlRequestHandlerTest {
+    private static final String SPRING_CSRF_ATTRIBUTE_IN_SESSION = "org.springframework.security.web.csrf.CsrfToken";
+    private static final String SPRING_CSRF_ATTRIBUTE = "_csrf";
     private MockServletServiceSessionSetup mocks;
     private MockServletServiceSessionSetup.TestVaadinServletService service;
     private VaadinSession session;
@@ -74,6 +86,7 @@ public class IndexHtmlRequestHandlerTest {
     private ByteArrayOutputStream responseOutput;
     private MockDeploymentConfiguration deploymentConfiguration;
     private HttpServer httpServer;
+    private VaadinContext context;
 
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -92,6 +105,7 @@ public class IndexHtmlRequestHandlerTest {
         deploymentConfiguration.setEnableDevServer(false);
         deploymentConfiguration.useDeprecatedV14Bootstrapping(false);
         indexHtmlRequestHandler = new IndexHtmlRequestHandler();
+        context = Mockito.mock(VaadinContext.class);
     }
 
     @Test
@@ -125,12 +139,8 @@ public class IndexHtmlRequestHandlerTest {
                 .mock(VaadinServletRequest.class);
         Mockito.when(vaadinRequest.getService()).thenReturn(vaadinService);
 
-        String path;
-        if(DEFAULT_FRONTEND_DIR.endsWith(File.separator)) {
-            path = DEFAULT_FRONTEND_DIR + "index.html";
-        } else {
-            path = DEFAULT_FRONTEND_DIR + File.separatorChar + "/index.html";
-        }
+        String path = DEFAULT_FRONTEND_DIR + "index.html";
+
         String expectedError = String
                 .format("Failed to load content of '%1$s'. "
                         + "It is required to have '%1$s' file when "
@@ -139,8 +149,8 @@ public class IndexHtmlRequestHandlerTest {
         exceptionRule.expect(IOException.class);
         exceptionRule.expectMessage(expectedError);
 
-        indexHtmlRequestHandler
-                .synchronizedHandleRequest(session, vaadinRequest, response);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                vaadinRequest, response);
     }
 
     @Test
@@ -350,14 +360,14 @@ public class IndexHtmlRequestHandlerTest {
         VaadinRequest request = createVaadinRequest("/");
 
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
-           
+
                 request, response);
 
-        ArgumentCaptor<IndexHtmlResponse> captor = 
-                ArgumentCaptor.forClass(IndexHtmlResponse.class);
-        
+        ArgumentCaptor<IndexHtmlResponse> captor = ArgumentCaptor
+                .forClass(IndexHtmlResponse.class);
+
         verify(request.getService()).modifyIndexHtmlResponse(captor.capture());
-        
+
         Assert.assertNotNull(captor.getValue().getUI());
     }
 
@@ -366,14 +376,14 @@ public class IndexHtmlRequestHandlerTest {
             throws IOException {
         VaadinRequest request = createVaadinRequest("/");
 
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                request, response);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
+                response);
 
-        ArgumentCaptor<IndexHtmlResponse> captor = 
-                ArgumentCaptor.forClass(IndexHtmlResponse.class);
-        
+        ArgumentCaptor<IndexHtmlResponse> captor = ArgumentCaptor
+                .forClass(IndexHtmlResponse.class);
+
         verify(request.getService()).modifyIndexHtmlResponse(captor.capture());
-        
+
         Assert.assertEquals(Optional.empty(), captor.getValue().getUI());
     }
 
@@ -396,6 +406,45 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
+    public void should_include_spring_csrf_token_in_meta_tags_when_return_not_null_spring_csrf_in_request()
+            throws IOException {
+        VaadinRequest request = Mockito.spy(createVaadinRequest("/"));
+        String springTokenString = UUID.randomUUID().toString();
+        String springTokenHeaderName = "x-CSRF-TOKEN";
+        String springTokenParamName = SPRING_CSRF_ATTRIBUTE_IN_SESSION;
+        Map<String, String> csrfJsonMap = new HashMap<>();
+        csrfJsonMap.put("token", springTokenString);
+        csrfJsonMap.put("headerName", springTokenHeaderName);
+        csrfJsonMap.put("parameterName", springTokenParamName);
+        Mockito.when(request.getAttribute(SPRING_CSRF_ATTRIBUTE_IN_SESSION))
+                .thenReturn(csrfJsonMap);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
+                response);
+
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements csrfMetaEelement = document.head()
+                .getElementsByAttributeValue("name", SPRING_CSRF_ATTRIBUTE);
+        Assert.assertEquals(1, csrfMetaEelement.size());
+        Assert.assertEquals(springTokenString,
+                csrfMetaEelement.first().attr("content"));
+
+        Elements csrfHeaderMetaElement = document.head()
+                .getElementsByAttributeValue("name", "_csrf_header");
+        Assert.assertEquals(1, csrfHeaderMetaElement.size());
+        Assert.assertEquals(springTokenHeaderName,
+                csrfHeaderMetaElement.first().attr("content"));
+
+        Elements csrfParameterMetaElement = document.head()
+                .getElementsByAttributeValue("name", "_csrf_parameter");
+        Assert.assertEquals(1, csrfParameterMetaElement.size());
+        Assert.assertEquals(springTokenParamName,
+                csrfParameterMetaElement.first().attr("content"));
+    }
+
+    @Test
     public void should_not_include_token_in_dom_when_return_null_csrfToken_in_session()
             throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
@@ -410,6 +459,65 @@ public class IndexHtmlRequestHandlerTest {
         Assert.assertFalse(scripts.get(0).childNode(0).toString()
                 .contains("window.Vaadin = {Flow: {\"csrfToken\":"));
         Assert.assertEquals("", scripts.get(0).attr("initial"));
+    }
+
+    @Test
+    public void should_not_include_spring_csrf_token_in_meta_tags_when_return_null_spring_csrf_in_request()
+            throws IOException {
+        VaadinRequest request = createVaadinRequest("/");
+        indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
+                response);
+
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        Assert.assertEquals(0, document.head()
+                .getElementsByAttribute(SPRING_CSRF_ATTRIBUTE).size());
+        Assert.assertEquals(0,
+                document.head().getElementsByAttribute("_csrf_header").size());
+    }
+
+    @Test
+    public void should_not_include_token_in_dom_when_referer_is_service_worker()
+            throws IOException {
+        Mockito.when(session.getCsrfToken()).thenReturn("foo");
+        VaadinServletRequest vaadinRequest = createVaadinRequest("/");
+        Mockito.when(((HttpServletRequest) vaadinRequest.getRequest())
+                .getHeader("referer"))
+                .thenReturn("http://somewhere.test/sw.js");
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                vaadinRequest, response);
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Assert.assertFalse(indexHtml.contains("csrfToken"));
+    }
+
+    @Test
+    public void should_not_include_spring_token_in_dom_when_referer_is_service_worker()
+            throws IOException {
+        VaadinRequest request = Mockito.spy(createVaadinRequest("/"));
+        String springTokenString = UUID.randomUUID().toString();
+        String springTokenHeaderName = "x-CSRF-TOKEN";
+        Map<String, String> csrfJsonMap = new HashMap<>();
+        csrfJsonMap.put("token", springTokenString);
+        csrfJsonMap.put("headerName", springTokenHeaderName);
+        Object springCsrfToken = JsonUtils.mapToJson(csrfJsonMap);
+        Mockito.when(request.getAttribute(SPRING_CSRF_ATTRIBUTE_IN_SESSION))
+                .thenReturn(springCsrfToken);
+        VaadinServletRequest vaadinRequest = createVaadinRequest("/");
+        Mockito.when(((HttpServletRequest) vaadinRequest.getRequest())
+                .getHeader("referer"))
+                .thenReturn("http://somewhere.test/sw.js");
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                vaadinRequest, response);
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+        Assert.assertEquals(0, document.head()
+                .getElementsByAttribute(SPRING_CSRF_ATTRIBUTE).size());
+        Assert.assertEquals(0,
+                document.head().getElementsByAttribute("_csrf_header").size());
     }
 
     @Test
@@ -439,13 +547,18 @@ public class IndexHtmlRequestHandlerTest {
         File npmFolder = temporaryFolder.getRoot();
         String baseDir = npmFolder.getAbsolutePath();
         new File(baseDir, FrontendUtils.WEBPACK_CONFIG).createNewFile();
-        createStubWebpackServer("Failed to compile", 300, baseDir);
+        createStubWebpackServer("Failed to compile", 3000, baseDir);
 
         // Create a DevModeHandler
         deploymentConfiguration.setEnableDevServer(true);
         deploymentConfiguration.setProductionMode(false);
+
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        mockApplicationConfiguration(appConfig);
+
         DevModeHandler handler = DevModeHandler.start(0,
-                deploymentConfiguration, npmFolder,
+                Lookup.of(appConfig, ApplicationConfiguration.class), npmFolder,
                 CompletableFuture.completedFuture(null));
         Method join = DevModeHandler.class.getDeclaredMethod("join");
         join.setAccessible(true);
@@ -471,6 +584,8 @@ public class IndexHtmlRequestHandlerTest {
                         "<div class=\"v-system-error\" onclick=\"this.parentElement.removeChild(this)\">"));
         Assert.assertTrue("Should show webpack failure error",
                 indexHtml.contains("Failed to compile"));
+
+        handler.stop();
     }
 
     @Test
@@ -493,7 +608,7 @@ public class IndexHtmlRequestHandlerTest {
     public void should_add_metaAndPwa_Inline_Elements_when_appShellPresent()
             throws Exception {
         // Set class in context and do not call initializer
-        AppShellRegistry registry = new AppShellRegistry();
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
         registry.setShell(AppShellWithPWA.class);
         mocks.setAppShellRegistry(registry);
 
@@ -530,7 +645,7 @@ public class IndexHtmlRequestHandlerTest {
     public void should_add_elements_when_appShellWithConfigurator()
             throws Exception {
         // Set class in context and do not call initializer
-        AppShellRegistry registry = new AppShellRegistry();
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
         registry.setShell(MyAppShellWithConfigurator.class);
         mocks.setAppShellRegistry(registry);
 
@@ -624,12 +739,13 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_store_IndexHtmltitleToUI_When_LoadingServerEagerly() 
+    public void should_store_IndexHtmltitleToUI_When_LoadingServerEagerly()
             throws IOException {
         deploymentConfiguration.setEagerServerLoad(true);
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
-        assertEquals("Flow Test CCDM", UI.getCurrent().getInternals().getAppShellTitle());
+        assertEquals("Flow Test CCDM",
+                UI.getCurrent().getInternals().getAppShellTitle());
     }
 
     @After
@@ -659,4 +775,33 @@ public class IndexHtmlRequestHandlerTest {
                 .getRequestURL();
         return request;
     }
+
+    private void mockApplicationConfiguration(
+            ApplicationConfiguration appConfig) {
+        Mockito.when(appConfig.isProductionMode()).thenReturn(false);
+        Mockito.when(appConfig.enableDevServer()).thenReturn(true);
+
+        Mockito.when(appConfig.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
+                .thenAnswer(invocation -> invocation.getArgumentAt(1,
+                        String.class));
+        Mockito.when(appConfig.getBooleanProperty(Mockito.anyString(),
+                Mockito.anyBoolean()))
+                .thenAnswer(invocation -> invocation.getArgumentAt(1,
+                        Boolean.class));
+    }
+
+    @Test
+    public void internal_request_no_bootstrap_page() {
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+        Mockito.when(request.getPathInfo()).thenReturn(null);
+        Mockito.when(request.getParameter("v-r")).thenReturn("hello-foo-bar");
+        Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
+        Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(request));
+
+        Mockito.when(request.getParameter("v-r")).thenReturn("init");
+        Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
+        Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(request));
+    }
+
 }

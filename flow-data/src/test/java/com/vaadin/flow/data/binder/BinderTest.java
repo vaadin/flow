@@ -16,6 +16,10 @@
 
 package com.vaadin.flow.data.binder;
 
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -40,6 +44,7 @@ import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.Converter;
+import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.IntegerRangeValidator;
 import com.vaadin.flow.data.validator.NotEmptyValidator;
@@ -340,15 +345,13 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     private void do_test_save_bound_beanAsDraft(boolean setBean) {
         Binder<Person> binder = new Binder<>();
-        binder.forField(nameField)
-            .withValidator((value,context) -> {
-                if (value.equals("Mike")) {
-                    return ValidationResult.ok();
-                } else {
-                    return ValidationResult.error("value must be Mike");
-                }
-            })
-            .bind(Person::getFirstName, Person::setFirstName);
+        binder.forField(nameField).withValidator((value, context) -> {
+            if (value.equals("Mike")) {
+                return ValidationResult.ok();
+            } else {
+                return ValidationResult.error("value must be Mike");
+            }
+        }).bind(Person::getFirstName, Person::setFirstName);
         binder.forField(ageField)
                 .withConverter(new StringToIntegerConverter(""))
                 .bind(Person::getAge, Person::setAge);
@@ -375,20 +378,22 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         // fails
         assertEquals(age, person.getAge());
 
-        binder.writeBeanAsDraft(person,true);
+        binder.writeBeanAsDraft(person, true);
         // name is now written despite validation as write was forced
         assertEquals(fieldValue, person.getFirstName());
     }
 
     @Test
-    public void save_bound_bean_disable_validation_binding() throws ValidationException {
+    public void save_bound_bean_disable_validation_binding()
+            throws ValidationException {
         Binder<Person> binder = new Binder<>();
         Binding<Person, String> nameBinding = binder.forField(nameField)
-            .withValidator((value,context) -> {
-                if (value.equals("Mike")) return ValidationResult.ok();
-                else return ValidationResult.error("value must be Mike");
-            })
-            .bind(Person::getFirstName, Person::setFirstName);
+                .withValidator((value, context) -> {
+                    if (value.equals("Mike"))
+                        return ValidationResult.ok();
+                    else
+                        return ValidationResult.error("value must be Mike");
+                }).bind(Person::getFirstName, Person::setFirstName);
         binder.forField(ageField)
                 .withConverter(new StringToIntegerConverter(""))
                 .bind(Person::getAge, Person::setAge);
@@ -412,14 +417,15 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
-    public void save_bound_bean_disable_validation_binder() throws ValidationException {
+    public void save_bound_bean_disable_validation_binder()
+            throws ValidationException {
         Binder<Person> binder = new Binder<>();
-        binder.forField(nameField)
-            .withValidator((value,context) -> {
-                if (value.equals("Mike")) return ValidationResult.ok();
-                else return ValidationResult.error("value must be Mike");
-            })
-            .bind(Person::getFirstName, Person::setFirstName);
+        binder.forField(nameField).withValidator((value, context) -> {
+            if (value.equals("Mike"))
+                return ValidationResult.ok();
+            else
+                return ValidationResult.error("value must be Mike");
+        }).bind(Person::getFirstName, Person::setFirstName);
         binder.forField(ageField)
                 .withConverter(new StringToIntegerConverter(""))
                 .bind(Person::getAge, Person::setAge);
@@ -567,6 +573,36 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    public void withConverter_writeBackValue() {
+        TestTextField rentField = new TestTextField();
+        rentField.setValue("");
+        binder.forField(rentField).withConverter(new EuroConverter(""))
+                .withNullRepresentation(BigDecimal.valueOf(0d))
+                .bind(Person::getRent, Person::setRent);
+        binder.setBean(item);
+        rentField.setValue("10");
+
+        // € 10.00
+        assertEquals("€ " + new DecimalFormat("0.00").format(10),
+                rentField.getValue());
+    }
+
+    @Test
+    public void withConverter_writeBackValueDisabled() {
+        TestTextField rentField = new TestTextField();
+        rentField.setValue("");
+        Binding<Person, BigDecimal> binding = binder.forField(rentField)
+                .withConverter(new EuroConverter(""))
+                .withNullRepresentation(BigDecimal.valueOf(0d))
+                .bind(Person::getRent, Person::setRent);
+        binder.setBean(item);
+        binding.setConvertBackToPresentation(false);
+        rentField.setValue("10");
+
+        assertNotEquals("€ 10.00", rentField.getValue());
+    }
+
+    @Test
     public void beanBinder_nullRepresentationIsNotDisabled() {
         Binder<Person> binder = new Binder<>(Person.class);
         binder.forField(nameField).bind("firstName");
@@ -615,13 +651,15 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         TestTextField textField = new TestTextField();
         assertFalse(textField.isRequiredIndicatorVisible());
 
-        BindingBuilder<Person, String> bindingBuilder = binder.forField(textField);
+        BindingBuilder<Person, String> bindingBuilder = binder
+                .forField(textField);
         assertFalse(textField.isRequiredIndicatorVisible());
 
         bindingBuilder.asRequired("foobar");
         assertTrue(textField.isRequiredIndicatorVisible());
 
-        Binding<Person, String> binding = bindingBuilder.bind(Person::getFirstName, Person::setFirstName);
+        Binding<Person, String> binding = bindingBuilder
+                .bind(Person::getFirstName, Person::setFirstName);
         binder.setBean(item);
         assertThat(textField.getErrorMessage(), isEmptyString());
 
@@ -642,12 +680,15 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     public void settingAsRequiredEnabledFalseWhenNoAsRequired() {
         TestTextField textField = new TestTextField();
 
-        BindingBuilder<Person, String> bindingBuilder = binder.forField(textField);
-        Binding<Person, String> binding = bindingBuilder.bind(Person::getFirstName, Person::setFirstName);
+        BindingBuilder<Person, String> bindingBuilder = binder
+                .forField(textField);
+        Binding<Person, String> binding = bindingBuilder
+                .bind(Person::getFirstName, Person::setFirstName);
 
         binder.readBean(item);
 
-        // TextField input is not set required, this should trigger IllegalStateExceptipon
+        // TextField input is not set required, this should trigger
+        // IllegalStateExceptipon
         binding.setAsRequiredEnabled(false);
     }
 
@@ -1584,6 +1625,63 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 innerListenerInvoked.get());
     }
 
+    @Test
+    public void setBean_readOnlyBinding_propertyBinding_valueIsNotUpdated() {
+        Binder<ExampleBean> binder = new Binder<>(ExampleBean.class);
+
+        binder.forField(nameField).withNullRepresentation("")
+                .withConverter(new TestConverter()).bind("vals")
+                .setReadOnly(true);
+
+        ExampleBean bean = new ExampleBean();
+        SubPropClass val = new SubPropClass();
+        bean.setVals(val);
+        binder.setBean(bean);
+
+        Assert.assertSame(val, bean.getVals());
+    }
+
+    @Test
+    public void setBean_readOnlyBinding_accessorsBiding_valueIsNotUpdated() {
+        Binder<ExampleBean> binder = new Binder<>(ExampleBean.class);
+
+        binder.forField(nameField).withNullRepresentation("")
+                .withConverter(new TestConverter())
+                .bind(ExampleBean::getVals, ExampleBean::setVals)
+                .setReadOnly(true);
+
+        ExampleBean bean = new ExampleBean();
+        SubPropClass val = new SubPropClass();
+        bean.setVals(val);
+        binder.setBean(bean);
+
+        Assert.assertSame(val, bean.getVals());
+    }
+
+    @Test
+    public void invalidUsage_modifyFieldsInsideValidator_binderDoesNotThrow() {
+        TestTextField field = new TestTextField();
+
+        AtomicBoolean validatorIsExecuted = new AtomicBoolean();
+        binder.forField(field).asRequired().withValidator((val, context) -> {
+            nameField.setValue("foo");
+            ageField.setValue("bar");
+            validatorIsExecuted.set(true);
+            return ValidationResult.ok();
+        }).bind(Person::getEmail, Person::setEmail);
+
+        binder.forField(nameField).bind(Person::getFirstName,
+                Person::setFirstName);
+        binder.forField(ageField).bind(Person::getLastName,
+                Person::setLastName);
+
+        binder.setBean(new Person());
+
+        field.setValue("baz");
+        // mostly self control, the main check is: not exception is thrown
+        Assert.assertTrue(validatorIsExecuted.get());
+    }
+
     private TestTextField createNullRejectingFieldWithEmptyValue(
             String emptyValue) {
         return new TestTextField() {
@@ -1611,5 +1709,90 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 .withConverter(new StringToIntegerConverter("Must have number"))
                 .bind(AtomicReference::get, AtomicReference::set);
         return binder;
+    }
+
+    public static class ExampleBean implements Serializable {
+        private SubPropClass vals;
+
+        public SubPropClass getVals() {
+            return vals;
+        }
+
+        public void setVals(SubPropClass vals) {
+            this.vals = vals;
+        }
+    }
+
+    public static class SubPropClass implements Serializable {
+        private String val1 = "Val1";
+
+        @Override
+        public String toString() {
+            return val1;
+        }
+    }
+
+    public static class TestConverter
+            implements Converter<String, SubPropClass> {
+
+        @Override
+        public Result<SubPropClass> convertToModel(String value,
+                ValueContext context) {
+            return Result.ok(null);
+        }
+
+        @Override
+        public String convertToPresentation(SubPropClass value,
+                ValueContext context) {
+            return value != null ? value.toString() : null;
+        }
+    };
+
+    /**
+     * A converter that adds/removes the euro sign and formats currencies with
+     * two decimal places.
+     */
+    public class EuroConverter extends StringToBigDecimalConverter {
+
+        public EuroConverter() {
+            super("defaultErrorMessage");
+        }
+
+        public EuroConverter(String errorMessage) {
+            super(errorMessage);
+        }
+
+        @Override
+        public Result<BigDecimal> convertToModel(String value,
+                ValueContext context) {
+            if (value.isEmpty()) {
+                return Result.ok(null);
+            }
+            value = value.replaceAll("[€\\s]", "").trim();
+            if (value.isEmpty()) {
+                value = "0";
+            }
+            return super.convertToModel(value, context);
+        }
+
+        @Override
+        public String convertToPresentation(BigDecimal value,
+                ValueContext context) {
+            if (value == null) {
+                return convertToPresentation(BigDecimal.ZERO, context);
+            }
+            return "€ " + super.convertToPresentation(value, context);
+        }
+
+        @Override
+        protected NumberFormat getFormat(Locale locale) {
+            // Always display currency with two decimals
+            NumberFormat format = super.getFormat(locale);
+            if (format instanceof DecimalFormat) {
+                ((DecimalFormat) format).setMaximumFractionDigits(2);
+                ((DecimalFormat) format).setMinimumFractionDigits(2);
+            }
+            return format;
+        }
     }
 }

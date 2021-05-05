@@ -18,15 +18,13 @@ package com.vaadin.flow.server.startup;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
+
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,16 +38,14 @@ import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 
@@ -60,6 +56,8 @@ import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_PWA
 
 /**
  * Servlet initializer visiting {@link AppShellConfigurator} configuration.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 3.0
  */
@@ -71,26 +69,31 @@ import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_PWA
 // it
 @WebListener
 public class VaadinAppShellInitializer
-        implements ClassLoaderAwareServletContainerInitializer,
+        implements VaadinServletContextStartupInitializer,
         // implementing ServletContextListener is needed for the @WebListener
         // annotation.
         ServletContextListener, Serializable {
 
     @Override
-    public void process(Set<Class<?>> classes, ServletContext context)
-            throws ServletException {
+    public void initialize(Set<Class<?>> classes, VaadinContext context) {
+        init(classes, context);
+    }
 
-        Collection<? extends ServletRegistration> registrations = context
-                .getServletRegistrations().values();
-        if (registrations.isEmpty()) {
-            return;
-        }
-
-        DeploymentConfiguration config = StubServletConfig
-                .createDeploymentConfiguration(context,
-                        registrations.iterator().next(), VaadinServlet.class);
-
-        init(classes, context, config);
+    /**
+     * Initializes the {@link AppShellRegistry} for the application.
+     *
+     * @deprecated Use {@link #init(Set, VaadinContext)} instead by wrapping
+     *             {@link ServletContext} with {@link VaadinServletContext}.
+     *
+     * @param classes
+     *            a set of classes that matches the {@link HandlesTypes} set in
+     *            this class.
+     * @param context
+     *            the servlet context.
+     */
+    @Deprecated
+    public static void init(Set<Class<?>> classes, ServletContext context) {
+        init(classes, new VaadinServletContext(context));
     }
 
     /**
@@ -100,13 +103,11 @@ public class VaadinAppShellInitializer
      *            a set of classes that matches the {@link HandlesTypes} set in
      *            this class.
      * @param context
-     *            the servlet context.
-     * @param config
-     *            the vaadin configuration for the application.
+     *            the {@link VaadinContext}.
      */
     @SuppressWarnings("unchecked")
-    public static void init(Set<Class<?>> classes, ServletContext context,
-            DeploymentConfiguration config) {
+    public static void init(Set<Class<?>> classes, VaadinContext context) {
+        ApplicationConfiguration config = ApplicationConfiguration.get(context);
 
         if (config.useV14Bootstrap()) {
             return;
@@ -115,8 +116,7 @@ public class VaadinAppShellInitializer
         boolean disregardOffendingAnnotations = config.getBooleanProperty(
                 Constants.ALLOW_APPSHELL_ANNOTATIONS, false);
 
-        AppShellRegistry registry = AppShellRegistry
-                .getInstance(new VaadinServletContext(context));
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
         registry.reset();
 
         if (classes == null || classes.isEmpty()) {
@@ -186,7 +186,7 @@ public class VaadinAppShellInitializer
      * scanning.
      *
      * @return list of annotations handled by
-     *         {@link VaadinAppShellInitializer#init(Set, ServletContext, DeploymentConfiguration)}
+     *         {@link VaadinAppShellInitializer#init(Set, VaadinContext)}
      */
     @SuppressWarnings("unchecked")
     public static List<Class<? extends Annotation>> getValidAnnotations() {
@@ -202,7 +202,7 @@ public class VaadinAppShellInitializer
      * scanning.
      *
      * @return list of super classes handled by
-     *         {@link VaadinAppShellInitializer#init(Set, ServletContext, DeploymentConfiguration)}
+     *         {@link VaadinAppShellInitializer#init(Set, VaadinContext)}
      */
     public static List<Class<?>> getValidSupers() {
         return Arrays.stream(getHandledTypes())

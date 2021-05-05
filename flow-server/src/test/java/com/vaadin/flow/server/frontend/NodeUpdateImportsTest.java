@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -44,6 +45,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -78,7 +80,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
-        generatedPath = new File(tmpRoot, DEFAULT_GENERATED_DIR);
+        generatedPath = new File(tmpRoot,
+                Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
         importsFile = new File(generatedPath, IMPORTS_NAME);
         importsDefinitionFile = new File(generatedPath, IMPORTS_D_TS_NAME);
         fallBackImportsFile = new File(generatedPath,
@@ -115,7 +118,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
                 tmpRoot, generatedPath, frontendDirectory, tokenFile,
-                fallBackData, false) {
+                fallBackData, false, TARGET) {
             @Override
             Logger log() {
                 return logger;
@@ -228,11 +231,11 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertTrue(importsDefinitionFile.exists());
 
-        String definitionContent = FileUtils.readFileToString(importsDefinitionFile,
-                Charset.defaultCharset());
+        String definitionContent = FileUtils.readFileToString(
+                importsDefinitionFile, Charset.defaultCharset());
 
-        Assert.assertThat(definitionContent, CoreMatchers
-                .containsString("export declare const addCssBlock: (block: string, before?: boolean) => void;"));
+        Assert.assertThat(definitionContent, CoreMatchers.containsString(
+                "export declare const addCssBlock: (block: string, before?: boolean) => void;"));
     }
 
     @Test
@@ -248,7 +251,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
                 tmpRoot, generatedPath, frontendDirectory, tokenFile, null,
-                false) {
+                false, TARGET) {
             @Override
             Logger log() {
                 return logger;
@@ -265,8 +268,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         // ============== check main generated imports file ============
 
         // Contains theme lines
-        Assert.assertThat(mainContent, CoreMatchers
-                .containsString("export const addCssBlock = function(block, before = false) {"));
+        Assert.assertThat(mainContent, CoreMatchers.containsString(
+                "export const addCssBlock = function(block, before = false) {"));
 
         Assert.assertThat(mainContent, CoreMatchers.containsString(
                 "addCssBlock('<custom-style>foo</custom-style>', true);"));
@@ -317,7 +320,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                tokenFile, null, false) {
+                tokenFile, null, false, TARGET) {
             @Override
             Logger log() {
                 return logger;
@@ -362,7 +365,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                tokenFile, null, false) {
+                tokenFile, null, false, TARGET) {
             @Override
             Logger log() {
                 return logger;

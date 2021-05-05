@@ -1,5 +1,6 @@
 package com.vaadin.tests.util;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -29,6 +30,10 @@ public class MockDeploymentConfiguration
     private boolean brotli = false;
     private boolean eagerServerLoad = false;
     private boolean devModeLiveReloadEnabled = false;
+
+    public MockDeploymentConfiguration() {
+        super(Collections.emptyMap());
+    }
 
     @Override
     public boolean isProductionMode() {
@@ -169,7 +174,8 @@ public class MockDeploymentConfiguration
         return useDeprecatedV14Bootstrapping;
     }
 
-    public void useDeprecatedV14Bootstrapping(boolean useDeprecatedV14Bootstrapping) {
+    public void useDeprecatedV14Bootstrapping(
+            boolean useDeprecatedV14Bootstrapping) {
         this.useDeprecatedV14Bootstrapping = useDeprecatedV14Bootstrapping;
     }
 

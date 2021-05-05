@@ -30,9 +30,10 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 
 /**
- * Stores the data about element
- * name({@link Tag} annotation name value) relation to
- * all unique classes with corresponding annotation.
+ * Stores the data about element name({@link Tag} annotation name value)
+ * relation to all unique classes with corresponding annotation.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -50,7 +51,7 @@ class CustomElements implements Serializable {
                             + "to do mapping between a tag name and a template "
                             + "class in order to instantiate the template when it's defined "
                             + "inside another template",
-                            tagName, componentClasses));
+                    tagName, componentClasses));
         }
         if (componentClasses.size() < 1) {
             return Optional.of(String.format(
@@ -64,9 +65,9 @@ class CustomElements implements Serializable {
             Map.Entry<String, Set<Class<? extends Component>>> entry) {
         Set<Class<? extends Component>> componentClasses = entry.getValue();
         validateComponentClasses(entry.getKey(), componentClasses)
-        .ifPresent(exceptionMessage -> {
-            throw new IllegalStateException(exceptionMessage);
-        });
+                .ifPresent(exceptionMessage -> {
+                    throw new IllegalStateException(exceptionMessage);
+                });
 
         return componentClasses.iterator().next();
     }

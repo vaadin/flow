@@ -24,6 +24,8 @@ import com.vaadin.flow.server.VaadinRequest;
 
 /**
  * Utility class for locale handling.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */
@@ -65,8 +67,8 @@ public final class LocaleUtil {
      *            application provided locales
      * @return found locale or null if no matches by language
      */
-    public static Optional<Locale> getLocaleMatchByLanguage(VaadinRequest request,
-            List<Locale> providedLocales) {
+    public static Optional<Locale> getLocaleMatchByLanguage(
+            VaadinRequest request, List<Locale> providedLocales) {
         Locale foundLocale = null;
         Enumeration<Locale> locales = request.getLocales();
         while (locales.hasMoreElements()) {

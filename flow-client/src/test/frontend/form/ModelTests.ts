@@ -5,16 +5,18 @@ const {expect} = intern.getPlugin("chai");
 
 // API to test
 import {
+  _fromString,
   _key,
   ArrayModel,
   Binder,
+  IsNumber,
   NotBlank,
   NotEmpty,
   NotNull,
   NumberModel,
   Positive,
   Size
-} from "../../../main/resources/META-INF/resources/frontend/form";
+} from "../../../main/frontend/form";
 
 import {IdEntity, IdEntityModel, TestEntity, TestModel} from "./TestModels";
 
@@ -53,6 +55,52 @@ suite("form/Model", () => {
     test(`Size validator with min 0 should not be mark a model as required`, async () => {
       binder.for(binder.model.fieldString).addValidator(new Size({min:0}));
       expect(binder.for(binder.model.fieldString).required).to.be.false;
+    });
+  });
+
+  suite('number model', () => {
+    test('should contain IsNumber validator by default', async () => {
+      const validators = binder.for(binder.model.fieldNumber).validators;
+      expect(validators[0]).to.be.instanceOf(IsNumber);
+    });
+
+    suite('_fromString', () => {
+      let fromString: (str: string) => number;
+
+      beforeEach(() => {
+        fromString = binder.model.fieldNumber[_fromString];
+      });
+
+      test('should disallow empty string', async () => {
+        expect(fromString('')).to.satisfy(Number.isNaN);
+      });
+
+      test('should integer format', async () => {
+        expect(fromString('0')).to.equal(0);
+        expect(fromString('01')).to.equal(1);
+        expect(fromString('10')).to.equal(10);
+        expect(fromString('+10')).to.equal(10);
+        expect(fromString('-10')).to.equal(-10);
+      });
+
+      test('should support decimal format', async () => {
+        expect(fromString('1.2')).to.equal(1.2);
+        expect(fromString('.2')).to.equal(.2);
+        expect(fromString('+1.2')).to.equal(1.2);
+        expect(fromString('-1.2')).to.equal(-1.2);
+      });
+
+      test('should disallow incorrect formats', async () => {
+        expect(fromString('1.')).to.satisfy(Number.isNaN);
+        // Wrong separator
+        expect(fromString('1,')).to.satisfy(Number.isNaN);
+        expect(fromString(',2')).to.satisfy(Number.isNaN);
+        expect(fromString('1,2')).to.satisfy(Number.isNaN);
+        // Extra symbols
+        expect(fromString('e1')).to.satisfy(Number.isNaN);
+        expect(fromString('1e')).to.satisfy(Number.isNaN);
+        expect(fromString('1e0')).to.satisfy(Number.isNaN);
+      });
     });
   });
 
@@ -129,7 +177,7 @@ suite("form/Model", () => {
 
     /**
      * default value is used for checking dirty state
-     * use case: adding a new order line, which contains a product 
+     * use case: adding a new order line, which contains a product
      * and a quantity field. The product model's dirty state is
      * comparing the default value, which is getting from the parent
      * order line model, which is an array item.
@@ -262,7 +310,8 @@ suite("form/Model", () => {
         Array.from(rowBinder.model).forEach((cellBinder, j) => {
           expect(cellBinder.model).to.be.instanceOf(NumberModel);
           expect(cellBinder.value).to.be.equal(matrix[i][j]);
-          expect(cellBinder.validators[0]).to.be.instanceOf(Positive);
+          const [, lastValidator] = cellBinder.validators;
+          expect(lastValidator).to.be.instanceOf(Positive);
           walkedCells++;
         });
       });

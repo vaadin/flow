@@ -15,18 +15,9 @@
  */
 package com.vaadin.flow.server;
 
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
-import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
-import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
-import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
-import static com.vaadin.flow.server.frontend.FrontendUtils.console;
-import static java.lang.String.format;
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_OK;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,23 +37,35 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
-
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
+
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
+import static com.vaadin.flow.server.StaticFileServer.APP_THEME_PATTERN;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
+import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
+import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
+import static com.vaadin.flow.server.frontend.FrontendUtils.console;
+import static java.lang.String.format;
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * Handles getting resources from <code>webpack-dev-server</code>.
@@ -74,6 +77,9 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
  *
  * By default it keeps updated npm dependencies and node imports before running
  * webpack server
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
@@ -128,34 +134,42 @@ public final class DevModeHandler implements RequestHandler {
     private final AtomicReference<DevServerWatchDog> watchDog = new AtomicReference<>();
     private final File devServerPortFile;
 
+    /**
+     * The list of static resource paths from webpack manifest.
+     */
+    private volatile List<String> manifestPaths = new ArrayList<>();
+
     private StringBuilder cumulativeOutput = new StringBuilder();
 
     private final CompletableFuture<Void> devServerStartFuture;
 
     private final File npmFolder;
 
-    private DevModeHandler(DeploymentConfiguration config, int runningPort,
-            File npmFolder, CompletableFuture<Void> waitFor) {
+    private DevModeHandler(Lookup lookup, int runningPort, File npmFolder,
+            CompletableFuture<Void> waitFor) {
 
         this.npmFolder = npmFolder;
         port = runningPort;
+        ApplicationConfiguration config = lookup
+                .lookup(ApplicationConfiguration.class);
         reuseDevServer = config.reuseDevServer();
         devServerPortFile = getDevServerPortFile(npmFolder);
 
-        devServerStartFuture = waitFor.whenCompleteAsync((value, exception) -> {
+        BiConsumer<Void, ? super Throwable> action = (value, exception) -> {
             // this will throw an exception if an exception has been thrown by
             // the waitFor task
             waitFor.getNow(null);
             runOnFutureComplete(config);
-        });
+        };
 
+        devServerStartFuture = waitFor.whenCompleteAsync(action);
     }
 
     /**
      * Start the dev mode handler if none has been started yet.
      *
-     * @param configuration
-     *            deployment configuration
+     * @param lookup
+     *            the provided lookup to get required data
      * @param npmFolder
      *            folder with npm configuration files
      * @param waitFor
@@ -164,9 +178,9 @@ public final class DevModeHandler implements RequestHandler {
      *
      * @return the instance in case everything is alright, null otherwise
      */
-    public static DevModeHandler start(DeploymentConfiguration configuration,
-            File npmFolder, CompletableFuture<Void> waitFor) {
-        return start(0, configuration, npmFolder, waitFor);
+    public static DevModeHandler start(Lookup lookup, File npmFolder,
+            CompletableFuture<Void> waitFor) {
+        return start(0, lookup, npmFolder, waitFor);
     }
 
     /**
@@ -174,8 +188,8 @@ public final class DevModeHandler implements RequestHandler {
      *
      * @param runningPort
      *            port on which Webpack is listening.
-     * @param configuration
-     *            deployment configuration
+     * @param lookup
+     *            the provided lookup to get required data
      * @param npmFolder
      *            folder with npm configuration files
      * @param waitFor
@@ -184,16 +198,17 @@ public final class DevModeHandler implements RequestHandler {
      *
      * @return the instance in case everything is alright, null otherwise
      */
-    public static DevModeHandler start(int runningPort,
-            DeploymentConfiguration configuration, File npmFolder,
-            CompletableFuture<Void> waitFor) {
+    public static DevModeHandler start(int runningPort, Lookup lookup,
+            File npmFolder, CompletableFuture<Void> waitFor) {
+        ApplicationConfiguration configuration = lookup
+                .lookup(ApplicationConfiguration.class);
         if (configuration.isProductionMode()
                 || !configuration.enableDevServer()) {
             return null;
         }
         if (atomicHandler.get() == null) {
-            atomicHandler.compareAndSet(null, createInstance(runningPort,
-                    configuration, npmFolder, waitFor));
+            atomicHandler.compareAndSet(null,
+                    createInstance(runningPort, lookup, npmFolder, waitFor));
         }
         return getDevModeHandler();
     }
@@ -256,11 +271,9 @@ public final class DevModeHandler implements RequestHandler {
         }
     }
 
-    private static DevModeHandler createInstance(int runningPort,
-            DeploymentConfiguration configuration, File npmFolder,
-            CompletableFuture<Void> waitFor) {
-        return new DevModeHandler(configuration, runningPort, npmFolder,
-                waitFor);
+    private static DevModeHandler createInstance(int runningPort, Lookup lookup,
+            File npmFolder, CompletableFuture<Void> waitFor) {
+        return new DevModeHandler(lookup, runningPort, npmFolder, waitFor);
     }
 
     /**
@@ -272,9 +285,15 @@ public final class DevModeHandler implements RequestHandler {
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
         String pathInfo = request.getPathInfo();
-        return pathInfo != null && pathInfo.startsWith("/" + VAADIN_MAPPING)
-                && !pathInfo
-                        .startsWith("/" + StreamRequestHandler.DYN_RES_PREFIX);
+        if (pathInfo != null
+                && (pathInfo.startsWith("/" + VAADIN_MAPPING)
+                        || APP_THEME_PATTERN.matcher(pathInfo).find())
+                && !pathInfo.startsWith(
+                        "/" + StreamRequestHandler.DYN_RES_PREFIX)) {
+            return true;
+        }
+
+        return manifestPaths.contains(pathInfo);
     }
 
     /**
@@ -310,6 +329,11 @@ public final class DevModeHandler implements RequestHandler {
                     requestFilename);
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return true;
+        }
+
+        // Redirect theme source request
+        if (APP_THEME_PATTERN.matcher(requestFilename).find()) {
+            requestFilename = "/VAADIN/static" + requestFilename;
         }
 
         HttpURLConnection connection = prepareConnection(requestFilename,
@@ -365,7 +389,7 @@ public final class DevModeHandler implements RequestHandler {
 
     private boolean checkWebpackConnection() {
         try {
-            prepareConnection("/", "GET").getResponseCode();
+            readManifestPaths();
             return true;
         } catch (IOException e) {
             getLogger().debug("Error checking webpack dev server connection",
@@ -472,6 +496,14 @@ public final class DevModeHandler implements RequestHandler {
             // reset cumulative buffer for the next compilation
             cumulativeOutput = new StringBuilder();
 
+            // Read webpack asset manifest json
+            try {
+                readManifestPaths();
+            } catch (IOException e) {
+                getLogger().error("Error when reading manifest.json "
+                        + "from webpack-dev-server", e);
+            }
+
             // Notify DevModeHandler to continue
             doNotify();
 
@@ -512,12 +544,44 @@ public final class DevModeHandler implements RequestHandler {
         FileUtils.deleteQuietly(devServerPortFile);
     }
 
-    private void runOnFutureComplete(DeploymentConfiguration config) {
+    private void runOnFutureComplete(ApplicationConfiguration config) {
         try {
             doStartDevModeServer(config);
         } catch (ExecutionFailedException exception) {
             getLogger().error(null, exception);
             throw new CompletionException(exception);
+        }
+    }
+
+    /**
+     * Get and parse /manifest.json from webpack-dev-server, extracting paths to
+     * all resources in the webpack output.
+     *
+     * Those paths do not necessarily start with /VAADIN, as some resources must
+     * be served from the root directory, e. g., service worker JS.
+     *
+     * @throws IOException
+     */
+    private void readManifestPaths() throws IOException {
+        getLogger().debug("Reading manifest.json from webpack");
+        HttpURLConnection connection = prepareConnection("/manifest.json",
+                "GET");
+        int responseCode = connection.getResponseCode();
+        if (responseCode != HTTP_OK) {
+            getLogger().error(
+                    "Unable to get manifest.json from "
+                            + "webpack-dev-server, got {} {}",
+                    responseCode, connection.getResponseMessage());
+            return;
+        }
+
+        String manifestJson = FrontendUtils
+                .streamToString(connection.getInputStream());
+        manifestPaths = FrontendUtils.parseManifestPaths(manifestJson);
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug(
+                    "Got asset paths from webpack manifest.json: \n    {}",
+                    String.join("\n    ", manifestPaths));
         }
     }
 
@@ -546,7 +610,7 @@ public final class DevModeHandler implements RequestHandler {
 
     }
 
-    private void doStartDevModeServer(DeploymentConfiguration config)
+    private void doStartDevModeServer(ApplicationConfiguration config)
             throws ExecutionFailedException {
         // If port is defined, means that webpack is already running
         if (port > 0) {
@@ -593,17 +657,17 @@ public final class DevModeHandler implements RequestHandler {
         }
     }
 
-    private boolean doStartWebpack(DeploymentConfiguration config,
+    private boolean doStartWebpack(ApplicationConfiguration config,
             Pair<File, File> webPackFiles, long start) {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
 
-        FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
-        tools.validateNodeAndNpmVersion();
-
         boolean useHomeNodeExec = config.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
+        FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
+                useHomeNodeExec);
+        tools.validateNodeAndNpmVersion();
 
         String nodeExec = null;
         if (useHomeNodeExec) {
@@ -665,8 +729,10 @@ public final class DevModeHandler implements RequestHandler {
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info(LOG_END, ms);
             return true;
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             getLogger().error("Failed to start the webpack process", e);
+        } catch (InterruptedException e) {
+            getLogger().debug("Webpack process start has been interrupted", e);
         }
         return false;
     }
@@ -680,7 +746,7 @@ public final class DevModeHandler implements RequestHandler {
         watchDog.set(null);
     }
 
-    private List<String> makeCommands(DeploymentConfiguration config,
+    private List<String> makeCommands(ApplicationConfiguration config,
             File webpack, File webpackConfig, String nodeExec) {
         List<String> command = new ArrayList<>();
         command.add(nodeExec);
@@ -689,7 +755,8 @@ public final class DevModeHandler implements RequestHandler {
         command.add(webpackConfig.getAbsolutePath());
         command.add("--port");
         command.add(String.valueOf(port));
-        command.add("--watchDogPort=" + watchDog.get().getWatchDogPort());
+        command.add("--env");
+        command.add("watchDogPort=" + watchDog.get().getWatchDogPort());
         command.addAll(Arrays.asList(config
                 .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
                         "-d --inline=false")

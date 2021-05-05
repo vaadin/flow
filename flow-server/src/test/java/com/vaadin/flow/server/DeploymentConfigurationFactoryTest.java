@@ -7,15 +7,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -23,8 +20,11 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -38,14 +38,14 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.DeploymentConfigurationFactory.DEV_FOLDER_MISSING_MESSAGE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+import static com.vaadin.flow.server.startup.AbstractConfigurationFactory.DEV_FOLDER_MISSING_MESSAGE;
 import static java.util.Collections.emptyMap;
-import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.capture;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.mock;
@@ -61,10 +61,16 @@ public class DeploymentConfigurationFactoryTest {
     private File tokenFile;
     private ServletContext contextMock;
 
+    private ApplicationConfiguration appConfiguration;
+
+    private FallbackChunk fallbackChunk;
+
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     private Map<String, String> defaultServletParams = new HashMap<>();
+
+    private static String globalUserDirValue;
 
     private static class NoSettings extends VaadinServlet {
     }
@@ -74,10 +80,6 @@ public class DeploymentConfigurationFactoryTest {
         }
     }
 
-    @VaadinServletConfiguration(productionMode = true, heartbeatInterval = 222)
-    private static class VaadinSettings extends VaadinServlet {
-    }
-
     @Before
     public void setup() throws IOException {
         System.setProperty("user.dir",
@@ -85,13 +87,27 @@ public class DeploymentConfigurationFactoryTest {
         tokenFile = new File(temporaryFolder.getRoot(),
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
         FileUtils.writeLines(tokenFile, Arrays.asList("{", "}"));
+        appConfiguration = mockApplicationConfiguration();
         contextMock = mock(ServletContext.class);
 
         defaultServletParams.put(PARAM_TOKEN_FILE, tokenFile.getPath());
     }
 
+    @After
     public void tearDown() {
         tokenFile.delete();
+    }
+
+    @BeforeClass
+    public static void setupBeforeClass() {
+        globalUserDirValue = System.getProperty("user.dir");
+    }
+
+    @AfterClass
+    public static void tearDownAfterClass() {
+        if (globalUserDirValue != null) {
+            System.setProperty("user.dir", globalUserDirValue);
+        }
     }
 
     @Test
@@ -101,7 +117,7 @@ public class DeploymentConfigurationFactoryTest {
         Map<String, String> servletConfigParams = new HashMap<>(
                 new HashMap<>(defaultServletParams));
 
-        DeploymentConfiguration config = DeploymentConfigurationFactory
+        DeploymentConfiguration config = new DeploymentConfigurationFactory()
                 .createDeploymentConfiguration(servlet,
                         createVaadinConfigMock(servletConfigParams,
                                 Collections.singletonMap(PARAM_TOKEN_FILE,
@@ -125,7 +141,7 @@ public class DeploymentConfigurationFactoryTest {
         Map<String, String> servletConfigParams = new HashMap<>(
                 defaultServletParams);
 
-        DeploymentConfiguration config = DeploymentConfigurationFactory
+        DeploymentConfiguration config = new DeploymentConfigurationFactory()
                 .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         servletConfigParams, emptyMap()));
 
@@ -136,83 +152,6 @@ public class DeploymentConfigurationFactoryTest {
         assertEquals(String.format(
                 "Expected DeploymentConfiguration for servlet '%s' to have its enclosing UI class",
                 servlet), UI.class.getName(), config.getUIClassName());
-    }
-
-    @Test
-    public void vaadinServletConfigurationRead() throws Exception {
-        Class<VaadinSettings> servlet = VaadinSettings.class;
-
-        Map<String, String> servletConfigParams = new HashMap<>(
-                defaultServletParams);
-
-        DeploymentConfiguration config = DeploymentConfigurationFactory
-                .createDeploymentConfiguration(servlet, createVaadinConfigMock(
-                        servletConfigParams, emptyMap()));
-
-        assertTrue(String.format(
-                "Unexpected value for production mode, check '%s' class annotation",
-                servlet), config.isProductionMode());
-        assertEquals(String.format(
-                "Unexpected value for heartbeat interval, check '%s' class annotation",
-                servlet), 222, config.getHeartbeatInterval());
-    }
-
-    @Test
-    public void servletConfigParametersOverrideVaadinParameters()
-            throws Exception {
-        Class<VaadinSettings> servlet = VaadinSettings.class;
-
-        boolean overridingProductionModeValue = false;
-        int overridingHeartbeatIntervalValue = 444;
-
-        Map<String, String> servletConfigParams = new HashMap<>(
-                defaultServletParams);
-        servletConfigParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
-                Boolean.toString(overridingProductionModeValue));
-        servletConfigParams.put(
-                InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
-                Integer.toString(overridingHeartbeatIntervalValue));
-
-        DeploymentConfiguration config = DeploymentConfigurationFactory
-                .createDeploymentConfiguration(servlet, createVaadinConfigMock(
-                        servletConfigParams, emptyMap()));
-
-        assertEquals(
-                "Unexpected value for production mode, should be the same as in servlet config parameters",
-                overridingProductionModeValue, config.isProductionMode());
-        assertEquals(
-                "Unexpected value for heartbeat interval, should be the same as in servlet config parameters",
-                overridingHeartbeatIntervalValue,
-                config.getHeartbeatInterval());
-    }
-
-    @Test
-    public void servletContextParametersOverrideVaadinParameters()
-            throws Exception {
-        Class<VaadinSettings> servlet = VaadinSettings.class;
-
-        boolean overridingProductionModeValue = false;
-        int overridingHeartbeatIntervalValue = 444;
-
-        Map<String, String> servletContextParams = new HashMap<>(
-                defaultServletParams);
-        servletContextParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
-                Boolean.toString(overridingProductionModeValue));
-        servletContextParams.put(
-                InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
-                Integer.toString(overridingHeartbeatIntervalValue));
-
-        DeploymentConfiguration config = DeploymentConfigurationFactory
-                .createDeploymentConfiguration(servlet, createVaadinConfigMock(
-                        emptyMap(), servletContextParams));
-
-        assertEquals(
-                "Unexpected value for production mode, should be the same as in servlet context parameters",
-                overridingProductionModeValue, config.isProductionMode());
-        assertEquals(
-                "Unexpected value for heartbeat interval, should be the same as in servlet context parameters",
-                overridingHeartbeatIntervalValue,
-                config.getHeartbeatInterval());
     }
 
     @Test
@@ -241,7 +180,7 @@ public class DeploymentConfigurationFactoryTest {
                 InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(servletContextHeartbeatIntervalValue));
 
-        DeploymentConfiguration config = DeploymentConfigurationFactory
+        DeploymentConfiguration config = new DeploymentConfigurationFactory()
                 .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         servletConfigParams, servletContextParams));
 
@@ -265,7 +204,7 @@ public class DeploymentConfigurationFactoryTest {
                 FrontendUtils.WEBPACK_CONFIG);
         FileUtils.writeLines(webPack, Arrays.asList("./webpack.generated.js"));
 
-        DeploymentConfigurationFactory.createDeploymentConfiguration(
+        new DeploymentConfigurationFactory().createDeploymentConfiguration(
                 VaadinServlet.class, createVaadinConfigMock(map, emptyMap()));
     }
 
@@ -360,34 +299,119 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void externalStatsFileTrue_predefinedContext() throws Exception {
-        FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"externalStatsFile\": true", "}"));
+    public void createInitParameters_valuesFromContextAreIgnored_valuesAreTakenFromservletConfig()
+            throws Exception {
+        DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
 
-        DeploymentConfiguration config = createConfig(Collections
-                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
 
-        assertEquals(false, config.isProductionMode());
-        assertEquals(false, config.enableDevServer());
-        assertEquals(true, config.isStatsExternal());
-        assertEquals(Constants.DEFAULT_EXTERNAL_STATS_URL,
-                config.getExternalStatsUrl());
+        Mockito.when(config.getVaadinContext()).thenReturn(context);
+
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+
+        Mockito.when(config.getConfigParameterNames()).thenReturn(
+                Collections.enumeration(Collections.singleton("foo")));
+        Mockito.when(context.getContextParameterNames()).thenReturn(
+                Collections.enumeration(Collections.singleton("bar")));
+
+        Mockito.when(config.getConfigParameter("foo")).thenReturn("baz");
+        Mockito.when(context.getContextParameter("bar")).thenReturn("foobar");
+
+        Mockito.when(context.getAttribute(
+                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
+                .thenReturn(appConfig);
+
+        Properties parameters = factory.createInitParameters(Object.class,
+                config);
+
+        Assert.assertEquals("baz", parameters.get("foo"));
+        Assert.assertFalse(parameters.contains("bar"));
     }
 
     @Test
-    public void externalStatsUrlGiven_predefinedContext() throws Exception {
-        FileUtils.writeLines(tokenFile, Arrays.asList("{",
-                "\"externalStatsUrl\": \"http://my.server/static/stats.json\"",
-                "}"));
+    public void createInitParameters_tokenFileIsSetViaContext_externalStatsUrlIsReadFromTokenFile_predefinedProperties()
+            throws Exception {
+        DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
 
-        DeploymentConfiguration config = createConfig(Collections
-                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+        VaadinConfig config = mockTokenFileViaContextParam(
+                "{ 'externalStatsUrl': 'http://my.server/static/stats.json'}");
 
-        assertEquals(false, config.isProductionMode());
-        assertEquals(false, config.enableDevServer());
-        assertEquals(true, config.isStatsExternal());
-        assertEquals("http://my.server/static/stats.json",
-                config.getExternalStatsUrl());
+        Properties parameters = factory.createInitParameters(Object.class,
+                config);
+
+        Assert.assertEquals("http://my.server/static/stats.json",
+                parameters.get(Constants.EXTERNAL_STATS_URL));
+        Assert.assertEquals(Boolean.TRUE.toString(),
+                parameters.get(Constants.EXTERNAL_STATS_FILE));
+        Assert.assertEquals(Boolean.FALSE.toString(), parameters
+                .get(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER));
+    }
+
+    @Test
+    public void createInitParameters_tokenFileIsSetViaContext_externalStatsFileIsReadFromTokenFile_predefinedProperties()
+            throws Exception {
+        DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
+
+        VaadinConfig config = mockTokenFileViaContextParam(
+                "{ 'externalStatsFile': true}");
+
+        Properties parameters = factory.createInitParameters(Object.class,
+                config);
+
+        Assert.assertEquals(Boolean.TRUE.toString(),
+                parameters.get(Constants.EXTERNAL_STATS_FILE));
+        Assert.assertEquals(Boolean.FALSE.toString(), parameters
+                .get(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER));
+    }
+
+    @Test
+    public void createInitParameters_tokenFileIsSetViaContext_setPropertyFromTokenFile()
+            throws Exception {
+        DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
+
+        VaadinConfig config = mockTokenFileViaContextParam(
+                "{ '" + SERVLET_PARAMETER_PRODUCTION_MODE + "': true}");
+
+        Properties parameters = factory.createInitParameters(Object.class,
+                config);
+
+        Assert.assertEquals(Boolean.TRUE.toString(),
+                parameters.get(SERVLET_PARAMETER_PRODUCTION_MODE));
+    }
+
+    private VaadinConfig mockTokenFileViaContextParam(String content)
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+
+        Mockito.when(config.getConfigParameterNames())
+                .thenReturn(Collections.enumeration(
+                        Collections.singleton(FrontendUtils.PARAM_TOKEN_FILE)));
+        Mockito.when(context.getContextParameterNames())
+                .thenReturn(Collections.emptyEnumeration());
+
+        Mockito.when(config.getVaadinContext()).thenReturn(context);
+
+        File tmpFile = temporaryFolder.newFile();
+        Files.write(tmpFile.toPath(), Collections.singletonList(content));
+
+        Mockito.when(
+                context.getContextParameter(FrontendUtils.PARAM_TOKEN_FILE))
+                .thenReturn(tmpFile.getPath());
+
+        Mockito.when(config.getConfigParameter(FrontendUtils.PARAM_TOKEN_FILE))
+                .thenReturn(tmpFile.toString());
+
+        Mockito.when(context.getAttribute(
+                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
+                .thenReturn(appConfig);
+
+        return config;
     }
 
     @Test
@@ -414,20 +438,46 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void createInitParameters_fallbackChunkObjectIsInInitParams()
-            throws VaadinConfigurationException, IOException {
+    public void createInitParameters_fallbackChunkIsCreatedViaAppConfig_fallbackChunkObjectIsInInitParams()
+            throws IOException {
+        ServletContext context = Mockito.mock(ServletContext.class);
+        ServletConfig config = Mockito.mock(ServletConfig.class);
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(config.getServletContext()).thenReturn(context);
+
+        Mockito.when(config.getInitParameterNames())
+                .thenReturn(Collections.emptyEnumeration());
+
+        Mockito.when(
+                context.getAttribute(ApplicationConfiguration.class.getName()))
+                .thenReturn(appConfig);
+
+        Mockito.when(appConfig.getFallbackChunk()).thenReturn(fallbackChunk);
+
+        Properties properties = new DeploymentConfigurationFactory()
+                .createInitParameters(Object.class,
+                        new VaadinServletConfig(config));
+        Object object = properties
+                .get(DeploymentConfigurationFactory.FALLBACK_CHUNK);
+
+        Assert.assertSame(fallbackChunk, object);
+    }
+
+    @Test
+    public void createInitParameters_servletConfigDefinesTokenFile_fallbackChunkObjectIsInInitParams()
+            throws IOException {
         ServletContext context = Mockito.mock(ServletContext.class);
         ServletConfig config = Mockito.mock(ServletConfig.class);
         Mockito.when(config.getServletContext()).thenReturn(context);
-
-        Hashtable<String, String> table = new Hashtable<>(
-                Collections.singletonMap(FrontendUtils.PARAM_TOKEN_FILE, ""));
-        Mockito.when(context.getInitParameterNames()).thenReturn(table.keys());
-
         Mockito.when(config.getInitParameterNames())
-                .thenReturn(new Hashtable<String, String>().keys());
+                .thenReturn(Collections.enumeration(
+                        Collections.singleton(FrontendUtils.PARAM_TOKEN_FILE)));
 
         File tokenFile = temporaryFolder.newFile();
+
+        Mockito.when(config.getInitParameter(FrontendUtils.PARAM_TOKEN_FILE))
+                .thenReturn(tokenFile.getPath());
 
         Files.write(tokenFile.toPath(),
                 Collections.singletonList("{ 'chunks': { " + "'fallback': {"
@@ -438,7 +488,7 @@ public class DeploymentConfigurationFactoryTest {
         Mockito.when(context.getInitParameter(FrontendUtils.PARAM_TOKEN_FILE))
                 .thenReturn(tokenFile.getPath());
 
-        Properties properties = DeploymentConfigurationFactory
+        Properties properties = new DeploymentConfigurationFactory()
                 .createInitParameters(Object.class,
                         new VaadinServletConfig(config));
 
@@ -475,69 +525,6 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void createInitParameters_readTokenFileFromContext()
-            throws VaadinConfigurationException, IOException {
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        VaadinConfig config = Mockito.mock(VaadinConfig.class);
-
-        ResourceProvider resourceProvider = mockResourceProvider(config,
-                context);
-
-        DeploymentConfigurationFactory.createInitParameters(
-                DeploymentConfigurationFactoryTest.class, config);
-
-        Mockito.verify(resourceProvider).getApplicationResources(
-                DeploymentConfigurationFactoryTest.class,
-                VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
-        Mockito.verify(resourceProvider).getApplicationResources(context,
-                VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
-    }
-
-    @Test
-    public void createInitParameters_checkWebpackGeneratedFromContext()
-            throws VaadinConfigurationException, IOException {
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        VaadinConfig config = Mockito.mock(VaadinConfig.class);
-
-        ResourceProvider resourceProvider = mockResourceProvider(config,
-                context);
-
-        String path = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
-
-        File tmpFile = temporaryFolder.newFile();
-        Files.write(tmpFile.toPath(), Collections.singletonList("{}"));
-
-        URLStreamHandler handler = new URLStreamHandler() {
-
-            @Override
-            protected URLConnection openConnection(URL u) throws IOException {
-                return tmpFile.toURI().toURL().openConnection();
-            }
-        };
-        URL url = new URL("file", "", -1, "foo.jar!/" + path, handler);
-
-        Mockito.when(resourceProvider.getApplicationResources(
-                DeploymentConfigurationFactoryTest.class, path))
-                .thenReturn(Collections.singletonList(url));
-
-        Mockito.when(resourceProvider.getApplicationResource(
-                DeploymentConfigurationFactoryTest.class,
-                FrontendUtils.WEBPACK_GENERATED))
-                .thenReturn(tmpFile.toURI().toURL());
-
-        DeploymentConfigurationFactory.createInitParameters(
-                DeploymentConfigurationFactoryTest.class, config);
-
-        Mockito.verify(resourceProvider).getApplicationResource(
-                DeploymentConfigurationFactoryTest.class,
-                FrontendUtils.WEBPACK_GENERATED);
-
-        Mockito.verify(resourceProvider).getApplicationResource(context,
-                FrontendUtils.WEBPACK_GENERATED);
-
-    }
-
-    @Test
     public void createInitParameters_initParamtersAreSet_tokenDevModePropertiesAreNotSet()
             throws Exception {
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
@@ -567,8 +554,9 @@ public class DeploymentConfigurationFactoryTest {
 
     private DeploymentConfiguration createConfig(Map<String, String> map)
             throws Exception {
-        return DeploymentConfigurationFactory.createDeploymentConfiguration(
-                VaadinServlet.class, createVaadinConfigMock(map, emptyMap()));
+        return new DeploymentConfigurationFactory()
+                .createDeploymentConfiguration(VaadinServlet.class,
+                        createVaadinConfigMock(map, emptyMap()));
     }
 
     private VaadinConfig createVaadinConfigMock(
@@ -578,23 +566,27 @@ public class DeploymentConfigurationFactoryTest {
                 servletConfigParameters, servletContextParameters));
     }
 
-    private ResourceProvider mockResourceProvider(VaadinConfig config,
-            VaadinContext context) throws VaadinConfigurationException {
-        Mockito.when(config.getVaadinContext()).thenReturn(context);
+    private ApplicationConfiguration mockApplicationConfiguration() {
+        ApplicationConfiguration configuration = mock(
+                ApplicationConfiguration.class);
+        expect(configuration.enableDevServer()).andReturn(true).anyTimes();
+        expect(configuration.isProductionMode()).andReturn(true).anyTimes();
+        expect(configuration.useV14Bootstrap()).andReturn(false).anyTimes();
+        expect(configuration.getStringProperty(EasyMock.anyString(),
+                EasyMock.anyString())).andReturn(null).anyTimes();
+        expect(configuration.isXsrfProtectionEnabled()).andReturn(false)
+                .anyTimes();
 
-        Mockito.when(context.getContextParameterNames())
-                .thenReturn(Collections.emptyEnumeration());
-        Mockito.when(config.getConfigParameterNames())
-                .thenReturn(Collections.emptyEnumeration());
+        expect(configuration.getPropertyNames())
+                .andReturn(Collections.emptyEnumeration()).anyTimes();
 
-        Lookup lookup = Mockito.mock(Lookup.class);
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(resourceProvider);
-        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        fallbackChunk = mock(FallbackChunk.class);
 
-        return resourceProvider;
+        expect(configuration.getFallbackChunk()).andReturn(fallbackChunk)
+                .anyTimes();
+        replay(configuration);
+        return configuration;
+
     }
 
     private ServletConfig createServletConfigMock(
@@ -603,6 +595,10 @@ public class DeploymentConfigurationFactoryTest {
 
         URLClassLoader classLoader = new URLClassLoader(
                 new URL[] { temporaryFolder.getRoot().toURI().toURL() });
+
+        expect(contextMock
+                .getAttribute(ApplicationConfiguration.class.getName()))
+                        .andReturn(appConfiguration).anyTimes();
 
         expect(contextMock.getInitParameterNames())
                 .andAnswer(() -> Collections
@@ -633,13 +629,9 @@ public class DeploymentConfigurationFactoryTest {
             }
         };
 
-        expect(provider.getApplicationResources(VaadinServlet.class,
-                VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
+        expect(provider
+                .getApplicationResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
                         .andAnswer(() -> Collections.emptyList()).anyTimes();
-
-        expect(provider.getApplicationResources(anyObject(Object.class),
-                anyObject())).andAnswer(() -> Collections.emptyList())
-                        .anyTimes();
 
         replay(provider);
 

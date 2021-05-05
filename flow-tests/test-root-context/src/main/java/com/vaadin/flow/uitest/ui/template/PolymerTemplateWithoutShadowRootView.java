@@ -36,10 +36,13 @@ public class PolymerTemplateWithoutShadowRootView extends Div {
         private Div div;
         @Id("special!#id")
         private Div specialId;
+        @Id("map")
+        private Div map;
 
         public Template() {
             div.setText("Hello");
             specialId.setText("Special");
+            map.setText("Map");
             div.addClickListener(e -> {
                 div.setText("Goodbye");
             });

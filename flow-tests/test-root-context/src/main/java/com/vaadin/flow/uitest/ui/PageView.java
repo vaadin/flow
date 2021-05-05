@@ -3,6 +3,7 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.IFrame;
 import com.vaadin.flow.component.html.Input;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinRequest;
@@ -10,6 +11,8 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 import javax.servlet.http.HttpServletRequest;
+
+import org.slf4j.LoggerFactory;
 
 @Route(value = "com.vaadin.flow.uitest.ui.PageView", layout = ViewTestLayout.class)
 public class PageView extends AbstractDivView {
@@ -43,10 +46,11 @@ public class PageView extends AbstractDivView {
             getPage().reload();
         });
 
-        VaadinServletRequest request = (VaadinServletRequest) VaadinRequest.getCurrent();
+        VaadinServletRequest request = (VaadinServletRequest) VaadinRequest
+                .getCurrent();
         HttpServletRequest httpServletRequest = request.getHttpServletRequest();
-        String url = httpServletRequest.getRequestURI()
-                .replace(PageView.class.getName(), BaseHrefView.class.getName());
+        String url = httpServletRequest.getRequestURI().replace(
+                PageView.class.getName(), BaseHrefView.class.getName());
 
         Div setLocationButton = new Div();
         setLocationButton.setId("setLocation");
@@ -68,6 +72,12 @@ public class PageView extends AbstractDivView {
 
         add(input, updateButton, overrideButton, reloadButton,
                 setLocationButton, openButton, openButton2, frame);
+        add(new NativeButton("page.fetchURL", onClickEvent -> {
+            getUI().ifPresent(ui -> ui.getPage().fetchCurrentURL(currentUrl -> {
+                LoggerFactory.getLogger(PageView.class.getName())
+                        .info(currentUrl.toString());
+            }));
+        }));
     }
 
 }

@@ -1,52 +1,63 @@
 module.exports = {
-    "env": {
-        "browser": true,
-        "es6": true
+  "env": {
+    "browser": true,
+    "es6": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2017,
+    "sourceType": "module"
+  },
+  "ignorePatterns": ["**/FlowClient.js"],
+
+  "overrides": [
+    {
+      "files": ["**/*.js"],
+      "extends": "eslint:recommended",
+      "rules": {
+        "no-prototype-builtins": 1,
+      },
     },
-    "extends": "vaadin",
-    "globals": {
-        "Atomics": "readonly",
-        "SharedArrayBuffer": "readonly"
+
+    {
+      "files": ["**/.eslintrc.js"],
+      "globals": {
+        "module": "readonly",
+      },
     },
-    "parserOptions": {
-        "ecmaVersion": 2017,
-        "sourceType": "module"
+
+    {
+      "files": ["**/*.ts"],
+
+      "extends": "vaadin",
+      "plugins": ["@typescript-eslint"],
+      "parser": "@typescript-eslint/parser",
+
+      "rules": {
+        "@typescript-eslint/no-empty-function": 1,
+        "@typescript-eslint/ban-ts-comment": 1,
+        "@typescript-eslint/ban-types": 1,
+        "default-case": 1,
+        "import/no-cycle": 1,
+        "prefer-destructuring": 1,
+        "no-multi-assign": 1,
+        "no-ex-assign": 1,
+        "no-return-assign": 1,
+        "no-use-before-define": 1,
+        "no-useless-constructor": 0,
+        "@typescript-eslint/no-useless-constructor": 1,
+        "prefer-template": 1,
+
+        "@typescript-eslint/explicit-module-boundary-types": 0,
+        "@typescript-eslint/no-explicit-any": 0,
+        "@typescript-eslint/no-inferrable-types": 0,
+        "@typescript-eslint/no-non-null-assertion": 0,
+        "lines-between-class-members": 0,
+        "max-classes-per-file": 0,
+        "no-else-return": 0,
+        "no-nested-ternary": 0,
+        "no-restricted-globals": 0,
+        "no-restricted-syntax": 0,
+      },
     },
-    "rules": {
-        "linebreak-style": "off"
-    },
-    "overrides": [{
-        "files": ["FlowClient.js"],
-        "rules": {
-            "brace-style": "off",
-            "camelcase": "off",
-            "comma-spacing": "off",
-            "curly": "off",
-            "indent": "off",
-            "key-spacing": "off",
-            "keyword-spacing": "off",
-            "max-len": "off",
-            "no-caller": "off",
-            "no-constant-condition": "off",
-            "no-control-regex": "off",
-            "no-debugger": "off",
-            "no-empty": "off",
-            "no-ex-assign": "off",
-            "no-extra-semi": "off",
-            "no-func-assign": "off",
-            "no-invalid-this": "off",
-            "no-redeclare": "off",
-            "no-self-assign": "off",
-            "no-throw-literal": "off",
-            "no-unused-vars": "off",
-            "quotes": "off",
-            "semi": "off",
-            "semi-spacing": "off",
-            "space-before-blocks": "off",
-            "space-before-function-paren": "off",
-            "space-infix-ops": "off",
-            "no-trailing-spaces": "off",
-            "func-call-spacing": "off"
-        }}
-    ]
+  ]
 };

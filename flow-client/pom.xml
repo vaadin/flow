@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>6.0-SNAPSHOT</version>
+        <version>8.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-client</artifactId>
     <name>Flow Client</name>
@@ -197,23 +197,6 @@
                     <testTimeOut>300</testTimeOut>
                     <extraJvmArgs>-Xmx512m -Dvaadin.enableDevServer=false</extraJvmArgs>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>com.github.ryanholdren</groupId>
-                <artifactId>resourcecompressor</artifactId>
-                <version>2017-06-24</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compress</goal>
-                        </goals>
-                        <phase>prepare-package</phase>
-                        <configuration>
-                            <directory>${gwt.module.output}/client/</directory>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
 
             <!-- Include separate source dir for GWT tests -->

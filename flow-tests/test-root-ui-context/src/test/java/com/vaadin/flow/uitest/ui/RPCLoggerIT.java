@@ -55,7 +55,8 @@ public class RPCLoggerIT extends ChromeBrowserTest {
         WebElement input = findElement(By.tagName("input"));
         input.sendKeys("foo");
         input.sendKeys(Keys.TAB);
-        // set text in the input -> RPCs for property synchronization, and dom event
+        // set text in the input -> RPCs for property synchronization, and dom
+        // event
         logs = findElements(By.className("log"));
         Assert.assertEquals(3, logs.size());
 

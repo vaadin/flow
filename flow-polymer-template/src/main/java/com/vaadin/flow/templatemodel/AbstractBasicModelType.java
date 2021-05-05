@@ -32,6 +32,8 @@ import elemental.json.JsonValue;
 
 /**
  * Common abstract class with generic functionality for basic mode type.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @param <T>
  *            the (basic) Java type used by this model type

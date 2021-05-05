@@ -36,4 +36,22 @@ public class PreserveOnRefreshLiveReloadIT extends AbstractLiveReloadIT {
                 messageDetails.getText().contains("@PreserveOnRefresh"));
     }
 
+    @Test
+    public void viewIsPreservedOnLiveReload() {
+        open();
+
+        String instanceId0 = findElement(
+                By.id(AbstractLiveReloadView.INSTANCE_IDENTIFIER)).getText();
+        WebElement liveReloadTrigger = findElement(
+                By.id(JavaLiveReloadView.JAVA_LIVE_RELOAD_TRIGGER_BUTTON));
+        liveReloadTrigger.click();
+
+        // when: the page is reloaded
+        waitForLiveReload();
+
+        // then: the same instance is rendered
+        String instanceId1 = findElement(
+                By.id(AbstractLiveReloadView.INSTANCE_IDENTIFIER)).getText();
+        Assert.assertEquals(instanceId0, instanceId1);
+    }
 }

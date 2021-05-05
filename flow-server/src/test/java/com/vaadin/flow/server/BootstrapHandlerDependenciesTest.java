@@ -209,8 +209,7 @@ public class BootstrapHandlerDependenciesTest {
         Mockito.when(router.resolveRouteNotFoundNavigationTarget())
                 .thenReturn(Optional.empty());
         RouteRegistry registry = Mockito.mock(RouteRegistry.class);
-        Mockito.when(
-                router.resolveNavigationTarget(Mockito.any(), Mockito.any()))
+        Mockito.when(router.resolveNavigationTarget(Mockito.any()))
                 .thenReturn(Optional.empty());
         Mockito.when(router.getRegistry()).thenReturn(registry);
         return router;
@@ -240,7 +239,7 @@ public class BootstrapHandlerDependenciesTest {
         ResourceProvider resourceProvider = service.getContext()
                 .getAttribute(Lookup.class).lookup(ResourceProvider.class);
         InputStream stream = resourceProvider.getClientResourceAsStream(
-                "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
+                "META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
                         + "/compile.properties");
         Properties properties = new Properties();
         properties.load(stream);

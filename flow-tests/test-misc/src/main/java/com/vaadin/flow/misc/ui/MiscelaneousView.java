@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.misc.ui.MiscelaneousView.MyTheme;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.PWA;
@@ -48,8 +49,9 @@ public class MiscelaneousView extends Div {
 
         @Override
         public List<String> getHeaderInlineContents() {
-            return Collections.singletonList("<custom-style>\n <style>\n   html {\n"
-                + "      font-size: 20px;\n  color:red;  }\n <style>\n </custom-style>");
+            return Collections
+                    .singletonList("<custom-style>\n <style>\n   html {\n"
+                            + "      font-size: 20px;\n  color:red;  }\n <style>\n </custom-style>");
         }
     }
 

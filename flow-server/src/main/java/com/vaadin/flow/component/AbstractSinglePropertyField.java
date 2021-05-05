@@ -44,7 +44,7 @@ import elemental.json.JsonValue;
  * @param <T>
  *            the value type
  */
-public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
+public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
         extends AbstractField<C, T> {
     @SuppressWarnings("rawtypes")
     private static final SerializableBiFunction RAW_IDENTITY = (ignore,

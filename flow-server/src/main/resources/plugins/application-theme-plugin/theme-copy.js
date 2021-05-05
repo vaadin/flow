@@ -15,51 +15,79 @@
  */
 
 /**
- * This file handles copying of theme files to
- * [staticResourcesFolder]
+ * This contains functions and features used to copy theme files.
  */
 
 const fs = require('fs');
 const path = require('path');
 const glob = require('glob');
-
-/**
- * Copy theme files to static assets folder. All files in the theme folder will be copied excluding
- * css, js and json files that will be handled by webpack and not be shared as static files.
- *
- * @param {string} themeFolder Folder with theme file
- * @param {string} projectStaticAssetsOutputFolder resources output folder
- */
-function copyThemeResources(themeFolder, projectStaticAssetsOutputFolder) {
-  if (!fs.existsSync(path.resolve(projectStaticAssetsOutputFolder))) {
-    require('mkdirp')(path.resolve(projectStaticAssetsOutputFolder));
-  }
-  copyThemeFiles(themeFolder, projectStaticAssetsOutputFolder);
-}
+const mkdirp = require('mkdirp');
 
 const ignoredFileExtensions = [".css", ".js", ".json"];
 
 /**
- * Recursively copy files found in theme folder excluding any with a extension found in the `ignoredFileExtensions` array.
+ * Copy theme static resources to static assets folder. All files in the theme
+ * folder will be copied excluding css, js and json files that will be
+ * handled by webpack and not be shared as static files.
  *
- * Any folders met will be generated and the contents copied.
- *
- * @param {string} folderToCopy folder to copy files from
- * @param {string} targetFolder folder to copy files to
+ * @param {string} themeFolder Folder with theme file
+ * @param {string} projectStaticAssetsOutputFolder resources output folder
+ * @param {object} logger plugin logger
  */
-function copyThemeFiles(folderToCopy, targetFolder) {
-  fs.readdirSync(folderToCopy).forEach(file => {
-    if (fs.statSync(path.resolve(folderToCopy, file)).isDirectory()) {
-      if (!fs.existsSync(path.resolve(targetFolder, file))) {
-        fs.mkdirSync(path.resolve(targetFolder, file));
-      }
-      copyThemeFiles(path.resolve(folderToCopy, file), path.resolve(targetFolder, file));
-    } else if (!ignoredFileExtensions.includes(path.extname(file))) {
-      fs.copyFileSync(path.resolve(folderToCopy, file), path.resolve(targetFolder, file));
-    }
-  });
+function copyThemeResources(themeFolder, projectStaticAssetsOutputFolder, logger) {
+  const staticAssetsThemeFolder = path.resolve(projectStaticAssetsOutputFolder, "themes", path.basename(themeFolder));
+  const collection = collectFolders(themeFolder, logger);
+
+  // Only create assets folder if there are files to copy.
+  if(collection.files.length > 0) {
+    mkdirp.sync(staticAssetsThemeFolder);
+    // create folders with
+    collection.directories.forEach(directory => {
+      const relativeDirectory = path.relative(themeFolder, directory);
+      const targetDirectory = path.resolve(staticAssetsThemeFolder, relativeDirectory);
+
+      mkdirp.sync(targetDirectory);
+    });
+
+    collection.files.forEach(file => {
+      const relativeFile = path.relative(themeFolder, file);
+      const targetFile = path.resolve(staticAssetsThemeFolder, relativeFile);
+      copyFileIfAbsentOrNewer(file, targetFile, logger);
+    });
+  }
 }
 
+/**
+ * Collect all folders with copyable files and all files to be copied.
+ * Foled will not be added if no files in folder or subfolders.
+ *
+ * Files will not contain files with ignored extensions and folders only containing ignored files will not be added.
+ *
+ * @param folderToCopy folder we will copy files from
+ * @param logger plugin logger
+ * @return {{directories: [], files: []}} object containing directories to create and files to copy
+ */
+function collectFolders(folderToCopy, logger) {
+  const collection = {directories: [], files: []};
+  logger.trace("files in directory", fs.readdirSync(folderToCopy));
+  fs.readdirSync(folderToCopy).forEach(file => {
+    const fileToCopy = path.resolve(folderToCopy, file);
+    if (fs.statSync(fileToCopy).isDirectory()) {
+      logger.debug("Going through directory", fileToCopy);
+      const result = collectFolders(fileToCopy, logger);
+      if (result.files.length > 0) {
+        collection.directories.push(fileToCopy);
+        logger.debug("Adding directory", fileToCopy);
+        collection.directories.push.apply(collection.directories, result.directories);
+        collection.files.push.apply(collection.files, result.files);
+      }
+    } else if (!ignoredFileExtensions.includes(path.extname(fileToCopy))) {
+      logger.debug("Adding file", fileToCopy);
+      collection.files.push(fileToCopy);
+    }
+  });
+  return collection;
+}
 
 /**
  * Copy any static node_modules assets marked in theme.json to
@@ -84,11 +112,12 @@ function copyThemeFiles(folderToCopy, targetFolder) {
  *
  * Note! there can be multiple copy-rules with target folders for one npm package asset.
  *
- * @param {json} themeProperties
- * @param {string} projectStaticAssetsOutputFolder
- * @param {logger} theme plugin logger
+ * @param {string} themeName name of the theme we are copying assets for
+ * @param {json} themeProperties theme properties json with data on assets
+ * @param {string} projectStaticAssetsOutputFolder project output folder where we copy assets to under theme/[themeName]
+ * @param {object} logger plugin logger
  */
-function copyStaticAssets(themeProperties, projectStaticAssetsOutputFolder, logger) {
+function copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputFolder, logger) {
 
   const assets = themeProperties['assets'];
   if (!assets) {
@@ -99,23 +128,55 @@ function copyStaticAssets(themeProperties, projectStaticAssetsOutputFolder, logg
   fs.mkdirSync(projectStaticAssetsOutputFolder, {
     recursive: true
   });
+  const missingModules = checkModules(Object.keys(assets));
+  if (missingModules.length > 0) {
+    throw Error("Missing npm modules '" + missingModules.join("', '")
+      + "' for assets marked in 'theme.json'.\n" +
+      "Install package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm i'");
+  }
   Object.keys(assets).forEach((module) => {
 
     const copyRules = assets[module];
     Object.keys(copyRules).forEach((copyRule) => {
       const nodeSources = path.resolve('node_modules/', module, copyRule);
-      const files = glob.sync(nodeSources, { nodir: true });
-      const targetFolder = path.resolve(projectStaticAssetsOutputFolder, copyRules[copyRule]);
+      const files = glob.sync(nodeSources, {nodir: true});
+      const targetFolder = path.resolve(projectStaticAssetsOutputFolder, "themes", themeName, copyRules[copyRule]);
 
       fs.mkdirSync(targetFolder, {
         recursive: true
       });
       files.forEach((file) => {
-        logger.trace("Copying: ", file, '=>', targetFolder);
-        fs.copyFileSync(file, path.resolve(targetFolder, path.basename(file)));
+        const copyTarget = path.resolve(targetFolder, path.basename(file));
+        copyFileIfAbsentOrNewer(file, copyTarget, logger);
       });
     });
   });
 };
 
-module.exports = { copyThemeResources, copyStaticAssets };
+function checkModules(modules) {
+  const missing = [];
+
+  modules.forEach((module) => {
+    if (!fs.existsSync(path.resolve('node_modules/', module))) {
+      missing.push(module);
+    }
+  });
+
+  return missing;
+}
+
+/**
+ * Copies given file to a given target path, if target file doesn't exist or if
+ * file to copy is newer.
+ * @param {string} fileToCopy path of the file to copy
+ * @param {string} copyTarget path of the target file
+ * @param {object} logger plugin logger
+ */
+function copyFileIfAbsentOrNewer(fileToCopy, copyTarget, logger) {
+  if (!fs.existsSync(copyTarget) || fs.statSync(copyTarget).mtime < fs.statSync(fileToCopy).mtime) {
+    logger.trace("Copying: ", fileToCopy, '=>', copyTarget);
+    fs.copyFileSync(fileToCopy, copyTarget);
+  }
+}
+
+module.exports = {checkModules, copyStaticAssets, copyThemeResources};

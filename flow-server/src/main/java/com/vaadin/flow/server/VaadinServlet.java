@@ -30,8 +30,11 @@ import java.util.Properties;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.ApplicationClassLoaderAccess;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -51,6 +54,8 @@ import com.vaadin.flow.shared.JsonConstants;
 public class VaadinServlet extends HttpServlet {
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
+
+    private volatile boolean isServletInitialized;
 
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
@@ -84,8 +89,12 @@ public class VaadinServlet extends HttpServlet {
              * its "init" method is called from the {@code
              * ServletContextListener} with the same ServletConfig instance.
              */
+            VaadinServletContext vaadinServletContext = null;
             if (getServletConfig() == null) {
+                isServletInitialized = true;
                 super.init(servletConfig);
+
+                vaadinServletContext = initializeContext();
             }
 
             if (getServletConfig() != servletConfig) {
@@ -94,11 +103,13 @@ public class VaadinServlet extends HttpServlet {
                                 + "instance which has been used for the initial method call");
             }
 
-            ServletContext servletContext = getServletConfig()
-                    .getServletContext();
-            if (servletService != null
-                    || new VaadinServletContext(servletContext)
-                            .getAttribute(Lookup.class) == null) {
+            if (vaadinServletContext == null) {
+                vaadinServletContext = new VaadinServletContext(
+                        getServletConfig().getServletContext());
+            }
+
+            if (servletService != null || vaadinServletContext
+                    .getAttribute(Lookup.class) == null) {
                 return;
             }
 
@@ -121,18 +132,28 @@ public class VaadinServlet extends HttpServlet {
         }
     }
 
+    @Override
+    public ServletConfig getServletConfig() {
+        if (isServletInitialized) {
+            return super.getServletConfig();
+        }
+        return null;
+    }
+
     /**
      * Creates a new instance of {@link StaticFileHandler}, that is responsible
      * to find and serve static resources. By default it returns a
      * {@link StaticFileServer} instance.
      *
-     * @param servletService
-     *            the servlet service created at {@link #createServletService()}
+     * @param vaadinService
+     *            the vaadinService created at {@link #createServletService()}
      * @return the file server to be used by this servlet, not <code>null</code>
      */
     protected StaticFileHandler createStaticFileHandler(
-            VaadinServletService servletService) {
-        return new StaticFileServer(servletService);
+            VaadinService vaadinService) {
+        Lookup lookup = vaadinService.getContext().getAttribute(Lookup.class);
+        return lookup.lookup(StaticFileHandlerFactory.class)
+                .createHandler(vaadinService);
     }
 
     protected void servletInitialized() throws ServletException {
@@ -173,14 +194,10 @@ public class VaadinServlet extends HttpServlet {
      */
     protected DeploymentConfiguration createDeploymentConfiguration()
             throws ServletException {
-        try {
-            return createDeploymentConfiguration(DeploymentConfigurationFactory
-                    .createInitParameters(getClass(),
-                            new VaadinServletConfig(getServletConfig())));
-        } catch (VaadinConfigurationException e) {
-            throw new ServletException(
-                    "Failed to construct DeploymentConfiguration.", e);
-        }
+        return createDeploymentConfiguration(
+                new DeploymentConfigurationFactory().createInitParameters(
+                        getClass(),
+                        new VaadinServletConfig(getServletConfig())));
     }
 
     /**
@@ -194,7 +211,11 @@ public class VaadinServlet extends HttpServlet {
      */
     protected DeploymentConfiguration createDeploymentConfiguration(
             Properties initParameters) {
-        return new DefaultDeploymentConfiguration(getClass(), initParameters);
+        VaadinServletContext context = new VaadinServletContext(
+                getServletContext());
+        return new DefaultDeploymentConfiguration(
+                ApplicationConfiguration.get(context), getClass(),
+                initParameters);
     }
 
     /**
@@ -510,7 +531,28 @@ public class VaadinServlet extends HttpServlet {
     @Override
     public void destroy() {
         super.destroy();
-        getService().destroy();
+        isServletInitialized = false;
+        if (getService() != null) {
+            getService().destroy();
+        }
+    }
+
+    private VaadinServletContext initializeContext() {
+        ServletContext servletContext = getServletConfig().getServletContext();
+        VaadinServletContext vaadinServletContext = new VaadinServletContext(
+                servletContext);
+        // ensure the web application classloader is available via context
+        ApplicationClassLoaderAccess access = () -> servletContext
+                .getClassLoader();
+        vaadinServletContext.getAttribute(ApplicationClassLoaderAccess.class,
+                () -> access);
+
+        VaadinContextInitializer initializer = vaadinServletContext
+                .getAttribute(VaadinContextInitializer.class);
+        if (initializer != null) {
+            initializer.initialize(vaadinServletContext);
+        }
+        return vaadinServletContext;
     }
 
 }

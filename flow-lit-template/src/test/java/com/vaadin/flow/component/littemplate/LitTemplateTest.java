@@ -77,7 +77,6 @@ public class LitTemplateTest {
         }
     }
 
-
     @Tag("foo-bar")
     private static class ElementWithTextLitTemplate extends LitTemplate {
 
@@ -146,17 +145,18 @@ public class LitTemplateTest {
     public void attachExistingElementWithDisabledAttributeValue_exceptionIsThrown() {
         expectedEx.expect(IllegalAttributeException.class);
         expectedEx.expectMessage(
-            Matchers.containsString("element 'label' with id 'labelId'"));
+                Matchers.containsString("element 'label' with id 'labelId'"));
 
         DisabledElementTemplate template = new DisabledElementTemplate(service);
     }
 
     @Test
-    public void attachExistingElementWithoutChildrenWithText_elementHasText() {
+    public void attachExistingElementWithoutChildrenWithText_elementHasNoText() {
         ElementWithTextLitTemplate template = new ElementWithTextLitTemplate(
                 service);
 
-        Assert.assertEquals("foo bar", template.label.getText());
+        // see #10106
+        Assert.assertEquals("", template.label.getText());
     }
 
     @Test

@@ -5,13 +5,13 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>6.0-SNAPSHOT</version>
+        <version>8.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>test-ccdm-flow-navigation</artifactId>
     <name>Test navigation between ts and java views</name>
-    <version>6.0-SNAPSHOT</version>
+    <version>8.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <properties>
@@ -41,6 +41,10 @@
                             <value>false</value>
                         </systemProperty>
                     </systemProperties>
+                    <webApp>
+                        <!-- use a non-root context -->
+                        <contextPath>/context-path</contextPath>
+                    </webApp>
                 </configuration>
             </plugin>
             <plugin>

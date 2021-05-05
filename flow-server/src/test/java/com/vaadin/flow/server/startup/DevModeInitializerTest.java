@@ -1,7 +1,5 @@
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletException;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -13,17 +11,16 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EventListener;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import com.google.common.collect.Maps;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -39,22 +36,23 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator;
+import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_GENERATED_TS_DIR;
+import static com.vaadin.flow.server.Constants.RESOURCES_THEME_JAR_DEFAULT;
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 
 @NotThreadSafe
 public class DevModeInitializerTest extends DevModeInitializerTestBase {
@@ -125,32 +123,47 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void loadingJars_useModernResourcesFolder_allFilesExist()
-            throws IOException, ServletException {
+            throws IOException, VaadinInitializerException {
         loadingJars_allFilesExist(RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
+    public void loadingJars_useResourcesThemesFolder_allFilesExist()
+            throws IOException, VaadinInitializerException {
+        loadingJarsWithProtocol_allFilesExist(RESOURCES_THEME_JAR_DEFAULT,
+                "src/test/resources/jar-with-themes-resources.jar!/META-INF/resources/themes",
+                this::jarUrlBuilder);
+    }
+
+    @Test
     public void loadingZipProtocolJars_useModernResourcesFolder_allFilesExist()
-            throws IOException, ServletException {
+            throws IOException, VaadinInitializerException {
         loadingZipProtocolJars_allFilesExist(RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
     public void loadingJars_useObsoleteResourcesFolder_allFilesExist()
-            throws IOException, ServletException {
+            throws IOException, VaadinInitializerException {
         loadingJars_allFilesExist(COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
     public void loadingFsResources_useModernResourcesFolder_allFilesExist()
-            throws IOException, ServletException {
+            throws IOException, VaadinInitializerException {
         loadingFsResources_allFilesExist("/dir-with-modern-frontend/",
                 RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
+    public void loadingFsResources_useResourcesThemesFolder_allFilesExist()
+            throws IOException, VaadinInitializerException {
+        loadingFsResources_allFilesExist("/dir-with-theme-resources/",
+                RESOURCES_THEME_JAR_DEFAULT);
+    }
+
+    @Test
     public void loadingFsResources_useObsoleteResourcesFolder_allFilesExist()
-            throws IOException, ServletException {
+            throws IOException, VaadinInitializerException {
         loadingFsResources_allFilesExist("/dir-with-frontend-resources/",
                 COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
     }
@@ -235,8 +248,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void should_Not_Run_Updaters_inProductionMode() throws Exception {
-        System.setProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE,
-                "true");
+        Mockito.when(appConfig.isProductionMode()).thenReturn(true);
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
         assertNull(DevModeHandler.getDevModeHandler());
@@ -254,7 +266,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void listener_should_stopDevModeHandler_onDestroy()
             throws Exception {
-        initParams.put(SERVLET_PARAMETER_REUSE_DEV_SERVER, "false");
+        Mockito.when(appConfig.reuseDevServer()).thenReturn(false);
 
         process();
 
@@ -267,8 +279,9 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void shouldUseByteCodeScannerIfPropertySet() throws Exception {
-        initParams.put(InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
-                "true");
+        Mockito.when(appConfig.getBooleanProperty(
+                InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+                false)).thenReturn(true);
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         final Set<Class<?>> classes = new HashSet<>();
         classes.add(NotVisitedWithDeps.class);
@@ -294,6 +307,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         classes.add(Visited.class);
         classes.add(RoutedWithReferenceToVisited.class);
         devModeInitializer.onStartup(classes, servletContext);
+        waitForDevModeServer();
         Mockito.verify(servletContext, Mockito.times(0)).setAttribute(
                 Mockito.eq(FallbackChunk.class.getName()),
                 Mockito.any(FallbackChunk.class));
@@ -302,81 +316,104 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void should_generateOpenApi_when_EndpointPresents()
             throws Exception {
-
-        // Configure a folder that has .java classes with valid endpoints
-        // Not using `src/test/java` because there are invalid endpoint names
-        // in some tests
-        File src = new File(
-                getClass().getClassLoader().getResource("java").getFile());
-        System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
-                src.getAbsolutePath());
-
+        String originalJavaSourceFolder = null;
         File generatedOpenApiJson = Paths
-                .get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE).toFile();
+                .get(baseDir, TARGET, DEFAULT_CONNECT_OPENAPI_JSON_FILE)
+                .toFile();
+        try {
+            originalJavaSourceFolder = System
+                    .getProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
 
-        Assert.assertFalse(generatedOpenApiJson.exists());
-        DevModeInitializer devModeInitializer = new DevModeInitializer();
-        devModeInitializer.onStartup(classes, servletContext);
-        waitForDevModeServer();
-        Assert.assertTrue("Should generate OpenAPI spec if Endpoint is used.",
-                generatedOpenApiJson.exists());
+            // Configure a folder to check the endpoints, doesn't matter
+            // which folder, since the actual task won't be run, just
+            // to verify the mocked task is executed.
+            System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                    javaSourceFolder.getRoot().getAbsolutePath());
+
+            Assert.assertFalse(generatedOpenApiJson.exists());
+            DevModeInitializer devModeInitializer = new DevModeInitializer();
+            devModeInitializer.onStartup(classes, servletContext);
+            waitForDevModeServer();
+
+            Mockito.verify(taskGenerateConnect, times(1)).execute();
+        } finally {
+            if (originalJavaSourceFolder != null) {
+                System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                        originalJavaSourceFolder);
+            } else {
+                System.clearProperty(
+                        "vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
+            }
+            generatedOpenApiJson.delete();
+        }
+
     }
 
     @Test
     public void should_notGenerateOpenApi_when_EndpointIsNotUsed()
             throws Exception {
+        String originalJavaSourceFolder = null;
         File generatedOpenApiJson = Paths
-                .get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE).toFile();
-        Assert.assertFalse(generatedOpenApiJson.exists());
-        devModeInitializer.onStartup(classes, servletContext);
-        Assert.assertFalse(
-                "Should not generate OpenAPI spec if Endpoint is not used.",
-                generatedOpenApiJson.exists());
+                .get(baseDir, TARGET, DEFAULT_CONNECT_OPENAPI_JSON_FILE)
+                .toFile();
+        try {
+            originalJavaSourceFolder = System
+                    .getProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
+            System.clearProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
+            Mockito.doReturn(null).when(lookup)
+                    .lookup(EndpointGeneratorTaskFactory.class);
+
+            Assert.assertFalse(generatedOpenApiJson.exists());
+            devModeInitializer.onStartup(classes, servletContext);
+            waitForDevModeServer();
+
+            Mockito.verify(taskGenerateConnect, never()).execute();
+        } finally {
+            if (originalJavaSourceFolder != null) {
+                System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                        originalJavaSourceFolder);
+            } else {
+                System.clearProperty(
+                        "vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
+            }
+            generatedOpenApiJson.delete();
+        }
     }
 
     @Test
     public void should_generateTs_files() throws Exception {
+        String originalJavaSourceFolder = null;
+        try {
+            originalJavaSourceFolder = System
+                    .getProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
 
-        // Configure a folder that has .java classes with valid endpoints
-        // Not using `src/test/java` because there are invalid endpoint names
-        // in some tests
-        File src = new File(
-                getClass().getClassLoader().getResource("java").getFile());
-        System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
-                src.getAbsolutePath());
+            // Configure a folder to check the endpoints, doesn't matter
+            // which folder, since the actual task won't be run, just
+            // to verify the mocked task is executed.
+            System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                    javaSourceFolder.getRoot().getAbsolutePath());
 
-        DevModeInitializer devModeInitializer = new DevModeInitializer();
+            DevModeInitializer devModeInitializer = new DevModeInitializer();
 
-        File ts1 = new File(baseDir,
-                DEFAULT_CONNECT_GENERATED_TS_DIR + "MyEndpoint.ts");
-        File ts2 = new File(baseDir, DEFAULT_CONNECT_GENERATED_TS_DIR
-                + VaadinConnectClientGenerator.CONNECT_CLIENT_NAME);
+            devModeInitializer.onStartup(classes, servletContext);
+            waitForDevModeServer();
 
-        assertFalse(ts1.exists());
-        assertFalse(ts2.exists());
-        devModeInitializer.onStartup(classes, servletContext);
-        waitForDevModeServer();
-        assertTrue(ts1.exists());
-        assertTrue(ts2.exists());
+            Mockito.verify(taskGenerateConnect, times(1)).execute();
+        } finally {
+            if (originalJavaSourceFolder != null) {
+                System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                        originalJavaSourceFolder);
+            } else {
+                System.clearProperty(
+                        "vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
+            }
+        }
     }
 
     @Test
     public void onStartup_emptyServletRegistrations_shouldCreateDevModeHandler()
             throws Exception {
         DevModeInitializer devModeInitializer = new DevModeInitializer();
-        Mockito.when(servletContext.getServletRegistrations())
-                .thenReturn(Collections.emptyMap());
-        Mockito.when(servletContext.getInitParameterNames())
-                .thenReturn(Collections.enumeration(new HashSet<>(Arrays.asList(
-                        InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
-                        FrontendUtils.PROJECT_BASEDIR))));
-        Mockito.when(
-                servletContext.getInitParameter(FrontendUtils.PROJECT_BASEDIR))
-                .thenReturn(initParams.get(FrontendUtils.PROJECT_BASEDIR));
-        Mockito.when(servletContext
-                .getInitParameter(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM))
-                .thenReturn(initParams
-                        .get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
         devModeInitializer.onStartup(classes, servletContext);
         assertNotNull(DevModeHandler.getDevModeHandler());
     }
@@ -384,7 +421,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void onStartup_devModeAlreadyStarted_shouldBeTrueWhenStarted()
             throws Exception {
-        final Map<String, Object> servletContextAttributes = Maps.newHashMap();
+        final Map<String, Object> servletContextAttributes = new HashMap<>();
         Mockito.doAnswer(answer -> {
             String key = answer.getArgumentAt(0, String.class);
             Object value = answer.getArgumentAt(1, Object.class);
@@ -396,6 +433,10 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                 .thenAnswer(answer -> servletContextAttributes
                         .get(answer.getArgumentAt(0, String.class)));
 
+        Mockito.when(servletContext
+                .getAttribute(ApplicationConfiguration.class.getName()))
+                .thenReturn(appConfig);
+
         Lookup lookup = Mockito.mock(Lookup.class);
         ResourceProvider resourceProvider = Mockito
                 .mock(ResourceProvider.class);
@@ -404,13 +445,15 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         servletContextAttributes.put(Lookup.class.getName(), lookup);
 
         process();
-        assertTrue(DevModeInitializer.isDevModeAlreadyStarted(servletContext));
+        assertTrue(DevModeInitializer.isDevModeAlreadyStarted(
+                new VaadinServletContext(servletContext)));
     }
 
     @Test(expected = IllegalStateException.class)
     public void onStartup_fallbackBaseDirIsNotProjectDirectory_throws()
             throws Exception {
-        initParams.remove(FrontendUtils.PROJECT_BASEDIR);
+        Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
+                null)).thenReturn(null);
         TemporaryFolder tmp = new TemporaryFolder();
         tmp.create();
         baseDir = tmp.getRoot().getPath();
@@ -430,7 +473,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void onStartup_fallbackBaseDirIsMavenProjectDirectory_isAccepted()
             throws Exception {
-        initParams.remove(FrontendUtils.PROJECT_BASEDIR);
+        Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
+                null)).thenReturn(null);
         TemporaryFolder tmp = new TemporaryFolder();
         tmp.create();
         tmp.newFile("pom.xml");
@@ -451,7 +495,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void onStartup_fallbackBaseDirIsGradleProjectDirectory_isAccepted()
             throws Exception {
-        initParams.remove(FrontendUtils.PROJECT_BASEDIR);
+        Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
+                null)).thenReturn(null);
         TemporaryFolder tmp = new TemporaryFolder();
         tmp.create();
         tmp.newFile("build.gradle");
@@ -470,18 +515,21 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     private void loadingJars_allFilesExist(String resourcesFolder)
-            throws IOException, ServletException {
-        loadingJarsWithProtocol_allFilesExist(resourcesFolder, s -> {
-            try {
-                return new URL("jar:" + s);
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
-            }
-        });
+            throws IOException, VaadinInitializerException {
+        loadingJarsWithProtocol_allFilesExist(resourcesFolder,
+                this::jarUrlBuilder);
+    }
+
+    private URL jarUrlBuilder(String url) {
+        try {
+            return new URL("jar:" + url);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void loadingZipProtocolJars_allFilesExist(String resourcesFolder)
-            throws IOException, ServletException {
+            throws IOException, VaadinInitializerException {
         final URLStreamHandler dummyZipHandler = new URLStreamHandler() {
 
             @Override
@@ -502,11 +550,18 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     private void loadingJarsWithProtocol_allFilesExist(String resourcesFolder,
             Function<String, URL> urlBuilder)
-            throws IOException, ServletException {
+            throws IOException, VaadinInitializerException {
+        loadingJarsWithProtocol_allFilesExist(resourcesFolder,
+                "src/test/resources/with%20space/jar-with-frontend-resources.jar!/META-INF/resources/frontend",
+                urlBuilder);
+    }
+
+    private void loadingJarsWithProtocol_allFilesExist(String resourcesFolder,
+            String jarContent, Function<String, URL> urlBuilder)
+            throws IOException, VaadinInitializerException {
         // Create jar urls with the given urlBuilder for test
         String urlPath = this.getClass().getResource("/").toString()
-                .replace("target/test-classes/", "")
-                + "src/test/resources/with%20space/jar-with-frontend-resources.jar!/META-INF/resources/frontend";
+                .replace("target/test-classes/", "") + jarContent;
         URL jar = urlBuilder.apply(urlPath);
         List<URL> urls = new ArrayList<>();
         urls.add(jar);
@@ -530,14 +585,16 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     private void loadingFsResources_allFilesExist(String resourcesRoot,
-            String resourcesFolder) throws IOException, ServletException {
+            String resourcesFolder)
+            throws IOException, VaadinInitializerException {
         List<URL> urls = Collections.singletonList(
                 getClass().getResource(resourcesRoot + resourcesFolder));
         loadingFsResources_allFilesExist(urls, resourcesFolder);
     }
 
     private void loadingFsResources_allFilesExist(Collection<URL> urls,
-            String resourcesFolder) throws IOException, ServletException {
+            String resourcesFolder)
+            throws IOException, VaadinInitializerException {
         // Create mock loader with the single jar to be found
         ClassLoader classLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(classLoader.getResources(resourcesFolder))
@@ -555,4 +612,5 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         assertTrue("Resource doesn't load from given path",
                 locations.get(0).exists());
     }
+
 }

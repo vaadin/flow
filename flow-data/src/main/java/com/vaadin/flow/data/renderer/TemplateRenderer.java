@@ -75,10 +75,10 @@ public final class TemplateRenderer<SOURCE> extends Renderer<SOURCE> {
 
     private static void warnIfClassOrStyleWithoutDollar(String template) {
         if (hasClassOrStyleWithoutDollar(template)) {
-            LoggerFactory.getLogger(TemplateRenderer.class)
-                    .warn("Bindings for 'class' and 'style' need a $ prefix (e.g. 'class$=\"[[item.className]]\"') to use an attribute binding instead of a property binding."
+            LoggerFactory.getLogger(TemplateRenderer.class).warn(
+                    "Bindings for 'class' and 'style' need a $ prefix (e.g. 'class$=\"[[item.className]]\"') to use an attribute binding instead of a property binding."
                             + " Apparent omission detected in the template '{}'",
-                            template);
+                    template);
         }
     }
 

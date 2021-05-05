@@ -55,6 +55,8 @@ import elemental.json.impl.JsonUtil;
 
 /**
  * Handles a client-to-server message containing serialized RPC invocations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -126,7 +128,8 @@ public class ServerRpcHandler implements Serializable {
         }
 
         /**
-         * Gets the CSRF security token (double submit cookie) for this request.
+         * Gets the CSRF security token (synchronizer token pattern) for this
+         * request.
          *
          * @return the CSRF security token for this current change request
          */

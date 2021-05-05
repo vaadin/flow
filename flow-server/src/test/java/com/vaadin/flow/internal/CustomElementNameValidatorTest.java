@@ -30,7 +30,8 @@ public class CustomElementNameValidatorTest {
     @Test
     public void testInvalidElementNames() {
         Stream.of("", "foo", "annotation-xml", "0-foo", "-foo", "foo-$",
-                "foo-/", "FOO-BAR", "foo/", "øl-unicorn", "foo-💩", "5th-element")
+                "foo-/", "FOO-BAR", "foo/", "øl-unicorn", "foo-💩",
+                "5th-element")
                 .forEach(name -> Assert.assertFalse(String.format(
                         "Name %s is valid even though it should not be", name),
                         CustomElementNameValidator.isCustomElementName(name)));
@@ -38,7 +39,8 @@ public class CustomElementNameValidatorTest {
 
     @Test
     public void testValidNamesWithoutErrorOrWarning() {
-        Stream.of("foo-bar", "custom-element", "date-field", "dos-box", "home-4-good")
+        Stream.of("foo-bar", "custom-element", "date-field", "dos-box",
+                "home-4-good")
                 .forEach(name -> Assert.assertTrue(String.format(
                         "Name %s is not valid even though it should be", name),
                         CustomElementNameValidator.isCustomElementName(name)));

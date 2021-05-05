@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -42,8 +43,10 @@ import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -318,8 +321,6 @@ public class BootstrapHandlerTest {
                     .setSecondDelay(SECOND_DELAY);
 
             settings.getPushConfiguration().setPushMode(PushMode.MANUAL);
-
-            settings.getReconnectDialogConfiguration().setDialogModal(true);
         }
     }
 
@@ -349,11 +350,11 @@ public class BootstrapHandlerTest {
         service.setRouteRegistry(routeRegistry);
         service.setRouter(new Router(routeRegistry) {
             @Override
-            public void initializeUI(UI ui, VaadinRequest initRequest) {
+            public void initializeUI(UI ui, Location location) {
                 // Skip initial navigation during UI.init if no routes have been
                 // injected
                 if (routeRegistry.hasNavigationTargets()) {
-                    super.initializeUI(ui, initRequest);
+                    super.initializeUI(ui, location);
                 }
             }
         });
@@ -371,6 +372,7 @@ public class BootstrapHandlerTest {
 
     @After
     public void tearDown() {
+        service.setDependencyFilters(null); // Reset to default
         session.unlock();
         mocks.cleanup();
     }
@@ -383,7 +385,8 @@ public class BootstrapHandlerTest {
         this.request = request;
 
         ui.doInit(request, 0);
-        ui.getInternals().getRouter().initializeUI(ui, request);
+        ui.getInternals().getRouter().initializeUI(ui,
+                requestToLocation(request));
         context = new BootstrapContext(request, null, session, ui,
                 this::contextRootRelativePath);
         ui.getInternals().setContextRoot(contextRootRelativePath(request));
@@ -400,13 +403,7 @@ public class BootstrapHandlerTest {
             navigationTargets.forEach(routeConfiguration::setAnnotatedRoute);
         });
 
-        this.request = request;
-
-        ui.doInit(request, 0);
-        ui.getInternals().getRouter().initializeUI(ui, request);
-        context = new BootstrapContext(request, null, session, ui,
-                this::contextRootRelativePath);
-        ui.getInternals().setContextRoot(contextRootRelativePath(request));
+        initUI(ui, request);
     }
 
     @Test
@@ -435,7 +432,8 @@ public class BootstrapHandlerTest {
         anotherUI.getInternals().setSession(session);
         VaadinRequest vaadinRequest = createVaadinRequest();
         anotherUI.doInit(vaadinRequest, 0);
-        anotherUI.getInternals().getRouter().initializeUI(anotherUI, request);
+        anotherUI.getInternals().getRouter().initializeUI(anotherUI,
+                requestToLocation(request));
         anotherUI.getInternals()
                 .setContextRoot(contextRootRelativePath(request));
         BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
@@ -1075,28 +1073,24 @@ public class BootstrapHandlerTest {
     @Test
     public void useDependencyFilters_removeDependenciesAndAddNewOnes()
             throws ServiceException {
-        List<DependencyFilter> filters = (List<DependencyFilter>) service
-                .getDependencyFilters();
-        filters.add((list, context) -> {
+        List<DependencyFilter> filters = Arrays.asList((list, context) -> {
             list.clear(); // remove everything
             return list;
-        });
-        filters.add((list, context) -> {
+        }, (list, context) -> {
             list.add(new Dependency(Dependency.Type.JAVASCRIPT,
                     "imported-by-filter.js", LoadMode.EAGER));
             list.add(new Dependency(Dependency.Type.JAVASCRIPT,
                     "imported-by-filter2.js", LoadMode.EAGER));
             return list;
-        });
-        filters.add((list, context) -> {
+        }, (list, context) -> {
             list.remove(1); // removes the imported-by-filter2.js
             return list;
-        });
-        filters.add((list, context) -> {
+        }, (list, context) -> {
             list.add(new Dependency(Dependency.Type.STYLESHEET,
                     "imported-by-filter.css", LoadMode.EAGER));
             return list;
         });
+        service.setDependencyFilters(filters);
 
         initUI(testUI);
 
@@ -1148,7 +1142,8 @@ public class BootstrapHandlerTest {
         anotherUI.getInternals().setSession(session);
         VaadinRequest vaadinRequest = createVaadinRequest();
         anotherUI.doInit(vaadinRequest, 0);
-        anotherUI.getInternals().getRouter().initializeUI(anotherUI, request);
+        anotherUI.getInternals().getRouter().initializeUI(anotherUI,
+                requestToLocation(request));
         BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
                 null, session, anotherUI, this::contextRootRelativePath);
         anotherUI.getInternals()
@@ -1231,7 +1226,8 @@ public class BootstrapHandlerTest {
         anotherUI.getInternals().setSession(session);
         VaadinRequest vaadinRequest = createVaadinRequest();
         anotherUI.doInit(vaadinRequest, 0);
-        anotherUI.getInternals().getRouter().initializeUI(anotherUI, request);
+        anotherUI.getInternals().getRouter().initializeUI(anotherUI,
+                requestToLocation(request));
         BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
                 null, session, anotherUI, this::contextRootRelativePath);
         anotherUI.getInternals()
@@ -1331,17 +1327,15 @@ public class BootstrapHandlerTest {
     @Test
     public void getBootstrapPage_jsModulesDoNotContainDeferAttribute()
             throws ServiceException {
-        List<DependencyFilter> filters = (List<DependencyFilter>) service
-                .getDependencyFilters();
-        filters.add((list, context) -> {
+        List<DependencyFilter> filters = Arrays.asList((list, context) -> {
             list.clear(); // remove everything
             return list;
-        });
-        filters.add((list, context) -> {
+        }, (list, context) -> {
             list.add(new Dependency(Dependency.Type.JS_MODULE, "//module.js",
                     LoadMode.EAGER));
             return list;
         });
+        service.setDependencyFilters(filters);
 
         initUI(testUI);
 
@@ -1392,9 +1386,10 @@ public class BootstrapHandlerTest {
 
         String statsJson = "{\n" + " \"errors\": [],\n" + " \"warnings\": [],\n"
                 + " \"assetsByChunkName\": {\n" + "  \"bundle\": [\n"
-                + "    \"build/vaadin-bundle-e77008557c8d410bf0dc.cache.js\",\n"
-                + "    \"build/vaadin-bundle-e77008557c8d410bf0dc.cache.js.map\"\n"
-                + "  ],\n" + " }" + "}";
+                + "    \"VAADIN/build/vaadin-bundle-e77008557c8d410bf0dc"
+                + ".cache.js\",\n"
+                + "    \"VAADIN/build/vaadin-bundle-e77008557c8d410bf0dc"
+                + ".cache.js.map\"\n" + "  ],\n" + " }" + "}";
 
         File tmpFile = tmpDir.newFile();
         try (FileOutputStream stream = new FileOutputStream(tmpFile)) {
@@ -1404,8 +1399,7 @@ public class BootstrapHandlerTest {
         Lookup lookup = testUI.getSession().getService().getContext()
                 .getAttribute(Lookup.class);
         ResourceProvider provider = lookup.lookup(ResourceProvider.class);
-        Mockito.when(provider.getApplicationResource(
-                Mockito.any(VaadinService.class), Mockito.anyString()))
+        Mockito.when(provider.getApplicationResource(Mockito.anyString()))
                 .thenReturn(tmpFile.toURI().toURL());
 
         BootstrapContext bootstrapContext = new BootstrapContext(request, null,
@@ -1433,7 +1427,8 @@ public class BootstrapHandlerTest {
         anotherUI.getInternals().setSession(session);
         VaadinServletRequest vaadinRequest = createVaadinRequest();
         anotherUI.doInit(vaadinRequest, 0);
-        anotherUI.getInternals().getRouter().initializeUI(anotherUI, request);
+        anotherUI.getInternals().getRouter().initializeUI(anotherUI,
+                requestToLocation(request));
         BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
                 null, session, anotherUI, this::contextRootRelativePath);
         anotherUI.getInternals()
@@ -1538,9 +1533,25 @@ public class BootstrapHandlerTest {
 
         Assert.assertEquals(PushMode.MANUAL,
                 testUI.getPushConfiguration().getPushMode());
+    }
 
-        Assert.assertTrue(
-                testUI.getReconnectDialogConfiguration().isDialogModal());
+    @Test
+    public void internal_request_no_bootstrap_page() {
+        BootstrapHandler bootstrapHandler = new BootstrapHandler();
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+        Mockito.when(request.getPathInfo()).thenReturn(null);
+        Mockito.when(request.getParameter("v-r")).thenReturn("hello-foo-bar");
+        Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
+        Assert.assertFalse(bootstrapHandler.canHandleRequest(request));
+
+        Mockito.when(request.getParameter("v-r")).thenReturn("init");
+        Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
+        Assert.assertFalse(bootstrapHandler.canHandleRequest(request));
+    }
+
+    public static Location requestToLocation(VaadinRequest request) {
+        return new Location(request.getPathInfo(),
+                QueryParameters.full(request.getParameterMap()));
     }
 
 }

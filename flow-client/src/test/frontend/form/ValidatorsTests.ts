@@ -10,6 +10,7 @@ import {
   Digits,
   Email,
   Future,
+  IsNumber,
   Max,
   Min,
   Negative,
@@ -25,7 +26,7 @@ import {
   Required,
   Size
 }
-  from "../../../main/resources/META-INF/resources/frontend/form";
+  from "../../../main/frontend/form";
 
 suite("form/Validators", () => {
 
@@ -118,6 +119,22 @@ suite("form/Validators", () => {
     assert.isTrue(validator.validate(null));
     assert.isFalse(validator.validate('true'));
     assert.isFalse(validator.validate(true));
+  });
+
+  test('IsNumber', () => {
+    let validator = new IsNumber(false);
+    assert.isNotTrue(validator.impliesRequired);
+    assert.isTrue(validator.validate(0));
+    assert.isTrue(validator.validate(1));
+    assert.isTrue(validator.validate(1.2));
+    assert.isTrue(validator.validate(-0.5));
+    assert.isFalse(validator.validate(Infinity));
+    assert.isFalse(validator.validate(-Infinity));
+    assert.isFalse(validator.validate(NaN));
+    assert.isFalse(validator.validate(undefined));
+
+    validator = new IsNumber(true);
+    assert.isTrue(validator.validate(undefined));
   });
 
   test("Min", () => {

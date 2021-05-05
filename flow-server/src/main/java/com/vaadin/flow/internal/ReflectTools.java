@@ -37,15 +37,17 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.LoggerFactory;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * An util class with helpers for reflection operations. Used internally by
  * Vaadin and should not be used by application developers. Subject to change at
  * any time.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */
@@ -781,6 +783,23 @@ public class ReflectTools implements Serializable {
     }
 
     /**
+     * Checks whether the {@code element} has annotation whose simple name is
+     * {@code simpleName}.
+     * 
+     * @param element
+     *            annotated element (field, method, etc.)
+     * @param simpleName
+     *            annotation simple name
+     * @return {@code true} is {@code element} has annotation whose simple name
+     *         is {@code simpleName}, {@code false} otherwise
+     */
+    public static boolean hasAnnotationWithSimpleName(AnnotatedElement element,
+            String simpleName) {
+        return Stream.of(element.getAnnotations()).anyMatch(anno -> simpleName
+                .equals(anno.annotationType().getSimpleName()));
+    }
+
+    /**
      * Gets the annotation method return value.
      * 
      * @param annotation
@@ -823,6 +842,41 @@ public class ReflectTools implements Serializable {
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * Check if a class can be instantiated via its default constructor via
+     * reflection.
+     * 
+     * @param clazz
+     *            the class to check
+     * @return true if the class can be instantiated, otherwise false
+     */
+    public static boolean isInstantiableService(Class<?> clazz) {
+        if (clazz.isInterface()) {
+            return false;
+        }
+        if (clazz.isSynthetic()) {
+            return false;
+        }
+        if (Modifier.isAbstract(clazz.getModifiers())) {
+            return false;
+        }
+        if (!Modifier.isPublic(clazz.getModifiers())) {
+            return false;
+        }
+        Optional<Constructor<?>> constructor = Stream
+                .of(clazz.getConstructors())
+                .filter(ctor -> ctor.getParameterCount() == 0).findFirst();
+        if (!constructor.isPresent()
+                || !Modifier.isPublic(constructor.get().getModifiers())) {
+            return false;
+        }
+        if (clazz.getEnclosingClass() != null
+                && !Modifier.isStatic(clazz.getModifiers())) {
+            return false;
+        }
+        return true;
     }
 
     private static List<Field> getConstants(Class<?> staticFields) {

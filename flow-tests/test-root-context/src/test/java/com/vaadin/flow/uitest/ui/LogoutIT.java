@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -25,13 +26,16 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class LogoutIT extends ChromeBrowserTest {
 
     @Test
-    public void setLocation_noErrorMessages() {
+    public void setLocationWithNotificationDisabled_noErrorMessages() {
         open();
 
         $(NativeButtonElement.class).first().click();
 
         // There can be "Session Expired" message because of heartbeat
-        checkLogsForErrors(msg -> msg.equals("Session Expired"));
+        // Strings defined in com.vaadin.flow.server.SystemMessages
+        checkLogsForErrors(
+                msg -> msg.contains("Session Expired") || msg.contains(
+                        "Take note of any unsaved data, and <u>click here</u> or press ESC key to continue."));
 
         // There can't be any error dialog
         Assert.assertFalse(isElementPresent(By.className("v-system-error")));

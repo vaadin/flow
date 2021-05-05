@@ -19,6 +19,8 @@ package com.vaadin.flow.server.frontend.installer;
  * Platform contains information about system architecture and OS.
  * <p>
  * Derived from eirslett/frontend-maven-plugin
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since
  */
@@ -69,11 +71,9 @@ public class Platform {
          */
         public static OS guess() {
             final String osName = System.getProperty("os.name");
-            return osName.contains("Windows") ?
-                    OS.WINDOWS :
-                    osName.contains("Mac") ?
-                            OS.MAC :
-                            osName.contains("SunOS") ? OS.SUN_OS : OS.LINUX;
+            return osName.contains("Windows") ? OS.WINDOWS
+                    : osName.contains("Mac") ? OS.MAC
+                            : osName.contains("SunOS") ? OS.SUN_OS : OS.LINUX;
         }
 
         /**
@@ -114,9 +114,9 @@ public class Platform {
      * Construct a new Platform.
      *
      * @param os
-     *         platform OS
+     *            platform OS
      * @param architecture
-     *         platform Architecture
+     *            platform Architecture
      */
     public Platform(OS os, Architecture architecture) {
         this.os = os;

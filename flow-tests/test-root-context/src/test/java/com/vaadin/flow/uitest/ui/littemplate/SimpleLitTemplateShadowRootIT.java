@@ -59,6 +59,10 @@ public class SimpleLitTemplateShadowRootIT extends ChromeBrowserTest {
         DivElement label = template.$(DivElement.class).id("label");
         Assert.assertEquals("Hello from server component event listener",
                 label.getText());
+
+        DivElement sortDiv = template.$(DivElement.class).id("sort");
+
+        Assert.assertEquals("Sort", sortDiv.getText());
     }
 
     @Test

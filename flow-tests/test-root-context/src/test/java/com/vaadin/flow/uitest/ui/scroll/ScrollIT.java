@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui.scroll;
 
 import java.util.Objects;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Point;
@@ -29,12 +30,9 @@ import static org.junit.Assert.assertThat;
 public class ScrollIT extends AbstractScrollIT {
 
     @Test
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/7584")
     public void scrollPositionIsRestoredAfterNavigatingToNewPageAndBack() {
         open();
-
-        if (hasClientIssue("7584")) {
-            return;
-        }
 
         final String initialPageUrl = driver.getCurrentUrl();
         final int xScrollAmount = 0;
@@ -65,10 +63,6 @@ public class ScrollIT extends AbstractScrollIT {
     public void anchorUrlsWorkProperly() {
         open();
 
-        if (hasClientIssue("8236")) {
-            return;
-        }
-
         final int xScrollAmount = 0;
         final int yScrollAmount = 400;
 
@@ -93,12 +87,9 @@ public class ScrollIT extends AbstractScrollIT {
     }
 
     @Test
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/7584")
     public void scrollPositionIsRestoredWhenNavigatingToHistoryWithAnchorLink() {
         open();
-
-        if (hasClientIssue("7584")) {
-            return;
-        }
 
         clickElementWithJs(ScrollView.ROUTER_ANCHOR_URL_ID);
         assertThat("Expected url to change to anchor one",
@@ -117,12 +108,9 @@ public class ScrollIT extends AbstractScrollIT {
     }
 
     @Test
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/7584")
     public void scrollPositionShouldBeAtAnchorWhenNavigatingFromOtherPage() {
         open();
-
-        if (hasClientIssue("7584")) {
-            return;
-        }
 
         Point anchorElementLocation = findElement(
                 By.id(ScrollView.ANCHOR_DIV_ID)).getLocation();

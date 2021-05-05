@@ -49,7 +49,7 @@ public final class Constants implements Serializable {
     public static final String CONNECT_JAVA_SOURCE_FOLDER_TOKEN = "connect.javaSourceFolder";
     public static final String CONNECT_APPLICATION_PROPERTIES_TOKEN = "connect.applicationProperties";
     public static final String CONNECT_OPEN_API_FILE_TOKEN = "connect.openApiFile";
-    public static final String CONNECT_GENERATED_TS_DIR_TOKEN = "connect.generated";
+    public static final String PROJECT_FRONTEND_GENERATED_DIR_TOKEN = "project.frontend.generated";
     public static final String EXTERNAL_STATS_FILE_TOKEN = "externalStatsFile";
     public static final String EXTERNAL_STATS_URL_TOKEN = "externalStatsUrl";
 
@@ -230,6 +230,11 @@ public final class Constants implements Serializable {
     public static final String PACKAGE_JSON = "package.json";
 
     /**
+     * Target folder constant.
+     */
+    public static final String TARGET = "target";
+
+    /**
      * Location for the frontend resources in jar files for compatibility mode
      * (also obsolete but supported for NPM mode).
      */
@@ -239,6 +244,22 @@ public final class Constants implements Serializable {
      * Location for the frontend resources in jar files.
      */
     public static final String RESOURCES_FRONTEND_DEFAULT = "META-INF/frontend";
+
+    /**
+     * The name of the application theme root folder.
+     */
+    public static final String APPLICATION_THEME_ROOT = "themes";
+
+    /**
+     * Location for the resources in jar files.
+     */
+    public static final String RESOURCES_JAR_DEFAULT = "META-INF/resources/";
+
+    /**
+     * Location for the theme resources in jar files.
+     */
+    public static final String RESOURCES_THEME_JAR_DEFAULT = RESOURCES_JAR_DEFAULT
+            + APPLICATION_THEME_ROOT + "/";
 
     /**
      * @deprecated Use
@@ -317,13 +338,6 @@ public final class Constants implements Serializable {
     public static final String VAADIN_MAPPING = "VAADIN/";
 
     /**
-     * The path to meta-inf/VAADIN/ where static resources are put on the
-     * servlet.
-     */
-    public static final String VAADIN_SERVLET_RESOURCES = META_INF
-            + VAADIN_MAPPING;
-
-    /**
      * The static build resources folder.
      */
     public static final String VAADIN_BUILD = "build/";
@@ -332,6 +346,24 @@ public final class Constants implements Serializable {
      * The static configuration resources folder.
      */
     public static final String VAADIN_CONFIGURATION = "config/";
+
+    /**
+     * The static resources root folder.
+     */
+    public static final String VAADIN_WEBAPP = "webapp/";
+
+    /**
+     * The path to meta-inf/VAADIN/ where static resources are put on the
+     * servlet.
+     */
+    public static final String VAADIN_SERVLET_RESOURCES = META_INF
+            + VAADIN_MAPPING;
+
+    /**
+     * The path to webapp/ public resources root.
+     */
+    public static final String VAADIN_WEBAPP_RESOURCES = VAADIN_SERVLET_RESOURCES
+            + VAADIN_WEBAPP;
 
     /**
      * The prefix used for all internal static files, relative to context root.

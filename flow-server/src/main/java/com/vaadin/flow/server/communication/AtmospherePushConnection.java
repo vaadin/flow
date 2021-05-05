@@ -40,6 +40,8 @@ import elemental.json.JsonObject;
 /**
  * A {@link PushConnection} implementation using the Atmosphere push support
  * that is by default included in Vaadin.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -400,8 +402,8 @@ public class AtmospherePushConnection implements PushConnection {
      *
      */
     public static void enableAtmosphereDebugLogging() {
-        getLogger()
-                .warn("Enable logging of 'org.atmosphere' through your slf4j implementation"
+        getLogger().warn(
+                "Enable logging of 'org.atmosphere' through your slf4j implementation"
                         + " instead (i.e.: logback, log4j, etc)");
     }
 
