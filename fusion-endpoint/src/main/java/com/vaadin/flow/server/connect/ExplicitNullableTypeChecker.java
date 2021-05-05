@@ -45,10 +45,8 @@ public class ExplicitNullableTypeChecker {
         Annotation[] annotations = element.getAnnotations();
 
         // JetBrains NotNull annotation is not available at runtime.
-        return Stream.of(annotations)
-                .anyMatch(annotation -> nonNullPattern
-                        .matcher(annotation.annotationType().getSimpleName())
-                        .find());
+        return Stream.of(annotations).anyMatch(annotation -> nonNullPattern
+                .matcher(annotation.annotationType().getSimpleName()).find());
     }
 
     /**
@@ -61,10 +59,10 @@ public class ExplicitNullableTypeChecker {
      */
     public static boolean isRequired(NodeWithAnnotations<?> node) {
         return node.getAnnotations().stream().anyMatch(annotation -> {
-            String qualifiedName = annotation.resolve().getQualifiedName();
-
-            return nonNullPattern.matcher(qualifiedName).find() || qualifiedName
-                    .equals("org.jetbrains.annotations.NotNull");
+            return nonNullPattern.matcher(annotation.getName().getIdentifier())
+                    .find()
+                    || annotation.resolve().getQualifiedName()
+                            .equals("org.jetbrains.annotations.NotNull");
         });
     }
 
