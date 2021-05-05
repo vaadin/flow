@@ -198,7 +198,8 @@ public class HtmlComponentSmokeTest {
             return true;
         }
 
-        // Anchor.setTarget(AnchorTarget) - https://github.com/vaadin/flow/issues/8346
+        // Anchor.setTarget(AnchorTarget) -
+        // https://github.com/vaadin/flow/issues/8346
         if (method.getDeclaringClass() == Anchor.class
                 && method.getName().equals("setTarget")
                 && method.getParameterTypes()[0] == AnchorTarget.class) {
