@@ -68,4 +68,8 @@ public final class TestUtils {
             throw new AssertionError("Failed to unify indentation", e);
         }
     }
+
+    public static boolean isJetBrainsKey(String key) {
+        return key.startsWith("jetBrains_");
+    }
 }

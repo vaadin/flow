@@ -6,46 +6,69 @@
 
 // @ts-ignore
 import client from './connect-client.default';
+import JetBrainsNonNullableModel from './com/vaadin/flow/server/connect/generator/endpoints/nonnullable/NonNullableEndpoint/JetBrainsNonNullableModel';
 import NonNullableModel from './com/vaadin/flow/server/connect/generator/endpoints/nonnullable/NonNullableEndpoint/NonNullableModel';
 import ParameterType from './com/vaadin/flow/server/connect/generator/endpoints/nonnullable/NonNullableEndpoint/ParameterType';
 import ReturnType from './com/vaadin/flow/server/connect/generator/endpoints/nonnullable/NonNullableEndpoint/ReturnType';
 
 function _echoMap(
-    shouldBeNotNull: boolean
-): Promise<{ [key: string]: NonNullableModel; }> {
+  shouldBeNotNull: boolean
+): Promise<{[key: string]: NonNullableModel;}> {
   return client.call('NonNullableEndpoint', 'echoMap', {shouldBeNotNull});
 }
+
 export {_echoMap as echoMap};
 
 function _echoNonNullMode(
-    nonNullableModels: Array<NonNullableModel>
+  nonNullableModels: Array<NonNullableModel>
 ): Promise<NonNullableModel | undefined> {
   return client.call('NonNullableEndpoint', 'echoNonNullMode', {nonNullableModels});
 }
+
 export {_echoNonNullMode as echoNonNullMode};
 
 function _getNotNullReturnType(): Promise<ReturnType | undefined> {
   return client.call('NonNullableEndpoint', 'getNotNullReturnType');
 }
+
 export {_getNotNullReturnType as getNotNullReturnType};
 
 function _getNullableString(
-    input?: string
+  input?: string
 ): Promise<string> {
   return client.call('NonNullableEndpoint', 'getNullableString', {input});
 }
+
 export {_getNullableString as getNullableString};
 
+function _jetBrains_echoMap(
+  jetBrains_shouldBeNotNull: string
+): Promise<{
+  [key: string]: JetBrainsNonNullableModel;
+}> {
+  return client.call(
+    'NonNullableEndpoint', 'jetBrains_echoMap', {
+      jetBrains_shouldBeNotNull
+    }
+  );
+}
+
+export {
+  _jetBrains_echoMap as jetBrains_echoMap
+};
+
 function _sendParameterType(
-    parameterType?: ParameterType
+  parameterType?: ParameterType
 ): Promise<void> {
   return client.call('NonNullableEndpoint', 'sendParameterType', {parameterType});
 }
+
 export {_sendParameterType as sendParameterType};
 
 function _stringNullable(): Promise<string | undefined> {
   return client.call('NonNullableEndpoint', 'stringNullable');
 }
+
 export {_stringNullable as stringNullable};
 
 export const NonNullableEndpoint = Object.freeze({
@@ -53,6 +76,7 @@ export const NonNullableEndpoint = Object.freeze({
   echoNonNullMode: _echoNonNullMode,
   getNotNullReturnType: _getNotNullReturnType,
   getNullableString: _getNullableString,
+  jetBrains_echoMap: _jetBrains_echoMap,
   sendParameterType: _sendParameterType,
   stringNullable: _stringNullable,
 });

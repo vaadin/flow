@@ -88,6 +88,7 @@ import com.vaadin.flow.server.connect.generator.endpoints.complexhierarchymodel.
 import com.vaadin.flow.server.connect.generator.endpoints.complexhierarchymodel.ParentModel;
 
 import static com.vaadin.flow.server.connect.generator.TestUtils.equalsIgnoreWhiteSpaces;
+import static com.vaadin.flow.server.connect.generator.TestUtils.isJetBrainsKey;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -351,7 +352,8 @@ public abstract class AbstractEndpointGenerationTest
             assertSchema(stringSchemaEntry.getValue(), parameterTypes[index],
                     parameterTypeArguments.get(index));
             List requiredList = requestSchema.getRequired();
-            if (ExplicitNullableTypeChecker.isRequired(parameters[index])) {
+            if (ExplicitNullableTypeChecker.isRequired(parameters[index])
+                    || isJetBrainsKey(stringSchemaEntry.getKey())) {
                 assertTrue(requiredList.contains(stringSchemaEntry.getKey()));
             } else {
                 boolean notRequired = requiredList == null
@@ -510,7 +512,8 @@ public abstract class AbstractEndpointGenerationTest
             Type type = expectedSchemaField.getGenericType();
             assertSchema(propertySchema, expectedSchemaField.getType(),
                     extractTypeArguments(type, typeArguments));
-            if (ExplicitNullableTypeChecker.isRequired(expectedSchemaField)) {
+            if (ExplicitNullableTypeChecker.isRequired(expectedSchemaField)
+                    || isJetBrainsKey(expectedSchemaField.getName())) {
                 assertTrue(schema.getRequired()
                         .contains(expectedSchemaField.getName()));
             } else {

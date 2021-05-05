@@ -45,8 +45,8 @@ public class NonNullableEndpoint {
     }
 
     @NotNull
-    public Map<String, JetBrainsNonNullableModel> echoMap1(
-            @NotNull String shouldBeNotNull) {
+    public Map<String, JetBrainsNonNullableModel> jetBrains_echoMap(
+            @NotNull String jetBrains_shouldBeNotNull) {
         return Collections.emptyMap();
     }
 
@@ -84,9 +84,9 @@ public class NonNullableEndpoint {
 
     public static class JetBrainsNonNullableModel {
         @NotNull
-        String foo;
+        String jetBrains_foo;
 
         @org.jetbrains.annotations.NotNull
-        int bar;
+        int jetBrains_bar;
     }
 }
