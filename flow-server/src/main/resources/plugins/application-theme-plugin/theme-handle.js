@@ -49,7 +49,7 @@ function processThemeResources(options, logger) {
       const warning = `Attention: Active theme is switched to '${themeName}'.`
       const description = `
       Note that adding new style sheet files to '/themes/${themeName}/components', 
-      may not be taken into effect until the next application is restart.
+      may not be taken into effect until the next application restart.
       Changes to existing style sheet files are being reloaded as before.`;
       logger.warn("*******************************************************************");
       logger.warn(warning);
