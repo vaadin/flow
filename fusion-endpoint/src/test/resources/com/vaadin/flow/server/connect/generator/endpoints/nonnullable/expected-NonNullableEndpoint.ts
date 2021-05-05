@@ -6,7 +6,6 @@
 
 // @ts-ignore
 import client from './connect-client.default';
-import JetBrainsNonNullableModel from './com/vaadin/flow/server/connect/generator/endpoints/nonnullable/NonNullableEndpoint/JetBrainsNonNullableModel';
 import NonNullableModel from './com/vaadin/flow/server/connect/generator/endpoints/nonnullable/NonNullableEndpoint/NonNullableModel';
 import ParameterType from './com/vaadin/flow/server/connect/generator/endpoints/nonnullable/NonNullableEndpoint/ParameterType';
 import ReturnType from './com/vaadin/flow/server/connect/generator/endpoints/nonnullable/NonNullableEndpoint/ReturnType';
@@ -41,22 +40,6 @@ function _getNullableString(
 
 export {_getNullableString as getNullableString};
 
-function _jetBrains_echoMap(
-  jetBrains_shouldBeNotNull: string
-): Promise<{
-  [key: string]: JetBrainsNonNullableModel;
-}> {
-  return client.call(
-    'NonNullableEndpoint', 'jetBrains_echoMap', {
-      jetBrains_shouldBeNotNull
-    }
-  );
-}
-
-export {
-  _jetBrains_echoMap as jetBrains_echoMap
-};
-
 function _sendParameterType(
   parameterType?: ParameterType
 ): Promise<void> {
@@ -76,7 +59,6 @@ export const NonNullableEndpoint = Object.freeze({
   echoNonNullMode: _echoNonNullMode,
   getNotNullReturnType: _getNotNullReturnType,
   getNullableString: _getNullableString,
-  jetBrains_echoMap: _jetBrains_echoMap,
   sendParameterType: _sendParameterType,
   stringNullable: _stringNullable,
 });

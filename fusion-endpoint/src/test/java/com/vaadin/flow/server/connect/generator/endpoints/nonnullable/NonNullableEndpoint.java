@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.jetbrains.annotations.NotNull;
-
 import com.vaadin.flow.server.connect.Endpoint;
 
 @Endpoint
@@ -41,12 +39,6 @@ public class NonNullableEndpoint {
     @Nonnull
     public Map<String, NonNullableModel> echoMap(
             @Nonnull boolean shouldBeNotNull) {
-        return Collections.emptyMap();
-    }
-
-    @NotNull
-    public Map<String, JetBrainsNonNullableModel> jetBrains_echoMap(
-            @NotNull String jetBrains_shouldBeNotNull) {
         return Collections.emptyMap();
     }
 
@@ -80,13 +72,5 @@ public class NonNullableEndpoint {
     public static class ParameterType {
         @Nonnull
         String foo;
-    }
-
-    public static class JetBrainsNonNullableModel {
-        @NotNull
-        String jetBrains_foo;
-
-        @org.jetbrains.annotations.NotNull
-        int jetBrains_bar;
     }
 }
