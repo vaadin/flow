@@ -356,10 +356,8 @@ public abstract class AbstractEndpointGenerationTest
             } else {
                 boolean notRequired = requiredList == null
                         || !requiredList.contains(stringSchemaEntry.getKey());
-                assertTrue(
-                        "Request parameter without @Nonnull annotation" +
-                                " should not be required",
-                        notRequired);
+                assertTrue("Request parameter without @Nonnull annotation"
+                        + " should not be required", notRequired);
             }
             index++;
         }
