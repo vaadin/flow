@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -29,7 +30,8 @@ import java.util.stream.Stream;
  * @see AnchorTarget
  *
  */
-public interface AnchorTargetValue {
+@FunctionalInterface
+public interface AnchorTargetValue extends Serializable {
 
     /**
      * Gets the string value representation.
