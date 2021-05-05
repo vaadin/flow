@@ -58,12 +58,11 @@ public class ExplicitNullableTypeChecker {
      * @return a result of check
      */
     public static boolean isRequired(NodeWithAnnotations<?> node) {
-        return node.getAnnotations().stream().anyMatch(annotation -> {
-            return nonNullPattern.matcher(annotation.getName().getIdentifier())
-                    .find()
-                    || annotation.resolve().getQualifiedName()
-                            .equals("org.jetbrains.annotations.NotNull");
-        });
+        return node.getAnnotations().stream()
+                .anyMatch(annotation -> nonNullPattern
+                        .matcher(annotation.getName().getIdentifier()).find()
+                        || annotation.resolve().getQualifiedName()
+                                .equals("org.jetbrains.annotations.NotNull"));
     }
 
     /**
