@@ -113,7 +113,7 @@ public class CopyMigratedResourcesStep extends AbstractCopyResourcesStep {
             if (!importLine.startsWith(IMPORT) || !importLine.endsWith(";")) {
                 return line;
             }
-            char quote = importLine.charAt(line.length() - 2);
+            char quote = importLine.charAt(importLine.length() - 2);
             if (quote != '\'' && quote != '"') {
                 return line;
             }
