@@ -1155,13 +1155,13 @@ public class FrontendUtils {
             final String versionString = sourceJson.getString(pkg);
             return new FrontendVersion(pkg, versionString);
         } catch (ClassCastException classCastException) {
-            LoggerFactory.getLogger(FrontendVersion.class).error(
-                    "Ignoring error while parsing frontend dependency version for package '{}' from '{}'",
+            LoggerFactory.getLogger(FrontendVersion.class).warn(
+                    "Ignoring error while parsing frontend dependency version for package '{}' in '{}'",
                     pkg, versionOrigin);
         } catch (NumberFormatException nfe) {
             // intentionally not failing the build at this point
-            LoggerFactory.getLogger(FrontendVersion.class).error(
-                    "Ignoring error while parsing frontend dependency version from {}: {}",
+            LoggerFactory.getLogger(FrontendVersion.class).warn(
+                    "Ignoring error while parsing frontend dependency version in {}: {}",
                     versionOrigin, nfe.getMessage());
         }
         return null;

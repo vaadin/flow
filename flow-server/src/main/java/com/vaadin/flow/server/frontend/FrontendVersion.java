@@ -18,10 +18,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.Serializable;
 import java.util.Objects;
 
-import org.slf4j.LoggerFactory;
-
-import elemental.json.JsonObject;
-
 /**
  * Version object for frontend versions comparison and handling.
  * <p>

@@ -69,10 +69,10 @@ class VersionsJsonFilter {
             }
             final FrontendVersion userManagedVersion = FrontendUtils
                     .getPackageVersionFromJson(userManagedDependencies, key,
-                            "dependencies/package.json");
+                            "/package.json -> { dependencies }");
             final FrontendVersion vaadinDepsVersion = FrontendUtils
                     .getPackageVersionFromJson(vaadinVersions, key,
-                            "vaadin-dependencies/package.json");
+                            "/package.json -> { vaadin { dependencies }}");
             if (userManagedVersion != null) {
                 if (version.isNewerThan(userManagedVersion)) {
                     LoggerFactory.getLogger("Versions").warn(
