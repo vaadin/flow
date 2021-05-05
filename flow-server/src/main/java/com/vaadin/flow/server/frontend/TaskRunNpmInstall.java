@@ -300,19 +300,24 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     private boolean shouldRunNpmInstall() {
-        if (packageUpdater.nodeModulesFolder.isDirectory()) {
-            // Ignore .bin and pnpm folders as those are always installed for
-            // pnpm execution
-            File[] installedPackages = packageUpdater.nodeModulesFolder
-                    .listFiles(
-                            (dir, name) -> !ignoredNodeFolders.contains(name));
-            assert installedPackages != null;
-            return installedPackages.length == 0
-                    || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
-                            .startsWith(installedPackages[0].getName()))
-                    || (installedPackages.length > 0 && isVaadinHashUpdated());
+        if (!packageUpdater.nodeModulesFolder.isDirectory()) {
+            return true;
         }
-        return true;
+        // Ignore .bin and pnpm folders as those are always installed for
+        // pnpm execution
+        File[] installedPackages = packageUpdater.nodeModulesFolder
+                .listFiles((dir, name) -> !ignoredNodeFolders.contains(name));
+        assert installedPackages != null;
+        if (installedPackages.length == 0) {
+            // Nothing installed
+            return true;
+        } else if (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
+                .startsWith(installedPackages[0].getName())) {
+            // Only flow-frontend installed
+            return true;
+        } else {
+            return isVaadinHashUpdated();
+        }
     }
 
     private boolean isVaadinHashUpdated() {
