@@ -33,8 +33,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import com.vaadin.flow.migration.CopyMigratedResourcesStep;
-
 public class CopyMigratedResourcesStepTest {
 
     @Rule
@@ -66,9 +64,9 @@ public class CopyMigratedResourcesStepTest {
         file1.getParentFile().mkdirs();
 
         Files.write(file1.toPath(), Arrays.asList(
-                "import { PolymerElement } from '/node_modules/@polymer/polymer/polymer-element.js';",
+                "import { PolymerElement } from '/node_modules/@polymer/polymer/polymer-element.js'; ",
                 "import '@vaadin/vaadin-button/vaadin-button.js';",
-                "import { html } from \"/node_modules/@polymer/polymer/lib/utils/html-tag.js\";"));
+                "import { html } from \"/node_modules/@polymer/polymer/lib/utils/html-tag.js\";  "));
 
         Files.write(file2.toPath(), Collections.singletonList(
                 "import '@polymer/polymer/lib/elements/dom-repeat.js';"));
