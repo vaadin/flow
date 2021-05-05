@@ -73,7 +73,7 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
      *
      * @see #setHref(String)
      * @see #setText(String)
-     * @see #setTarget(AnchorTarget)
+     * @see #setTarget(AnchorTargetValue)
      *
      * @param href
      *            the href to set
