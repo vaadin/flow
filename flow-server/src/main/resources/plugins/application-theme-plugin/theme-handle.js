@@ -46,6 +46,13 @@ function processThemeResources(options, logger) {
       firstThemeName = themeName;
     } else if ((prevThemeName && prevThemeName !== themeName && firstThemeName !== themeName)
         || (!prevThemeName && firstThemeName !== themeName)) {
+      // Warning message is shown to the developer when:
+      // 1. He is switching to any theme, which is differ from one being set up
+      // on application startup, by changing theme name in `@Theme()`
+      // 2. He removes or comments out `@Theme()` to see how the app
+      // looks like without theming, and then again brings `@Theme()` back
+      // with a themeName which is differ from one being set up on application
+      // startup.
       const warning = `Attention: Active theme is switched to '${themeName}'.`
       const description = `
       Note that adding new style sheet files to '/themes/${themeName}/components', 
@@ -60,6 +67,10 @@ function processThemeResources(options, logger) {
 
     findThemeFolderAndHandleTheme(themeName, options, logger);
   } else {
+    // This is needed in the situation that the user decides to comment or
+    // remove the @Theme(...) completely to see how the application looks
+    // without any theme. Then when the user brings back one of the themes,
+    // the previous theme should be undefined to enable us to detect the change.
     prevThemeName = undefined;
     logger.debug("Skipping Vaadin application theme handling.");
     logger.trace("Most likely no @Theme annotation for application or only themeClass used.");
