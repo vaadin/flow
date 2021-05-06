@@ -267,7 +267,8 @@ public class NodeTasks implements FallibleCommand {
          *            <code>false</code>
          * @return this builder
          */
-        public Builder enableNpmFileCleaning(boolean forceClean) {
+        // This method is only used in tests ...
+        Builder enableNpmFileCleaning(boolean forceClean) {
             this.cleanNpmFiles = forceClean;
             return this;
         }
