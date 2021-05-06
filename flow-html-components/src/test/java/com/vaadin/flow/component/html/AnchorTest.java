@@ -15,9 +15,12 @@
  */
 package com.vaadin.flow.component.html;
 
-import com.vaadin.flow.component.Text;
+import java.util.Optional;
+
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.vaadin.flow.component.Text;
 
 public class AnchorTest extends ComponentTest {
 
@@ -35,7 +38,27 @@ public class AnchorTest extends ComponentTest {
     public void createWithComponent() {
         Anchor anchor = new Anchor("#", new Text("Home"));
         Assert.assertEquals(anchor.getElement().getAttribute("href"), "#");
+        Assert.assertEquals(anchor.getHref(), "#");
         Assert.assertEquals(anchor.getElement().getText(), "Home");
+        Assert.assertEquals(anchor.getText(), "Home");
+    }
+
+    @Test
+    public void createWithTarget() {
+        Anchor anchor = new Anchor("#", "Home");
+        Assert.assertEquals(anchor.getTargetValue(), AnchorTarget.DEFAULT);
+        Assert.assertEquals(anchor.getTarget(), Optional.empty());
+
+        anchor.setTarget(AnchorTarget.BLANK);
+
+        Assert.assertEquals(anchor.getTargetValue(), AnchorTarget.BLANK);
+        Assert.assertEquals(anchor.getTarget(),
+                Optional.of(AnchorTarget.BLANK.getValue()));
+
+        Assert.assertEquals(anchor.getTargetValue(),
+                new Anchor("#", "Home", AnchorTarget.BLANK).getTargetValue());
+        Assert.assertEquals(anchor.getTarget(),
+                new Anchor("#", "Home", AnchorTarget.BLANK).getTarget());
     }
 
     @Test
@@ -58,6 +81,44 @@ public class AnchorTest extends ComponentTest {
         Assert.assertEquals(
                 "Anchor element should have router-ignore " + "attribute", "",
                 anchor.getElement().getAttribute("router-ignore"));
+    }
+
+    @Test
+    public void setTargetValue_useEnum_targetIsSet() {
+        Anchor anchor = new Anchor();
+        anchor.setTarget(AnchorTarget.PARENT);
+
+        Assert.assertEquals(Optional.of(AnchorTarget.PARENT.getValue()),
+                anchor.getTarget());
+        Assert.assertEquals(AnchorTarget.PARENT, anchor.getTargetValue());
+    }
+
+    @Test
+    public void setTargetValue_useObject_targetIsSet() {
+        Anchor anchor = new Anchor();
+        anchor.setTarget(AnchorTargetValue.forString("foo"));
+
+        Assert.assertEquals(Optional.of("foo"), anchor.getTarget());
+        Assert.assertEquals("foo", anchor.getTargetValue().getValue());
+    }
+
+    @Test
+    public void getTargetValue_useEnumStringValue_targetIsReturned() {
+        Anchor anchor = new Anchor();
+        anchor.setTarget(AnchorTarget.SELF.getValue());
+
+        Assert.assertEquals(Optional.of(AnchorTarget.SELF.getValue()),
+                anchor.getTarget());
+        Assert.assertEquals(AnchorTarget.SELF, anchor.getTargetValue());
+    }
+
+    @Test
+    public void getTargetValue_useSomeStringValue_targetIsReturned() {
+        Anchor anchor = new Anchor();
+        anchor.setTarget("foo");
+
+        Assert.assertEquals(Optional.of("foo"), anchor.getTarget());
+        Assert.assertEquals("foo", anchor.getTargetValue().getValue());
     }
 
     // Other test methods in super class
