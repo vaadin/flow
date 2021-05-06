@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -36,7 +37,10 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
@@ -52,6 +56,14 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 @NotThreadSafe
 public class TaskUpdatePackagesNpmTest {
 
+    private static final String PLATFORM_DIALOG_VERSION = "2.5.2";
+    private static final String USER_SPECIFIED_MIXIN_VERSION = "2.4.1";
+    private static final String VAADIN_ELEMENT_MIXIN = "@vaadin/vaadin-element-mixin";
+    private static final String VAADIN_DIALOG = "@vaadin/vaadin-dialog";
+    private static final String VAADIN_OVERLAY = "@vaadin/vaadin-overlay";
+    private static final String PLATFORM_ELEMENT_MIXIN_VERSION = "2.4.2";
+    private static final String PLATFORM_OVERLAY_VERSION = "3.5.1";
+
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -59,7 +71,10 @@ public class TaskUpdatePackagesNpmTest {
 
     private ClassFinder finder;
 
+    private Logger logger = Mockito
+            .spy(LoggerFactory.getLogger(NodeUpdater.class));
     private File generatedPath;
+    private File versionJsonFile;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -69,13 +84,17 @@ public class TaskUpdatePackagesNpmTest {
         npmFolder = temporaryFolder.newFolder();
         generatedPath = new File(npmFolder, "generated");
         generatedPath.mkdir();
+        versionJsonFile = new File(npmFolder, "versions.json");
         finder = Mockito.mock(ClassFinder.class);
+        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+                .thenReturn(versionJsonFile.toURI().toURL());
     }
 
     @Test
     public void oldDefaultDependenciesInPackageJson_devAndNormalAreCleaned()
             throws IOException {
-
+        createBasicVaadinVersionsJson();
+        
         TaskUpdatePackages task = createTask(Collections.emptyMap());
         JsonObject packageJson = task.getPackageJson();
         // Add default dependency
@@ -135,6 +154,8 @@ public class TaskUpdatePackagesNpmTest {
     @Test
     public void passUnorderedApplicationDependenciesAndReadUnorderedPackageJson_resultingPackageJsonIsOrdered()
             throws IOException {
+        createBasicVaadinVersionsJson();
+
         LinkedHashMap<String, String> map = new LinkedHashMap<>();
         map.put("foo", "bar");
         // "bar" is lexicographically before the "foo" but in the linked hash
@@ -222,6 +243,230 @@ public class TaskUpdatePackagesNpmTest {
         return true;
     }
 
+    @Test
+    public void npmIsInUse_platformVersionsJsonHasPinnedVersions_versionsArePinned()
+            throws IOException {
+        runTestWithoutPreexistingPackageJson();
+    }
+
+    private void runTestWithoutPreexistingPackageJson() throws IOException {
+        createBasicVaadinVersionsJson();
+        final TaskUpdatePackages task = createTask(
+                createApplicationDependencies());
+        task.execute();
+        Assert.assertTrue("Updates we're not written", task.modified);
+        verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
+                PLATFORM_OVERLAY_VERSION);
+    }
+
+    @Test
+    public void npmIsInUse_userHasPinnedPlatformProvidedVersionInPackageJson_userPinnedVersionUsed()
+            throws IOException {
+        // run the basic test to produce an existing package.json
+        runTestWithoutPreexistingPackageJson();
+
+        // user pins a transitive dependency in package.json
+        final JsonObject packageJsonJson = getOrCreatePackageJson();
+        JsonObject dependencies = packageJsonJson.getObject(DEPENDENCIES);
+        dependencies.put(VAADIN_ELEMENT_MIXIN, USER_SPECIFIED_MIXIN_VERSION);
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
+                packageJsonJson.toJson(), StandardCharsets.UTF_8);
+
+        final TaskUpdatePackages task = createTask(
+                createApplicationDependencies());
+        task.execute();
+        Assert.assertTrue(
+                "User's updates in package.json should have been noticed.",
+                task.modified);
+
+        // versions should be the same, except overridden mixin
+        verifyVersions(PLATFORM_DIALOG_VERSION, USER_SPECIFIED_MIXIN_VERSION,
+                PLATFORM_OVERLAY_VERSION);
+    }
+
+    @Test
+    public void npmIsInUse_applicationHasPinnedPlatformProvidedVersionInAddon_applicationPinnedVersionIsUsed()
+            throws IOException {
+        // run the basic test to produce an existing package.json
+        runTestWithoutPreexistingPackageJson();
+
+        // user adds an application/add-on specific version,
+        // in practice excludes the vaadin brought in version
+        final Map<String, String> applicationDependencies = createApplicationDependencies();
+        applicationDependencies.put(VAADIN_ELEMENT_MIXIN,
+                USER_SPECIFIED_MIXIN_VERSION);
+        final TaskUpdatePackages task = createTask(applicationDependencies);
+        task.execute();
+        Assert.assertTrue(
+                "User's added application dependency updates should have been noticed",
+                task.modified);
+
+        // versions should be the same, except overridden mixin
+        verifyVersions(PLATFORM_DIALOG_VERSION, USER_SPECIFIED_MIXIN_VERSION,
+                PLATFORM_OVERLAY_VERSION);
+    }
+
+    @Test
+    public void npmIsInUse_platformVersionIsBumped_versionsAreUpdated()
+            throws IOException {
+        // run the basic test to produce an existing package.json
+        runTestWithoutPreexistingPackageJson();
+        // write new versions json and scanned deps
+        final String newVersion = "20.0.0";
+        createVaadinVersionsJson(newVersion, newVersion, newVersion);
+
+        final Map<String, String> applicationDependencies = createApplicationDependencies();
+        applicationDependencies.put(VAADIN_DIALOG, newVersion);
+        final TaskUpdatePackages task = createTask(applicationDependencies);
+        task.execute();
+        Assert.assertTrue("Updates not picked", task.modified);
+
+        verifyVersions(newVersion, newVersion, newVersion);
+    }
+
+    @Test
+    public void npmIsInUse_noPlatformVersionJsonPresent_noFailure()
+            throws IOException {
+        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+                .thenReturn(null);
+        final TaskUpdatePackages task = createTask(
+                createApplicationDependencies());
+        task.execute();
+        Assert.assertTrue("Updates not picked", task.modified);
+
+        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+                .thenReturn(versionJsonFile.toURI().toURL());
+        JsonObject dependencies = getOrCreatePackageJson()
+                .getObject(DEPENDENCIES);
+        Assert.assertEquals(PLATFORM_DIALOG_VERSION,
+                dependencies.get(VAADIN_DIALOG).asString());
+    }
+
+    @Test
+    public void npmIsInUse_platformVersionsJsonAdded_versionsPinned()
+            throws IOException {
+        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+                .thenReturn(null);
+        createTask(createApplicationDependencies()).execute();
+
+        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+                .thenReturn(versionJsonFile.toURI().toURL());
+        final String newVersion = "20.0.0";
+        createVaadinVersionsJson(newVersion, newVersion, newVersion);
+
+        final Map<String, String> applicationDependencies = createApplicationDependencies();
+        applicationDependencies.put(VAADIN_DIALOG, newVersion);
+        final TaskUpdatePackages task = createTask(applicationDependencies);
+        task.execute();
+        Assert.assertTrue("Updates not picked", task.modified);
+
+        verifyVersions(newVersion, newVersion, newVersion);
+    }
+
+    @Test
+    public void npmIsInUse_switchToPnpm_pinnedVersionsDeleted()
+            throws IOException {
+        runTestWithoutPreexistingPackageJson();
+        final TaskUpdatePackages task = createTask(
+                createApplicationDependencies(), true);
+        task.execute();
+        Assert.assertTrue("Updates not picked", task.modified);
+
+        // only the application dependency should stay
+        verifyVersions(PLATFORM_DIALOG_VERSION, null, null);
+    }
+
+    @Test
+    public void npmIsInUse_versionJsonHasBadVersion_noFailureNothingAdded()
+            throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
+                PLATFORM_ELEMENT_MIXIN_VERSION, "{{{foobar}}");
+
+        final TaskUpdatePackages task = createTask(
+                createApplicationDependencies());
+        task.execute();
+        Assert.assertTrue("Updates not picked", task.modified);
+
+        verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
+                null);
+    }
+
+    @Test
+    public void npmIsInUse_versionsJsonHasSnapshotVersions_notAddedToPackageJson()
+            throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
+                PLATFORM_ELEMENT_MIXIN_VERSION, "20.0-SNAPSHOT");
+
+        final TaskUpdatePackages task = createTask(
+                createApplicationDependencies());
+        task.execute();
+        Assert.assertTrue("Updates not picked", task.modified);
+
+        verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
+                null);
+    }
+
+    @Test
+    public void npmIsInUse_packageJsonHasBadVersion_pinnedVersionUsed()
+            throws IOException {
+        final JsonObject packageJson = getOrCreatePackageJson();
+        JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        dependencies.put(VAADIN_ELEMENT_MIXIN, "asdfasagqae4rat");
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
+                packageJson.toJson(), StandardCharsets.UTF_8);
+
+        createBasicVaadinVersionsJson();
+
+        final TaskUpdatePackages task = createTask(
+                createApplicationDependencies());
+        task.execute();
+
+        Assert.assertTrue("Updates not picked", task.modified);
+
+        verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
+                PLATFORM_OVERLAY_VERSION);
+    }
+
+    private void createBasicVaadinVersionsJson() {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
+                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+    }
+
+    private void createVaadinVersionsJson(String dialogVersion,
+            String elementMixinVersion, String overlayVersion) {
+        // testing with exact versions json content instead of mocking parsing
+        String versionJsonString = //@formatter:off
+                "{ \"core\": {"
+                        + "\"vaadin-dialog\": {\n"
+                        + "   \"component\": true,\n"
+                        + "   \"javaVersion\": \"{{version}}\",\n"
+                        + "    \"jsVersion\": \""+dialogVersion+"\",\n"
+                        + "    \"npmName\": \""+VAADIN_DIALOG+"\"\n"
+                        + "},\n"
+                        + "\"vaadin-element-mixin\": {\n"
+                        + "    \"jsVersion\": \""+elementMixinVersion+"\",\n"
+                        + "    \"npmName\": \""+VAADIN_ELEMENT_MIXIN+"\"\n"
+                        + "},\n"
+                        + "\"vaadin-overlay\": {\n"
+                        + "    \"jsVersion\": \""+overlayVersion+"\",\n"
+                        + "    \"npmName\": \""+VAADIN_OVERLAY+"\",\n"
+                        + "    \"releasenotes\": true\n"
+                        +"}}},\n";//@formatter:on
+        try {
+            FileUtils.write(versionJsonFile, versionJsonString,
+                    StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Map<String, String> createApplicationDependencies() {
+        Map<String, String> applicationScannedDependencies = new HashMap<>();
+        applicationScannedDependencies.put(VAADIN_DIALOG,
+                PLATFORM_DIALOG_VERSION);
+        return applicationScannedDependencies;
+    }
+
     private TaskUpdatePackages createTask(
             Map<String, String> applicationDependencies) {
         return createTask(applicationDependencies, false);
@@ -249,6 +494,34 @@ public class TaskUpdatePackagesNpmTest {
             FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
                     packageJsonJson.toJson(), StandardCharsets.UTF_8);
             return packageJsonJson;
+        }
+    }
+
+    private void verifyVersions(String expectedDialogVersion,
+            String expectedElementMixinVersion, String expectedOverlayVersion)
+            throws IOException {
+        JsonObject dependencies = getOrCreatePackageJson()
+                .getObject(DEPENDENCIES);
+        if (expectedDialogVersion == null) {
+            Assert.assertNull("Dependency added when it should not have been",
+                    dependencies.get(VAADIN_DIALOG));
+        } else {
+            Assert.assertEquals(expectedDialogVersion,
+                    dependencies.getString(VAADIN_DIALOG));
+        }
+        if (expectedElementMixinVersion == null) {
+            Assert.assertNull("Dependency added when it should not have been",
+                    dependencies.get(VAADIN_ELEMENT_MIXIN));
+        } else {
+            Assert.assertEquals(expectedElementMixinVersion,
+                    dependencies.getString(VAADIN_ELEMENT_MIXIN));
+        }
+        if (expectedOverlayVersion == null) {
+            Assert.assertNull("Dependency added when it should not have been",
+                    dependencies.get(VAADIN_OVERLAY));
+        } else {
+            Assert.assertEquals(expectedOverlayVersion,
+                    dependencies.getString(VAADIN_OVERLAY));
         }
     }
 

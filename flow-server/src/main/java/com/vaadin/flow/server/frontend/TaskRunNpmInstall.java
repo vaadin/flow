@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -31,7 +30,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -186,38 +184,29 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     /**
-     * Generate versions json file.
+     * Generate versions json file for pnpm.
      *
      * @return generated versions json file path
      * @throws IOException
+     *             when file IO fails
      */
     protected String generateVersionsJson() throws IOException {
-        URL resource = classFinder.getResource(Constants.VAADIN_VERSIONS_JSON);
-        if (resource == null) {
-            packageUpdater.log()
-                    .warn("Couldn't find {} file to pin dependency versions."
-                            + " Transitive dependencies won't be pinned for pnpm.",
-                            Constants.VAADIN_VERSIONS_JSON);
+        assert enablePnpm;
+        File versions = new File(packageUpdater.generatedFolder,
+                "versions.json");
+
+        JsonObject versionsJson = getLockedVersions();
+        if (versionsJson == null) {
+            versionsJson = generateVersionsFromPackageJson();
         }
-        try (InputStream content = resource == null ? null
-                : resource.openStream()) {
-
-            File versions = new File(packageUpdater.generatedFolder,
-                    "versions.json");
-
-            JsonObject versionsJson = getVersions(content);
-            if (versionsJson == null) {
-                versionsJson = generateVersionsFromPackageJson();
-            }
-            FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
-                    StandardCharsets.UTF_8);
-            Path versionsPath = versions.toPath();
-            if (versions.isAbsolute()) {
-                return FrontendUtils.getUnixRelativePath(
-                        packageUpdater.npmFolder.toPath(), versionsPath);
-            } else {
-                return FrontendUtils.getUnixPath(versionsPath);
-            }
+        FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
+                StandardCharsets.UTF_8);
+        Path versionsPath = versions.toPath();
+        if (versions.isAbsolute()) {
+            return FrontendUtils.getUnixRelativePath(
+                    packageUpdater.npmFolder.toPath(), versionsPath);
+        } else {
+            return FrontendUtils.getUnixPath(versionsPath);
         }
     }
 
@@ -251,19 +240,12 @@ public class TaskRunNpmInstall implements FallibleCommand {
         return versionsJson;
     }
 
-    private JsonObject getVersions(InputStream platformVersions)
-            throws IOException {
-        JsonObject versionsJson = null;
-        if (platformVersions != null) {
-            VersionsJsonConverter convert = new VersionsJsonConverter(
-                    Json.parse(IOUtils.toString(platformVersions,
-                            StandardCharsets.UTF_8)));
-            versionsJson = convert.getConvertedJson();
-            versionsJson = new VersionsJsonFilter(
-                    packageUpdater.getPackageJson(), NodeUpdater.DEPENDENCIES)
-                            .getFilteredVersions(versionsJson);
-        }
+    private JsonObject getLockedVersions() throws IOException {
+        assert enablePnpm;
+        JsonObject versionsJson = packageUpdater
+                .getPlatformPinnedDependencies();
 
+        // if devDependencies were locked to be locked, it would happen here
         return versionsJson;
     }
 

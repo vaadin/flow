@@ -59,7 +59,7 @@ public class TaskRunNpmInstallTest {
 
     private File npmFolder;
 
-    private ClassFinder finder = Mockito.mock(ClassFinder.class);
+    private ClassFinder finder;
 
     private Logger logger = Mockito.mock(Logger.class);
 
@@ -74,7 +74,8 @@ public class TaskRunNpmInstallTest {
         npmFolder = temporaryFolder.newFolder();
         File generatedPath = new File(npmFolder, "generated");
         generatedPath.mkdir();
-        nodeUpdater = new NodeUpdater(getClassFinder(),
+        finder = Mockito.mock(ClassFinder.class);
+        nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), npmFolder,
                 getGeneratedFolder()) {
             @Override

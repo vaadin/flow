@@ -37,7 +37,7 @@ class VersionsJsonFilter {
 
     private final String dependenciesKey;
 
-    private final String OLDER_VERSION_WARNING = "Using user pinned version '{}' of '{}' which is older than the current platform version '{}'";
+    private static final String OLDER_VERSION_WARNING = "Using user (package.json) pinned version '{}' of '{}' which is older than the current platform version '{}'";
 
     VersionsJsonFilter(JsonObject packageJson, String dependenciesKey) {
         this.dependenciesKey = dependenciesKey;
@@ -49,44 +49,46 @@ class VersionsJsonFilter {
      * Collect framework managed versions to enforce that the user hasn't
      * changed.
      *
+     * @param versions
+     *            to be filtered for user managed ones
      * @return filtered versions json
      */
     JsonObject getFilteredVersions(JsonObject versions) {
         JsonObject json = Json.createObject();
         for (String key : versions.keys()) {
-            if (userManagedDependencies.hasKey(key)) {
-                if (isNewer(versions.getString(key),
-                        userManagedDependencies.getString(key))) {
+            final FrontendVersion version = FrontendUtils
+                    .getPackageVersionFromJson(versions, key,
+                            "vaadin_version.json");
+            if (version == null) {
+                continue;
+            }
+            // for platform snapshots, snapshot is set to be the vaadin-core
+            // version
+            if (version.getFullVersion().contains("SNAPSHOT")) {
+                continue;
+            }
+            final FrontendVersion userManagedVersion = FrontendUtils
+                    .getPackageVersionFromJson(userManagedDependencies, key,
+                            "/package.json -> { dependencies }");
+            final FrontendVersion vaadinDepsVersion = FrontendUtils
+                    .getPackageVersionFromJson(vaadinVersions, key,
+                            "/package.json -> { vaadin { dependencies }}");
+            if (userManagedVersion != null) {
+                if (version.isNewerThan(userManagedVersion)) {
                     LoggerFactory.getLogger("Versions").warn(
                             OLDER_VERSION_WARNING,
                             userManagedDependencies.getString(key), key,
                             versions.getString(key));
                 }
                 json.put(key, userManagedDependencies.getString(key));
-            } else if (vaadinVersions.hasKey(key) && isNewer(
-                    vaadinVersions.getString(key), versions.getString(key))) {
+            } else if (vaadinDepsVersion != null
+                    && vaadinDepsVersion.isNewerThan(version)) {
                 json.put(key, vaadinVersions.getString(key));
             } else {
                 json.put(key, versions.getString(key));
             }
         }
         return json;
-    }
-
-    /**
-     * Check if version1 is newer than version2.
-     * 
-     * @param version1
-     *            version string to see if newer
-     * @param version2
-     *            version string to compare against
-     * @return true if version1 > version2
-     */
-    private boolean isNewer(String version1, String version2) {
-        final FrontendVersion frontendVersion = new FrontendVersion(version1);
-        final FrontendVersion frontendVersion2 = new FrontendVersion(version2);
-
-        return frontendVersion.isNewerThan(frontendVersion2);
     }
 
     /**
@@ -117,9 +119,9 @@ class VersionsJsonFilter {
     private boolean isUserChanged(String key, JsonObject vaadinDep,
             JsonObject dependencies) {
         if (vaadinDep.hasKey(key)) {
-            FrontendVersion vaadin = new FrontendVersion(
+            FrontendVersion vaadin = new FrontendVersion(key,
                     vaadinDep.getString(key));
-            FrontendVersion dep = new FrontendVersion(
+            FrontendVersion dep = new FrontendVersion(key,
                     dependencies.getString(key));
             return !vaadin.isEqualTo(dep);
         }
