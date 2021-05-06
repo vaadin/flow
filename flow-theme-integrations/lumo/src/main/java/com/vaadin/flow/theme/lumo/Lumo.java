@@ -38,7 +38,7 @@ import com.vaadin.flow.theme.AbstractTheme;
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/spacing.html")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/style.html")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/icons.html")
-@NpmPackage(value = "@vaadin/vaadin-lumo-styles", version = "1.6.0")
+@NpmPackage(value = "@vaadin/vaadin-lumo-styles", version = "1.6.1")
 @JsModule("@vaadin/vaadin-lumo-styles/color.js")
 @JsModule("@vaadin/vaadin-lumo-styles/typography.js")
 @JsModule("@vaadin/vaadin-lumo-styles/sizing.js")
