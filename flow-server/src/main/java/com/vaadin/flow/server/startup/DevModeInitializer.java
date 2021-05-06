@@ -285,10 +285,8 @@ public class DevModeInitializer
 
         // If we are missing the generated webpack configuration then generate
         // webpack configurations
-        if (!new File(builder.npmFolder, WEBPACK_GENERATED).exists()) {
-            builder.withWebpack(builder.npmFolder, FrontendUtils.WEBPACK_CONFIG,
-                    FrontendUtils.WEBPACK_GENERATED);
-        }
+        builder.withWebpack(builder.npmFolder, FrontendUtils.WEBPACK_CONFIG,
+                FrontendUtils.WEBPACK_GENERATED);
 
         // If we are missing either the base or generated package json files
         // generate those
