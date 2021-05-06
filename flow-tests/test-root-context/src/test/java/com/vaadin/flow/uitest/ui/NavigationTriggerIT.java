@@ -22,6 +22,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -54,17 +55,6 @@ public class NavigationTriggerIT extends ChromeBrowserTest {
         assertMessageCount(3);
         assertLastMessage("/navigate", NavigationTrigger.UI_NAVIGATE,
                 "navigate");
-    }
-
-    @Test
-    @Ignore("Ignored because of fusion issue https://github.com/vaadin/flow/issues/10513")
-    public void testNavigationTriggers_back_forward() {
-        String url = getTestURL() + "/abc/";
-        getDriver().get(url);
-
-        findElement(By.id("routerlink")).click();
-
-        findElement(By.id("navigate")).click();
 
         getDriver().navigate().back();
         assertMessageCount(4);
@@ -87,7 +77,8 @@ public class NavigationTriggerIT extends ChromeBrowserTest {
 
         findElement(By.id("rerouteButton")).click();
         assertMessageCount(7);
-        assertLastMessage("/", NavigationTrigger.PROGRAMMATIC, "rerouted");
+        assertLastMessage("/rerouted", NavigationTrigger.PROGRAMMATIC,
+                "rerouted");
     }
 
     private void assertLastMessage(String path, NavigationTrigger trigger,
