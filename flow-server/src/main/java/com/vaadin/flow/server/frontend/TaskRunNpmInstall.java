@@ -95,7 +95,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      *            whether vaadin home node executable has to be used
      * @param nodeVersion
      *            The node.js version to be used when node.js is installed
-     *            automatically by Vaadin, for example <code>"v14.15.4"</code>.
+     *            automatically by Vaadin, for example <code>"v16.0.0"</code>.
      *            Use {@value FrontendTools#DEFAULT_NODE_VERSION} by default.
      * @param nodeDownloadRoot
      *            Download node.js from this URL. Handy in heavily firewalled
