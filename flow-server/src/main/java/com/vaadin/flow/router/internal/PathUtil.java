@@ -39,7 +39,7 @@ public class PathUtil implements Serializable {
      * @return a List containing the segments of the path.
      */
     public static List<String> getSegmentsList(String path) {
-        path = trimPath(path);
+        path = trimPathEnding(path);
 
         final String[] segments = path.split("/");
         if (segments.length == 1 && segments[0].isEmpty()) {
@@ -59,8 +59,8 @@ public class PathUtil implements Serializable {
      * @return path form from input segments.
      */
     public static String getPath(List<String> segments) {
-        return trimPath((segments == null || segments.isEmpty()) ? ""
-                : String.join("/", segments));
+        return trimPathEnding(
+                segments == null ? "" : String.join("/", segments));
     }
 
     /**
@@ -99,6 +99,28 @@ public class PathUtil implements Serializable {
         if (path.startsWith("/")) {
             path = path.substring(1);
         }
+        if (path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
+        }
+        return path;
+    }
+
+    /**
+     * Trim the path by removing any leading whitespaces and trailing slashes
+     * and whitespaces.
+     *
+     * @param path
+     *            url path to trim.
+     * @return a String representing the input path without any leading and
+     *         trailing whitespaces and trailing slash.
+     */
+    public static String trimPathEnding(String path) {
+        if (path == null) {
+            return "";
+        }
+
+        path = path.trim();
+
         if (path.endsWith("/")) {
             path = path.substring(0, path.length() - 1);
         }
