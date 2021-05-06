@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.server.connect;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -38,11 +37,9 @@ public class ExplicitNullableTypeChecker {
      * @return a result of check
      */
     public static boolean isRequired(AnnotatedElement element) {
-        Annotation[] annotations = element.getAnnotations();
-
-        // JetBrains NotNull annotation is not available at runtime.
-        return Stream.of(annotations).anyMatch(annotation -> "nonnull"
-                .equalsIgnoreCase(annotation.annotationType().getSimpleName()));
+        return Stream.of(element.getAnnotations())
+                .anyMatch(annotation -> "nonnull".equalsIgnoreCase(
+                        annotation.annotationType().getSimpleName()));
     }
 
     /**
