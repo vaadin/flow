@@ -5,12 +5,14 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,6 +25,8 @@ import java.util.Set;
 import java.util.function.Function;
 
 import net.jcip.annotations.NotThreadSafe;
+
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -225,6 +229,19 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         webpackFile.delete();
         process();
         assertNotNull(getDevModeHandler());
+    }
+
+    @Test
+    public void should_Always_Update_Generated_Webpack_Conf() throws Exception {
+        File generatedWebpackFile = new File(webpackFile.getParentFile(), FrontendUtils.WEBPACK_GENERATED);
+        try (FileWriter writer = new FileWriter(generatedWebpackFile)) {
+            IOUtils.write("Hello world", writer);
+            Assert.assertEquals("Hello world", IOUtils.toString(generatedWebpackFile.toURI(),StandardCharsets.UTF_8));
+            process();
+            Assert.assertNotEquals("Hello world", IOUtils.toString(generatedWebpackFile.toURI(),StandardCharsets.UTF_8));
+        } finally {
+            generatedWebpackFile.delete();
+        }
     }
 
     @Test
