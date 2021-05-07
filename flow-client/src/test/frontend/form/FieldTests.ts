@@ -3,7 +3,7 @@
 import { expect } from 'chai';
 import { LitElement, nothing, render } from 'lit';
 import { html, unsafeStatic } from 'lit/static-html';
-import { customElement, query } from 'lit/decorators';
+import { customElement, query } from 'lit/decorators.js';
 import { BinderNode } from '../../../main/frontend/form/BinderNode';
 
 // API to test

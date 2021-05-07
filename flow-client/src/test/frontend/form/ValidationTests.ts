@@ -2,7 +2,7 @@
 
 import { expect } from 'chai';
 import { css, html, LitElement } from 'lit';
-import { customElement, query } from 'lit/decorators';
+import { customElement, query } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat';
 
 // API to test
