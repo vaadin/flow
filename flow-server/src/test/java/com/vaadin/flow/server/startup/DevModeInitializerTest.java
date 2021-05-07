@@ -236,6 +236,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         File generatedWebpackFile = new File(webpackFile.getParentFile(), FrontendUtils.WEBPACK_GENERATED);
         try (FileWriter writer = new FileWriter(generatedWebpackFile)) {
             IOUtils.write("Hello world", writer);
+            writer.flush();
             Assert.assertEquals("Hello world", IOUtils.toString(generatedWebpackFile.toURI(),StandardCharsets.UTF_8));
             process();
             Assert.assertNotEquals("Hello world", IOUtils.toString(generatedWebpackFile.toURI(),StandardCharsets.UTF_8));
