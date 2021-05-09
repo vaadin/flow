@@ -1,5 +1,5 @@
 import { css, html, LitElement } from 'lit';
-import { property } from 'lit/decorators';
+import { property } from 'lit/decorators.js';
 
 export class VaadinDevmodeGizmo extends LitElement {
   static BLUE_HSL = css`206, 100%, 70%`;

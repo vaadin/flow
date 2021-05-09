@@ -14,7 +14,7 @@ import {
 import {Employee, EmployeeModel, Order, OrderModel, TestEntity, TestModel} from "./TestModels";
 
 import {LitElement} from 'lit';
-import {customElement} from 'lit/decorators';
+import {customElement} from 'lit/decorators.js';
 
 @customElement('lit-order-view')
 class LitOrderView extends LitElement {}
