@@ -52,6 +52,15 @@ The full information would be preferred:
 
 For creating a plugin see [Writing a plugin](https://webpack.js.org/contribute/writing-a-plugin/)
 
+## Working with plugin in a project
+
+Testing a plugin is often easier by using it in a project.
+As by default all plugins are re-copied from the `flow-server.jar` making changes
+would mean building the server module each time.
+
+The plugins are copied to `target/plugins` from there they are "installed" to `node_modules` with (p)npm.
+To make editing and testing easier one can add `"update": false,` to the plugin package json that will make it not be overwritten.
+
 ## Using a Flow webpack plugin
 
 The flow plugins get installed to `node_modules/@vaadin` which means that using them we should use the for `@vaadin/${plugin-name}`
