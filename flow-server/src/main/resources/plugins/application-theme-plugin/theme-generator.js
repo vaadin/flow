@@ -47,11 +47,37 @@ const getStyleModule = (id) => {
   return cssText;
 };
 `;
+const createLinkReferences = `
+const createLinkReferences = (css, target) => {
+  // Unresolved urls are written as '@import url(text);' to the css
+  const importMatcher = /\\@import\\surl\\((.+?)\\);/g;
+  
+  var match;
+  var styleCss = css;
+  
+  // For each external url import add a link reference
+  while((match = importMatcher.exec(css)) !== null) {
+    styleCss = styleCss.replace(match[0], "");
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = match[1];
+    // For target document append to head else append to target
+    if(target === document) {
+      document.head.appendChild(link);
+    } else {
+      target.appendChild(link);
+    }
+  };
+  return styleCss;
+};
+`;
+
 const injectGlobalCssMethod = `
 // target: Document | ShadowRoot
 export const injectGlobalCss = (css, target, first) => {
+  
   const sheet = new CSSStyleSheet();
-  sheet.replaceSync(css);
+  sheet.replaceSync(createLinkReferences(css,target));
   if (first) {
     target.adoptedStyleSheets = [sheet, ...target.adoptedStyleSheets];
   } else {
@@ -105,6 +131,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
     themeFile += `import {applyTheme as applyBaseTheme} from './theme-${themeProperties.parent}.generated.js';`;
   }
 
+  themeFile += createLinkReferences;
   themeFile += injectGlobalCssMethod;
   themeFile += addCssBlockMethod;
   themeFile += addStyleIncludeMethod;
