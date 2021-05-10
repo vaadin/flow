@@ -61,7 +61,7 @@ export abstract class AbstractModel<T> {
     return String(this.valueOf());
   }
   valueOf(): T {
-    const value = getBinderNode(this).value;
+    const { value } = getBinderNode(this);
     if (value === undefined) {
       throw new TypeError('Value is undefined');
     }
