@@ -15,8 +15,12 @@
  */
 package com.vaadin.flow.internal;
 
+import java.util.Optional;
+
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 
@@ -30,39 +34,30 @@ import com.vaadin.flow.server.VaadinService;
  * @since
  *
  */
-public class BrowserLiveReloadAccess {
+public interface BrowserLiveReloadAccess {
 
     /**
      * Returns a {@link BrowserLiveReload} instance for the given
      * {@code service}.
-     * <p>
-     * Returns {@code null} if production mode is enabled for the service.
+     *
+     * @param service
+     *            a live reload service
+     * @return a <code>BrowserLiveReload</code> instance or null if disabled
+     */
+    BrowserLiveReload getLiveReload(VaadinService service);
+
+    /**
+     * Create a {@link BrowserLiveReload} is factory available.
      *
      * @param service
      *            a service
-     * @return a BrowserLiveReload instance or null for production mode
+     * @return a <code>DevModeHandler</code> instance or null if disabled
      */
-    public BrowserLiveReload getLiveReload(VaadinService service) {
-        if (service.getDeploymentConfiguration().isProductionMode()) {
-            LoggerFactory.getLogger(BrowserLiveReloadAccess.class).debug(
-                    "BrowserLiveReloadAccess::getLiveReload is called in production mode.");
-            return null;
-        }
-        if (!service.getDeploymentConfiguration()
-                .isDevModeLiveReloadEnabled()) {
-            LoggerFactory.getLogger(BrowserLiveReloadAccess.class).debug(
-                    "BrowserLiveReloadAccess::getLiveReload is called when live reload is disabled.");
-            return null;
-        }
+    static BrowserLiveReload getLiveReloadIfAvailable(VaadinService service) {
         VaadinContext context = service.getContext();
-        BrowserLiveReloadImpl liveReload;
-        synchronized (this) {
-            liveReload = context.getAttribute(BrowserLiveReloadImpl.class);
-            if (liveReload == null) {
-                liveReload = new BrowserLiveReloadImpl();
-                context.setAttribute(BrowserLiveReloadImpl.class, liveReload);
-            }
-        }
-        return liveReload;
+        return Optional.ofNullable(context)
+                .map(ctx -> ctx.getAttribute(Lookup.class))
+                .map(lu -> lu.lookup(BrowserLiveReloadAccess.class))
+                .map(blra -> blra.getLiveReload(service)).orElse(null);
     }
 }

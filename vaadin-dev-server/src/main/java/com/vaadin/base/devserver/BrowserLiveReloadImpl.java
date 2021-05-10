@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.internal;
+package com.vaadin.base.devserver;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
@@ -27,7 +27,7 @@ import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.internal.BrowserLiveReload;
 
 /**
  * {@link BrowserLiveReload} implementation class.
@@ -37,7 +37,7 @@ import com.vaadin.flow.server.DevModeHandler;
  * @author Vaadin Ltd
  *
  */
-class BrowserLiveReloadImpl implements BrowserLiveReload {
+public class BrowserLiveReloadImpl implements BrowserLiveReload {
 
     private final ClassLoader classLoader;
 
@@ -58,17 +58,12 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
                 "org.springframework.boot.devtools.livereload.LiveReloadServer"));
     }
 
-    BrowserLiveReloadImpl() {
+    public BrowserLiveReloadImpl() {
         this(BrowserLiveReloadImpl.class.getClassLoader());
     }
 
-    BrowserLiveReloadImpl(ClassLoader classLoader) {
+    public BrowserLiveReloadImpl(ClassLoader classLoader) {
         this.classLoader = classLoader;
-
-        DevModeHandler devModeHandler = DevModeHandler.getDevModeHandler();
-        if (devModeHandler != null) {
-            devModeHandler.setLiveReload(this);
-        }
     }
 
     @Override

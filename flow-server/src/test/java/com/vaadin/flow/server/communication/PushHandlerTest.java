@@ -28,14 +28,16 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadAccessTest;
+import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.SessionExpiredException;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -96,8 +98,7 @@ public class PushHandlerTest {
         deploymentConfiguration.setDevModeLiveReloadEnabled(true);
 
         VaadinContext context = service.getContext();
-        BrowserLiveReload liveReload = BrowserLiveReloadAccessTest
-                .mockBrowserLiveReloadImpl(context);
+        BrowserLiveReload liveReload = mockBrowserLiveReloadImpl(context);
 
         AtomicReference<AtmosphereResource> res = new AtomicReference<>();
         runTest(service, (handler, resource) -> {
@@ -125,8 +126,7 @@ public class PushHandlerTest {
         deploymentConfiguration.setDevModeLiveReloadEnabled(true);
 
         VaadinContext context = service.getContext();
-        BrowserLiveReload liveReload = BrowserLiveReloadAccessTest
-                .mockBrowserLiveReloadImpl(context);
+        BrowserLiveReload liveReload = mockBrowserLiveReloadImpl(context);
 
         AtomicReference<AtmosphereResource> res = new AtomicReference<>();
         runTest(service, (handler, resource) -> {
@@ -281,5 +281,18 @@ public class PushHandlerTest {
         } catch (ServiceException exception) {
             throw new RuntimeException(exception);
         }
+    }
+
+    public static BrowserLiveReload mockBrowserLiveReloadImpl(
+            VaadinContext context) {
+        BrowserLiveReload liveReload = Mockito.mock(BrowserLiveReload.class);
+        Lookup lookup = Lookup.of(new BrowserLiveReloadAccess() {
+            @Override
+            public BrowserLiveReload getLiveReload(VaadinService service) {
+                return liveReload;
+            }
+        }, BrowserLiveReloadAccess.class);
+        context.setAttribute(Lookup.class, lookup);
+        return liveReload;
     }
 }

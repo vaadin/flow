@@ -1,4 +1,4 @@
-package com.vaadin.flow.server.startup;
+package com.vaadin.base.devserver.startup;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -12,7 +12,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.vaadin.flow.server.frontend.TestUtils;
+import com.vaadin.flow.testutil.TestUtils;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;

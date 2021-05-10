@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server;
+package com.vaadin.base.devserver;
 
 import java.io.IOException;
 import java.net.ServerSocket;

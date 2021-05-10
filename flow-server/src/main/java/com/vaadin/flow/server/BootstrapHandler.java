@@ -66,6 +66,8 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerAccess;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
@@ -608,7 +610,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             setupPwa(document, context);
 
             if (!config.isProductionMode()) {
-                showWebpackErrors(document);
+                showWebpackErrors(context.getService(), document);
             }
 
             BootstrapPageResponse response = new BootstrapPageResponse(
@@ -1194,12 +1196,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         deploymentConfiguration.isDevModeLiveReloadEnabled());
 
                 VaadinService service = session.getService();
-                BrowserLiveReloadAccess liveReloadAccess = service
-                        .getInstantiator()
-                        .getOrCreate(BrowserLiveReloadAccess.class);
-                BrowserLiveReload liveReload = liveReloadAccess != null
-                        ? liveReloadAccess.getLiveReload(service)
-                        : null;
+                BrowserLiveReload liveReload = BrowserLiveReloadAccess
+                        .getLiveReloadIfAvailable(service);
 
                 // With V15+ bootstrap, gizmo is added to generated index.html
                 if (liveReload != null
@@ -1490,10 +1488,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return pushJSPath;
     }
 
-    protected static void showWebpackErrors(Document document) {
-        DevModeHandler devMode = DevModeHandler.getDevModeHandler();
-        if (devMode != null) {
-            String errorMsg = devMode.getFailedOutput();
+    protected static void showWebpackErrors(VaadinService service,
+            Document document) {
+        DevModeHandler devServer = DevModeHandlerAccess
+                .getDevModeHandlerIfAvailable(service);
+        if (devServer != null) {
+            String errorMsg = devServer.getFailedOutput();
             if (errorMsg != null) {
                 // Make error lines more prominent
                 errorMsg = errorMsg.replaceAll("(ERROR.+?\n)", "<b>$1</b>");

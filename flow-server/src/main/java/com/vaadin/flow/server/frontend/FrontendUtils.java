@@ -45,8 +45,9 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerAccess;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -459,8 +460,11 @@ public class FrontendUtils {
         InputStream content = null;
 
         try {
+            DevModeHandler devModeHandler = DevModeHandlerAccess
+                    .getDevModeHandlerIfAvailable(service);
             if (!config.isProductionMode() && config.enableDevServer()) {
-                content = getStatsFromWebpack();
+                assert devModeHandler != null;
+                content = getStatsFromWebpack(devModeHandler);
             }
 
             if (config.isStatsExternal()) {
@@ -517,8 +521,11 @@ public class FrontendUtils {
         InputStream content = null;
 
         try {
-            if (!config.isProductionMode() && config.enableDevServer()) {
-                content = getFileFromWebpack(path);
+            DevModeHandler devServer = DevModeHandlerAccess
+                    .getDevModeHandlerIfAvailable(service);
+            if (!config.isProductionMode() && config.enableDevServer()
+                    && devServer != null) {
+                content = getFileFromWebpack(devServer, path);
             }
 
             if (content == null) {
@@ -556,10 +563,10 @@ public class FrontendUtils {
      */
     public static String getStatsHash(VaadinService service)
             throws IOException {
-        DeploymentConfiguration config = service.getDeploymentConfiguration();
-        if (!config.isProductionMode() && config.enableDevServer()) {
-            DevModeHandler handler = DevModeHandler.getDevModeHandler();
-            HttpURLConnection statsConnection = handler
+        DevModeHandler devModeHandler = DevModeHandlerAccess
+                .getDevModeHandlerIfAvailable(service);
+        if (devModeHandler != null) {
+            HttpURLConnection statsConnection = devModeHandler
                     .prepareConnection("/stats.hash", "GET");
             if (statsConnection
                     .getResponseCode() != HttpURLConnection.HTTP_OK) {
@@ -573,15 +580,17 @@ public class FrontendUtils {
         return "";
     }
 
-    private static InputStream getStatsFromWebpack() throws IOException {
-        return getResourceFromWebpack("/stats.json", "downloading stats.json");
+    private static InputStream getStatsFromWebpack(
+            DevModeHandler devModeHandler) throws IOException {
+        return getResourceFromWebpack(devModeHandler, "/stats.json",
+                "downloading stats.json");
     }
 
-    private static InputStream getResourceFromWebpack(String resource,
+    private static InputStream getResourceFromWebpack(
+            DevModeHandler devModeHandler, String resource,
             String exceptionMessage) throws IOException {
-        DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        HttpURLConnection statsConnection = handler.prepareConnection(resource,
-                "GET");
+        HttpURLConnection statsConnection = devModeHandler
+                .prepareConnection(resource, "GET");
         if (statsConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new WebpackConnectionException(
                     String.format(NO_CONNECTION, exceptionMessage));
@@ -686,10 +695,9 @@ public class FrontendUtils {
         return stream;
     }
 
-    private static InputStream getFileFromWebpack(String filePath)
-            throws IOException {
-        DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        return handler.prepareConnection("/" + filePath, "GET")
+    private static InputStream getFileFromWebpack(DevModeHandler devModeHandler,
+            String filePath) throws IOException {
+        return devModeHandler.prepareConnection("/" + filePath, "GET")
                 .getInputStream();
     }
 
@@ -712,9 +720,12 @@ public class FrontendUtils {
     public static String getStatsAssetsByChunkName(VaadinService service)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
-        if (!config.isProductionMode() && config.enableDevServer()) {
-            return streamToString(getResourceFromWebpack("/assetsByChunkName",
-                    "getting assets by chunk name."));
+        DevModeHandler devModeHandler = DevModeHandlerAccess
+                .getDevModeHandlerIfAvailable(service);
+        if (!config.isProductionMode() && config.enableDevServer()
+                && devModeHandler != null) {
+            return streamToString(getResourceFromWebpack(devModeHandler,
+                    "/assetsByChunkName", "getting assets by chunk name."));
         }
         InputStream resourceAsStream;
         if (config.isStatsExternal()) {

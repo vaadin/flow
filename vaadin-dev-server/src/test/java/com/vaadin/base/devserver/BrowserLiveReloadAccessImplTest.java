@@ -13,19 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.internal;
+package com.vaadin.base.devserver;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 
-public class BrowserLiveReloadAccessTest {
+public class BrowserLiveReloadAccessImplTest {
 
-    private BrowserLiveReloadAccess access = new BrowserLiveReloadAccess();
+    private BrowserLiveReloadAccessImpl access = new BrowserLiveReloadAccessImpl();
 
     @Test
     public void getLiveReload_productionMode_nullIsReturned() {
@@ -60,6 +61,8 @@ public class BrowserLiveReloadAccessTest {
         Mockito.when(config.isDevModeLiveReloadEnabled()).thenReturn(true);
 
         VaadinContext context = Mockito.mock(VaadinContext.class);
+        Mockito.when(context.getAttribute(BrowserLiveReload.class))
+                .thenReturn(Mockito.mock(BrowserLiveReload.class));
         Mockito.when(service.getContext()).thenReturn(context);
 
         Assert.assertNotNull(access.getLiveReload(service));
@@ -77,19 +80,10 @@ public class BrowserLiveReloadAccessTest {
         VaadinContext context = Mockito.mock(VaadinContext.class);
         Mockito.when(service.getContext()).thenReturn(context);
 
-        BrowserLiveReloadImpl reload = Mockito
-                .mock(BrowserLiveReloadImpl.class);
-        Mockito.when(context.getAttribute(BrowserLiveReloadImpl.class))
+        BrowserLiveReload reload = Mockito.mock(BrowserLiveReload.class);
+        Mockito.when(context.getAttribute(BrowserLiveReload.class))
                 .thenReturn(reload);
 
         Assert.assertSame(reload, access.getLiveReload(service));
-    }
-
-    public static BrowserLiveReload mockBrowserLiveReloadImpl(
-            VaadinContext context) {
-        BrowserLiveReloadImpl liveReload = Mockito
-                .mock(BrowserLiveReloadImpl.class);
-        context.setAttribute(BrowserLiveReloadImpl.class, liveReload);
-        return liveReload;
     }
 }

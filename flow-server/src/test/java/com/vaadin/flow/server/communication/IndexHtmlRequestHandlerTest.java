@@ -18,18 +18,15 @@ package com.vaadin.flow.server.communication;
 import javax.servlet.http.HttpServletRequest;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import com.sun.net.httpserver.HttpServer;
 import org.jsoup.Jsoup;
 import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
@@ -47,11 +44,12 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.DevModeHandlerAccess;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
-import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -59,7 +57,6 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.AppShellWithPWA;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithConfigurator;
@@ -69,9 +66,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
-import static com.vaadin.flow.server.DevModeHandlerTest.createStubWebpackTcpListener;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 
@@ -85,7 +80,6 @@ public class IndexHtmlRequestHandlerTest {
     private VaadinResponse response;
     private ByteArrayOutputStream responseOutput;
     private MockDeploymentConfiguration deploymentConfiguration;
-    private HttpServer httpServer;
     private VaadinContext context;
 
     @Rule
@@ -543,35 +537,22 @@ public class IndexHtmlRequestHandlerTest {
 
     @Test
     public void should_attachWebpackErrors() throws Exception {
-        // Create a webpack-dev-server command that should fail the compilation
-        File npmFolder = temporaryFolder.getRoot();
-        String baseDir = npmFolder.getAbsolutePath();
-        new File(baseDir, FrontendUtils.WEBPACK_CONFIG).createNewFile();
-        createStubWebpackServer("Failed to compile", 3000, baseDir);
-
-        // Create a DevModeHandler
         deploymentConfiguration.setEnableDevServer(true);
         deploymentConfiguration.setProductionMode(false);
+
+        DevModeHandler devServer = Mockito.mock(DevModeHandler.class);
+        Mockito.when(devServer.getFailedOutput())
+                .thenReturn("Failed to compile");
+        Mockito.when(devServer.prepareConnection(Mockito.anyString(),
+                Mockito.anyString()))
+                .thenReturn(Mockito.mock(HttpURLConnection.class));
+        service.setContext(context);
+        Lookup lookup = Lookup.of(s -> devServer, DevModeHandlerAccess.class);
+        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
 
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
         mockApplicationConfiguration(appConfig);
-
-        DevModeHandler handler = DevModeHandler.start(0,
-                Lookup.of(appConfig, ApplicationConfiguration.class), npmFolder,
-                CompletableFuture.completedFuture(null));
-        Method join = DevModeHandler.class.getDeclaredMethod("join");
-        join.setAccessible(true);
-        join.invoke(handler);
-        // Ask to the DevModeHandler for the computed random port
-        Method runningPort = DevModeHandler.class
-                .getDeclaredMethod("getRunningDevServerPort", File.class);
-        runningPort.setAccessible(true);
-        int port = (Integer) runningPort.invoke(handler, npmFolder);
-
-        // Configure webpack-dev-server tcp listener to return the `index.html`
-        // content
-        httpServer = createStubWebpackTcpListener(port, 200, "<html></html>");
 
         // Send the request
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
@@ -584,8 +565,6 @@ public class IndexHtmlRequestHandlerTest {
                         "<div class=\"v-system-error\" onclick=\"this.parentElement.removeChild(this)\">"));
         Assert.assertTrue("Should show webpack failure error",
                 indexHtml.contains("Failed to compile"));
-
-        handler.stop();
     }
 
     @Test
@@ -752,14 +731,6 @@ public class IndexHtmlRequestHandlerTest {
     public void tearDown() throws Exception {
         session.unlock();
         mocks.cleanup();
-        if (httpServer != null) {
-            httpServer.stop(0);
-            httpServer = null;
-        }
-        DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        if (handler != null) {
-            handler.stop();
-        }
     }
 
     private VaadinServletRequest createVaadinRequest(String pathInfo) {

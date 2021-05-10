@@ -64,7 +64,7 @@ public class StaticFileServer implements StaticFileHandler {
     private final List<String> manifestPaths;
 
     // Matcher to match string starting with '/themes/[theme-name]/'
-    protected static final Pattern APP_THEME_PATTERN = Pattern
+    public static final Pattern APP_THEME_PATTERN = Pattern
             .compile("^\\/themes\\/[\\s\\S]+?\\/");
 
     /**

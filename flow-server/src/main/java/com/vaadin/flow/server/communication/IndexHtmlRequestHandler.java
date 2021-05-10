@@ -107,7 +107,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         configureErrorDialogStyles(indexDocument);
 
-        showWebpackErrors(indexDocument);
+        showWebpackErrors(session.getService(), indexDocument);
 
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
@@ -161,11 +161,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private void addDevmodeGizmo(Document indexDocument, VaadinSession session,
             VaadinRequest request) {
         VaadinService service = session.getService();
-        BrowserLiveReloadAccess liveReloadAccess = service.getInstantiator()
-                .getOrCreate(BrowserLiveReloadAccess.class);
-        BrowserLiveReload liveReload = liveReloadAccess != null
-                ? liveReloadAccess.getLiveReload(service)
-                : null;
+        BrowserLiveReload liveReload = BrowserLiveReloadAccess
+                .getLiveReloadIfAvailable(service);
 
         if (liveReload != null) {
             Element devmodeGizmo = new Element("vaadin-devmode-gizmo");

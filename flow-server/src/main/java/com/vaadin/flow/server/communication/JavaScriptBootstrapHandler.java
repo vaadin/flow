@@ -25,14 +25,16 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerAccess;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
-import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -198,9 +200,10 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         return stats;
     }
 
-    private JsonValue getErrors() {
+    private JsonValue getErrors(VaadinService service) {
         JsonObject errors = Json.createObject();
-        DevModeHandler devMode = DevModeHandler.getDevModeHandler();
+        DevModeHandler devMode = DevModeHandlerAccess
+                .getDevModeHandlerIfAvailable(service);
         if (devMode != null) {
             String errorMsg = devMode.getFailedOutput();
             if (errorMsg != null) {
@@ -254,7 +257,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         if (!session.getConfiguration().isProductionMode()) {
             initial.put("stats", getStats());
         }
-        initial.put("errors", getErrors());
+        initial.put("errors", getErrors(request.getService()));
 
         return initial;
     }
