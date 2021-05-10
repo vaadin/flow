@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -259,6 +262,26 @@ public class ThemeIT extends ChromeBrowserTest {
                 "rgba(0, 0, 255, 1)",
                 $("html").first().getCssValue("background-color"));
 
+    }
+
+    @Test
+    public void documentCssImport_onlyExternalAddedToHeadAsLink() {
+        open();
+        checkLogsForErrors();
+
+        final WebElement documentHead = getDriver()
+                .findElement(By.xpath("/html/head"));
+        final List<WebElement> links = documentHead
+                .findElements(By.tagName("link"));
+
+        List<String> linkUrls = links.stream()
+                .map(link -> link.getAttribute("href"))
+                .collect(Collectors.toList());
+
+        Assert.assertTrue("Missing link for external url", linkUrls
+                .contains("https://fonts.googleapis.com/css?family=Itim"));
+        Assert.assertFalse("Found import that webpack should have resolved",
+                linkUrls.contains("sub-css/sub.css"));
     }
 
     @Override
