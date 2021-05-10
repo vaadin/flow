@@ -51,6 +51,7 @@ suite("form/Validators", () => {
   test("Email", () => {
     const validator = new Email();
     assert.isNotTrue(validator.impliesRequired);
+    assert.isTrue(validator.validate(undefined));
     assert.isTrue(validator.validate('foo@vaadin.com'));
     assert.isFalse(validator.validate(''));
     assert.isFalse(validator.validate('foo'));

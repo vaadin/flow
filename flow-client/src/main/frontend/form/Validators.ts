@@ -66,8 +66,8 @@ abstract class NumberValidator<T> extends AbstractValidator<T> {
   constructor(attrs?: ValidatorAttributes) {
     super(attrs);
   }
-  validate(value: T) {
-    return isNumeric(String(value));
+  validate(value: T | undefined) {
+    return value === undefined || isNumeric(String(value));
   }
 }
 
@@ -97,8 +97,8 @@ export class Email extends AbstractValidator<string> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be a well-formed email address', ...attrs });
   }
-  validate(value: string) {
-    return isEmail(value);
+  validate(value: string | undefined) {
+    return value === undefined || isEmail(value);
   }
 }
 export class Null extends AbstractValidator<any> {
