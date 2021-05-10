@@ -191,8 +191,20 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 .collect(Collectors.toList());
         Assert.assertTrue("Missing link for external url", linkUrls
                 .contains("https://fonts.googleapis.com/css?family=Poppins"));
+        Assert.assertTrue("Link with media query was not found", linkUrls
+                .contains("https://fonts.googleapis.com/css?family=Oswald"));
         Assert.assertFalse("Found import that webpack should have resolved",
                 linkUrls.contains("docImport.css"));
+
+        final List<WebElement> mediaLinks = links.stream()
+                .filter(link -> link.getAttribute("href").equals(
+                        "https://fonts.googleapis.com/css?family=Oswald"))
+                .collect(Collectors.toList());
+        Assert.assertFalse("No expected media link found",
+                mediaLinks.isEmpty());
+        Assert.assertEquals("Wrong media attribute contents",
+                "screen and (orientation:landscape)",
+                mediaLinks.get(0).getAttribute("media"));
     }
 
     @Test

@@ -47,10 +47,14 @@ const getStyleModule = (id) => {
   return cssText;
 };
 `;
+
 const createLinkReferences = `
 const createLinkReferences = (css, target) => {
   // Unresolved urls are written as '@import url(text);' to the css
-  const importMatcher = /\\@import\\surl\\((.+?)\\);/g;
+  // [0] is the full match
+  // [1] matches the media query
+  // [2] matches the url
+  const importMatcher = /(?:@media\\s(.+?))?(?:\\s{)?\\@import\\surl\\((.+?)\\);(?:})?/g;
   
   var match;
   var styleCss = css;
@@ -60,9 +64,12 @@ const createLinkReferences = (css, target) => {
     styleCss = styleCss.replace(match[0], "");
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = match[1];
+    link.href = match[2];
+    if (match[1]) {
+      link.media = match[1];
+    }
     // For target document append to head else append to target
-    if(target === document) {
+    if (target === document) {
       document.head.appendChild(link);
     } else {
       target.appendChild(link);
