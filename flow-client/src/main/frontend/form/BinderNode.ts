@@ -230,7 +230,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     if (!itemValue) {
       itemValue = this.model[_ItemModel].createEmptyValue();
     }
-    this.value = ([...((this.value as unknown) as ReadonlyArray<IT>), itemValue] as unknown) as T;
+    this.value = [...(this.value as unknown as ReadonlyArray<IT>), itemValue] as unknown as T;
   }
 
   /**
@@ -249,7 +249,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     if (!itemValue) {
       itemValue = this.model[_ItemModel].createEmptyValue();
     }
-    this.value = ([itemValue, ...((this.value as unknown) as ReadonlyArray<IT>)] as unknown) as T;
+    this.value = [itemValue, ...(this.value as unknown as ReadonlyArray<IT>)] as unknown as T;
   }
 
   /**

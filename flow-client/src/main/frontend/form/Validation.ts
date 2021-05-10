@@ -19,7 +19,7 @@ export class ValidationError extends Error {
     super(
       [
         'There are validation errors in the form.',
-        ...errors.map((e) => `${e.property} - ${e.validator.constructor.name}${e.message ? ': ' + e.message : ''}`)
+        ...errors.map((e) => `${e.property} - ${e.validator.constructor.name}${e.message ? `: ${e.message}` : ''}`)
       ].join('\n - ')
     );
     this.name = this.constructor.name;
@@ -50,7 +50,7 @@ export async function runValidator<T>(
   model: AbstractModel<T>,
   validator: Validator<T>
 ): Promise<ReadonlyArray<ValueError<T>>> {
-  const value = getBinderNode(model).value;
+  const { value } = getBinderNode(model);
   // If model is not required and value empty, do not run any validator. Except
   // always validate NumberModel, which has a mandatory builtin validator
   // to indicate NaN input.

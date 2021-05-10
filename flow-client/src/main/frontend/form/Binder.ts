@@ -32,10 +32,8 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
   private [_onChange]: (oldValue?: T) => void;
   private [_onSubmit]: (value: T) => Promise<any>;
 
-  private [_validations]: Map<
-    AbstractModel<any>,
-    Map<Validator<any>, Promise<ReadonlyArray<ValueError<any>>>>
-  > = new Map();
+  private [_validations]: Map<AbstractModel<any>, Map<Validator<any>, Promise<ReadonlyArray<ValueError<any>>>>> =
+    new Map();
 
   /**
    *
@@ -161,9 +159,10 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
       if (error.validationErrorData && error.validationErrorData.length) {
         const valueErrors: Array<ValueError<any>> = [];
         error.validationErrorData.forEach((data: any) => {
-          const res = /Object of type '(.+)' has invalid property '(.+)' with value '(.+)', validation error: '(.+)'/.exec(
-            data.message
-          );
+          const res =
+            /Object of type '(.+)' has invalid property '(.+)' with value '(.+)', validation error: '(.+)'/.exec(
+              data.message
+            );
           const [property, value, message] = res ? res.splice(2) : [data.parameterName, undefined, data.message];
           valueErrors.push({ property, value, validator: new ServerValidator(message), message });
         });
