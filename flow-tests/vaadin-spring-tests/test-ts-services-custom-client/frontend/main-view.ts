@@ -7,7 +7,7 @@ import {AppEndpoint} from "./generated/AppEndpoint";
 export class MainView extends LitElement {
 
   @property()
-  private content = "";
+  private content?: string;
 
   render() {
     return html`
