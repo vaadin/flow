@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -691,7 +692,7 @@ public class UIInternals implements Serializable {
 
         // Assemble previous parent-child relationships to enable detecting
         // changes
-        Map<RouterLayout, HasElement> oldChildren = new HashMap<>();
+        Map<RouterLayout, HasElement> oldChildren = new LinkedHashMap<>();
         for (int i = 0; i < routerTargetChain.size() - 1; i++) {
             HasElement child = routerTargetChain.get(i);
             RouterLayout parent = (RouterLayout) routerTargetChain.get(i + 1);
@@ -704,6 +705,17 @@ public class UIInternals implements Serializable {
 
         if (layouts != null) {
             routerTargetChain.addAll(layouts);
+        }
+
+        // If the old and the new router target chains are not intersect,
+        // meaning that the new chain doesn't contain the root router
+        // layout node of the old chain, this aims to recursively remove
+        // content of the all nested router layouts of the given old content
+        // to be detached. This is needed to let Dependency Injection
+        // frameworks to re-create managed components with no
+        // duplicates/leftovers.
+        if (oldRoot == null || !routerTargetChain.contains(oldRoot)) {
+            oldChildren.forEach(RouterLayout::removeRouterLayoutContent);
         }
 
         // Ensure the entire chain is connected
@@ -725,9 +737,19 @@ public class UIInternals implements Serializable {
 
                 if (oldContent != newContent) {
                     RouterLayout layout = (RouterLayout) current;
-                    if (oldContent != null) {
+                    // Recursively remove content of the all nested router
+                    // layouts of the given old content to be detached. This
+                    // is needed to let Dependency Injection frameworks to
+                    // re-create managed components with no
+                    // duplicates/leftovers.
+                    while (oldContent != null) {
                         layout.removeRouterLayoutContent(oldContent);
+                        if (oldContent instanceof RouterLayout) {
+                            layout = (RouterLayout) oldContent;
+                        }
+                        oldContent = oldChildren.get(oldContent);
                     }
+                    layout = (RouterLayout) current;
                     layout.showRouterLayoutContent(newContent);
                 }
             }
