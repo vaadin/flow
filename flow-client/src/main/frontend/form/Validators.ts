@@ -66,7 +66,7 @@ abstract class NumberValidator<T> extends AbstractValidator<T> {
   constructor(attrs?: ValidatorAttributes) {
     super(attrs);
   }
-  validate(value: T | undefined) {
+  validate(value: T | undefined) {
     return value === undefined || isNumeric(String(value));
   }
 }
