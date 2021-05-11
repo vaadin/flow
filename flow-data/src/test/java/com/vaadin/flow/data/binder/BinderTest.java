@@ -19,6 +19,7 @@ package com.vaadin.flow.data.binder;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Locale;
@@ -583,8 +584,12 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         rentField.setValue("10");
 
         // € 10.00
-        assertEquals("€ " + new DecimalFormat("0.00").format(10),
-                rentField.getValue());
+        DecimalFormat formatter = new DecimalFormat("0.00",
+                // Needed for the environments where Locale.getDefault()
+                // differs from Locale.getDefault(Locale.Category.FORMAT).
+                // For example, these could be en_US and en_FI.
+                DecimalFormatSymbols.getInstance(Locale.getDefault()));
+        assertEquals("€ " + formatter.format(10), rentField.getValue());
     }
 
     @Test
