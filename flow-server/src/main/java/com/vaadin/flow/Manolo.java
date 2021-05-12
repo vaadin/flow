@@ -15,13 +15,15 @@
  */
 package com.vaadin.flow;
 
+import java.io.Serializable;
+
 /**
  * DO NOT MERGE.
  * 
  * @param <T>
  *            just a parameter.
  */
-public interface Manolo<T> {
+public interface Manolo<T> extends Serializable {
 
     /**
      * Just a method.
