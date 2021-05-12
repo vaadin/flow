@@ -298,7 +298,8 @@ public class FrontendUtils {
     }
 
     /**
-     * Read a stream and copy the content in a String.
+     * Read a stream and copy the content into a String using system line
+     * separators for all 'carriage return' characters.
      *
      * @param inputStream
      *            the input stream
@@ -515,12 +516,13 @@ public class FrontendUtils {
         return host;
     }
 
-    private static InputStream getStatsFromClassPath(VaadinService service) {
+    private static InputStream getStatsFromClassPath(VaadinService service)
+            throws IOException {
         Stats statistics = service.getContext().getAttribute(Stats.class);
 
         if (statistics != null) {
-            return new ByteArrayInputStream(
-              statistics.statsJson.getBytes(StandardCharsets.UTF_8));
+            return IOUtils.toInputStream(statistics.statsJson,
+                    StandardCharsets.UTF_8);
         }
 
         String stats = service.getDeploymentConfiguration()
@@ -545,10 +547,11 @@ public class FrontendUtils {
                     "Cannot get the 'stats.json' from the classpath '{}'",
                     stats);
         } else {
-            statistics = new Stats(streamToString(stream), null);
+            statistics = new Stats(
+                    IOUtils.toString(stream, StandardCharsets.UTF_8), null);
             service.getContext().setAttribute(statistics);
-            stream = new ByteArrayInputStream(
-              statistics.statsJson.getBytes(StandardCharsets.UTF_8));
+            stream = IOUtils.toInputStream(statistics.statsJson,
+                    StandardCharsets.UTF_8);
         }
         return stream;
     }

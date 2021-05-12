@@ -43,6 +43,8 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
+import elemental.json.Json;
+import elemental.json.JsonException;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
@@ -318,6 +320,39 @@ public class FrontendUtilsTest {
 
         assertNotNull("Stats cache should be created",
                 service.getContext().getAttribute(CACHE_KEY));
+    }
+
+    @Test // #10893
+    public void newLineCharacterInJsonStats_readStreamIsJsonParsable()
+            throws IOException, ServiceException {
+        VaadinService service = setupStatsAssetMocks(
+                "specialCharacterValue.json");
+
+        assertNull("Stats cache should not be present",
+                service.getContext().getAttribute(CACHE_KEY));
+
+        // Load file from classpath and populate cache
+        String statsContent = FrontendUtils.getStatsContent(service);
+
+        try {
+            // Json parsing should not throw for loaded stats.
+            Json.parse(statsContent);
+        } catch (JsonException jsonException) {
+            Assert.fail("Json loaded from class path was not parsable json");
+        }
+
+        assertNotNull("Stats cache should be created",
+                service.getContext().getAttribute(CACHE_KEY));
+
+        // Load cached stats.
+        statsContent = FrontendUtils.getStatsContent(service);
+
+        try {
+            // Json parsing should not throw for cached stats.
+            Json.parse(statsContent);
+        } catch (JsonException jsonException) {
+            Assert.fail("Json loaded from cache was not parsable json");
+        }
     }
 
     @Test
