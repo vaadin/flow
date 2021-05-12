@@ -292,7 +292,8 @@ public class UIInternalsTest {
         AnotherView anotherView = new AnotherView();
 
         List<RouterLayout> oldLayouts = Arrays.asList(subLayout, mainLayout);
-        List<RouterLayout> newLayouts = Collections.singletonList(anotherLayout);
+        List<RouterLayout> newLayouts = Collections
+                .singletonList(anotherLayout);
 
         Location location = Mockito.mock(Location.class);
         setUpInitialPush();
@@ -301,7 +302,8 @@ public class UIInternalsTest {
         internals.showRouteTarget(location, firstView, oldLayouts);
         // Navigate to another view outside of the initial router hierarchy
         internals.showRouteTarget(location, anotherView, newLayouts);
-        List<HasElement> activeRouterTargetsChain = internals.getActiveRouterTargetsChain();
+        List<HasElement> activeRouterTargetsChain = internals
+                .getActiveRouterTargetsChain();
         Assert.assertArrayEquals(
                 "Unexpected router targets chain after navigation",
                 new HasElement[] { anotherView, anotherLayout },
@@ -313,8 +315,8 @@ public class UIInternalsTest {
                 "Expected no child elements for main layout after navigation",
                 0, mainLayout.getElement().getChildren().count());
         Assert.assertEquals(
-                "Expected no child elements for sub layout after navigation",
-                0, subLayout.getElement().getChildren().count());
+                "Expected no child elements for sub layout after navigation", 0,
+                subLayout.getElement().getChildren().count());
     }
 
     private PushConfiguration setUpInitialPush() {
