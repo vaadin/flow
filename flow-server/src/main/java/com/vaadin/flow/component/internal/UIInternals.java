@@ -714,7 +714,7 @@ public class UIInternals implements Serializable {
         // to be detached. This is needed to let Dependency Injection
         // frameworks to re-create managed components with no
         // duplicates/leftovers.
-        if (oldRoot == null || !routerTargetChain.contains(oldRoot)) {
+        if (oldRoot != null && !routerTargetChain.contains(oldRoot)) {
             oldChildren.forEach(RouterLayout::removeRouterLayoutContent);
         }
 
