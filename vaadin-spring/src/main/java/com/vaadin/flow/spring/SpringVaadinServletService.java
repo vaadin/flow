@@ -16,9 +16,9 @@
 package com.vaadin.flow.spring;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -29,13 +29,12 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.SessionDestroyListener;
+import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.theme.AbstractTheme;
 
 /**
  * Spring application context aware Vaadin servlet service implementation.
@@ -95,6 +94,14 @@ public class SpringVaadinServletService extends VaadinServletService {
         }
         return spiInstantiator.isPresent() ? spiInstantiator
                 : springInstantiators.stream().findFirst();
+    }
+
+    @Override
+    public void init() throws ServiceException {
+        super.init();
+        Map<String, UIInitListener> uiInitListeners = context
+                .getBeansOfType(UIInitListener.class);
+        uiInitListeners.values().forEach(this::addUIInitListener);
     }
 
     @Override

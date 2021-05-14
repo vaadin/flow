@@ -29,7 +29,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
@@ -116,6 +118,21 @@ public class SpringVaadinServletServiceTest {
         Properties properties = new Properties(BASE_PROPERTIES);
         properties.setProperty(FOO, BAR);
         SpringInstantiatorTest.getService(context, properties);
+    }
+
+    @Test
+    public void uiInitListenerAsSpringBean_listenerIsAutoregisteredAsUIInitiLietnerInSpringService()
+            throws ServletException, ServiceException {
+        VaadinService service = SpringInstantiatorTest.getService(context,
+                new Properties());
+
+        UI ui = new UI();
+        TestUIInitListener listener = context.getBean(TestUIInitListener.class);
+
+        service.fireUIInitListeners(ui);
+
+        Assert.assertEquals(1, listener.events.size());
+        Assert.assertSame(ui, listener.events.get(0).getUI());
     }
 
 }

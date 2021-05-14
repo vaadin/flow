@@ -104,30 +104,45 @@ class BeanStore implements Serializable {
 
     Void doDestroy() {
         assert session.hasLock();
-        for (Runnable destructionCallback : destructionCallbacks.values()) {
-            try {
-                destructionCallback.run();
-            } catch (Exception e) {
-                LOGGER.error("BeanStore destruction callback failed", e);
+        try {
+            for (Runnable destructionCallback : destructionCallbacks.values()) {
+                try {
+                    destructionCallback.run();
+                } catch (Throwable throwable) {
+                    LOGGER.error("BeanStore destruction callback failed",
+                            throwable);
+                }
             }
+        } finally {
+            destructionCallbacks.clear();
+            objects.clear();
         }
-        destructionCallbacks.clear();
-        objects.clear();
         return null;
     }
 
-    private Object doRemove(String name) {
-        destructionCallbacks.remove(name);
+    Object doRemove(String name) {
+        Runnable destructionCallback = destructionCallbacks.remove(name);
+        try {
+            if (destructionCallback != null) {
+                destructionCallback.run();
+            }
+        } catch (Throwable throwable) {
+            LOGGER.error("BeanStore destruction callback failed", throwable);
+        }
         return objects.remove(name);
     }
 
-    private Object doGet(String name, ObjectFactory<?> objectFactory) {
+    Object doGet(String name, ObjectFactory<?> objectFactory) {
         Object bean = objects.get(name);
         if (bean == null) {
             bean = objectFactory.getObject();
-            objects.put(name, bean);
+            storeBean(name, bean);
         }
         return bean;
+    }
+
+    void storeBean(String name, Object bean) {
+        objects.put(name, bean);
     }
 
     private <T> T execute(Supplier<T> supplier) {
