@@ -1,8 +1,13 @@
 package com.vaadin.flow.spring.security;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,6 +162,60 @@ public abstract class VaadinWebSecurityConfigurerAdapter
         formLogin.loginPage(fusionLoginViewPath).permitAll();
         formLogin.successHandler(
                 new VaadinSavedRequestAwareAuthenticationSuccessHandler());
+        http.logout().logoutSuccessUrl(logoutUrl);
+    }
+
+    /**
+     * Sets up login for the application using the given Flow login view.
+     * 
+     * @param http
+     *            the http security from {@link #configure(HttpSecurity)}
+     * @param flowLoginView
+     *            the login view to use
+     * @throws Exception
+     *             if something goes wrong
+     */
+    protected void setLoginView(HttpSecurity http,
+            Class<? extends Component> flowLoginView) throws Exception {
+        setLoginView(http, flowLoginView, "/");
+    }
+
+    /**
+     * Sets up login for the application using the given Flow login view.
+     * 
+     * @param http
+     *            the http security from {@link #configure(HttpSecurity)}
+     * @param flowLoginView
+     *            the login view to use
+     * @param logoutUrl
+     *            the URL to redirect the user to after logging out
+     * 
+     * @throws Exception
+     *             if something goes wrong
+     */
+    protected void setLoginView(HttpSecurity http,
+            Class<? extends Component> flowLoginView, String logoutUrl)
+            throws Exception {
+        Optional<Route> route = AnnotationReader.getAnnotationFor(flowLoginView,
+                Route.class);
+
+        if (!route.isPresent()) {
+            throw new IllegalArgumentException(
+                    "Unable find a @Route annotation on the login view "
+                            + flowLoginView.getName());
+        }
+
+        String loginPath = RouteUtil.getRoutePath(flowLoginView, route.get());
+        if (!loginPath.startsWith("/")) {
+            loginPath = "/" + loginPath;
+        }
+
+        // Actually set it up
+        FormLoginConfigurer<HttpSecurity> formLogin = http.formLogin();
+        formLogin.loginPage(loginPath).permitAll();
+        formLogin.successHandler(
+                new VaadinSavedRequestAwareAuthenticationSuccessHandler());
+        http.csrf().ignoringAntMatchers(loginPath);
         http.logout().logoutSuccessUrl(logoutUrl);
     }
 
