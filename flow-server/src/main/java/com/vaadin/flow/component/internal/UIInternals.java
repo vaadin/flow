@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -691,7 +692,7 @@ public class UIInternals implements Serializable {
 
         // Assemble previous parent-child relationships to enable detecting
         // changes
-        Map<RouterLayout, HasElement> oldChildren = new HashMap<>();
+        Map<RouterLayout, HasElement> oldChildren = new IdentityHashMap<>();
         for (int i = 0; i < routerTargetChain.size() - 1; i++) {
             HasElement child = routerTargetChain.get(i);
             RouterLayout parent = (RouterLayout) routerTargetChain.get(i + 1);
@@ -1107,18 +1108,19 @@ public class UIInternals implements Serializable {
     }
 
     private void removeChildrenContentFromRouterLayout(
-            RouterLayout routerLayout,
-            Map<RouterLayout, HasElement> oldChildren) {
-        HasElement oldContent = oldChildren.get(routerLayout);
+            final RouterLayout targetRouterLayout,
+            final Map<RouterLayout, HasElement> oldChildren) {
+        HasElement oldContent = oldChildren.get(targetRouterLayout);
+        RouterLayout removeFrom = targetRouterLayout;
         // Recursively remove content of the all nested router
         // layouts of the given old content to be detached. This
         // is needed to let Dependency Injection frameworks to
         // re-create managed components with no
         // duplicates/leftovers.
         while (oldContent != null) {
-            routerLayout.removeRouterLayoutContent(oldContent);
+            removeFrom.removeRouterLayoutContent(oldContent);
             if (oldContent instanceof RouterLayout) {
-                routerLayout = (RouterLayout) oldContent;
+                removeFrom = (RouterLayout) oldContent;
             }
             oldContent = oldChildren.get(oldContent);
         }
