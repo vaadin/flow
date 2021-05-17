@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Utility class which contains various methods for parsing a route url into
@@ -39,7 +40,7 @@ public class PathUtil implements Serializable {
      * @return a List containing the segments of the path.
      */
     public static List<String> getSegmentsList(String path) {
-        path = trimPath(path);
+        path = path == null ? "" : trimSegmentsString(path);
 
         final String[] segments = path.split("/");
         if (segments.length == 1 && segments[0].isEmpty()) {
@@ -59,8 +60,8 @@ public class PathUtil implements Serializable {
      * @return path form from input segments.
      */
     public static String getPath(List<String> segments) {
-        return trimPath((segments == null || segments.isEmpty()) ? ""
-                : String.join("/", segments));
+        return trimSegmentsString(
+                segments == null ? "" : String.join("/", segments));
     }
 
     /**
@@ -99,6 +100,26 @@ public class PathUtil implements Serializable {
         if (path.startsWith("/")) {
             path = path.substring(1);
         }
+        if (path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
+        }
+        return path;
+    }
+
+    /**
+     * Trim the path by removing any leading and trailing whitespaces and
+     * trailing slashes.
+     *
+     * @param path
+     *            url path to trim, not null
+     * @return a String representing the input path without any leading and
+     *         trailing whitespaces or trailing slash.
+     */
+    public static String trimSegmentsString(String path) {
+        Objects.requireNonNull(path);
+
+        path = path.trim();
+
         if (path.endsWith("/")) {
             path = path.substring(0, path.length() - 1);
         }

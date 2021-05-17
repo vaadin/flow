@@ -6,21 +6,27 @@ const {assert} = intern.getPlugin("chai");
 const {sinon} = intern.getPlugin('sinon');
 
 // API to test
-import {
-  Binder,
-  BinderConfiguration,
-} from "../../../main/frontend/form";
+import {Binder, BinderConfiguration,} from "../../../main/frontend/form";
 
-import {Employee, EmployeeModel, Order, OrderModel, TestEntity, TestModel} from "./TestModels";
+import {
+  Employee,
+  EmployeeModel,
+  Order,
+  OrderModel,
+  TestEntity,
+  TestModel
+} from "./TestModels";
 
 import {LitElement} from 'lit';
-import {customElement} from 'lit/decorators';
+import {customElement} from 'lit/decorators.js';
 
 @customElement('lit-order-view')
-class LitOrderView extends LitElement {}
+class LitOrderView extends LitElement {
+}
 
 @customElement('lit-employee-view')
-class LitEmployeeView extends LitElement {}
+class LitEmployeeView extends LitElement {
+}
 
 suite("form/Binder", () => {
   const litOrderView = document.createElement('lit-order-view') as LitOrderView;
@@ -57,7 +63,9 @@ suite("form/Binder", () => {
   test("should be able to create a binder with a custom onchange listener", () => {
     let foo = 'bar';
     const config: BinderConfiguration<Order> = {
-      onChange: () => { foo = 'baz' }
+      onChange: () => {
+        foo = 'baz'
+      }
     }
 
     const binder = new Binder(litOrderView, OrderModel, config);
@@ -230,14 +238,14 @@ suite("form/Binder", () => {
     });
 
     test('should be able to set null to object type property', () => {
-      const myBinder:Binder<TestEntity, TestModel<TestEntity>> = new Binder(document.createElement('div'), TestModel);
+      const myBinder: Binder<TestEntity, TestModel<TestEntity>> = new Binder(document.createElement('div'), TestModel);
       myBinder.for(myBinder.model.fieldAny).value = null;
       myBinder.for(myBinder.model.fieldAny).validate();
       assert.isFalse(myBinder.invalid);
     });
 
     test('should be able to set undefined to object type property', () => {
-      const myBinder:Binder<TestEntity, TestModel<TestEntity>> = new Binder(document.createElement('div'), TestModel);
+      const myBinder: Binder<TestEntity, TestModel<TestEntity>> = new Binder(document.createElement('div'), TestModel);
       myBinder.for(myBinder.model.fieldAny).value = undefined;
       myBinder.for(myBinder.model.fieldAny).validate();
       assert.isFalse(myBinder.invalid);
@@ -332,6 +340,24 @@ suite("form/Binder", () => {
           supervisor: expectedEmptyEmployee
         }
       };
+
+      await binder.validate();
+      assert.isFalse(binder.invalid);
+    });
+
+    test('should allow to reset optional object or array', async () => {
+      // Start from fields with optional data
+      binder.read({
+        ...binder.value,
+        supervisor: expectedEmptyEmployee,
+        colleagues: [expectedEmptyEmployee]
+      });
+
+      await binder.validate();
+      assert.isFalse(binder.invalid);
+
+      // Reset optionals back to undefined
+      binder.value = expectedEmptyEmployee;
 
       await binder.validate();
       assert.isFalse(binder.invalid);

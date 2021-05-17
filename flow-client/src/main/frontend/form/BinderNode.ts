@@ -307,6 +307,11 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   }
 
   private *getChildBinderNodes(): Generator<BinderNode<any, AbstractModel<any>>> {
+    if (this.value === undefined) {
+      // Undefined value cannot have child properties and items.
+      return;
+    }
+
     if (this.model instanceof ObjectModel) {
       // We need to skip all non-initialised optional fields here in order to
       // prevent infinite recursion for circular references in the model.
@@ -324,11 +329,8 @@ export class BinderNode<T, M extends AbstractModel<T>> {
         }
       }
     } else if (this.model instanceof ArrayModel) {
-      // Only iterate if optional array is initialised
-      if (this.value !== undefined) {
-        for (const childModel of this.model) {
-          yield childModel;
-        }
+      for (const childBinderNode of this.model) {
+        yield childBinderNode;
       }
     }
   }
