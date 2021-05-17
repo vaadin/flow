@@ -4,6 +4,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfoRepository;
+import com.vaadin.flow.spring.flowsecurity.views.LoginView;
 import com.vaadin.flow.spring.security.VaadinWebSecurityConfigurerAdapter;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,6 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -37,20 +37,15 @@ public class SecurityConfig extends VaadinWebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        // Public access
+        // Public access for the given view
         http.authorizeRequests().antMatchers("/").permitAll();
-        // Admin only access
+        // Admin only access for given resources
         http.authorizeRequests().antMatchers("/admin-only/**")
                 .hasAnyRole(ROLE_ADMIN);
 
         super.configure(http);
 
-        FormLoginConfigurer<HttpSecurity> formLogin = http.formLogin();
-        formLogin.loginPage("/login").permitAll();
-        http.csrf().ignoringAntMatchers("/login");
-
-        // redirect to / after logout
-        http.logout().logoutSuccessUrl(LOGOUT_SUCCESS_URL);
+        setLoginView(http, LoginView.class, LOGOUT_SUCCESS_URL);
     }
 
     @Override
