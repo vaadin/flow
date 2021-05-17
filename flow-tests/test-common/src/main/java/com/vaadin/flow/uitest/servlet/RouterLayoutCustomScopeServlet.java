@@ -16,16 +16,11 @@
 
 package com.vaadin.flow.uitest.servlet;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
@@ -63,11 +58,6 @@ public class RouterLayoutCustomScopeServlet extends VaadinServlet {
         return routerLayoutCustomScopeService;
     }
 
-    @Target(ElementType.TYPE)
-    @Retention(RetentionPolicy.RUNTIME)
-    public @interface CustomUIScope {
-    }
-
     private static class CustomSessionScopeContext {
         private static final String uiScopeContextKey = CustomSessionScopeContext.class
                 .getName();
@@ -85,29 +75,30 @@ public class RouterLayoutCustomScopeServlet extends VaadinServlet {
     }
 
     private static class CustomUIScopeContext {
-        // Modifying UI and components are supposed to be within a single
+        // Modifying UI and layouts are supposed to be within a single
         // test, so it's not necessary to use thread-safe collection or
         // synchronization
-        private final Map<Integer, Map<Class<? extends Component>, Component>> components = new HashMap<>();
+        private final Map<Integer, Map<Class<? extends RouterLayout>, RouterLayout>> routerLayouts = new HashMap<>();
 
         void addUI(UI ui) {
-            components.put(ui.getUIId(), new HashMap<>());
-            // Cleanup the components context upon detaching UI
+            routerLayouts.put(ui.getUIId(), new HashMap<>());
+            // Cleanup the layouts context upon detaching UI
             ui.addDetachListener(event -> {
-                Map<Class<? extends Component>, Component> removed = components
+                Map<Class<? extends RouterLayout>, RouterLayout> removed = routerLayouts
                         .remove(event.getUI().getUIId());
                 removed.clear();
             });
         }
 
-        Component getComponent(Class<? extends Component> componentType,
-                SerializableFunction<Class<? extends Component>, Component> instanceSupplier) {
+        RouterLayout getRouterLayout(
+                Class<? extends RouterLayout> routerLayoutType,
+                SerializableFunction<Class<? extends RouterLayout>, RouterLayout> factory) {
             UI current = UI.getCurrent();
             assert current != null : "Current UI is supposed to be not empty "
-                    + "when a component instance is being requested";
-            components.get(current.getUIId()).computeIfAbsent(componentType,
-                    instanceSupplier);
-            return components.get(current.getUIId()).get(componentType);
+                    + "when a layout instance is being requested";
+            routerLayouts.get(current.getUIId())
+                    .computeIfAbsent(routerLayoutType, factory);
+            return routerLayouts.get(current.getUIId()).get(routerLayoutType);
         }
     }
 
@@ -142,20 +133,17 @@ public class RouterLayoutCustomScopeServlet extends VaadinServlet {
         @SuppressWarnings("unchecked")
         @Override
         public <T> T getOrCreate(Class<T> type) {
-            if (Component.class.isAssignableFrom(type)) {
-                CustomUIScope annotation = type
-                        .getAnnotation(CustomUIScope.class);
-                if (annotation != null) {
-                    return (T) CustomSessionScopeContext.getUIScopeContext()
-                            .getComponent((Class<? extends Component>) type,
-                                    super::getOrCreate);
-                }
+            // All the RouterLayout objects handled by this servlet are
+            // always UI-scoped for the test purposes.
+            if (RouterLayout.class.isAssignableFrom(type)) {
+                return (T) CustomSessionScopeContext.getUIScopeContext()
+                        .getRouterLayout((Class<? extends RouterLayout>) type,
+                                super::getOrCreate);
             }
             return super.getOrCreate(type);
         }
     }
 
-    @CustomUIScope
     @Route("main")
     public static class CustomUIScopeMainLayout extends Div
             implements RouterLayout {
@@ -164,7 +152,6 @@ public class RouterLayoutCustomScopeServlet extends VaadinServlet {
             add(new Span("This is a topmost parent router layout"));
         }
 
-        @CustomUIScope
         @ParentLayout(CustomUIScopeMainLayout.class)
         public static class SubLayout extends Div implements RouterLayout {
             public SubLayout() {
@@ -209,7 +196,6 @@ public class RouterLayoutCustomScopeServlet extends VaadinServlet {
         }
     }
 
-    @CustomUIScope
     @Route("secondary")
     public static class CustomUIScopeAnotherLayout extends Div
             implements RouterLayout {

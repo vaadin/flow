@@ -35,10 +35,8 @@ import static com.vaadin.flow.uitest.servlet.RouterLayoutCustomScopeServlet.SUB_
 public class RemoveRoutersLayoutContentIT extends ChromeBrowserTest {
 
     @Override
-    protected void open() {
-        getDriver().get(
-                getRootURL() + "/router-layout-custom-scope/first-child-route");
-        waitForDevServer();
+    protected String getTestPath() {
+        return "/router-layout-custom-scope/first-child-route";
     }
 
     @Test
