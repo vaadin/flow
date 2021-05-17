@@ -31,7 +31,7 @@ export async function login(username: string, password: string, options?: LoginO
     data.append('username', username);
     data.append('password', password);
 
-    const loginProcessingUrl = options && options.loginProcessingUrl ? options.loginProcessingUrl : '/login';
+    const loginProcessingUrl = options && options.loginProcessingUrl ? options.loginProcessingUrl : 'login';
     const headers = getSpringCsrfTokenHeadersFromDocument(document);
     headers.source = 'typescript';
     const response = await fetch(loginProcessingUrl, {
@@ -89,7 +89,7 @@ export async function login(username: string, password: string, options?: LoginO
  */
 export async function logout(options?: LogoutOptions) {
   // this assumes the default Spring Security logout configuration (handler URL)
-  const logoutUrl = options && options.logoutUrl ? options.logoutUrl : '/logout';
+  const logoutUrl = options && options.logoutUrl ? options.logoutUrl : 'logout';
   try {
     const headers = getSpringCsrfTokenHeadersFromDocument(document);
     await doLogout(logoutUrl, headers);
