@@ -57,6 +57,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * This class is responsible for serving the <code>index.html</code> according
  * to the template provided in the frontend folder. The handler will calculate
  * and inject baseHref as well as the bundle scripts into the template.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 

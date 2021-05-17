@@ -38,6 +38,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
  * application theme into the generated frontend directory.
  * 
  * Default directory is ' ./frontend/generated'
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since
  */

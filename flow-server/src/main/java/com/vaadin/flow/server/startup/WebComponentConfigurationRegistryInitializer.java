@@ -40,6 +40,8 @@ import com.vaadin.flow.server.webcomponent.WebComponentExporterUtils;
  * {@link WebComponentExporter}/{@link WebComponentExporterFactory} on startup,
  * creates unique {@link WebComponentConfiguration} instances, and adds them to
  * {@link WebComponentConfigurationRegistry}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
  * @since 2.0

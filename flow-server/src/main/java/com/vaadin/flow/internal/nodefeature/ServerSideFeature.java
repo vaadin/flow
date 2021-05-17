@@ -23,6 +23,8 @@ import com.vaadin.flow.internal.change.NodeChange;
 /**
  * Abstract node feature that is only present on the server. A server side
  * feature does not produce any node changes and it can't contain child nodes.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

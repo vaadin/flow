@@ -55,6 +55,7 @@ import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -64,6 +65,8 @@ import static java.lang.String.format;
 /**
  * A class for static methods and definitions that might be used in different
  * locations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */

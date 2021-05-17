@@ -27,6 +27,8 @@ import elemental.json.JsonArray;
  * The registration can be passed as a parameter to various
  * <code>executeJavaScript</code> methods and will be represented on the client
  * as a function that calls the registered handler.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 2.0

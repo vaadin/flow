@@ -22,6 +22,8 @@ import java.util.Objects;
  * A container for CssImport information when scanning the class path. It
  * overrides equals and hashCode in order to use HashSet to eliminate
  * duplicates.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */

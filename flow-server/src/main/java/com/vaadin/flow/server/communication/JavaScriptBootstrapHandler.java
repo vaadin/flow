@@ -28,6 +28,7 @@ import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.HandlerHelper;
@@ -36,13 +37,13 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 
 /**
@@ -54,6 +55,8 @@ import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_RO
  * bootstrap data. Bootstraping is the responsability of the `@vaadin/flow`
  * client that is able to ask the server side to create the vaadin session and
  * do the boostrapping lazily.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  */
 public class JavaScriptBootstrapHandler extends BootstrapHandler {

@@ -60,6 +60,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Handles {@link StreamReceiver} instances registered in {@link VaadinSession}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

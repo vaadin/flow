@@ -24,6 +24,9 @@ import java.util.Objects;
 /**
  * Utility class which contains various methods for parsing a route url into
  * segments.
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class PathUtil implements Serializable {
 

@@ -38,6 +38,8 @@ import org.slf4j.LoggerFactory;
  * A class visitor for annotated classes. It's used to visit multiple classes
  * and extract all the properties of an specific annotation defined in the
  * constructor.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */

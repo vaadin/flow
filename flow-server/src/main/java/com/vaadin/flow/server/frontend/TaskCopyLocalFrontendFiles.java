@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Copies JavaScript files from the given local frontend folder.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
