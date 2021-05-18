@@ -246,8 +246,35 @@ public class ViewAccessCheckerTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void setLoginViewCannotBeCalledTwice() {
+    public void setLoginViewStringCannotBeCalledAfterSettingClass()
+            throws Exception {
+        resetLoginView();
+        this.viewAccessChecker.setLoginView(TestLoginView.class);
         this.viewAccessChecker.setLoginView("/foo");
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setLoginViewClassCannotBeCalledAfterSettingClass()
+            throws Exception {
+        resetLoginView();
+        this.viewAccessChecker.setLoginView(TestLoginView.class);
+        this.viewAccessChecker.setLoginView(TestLoginView.class);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setLoginViewStringCannotBeCalledAfterSettingString()
+            throws Exception {
+        resetLoginView();
+        this.viewAccessChecker.setLoginView("/foo");
+        this.viewAccessChecker.setLoginView("/foo");
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setLoginViewClassCannotBeCalledAfterSettingString()
+            throws Exception {
+        resetLoginView();
+        this.viewAccessChecker.setLoginView("/foo");
+        this.viewAccessChecker.setLoginView(TestLoginView.class);
     }
 
     @Test
@@ -259,12 +286,17 @@ public class ViewAccessCheckerTest {
     @Test
     public void openingRestrictedViewRedirectsAnonymousUserToLogin_whenUsingLoginPath()
             throws Exception {
-        Field f = ViewAccessChecker.class.getDeclaredField("loginView");
-        f.setAccessible(true);
-        f.set(this.viewAccessChecker, null);
+        resetLoginView();
         viewAccessChecker.setLoginView("/log-in");
         Result result = checkAccess(RolesAllowedAdminView.class, null);
         Assert.assertEquals("/log-in", result.rerouteToURL.get());
+    }
+
+    private void resetLoginView()
+            throws NoSuchFieldException, IllegalAccessException {
+        Field f = ViewAccessChecker.class.getDeclaredField("loginView");
+        f.setAccessible(true);
+        f.set(this.viewAccessChecker, null);
     }
 
     @Test

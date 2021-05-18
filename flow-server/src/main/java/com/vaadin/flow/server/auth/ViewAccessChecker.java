@@ -146,10 +146,10 @@ public class ViewAccessChecker implements BeforeEnterListener {
                     targetView.getName());
             return;
         }
-        boolean ok = accessAnnotationChecker.hasAccess(targetView,
+        boolean hasAccess = accessAnnotationChecker.hasAccess(targetView,
                 httpServletRequest);
 
-        if (ok) {
+        if (hasAccess) {
             getLogger().debug("Allowed access to view {}",
                     targetView.getName());
             return;
