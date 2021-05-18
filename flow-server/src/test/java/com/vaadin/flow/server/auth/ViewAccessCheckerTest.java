@@ -59,43 +59,43 @@ public class ViewAccessCheckerTest {
     }
 
     @Test
-    public void anonAccessToAnonViewAllowed() {
+    public void anonymousAccessToAnonymousViewAllowed() {
         Result result = checkAccess(AnonymousAllowedView.class, null);
         Assert.assertTrue(result.wasAccessGranted());
     }
 
     @Test
-    public void anonAccessToNoAnnotationViewDenied() {
+    public void anonymousAccessToNoAnnotationViewDenied() {
         Result result = checkAccess(NoAnnotationView.class, null);
         Assert.assertFalse(result.wasAccessGranted());
     }
 
     @Test
-    public void anonAccessToPemitAllViewDenied() {
+    public void anonymousAccessToPemitAllViewDenied() {
         Result result = checkAccess(PermitAllView.class, null);
         Assert.assertFalse(result.wasAccessGranted());
     }
 
     @Test
-    public void anonAccessToDenyAllViewDenied() {
+    public void anonymousAccessToDenyAllViewDenied() {
         Result result = checkAccess(DenyAllView.class, null);
         Assert.assertFalse(result.wasAccessGranted());
     }
 
     @Test
-    public void anonAccessToRolesAllowedUserViewDenied() {
+    public void anonymousAccessToRolesAllowedUserViewDenied() {
         Result result = checkAccess(RolesAllowedUserView.class, null);
         Assert.assertFalse(result.wasAccessGranted());
     }
 
     @Test
-    public void anonAccessToRolesAllowedAdminViewDenied() {
+    public void anonymousAccessToRolesAllowedAdminViewDenied() {
         Result result = checkAccess(RolesAllowedAdminView.class, null);
         Assert.assertFalse(result.wasAccessGranted());
     }
 
     @Test
-    public void loggedInNoRolesAccessToAnonViewAllowed() {
+    public void loggedInNoRolesAccessToAnonymousViewAllowed() {
         Result result = checkAccess(AnonymousAllowedView.class,
                 User.USER_NO_ROLES);
         Assert.assertTrue(result.wasAccessGranted());
@@ -134,7 +134,7 @@ public class ViewAccessCheckerTest {
     }
 
     @Test
-    public void loggedInUserRoleAccessToAnonViewAllowed() {
+    public void loggedInUserRoleAccessToAnonymousViewAllowed() {
         Result result = checkAccess(AnonymousAllowedView.class,
                 User.NORMAL_USER);
         Assert.assertTrue(result.wasAccessGranted());
@@ -173,7 +173,7 @@ public class ViewAccessCheckerTest {
     }
 
     @Test
-    public void loggedInAdminRoleAccessToAnonViewAllowed() {
+    public void loggedInAdminRoleAccessToAnonymousViewAllowed() {
         Result result = checkAccess(AnonymousAllowedView.class, User.ADMIN);
         Assert.assertTrue(result.wasAccessGranted());
     }
@@ -221,7 +221,7 @@ public class ViewAccessCheckerTest {
     }
 
     @Test
-    public void redirectUrlStoredForAnonUsers() {
+    public void redirectUrlStoredForAnonymousUsers() {
         Result result = checkAccess(RolesAllowedAdminView.class, null);
         Assert.assertFalse(result.wasAccessGranted());
         Assert.assertEquals(getRoute(RolesAllowedAdminView.class),
