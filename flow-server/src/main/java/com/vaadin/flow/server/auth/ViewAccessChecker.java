@@ -49,7 +49,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
     }
 
     /**
-     * Creates an intstance using the given checker.
+     * Creates an instance using the given checker.
      * <p>
      * Note that the access checker is disabled by default and can be enabled
      * using {@link #setEnabled(boolean)}. You should also set the login view to
@@ -92,7 +92,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
      *            the Flow view to use as login view
      */
     public void setLoginView(Class<? extends Component> loginView) {
-        throwIfEnabled();
+        throwIfLoginViewSet();
         this.loginView = loginView;
     }
 
@@ -106,11 +106,11 @@ public class ViewAccessChecker implements BeforeEnterListener {
      *            the Fusion view to use as login view
      */
     public void setLoginView(String loginUrl) {
-        throwIfEnabled();
+        throwIfLoginViewSet();
         this.loginUrl = loginUrl;
     }
 
-    private void throwIfEnabled() {
+    private void throwIfLoginViewSet() {
         if (this.loginUrl != null) {
             throw new IllegalStateException(
                     "Already using " + this.loginUrl + " as the login view");
@@ -154,19 +154,20 @@ public class ViewAccessChecker implements BeforeEnterListener {
             getLogger().debug("Allowed access to view {}",
                     targetView.getName());
             return;
-        } else {
-            getLogger().debug("Denied access to view {}", targetView.getName());
-            if (httpServletRequest.getUserPrincipal() == null) {
-                httpServletRequest.getSession()
-                        .setAttribute(SESSION_STORED_REDIRECT, beforeEnterEvent.getLocation().getPathWithQueryParameters());
-                if (loginView != null) {
-                    beforeEnterEvent.forwardTo(loginView);
-                } else {
-                    beforeEnterEvent.getUI().getPage().setLocation(loginUrl);
-                }
+        }
+
+        getLogger().debug("Denied access to view {}", targetView.getName());
+        if (httpServletRequest.getUserPrincipal() == null) {
+            httpServletRequest.getSession()
+                    .setAttribute(SESSION_STORED_REDIRECT, beforeEnterEvent
+                            .getLocation().getPathWithQueryParameters());
+            if (loginView != null) {
+                beforeEnterEvent.forwardTo(loginView);
             } else {
-                beforeEnterEvent.rerouteToError(NotFoundException.class);
+                beforeEnterEvent.getUI().getPage().setLocation(loginUrl);
             }
+        } else {
+            beforeEnterEvent.rerouteToError(NotFoundException.class);
         }
     }
 
