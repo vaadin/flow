@@ -133,7 +133,8 @@ public class Activator {
         }
     }
 
-    private static class FixedRouterLayoutCustomScopeServlet extends RouterLayoutCustomScopeServlet {
+    private static class FixedRouterLayoutCustomScopeServlet
+            extends RouterLayoutCustomScopeServlet {
         @Override
         public void init(ServletConfig servletConfig) throws ServletException {
             super.init(servletConfig);
