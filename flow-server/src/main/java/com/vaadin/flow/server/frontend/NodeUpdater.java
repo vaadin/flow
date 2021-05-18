@@ -75,6 +75,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     static final String VAADIN_DEP_KEY = "vaadin";
     static final String HASH_KEY = "hash";
     static final String DEV_DEPENDENCIES = "devDependencies";
+    static final String VAADIN_CORE_NPM_PACKAGE = "@vaadin/vaadin-core";
 
     private static final String DEP_LICENSE_KEY = "license";
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";

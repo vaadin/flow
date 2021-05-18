@@ -15,9 +15,13 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.util.Objects;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+
+import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_CORE_NPM_PACKAGE;
 
 /**
  * Converts platform versions file to internal format which doesn't contain
@@ -71,6 +75,10 @@ class VersionsJsonConverter {
     private void addDependency(JsonObject obj) {
         assert obj.hasKey(NPM_NAME);
         String npmName = obj.getString(NPM_NAME);
+        // #11025
+        if (Objects.equals(npmName, VAADIN_CORE_NPM_PACKAGE)) {
+            return;
+        }
         if (obj.hasKey(NPM_VERSION)) {
             convertedObject.put(npmName, obj.getString(NPM_VERSION));
         } else if (obj.hasKey(JS_VERSION)) {
