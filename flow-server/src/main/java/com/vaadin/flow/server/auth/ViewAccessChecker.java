@@ -16,15 +16,14 @@
 package com.vaadin.flow.server.auth;
 
 import javax.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.server.VaadinServletRequest;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Checks access to views using an {@link AccessAnnotationChecker}.
