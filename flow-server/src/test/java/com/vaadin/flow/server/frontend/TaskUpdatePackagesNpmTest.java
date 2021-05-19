@@ -43,7 +43,7 @@ import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
-import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_CORE_NPM_PACKAGE;
+import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 
 @NotThreadSafe

@@ -25,7 +25,7 @@ import org.junit.rules.TemporaryFolder;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_CORE_NPM_PACKAGE;
+import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
 
 public class VersionsJsonConverterTest {
 

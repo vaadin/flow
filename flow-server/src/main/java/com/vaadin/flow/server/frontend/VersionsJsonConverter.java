@@ -21,8 +21,6 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
-import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_CORE_NPM_PACKAGE;
-
 /**
  * Converts platform versions file to internal format which doesn't contain
  * extra information.
@@ -36,6 +34,7 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_CORE_NPM_PACKAG
  */
 class VersionsJsonConverter {
 
+    static final String VAADIN_CORE_NPM_PACKAGE = "@vaadin/vaadin-core";
     private static final String JS_VERSION = "jsVersion";
     private static final String NPM_NAME = "npmName";
     private static final String NPM_VERSION = "npmVersion";
