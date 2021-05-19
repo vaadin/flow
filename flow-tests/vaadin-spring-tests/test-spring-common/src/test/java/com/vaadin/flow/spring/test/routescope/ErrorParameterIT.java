@@ -59,4 +59,5 @@ public class ErrorParameterIT extends AbstractSpringTest {
     private void switchContent() {
         findElement(By.id("switch-content")).click();
     }
+
 }
