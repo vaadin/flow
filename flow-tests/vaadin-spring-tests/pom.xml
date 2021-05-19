@@ -28,7 +28,7 @@
         <driver.binary.downloader.maven.plugin.version>1.0.14
         </driver.binary.downloader.maven.plugin.version>
         <maven.war.plugin.version>3.1.0</maven.war.plugin.version>
-        <vaadin.version>20.0-SNAPSHOT</vaadin.version>
+        <vaadin.version>21.0-SNAPSHOT</vaadin.version>
     </properties>
 
     <dependencyManagement>
