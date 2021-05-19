@@ -82,8 +82,7 @@ public class DevModeInitializerEndpointTest {
         appConfig = Mockito.mock(ApplicationConfiguration.class);
         Mockito.when(appConfig.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
-                .thenAnswer(invocation -> invocation.getArgumentAt(1,
-                        String.class));
+                .thenAnswer(invocation -> invocation.getArgument(1));
         Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 null)).thenReturn(baseDir);
         Mockito.when(appConfig.enableDevServer()).thenReturn(true);
