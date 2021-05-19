@@ -20,11 +20,11 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.UUID;
 
+import com.vaadin.base.devserver.DevModeHandlerImpl;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.WebpackDevServerPortView", layout = ViewTestLayout.class)
@@ -42,7 +42,7 @@ public class WebpackDevServerPortView extends Div {
         unique.setId(UUID_ID);
         add(unique);
 
-        DevModeHandler handler = DevModeHandler.getDevModeHandler();
+        DevModeHandlerImpl handler = DevModeHandlerImpl.getDevModeHandler();
         Span portSpan = new Span(String.valueOf(handler.getPort()));
         portSpan.setId(WEBPACK_PORT_ID);
         add(portSpan);

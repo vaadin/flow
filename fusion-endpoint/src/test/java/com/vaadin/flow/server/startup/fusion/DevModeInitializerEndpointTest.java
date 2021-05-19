@@ -25,13 +25,13 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.fusion.EndpointGeneratorTaskFactoryImpl;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-import com.vaadin.flow.server.startup.DevModeInitializer;
+import com.vaadin.base.devserver.startup.DevModeInitializer;
+import com.vaadin.base.devserver.DevModeHandlerImpl;
 
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.TARGET;
@@ -64,7 +64,7 @@ public class DevModeInitializerEndpointTest {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setup() throws Exception {
         assertNull("No DevModeHandler should be available at test start",
-                DevModeHandler.getDevModeHandler());
+                DevModeHandlerImpl.getDevModeHandler());
 
         temporaryFolder.create();
         baseDir = temporaryFolder.getRoot().getPath();
@@ -137,12 +137,12 @@ public class DevModeInitializerEndpointTest {
 
     @After
     public void teardown() throws Exception {
-        final DevModeHandler devModeHandler = DevModeHandler
+        final DevModeHandlerImpl devModeHandler = DevModeHandlerImpl
                 .getDevModeHandler();
         if (devModeHandler != null) {
             devModeHandler.stop();
             // Wait until dev mode handler has stopped.
-            while (DevModeHandler.getDevModeHandler() != null) {
+            while (DevModeHandlerImpl.getDevModeHandler() != null) {
                 Thread.sleep(200); // NOSONAR
             }
         }
@@ -214,9 +214,9 @@ public class DevModeInitializerEndpointTest {
 
     private void waitForDevModeServer() throws NoSuchMethodException,
             IllegalAccessException, InvocationTargetException {
-        DevModeHandler handler = DevModeHandler.getDevModeHandler();
+        DevModeHandlerImpl handler = DevModeHandlerImpl.getDevModeHandler();
         Assert.assertNotNull(handler);
-        Method join = DevModeHandler.class.getDeclaredMethod("join");
+        Method join = DevModeHandlerImpl.class.getDeclaredMethod("join");
         join.setAccessible(true);
         join.invoke(handler);
     }
