@@ -45,7 +45,7 @@ public class ViewAccessCheckerTest {
     @Before
     public void init() {
         this.viewAccessChecker = new ViewAccessChecker();
-        this.viewAccessChecker.setEnabled(true);
+        this.viewAccessChecker.enable();
         this.viewAccessChecker.setLoginView(TestLoginView.class);
     }
 
@@ -239,8 +239,8 @@ public class ViewAccessCheckerTest {
     }
 
     @Test
-    public void disabledAccessCheckerAlwaysPasses() {
-        this.viewAccessChecker.setEnabled(false);
+    public void disabledAccessCheckerAlwaysPasses() throws Exception {
+        resetCheckerToDisabled();
         Assert.assertTrue(checkAccess(RolesAllowedAdminView.class, null)
                 .wasAccessGranted());
     }
@@ -292,6 +292,14 @@ public class ViewAccessCheckerTest {
         Assert.assertEquals("/log-in", result.rerouteToURL.get());
     }
 
+    @Test
+    public void openingRestrictedViewShowsNotFoundForLoggedInUser() {
+        Result result = checkAccess(RolesAllowedAdminView.class,
+                User.NORMAL_USER);
+        Assert.assertEquals(NotFoundException.class,
+                result.rerouteToError.get());
+    }
+
     private void resetLoginView()
             throws NoSuchFieldException, IllegalAccessException {
         Field f = ViewAccessChecker.class.getDeclaredField("loginView");
@@ -299,12 +307,11 @@ public class ViewAccessCheckerTest {
         f.set(this.viewAccessChecker, null);
     }
 
-    @Test
-    public void openingRestrictedViewShowsNotFoundForLoggedInUser() {
-        Result result = checkAccess(RolesAllowedAdminView.class,
-                User.NORMAL_USER);
-        Assert.assertEquals(NotFoundException.class,
-                result.rerouteToError.get());
+    private void resetCheckerToDisabled()
+            throws NoSuchFieldException, IllegalAccessException {
+        Field f = ViewAccessChecker.class.getDeclaredField("enabled");
+        f.setAccessible(true);
+        f.set(this.viewAccessChecker, false);
     }
 
     private static class Result {

@@ -51,8 +51,8 @@ public class ViewAccessChecker implements BeforeEnterListener {
      * Creates an instance using the given checker.
      * <p>
      * Note that the access checker is disabled by default and can be enabled
-     * using {@link #setEnabled(boolean)}. You should also set the login view to
-     * use using {@link #setLoginView(Class)} or {@link #setLoginView(String)}
+     * using {@link #enable()}. You should also set the login view to use using
+     * {@link #setLoginView(Class)} or {@link #setLoginView(String)}
      * 
      * @param accessAnnotationChecker
      *            the checker to use
@@ -63,13 +63,13 @@ public class ViewAccessChecker implements BeforeEnterListener {
     }
 
     /**
-     * Enables or disables the access checker.
-     * 
-     * @param enabled
-     *            {@code true} to enable, {@code false} to disable
+     * Enables the access checker.
+     * <p>
+     * This must be called for the access checker to perform any checks. By
+     * default the access checker is disabled.
      */
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    public void enable() {
+        this.enabled = true;
     }
 
     /**
