@@ -357,6 +357,30 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         });
     }
 
+    @Override
+    public NavigationRouteTarget getNavigationRouteTarget(String url) {
+        return getConfiguration().getNavigationRouteTarget(url);
+    }
+
+    @Override
+    public RouteTarget getRouteTarget(Class<? extends Component> target,
+            RouteParameters parameters) {
+        return getConfiguration().getRouteTarget(target, parameters);
+    }
+
+    @Override
+    public Optional<Class<? extends Component>> getNavigationTarget(
+            String url) {
+        Objects.requireNonNull(url, "url must not be null.");
+        return getConfiguration().getTarget(url);
+    }
+
+    @Override
+    public Optional<Class<? extends Component>> getNavigationTarget(String url,
+            List<String> segments) {
+        return getNavigationTarget(PathUtil.getPath(url, segments));
+    }
+
     /**
      * Add the given error target to the exceptionTargetMap. This will handle
      * existing overlapping exception types by assigning the correct error

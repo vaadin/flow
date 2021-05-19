@@ -33,15 +33,15 @@ import com.vaadin.flow.router.RouteParameters;
 public class NavigationRouteTarget implements Serializable {
 
     // Processed path.
-    private String path;
+    private final String path;
 
     // Target found for the specified path.
-    private RouteTarget routeTarget;
+    private final RouteTarget routeTarget;
 
     // Parameters found in the path.
-    private RouteParameters parameters;
+    private final RouteParameters parameters;
 
-    NavigationRouteTarget(String path, RouteTarget routeTarget,
+    public NavigationRouteTarget(String path, RouteTarget routeTarget,
             Map<String, String> parameters) {
         this.path = path;
         this.routeTarget = routeTarget;

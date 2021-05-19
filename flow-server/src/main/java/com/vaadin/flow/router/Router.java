@@ -16,18 +16,21 @@
 package com.vaadin.flow.router;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.DefaultRouteResolver;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.InternalRedirectHandler;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.router.internal.ResolveRequest;
+import com.vaadin.flow.server.ErrorRouteRegistry;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
@@ -313,8 +316,8 @@ public class Router implements Serializable {
      */
     public Optional<ErrorTargetEntry> getErrorNavigationTarget(
             Exception exception) {
-        if (registry instanceof ApplicationRouteRegistry) {
-            return ((ApplicationRouteRegistry) registry)
+        if (registry instanceof ErrorRouteRegistry) {
+            return ((ErrorRouteRegistry) registry)
                     .getErrorNavigationTarget(exception);
         }
         return Optional.empty();
