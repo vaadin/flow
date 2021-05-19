@@ -163,7 +163,12 @@ public class ViewAccessChecker implements BeforeEnterListener {
             if (loginView != null) {
                 beforeEnterEvent.forwardTo(loginView);
             } else {
-                beforeEnterEvent.getUI().getPage().setLocation(loginUrl);
+                // Prevent the view from being ceated
+                beforeEnterEvent.rerouteToError(NotFoundException.class);
+
+                if (loginUrl != null) {
+                    beforeEnterEvent.getUI().getPage().setLocation(loginUrl);
+                }
             }
         } else {
             beforeEnterEvent.rerouteToError(NotFoundException.class);
