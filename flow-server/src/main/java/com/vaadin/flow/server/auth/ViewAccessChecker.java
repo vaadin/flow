@@ -85,7 +85,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
      * Sets the Flow login view to use.
      * <p>
      * Note that the access checker needs to be separately enabled using
-     * {@link #setEnabled(boolean)}
+     * {@link #enable()}
      * 
      * @param loginView
      *            the Flow view to use as login view
@@ -99,7 +99,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
      * Sets the Fusion login view to use.
      * <p>
      * Note that the access checker needs to be separately enabled using
-     * {@link #setEnabled(boolean)}
+     * {@link #enable()}
      * 
      * @param loginUrl
      *            the Fusion view to use as login view
