@@ -37,6 +37,7 @@ import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.uitest.servlet.Es6UrlViewTestServlet;
 import com.vaadin.flow.uitest.servlet.ProductionModeTimingDataViewTestServlet;
 import com.vaadin.flow.uitest.servlet.ProductionModeViewTestServlet;
+import com.vaadin.flow.uitest.servlet.RouterLayoutCustomScopeServlet;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet;
 import com.vaadin.flow.uitest.servlet.ViewTestServlet;
 import com.vaadin.flow.uitest.ui.LogoutWithNotificationServlet;
@@ -143,6 +144,22 @@ public class Activator implements BundleActivator {
         }
     }
 
+    private static class FixedRouterLayoutCustomScopeServlet
+            extends RouterLayoutCustomScopeServlet {
+        @Override
+        public void init(ServletConfig servletConfig) throws ServletException {
+            super.init(servletConfig);
+
+            getService().setClassLoader(getClass().getClassLoader());
+        }
+
+        @Override
+        protected StaticFileHandler createStaticFileHandler(
+                VaadinServletService servletService) {
+            return new ItStaticFileServer(servletService);
+        }
+    }
+
     @VaadinServletConfiguration(productionMode = true)
     private static class FixedEs6UrlViewServlet extends Es6UrlViewTestServlet {
         @Override
@@ -206,6 +223,9 @@ public class Activator implements BundleActivator {
                             new FixedEs6UrlViewServlet(), dictionary, null);
                     httpService.registerServlet("/logout-with-notification/*",
                             new FixedLogoutWithNotificationServlet(),
+                            dictionary, null);
+                    httpService.registerServlet("/router-layout-custom-scope/*",
+                            new FixedRouterLayoutCustomScopeServlet(),
                             dictionary, null);
                 } catch (ServletException | NamespaceException exception) {
                     throw new RuntimeException(exception);
