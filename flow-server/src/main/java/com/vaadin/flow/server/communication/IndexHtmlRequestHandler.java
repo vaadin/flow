@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.util.Optional;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
@@ -161,16 +162,16 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private void addDevmodeGizmo(Document indexDocument, VaadinSession session,
             VaadinRequest request) {
         VaadinService service = session.getService();
-        BrowserLiveReload liveReload = BrowserLiveReloadAccess
-                .getLiveReloadIfAvailable(service);
+        Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccess
+                .getLiveReloadFromService(service);
 
-        if (liveReload != null) {
+        if (liveReload.isPresent()) {
             Element devmodeGizmo = new Element("vaadin-devmode-gizmo");
             devmodeGizmo.attr("url",
                     BootstrapHandlerHelper.getPushURL(session, request));
-            if (liveReload.getBackend() != null) {
-                devmodeGizmo.attr("backend",
-                        liveReload.getBackend().toString());
+            BrowserLiveReload.Backend backend = liveReload.get().getBackend();
+            if (backend != null) {
+                devmodeGizmo.attr("backend", backend.toString());
             }
             devmodeGizmo.attr("springbootlivereloadport", Integer
                     .toString(Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT));

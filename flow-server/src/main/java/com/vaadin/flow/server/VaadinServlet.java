@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Optional;
 import java.util.Properties;
 
 import com.vaadin.flow.component.UI;
@@ -330,10 +331,12 @@ public class VaadinServlet extends HttpServlet {
     protected boolean serveStaticOrWebJarRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
 
-        DevModeHandler devModeHandler = DevModeHandlerAccess
-                .getDevModeHandlerIfAvailable(getService());
-        if (devModeHandler != null && devModeHandler.isDevModeRequest(request)
-                && devModeHandler.serveDevModeRequest(request, response)) {
+        Optional<DevModeHandler> devModeHandler = DevModeHandlerAccess
+                .getDevModeHandlerFromService(getService());
+        if (devModeHandler.isPresent()
+                && devModeHandler.get().isDevModeRequest(request)
+                && devModeHandler.get().serveDevModeRequest(request,
+                        response)) {
             return true;
         }
 

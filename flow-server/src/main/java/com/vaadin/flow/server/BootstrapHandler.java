@@ -1196,17 +1196,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         deploymentConfiguration.isDevModeLiveReloadEnabled());
 
                 VaadinService service = session.getService();
-                BrowserLiveReload liveReload = BrowserLiveReloadAccess
-                        .getLiveReloadIfAvailable(service);
+                Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccess
+                        .getLiveReloadFromService(service);
 
                 // With V15+ bootstrap, gizmo is added to generated index.html
-                if (liveReload != null
+                if (liveReload.isPresent()
                         && deploymentConfiguration.useV14Bootstrap()) {
                     appConfig.put("liveReloadUrl", BootstrapHandlerHelper
                             .getPushURL(session, request));
-                    if (liveReload.getBackend() != null) {
-                        appConfig.put("liveReloadBackend",
-                                liveReload.getBackend().toString());
+                    BrowserLiveReload.Backend backend = liveReload.get()
+                            .getBackend();
+                    if (backend != null) {
+                        appConfig.put("liveReloadBackend", backend.toString());
                     }
                     appConfig.put("springBootLiveReloadPort",
                             Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT);
@@ -1490,10 +1491,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     protected static void showWebpackErrors(VaadinService service,
             Document document) {
-        DevModeHandler devServer = DevModeHandlerAccess
-                .getDevModeHandlerIfAvailable(service);
-        if (devServer != null) {
-            String errorMsg = devServer.getFailedOutput();
+        Optional<DevModeHandler> devServer = DevModeHandlerAccess
+                .getDevModeHandlerFromService(service);
+        if (devServer.isPresent()) {
+            String errorMsg = devServer.get().getFailedOutput();
             if (errorMsg != null) {
                 // Make error lines more prominent
                 errorMsg = errorMsg.replaceAll("(ERROR.+?\n)", "<b>$1</b>");

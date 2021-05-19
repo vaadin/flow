@@ -288,7 +288,7 @@ public class PushHandlerTest {
         BrowserLiveReload liveReload = Mockito.mock(BrowserLiveReload.class);
         Lookup lookup = Lookup.of(new BrowserLiveReloadAccess() {
             @Override
-            public BrowserLiveReload getLiveReload(VaadinService service) {
+            public BrowserLiveReload getLiveReload(VaadinContext context) {
                 return liveReload;
             }
         }, BrowserLiveReloadAccess.class);

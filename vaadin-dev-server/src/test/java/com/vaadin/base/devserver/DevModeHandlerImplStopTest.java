@@ -95,7 +95,7 @@ public class DevModeHandlerImplStopTest {
 
         startTestServer(port, HTTP_OK, "OK");
 
-        DevModeHandlerImpl.start(port, createDevModeLookup(), npmFolder, null,
+        DevModeHandlerImpl.start(port, createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null)).join();
         assertEquals(port, DevModeHandlerImpl.getDevModeHandler().getPort());
         assertNotNull(requestWebpackServer(port, "/bar"));
@@ -111,14 +111,14 @@ public class DevModeHandlerImplStopTest {
 
         startTestServer(port, HTTP_OK, "OK");
 
-        DevModeHandlerImpl.start(port, createDevModeLookup(), npmFolder, null,
+        DevModeHandlerImpl.start(port, createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null)).join();
 
         // Simulate a server restart by removing the handler, and starting a new
         // one
         DevModeHandlerImplTest.removeDevModeHandlerInstance();
         assertNull(DevModeHandlerImpl.getDevModeHandler());
-        DevModeHandlerImpl.start(createDevModeLookup(), npmFolder, null,
+        DevModeHandlerImpl.start(createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null)).join();
 
         // Webpack server should continue working

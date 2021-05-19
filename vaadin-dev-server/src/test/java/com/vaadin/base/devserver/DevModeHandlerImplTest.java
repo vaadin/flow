@@ -154,7 +154,7 @@ public class DevModeHandlerImplTest {
     public void should_CreateInstanceAndRunWebPack_When_DevModeAndNpmInstalled()
             throws Exception {
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(
-                createDevModeLookup(), npmFolder, null,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         assertNotNull(handler);
         handler.join();
@@ -188,7 +188,7 @@ public class DevModeHandlerImplTest {
         };
 
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(
-                createDevModeLookup(), npmFolder, null,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
 
         handler.join();
@@ -201,7 +201,7 @@ public class DevModeHandlerImplTest {
         // validation (which means server instance won't be reused)
         DevModeHandlerImpl newhHandler = DevModeHandlerImpl.start(
                 createDevModeLookup(),
-                new File(npmFolder, UUID.randomUUID().toString()), null,
+                new File(npmFolder, UUID.randomUUID().toString()),
                 CompletableFuture.completedFuture(null));
 
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
@@ -230,7 +230,7 @@ public class DevModeHandlerImplTest {
         exception.expectMessage("Webpack exited prematurely");
 
         createStubWebpackServer("Foo", 0, baseDir);
-        DevModeHandlerImpl.start(createDevModeLookup(), npmFolder, null,
+        DevModeHandlerImpl.start(createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
     }
 
@@ -241,7 +241,7 @@ public class DevModeHandlerImplTest {
                 .thenReturn("100");
         createStubWebpackServer("Failed to compile", 300, baseDir, true);
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(
-                createDevModeLookup(), npmFolder, null,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         assertNotNull(handler);
         handler.join();
@@ -260,7 +260,7 @@ public class DevModeHandlerImplTest {
             throws Exception {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(
-                createDevModeLookup(), npmFolder, null,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         assertNull(handler);
     }
@@ -270,7 +270,7 @@ public class DevModeHandlerImplTest {
             throws Exception {
         Mockito.when(configuration.enableDevServer()).thenReturn(false);
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(
-                createDevModeLookup(), npmFolder, null,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         assertNull(handler);
     }
@@ -280,7 +280,7 @@ public class DevModeHandlerImplTest {
         final String manifestJsonResponse = "{}";
         int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(port,
-                createDevModeLookup(), npmFolder, null,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         handler.join();
         assertFalse(new File(baseDir,
@@ -292,7 +292,7 @@ public class DevModeHandlerImplTest {
     public void webpackNotInstalled_throws() throws Exception {
         exception.expectCause(CoreMatchers.isA(ExecutionFailedException.class));
         new File(baseDir, WEBPACK_SERVER).delete();
-        DevModeHandlerImpl.start(createDevModeLookup(), npmFolder, null,
+        DevModeHandlerImpl.start(createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null)).join();
     }
 
@@ -305,7 +305,7 @@ public class DevModeHandlerImplTest {
         if (systemImplementsExecutable) {
             exception.expectCause(
                     CoreMatchers.isA(ExecutionFailedException.class));
-            DevModeHandlerImpl.start(createDevModeLookup(), npmFolder, null,
+            DevModeHandlerImpl.start(createDevModeLookup(), npmFolder,
                     CompletableFuture.completedFuture(null)).join();
         }
     }
@@ -314,7 +314,7 @@ public class DevModeHandlerImplTest {
     public void webpackNotConfigured_throws() {
         exception.expectCause(CoreMatchers.isA(ExecutionFailedException.class));
         new File(baseDir, FrontendUtils.WEBPACK_CONFIG).delete();
-        DevModeHandlerImpl.start(createDevModeLookup(), npmFolder, null,
+        DevModeHandlerImpl.start(createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null)).join();
     }
 
@@ -322,7 +322,7 @@ public class DevModeHandlerImplTest {
     public void should_HandleJavaScriptRequests() {
         HttpServletRequest request = prepareRequest("/VAADIN/foo.js");
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(
-                createDevModeLookup(), npmFolder, null,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         assertTrue(handler.isDevModeRequest(request));
     }
@@ -331,7 +331,7 @@ public class DevModeHandlerImplTest {
     public void shouldNot_HandleNonVaadinRequests() {
         HttpServletRequest request = prepareRequest("/foo.js");
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(
-                createDevModeLookup(), npmFolder, null,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         assertFalse(handler.isDevModeRequest(request));
     }
@@ -340,7 +340,7 @@ public class DevModeHandlerImplTest {
     public void shouldNot_HandleOtherRequests() {
         HttpServletRequest request = prepareRequest("/foo/VAADIN//foo.bar");
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(
-                createDevModeLookup(), npmFolder, null,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         handler.join();
         assertFalse(handler.isDevModeRequest(request));
@@ -351,7 +351,7 @@ public class DevModeHandlerImplTest {
         HttpServletRequest request = prepareRequest(
                 "/" + StreamRequestHandler.DYN_RES_PREFIX + "foo");
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(
-                createDevModeLookup(), npmFolder, null,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         handler.join();
         assertFalse(handler.isDevModeRequest(request));
@@ -361,7 +361,7 @@ public class DevModeHandlerImplTest {
     public void should_HandleAnyAssetInVaadin() {
         HttpServletRequest request = prepareRequest("/VAADIN/foo.bar");
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(
-                createDevModeLookup(), npmFolder, null,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         handler.join();
         assertTrue(handler.isDevModeRequest(request));
@@ -374,7 +374,7 @@ public class DevModeHandlerImplTest {
         int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
 
         DevModeHandlerImpl devModeHandler = DevModeHandlerImpl.start(port,
-                createDevModeLookup(), npmFolder, null,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         devModeHandler.join();
 
@@ -389,7 +389,7 @@ public class DevModeHandlerImplTest {
         int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
 
         DevModeHandlerImpl devModeHandler = DevModeHandlerImpl.start(port,
-                createDevModeLookup(), npmFolder, null,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         devModeHandler.join();
 
@@ -403,7 +403,7 @@ public class DevModeHandlerImplTest {
         createStubWebpackServer("Compiled", 3000, baseDir, false);
         HttpServletRequest request = prepareRequest("/VAADIN//foo.js");
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(0,
-                createDevModeLookup(), npmFolder, null,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         handler.join();
         handler.serveDevModeRequest(request, null);
@@ -419,7 +419,7 @@ public class DevModeHandlerImplTest {
         int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
 
         DevModeHandlerImpl devModeHandler = DevModeHandlerImpl.start(port,
-                createDevModeLookup(), npmFolder, null,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         devModeHandler.join();
         assertTrue(devModeHandler.serveDevModeRequest(request, response));
@@ -483,7 +483,7 @@ public class DevModeHandlerImplTest {
 
         String statsContent = "{}";
         int port = prepareHttpServer(0, HTTP_OK, statsContent);
-        DevModeHandlerImpl.start(port, lookup, npmFolder, null,
+        DevModeHandlerImpl.start(port, lookup, npmFolder,
                 CompletableFuture.completedFuture(null)).join();
 
         assertEquals(statsContent,
@@ -495,7 +495,7 @@ public class DevModeHandlerImplTest {
         final String manifestJsonContents = "{}";
         int port = prepareHttpServer(0, HTTP_OK, manifestJsonContents);
 
-        DevModeHandlerImpl.start(port, createDevModeLookup(), npmFolder, null,
+        DevModeHandlerImpl.start(port, createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null)).join();
         assertNotNull(DevModeHandlerImpl.getDevModeHandler());
         assertEquals(port, DevModeHandlerImpl.getDevModeHandler().getPort());
@@ -503,7 +503,7 @@ public class DevModeHandlerImplTest {
         removeDevModeHandlerInstance();
         assertNull(DevModeHandlerImpl.getDevModeHandler());
 
-        DevModeHandlerImpl.start(createDevModeLookup(), npmFolder, null,
+        DevModeHandlerImpl.start(createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null)).join();
         assertNotNull(DevModeHandlerImpl.getDevModeHandler());
         assertEquals(port, DevModeHandlerImpl.getDevModeHandler().getPort());
@@ -526,7 +526,7 @@ public class DevModeHandlerImplTest {
             Mockito.when(configuration.getBooleanProperty(
                     InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false))
                     .thenReturn(true);
-            DevModeHandlerImpl.start(createDevModeLookup(), npmFolder, null,
+            DevModeHandlerImpl.start(createDevModeLookup(), npmFolder,
                     CompletableFuture.completedFuture(null)).join();
         } finally {
             System.setProperty(userHome, originalHome);
@@ -541,7 +541,7 @@ public class DevModeHandlerImplTest {
         final String manifestJsonResponse = "{}";
         int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(port,
-                createDevModeLookup(), npmFolder, null, throwFuture);
+                createDevModeLookup(), npmFolder, throwFuture);
         try {
             handler.join();
         } catch (CompletionException ignore) {
@@ -559,7 +559,7 @@ public class DevModeHandlerImplTest {
         CompletableFuture<Void> throwFuture = new CompletableFuture<>();
         throwFuture.completeExceptionally(new CustomRuntimeException());
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(0,
-                createDevModeLookup(), npmFolder, null, throwFuture);
+                createDevModeLookup(), npmFolder, throwFuture);
         try {
             handler.join();
         } catch (CompletionException ignore) {
@@ -587,7 +587,7 @@ public class DevModeHandlerImplTest {
         TestAppConfig conf = Mockito.spy(TestAppConfig.class);
         mockApplicationConfiguration(conf);
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(0,
-                createDevModeLookup(configuration), npmFolder, null,
+                createDevModeLookup(configuration), npmFolder,
                 CompletableFuture.completedFuture(null));
         handler.join();
 
@@ -597,7 +597,7 @@ public class DevModeHandlerImplTest {
         // "start" one more time: there should not be another instance of dev
         // mode handler created
         DevModeHandlerImpl anotherHandler = DevModeHandlerImpl.start(0,
-                createDevModeLookup(), npmFolder, null,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         anotherHandler.join();
 
@@ -616,7 +616,7 @@ public class DevModeHandlerImplTest {
         exception.expectCause(Matchers.instanceOf(IllegalStateException.class));
         int port = DevModeHandlerImpl.getFreePort();
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(port,
-                createDevModeLookup(), npmFolder, null,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         handler.join();
     }
@@ -624,7 +624,7 @@ public class DevModeHandlerImplTest {
     @Test
     public void devModeNotReady_handleRequest_returnsHtml() throws Exception {
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(
-                createDevModeLookup(), npmFolder, null,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -701,7 +701,7 @@ public class DevModeHandlerImplTest {
         HttpServletRequest request = prepareRequest(uri);
         HttpServletResponse response = prepareResponse();
         DevModeHandlerImpl handler = DevModeHandlerImpl.start(
-                createDevModeLookup(), npmFolder, null,
+                createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null));
         handler.join();
         assertTrue(handler.serveDevModeRequest(request, response));
@@ -712,7 +712,7 @@ public class DevModeHandlerImplTest {
     private VaadinServlet prepareServlet(int port)
             throws ServletException, IOException {
         Lookup devModeLookup = createDevModeLookup();
-        DevModeHandlerImpl.start(port, devModeLookup, npmFolder, null,
+        DevModeHandlerImpl.start(port, devModeLookup, npmFolder,
                 CompletableFuture.completedFuture(null)).join();
         VaadinServlet servlet = new VaadinServlet();
         ServletConfig cfg = mock(ServletConfig.class);

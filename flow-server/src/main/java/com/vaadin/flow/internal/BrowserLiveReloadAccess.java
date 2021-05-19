@@ -38,26 +38,41 @@ public interface BrowserLiveReloadAccess {
 
     /**
      * Returns a {@link BrowserLiveReload} instance for the given
+     * {@code context}.
+     *
+     * @param context
+     *            a Vaadin context
+     * @return a <code>BrowserLiveReload</code> instance or null if disabled
+     */
+    BrowserLiveReload getLiveReload(VaadinContext context);
+
+    /**
+     * Returns a {@link BrowserLiveReload} instance for the given
      * {@code service}.
      *
      * @param service
-     *            a live reload service
+     *            a Vaadin service
      * @return a <code>BrowserLiveReload</code> instance or null if disabled
      */
-    BrowserLiveReload getLiveReload(VaadinService service);
+    default BrowserLiveReload getLiveReload(VaadinService service) {
+        return getLiveReload(service.getContext());
+    }
 
     /**
-     * Create a {@link BrowserLiveReload} is factory available.
+     * Create a {@link BrowserLiveReload} if factory available.
      *
      * @param service
-     *            a service
-     * @return a <code>DevModeHandler</code> instance or null if disabled
+     *            a Vaadin service
+     * @return an {@link Optional} containing a {@link BrowserLiveReload}
+     *         instance or <code>EMPTY</code> if disabled
      */
-    static BrowserLiveReload getLiveReloadIfAvailable(VaadinService service) {
+    static Optional<BrowserLiveReload> getLiveReloadFromService(
+            VaadinService service) {
         VaadinContext context = service.getContext();
         return Optional.ofNullable(context)
                 .map(ctx -> ctx.getAttribute(Lookup.class))
                 .map(lu -> lu.lookup(BrowserLiveReloadAccess.class))
-                .map(blra -> blra.getLiveReload(service)).orElse(null);
+                .flatMap(blra -> Optional
+                        .ofNullable(blra.getLiveReload(service)));
     }
 }

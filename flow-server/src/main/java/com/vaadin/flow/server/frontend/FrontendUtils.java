@@ -460,11 +460,11 @@ public class FrontendUtils {
         InputStream content = null;
 
         try {
-            DevModeHandler devModeHandler = DevModeHandlerAccess
-                    .getDevModeHandlerIfAvailable(service);
             if (!config.isProductionMode() && config.enableDevServer()) {
-                assert devModeHandler != null;
-                content = getStatsFromWebpack(devModeHandler);
+                Optional<DevModeHandler> devModeHandler = DevModeHandlerAccess
+                        .getDevModeHandlerFromService(service);
+                assert devModeHandler.isPresent();
+                content = getStatsFromWebpack(devModeHandler.get());
             }
 
             if (config.isStatsExternal()) {
@@ -521,11 +521,11 @@ public class FrontendUtils {
         InputStream content = null;
 
         try {
-            DevModeHandler devServer = DevModeHandlerAccess
-                    .getDevModeHandlerIfAvailable(service);
+            Optional<DevModeHandler> devModeHandler = DevModeHandlerAccess
+                    .getDevModeHandlerFromService(service);
             if (!config.isProductionMode() && config.enableDevServer()
-                    && devServer != null) {
-                content = getFileFromWebpack(devServer, path);
+                    && devModeHandler.isPresent()) {
+                content = getFileFromWebpack(devModeHandler.get(), path);
             }
 
             if (content == null) {
@@ -563,10 +563,10 @@ public class FrontendUtils {
      */
     public static String getStatsHash(VaadinService service)
             throws IOException {
-        DevModeHandler devModeHandler = DevModeHandlerAccess
-                .getDevModeHandlerIfAvailable(service);
-        if (devModeHandler != null) {
-            HttpURLConnection statsConnection = devModeHandler
+        Optional<DevModeHandler> devModeHandler = DevModeHandlerAccess
+                .getDevModeHandlerFromService(service);
+        if (devModeHandler.isPresent()) {
+            HttpURLConnection statsConnection = devModeHandler.get()
                     .prepareConnection("/stats.hash", "GET");
             if (statsConnection
                     .getResponseCode() != HttpURLConnection.HTTP_OK) {
@@ -720,11 +720,11 @@ public class FrontendUtils {
     public static String getStatsAssetsByChunkName(VaadinService service)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
-        DevModeHandler devModeHandler = DevModeHandlerAccess
-                .getDevModeHandlerIfAvailable(service);
+        Optional<DevModeHandler> devModeHandler = DevModeHandlerAccess
+                .getDevModeHandlerFromService(service);
         if (!config.isProductionMode() && config.enableDevServer()
-                && devModeHandler != null) {
-            return streamToString(getResourceFromWebpack(devModeHandler,
+                && devModeHandler.isPresent()) {
+            return streamToString(getResourceFromWebpack(devModeHandler.get(),
                     "/assetsByChunkName", "getting assets by chunk name."));
         }
         InputStream resourceAsStream;

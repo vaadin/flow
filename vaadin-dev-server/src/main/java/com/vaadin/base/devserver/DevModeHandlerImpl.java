@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -156,15 +157,20 @@ public final class DevModeHandlerImpl
     private final File npmFolder;
 
     private DevModeHandlerImpl(Lookup lookup, int runningPort, File npmFolder,
-            BrowserLiveReload liveReload, CompletableFuture<Void> waitFor) {
+            CompletableFuture<Void> waitFor) {
 
         this.npmFolder = npmFolder;
         port = runningPort;
-        this.liveReload = liveReload;
         ApplicationConfiguration config = lookup
                 .lookup(ApplicationConfiguration.class);
         reuseDevServer = config.reuseDevServer();
         devServerPortFile = getDevServerPortFile(npmFolder);
+
+        BrowserLiveReloadAccess liveReloadAccess = lookup
+                .lookup(BrowserLiveReloadAccess.class);
+        liveReload = liveReloadAccess != null ?
+                liveReloadAccess.getLiveReload(config.getContext()) :
+                null;
 
         BiConsumer<Void, ? super Throwable> action = (value, exception) -> {
             // this will throw an exception if an exception has been thrown by
@@ -183,8 +189,6 @@ public final class DevModeHandlerImpl
      *            the provided lookup to get required data
      * @param npmFolder
      *            folder with npm configuration files
-     * @param liveReload
-     *            a live reload implementation, or null
      * @param waitFor
      *            a completable future whose execution result needs to be
      *            available to start the webpack dev server
@@ -192,8 +196,8 @@ public final class DevModeHandlerImpl
      * @return the instance in case everything is alright, null otherwise
      */
     public static DevModeHandlerImpl start(Lookup lookup, File npmFolder,
-            BrowserLiveReload liveReload, CompletableFuture<Void> waitFor) {
-        return start(0, lookup, npmFolder, liveReload, waitFor);
+            CompletableFuture<Void> waitFor) {
+        return start(0, lookup, npmFolder, waitFor);
     }
 
     /**
@@ -205,8 +209,6 @@ public final class DevModeHandlerImpl
      *            the provided lookup to get required data
      * @param npmFolder
      *            folder with npm configuration files
-     * @param liveReload
-     *            a live reload implementation, or null
      * @param waitFor
      *            a completable future whose execution result needs to be
      *            available to start the webpack dev server
@@ -214,8 +216,7 @@ public final class DevModeHandlerImpl
      * @return the instance in case everything is alright, null otherwise
      */
     public static DevModeHandlerImpl start(int runningPort, Lookup lookup,
-            File npmFolder, BrowserLiveReload liveReload,
-            CompletableFuture<Void> waitFor) {
+            File npmFolder, CompletableFuture<Void> waitFor) {
         ApplicationConfiguration configuration = lookup
                 .lookup(ApplicationConfiguration.class);
         if (configuration.isProductionMode()
@@ -223,8 +224,8 @@ public final class DevModeHandlerImpl
             return null;
         }
         if (atomicHandler.get() == null) {
-            atomicHandler.compareAndSet(null, createInstance(runningPort,
-                    lookup, npmFolder, liveReload, waitFor));
+            atomicHandler.compareAndSet(null,
+                    createInstance(runningPort, lookup, npmFolder, waitFor));
         }
         return getDevModeHandler();
     }
@@ -269,10 +270,8 @@ public final class DevModeHandlerImpl
     }
 
     private static DevModeHandlerImpl createInstance(int runningPort,
-            Lookup lookup, File npmFolder, BrowserLiveReload liveReload,
-            CompletableFuture<Void> waitFor) {
-        return new DevModeHandlerImpl(lookup, runningPort, npmFolder,
-                liveReload, waitFor);
+            Lookup lookup, File npmFolder, CompletableFuture<Void> waitFor) {
+        return new DevModeHandlerImpl(lookup, runningPort, npmFolder, waitFor);
     }
 
     @Override

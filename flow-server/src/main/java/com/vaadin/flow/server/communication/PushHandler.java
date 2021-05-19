@@ -21,6 +21,7 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Collection;
+import java.util.Optional;
 
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
@@ -318,11 +319,11 @@ public class PushHandler {
         // In development mode we may have a live-reload push channel
         // that should be closed.
 
-        BrowserLiveReload liveReload = BrowserLiveReloadAccess
-                .getLiveReloadIfAvailable(service);
-        if (liveReload != null && isLiveReloadConnection(resource)) {
-            if (liveReload.isLiveReload(resource)) {
-                liveReload.onDisconnect(resource);
+        Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccess
+                .getLiveReloadFromService(service);
+        if (isLiveReloadConnection(resource)) {
+            if (liveReload.get().isLiveReload(resource)) {
+                liveReload.get().onDisconnect(resource);
                 return null;
             }
         }
@@ -513,11 +514,8 @@ public class PushHandler {
      */
     void onConnect(AtmosphereResource resource) {
         if (isLiveReloadConnection(resource)) {
-            BrowserLiveReload liveReload = BrowserLiveReloadAccess
-                    .getLiveReloadIfAvailable(service);
-            if (liveReload != null) {
-                liveReload.onConnect(resource);
-            }
+            BrowserLiveReloadAccess.getLiveReloadFromService(service)
+                    .ifPresent(liveReload -> liveReload.onConnect(resource));
         } else {
             callWithUi(resource, establishCallback);
         }

@@ -9,16 +9,28 @@ import com.vaadin.flow.server.VaadinService;
 
 public class BrowserLiveReloadAccessImpl implements BrowserLiveReloadAccess {
 
+    @Override
+    public BrowserLiveReload getLiveReload(VaadinContext context) {
+        BrowserLiveReload liveReload = context
+                .getAttribute(BrowserLiveReload.class);
+        if (liveReload == null) {
+            liveReload = new BrowserLiveReloadImpl();
+            context.setAttribute(BrowserLiveReload.class, liveReload);
+        }
+        return liveReload;
+    }
+
     /**
      * Returns a {@link BrowserLiveReload} instance for the given
      * {@code service}. The instance is stored in the Vaadin context by the
      * {@code vaadin-dev-server} dependency.
      * <p>
-     * Returns {@code null} if production mode is enabled for the service, or
+     * Returns {@code null} if production mode is enabled for the service.
      *
      * @param service
-     *            a service
-     * @return a BrowserLiveReload instance or null for production mode
+     *            a Vaadin service
+     * @return a {@link BrowserLiveReload} instance or <code>null</code> in
+     *         production mode
      */
     @Override
     public BrowserLiveReload getLiveReload(VaadinService service) {
@@ -33,14 +45,7 @@ public class BrowserLiveReloadAccessImpl implements BrowserLiveReloadAccess {
                     "BrowserLiveReloadAccessImpl::getLiveReload is called when live reload is disabled.");
             return null;
         }
-        VaadinContext context = service.getContext();
-        BrowserLiveReload liveReload = context
-                .getAttribute(BrowserLiveReload.class);
-        if (liveReload == null) {
-            liveReload = new BrowserLiveReloadImpl();
-            context.setAttribute(BrowserLiveReload.class, liveReload);
-        }
-        return liveReload;
+        return getLiveReload(service.getContext());
     }
 
     private static Logger getLogger() {

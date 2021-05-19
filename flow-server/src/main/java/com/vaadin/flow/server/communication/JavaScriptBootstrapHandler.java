@@ -18,6 +18,7 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.Optional;
 import java.util.function.Function;
 
 import com.vaadin.flow.component.PushConfiguration;
@@ -202,10 +203,10 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
     private JsonValue getErrors(VaadinService service) {
         JsonObject errors = Json.createObject();
-        DevModeHandler devMode = DevModeHandlerAccess
-                .getDevModeHandlerIfAvailable(service);
-        if (devMode != null) {
-            String errorMsg = devMode.getFailedOutput();
+        Optional<DevModeHandler> devModeHandler = DevModeHandlerAccess
+                .getDevModeHandlerFromService(service);
+        if (devModeHandler.isPresent()) {
+            String errorMsg = devModeHandler.get().getFailedOutput();
             if (errorMsg != null) {
                 errors.put("webpack-dev-server", errorMsg);
             }

@@ -22,23 +22,26 @@ public interface DevModeHandlerAccess {
      * Returns a {@link DevModeHandler} instance for the given {@code service}.
      *
      * @param service
-     *            a service
-     * @return a <code>DevModeHandler</code> instance
+     *            a Vaadin service
+     * @return a {@link DevModeHandler} instance
      */
     DevModeHandler getDevModeHandler(VaadinService service);
 
     /**
-     * Create a {@link DevModeHandler} is factory available.
+     * Create a {@link DevModeHandler} if factory available.
      *
      * @param service
-     *            a service
-     * @return a <code>DevModeHandler</code> instance or null if disabled
+     *            a Vaadin service
+     * @return an {@link Optional} containing a {@link DevModeHandler} instance
+     *         or <code>EMPTY</code> if disabled
      */
-    static DevModeHandler getDevModeHandlerIfAvailable(VaadinService service) {
+    static Optional<DevModeHandler> getDevModeHandlerFromService(
+            VaadinService service) {
         VaadinContext context = service.getContext();
         return Optional.ofNullable(context)
                 .map(ctx -> ctx.getAttribute(Lookup.class))
                 .map(lu -> lu.lookup(DevModeHandlerAccess.class))
-                .map(dmha -> dmha.getDevModeHandler(service)).orElse(null);
+                .flatMap(dmha -> Optional
+                        .ofNullable(dmha.getDevModeHandler(service)));
     }
 }

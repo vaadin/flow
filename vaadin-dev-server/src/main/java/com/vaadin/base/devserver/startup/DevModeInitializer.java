@@ -391,12 +391,10 @@ public class DevModeInitializer
         CompletableFuture<Void> nodeTasksFuture = CompletableFuture
                 .runAsync(runnable);
 
-        BrowserLiveReload liveReload = context
-                .getAttribute(BrowserLiveReload.class);
         DevModeHandlerImpl.start(
                 Lookup.compose(lookup,
                         Lookup.of(config, ApplicationConfiguration.class)),
-                builder.getNpmFolder(), liveReload, nodeTasksFuture);
+                builder.getNpmFolder(), nodeTasksFuture);
     }
 
     private static boolean isEndpointServiceAvailable(Lookup lookup) {
