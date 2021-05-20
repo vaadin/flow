@@ -23,6 +23,7 @@ let arrURL = [];
 let arrSHA = [];
 let arrBranch = [];
 let arrUser = [];
+let arrMergedBy = [];
 
 const repo = "vaadin/flow";
 const token = process.env['GITHUB_TOKEN'];
@@ -81,6 +82,7 @@ function filterCommits(commits){
           arrBranch.push(branch[1]);
           arrTitle.push(`${commit.title} (#${commit.number}) (CP: ${branch[1]})`);
           arrUser.push(`@${commit.user.login}`);
+          arrMergedBy.push(`@{commit.merged_by.login}`);
         }
       })
     }
@@ -108,7 +110,7 @@ async function cherryPickCommits(){
     } catch (err) {
       console.error(`Cannot Pick the Commit:${arrSHA[i]} to ${arrBranch[i]}, error :${err}`);
       await labelCommit(arrURL[i], `need to pick manually ${arrBranch[i]}`);
-      await postComment(arrURL[i], arrUser[i], arrBranch[i], err);
+      await postComment(arrURL[i], arrUser[i], arrMergedBy[i], arrBranch[i], err);
       await exec(`git cherry-pick --abort`);
       await exec(`git checkout master`);
       await exec(`git branch -D ${branchName}`);
@@ -135,7 +137,7 @@ async function labelCommit(url, label){
   await axios.post(issueURL, {"labels":[label]}, options);
 }
 
-async function postComment(url, userName, branch, message){
+async function postComment(url, userName, mergedBy, branch, message){
   let issueURL = url.replace("pulls", "issues") + "/comments";
   const options = {
     headers:{
@@ -144,7 +146,7 @@ async function postComment(url, userName, branch, message){
     }
   };
 
-  await axios.post(issueURL, {"body":`Hi ${userName} , this commit cannot be picked to ${branch} by this bot, can you take a look and pick it manually?\n Error Message: ${message}`}, options);
+  await axios.post(issueURL, {"body":`Hi ${userName} and ${mergedBy}, when i performed cherry-pick to this commit to ${branch}, i have encountered the following issue. Can you take a look and pick it manually?\n Error Message:\n ${message}`}, options);
 }
 
 
