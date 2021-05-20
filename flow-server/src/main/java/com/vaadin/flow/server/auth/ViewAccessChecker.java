@@ -84,6 +84,8 @@ public class ViewAccessChecker implements BeforeEnterListener {
     /**
      * Sets the Flow login view to use.
      * <p>
+     * The login view can only be set once and cannot be changed afterwards.
+     * <p>
      * Note that the access checker needs to be separately enabled using
      * {@link #enable()}
      * 
@@ -97,6 +99,8 @@ public class ViewAccessChecker implements BeforeEnterListener {
 
     /**
      * Sets the Fusion login view to use.
+     * <p>
+     * The login view can only be set once and cannot be changed afterwards.
      * <p>
      * Note that the access checker needs to be separately enabled using
      * {@link #enable()}
@@ -170,9 +174,18 @@ public class ViewAccessChecker implements BeforeEnterListener {
                     beforeEnterEvent.getUI().getPage().setLocation(loginUrl);
                 }
             }
-        } else {
+        } else if (isProductionMode(beforeEnterEvent)) {
+            // Intentionally does not reveal if the route exists
             beforeEnterEvent.rerouteToError(NotFoundException.class);
+        } else {
+            beforeEnterEvent.rerouteToError(NotFoundException.class,
+                    "Access denied");
         }
+    }
+
+    private boolean isProductionMode(BeforeEnterEvent beforeEnterEvent) {
+        return beforeEnterEvent.getUI().getSession().getConfiguration()
+                .isProductionMode();
     }
 
     private Logger getLogger() {

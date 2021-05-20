@@ -14,6 +14,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -30,6 +31,7 @@ import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.AnonymousAllowedView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.DenyAllView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationView;
@@ -60,7 +62,7 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void cannotUseWithoutServlet() {
-        Result request = setupRequest(AnonymousAllowedView.class, null);
+        Result request = setupRequest(AnonymousAllowedView.class, null, true);
         CurrentInstance.clearAll();
         this.viewAccessChecker.beforeEnter(request.event);
         Assert.assertEquals(NotFoundException.class, request.getRerouteError());
@@ -306,6 +308,15 @@ public class ViewAccessCheckerTest {
         Result result = checkAccess(RolesAllowedAdminView.class,
                 User.NORMAL_USER);
         Assert.assertEquals(NotFoundException.class, result.getRerouteError());
+        Assert.assertEquals("", result.getRerouteErrorMessage());
+    }
+
+    @Test
+    public void openingRestrictedViewShowsReasonInDevelopmentMode() {
+        Result result = checkAccess(RolesAllowedAdminView.class,
+                User.NORMAL_USER, false);
+        Assert.assertEquals(NotFoundException.class, result.getRerouteError());
+        Assert.assertEquals("Access denied", result.getRerouteErrorMessage());
     }
 
     @Test
@@ -351,6 +362,15 @@ public class ViewAccessCheckerTest {
             return event.getForwardTargetType();
         }
 
+        public String getRerouteErrorMessage() {
+            if (!event.hasRerouteTarget() || !(event
+                    .getRerouteTarget() instanceof ErrorStateRenderer)) {
+                return null;
+            }
+
+            return event.getErrorParameter().getCustomMessage();
+        }
+
         public Class<? extends Exception> getRerouteError() {
             if (!event.hasRerouteTarget() || !(event
                     .getRerouteTarget() instanceof ErrorStateRenderer)) {
@@ -380,14 +400,20 @@ public class ViewAccessCheckerTest {
     }
 
     private Result checkAccess(Class<?> viewClass, User user) {
-        Result result = setupRequest(viewClass, user);
+        return checkAccess(viewClass, user, true);
+    }
+
+    private Result checkAccess(Class<?> viewClass, User user,
+            boolean productionMode) {
+        Result result = setupRequest(viewClass, user, productionMode);
         BeforeEnterEvent event = result.event;
 
         this.viewAccessChecker.beforeEnter(event);
         return result;
     }
 
-    private Result setupRequest(Class navigationTarget, User user) {
+    private Result setupRequest(Class navigationTarget, User user,
+            boolean productionMode) {
         CurrentInstance.clearAll();
 
         Principal principal;
@@ -419,6 +445,14 @@ public class ViewAccessCheckerTest {
         UI ui = Mockito.mock(UI.class);
         Page page = Mockito.mock(Page.class);
         Mockito.when(ui.getPage()).thenReturn(page);
+        VaadinSession vaadinSession = Mockito.mock(VaadinSession.class);
+        Mockito.when(ui.getSession()).thenReturn(vaadinSession);
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(vaadinSession.getConfiguration())
+                .thenReturn(configuration);
+        Mockito.when(configuration.isProductionMode())
+                .thenReturn(productionMode);
 
         UIInternals uiInternals = Mockito.mock(UIInternals.class);
         Mockito.when(ui.getInternals()).thenReturn(uiInternals);
