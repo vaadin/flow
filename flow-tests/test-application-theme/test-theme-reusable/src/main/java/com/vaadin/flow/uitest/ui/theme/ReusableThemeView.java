@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.uitest.ui.theme;
 
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
@@ -26,6 +27,7 @@ import com.vaadin.flow.theme.Theme;
 @Route("com.vaadin.flow.uitest.ui.theme.ReusableThemeView")
 @Theme(themeFolder = "reusable-theme")
 @NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "1.6.1")
+@CssImport(value = "./css/styles.css")
 public class ReusableThemeView extends Div {
 
     public static final String MY_POLYMER_ID = "field";
@@ -72,5 +74,9 @@ public class ReusableThemeView extends Div {
         badge.getElement().setAttribute("theme", "badge");
 
         add(badge);
+        Span cssIcon = new Span();
+        cssIcon.setId("css-icon");
+        cssIcon.setClassName("css-icon");
+        add(cssIcon);
     }
 }

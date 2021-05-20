@@ -175,6 +175,17 @@ public class ReusableThemeIT extends ChromeBrowserTest {
         Assert.assertEquals("rgba(22, 118, 243, 0.1)", badgeBackgroundColor);
     }
 
+    @Test //11015
+    public void importedCssStyle_isUsed() {
+        open();
+        checkLogsForErrors();
+
+        final SpanElement cssIcon = $(SpanElement.class).id("css-icon");
+
+        Assert.assertEquals("url(\"" + getRootURL() + "/path/img/icon.png\")",
+                cssIcon.getCssValue("background-image"));
+    }
+
     @Override
     protected String getTestPath() {
         String path = super.getTestPath();
