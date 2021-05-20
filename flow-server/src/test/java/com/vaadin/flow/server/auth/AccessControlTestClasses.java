@@ -4,6 +4,9 @@ import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.Route;
+
 public class AccessControlTestClasses {
 
     public static class NoAnnotationClass {
@@ -231,5 +234,40 @@ public class AccessControlTestClasses {
         public void rolesAllowedUserAdmin() {
         }
 
+    }
+
+    @Route("login")
+    public static class TestLoginView extends Component {
+
+    }
+
+    @Route("noannotation")
+    public static class NoAnnotationView extends Component {
+
+    }
+
+    @AnonymousAllowed
+    @Route("anon")
+    public static class AnonymousAllowedView extends Component {
+    }
+
+    @PermitAll
+    @Route("permitall")
+    public static class PermitAllView extends Component {
+    }
+
+    @DenyAll
+    @Route("denyall")
+    public static class DenyAllView extends Component {
+    }
+
+    @RolesAllowed("user")
+    @Route("user")
+    public static class RolesAllowedUserView extends Component {
+    }
+
+    @RolesAllowed("admin")
+    @Route("admin")
+    public static class RolesAllowedAdminView extends Component {
     }
 }
