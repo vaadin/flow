@@ -70,6 +70,12 @@
             <artifactId>plexus-build-api</artifactId>
             <version>0.0.7</version>
         </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>fusion-endpoint</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <!-- Needed for lambdas in Mojos -->
