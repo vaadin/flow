@@ -37,8 +37,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -51,6 +49,7 @@ import elemental.json.JsonValue;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 
 @NotThreadSafe
@@ -423,6 +422,46 @@ public class TaskUpdatePackagesNpmTest {
 
         verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
                 PLATFORM_OVERLAY_VERSION);
+    }
+
+    // #11025
+    @Test
+    public void npmIsInUse_versionsJsonHasVaadinCoreVersionPinned_vaadinCoreVersionIgnored()
+            throws IOException {
+        final String expectedElementMixinVersion = "21.0.0-alpha2";
+        String versionJsonString = //@formatter:off
+                "{ \"core\": {"
+                        + "\"vaadin-element-mixin\": {\n"
+                        + "    \"jsVersion\": \""+expectedElementMixinVersion+"\",\n"
+                        + "    \"npmName\": \""+VAADIN_ELEMENT_MIXIN+"\"\n"
+                        + "},\n"
+                        + "\"vaadin-core\": {\n"
+                        + "    \"jsVersion\": \"21.0.0.alpha1\",\n" // broken for npm
+                        + "    \"npmName\": \""+VAADIN_CORE_NPM_PACKAGE+"\"\n"
+                        + "},\n"
+                        +"}}},\n";//@formatter:on
+        FileUtils.write(versionJsonFile, versionJsonString,
+                StandardCharsets.UTF_8);
+
+        final TaskUpdatePackages task = createTask(
+                createApplicationDependencies());
+        task.execute();
+        Assert.assertTrue("Updates not picked", task.modified);
+
+        verifyVersions(PLATFORM_DIALOG_VERSION, expectedElementMixinVersion,
+                null);
+        final JsonObject packageJson = getOrCreatePackageJson();
+        JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+
+        Assert.assertFalse(
+                VAADIN_CORE_NPM_PACKAGE
+                        + " version should not be written to package.json",
+                dependencies.hasKey(VAADIN_CORE_NPM_PACKAGE));
+        final JsonObject vaadinDependencies = packageJson
+                .getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES);
+        Assert.assertFalse(VAADIN_CORE_NPM_PACKAGE
+                + " version should not be written to vaadin dependencies in package.json",
+                vaadinDependencies.hasKey(VAADIN_CORE_NPM_PACKAGE));
     }
 
     private void createBasicVaadinVersionsJson() {
