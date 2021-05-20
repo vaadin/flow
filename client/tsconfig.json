@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "declaration": true,
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "lib": ["esnext", "es2018", "dom"],
+    "strict": true,
+    "importsNotUsedAsValues": "error"
+  },
+  "include": ["packages/**"]
+}

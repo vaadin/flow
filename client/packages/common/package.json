@@ -1,0 +1,32 @@
+{
+  "name": "@vaadin/client-commons",
+  "version": "21.0.0-alpha2",
+  "description": "Vaadin client common utils",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "repository": "vaadin/flow/client",
+  "keywords": [
+    "Vaadin",
+    "Fusion"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/flow/issues"
+  },
+  "homepage": "https://vaadin.com/fusion",
+  "files": [
+    "*.d.ts",
+    "*.js"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "lit-element": "^2.5.1",
+    "lit-html": "^1.4.1"
+  }
+}
