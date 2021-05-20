@@ -73,15 +73,6 @@ public class ViewAccessChecker implements BeforeEnterListener {
     }
 
     /**
-     * Checks if the access checker is enabled.
-     * 
-     * @return {@code true} if enabled, false otherwise
-     */
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    /**
      * Sets the Flow login view to use.
      * <p>
      * The login view can only be set once and cannot be changed afterwards.
@@ -126,7 +117,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-        if (!isEnabled()) {
+        if (!enabled) {
             return;
         }
         Class<?> targetView = beforeEnterEvent.getNavigationTarget();
