@@ -58,11 +58,11 @@ public class BrowserLiveReloadImpl implements BrowserLiveReload {
                 "org.springframework.boot.devtools.livereload.LiveReloadServer"));
     }
 
-    public BrowserLiveReloadImpl() {
+    BrowserLiveReloadImpl() {
         this(BrowserLiveReloadImpl.class.getClassLoader());
     }
 
-    public BrowserLiveReloadImpl(ClassLoader classLoader) {
+    BrowserLiveReloadImpl(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
 

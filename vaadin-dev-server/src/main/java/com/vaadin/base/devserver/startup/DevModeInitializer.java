@@ -64,8 +64,6 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.base.devserver.DevModeHandlerImpl;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
@@ -541,9 +539,10 @@ public class DevModeInitializer
                 Matcher dirVfsMatcher = VFS_DIRECTORY_REGEX.matcher(urlString);
                 if (jarVfsMatcher.find()) {
                     String vfsJar = jarVfsMatcher.group(1);
-                    if (vfsJars.add(vfsJar))
+                    if (vfsJars.add(vfsJar)) { // NOSONAR
                         frontendFiles.add(
                                 getPhysicalFileOfJBossVfsJar(new URL(vfsJar)));
+                    }
                 } else if (dirVfsMatcher.find()) {
                     URL vfsDirUrl = new URL(urlString.substring(0,
                             urlString.lastIndexOf(resourcesFolder)));

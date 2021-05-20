@@ -321,11 +321,10 @@ public class PushHandler {
 
         Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccess
                 .getLiveReloadFromService(service);
-        if (isLiveReloadConnection(resource)) {
-            if (liveReload.get().isLiveReload(resource)) {
-                liveReload.get().onDisconnect(resource);
-                return null;
-            }
+        if (isLiveReloadConnection(resource) && liveReload.isPresent()
+                && liveReload.get().isLiveReload(resource)) {
+            liveReload.get().onDisconnect(resource);
+            return null;
         }
 
         VaadinServletRequest vaadinRequest = new VaadinServletRequest(

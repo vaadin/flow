@@ -1167,7 +1167,7 @@ public class FrontendUtils {
         try {
             final String versionString = sourceJson.getString(pkg);
             return new FrontendVersion(pkg, versionString);
-        } catch (ClassCastException classCastException) {
+        } catch (ClassCastException classCastException) { // NOSONAR
             LoggerFactory.getLogger(FrontendVersion.class).warn(
                     "Ignoring error while parsing frontend dependency version for package '{}' in '{}'",
                     pkg, versionOrigin);

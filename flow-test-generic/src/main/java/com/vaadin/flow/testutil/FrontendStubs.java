@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2021 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.testutil;
 
 import java.io.File;
@@ -6,13 +21,34 @@ import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
 
+/**
+ * Utility class for stubbing Node.JS and Webpack scripts.
+ */
 public class FrontendStubs {
 
     public static final String WEBPACK_SERVER = "node_modules/webpack-dev-server/bin/webpack-dev-server.js";
     public static final String WEBPACK_TEST_OUT_FILE = "webpack-out.test";
 
-    // Creates stub versions of `node` and `npm` in the ./node folder as
-    // frontend-maven-plugin does
+    /**
+     * Only static methods.
+     */
+    private FrontendStubs() {
+    }
+
+    /**
+     * Creates stub versions of `node` and `npm` in the ./node folder as
+     * frontend-maven-plugin does.
+     *
+     * @param stubNode
+     *            whether `node/node` (`node/node.exe`) stub should be created
+     * @param stubNpm
+     *            whether `node/node_modules/npm/bin/npm-cli` and `npx-cli`
+     *            should be created
+     * @param baseDir
+     *            parent to create `node` dir in
+     * @throws IOException
+     *             when a file operation fails
+     */
     public static void createStubNode(boolean stubNode, boolean stubNpm,
             String baseDir) throws IOException {
 
@@ -46,9 +82,22 @@ public class FrontendStubs {
         }
     }
 
-    // Creates a stub webpack-dev-server able to output a ready string, sleep
-    // for a while and output arguments passed to a file, so as tests can check
-    // it
+    /**
+     * Creates a stub webpack-dev-server able to output a ready string, sleep
+     * for a while and output arguments passed to a file, so as tests can check
+     * it.
+     * 
+     * @param readyString
+     *            string to output
+     * @param milliSecondsToRun
+     *            time to keep the server running
+     * @param baseDir
+     *            parent directory
+     * @param enableListening
+     *            enable listening to port passed via `--port`
+     * @throws IOException
+     *             when a file operation fails
+     */
     public static void createStubWebpackServer(String readyString,
             int milliSecondsToRun, String baseDir, boolean enableListening)
             throws IOException {
@@ -88,6 +137,20 @@ public class FrontendStubs {
         FileUtils.write(serverFile, sb.toString(), "UTF-8");
     }
 
+    /**
+     * Creates a stub webpack-dev-server able to output a ready string, sleep
+     * for a while and output arguments passed to a file, so as tests can check
+     * it.
+     *
+     * @param readyString
+     *            string to output
+     * @param milliSecondsToRun
+     *            time to keep the server running
+     * @param baseDir
+     *            parent directory
+     * @throws IOException
+     *             when a file operation fails
+     */
     public static void createStubWebpackServer(String readyString,
             int milliSecondsToRun, String baseDir) throws IOException {
         createStubWebpackServer(readyString, milliSecondsToRun, baseDir, false);

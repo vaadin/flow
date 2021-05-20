@@ -54,7 +54,6 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.RequestHandler;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -168,9 +167,9 @@ public final class DevModeHandlerImpl
 
         BrowserLiveReloadAccess liveReloadAccess = lookup
                 .lookup(BrowserLiveReloadAccess.class);
-        liveReload = liveReloadAccess != null ?
-                liveReloadAccess.getLiveReload(config.getContext()) :
-                null;
+        liveReload = liveReloadAccess != null
+                ? liveReloadAccess.getLiveReload(config.getContext())
+                : null;
 
         BiConsumer<Void, ? super Throwable> action = (value, exception) -> {
             // this will throw an exception if an exception has been thrown by

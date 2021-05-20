@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2021 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.base.devserver;
 
 import org.slf4j.Logger;
@@ -7,6 +22,10 @@ import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 
+/**
+ * Default implementation for {@link BrowserLiveReloadAccess} that stores the
+ * instance in the Vaadin context.
+ */
 public class BrowserLiveReloadAccessImpl implements BrowserLiveReloadAccess {
 
     @Override
@@ -20,18 +39,6 @@ public class BrowserLiveReloadAccessImpl implements BrowserLiveReloadAccess {
         return liveReload;
     }
 
-    /**
-     * Returns a {@link BrowserLiveReload} instance for the given
-     * {@code service}. The instance is stored in the Vaadin context by the
-     * {@code vaadin-dev-server} dependency.
-     * <p>
-     * Returns {@code null} if production mode is enabled for the service.
-     *
-     * @param service
-     *            a Vaadin service
-     * @return a {@link BrowserLiveReload} instance or <code>null</code> in
-     *         production mode
-     */
     @Override
     public BrowserLiveReload getLiveReload(VaadinService service) {
         if (service.getDeploymentConfiguration().isProductionMode()) {

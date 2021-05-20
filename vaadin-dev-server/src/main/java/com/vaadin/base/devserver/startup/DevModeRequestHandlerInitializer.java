@@ -20,6 +20,9 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 
+/**
+ * Register the dev mode handler as a request handler.
+ */
 public class DevModeRequestHandlerInitializer
         implements VaadinServiceInitListener {
 
