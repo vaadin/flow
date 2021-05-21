@@ -2,6 +2,8 @@ package com.vaadin.flow.spring.flowsecurity.views;
 
 import java.math.BigDecimal;
 
+import javax.annotation.security.PermitAll;
+
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Span;
@@ -13,6 +15,7 @@ import com.vaadin.flow.spring.flowsecurity.service.BankService;
 
 @Route(value = "private", layout = MainView.class)
 @PageTitle("Private View")
+@PermitAll
 public class PrivateView extends VerticalLayout {
 
     private BankService bankService;

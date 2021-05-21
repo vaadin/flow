@@ -19,6 +19,7 @@ import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.tabs.TabsVariant;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.spring.flowsecurity.SecurityUtils;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 
@@ -30,10 +31,12 @@ public class MainView extends AppLayout {
     private H1 viewTitle;
     private SecurityUtils securityUtils;
     private UserInfo userInfo;
+    private AccessAnnotationChecker accessChecker;
 
-    public MainView(@Autowired SecurityUtils securityUtils) {
+    public MainView(SecurityUtils securityUtils, AccessAnnotationChecker accessChecker) {
         setId("main-view");
         this.securityUtils = securityUtils;
+        this.accessChecker = accessChecker;
         userInfo = securityUtils.getAuthenticatedUserInfo();
 
         setPrimarySection(Section.DRAWER);
@@ -109,12 +112,12 @@ public class MainView extends AppLayout {
     private Component[] createMenuItems() {
         Tab[] tabs = new Tab[3];
         tabs[0] = createTab("Public", PublicView.class);
-        if (userInfo != null) {
+        if (accessChecker.hasAccess(PrivateView.class)) {
             tabs[1] = createTab("Private", PrivateView.class);
         } else {
             tabs[1] = createTab("Private (hidden)", PrivateView.class);
         }
-        if (userInfo != null && userInfo.getRoles().contains("admin")) {
+        if (accessChecker.hasAccess(AdminView.class)) {
             tabs[2] = createTab("Admin", AdminView.class);
         } else {
             tabs[2] = createTab("Admin (hidden)", AdminView.class);

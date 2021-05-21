@@ -26,6 +26,11 @@ public class AppViewIT extends ChromeBrowserTest {
         return SERVER_PORT;
     }
 
+    @Override
+    protected String getRootURL() {
+        return super.getRootURL(); // + "/context";
+    }
+
     @After
     public void tearDown() {
         if (getDriver() != null) {
@@ -102,21 +107,28 @@ public class AppViewIT extends ChromeBrowserTest {
     public void navigate_to_private_view_prevented() {
         open("");
         navigateTo("private", false);
-        // TODO Currently view access control is missing
-        // assertLoginViewShown();
+        assertLoginViewShown();
     }
 
     @Test
     public void navigate_to_admin_view_prevented() {
         open("");
         navigateTo("admin", false);
-        // TODO Currently view access control is missing
-        // assertLoginViewShown();
+        assertLoginViewShown();
     }
 
     @Test
     public void redirect_to_private_view_after_login() {
         open("private");
+        assertPathShown("login");
+        loginUser();
+        assertPrivatePageShown(USER_FULLNAME);
+    }
+
+    @Test
+    public void redirect_to_private_view_after_navigation_and_login() {
+        open("");
+        navigateTo("private", false);
         assertPathShown("login");
         loginUser();
         assertPrivatePageShown(USER_FULLNAME);
@@ -135,6 +147,16 @@ public class AppViewIT extends ChromeBrowserTest {
         open("login");
         loginUser();
         navigateTo("private");
+        clickLogout();
+        assertRootPageShown();
+    }
+
+    @Test
+    public void logout_redirects_to_root_page() {
+        open("login");
+        loginUser();
+        navigateTo("private");
+        assertPrivatePageShown(USER_FULLNAME);
         clickLogout();
         assertRootPageShown();
     }

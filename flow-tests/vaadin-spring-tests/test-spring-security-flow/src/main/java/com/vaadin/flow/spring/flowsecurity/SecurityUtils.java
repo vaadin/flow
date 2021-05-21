@@ -1,7 +1,6 @@
 package com.vaadin.flow.spring.flowsecurity;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfoRepository;
@@ -18,6 +17,8 @@ public class SecurityUtils {
 
     @Autowired
     private UserInfoRepository userInfoRepository;
+    @Autowired
+    private SecurityConfig securityConfig;
 
     public UserDetails getAuthenticatedUser() {
         SecurityContext context = SecurityContextHolder.getContext();
@@ -46,7 +47,7 @@ public class SecurityUtils {
                 VaadinServletRequest.getCurrent().getHttpServletRequest(), null,
                 null);
         UI.getCurrent().getPage()
-                .setLocation(SecurityConfig.LOGOUT_SUCCESS_URL);
+                .setLocation(securityConfig.getLogoutSuccessUrl());
     }
 
 }
