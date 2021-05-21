@@ -253,7 +253,7 @@
             <dependency>
                 <groupId>org.easymock</groupId>
                 <artifactId>easymock</artifactId>
-                <version>3.4</version>
+                <version>4.3</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -274,7 +274,6 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-all</artifactId>
@@ -508,6 +507,8 @@
                         <excludes>
                             <exclude>${exclude.windows.failed.tests}</exclude>
                         </excludes>
+                        <!-- needed for running easymock in JDK11+ (easymock#235) -->
+                        <argLine>--add-opens java.base/java.lang=ALL-UNNAMED</argLine>
                     </configuration>
                 </plugin>
                 <plugin>
