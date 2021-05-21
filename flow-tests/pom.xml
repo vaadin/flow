@@ -350,7 +350,8 @@
                 <module>test-ccdm-flow-navigation/pom-production.xml</module>
 
                 <module>test-root-context</module>
-                     
+				
+                <module>test-custom-route-registry</module>
                 <!-- move theme tests to the end, because theme switch live reload-->
                 <!-- test impacts startup test-->
                 <module>test-application-theme</module>     

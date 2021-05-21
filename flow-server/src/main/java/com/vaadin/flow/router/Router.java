@@ -32,13 +32,13 @@ import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.InternalRedirectHandler;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.router.internal.ResolveRequest;
+import com.vaadin.flow.server.ErrorRouteRegistry;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import elemental.json.JsonValue;
 
@@ -352,8 +352,8 @@ public class Router implements Serializable {
      */
     public Optional<ErrorTargetEntry> getErrorNavigationTarget(
             Exception exception) {
-        if (registry instanceof ApplicationRouteRegistry) {
-            return ((ApplicationRouteRegistry) registry)
+        if (registry instanceof ErrorRouteRegistry) {
+            return ((ErrorRouteRegistry) registry)
                     .getErrorNavigationTarget(exception);
         }
         return Optional.empty();
