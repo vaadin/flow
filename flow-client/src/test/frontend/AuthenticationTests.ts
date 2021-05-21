@@ -85,7 +85,7 @@ describe('Authentication', () => {
     });
 
     it('should return an error on invalid credentials', async () => {
-      fetchMock.post('/login', { redirectUrl: '/login?error' }, { headers: requestHeaders });
+      fetchMock.post('login', { redirectUrl: 'login?error' }, { headers: requestHeaders });
       const result = await login('invalid-username', 'invalid-password');
       const expectedResult: LoginResult = {
         error: true,
@@ -99,7 +99,7 @@ describe('Authentication', () => {
 
     it('should return a CSRF token on valid credentials', async () => {
       fetchMock.post(
-        '/login',
+        'login',
         {
           body: happyCaseLoginResponseText,
           headers: happyCaseResponseHeaders
@@ -120,7 +120,7 @@ describe('Authentication', () => {
 
     it('should set the csrf tokens on login', async () => {
       fetchMock.post(
-        '/login',
+        'login',
         {
           body: happyCaseLoginResponseText,
           headers: {
@@ -142,7 +142,7 @@ describe('Authentication', () => {
       // request cache, so after login, it should redirect the user to that
       // request
       fetchMock.post(
-        '/login',
+        'login',
         {
           body: happyCaseLoginResponseText,
           // mock the unthenticated attempt, which would be
@@ -173,10 +173,10 @@ describe('Authentication', () => {
 
     it('should set the csrf token on logout', async () => {
       fetchMock.post(
-        '/logout',
+        'logout',
         {
           body: happyCaseLogoutResponseText,
-          redirectUrl: '/logout?login'
+          redirectUrl: 'logout?login'
         },
         { headers: requestHeaders }
       );
@@ -188,7 +188,7 @@ describe('Authentication', () => {
     it('should clear the csrf tokens on failed server logout', async () => {
       const fakeError = new Error('unable to connect');
       fetchMock.post(
-        '/logout',
+        'logout',
         () => {
           throw fakeError;
         },
@@ -212,15 +212,15 @@ describe('Authentication', () => {
       clearSpringCsrfMetaTags();
 
       verifySpringCsrfTokenIsCleared();
-      fetchMock.post('/logout', 403, { repeat: 1 });
+      fetchMock.post('logout', 403, { repeat: 1 });
       fetchMock.get('?nocache', {
         body: happyCaseLogoutResponseText
       });
       fetchMock.post(
-        '/logout',
+        'logout',
         {
           body: happyCaseLogoutResponseText,
-          redirectUrl: '/logout?login'
+          redirectUrl: 'logout?login'
         },
         { headers: requestHeaders, overwriteRoutes: false, repeat: 1 }
       );
@@ -236,13 +236,13 @@ describe('Authentication', () => {
 
       verifySpringCsrfTokenIsCleared();
 
-      fetchMock.post('/logout', 403, { repeat: 1 });
+      fetchMock.post('logout', 403, { repeat: 1 });
       fetchMock.get('?nocache', {
         body: happyCaseLogoutResponseText
       });
       const fakeError = new Error('server error');
       fetchMock.post(
-        '/logout',
+        'logout',
         () => {
           throw fakeError;
         },
@@ -269,15 +269,15 @@ describe('Authentication', () => {
       const headersWithExpiredSpringCsrfToken: Record<string, string> = {};
       headersWithExpiredSpringCsrfToken[springCsrfHeaderName] = expiredSpringCsrfToken;
 
-      fetchMock.post('/logout', 403, { headers: headersWithExpiredSpringCsrfToken, repeat: 1 });
+      fetchMock.post('logout', 403, { headers: headersWithExpiredSpringCsrfToken, repeat: 1 });
       fetchMock.get('?nocache', {
         body: happyCaseLogoutResponseText
       });
       fetchMock.post(
-        '/logout',
+        'logout',
         {
           body: happyCaseLogoutResponseText,
-          redirectUrl: '/logout?login'
+          redirectUrl: 'logout?login'
         },
         { headers: requestHeaders, overwriteRoutes: false, repeat: 1 }
       );
