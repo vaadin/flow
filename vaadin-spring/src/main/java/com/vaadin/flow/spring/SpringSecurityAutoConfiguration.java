@@ -15,9 +15,13 @@
  */
 package com.vaadin.flow.spring;
 
+import com.vaadin.flow.server.auth.AccessAnnotationChecker;
+import com.vaadin.flow.server.auth.ViewAccessChecker;
 import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
+import com.vaadin.flow.spring.security.ViewAccessCheckerInitializer;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,6 +46,43 @@ public class SpringSecurityAutoConfiguration {
     @Bean
     public VaadinDefaultRequestCache vaadinDefaultRequestCache() {
         return new VaadinDefaultRequestCache();
+    }
+
+    /**
+     * Makes the default view access check initializer available for security
+     * configuration.
+     * 
+     * @return the default access check initializer
+     */
+    @Bean
+    public ViewAccessCheckerInitializer viewAccessCheckerInitializer() {
+        return new ViewAccessCheckerInitializer();
+    }
+
+    /**
+     * Makes the default view access checker available for security
+     * configuration.
+     * 
+     * @return the default view access checker
+     */
+    @Bean
+    public ViewAccessChecker viewAccessChecker() {
+        return new ViewAccessChecker();
+    }
+
+    /**
+     * Makes the default access annotation checker available for security
+     * configuration.
+     * <p>
+     * Fusion makes this bean available by default but if Fusion is excluded
+     * from the project, we make it available here
+     * 
+     * @return the default access annotation checker
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public AccessAnnotationChecker accessAnnotationChecker() {
+        return new AccessAnnotationChecker();
     }
 
 }

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2021 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.spring.security;
 
 import java.io.IOException;
@@ -8,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.auth.ViewAccessChecker;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.DefaultRedirectStrategy;
@@ -72,14 +88,21 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
      * Redirect strategy used by
      * {@link VaadinSavedRequestAwareAuthenticationSuccessHandler}.
      */
-    public static class TypeScriptClientRedirectStrategy
-            extends DefaultRedirectStrategy {
+    public static class RedirectStrategy extends DefaultRedirectStrategy {
 
         @Override
         public void sendRedirect(HttpServletRequest request,
                 HttpServletResponse response, String url) throws IOException {
+            String redirectUrl;
+            String savedRedirectUrl = response.getHeader(SAVED_URL_HEADER);
+            if (savedRedirectUrl != null) {
+                redirectUrl = savedRedirectUrl;
+            } else {
+                redirectUrl = url;
+            }
+
             if (!isTypescriptLogin(request)) {
-                super.sendRedirect(request, response, url);
+                super.sendRedirect(request, response, redirectUrl);
                 return;
             }
 
@@ -114,7 +137,7 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
      * Creates a new instance.
      */
     public VaadinSavedRequestAwareAuthenticationSuccessHandler() {
-        setRedirectStrategy(new TypeScriptClientRedirectStrategy());
+        setRedirectStrategy(new RedirectStrategy());
     }
 
     @Override
@@ -123,15 +146,45 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
             throws ServletException, IOException {
         SavedRequest savedRequest = this.requestCache.getRequest(request,
                 response);
-        if (isTypescriptLogin(request)) {
-            if (savedRequest != null) {
-                response.setHeader(SAVED_URL_HEADER,
-                        savedRequest.getRedirectUrl());
+        String storedServerNavigation = getStoredServerNavigation(request);
+        if (storedServerNavigation != null) {
+            // The saved server navigation URL is relative to the context path
+            if (!"".equals(request.getContextPath())) {
+                storedServerNavigation = "/" + storedServerNavigation;
             }
+            response.setHeader(SAVED_URL_HEADER, storedServerNavigation);
+        } else if (savedRequest != null) {
+            /*
+             * This is here instead of in sendRedirect as we do not want to
+             * fallback to the default URL but instead send that separately.
+             */
+            response.setHeader(SAVED_URL_HEADER, savedRequest.getRedirectUrl());
+        }
+
+        if (isTypescriptLogin(request)) {
             response.setHeader(DEFAULT_URL_HEADER,
                     determineTargetUrl(request, response));
         }
+
         super.onAuthenticationSuccess(request, response, authentication);
+    }
+
+    /**
+     * Gets the target URL potentially stored by the server side view access
+     * control.
+     * 
+     * @return a URL if the login dialog was triggered by the user trying to
+     *         perform (server side) navigation to a protected server side view,
+     *         {@code null} otherwise
+     */
+    private static String getStoredServerNavigation(
+            HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return null;
+        }
+        return (String) session
+                .getAttribute(ViewAccessChecker.SESSION_STORED_REDIRECT);
     }
 
     static boolean isTypescriptLogin(HttpServletRequest request) {
