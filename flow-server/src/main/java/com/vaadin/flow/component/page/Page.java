@@ -638,6 +638,11 @@ public class Page implements Serializable {
     }
 
     private void handleExtendedClientDetailsResponse(JsonValue json) {
+        ExtendedClientDetails cachedDetails = ui.getInternals()
+                .getExtendedClientDetails();
+        if (cachedDetails != null) {
+            return;
+        }
         if (!(json instanceof JsonObject)) {
             throw new RuntimeException("Expected a JSON object");
         }
