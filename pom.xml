@@ -507,8 +507,7 @@
                         <excludes>
                             <exclude>${exclude.windows.failed.tests}</exclude>
                         </excludes>
-                        <!-- needed for running easymock in JDK11+ (easymock#235) -->
-                        <argLine>--add-opens java.base/java.lang=ALL-UNNAMED</argLine>
+                        <argLine>${surefire.argLine}</argLine>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -618,6 +617,8 @@
             </activation>
             <properties>
                 <maven.compiler.release>8</maven.compiler.release>
+                <!-- needed for running easymock in JDK11+ (easymock#235) -->
+                <surefire.argLine>--add-opens java.base/java.lang=ALL-UNNAMED</surefire.argLine>
             </properties>
             <build>
                 <pluginManagement>
