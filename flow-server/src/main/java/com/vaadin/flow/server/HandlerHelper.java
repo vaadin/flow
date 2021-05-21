@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
@@ -191,8 +192,8 @@ public class HandlerHelper implements Serializable {
     }
 
     /**
-     * Returns the path inside the servlet if the requested path targets a path
-     * inside the servlet.
+     * Returns the rest of the path after the servlet mapping part, if the
+     * requested path targets a path inside the servlet.
      * 
      * @param servletMappingPath
      *            the servlet mapping from the servlet configuration
@@ -204,27 +205,61 @@ public class HandlerHelper implements Serializable {
      */
     public static Optional<String> getPathIfInsideServlet(
             String servletMappingPath, String requestedPath) {
-        if (servletMappingPath.endsWith("/*")) {
-            servletMappingPath = servletMappingPath.substring(0,
-                    servletMappingPath.length() - "/*".length());
+        Objects.requireNonNull(servletMappingPath,
+                "servletMappingPath cannot be null");
+        Objects.requireNonNull(requestedPath, "requestedPath cannot be null");
+
+        if ("/*".equals(servletMappingPath) || "/".equals(servletMappingPath)) {
+            // All paths are inside a /* servlet and a / servlet
+            return Optional.of(requestedPath);
+        } else if (servletMappingPath.endsWith("/*")) {
+            String servletPrefix = servletMappingPath.substring(0,
+                    servletMappingPath.length() - 1); // Only remove "*"
+            if (requestedPath.startsWith(servletPrefix)) {
+                return Optional
+                        .of(requestedPath.substring(servletPrefix.length()));
+            } else {
+                return Optional.empty();
+            }
+        } else {
+            // Servlet is mapped only to a static path such as "" or /foo/bar
+            String servletMappingWithoutSlash;
+
+            if (servletMappingPath.startsWith("/")) {
+                // Requested path should not contain the initial slash
+                servletMappingWithoutSlash = servletMappingPath.substring(1);
+            } else {
+                servletMappingWithoutSlash = servletMappingPath;
+            }
+            if (requestedPath.equals(servletMappingWithoutSlash)) {
+                return Optional.of(requestedPath
+                        .substring(servletMappingWithoutSlash.length()));
+            } else {
+                return Optional.empty();
+            }
         }
-        if ("/".equals(servletMappingPath)) {
-            servletMappingPath = "";
-        }
-        if (!requestedPath.startsWith(servletMappingPath)) {
-            return Optional.empty();
-        }
-        return Optional
-                .of(requestedPath.substring(servletMappingPath.length()));
     }
 
+    /**
+     * Returns the requested path inside the context root.
+     * 
+     * @param request
+     *            the servlet request
+     * @return the path inside the context root, not including the slash after
+     *         the context root path
+     */
     private static String getRequestPathInsideContext(
             HttpServletRequest request) {
         String servletPath = request.getServletPath();
         String pathInfo = request.getPathInfo();
         String url = "";
         if (servletPath != null) {
-            url += servletPath;
+            if (servletPath.startsWith("/")) {
+                // This SHOULD always be true...
+                url += servletPath.substring(1);
+            } else {
+                url += servletPath;
+            }
         }
         if (pathInfo != null) {
             url += pathInfo;

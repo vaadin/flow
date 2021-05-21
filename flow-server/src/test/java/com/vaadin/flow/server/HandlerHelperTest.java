@@ -2,6 +2,7 @@ package com.vaadin.flow.server;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -107,7 +108,7 @@ public class HandlerHelperTest {
 
     @Test
     public void isFrameworkInternalRequest_validType_withPath() {
-        HttpServletRequest request = createRequest("/hello", RequestType.INIT);
+        HttpServletRequest request = createRequest("hello", RequestType.INIT);
 
         Assert.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/", request));
@@ -119,17 +120,19 @@ public class HandlerHelperTest {
                 HandlerHelper.isFrameworkInternalRequest("/foo/*", request));
         Assert.assertTrue(
                 HandlerHelper.isFrameworkInternalRequest("/hello", request));
-        Assert.assertTrue(
+        Assert.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/hello/*", request));
     }
 
     @Test
     public void isFrameworkInternalRequest_validType_withServletMappingAndPath() {
-        HttpServletRequest request = createRequest("/", RequestType.INIT);
+        HttpServletRequest request = createRequest("", RequestType.INIT);
         Mockito.when(request.getServletPath()).thenReturn("/servlet");
 
         Assert.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/", request));
+        Assert.assertFalse(
+                HandlerHelper.isFrameworkInternalRequest("", request));
         Assert.assertTrue(
                 HandlerHelper.isFrameworkInternalRequest("/servlet", request));
     }
@@ -194,11 +197,89 @@ public class HandlerHelperTest {
                 BootstrapHandler.isFrameworkInternalRequest(request));
     }
 
+    @Test
+    public void getPathIfInsideServlet_default_servlet() {
+        String servletMapping = "/*";
+        Assert.assertEquals(Optional.of(""),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, ""));
+        Assert.assertEquals(Optional.of("/"),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "/"));
+        Assert.assertEquals(Optional.of("foo"),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "foo"));
+        Assert.assertEquals(Optional.of("/foo"),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "/foo"));
+    }
+
+    @Test
+    public void getPathIfInsideServlet_root_only_servlet() {
+        String servletMapping = "";
+        Assert.assertEquals(Optional.of(""),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, ""));
+        Assert.assertEquals(Optional.empty(),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "/"));
+        Assert.assertEquals(Optional.empty(),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "foo"));
+        Assert.assertEquals(Optional.empty(),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "/foo"));
+    }
+
+    @Test
+    public void getPathIfInsideServlet_all_urls_servlet() {
+        String servletMapping = "/";
+        Assert.assertEquals(Optional.of(""),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, ""));
+        Assert.assertEquals(Optional.of("/"),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "/"));
+        Assert.assertEquals(Optional.of("foo"),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "foo"));
+        Assert.assertEquals(Optional.of("/foo"),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "/foo"));
+    }
+
+    @Test
+    public void getPathIfInsideServlet_sevlet_using_single_path() {
+        String servletMapping = "/foo";
+        Assert.assertEquals(Optional.empty(),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, ""));
+        Assert.assertEquals(Optional.empty(),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "bar"));
+        Assert.assertEquals(Optional.empty(),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "/bar"));
+        Assert.assertEquals(Optional.of(""),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "foo"));
+        Assert.assertEquals(Optional.empty(),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "foo/"));
+        Assert.assertEquals(Optional.empty(), HandlerHelper
+                .getPathIfInsideServlet(servletMapping, "foo/bar"));
+    }
+
+    @Test
+    public void getPathIfInsideServlet_sevlet_with_context_path() {
+        String servletMapping = "/foo/*";
+        Assert.assertEquals(Optional.empty(),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, ""));
+        Assert.assertEquals(Optional.empty(),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "bar"));
+        Assert.assertEquals(Optional.empty(),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "/bar"));
+        Assert.assertEquals(Optional.empty(),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "/foo"));
+        Assert.assertEquals(Optional.empty(),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "/foos"));
+        Assert.assertEquals(Optional.empty(),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "/foos/bar"));
+        Assert.assertEquals(Optional.of(""),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "/foo/"));
+        Assert.assertEquals(Optional.of("bar"), HandlerHelper
+                .getPathIfInsideServlet(servletMapping, "/foo/bar"));
+    }
+
     private VaadinRequest createVaadinRequest(String requestPath,
             String servletPath, RequestType type) {
         HttpServletRequest servletRequest = createRequest(requestPath, type);
         if (servletPath.equals("/*")) {
-            // This is what the spec says HttpServletRequest#getServletPath
+            // This is what the spec says
+            // HttpServletRequest#getServletPath
             servletPath = "";
         }
         Mockito.when(servletRequest.getServletPath()).thenReturn(servletPath);
