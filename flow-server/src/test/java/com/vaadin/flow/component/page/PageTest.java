@@ -288,7 +288,7 @@ public class PageTest {
         // then
         final int jsInvocations = mockUI.getInternals()
                 .dumpPendingJavaScriptInvocations().size();
-        // Assert.assertEquals(1, jsInvocations);
+        Assert.assertEquals(1, jsInvocations);
         Assert.assertEquals(2, callbackInvocations.get());
     }
 
