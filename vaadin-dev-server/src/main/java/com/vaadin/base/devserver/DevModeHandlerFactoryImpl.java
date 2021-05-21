@@ -18,7 +18,7 @@ package com.vaadin.base.devserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.DevModeHandler;
-import com.vaadin.flow.internal.DevModeHandlerAccess;
+import com.vaadin.flow.internal.DevModeHandlerFactory;
 import com.vaadin.flow.server.VaadinService;
 
 /**
@@ -30,7 +30,7 @@ import com.vaadin.flow.server.VaadinService;
  * @author Vaadin Ltd
  * @since
  */
-public class DevModeHandlerAccessImpl implements DevModeHandlerAccess {
+public class DevModeHandlerFactoryImpl implements DevModeHandlerFactory {
 
     @Override
     public DevModeHandler getDevModeHandler(VaadinService service) {

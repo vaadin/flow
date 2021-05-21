@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,61 +15,29 @@
  */
 package com.vaadin.flow.internal;
 
-import java.util.Optional;
-
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 
 /**
- * Provides API to access to the {@link BrowserLiveReload} instance by a
- * {@link VaadinService}.
+ * Creates a live reload instance by delegating to
+ * {@link BrowserLiveReloadFactory#getLiveReload(VaadinService)}
  * <p>
- * For internal use only. May be renamed or removed in a future release.
- *
- * @author Vaadin Ltd
- * @since
- *
+ * Class exists only for backwards compatibility with JRebel and HotswapAgent
+ * plugins.
  */
-public interface BrowserLiveReloadAccess {
-
-    /**
-     * Returns a {@link BrowserLiveReload} instance for the given
-     * {@code context}.
-     *
-     * @param context
-     *            a Vaadin context
-     * @return a <code>BrowserLiveReload</code> instance or null if disabled
-     */
-    BrowserLiveReload getLiveReload(VaadinContext context);
+public class BrowserLiveReloadAccess {
 
     /**
      * Returns a {@link BrowserLiveReload} instance for the given
      * {@code service}.
+     * <p>
+     * Returns {@code null} if production mode is enabled for the service.
      *
      * @param service
-     *            a Vaadin service
-     * @return a <code>BrowserLiveReload</code> instance or null if disabled
+     *            a service
+     * @return a BrowserLiveReload instance or null for production mode
      */
-    default BrowserLiveReload getLiveReload(VaadinService service) {
-        return getLiveReload(service.getContext());
-    }
-
-    /**
-     * Create a {@link BrowserLiveReload} if factory available.
-     *
-     * @param service
-     *            a Vaadin service
-     * @return an {@link Optional} containing a {@link BrowserLiveReload}
-     *         instance or <code>EMPTY</code> if disabled
-     */
-    static Optional<BrowserLiveReload> getLiveReloadFromService(
-            VaadinService service) {
-        VaadinContext context = service.getContext();
-        return Optional.ofNullable(context)
-                .map(ctx -> ctx.getAttribute(Lookup.class))
-                .map(lu -> lu.lookup(BrowserLiveReloadAccess.class))
-                .flatMap(blra -> Optional
-                        .ofNullable(blra.getLiveReload(service)));
+    public BrowserLiveReload getLiveReload(VaadinService service) {
+        return BrowserLiveReloadFactory.getLiveReloadFromService(service)
+                .orElse(null);
     }
 }

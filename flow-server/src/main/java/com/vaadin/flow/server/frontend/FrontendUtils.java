@@ -46,7 +46,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
-import com.vaadin.flow.internal.DevModeHandlerAccess;
+import com.vaadin.flow.internal.DevModeHandlerFactory;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -461,7 +461,7 @@ public class FrontendUtils {
 
         try {
             if (!config.isProductionMode() && config.enableDevServer()) {
-                Optional<DevModeHandler> devModeHandler = DevModeHandlerAccess
+                Optional<DevModeHandler> devModeHandler = DevModeHandlerFactory
                         .getDevModeHandlerFromService(service);
                 assert devModeHandler.isPresent();
                 content = getStatsFromWebpack(devModeHandler.get());
@@ -521,7 +521,7 @@ public class FrontendUtils {
         InputStream content = null;
 
         try {
-            Optional<DevModeHandler> devModeHandler = DevModeHandlerAccess
+            Optional<DevModeHandler> devModeHandler = DevModeHandlerFactory
                     .getDevModeHandlerFromService(service);
             if (!config.isProductionMode() && config.enableDevServer()
                     && devModeHandler.isPresent()) {
@@ -563,7 +563,7 @@ public class FrontendUtils {
      */
     public static String getStatsHash(VaadinService service)
             throws IOException {
-        Optional<DevModeHandler> devModeHandler = DevModeHandlerAccess
+        Optional<DevModeHandler> devModeHandler = DevModeHandlerFactory
                 .getDevModeHandlerFromService(service);
         if (devModeHandler.isPresent()) {
             HttpURLConnection statsConnection = devModeHandler.get()
@@ -720,7 +720,7 @@ public class FrontendUtils {
     public static String getStatsAssetsByChunkName(VaadinService service)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
-        Optional<DevModeHandler> devModeHandler = DevModeHandlerAccess
+        Optional<DevModeHandler> devModeHandler = DevModeHandlerFactory
                 .getDevModeHandlerFromService(service);
         if (!config.isProductionMode() && config.enableDevServer()
                 && devModeHandler.isPresent()) {

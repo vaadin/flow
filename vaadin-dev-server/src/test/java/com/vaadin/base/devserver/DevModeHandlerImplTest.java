@@ -57,7 +57,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.DevModeHandlerAccess;
+import com.vaadin.flow.internal.DevModeHandlerFactory;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.StaticFileHandler;
@@ -793,7 +793,7 @@ public class DevModeHandlerImplTest {
                                         .mock(StaticFileHandler.class),
                                 StaticFileHandlerFactory.class)),
                 Lookup.of(service -> DevModeHandlerImpl.getDevModeHandler(),
-                        DevModeHandlerAccess.class));
+                        DevModeHandlerFactory.class));
     }
 
     private void mockApplicationConfiguration(

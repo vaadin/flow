@@ -30,14 +30,13 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadAccess;
+import com.vaadin.flow.internal.BrowserLiveReloadFactory;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.SessionExpiredException;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -286,12 +285,12 @@ public class PushHandlerTest {
     public static BrowserLiveReload mockBrowserLiveReloadImpl(
             VaadinContext context) {
         BrowserLiveReload liveReload = Mockito.mock(BrowserLiveReload.class);
-        Lookup lookup = Lookup.of(new BrowserLiveReloadAccess() {
+        Lookup lookup = Lookup.of(new BrowserLiveReloadFactory() {
             @Override
             public BrowserLiveReload getLiveReload(VaadinContext context) {
                 return liveReload;
             }
-        }, BrowserLiveReloadAccess.class);
+        }, BrowserLiveReloadFactory.class);
         context.setAttribute(Lookup.class, lookup);
         return liveReload;
     }

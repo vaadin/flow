@@ -89,7 +89,7 @@ public class BrowserLiveReloadImplTest {
     }
 
     @Test
-    public void getBackend_JRebelInitializerClassLoaded_returnsJREBEL() {
+    public void getBackend_JRebelClassEventListenerClassLoaded_returnsJREBEL() {
         class JRebelInitializer {
         }
         BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl(
@@ -98,7 +98,7 @@ public class BrowserLiveReloadImplTest {
                     protected Class<?> findClass(String name)
                             throws ClassNotFoundException {
                         switch (name) {
-                        case "com.vaadin.flow.server.jrebel.JRebelInitializer":
+                        case "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener":
                             return JRebelInitializer.class;
                         default:
                             throw new ClassNotFoundException();

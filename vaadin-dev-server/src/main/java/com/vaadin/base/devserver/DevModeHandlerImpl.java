@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadAccess;
+import com.vaadin.flow.internal.BrowserLiveReloadFactory;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -165,8 +165,8 @@ public final class DevModeHandlerImpl
         reuseDevServer = config.reuseDevServer();
         devServerPortFile = getDevServerPortFile(npmFolder);
 
-        BrowserLiveReloadAccess liveReloadAccess = lookup
-                .lookup(BrowserLiveReloadAccess.class);
+        BrowserLiveReloadFactory liveReloadAccess = lookup
+                .lookup(BrowserLiveReloadFactory.class);
         liveReload = liveReloadAccess != null
                 ? liveReloadAccess.getLiveReload(config.getContext())
                 : null;

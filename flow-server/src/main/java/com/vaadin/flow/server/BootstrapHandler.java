@@ -63,11 +63,11 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadAccess;
+import com.vaadin.flow.internal.BrowserLiveReloadFactory;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.internal.DevModeHandler;
-import com.vaadin.flow.internal.DevModeHandlerAccess;
+import com.vaadin.flow.internal.DevModeHandlerFactory;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
@@ -1196,7 +1196,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         deploymentConfiguration.isDevModeLiveReloadEnabled());
 
                 VaadinService service = session.getService();
-                Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccess
+                Optional<BrowserLiveReload> liveReload = BrowserLiveReloadFactory
                         .getLiveReloadFromService(service);
 
                 // With V15+ bootstrap, gizmo is added to generated index.html
@@ -1491,7 +1491,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     protected static void showWebpackErrors(VaadinService service,
             Document document) {
-        Optional<DevModeHandler> devServer = DevModeHandlerAccess
+        Optional<DevModeHandler> devServer = DevModeHandlerFactory
                 .getDevModeHandlerFromService(service);
         if (devServer.isPresent()) {
             String errorMsg = devServer.get().getFailedOutput();
