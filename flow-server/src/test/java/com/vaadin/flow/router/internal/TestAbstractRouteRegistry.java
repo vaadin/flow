@@ -17,38 +17,6 @@
 
 package com.vaadin.flow.router.internal;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.RouteParameters;
-
 public class TestAbstractRouteRegistry extends AbstractRouteRegistry {
-
-    @Override
-    public NavigationRouteTarget getNavigationRouteTarget(String url) {
-        return getConfiguration().getNavigationRouteTarget(url);
-    }
-
-    @Override
-    public RouteTarget getRouteTarget(Class<? extends Component> target,
-            RouteParameters parameters) {
-        return getConfiguration().getRouteTarget(target, parameters);
-    }
-
-    @Override
-    public Optional<Class<? extends Component>> getNavigationTarget(
-            String pathString) {
-        Objects.requireNonNull(pathString, "pathString must not be null.");
-        return getConfiguration().getTarget(pathString);
-    }
-
-    @Override
-    public Optional<Class<? extends Component>> getNavigationTarget(
-            String pathString, List<String> segments) {
-
-        return getNavigationTarget(PathUtil.getPath(pathString, segments));
-    }
 
 }
