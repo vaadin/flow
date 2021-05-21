@@ -372,7 +372,8 @@ public class FrontendUtils {
     }
 
     /**
-     * Read a stream and copy the content in a String.
+     * Read a stream and copy the content into a String using system line
+     * separators for all 'carriage return' characters.
      *
      * @param inputStream
      *            the input stream
@@ -650,8 +651,8 @@ public class FrontendUtils {
         Stats statistics = service.getContext().getAttribute(Stats.class);
 
         if (statistics != null) {
-            return new ByteArrayInputStream(
-                    statistics.statsJson.getBytes(StandardCharsets.UTF_8));
+            return IOUtils.toInputStream(statistics.statsJson,
+                    StandardCharsets.UTF_8);
         }
 
         String stats = service.getDeploymentConfiguration()
@@ -666,10 +667,11 @@ public class FrontendUtils {
         try {
             stream = statsUrl == null ? null : statsUrl.openStream();
             if (stream != null) {
-                statistics = new Stats(streamToString(stream), null);
+                statistics = new Stats(
+                        IOUtils.toString(stream, StandardCharsets.UTF_8), null);
                 service.getContext().setAttribute(statistics);
-                stream = new ByteArrayInputStream(
-                        statistics.statsJson.getBytes(StandardCharsets.UTF_8));
+                stream = IOUtils.toInputStream(statistics.statsJson,
+                        StandardCharsets.UTF_8);
             }
         } catch (IOException exception) {
             getLogger().warn("Couldn't read content of stats file {}", stats,
@@ -1131,6 +1133,40 @@ public class FrontendUtils {
                 .filter(key -> !INDEX_HTML.equals(key))
                 .map(key -> "/" + manifest.getString(key))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Tries to parse the given package's frontend version or if it doesn't
+     * exist, returns {@code null}. In case the value cannot be parsed, logs an
+     * error and returns {@code null}.
+     *
+     * @param sourceJson
+     *            json object that has the package
+     * @param pkg
+     *            the package name
+     * @param versionOrigin
+     *            origin of the version (like a file), used in error message
+     * @return the frontend version the package or {@code null}
+     */
+    public static FrontendVersion getPackageVersionFromJson(
+            JsonObject sourceJson, String pkg, String versionOrigin) {
+        if (!sourceJson.hasKey(pkg)) {
+            return null;
+        }
+        try {
+            final String versionString = sourceJson.getString(pkg);
+            return new FrontendVersion(pkg, versionString);
+        } catch (ClassCastException classCastException) {
+            LoggerFactory.getLogger(FrontendVersion.class).warn(
+                    "Ignoring error while parsing frontend dependency version for package '{}' in '{}'",
+                    pkg, versionOrigin);
+        } catch (NumberFormatException nfe) {
+            // intentionally not failing the build at this point
+            LoggerFactory.getLogger(FrontendVersion.class).warn(
+                    "Ignoring error while parsing frontend dependency version in {}: {}",
+                    versionOrigin, nfe.getMessage());
+        }
+        return null;
     }
 
     /**

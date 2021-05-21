@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.webcomponent;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -171,5 +174,51 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         Assert.assertFalse(
                 "Expected no Ostrich font to be applied to embedded component",
                 (Boolean) ostrichFontStylesFoundForEmbedded);
+    }
+
+    @Test
+    public void documentCssImport_onlyExternalAddedToHeadAsLink() {
+        open();
+        checkLogsForErrors();
+
+        final WebElement documentHead = getDriver()
+                .findElement(By.xpath("/html/head"));
+        final List<WebElement> links = documentHead
+                .findElements(By.tagName("link"));
+
+        List<String> linkUrls = links.stream()
+                .map(link -> link.getAttribute("href"))
+                .collect(Collectors.toList());
+        Assert.assertTrue("Missing link for external url", linkUrls
+                .contains("https://fonts.googleapis.com/css?family=Poppins"));
+        Assert.assertTrue("Link with media query was not found", linkUrls
+                .contains("https://fonts.googleapis.com/css?family=Oswald"));
+        Assert.assertFalse("Found import that webpack should have resolved",
+                linkUrls.contains("docImport.css"));
+
+        final List<WebElement> mediaLinks = links.stream()
+                .filter(link -> link.getAttribute("href").equals(
+                        "https://fonts.googleapis.com/css?family=Oswald"))
+                .collect(Collectors.toList());
+        Assert.assertFalse("No expected media link found",
+                mediaLinks.isEmpty());
+        Assert.assertEquals("Wrong media attribute contents",
+                "screen and (orientation:landscape)",
+                mediaLinks.get(0).getAttribute("media"));
+    }
+
+    @Test
+    public void stylesCssImport_externalLinkAddedToShadowroot() {
+        open();
+        checkLogsForErrors();
+        final TestBenchElement themedComponent = $("themed-component").first();
+        final List<WebElement> links = findInShadowRoot(themedComponent,
+                By.tagName("link"));
+
+        List<String> linkUrls = links.stream()
+                .map(link -> link.getAttribute("href"))
+                .collect(Collectors.toList());
+        Assert.assertTrue("Missing link for external url", linkUrls
+                .contains("https://fonts.googleapis.com/css?family=Itim"));
     }
 }

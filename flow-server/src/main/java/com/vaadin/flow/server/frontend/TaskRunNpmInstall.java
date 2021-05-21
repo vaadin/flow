@@ -30,15 +30,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-
 import com.vaadin.flow.internal.BuildUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.shared.util.SharedUtil;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -96,7 +95,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      *            whether vaadin home node executable has to be used
      * @param nodeVersion
      *            The node.js version to be used when node.js is installed
-     *            automatically by Vaadin, for example <code>"v14.15.4"</code>.
+     *            automatically by Vaadin, for example <code>"v16.0.0"</code>.
      *            Use {@value FrontendTools#DEFAULT_NODE_VERSION} by default.
      * @param nodeDownloadRoot
      *            Download node.js from this URL. Handy in heavily firewalled
@@ -172,38 +171,29 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     /**
-     * Generate versions json file.
+     * Generate versions json file for pnpm.
      *
      * @return generated versions json file path
      * @throws IOException
+     *             when file IO fails
      */
     protected String generateVersionsJson() throws IOException {
-        URL resource = classFinder.getResource(Constants.VAADIN_VERSIONS_JSON);
-        if (resource == null) {
-            packageUpdater.log()
-                    .warn("Couldn't find {} file to pin dependency versions."
-                            + " Transitive dependencies won't be pinned for pnpm.",
-                            Constants.VAADIN_VERSIONS_JSON);
+        assert enablePnpm;
+        File versions = new File(packageUpdater.generatedFolder,
+                "versions.json");
+
+        JsonObject versionsJson = getLockedVersions();
+        if (versionsJson == null) {
+            versionsJson = generateVersionsFromPackageJson();
         }
-        try (InputStream content = resource == null ? null
-                : resource.openStream()) {
-
-            File versions = new File(packageUpdater.generatedFolder,
-                    "versions.json");
-
-            JsonObject versionsJson = getVersions(content);
-            if (versionsJson == null) {
-                versionsJson = generateVersionsFromPackageJson();
-            }
-            FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
-                    StandardCharsets.UTF_8);
-            Path versionsPath = versions.toPath();
-            if (versions.isAbsolute()) {
-                return FrontendUtils.getUnixRelativePath(
-                        packageUpdater.npmFolder.toPath(), versionsPath);
-            } else {
-                return FrontendUtils.getUnixPath(versionsPath);
-            }
+        FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
+                StandardCharsets.UTF_8);
+        Path versionsPath = versions.toPath();
+        if (versions.isAbsolute()) {
+            return FrontendUtils.getUnixRelativePath(
+                    packageUpdater.npmFolder.toPath(), versionsPath);
+        } else {
+            return FrontendUtils.getUnixPath(versionsPath);
         }
     }
 
@@ -249,24 +239,16 @@ public class TaskRunNpmInstall implements FallibleCommand {
         return BuildUtil.getBuildProperty(DEV_DEPENDENCIES_PATH);
     }
 
-    private JsonObject getVersions(InputStream platformVersions)
-            throws IOException {
-        JsonObject versionsJson = null;
-        if (platformVersions != null) {
-            VersionsJsonConverter convert = new VersionsJsonConverter(
-                    Json.parse(IOUtils.toString(platformVersions,
-                            StandardCharsets.UTF_8)));
-            versionsJson = convert.getConvertedJson();
-            versionsJson = new VersionsJsonFilter(
-                    packageUpdater.getPackageJson(), NodeUpdater.DEPENDENCIES)
-                            .getFilteredVersions(versionsJson);
-        }
+    private JsonObject getLockedVersions() throws IOException {
+        assert enablePnpm;
+        JsonObject versionsJson = packageUpdater
+                .getPlatformPinnedDependencies();
 
         String genDevDependenciesPath = getDevDependenciesFilePath();
         if (genDevDependenciesPath == null) {
             // #9345 - locking dev dependencies doesn't work for now
             packageUpdater.log().debug(
-                    "Couldn't find dev dependencies file path from proeprties file. "
+                    "Couldn't find dev dependencies file path from properties file. "
                             + "Dev dependencies won't be locked");
             return versionsJson;
         }
@@ -302,19 +284,24 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     private boolean shouldRunNpmInstall() {
-        if (packageUpdater.nodeModulesFolder.isDirectory()) {
-            // Ignore .bin and pnpm folders as those are always installed for
-            // pnpm execution
-            File[] installedPackages = packageUpdater.nodeModulesFolder
-                    .listFiles(
-                            (dir, name) -> !ignoredNodeFolders.contains(name));
-            assert installedPackages != null;
-            return installedPackages.length == 0
-                    || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
-                            .startsWith(installedPackages[0].getName()))
-                    || (installedPackages.length > 0 && isVaadinHashUpdated());
+        if (!packageUpdater.nodeModulesFolder.isDirectory()) {
+            return true;
         }
-        return true;
+        // Ignore .bin and pnpm folders as those are always installed for
+        // pnpm execution
+        File[] installedPackages = packageUpdater.nodeModulesFolder
+                .listFiles((dir, name) -> !ignoredNodeFolders.contains(name));
+        assert installedPackages != null;
+        if (installedPackages.length == 0) {
+            // Nothing installed
+            return true;
+        } else if (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
+                .startsWith(installedPackages[0].getName())) {
+            // Only flow-frontend installed
+            return true;
+        } else {
+            return isVaadinHashUpdated();
+        }
     }
 
     private boolean isVaadinHashUpdated() {

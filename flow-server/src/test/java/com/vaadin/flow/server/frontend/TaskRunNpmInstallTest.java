@@ -60,10 +60,11 @@ public class TaskRunNpmInstallTest {
 
     private File npmFolder;
 
-    private ClassFinder finder = Mockito.mock(ClassFinder.class);
+    private ClassFinder finder;
 
     private Logger logger = Mockito
             .spy(LoggerFactory.getLogger(NodeUpdater.class));
+    protected File generatedPath;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -71,9 +72,10 @@ public class TaskRunNpmInstallTest {
     @Before
     public void setUp() throws IOException {
         npmFolder = temporaryFolder.newFolder();
-        File generatedPath = new File(npmFolder, "generated");
+        generatedPath = new File(npmFolder, "generated");
         generatedPath.mkdir();
-        nodeUpdater = new NodeUpdater(Mockito.mock(ClassFinder.class),
+        finder = Mockito.mock(ClassFinder.class);
+        nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), npmFolder,
                 generatedPath, null, TARGET) {
 

@@ -535,7 +535,7 @@ public class IndexHtmlRequestHandlerTest {
                 Boolean.FALSE);
 
         ((JavaScriptBootstrapUI) UI.getCurrent()).connectClient("foo", "bar",
-                "/foo", "");
+                "/foo", "", null);
 
         Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING,
                 Boolean.FALSE);

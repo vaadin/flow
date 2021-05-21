@@ -48,7 +48,7 @@ public class AccessAnnotationCheckerTest {
             .map(cls -> cls.getSimpleName().toLowerCase(Locale.ENGLISH))
             .toArray(String[]::new);
 
-    private static final Principal USER_PRINCIPAL = new Principal() {
+    static final Principal USER_PRINCIPAL = new Principal() {
         @Override
         public String getName() {
             return "John Doe";
@@ -338,7 +338,7 @@ public class AccessAnnotationCheckerTest {
         }
     }
 
-    private HttpServletRequest createRequest(Principal userPrincipal,
+    static HttpServletRequest createRequest(Principal userPrincipal,
             String... roles) {
         Set<String> roleSet = new HashSet<>();
         Collections.addAll(roleSet, roles);

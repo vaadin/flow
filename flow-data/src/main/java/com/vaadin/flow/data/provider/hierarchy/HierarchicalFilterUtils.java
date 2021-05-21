@@ -59,8 +59,8 @@ final class HierarchicalFilterUtils {
         }
 
         @Override
-        public int size(Query<T, Q> t) {
-            return HierarchicalConfigurableFilterDataProvider.super.size(t);
+        public int size(Query<T, Q> query) {
+            return HierarchicalConfigurableFilterDataProvider.super.size(query);
         }
 
         @Override

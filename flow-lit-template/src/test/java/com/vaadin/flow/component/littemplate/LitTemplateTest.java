@@ -101,6 +101,15 @@ public class LitTemplateTest {
 
     }
 
+    // This is for checking LitTemplate implements HasStyle
+    @Tag("custom-element-with-class")
+    private static class ElementWithStyleClass extends LitTemplate {
+        ElementWithStyleClass() {
+            // Should be possible to modify the class name
+            addClassName("custom-element-class-name");
+        }
+    }
+
     @Before
     public void setUp() {
         DeploymentConfiguration configuration = Mockito

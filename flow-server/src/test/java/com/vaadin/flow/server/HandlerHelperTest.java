@@ -308,6 +308,7 @@ public class HandlerHelperTest {
         expected.add("/icons/icon-750x1334.png");
         expected.add("/icons/icon-1242x2208.png");
         expected.add("/icons/icon-640x1136.png");
+        expected.add("/themes/**");
 
         Set<String> actual = new HashSet<>();
         Collections.addAll(actual, HandlerHelper.getPublicResources());

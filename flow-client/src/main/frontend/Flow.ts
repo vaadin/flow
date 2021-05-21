@@ -217,7 +217,8 @@ export class Flow {
           this.container.localName,
           this.container.id,
           this.getFlowRoute(ctx),
-          this.appShellTitle
+          this.appShellTitle,
+          history.state
         );
       });
     } else {

@@ -26,7 +26,14 @@ import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.junit.Assert;
@@ -197,6 +204,15 @@ public class HtmlComponentSmokeTest {
                 && method.getParameterTypes()[0] == Component.class) {
             return true;
         }
+
+        // Anchor.setTarget(AnchorTargetValue) -
+        // https://github.com/vaadin/flow/issues/8346
+        if (method.getDeclaringClass() == Anchor.class
+                && method.getName().equals("setTarget")
+                && method.getParameterTypes()[0] == AnchorTargetValue.class) {
+            return true;
+        }
+
         // setFoo(AbstractStreamResource) for resource URLs
         if (method.getParameterCount() == 1 && AbstractStreamResource.class
                 .isAssignableFrom(method.getParameters()[0].getType())) {

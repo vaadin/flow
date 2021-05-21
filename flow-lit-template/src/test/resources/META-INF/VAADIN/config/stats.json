@@ -20,7 +20,7 @@
         {
           "id": "./frontend/my-form.ts",
           "name": "./frontend/my-form.ts",
-          "source": "import { html, LitElement } from 'lit';\r\nimport { customElement } from 'lit/decorators';\r\n// @customElement(\"my-form\")\r\nexport class MyFormElement extends LitElement {\r\n    render() {\r\n        return html `\n      <h2>Hello</h2>\n      <vaadin-text-field id=\"nameField\"></vaadin-text-field>\n    `;\r\n    }\r\n}\r\ncustomElements.define(\"my-form\", MyFormElement);\r\n"
+          "source": "import { html, LitElement } from 'lit';\r\nimport { customElement } from 'lit/decorators.js';\r\n// @customElement(\"my-form\")\r\nexport class MyFormElement extends LitElement {\r\n    render() {\r\n        return html `\n      <h2>Hello</h2>\n      <vaadin-text-field id=\"nameField\"></vaadin-text-field>\n    `;\r\n    }\r\n}\r\ncustomElements.define(\"my-form\", MyFormElement);\r\n"
         }
       ]
       ,

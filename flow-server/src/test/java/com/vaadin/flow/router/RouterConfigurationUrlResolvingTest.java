@@ -147,6 +147,28 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test
+    public void wildcardPathWithEmptyParameter_emptyParameterIsAvailable() {
+        WildParameter.events.clear();
+        WildParameter.param = null;
+        setNavigationTargets(WildParameter.class);
+
+        router.navigate(ui, new Location("wild//two/three"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("/two/three", WildParameter.param);
+
+        router.navigate(ui, new Location("wild////four/five"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("///four/five", WildParameter.param);
+
+        router.navigate(ui, new Location("wild//two//four"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("/two//four", WildParameter.param);
+    }
+
+    @Test
     public void root_navigation_target_with_wildcard_parameter()
             throws InvalidRouteConfigurationException {
         WildRootParameter.events.clear();

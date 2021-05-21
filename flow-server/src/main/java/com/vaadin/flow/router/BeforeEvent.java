@@ -30,6 +30,7 @@ import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
+import com.vaadin.flow.router.internal.PathUtil;
 
 /**
  * Abstract before event class that has the common functionalities for
@@ -360,7 +361,7 @@ public abstract class BeforeEvent extends EventObject {
                     location));
         } else {
             // Inform that forward target location is not known.
-            forwardToUrl = trimPath(location);
+            forwardToUrl = PathUtil.trimPath(location);
         }
     }
 
@@ -504,7 +505,7 @@ public abstract class BeforeEvent extends EventObject {
                     route));
         } else {
             // Inform that reroute target location is not known.
-            rerouteToUrl = trimPath(route);
+            rerouteToUrl = PathUtil.trimPath(route);
         }
     }
 
@@ -820,22 +821,6 @@ public abstract class BeforeEvent extends EventObject {
      */
     public UI getUI() {
         return ui;
-    }
-
-    private static String trimPath(String path) {
-        if (path == null) {
-            return "";
-        }
-
-        path = path.trim();
-
-        if (path.startsWith("/")) {
-            path = path.substring(1);
-        }
-        if (path.endsWith("/")) {
-            path = path.substring(0, path.length() - 1);
-        }
-        return path;
     }
 
 }

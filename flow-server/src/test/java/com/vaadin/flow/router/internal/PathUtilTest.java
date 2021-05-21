@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router.internal;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -45,10 +46,14 @@ public class PathUtilTest {
         Assert.assertEquals("Unexpected result", segments,
                 PathUtil.getSegmentsList(path));
         Assert.assertEquals("Unexpected result", segments,
-                PathUtil.getSegmentsList("/" + path));
-        Assert.assertEquals("Unexpected result", segments,
                 PathUtil.getSegmentsList(path + "/"));
-        Assert.assertEquals("Unexpected result", segments,
+
+        List<String> emptyStartSegment = new ArrayList<>();
+        emptyStartSegment.add("");
+        emptyStartSegment.addAll(segments);
+        Assert.assertEquals("Unexpected result", emptyStartSegment,
+                PathUtil.getSegmentsList("/" + path));
+        Assert.assertEquals("Unexpected result", emptyStartSegment,
                 PathUtil.getSegmentsList("/" + path + "/"));
 
         Assert.assertEquals("Unexpected result", path, PathUtil.trimPath(path));

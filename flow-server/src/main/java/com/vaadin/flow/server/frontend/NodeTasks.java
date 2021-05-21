@@ -125,8 +125,8 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * The node.js version to be used when node.js is installed
-         * automatically by Vaadin, for example <code>"v14.15.4"</code>.
-         * Defaults to {@value FrontendTools#DEFAULT_NODE_VERSION}.
+         * automatically by Vaadin, for example <code>"v16.0.0"</code>. Defaults
+         * to {@value FrontendTools#DEFAULT_NODE_VERSION}.
          */
         private String nodeVersion = FrontendTools.DEFAULT_NODE_VERSION;
 
@@ -267,7 +267,8 @@ public class NodeTasks implements FallibleCommand {
          *            <code>false</code>
          * @return this builder
          */
-        public Builder enableNpmFileCleaning(boolean forceClean) {
+        // This method is only used in tests ...
+        Builder enableNpmFileCleaning(boolean forceClean) {
             this.cleanNpmFiles = forceClean;
             return this;
         }
@@ -501,8 +502,8 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Sets the node.js version to be used when node.js is installed
-         * automatically by Vaadin, for example <code>"v14.15.4"</code>.
-         * Defaults to {@value FrontendTools#DEFAULT_NODE_VERSION}.
+         * automatically by Vaadin, for example <code>"v16.0.0"</code>. Defaults
+         * to {@value FrontendTools#DEFAULT_NODE_VERSION}.
          *
          * @param nodeVersion
          *            the new node version to download, not null.

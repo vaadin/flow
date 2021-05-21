@@ -1,5 +1,5 @@
 import { ElementPart, noChange, nothing, PropertyPart } from 'lit';
-import { directive, Directive, DirectiveParameters, PartInfo, PartType } from 'lit/directive';
+import { directive, Directive, DirectiveParameters, PartInfo, PartType } from 'lit/directive.js';
 import { _fromString, AbstractModel, getBinderNode } from './Models';
 
 interface Field {

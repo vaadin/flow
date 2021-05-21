@@ -147,7 +147,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
 
     /**
      * The node.js version to be used when node.js is installed automatically by
-     * Vaadin, for example `"v14.15.4"`. Defaults to [FrontendTools.DEFAULT_NODE_VERSION].
+     * Vaadin, for example `"v16.0.0"`. Defaults to [FrontendTools.DEFAULT_NODE_VERSION].
      */
     public var nodeVersion: String = FrontendTools.DEFAULT_NODE_VERSION
 

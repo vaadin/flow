@@ -17,7 +17,10 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -30,14 +33,14 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import elemental.json.Json;
 import elemental.json.JsonException;
@@ -159,6 +162,38 @@ public abstract class NodeUpdater implements FallibleCommand {
         return new File(npmFolder, PACKAGE_JSON);
     }
 
+    /**
+     * Gets the platform pinned versions that are not overridden by the user in
+     * package.json.
+     * 
+     * @return json object with the dependencies or {@code null}
+     * @throws IOException
+     *             when versions file could not be read
+     */
+    JsonObject getPlatformPinnedDependencies() throws IOException {
+        URL resource = finder.getResource(Constants.VAADIN_VERSIONS_JSON);
+        if (resource == null) {
+            log().info("Couldn't find {} file to pin dependency versions."
+                    + " Transitive dependencies won't be pinned for pnpm.",
+                    Constants.VAADIN_VERSIONS_JSON);
+        }
+
+        JsonObject versionsJson = null;
+        try (InputStream content = resource == null ? null
+                : resource.openStream()) {
+
+            if (content != null) {
+                VersionsJsonConverter convert = new VersionsJsonConverter(
+                        Json.parse(IOUtils.toString(content,
+                                StandardCharsets.UTF_8)));
+                versionsJson = convert.getConvertedJson();
+                versionsJson = new VersionsJsonFilter(getPackageJson(),
+                        DEPENDENCIES).getFilteredVersions(versionsJson);
+            }
+        }
+        return versionsJson;
+    }
+
     static Set<String> getGeneratedModules(File directory,
             Set<String> excludes) {
         if (!directory.exists()) {
@@ -216,6 +251,8 @@ public abstract class NodeUpdater implements FallibleCommand {
             packageJson = Json.createObject();
             packageJson.put(DEP_NAME_KEY, DEP_NAME_DEFAULT);
             packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
+            packageJson.put(DEPENDENCIES, Json.createObject());
+            packageJson.put(DEV_DEPENDENCIES, Json.createObject());
         }
 
         addVaadinDefaultsToJson(packageJson);
@@ -325,6 +362,10 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("lit", "2.0.0-rc.1");
 
+        // Constructable style sheets is only implemented for chrome,
+        // polyfill needed for FireFox et.al. at the moment
+        defaults.put("construct-style-sheets-polyfill", "2.4.16");
+
         return defaults;
     }
 
@@ -355,9 +396,6 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("webpack-manifest-plugin", "3.0.0");
         defaults.put("@types/validator", "13.1.0");
         defaults.put("validator", "13.1.17");
-        // Constructable style sheets is only implemented for chrome,
-        // polyfill needed for FireFox et.al. at the moment
-        defaults.put("construct-style-sheets-polyfill", "2.4.16");
 
         // Forcing chokidar version for now until new babel version is available
         // check out https://github.com/babel/babel/issues/11488

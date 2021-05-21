@@ -42,6 +42,7 @@ import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.router.internal.RouteTarget;
+import com.vaadin.flow.server.ErrorRouteRegistry;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinContext;
 
@@ -51,7 +52,8 @@ import com.vaadin.flow.server.VaadinContext;
  *
  * @since 1.3
  */
-public class ApplicationRouteRegistry extends AbstractRouteRegistry {
+public class ApplicationRouteRegistry extends AbstractRouteRegistry
+        implements ErrorRouteRegistry {
 
     private AtomicReference<Class<?>> pwaConfigurationClass = new AtomicReference<>();
     private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
@@ -168,15 +170,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                 .allMatch(filter -> filter.testErrorNavigationTarget(target));
     }
 
-    /**
-     * Get a registered navigation target for given exception. First we will
-     * search for a matching cause for in the exception chain and if no match
-     * found search by extended type.
-     *
-     * @param exception
-     *            exception to search error view for
-     * @return optional error target entry corresponding to the given exception
-     */
+    @Override
     public Optional<ErrorTargetEntry> getErrorNavigationTarget(
             Exception exception) {
         if (getConfiguration().getExceptionHandlers().isEmpty()) {
@@ -187,30 +181,6 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
             result = searchBySuperType(exception);
         }
         return result;
-    }
-
-    @Override
-    public NavigationRouteTarget getNavigationRouteTarget(String url) {
-        return getConfiguration().getNavigationRouteTarget(url);
-    }
-
-    @Override
-    public RouteTarget getRouteTarget(Class<? extends Component> target,
-            RouteParameters parameters) {
-        return getConfiguration().getRouteTarget(target, parameters);
-    }
-
-    @Override
-    public Optional<Class<? extends Component>> getNavigationTarget(
-            String url) {
-        Objects.requireNonNull(url, "url must not be null.");
-        return getConfiguration().getTarget(url);
-    }
-
-    @Override
-    public Optional<Class<? extends Component>> getNavigationTarget(String url,
-            List<String> segments) {
-        return getNavigationTarget(PathUtil.getPath(url, segments));
     }
 
     /**
