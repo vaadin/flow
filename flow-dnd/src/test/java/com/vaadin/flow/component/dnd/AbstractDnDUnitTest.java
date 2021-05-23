@@ -50,6 +50,8 @@ public abstract class AbstractDnDUnitTest {
                 .mock(ApplicationConfiguration.class);
         Mockito.when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
+        Mockito.when(appConfig.getBuildFolder())
+                .thenReturn(".");
         DefaultDeploymentConfiguration configuration = new DefaultDeploymentConfiguration(
                 appConfig, VaadinServlet.class, new Properties());
 
