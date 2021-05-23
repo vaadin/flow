@@ -143,7 +143,7 @@ public class DevModeInitializerEndpointTest {
             devModeHandler.stop();
             // Wait until dev mode handler has stopped.
             while (DevModeHandler.getDevModeHandler() != null) {
-                Thread.sleep(200);
+                Thread.sleep(200); // NOSONAR
             }
         }
 
