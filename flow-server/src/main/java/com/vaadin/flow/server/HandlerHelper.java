@@ -214,14 +214,15 @@ public class HandlerHelper implements Serializable {
             // All paths are inside a /* servlet and a / servlet
             return Optional.of(requestedPath);
         } else if (servletMappingPath.endsWith("/*")) {
+
             String servletPrefix = servletMappingPath.substring(0,
                     servletMappingPath.length() - 1); // Only remove "*"
             if (requestedPath.startsWith(servletPrefix)) {
                 return Optional
                         .of(requestedPath.substring(servletPrefix.length()));
-            } else {
-                return Optional.empty();
             }
+
+            return Optional.empty();
         } else {
             // Servlet is mapped only to a static path such as "" or /foo/bar
             String servletMappingWithoutSlash;
@@ -232,12 +233,13 @@ public class HandlerHelper implements Serializable {
             } else {
                 servletMappingWithoutSlash = servletMappingPath;
             }
+
             if (requestedPath.equals(servletMappingWithoutSlash)) {
                 return Optional.of(requestedPath
                         .substring(servletMappingWithoutSlash.length()));
-            } else {
-                return Optional.empty();
             }
+
+            return Optional.empty();
         }
     }
 
