@@ -1,0 +1,6 @@
+.css-icon {
+	/* note that tests use path context fo which reason the image is placed in path/img */
+	background-image: url('img/icon.png');
+	background-size: 26px 26px;
+}
+
