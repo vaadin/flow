@@ -16,6 +16,9 @@
   },
   "author": "Vaadin Ltd",
   "license": "Apache-2.0",
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged"
+  },
   "dependencies": {
     "eslint": "^7.26.0",
     "eslint-config-vaadin": "^0.4.0",
@@ -23,5 +26,8 @@
     "prettier": "^2.3.0",
     "typescript": "^4.2.4"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "lint-staged": "^11.0.0",
+    "simple-git-hooks": "^2.4.1"
+  }
 }
