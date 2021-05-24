@@ -28,5 +28,14 @@
   "dependencies": {
     "lit-element": "^2.5.1",
     "lit-html": "^1.4.1"
+  },
+  "devDependencies": {
+    "abort-controller": "^3.0.0",
+    "chai": "^4.3.4",
+    "fetch-mock": "^9.11.0",
+    "intern": "^4.9.0",
+    "sinon": "^10.0.0",
+    "sinon-chai": "^3.6.0",
+    "xhr-mock": "^2.5.1"
   }
 }
