@@ -213,8 +213,8 @@ public class HandlerHelper implements Serializable {
         if ("/*".equals(servletMappingPath) || "/".equals(servletMappingPath)) {
             // All paths are inside a /* servlet and a / servlet
             return Optional.of(requestedPath);
-        } 
-        
+        }
+
         if (servletMappingPath.endsWith("/*")) {
             String servletPrefix = servletMappingPath.substring(0,
                     servletMappingPath.length() - 1); // Only remove "*"
@@ -223,8 +223,8 @@ public class HandlerHelper implements Serializable {
                         .of(requestedPath.substring(servletPrefix.length()));
             }
             return Optional.empty();
-        } 
-        
+        }
+
         // Servlet is mapped only to a static path such as "" or /foo/bar
         String servletMappingWithoutSlash;
 
