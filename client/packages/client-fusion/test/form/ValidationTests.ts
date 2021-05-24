@@ -4,10 +4,8 @@ import { expect } from 'chai';
 import { css, html, LitElement } from 'lit';
 import { customElement, query } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
-
 // API to test
-import { Binder, field, Required, ValidationError, Validator, ValueError } from '../../../main/frontend/form';
-
+import { Binder, field, Required, ValidationError, Validator, ValueError } from '../../src/form';
 import { IdEntity, IdEntityModel, Order, OrderModel, TestEntity, TestModel } from './TestModels';
 
 const { suite, test, beforeEach, afterEach } = intern.getInterface('tdd');

@@ -1,5 +1,5 @@
 /* tslint:disable: no-unused-expression */
-
+import intern from 'intern';
 // API to test
 import {
   _fromString,
@@ -13,7 +13,7 @@ import {
   NumberModel,
   Positive,
   Size,
-} from '../../../main/frontend/form';
+} from '../../src/form';
 
 import { IdEntity, IdEntityModel, TestEntity, TestModel } from './TestModels';
 

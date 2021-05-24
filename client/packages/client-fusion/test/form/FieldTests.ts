@@ -1,26 +1,25 @@
 /* eslint-disable no-unused-expressions, no-shadow */
-import intern from 'intern';
 import { expect } from 'chai';
+import intern from 'intern';
 import { LitElement, nothing, render } from 'lit';
-import { html, unsafeStatic } from 'lit/static-html.js';
 import { customElement, query } from 'lit/decorators.js';
-import type { BinderNode } from '../../src/form/BinderNode';
-
+import { html, unsafeStatic } from 'lit/static-html.js';
 // API to test
 import {
+  AbstractFieldStrategy,
+  AbstractModel,
   Binder,
-  field,
-  GenericFieldStrategy,
   CheckedFieldStrategy,
+  field,
+  FieldStrategy,
+  GenericFieldStrategy,
+  Required,
   SelectedFieldStrategy,
   VaadinFieldStrategy,
-  Required,
-  AbstractModel,
-  FieldStrategy,
-  AbstractFieldStrategy,
-} from '../../../main/frontend/form';
+} from '../../src/form';
+import type { BinderNode } from '../../src/form/BinderNode';
 
-import { OrderModel, TestModel, TestEntity, Order } from './TestModels';
+import { Order, OrderModel, TestEntity, TestModel } from './TestModels';
 
 const { suite, test, beforeEach, afterEach } = intern.getInterface('tdd');
 const { assert } = intern.getPlugin('chai');
