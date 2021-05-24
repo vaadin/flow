@@ -194,7 +194,8 @@ module.exports = {
             options: {
               url: (url, resourcePath) => {
                 // Only translate files from node_modules
-                const resolve = resourcePath.match(/(\\|\/)node_modules\1/);
+                const resolve = resourcePath.match(/(\\|\/)node_modules\1/)
+                  && fs.existsSync(path.resolve(path.dirname(resourcePath), url));
                 const themeResource = resourcePath.match(themePartRegex) && url.match(/^themes\/[\s\S]*?\//);
                 return resolve || themeResource;
               },
