@@ -14,6 +14,8 @@
  * the License.
  */
 import type { Binder } from './Binder';
+// TODO: Fix dependency cycle
+// eslint-disable-next-line import/no-cycle
 import {
   _binderNode,
   _ItemModel,

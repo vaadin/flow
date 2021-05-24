@@ -1,4 +1,6 @@
 import isNumeric from 'validator/es/lib/isNumeric';
+// TODO: Fix dependency cycle
+// eslint-disable-next-line import/no-cycle
 import { BinderNode } from './BinderNode';
 import type { Validator } from './Validation';
 import { IsNumber } from './Validators';

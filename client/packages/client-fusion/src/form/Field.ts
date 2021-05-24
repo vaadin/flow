@@ -22,7 +22,11 @@ export abstract class AbstractFieldStrategy implements FieldStrategy {
 
   abstract invalid: boolean;
 
-  constructor(public element: Element & Field) {}
+  element: Element & Field;
+
+  constructor(element: Element & Field) {
+    this.element = element;
+  }
 
   validate = async () => [];
 

@@ -1,5 +1,9 @@
 import type { Binder } from './Binder';
+// TODO: Fix dependency cycle
+// eslint-disable-next-line import/no-cycle
 import { AbstractModel, getBinderNode, NumberModel } from './Models';
+// TODO: Fix dependency cycle
+// eslint-disable-next-line import/no-cycle
 import { Required } from './Validators';
 
 export interface ValueError<T> {
@@ -42,7 +46,11 @@ export interface Validator<T> {
 }
 
 export class ServerValidator implements Validator<any> {
-  constructor(public message: string) {}
+  message: string;
+
+  constructor(message: string) {
+    this.message = message;
+  }
 
   validate = () => false;
 }
