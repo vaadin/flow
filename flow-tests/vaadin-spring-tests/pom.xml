@@ -152,6 +152,7 @@
         <module>test-mvc-without-endpoints</module>
 
         <module>test-spring-security-flow</module>
+        <module>test-spring-security-flow-contextpath</module>
         <module>test-spring-security-fusion</module>
 
         <!-- nexus-staging-maven-plugin requires the last module to be not skipped for deployment -->

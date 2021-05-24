@@ -7,7 +7,7 @@
         <artifactId>vaadin-spring-tests</artifactId>
         <version>18.0-SNAPSHOT</version>
     </parent>
-    <artifactId>test-spring-security-flow</artifactId>
+    <artifactId>test-spring-security-flow-contextpath</artifactId>
     <name>Integration tests for Vaadin Spring Security and Flow</name>
     <packaging>jar</packaging>
     <properties>
@@ -39,6 +39,19 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>test-spring-security-flow</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>test-spring-security-flow</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -93,19 +106,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.0.2</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
         </plugins>
     </build>
 
