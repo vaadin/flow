@@ -18,15 +18,16 @@ package com.vaadin.base.devserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadFactory;
+import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 
 /**
- * Default implementation for {@link BrowserLiveReloadFactory} that stores the
+ * Default implementation for {@link BrowserLiveReloadAccessor} that stores the
  * instance in the Vaadin context.
  */
-public class BrowserLiveReloadFactoryImpl implements BrowserLiveReloadFactory {
+public class BrowserLiveReloadAccessorImpl
+        implements BrowserLiveReloadAccessor {
 
     @Override
     public BrowserLiveReload getLiveReload(VaadinContext context) {
@@ -56,6 +57,6 @@ public class BrowserLiveReloadFactoryImpl implements BrowserLiveReloadFactory {
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(BrowserLiveReloadFactory.class);
+        return LoggerFactory.getLogger(BrowserLiveReloadAccessor.class);
     }
 }

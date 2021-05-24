@@ -19,7 +19,7 @@ import com.vaadin.flow.server.VaadinService;
 
 /**
  * Creates a live reload instance by delegating to
- * {@link BrowserLiveReloadFactory#getLiveReload(VaadinService)}
+ * {@link BrowserLiveReloadAccessor#getLiveReload(VaadinService)}
  * <p>
  * Class exists only for backwards compatibility with JRebel and HotswapAgent
  * plugins.
@@ -37,7 +37,7 @@ public class BrowserLiveReloadAccess {
      * @return a BrowserLiveReload instance or null for production mode
      */
     public BrowserLiveReload getLiveReload(VaadinService service) {
-        return BrowserLiveReloadFactory.getLiveReloadFromService(service)
+        return BrowserLiveReloadAccessor.getLiveReloadFromService(service)
                 .orElse(null);
     }
 }

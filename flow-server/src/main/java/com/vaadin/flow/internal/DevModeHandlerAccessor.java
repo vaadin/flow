@@ -31,7 +31,7 @@ import com.vaadin.flow.server.VaadinService;
  * @since
  *
  */
-public interface DevModeHandlerFactory {
+public interface DevModeHandlerAccessor {
 
     /**
      * Returns a {@link DevModeHandler} instance for the given {@code service}.
@@ -55,7 +55,7 @@ public interface DevModeHandlerFactory {
         VaadinContext context = service.getContext();
         return Optional.ofNullable(context)
                 .map(ctx -> ctx.getAttribute(Lookup.class))
-                .map(lu -> lu.lookup(DevModeHandlerFactory.class))
+                .map(lu -> lu.lookup(DevModeHandlerAccessor.class))
                 .flatMap(dmha -> Optional
                         .ofNullable(dmha.getDevModeHandler(service)));
     }

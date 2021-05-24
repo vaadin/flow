@@ -35,7 +35,7 @@ import com.vaadin.flow.internal.ApplicationClassLoaderAccess;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.flow.internal.DevModeHandler;
-import com.vaadin.flow.internal.DevModeHandlerFactory;
+import com.vaadin.flow.internal.DevModeHandlerAccessor;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.JsonConstants;
@@ -331,7 +331,7 @@ public class VaadinServlet extends HttpServlet {
     protected boolean serveStaticOrWebJarRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
 
-        Optional<DevModeHandler> devModeHandler = DevModeHandlerFactory
+        Optional<DevModeHandler> devModeHandler = DevModeHandlerAccessor
                 .getDevModeHandlerFromService(getService());
         if (devModeHandler.isPresent()
                 && devModeHandler.get().isDevModeRequest(request)

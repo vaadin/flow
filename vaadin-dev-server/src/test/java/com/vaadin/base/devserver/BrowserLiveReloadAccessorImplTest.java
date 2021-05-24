@@ -24,9 +24,9 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 
-public class BrowserLiveReloadFactoryImplTest {
+public class BrowserLiveReloadAccessorImplTest {
 
-    private BrowserLiveReloadFactoryImpl access = new BrowserLiveReloadFactoryImpl();
+    private BrowserLiveReloadAccessorImpl access = new BrowserLiveReloadAccessorImpl();
 
     @Test
     public void getLiveReload_productionMode_nullIsReturned() {

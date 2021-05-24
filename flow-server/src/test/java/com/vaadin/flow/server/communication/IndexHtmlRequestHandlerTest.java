@@ -44,7 +44,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.internal.DevModeHandlerFactory;
+import com.vaadin.flow.internal.DevModeHandlerAccessor;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.DevModeHandler;
@@ -547,7 +547,7 @@ public class IndexHtmlRequestHandlerTest {
                 Mockito.anyString()))
                 .thenReturn(Mockito.mock(HttpURLConnection.class));
         service.setContext(context);
-        Lookup lookup = Lookup.of(s -> devServer, DevModeHandlerFactory.class);
+        Lookup lookup = Lookup.of(s -> devServer, DevModeHandlerAccessor.class);
         Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
 
         ApplicationConfiguration appConfig = Mockito

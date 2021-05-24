@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadFactory;
+import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.HandlerHelper;
@@ -319,7 +319,7 @@ public class PushHandler {
         // In development mode we may have a live-reload push channel
         // that should be closed.
 
-        Optional<BrowserLiveReload> liveReload = BrowserLiveReloadFactory
+        Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
                 .getLiveReloadFromService(service);
         if (isLiveReloadConnection(resource) && liveReload.isPresent()
                 && liveReload.get().isLiveReload(resource)) {
@@ -513,7 +513,7 @@ public class PushHandler {
      */
     void onConnect(AtmosphereResource resource) {
         if (isLiveReloadConnection(resource)) {
-            BrowserLiveReloadFactory.getLiveReloadFromService(service)
+            BrowserLiveReloadAccessor.getLiveReloadFromService(service)
                     .ifPresent(liveReload -> liveReload.onConnect(resource));
         } else {
             callWithUi(resource, establishCallback);

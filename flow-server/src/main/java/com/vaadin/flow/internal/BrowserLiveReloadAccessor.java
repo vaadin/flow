@@ -31,7 +31,7 @@ import com.vaadin.flow.server.VaadinService;
  * @since
  *
  */
-public interface BrowserLiveReloadFactory {
+public interface BrowserLiveReloadAccessor {
 
     /**
      * Returns a {@link BrowserLiveReload} instance for the given
@@ -68,7 +68,7 @@ public interface BrowserLiveReloadFactory {
         VaadinContext context = service.getContext();
         return Optional.ofNullable(context)
                 .map(ctx -> ctx.getAttribute(Lookup.class))
-                .map(lu -> lu.lookup(BrowserLiveReloadFactory.class))
+                .map(lu -> lu.lookup(BrowserLiveReloadAccessor.class))
                 .flatMap(blra -> Optional
                         .ofNullable(blra.getLiveReload(service)));
     }
