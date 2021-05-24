@@ -385,7 +385,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("webpack-merge", "4.2.2");
         defaults.put("css-loader", "4.2.1");
         defaults.put("extract-loader", "5.1.0");
-        defaults.put("lit-css-loader", "0.0.4");
+        defaults.put("lit-css-loader", "0.1.0");
         defaults.put("file-loader", "6.2.0");
         defaults.put("loader-utils", "2.0.0");
         final String WORKBOX_VERSION = "6.1.0";
