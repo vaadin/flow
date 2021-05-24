@@ -213,34 +213,34 @@ public class HandlerHelper implements Serializable {
         if ("/*".equals(servletMappingPath) || "/".equals(servletMappingPath)) {
             // All paths are inside a /* servlet and a / servlet
             return Optional.of(requestedPath);
-        } else if (servletMappingPath.endsWith("/*")) {
-
+        } 
+        
+        if (servletMappingPath.endsWith("/*")) {
             String servletPrefix = servletMappingPath.substring(0,
                     servletMappingPath.length() - 1); // Only remove "*"
             if (requestedPath.startsWith(servletPrefix)) {
                 return Optional
                         .of(requestedPath.substring(servletPrefix.length()));
             }
-
             return Optional.empty();
+        } 
+        
+        // Servlet is mapped only to a static path such as "" or /foo/bar
+        String servletMappingWithoutSlash;
+
+        if (servletMappingPath.startsWith("/")) {
+            // Requested path should not contain the initial slash
+            servletMappingWithoutSlash = servletMappingPath.substring(1);
         } else {
-            // Servlet is mapped only to a static path such as "" or /foo/bar
-            String servletMappingWithoutSlash;
-
-            if (servletMappingPath.startsWith("/")) {
-                // Requested path should not contain the initial slash
-                servletMappingWithoutSlash = servletMappingPath.substring(1);
-            } else {
-                servletMappingWithoutSlash = servletMappingPath;
-            }
-
-            if (requestedPath.equals(servletMappingWithoutSlash)) {
-                return Optional.of(requestedPath
-                        .substring(servletMappingWithoutSlash.length()));
-            }
-
-            return Optional.empty();
+            servletMappingWithoutSlash = servletMappingPath;
         }
+
+        if (requestedPath.equals(servletMappingWithoutSlash)) {
+            return Optional.of(requestedPath
+                    .substring(servletMappingWithoutSlash.length()));
+        }
+
+        return Optional.empty();
     }
 
     /**
