@@ -31,13 +31,15 @@ public class BrowserLiveReloadAccessorImpl
 
     @Override
     public BrowserLiveReload getLiveReload(VaadinContext context) {
-        BrowserLiveReload liveReload = context
-                .getAttribute(BrowserLiveReload.class);
-        if (liveReload == null) {
-            liveReload = new BrowserLiveReloadImpl();
-            context.setAttribute(BrowserLiveReload.class, liveReload);
+        synchronized (context) {
+            BrowserLiveReload liveReload = context
+                    .getAttribute(BrowserLiveReload.class);
+            if (liveReload == null) {
+                liveReload = new BrowserLiveReloadImpl();
+                context.setAttribute(BrowserLiveReload.class, liveReload);
+            }
+            return liveReload;
         }
-        return liveReload;
     }
 
     @Override
