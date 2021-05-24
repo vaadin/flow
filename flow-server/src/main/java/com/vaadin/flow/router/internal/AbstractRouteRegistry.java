@@ -38,7 +38,6 @@ import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.RoutesChangedListener;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.shared.Registration;
 

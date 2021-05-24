@@ -21,13 +21,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
 
@@ -35,13 +32,9 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.InternalServerError;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteNotFoundError;
-import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
-import com.vaadin.flow.router.internal.NavigationRouteTarget;
-import com.vaadin.flow.router.internal.PathUtil;
-import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.server.ErrorRouteRegistry;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinContext;
