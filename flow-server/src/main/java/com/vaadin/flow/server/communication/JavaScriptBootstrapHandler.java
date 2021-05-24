@@ -27,7 +27,7 @@ import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.DevModeHandler;
-import com.vaadin.flow.internal.DevModeHandlerAccessor;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
@@ -203,8 +203,8 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
     private JsonValue getErrors(VaadinService service) {
         JsonObject errors = Json.createObject();
-        Optional<DevModeHandler> devModeHandler = DevModeHandlerAccessor
-                .getDevModeHandlerFromService(service);
+        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
+                .getDevModeHandler(service);
         if (devModeHandler.isPresent()) {
             String errorMsg = devModeHandler.get().getFailedOutput();
             if (errorMsg != null) {

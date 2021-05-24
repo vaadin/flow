@@ -67,7 +67,7 @@ import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.internal.DevModeHandler;
-import com.vaadin.flow.internal.DevModeHandlerAccessor;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
@@ -1491,8 +1491,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     protected static void showWebpackErrors(VaadinService service,
             Document document) {
-        Optional<DevModeHandler> devServer = DevModeHandlerAccessor
-                .getDevModeHandlerFromService(service);
+        Optional<DevModeHandler> devServer = DevModeHandlerManager
+                .getDevModeHandler(service);
         if (devServer.isPresent()) {
             String errorMsg = devServer.get().getFailedOutput();
             if (errorMsg != null) {

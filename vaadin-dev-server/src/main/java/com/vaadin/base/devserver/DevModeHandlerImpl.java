@@ -821,21 +821,12 @@ public final class DevModeHandlerImpl
         return port;
     }
 
-    /**
-     * Whether the 'webpack-dev-server' should be reused on servlet reload.
-     * Default true.
-     *
-     * @return true in case of reusing the server.
-     */
-    public boolean reuseDevServer() {
-        return reuseDevServer;
-    }
-
-    /**
-     * Stop the webpack-dev-server.
-     */
+    @Override
     public void stop() {
         if (atomicHandler.get() == null) {
+            return;
+        }
+        if (reuseDevServer) {
             return;
         }
 

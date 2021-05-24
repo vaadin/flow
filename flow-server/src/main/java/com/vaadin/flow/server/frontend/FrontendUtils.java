@@ -46,7 +46,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
-import com.vaadin.flow.internal.DevModeHandlerAccessor;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -461,8 +461,8 @@ public class FrontendUtils {
 
         try {
             if (!config.isProductionMode() && config.enableDevServer()) {
-                Optional<DevModeHandler> devModeHandler = DevModeHandlerAccessor
-                        .getDevModeHandlerFromService(service);
+                Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
+                        .getDevModeHandler(service);
                 assert devModeHandler.isPresent();
                 content = getStatsFromWebpack(devModeHandler.get());
             }
@@ -521,8 +521,8 @@ public class FrontendUtils {
         InputStream content = null;
 
         try {
-            Optional<DevModeHandler> devModeHandler = DevModeHandlerAccessor
-                    .getDevModeHandlerFromService(service);
+            Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
+                    .getDevModeHandler(service);
             if (!config.isProductionMode() && config.enableDevServer()
                     && devModeHandler.isPresent()) {
                 content = getFileFromWebpack(devModeHandler.get(), path);
@@ -563,8 +563,8 @@ public class FrontendUtils {
      */
     public static String getStatsHash(VaadinService service)
             throws IOException {
-        Optional<DevModeHandler> devModeHandler = DevModeHandlerAccessor
-                .getDevModeHandlerFromService(service);
+        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
+                .getDevModeHandler(service);
         if (devModeHandler.isPresent()) {
             HttpURLConnection statsConnection = devModeHandler.get()
                     .prepareConnection("/stats.hash", "GET");
@@ -720,8 +720,8 @@ public class FrontendUtils {
     public static String getStatsAssetsByChunkName(VaadinService service)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
-        Optional<DevModeHandler> devModeHandler = DevModeHandlerAccessor
-                .getDevModeHandlerFromService(service);
+        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
+                .getDevModeHandler(service);
         if (!config.isProductionMode() && config.enableDevServer()
                 && devModeHandler.isPresent()) {
             return streamToString(getResourceFromWebpack(devModeHandler.get(),

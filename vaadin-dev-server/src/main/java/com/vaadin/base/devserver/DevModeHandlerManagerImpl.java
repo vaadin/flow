@@ -15,11 +15,15 @@
  */
 package com.vaadin.base.devserver;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.servlet.annotation.HandlesTypes;
+import java.util.Set;
+
+import com.vaadin.base.devserver.startup.DevModeInitializer;
 import com.vaadin.flow.internal.DevModeHandler;
-import com.vaadin.flow.internal.DevModeHandlerAccessor;
+import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.startup.VaadinInitializerException;
 
 /**
  * Provides API to access to the {@link DevModeHandler} instance by a
@@ -30,24 +34,27 @@ import com.vaadin.flow.server.VaadinService;
  * @author Vaadin Ltd
  * @since
  */
-public class DevModeHandlerAccessorImpl implements DevModeHandlerAccessor {
+public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
     @Override
-    public DevModeHandler getDevModeHandler(VaadinService service) {
-        if (service.getDeploymentConfiguration().isProductionMode()) {
-            getLogger().debug(
-                    "DevModeHandlerAccessImpl::getDevModeHandler is called in production mode.");
-            return null;
-        }
-        if (!service.getDeploymentConfiguration().enableDevServer()) {
-            getLogger().debug(
-                    "DevModeHandlerAccessImpl::getDevModeHandler is called when dev server is disabled.");
-            return null;
-        }
+    public Class<?>[] getHandlesTypes() {
+        return DevModeInitializer.class.getAnnotation(HandlesTypes.class)
+                .value();
+    }
+
+    @Override
+    public void initDevModeHandler(Set<Class<?>> classes, VaadinContext context)
+            throws VaadinInitializerException {
+        DevModeInitializer.initDevModeHandler(classes, context);
+    }
+
+    @Override
+    public DevModeHandler getDevModeHandler() {
         return DevModeHandlerImpl.getDevModeHandler();
     }
 
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(DevModeHandler.class);
+    @Override
+    public boolean isDevModeAlreadyStarted(VaadinContext context) {
+        return false;
     }
 }

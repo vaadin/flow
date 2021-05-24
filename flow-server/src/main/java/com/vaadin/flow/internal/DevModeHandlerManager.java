@@ -15,11 +15,14 @@
  */
 package com.vaadin.flow.internal;
 
+import javax.servlet.ServletException;
 import java.util.Optional;
+import java.util.Set;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.startup.VaadinInitializerException;
 
 /**
  * Provides API to access to the {@link DevModeHandler} instance by a
@@ -31,16 +34,47 @@ import com.vaadin.flow.server.VaadinService;
  * @since
  *
  */
-public interface DevModeHandlerAccessor {
+public interface DevModeHandlerManager {
+
+    /**
+     * A dev mode handler implementation is interested in certain annotations to
+     * be be scanned from the class path and passed to the
+     * {@link #initDevModeHandler(Set, VaadinContext)} initializer.
+     *
+     * @return an array of types the dev mode handler is interested id.
+     */
+    Class<?>[] getHandlesTypes();
+
+    /**
+     * Starts up a new {@link DevModeHandler}.
+     *
+     * @param classes
+     *            classes to check for npm- and js modules
+     * @param context
+     *            servlet context we are running in
+     *
+     * @throws ServletException
+     *             if dev mode can't be initialized
+     */
+    void initDevModeHandler(Set<Class<?>> classes, VaadinContext context)
+            throws VaadinInitializerException;
 
     /**
      * Returns a {@link DevModeHandler} instance for the given {@code service}.
      *
-     * @param service
-     *            a Vaadin service
      * @return a {@link DevModeHandler} instance
      */
-    DevModeHandler getDevModeHandler(VaadinService service);
+    DevModeHandler getDevModeHandler();
+
+    /**
+     * Returns whether {@link DevModeHandler} has been already started or not.
+     *
+     * @param context
+     *            The {@link VaadinContext}, not <code>null</code>
+     * @return <code>true</code> if {@link DevModeHandler} has already been
+     *         started, <code>false</code> - otherwise
+     */
+    boolean isDevModeAlreadyStarted(VaadinContext context);
 
     /**
      * Create a {@link DevModeHandler} if factory available.
@@ -50,13 +84,11 @@ public interface DevModeHandlerAccessor {
      * @return an {@link Optional} containing a {@link DevModeHandler} instance
      *         or <code>EMPTY</code> if disabled
      */
-    static Optional<DevModeHandler> getDevModeHandlerFromService(
-            VaadinService service) {
+    static Optional<DevModeHandler> getDevModeHandler(VaadinService service) {
         VaadinContext context = service.getContext();
         return Optional.ofNullable(context)
                 .map(ctx -> ctx.getAttribute(Lookup.class))
-                .map(lu -> lu.lookup(DevModeHandlerAccessor.class))
-                .flatMap(dmha -> Optional
-                        .ofNullable(dmha.getDevModeHandler(service)));
+                .map(lu -> lu.lookup(DevModeHandlerManager.class))
+                .flatMap(dmha -> Optional.ofNullable(dmha.getDevModeHandler()));
     }
 }

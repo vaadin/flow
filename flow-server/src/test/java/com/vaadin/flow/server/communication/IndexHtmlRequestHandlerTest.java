@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -44,7 +45,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.internal.DevModeHandlerAccessor;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.DevModeHandler;
@@ -60,6 +61,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.AppShellWithPWA;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithConfigurator;
+import com.vaadin.flow.server.startup.VaadinInitializerException;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.Json;
@@ -547,7 +549,29 @@ public class IndexHtmlRequestHandlerTest {
                 Mockito.anyString()))
                 .thenReturn(Mockito.mock(HttpURLConnection.class));
         service.setContext(context);
-        Lookup lookup = Lookup.of(s -> devServer, DevModeHandlerAccessor.class);
+        DevModeHandlerManager devModeHandlerManager = new DevModeHandlerManager() {
+            @Override
+            public Class<?>[] getHandlesTypes() {
+                return new Class[0];
+            }
+
+            @Override
+            public void initDevModeHandler(Set<Class<?>> classes,
+                    VaadinContext context) throws VaadinInitializerException {
+            }
+
+            @Override
+            public DevModeHandler getDevModeHandler() {
+                return devServer;
+            }
+
+            @Override
+            public boolean isDevModeAlreadyStarted(VaadinContext context) {
+                return false;
+            }
+        };
+        Lookup lookup = Lookup.of(devModeHandlerManager,
+                DevModeHandlerManager.class);
         Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
 
         ApplicationConfiguration appConfig = Mockito

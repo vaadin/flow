@@ -447,7 +447,7 @@ public class DevModeInitializer
     @Override
     public void contextDestroyed(ServletContextEvent ctx) {
         DevModeHandlerImpl handler = DevModeHandlerImpl.getDevModeHandler();
-        if (handler != null && !handler.reuseDevServer()) {
+        if (handler != null) {
             handler.stop();
         }
     }

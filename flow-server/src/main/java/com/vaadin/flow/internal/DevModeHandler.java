@@ -67,4 +67,9 @@ public interface DevModeHandler extends RequestHandler {
      */
     boolean serveDevModeRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException;
+
+    /**
+     * Stop the dev-server.
+     */
+    void stop();
 }
