@@ -56,9 +56,6 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
         implements ErrorRouteRegistry {
 
     private AtomicReference<Class<?>> pwaConfigurationClass = new AtomicReference<>();
-    private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
-            .of(RouteNotFoundError.class, InternalServerError.class)
-            .collect(Collectors.toSet());
 
     private final ArrayList<NavigationTargetFilter> routeFilters = new ArrayList<>();
 
@@ -156,9 +153,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
 
         exceptionTargetsMap.putAll(getConfiguration().getExceptionHandlers());
 
-        errorNavigationTargets.stream()
-                .filter(target -> !defaultErrorHandlers.contains(target))
-                .filter(this::allErrorFiltersMatch)
+        errorNavigationTargets.stream().filter(this::allErrorFiltersMatch)
                 .filter(handler -> !Modifier.isAbstract(handler.getModifiers()))
                 .forEach(target -> addErrorTarget(target, exceptionTargetsMap));
 

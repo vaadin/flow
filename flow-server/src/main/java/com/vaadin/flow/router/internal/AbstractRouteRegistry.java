@@ -413,7 +413,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      * Register a child handler if parent registered or leave as is if child
      * registered.
      * <p>
-     * If the target is not related to the registered handler then throw
+     * If the target is not related to the registered handler and neither
+     * handler is annotated as {@link DefaultErrorHandler} then throw
      * configuration exception as only one handler for each exception type is
      * allowed.
      *
@@ -421,6 +422,10 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      *            target being handled
      * @param exceptionType
      *            type of the handled exception
+     * @throws InvalidRouteConfigurationException
+     *             thrown if multiple exception handlers are registered for the
+     *             same exception without relation or the other being a default
+     *             handler
      */
     private void handleRegisteredExceptionType(
             Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap,
@@ -432,11 +437,15 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (registered.isAssignableFrom(target)) {
             exceptionTargetsMap.put(exceptionType, target);
         } else if (!target.isAssignableFrom(registered)) {
-            String msg = String.format(
-                    "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
-                    target.getName(), registered.getName(),
-                    exceptionType.getName());
-            throw new InvalidRouteLayoutConfigurationException(msg);
+            if (registered.isAnnotationPresent(DefaultErrorHandler.class)) {
+                exceptionTargetsMap.put(exceptionType, target);
+            } else if (!target.isAnnotationPresent(DefaultErrorHandler.class)) {
+                String msg = String.format(
+                        "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
+                        target.getName(), registered.getName(),
+                        exceptionType.getName());
+                throw new InvalidRouteConfigurationException(msg);
+            }
         }
     }
 
