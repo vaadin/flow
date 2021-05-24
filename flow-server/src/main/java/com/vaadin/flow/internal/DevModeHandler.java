@@ -20,7 +20,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
-public interface DevModeHandler {
+import com.vaadin.flow.server.RequestHandler;
+
+public interface DevModeHandler extends RequestHandler {
 
     /**
      * Return webpack console output when a compilation error happened.
