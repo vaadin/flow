@@ -262,7 +262,7 @@ public class HandlerHelperTest {
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "bar"));
         Assert.assertEquals(Optional.empty(),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "/bar"));
-        Assert.assertEquals(Optional.empty(),
+        Assert.assertEquals(Optional.of(""),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "/foo"));
         Assert.assertEquals(Optional.empty(),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "/foos"));
