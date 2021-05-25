@@ -274,8 +274,8 @@
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
-                <artifactId>mockito-all</artifactId>
-                <version>1.10.19</version>
+                <artifactId>mockito-core</artifactId>
+                <version>3.10.0</version>
             </dependency>
             <dependency>
                 <groupId>org.hamcrest</groupId>
@@ -285,7 +285,7 @@
             <dependency>
                 <groupId>org.easymock</groupId>
                 <artifactId>easymock</artifactId>
-                <version>3.4</version>
+                <version>4.3</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -303,10 +303,9 @@
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-all</artifactId>
@@ -524,6 +523,7 @@
                         <excludes>
                             <exclude>${exclude.windows.failed.tests}</exclude>
                         </excludes>
+                        <argLine>${surefire.argLine}</argLine>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -644,6 +644,8 @@
             </activation>
             <properties>
                 <maven.compiler.release>8</maven.compiler.release>
+                <!-- needed for running easymock in JDK11+ (easymock#235) -->
+                <surefire.argLine>--add-opens java.base/java.lang=ALL-UNNAMED</surefire.argLine>
             </properties>
             <build>
                 <pluginManagement>

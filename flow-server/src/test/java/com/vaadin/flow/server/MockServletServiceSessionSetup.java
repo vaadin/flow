@@ -1,11 +1,5 @@
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,9 +14,11 @@ import java.util.Locale;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Supplier;
 
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
@@ -33,6 +29,10 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 public class MockServletServiceSessionSetup {
 
@@ -264,8 +264,8 @@ public class MockServletServiceSessionSetup {
         Mockito.when(resourceProvider.getApplicationResource(
                 Mockito.any(VaadinContext.class), Mockito.anyString()))
                 .thenAnswer(invocation -> {
-                    return MockServletServiceSessionSetup.class.getResource(
-                            "/" + invocation.getArgumentAt(1, String.class));
+                    return MockServletServiceSessionSetup.class
+                            .getResource("/" + invocation.getArgument(1));
                 });
 
         servlet.init(servletConfig);

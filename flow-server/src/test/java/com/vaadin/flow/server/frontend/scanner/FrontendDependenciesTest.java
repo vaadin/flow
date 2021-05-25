@@ -76,7 +76,7 @@ public class FrontendDependenciesTest {
 
         Mockito.doAnswer(
             invocation -> FrontendDependenciesTest.class.getClassLoader()
-                .getResource(invocation.getArgumentAt(0, String.class)))
+                .getResource(invocation.getArgument(0)))
             .when(classFinder).getResource(Mockito.anyString());
 
     }
