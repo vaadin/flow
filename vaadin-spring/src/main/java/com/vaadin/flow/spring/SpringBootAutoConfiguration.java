@@ -85,6 +85,8 @@ public class SpringBootAutoConfiguration {
                 .setAsyncSupported(configurationProperties.isAsyncSupported());
         registration.setName(
                 ClassUtils.getShortNameAsProperty(SpringServlet.class));
+        registration.setLoadOnStartup(
+                configurationProperties.isLoadOnStartup() ? 1 : -1);
         return registration;
     }
 
@@ -98,13 +100,4 @@ public class SpringBootAutoConfiguration {
         return new VaadinWebsocketEndpointExporter();
     }
 
-    /**
-     * Makes the request util available.
-     * 
-     * @return the request util
-     */
-    @Bean
-    public RequestUtil requestUtil() {
-        return new RequestUtil();
-    }
 }

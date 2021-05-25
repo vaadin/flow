@@ -1,14 +1,26 @@
 package com.vaadin.flow.spring.security;
 
+import java.util.Optional;
+
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.internal.NavigationRouteTarget;
+import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.connect.EndpointUtil;
+import com.vaadin.flow.spring.SpringServlet;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -22,9 +34,15 @@ public class RequestUtil {
     private ApplicationContext applicationContext;
 
     @Autowired
+    private AccessAnnotationChecker accessAnnotationChecker;
+
+    @Autowired
     private VaadinConfigurationProperties configurationProperties;
 
     private Object endpointUtil;
+
+    @Autowired
+    private ServletRegistrationBean<SpringServlet> springServletRegistration;
 
     @PostConstruct
     public void init() {
@@ -87,4 +105,61 @@ public class RequestUtil {
         }
         return false;
     }
+
+    public boolean isAnonymousRoute(HttpServletRequest request) {
+        String vaadinMapping = configurationProperties.getUrlMapping();
+        String requestedPath = getRequestPathInsideContext(request);
+        Optional<String> maybePath = HandlerHelper
+                .getPathIfInsideServlet(vaadinMapping, requestedPath);
+        if (!maybePath.isPresent()) {
+            return false;
+        }
+        String path = maybePath.get();
+        SpringServlet servlet = springServletRegistration.getServlet();
+        VaadinService service = servlet.getService();
+        Router router = service.getRouter();
+        RouteRegistry routeRegistry = router.getRegistry();
+
+        NavigationRouteTarget target = routeRegistry
+                .getNavigationRouteTarget(path);
+        if (target == null) {
+            return false;
+        }
+        RouteTarget routeTarget = target.getRouteTarget();
+        if (routeTarget == null) {
+            return false;
+        }
+        Class<? extends com.vaadin.flow.component.Component> targetView = routeTarget
+                .getTarget();
+        if (targetView == null) {
+            return false;
+        }
+
+        // Check if a not authenticated user can access the view
+        boolean result = accessAnnotationChecker.hasAccess(targetView, null,
+                role -> false);
+        if (result) {
+            getLogger().debug(path + " refers to a public view");
+        }
+        return result;
+    }
+
+    private Logger getLogger() {
+        return LoggerFactory.getLogger(getClass());
+    }
+
+    private static String getRequestPathInsideContext(
+            HttpServletRequest request) {
+        String servletPath = request.getServletPath();
+        String pathInfo = request.getPathInfo();
+        String url = "";
+        if (servletPath != null) {
+            url += servletPath;
+        }
+        if (pathInfo != null) {
+            url += pathInfo;
+        }
+        return url;
+    }
+
 }

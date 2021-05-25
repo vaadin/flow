@@ -42,6 +42,11 @@ public class VaadinConfigurationProperties {
     private boolean asyncSupported = true;
 
     /**
+     * Whether servlet is loaded on startup.
+     */
+    private boolean loadOnStartup = true;
+
+    /**
      * Whether pnpm support is enabled
      **/
     private Pnpm pnpm = new Pnpm();
@@ -118,6 +123,36 @@ public class VaadinConfigurationProperties {
      */
     public void setAsyncSupported(boolean asyncSupported) {
         this.asyncSupported = asyncSupported;
+    }
+
+    /**
+     * Returns if servlet is loaded on startup.
+     * <p>
+     * If the servlet is not loaded on startup then the first request to the
+     * server might be incorrectly handled by
+     * {@link com.vaadin.flow.spring.security.VaadinWebSecurityConfigurerAdapter}
+     * and access to a public view will be denied instead of allowed.
+     *
+     * @return if servlet is loaded on startup
+     */
+    public boolean isLoadOnStartup() {
+        return loadOnStartup;
+    }
+
+    /**
+     * Sets whether servlet is loaded on startup.
+     * <p>
+     * If the servlet is not loaded on startup then the first request to the
+     * server might be incorrectly handled by
+     * {@link com.vaadin.flow.spring.security.VaadinWebSecurityConfigurerAdapter}
+     * and access to a public view will be denied instead of allowed.
+     * 
+     * @param loadOnStartup
+     *            {@code true} to load the servlet on startup, {@code false}
+     *            otherwise
+     */
+    public void setLoadOnStartup(boolean loadOnStartup) {
+        this.loadOnStartup = loadOnStartup;
     }
 
     /**

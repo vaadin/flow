@@ -12,6 +12,7 @@ import com.vaadin.flow.server.connect.EndpointRegistry;
 import com.vaadin.flow.server.connect.VaadinConnectControllerConfiguration;
 import com.vaadin.flow.server.connect.VaadinEndpointProperties;
 import com.vaadin.flow.spring.SpringBootAutoConfiguration;
+import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -23,10 +24,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { VaadinEndpointProperties.class,
-        VaadinDefaultRequestCache.class })
-@ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
-        VaadinConnectControllerConfiguration.class })
+@SpringBootTest(classes = { VaadinEndpointProperties.class })
+@ContextConfiguration(classes = { VaadinConnectControllerConfiguration.class,
+        SpringBootAutoConfiguration.class,
+        SpringSecurityAutoConfiguration.class })
 public class VaadinDefaultRequestCacheTest {
 
     @Autowired

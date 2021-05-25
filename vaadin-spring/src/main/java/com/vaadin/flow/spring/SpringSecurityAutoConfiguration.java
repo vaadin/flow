@@ -17,6 +17,7 @@ package com.vaadin.flow.spring;
 
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
+import com.vaadin.flow.spring.security.RequestUtil;
 import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
 import com.vaadin.flow.spring.security.ViewAccessCheckerInitializer;
 
@@ -85,4 +86,13 @@ public class SpringSecurityAutoConfiguration {
         return new AccessAnnotationChecker();
     }
 
+    /**
+     * Makes the request util available.
+     *
+     * @return the request util
+     */
+    @Bean
+    public RequestUtil requestUtil() {
+        return new RequestUtil();
+    }
 }
