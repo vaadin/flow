@@ -210,17 +210,55 @@ public class HandlerHelper implements Serializable {
                 "servletMappingPath cannot be null");
         Objects.requireNonNull(requestedPath, "requestedPath cannot be null");
 
+        /*
+         * The Servlet 4 spec says
+         *
+         * A string beginning with a ‘/’ character and ending with a ‘/*’ suffix
+         * is used for path mapping.
+         *
+         * A string beginning with a ‘*.’ prefix is used as an extension
+         * mapping.
+         *
+         * The empty string ("") is a special URL pattern that exactly maps to
+         * the application's context root, i.e., requests of the form
+         * http://host:port/<contextroot>/. In this case the path info is ’/’
+         * and the servlet path and context path is empty string (““).
+         *
+         * A string containing only the ’/’ character indicates the "default"
+         * servlet of the application. In this case the servlet path is the
+         * request URI minus the context path and the path info is null.
+         *
+         * All other strings are used for exact matches only
+         */
+
         if ("/*".equals(servletMappingPath) || "/".equals(servletMappingPath)) {
-            // All paths are inside a /* servlet and a / servlet
+            /*
+             * A string containing only the ’/’ character indicates the
+             * "default" servlet
+             *
+             * A /* mapping covers everything
+             */
             return Optional.of(requestedPath);
         }
 
-        if (servletMappingPath.endsWith("/*")) {
-            String servletPrefix = servletMappingPath.substring(0,
-                    servletMappingPath.length() - 1); // Only remove "*"
-            if (requestedPath.startsWith(servletPrefix)) {
-                return Optional
-                        .of(requestedPath.substring(servletPrefix.length()));
+        if (servletMappingPath.startsWith("/")
+                && servletMappingPath.endsWith("/*")) {
+            /*
+             * A string beginning with a ‘/’ character and ending with a ‘/*’
+             * suffix is used for path mapping.
+             */
+            String directory = servletMappingPath.substring(0,
+                    servletMappingPath.length() - 2);
+            String directoryWithSlash = directory + "/";
+
+            // /foo/* matches /foo
+            if (requestedPath.equals(directory)) {
+                return Optional.of("");
+
+            }
+            if (requestedPath.startsWith(directoryWithSlash)) {
+                return Optional.of(
+                        requestedPath.substring(directoryWithSlash.length()));
             }
             return Optional.empty();
         }
