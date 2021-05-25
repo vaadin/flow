@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.frontend.installer;
 
+import com.vaadin.flow.server.frontend.FrontendVersion;
+
 /**
  * Platform contains information about system architecture and OS.
  * <p>
@@ -112,6 +114,9 @@ public class Platform {
     private final OS os;
     private final Architecture architecture;
 
+    // Node.js supports Apple silicon from v16.0.0
+    private static final int NODE_VERSION_THRESHOLD_MAC_ARM64 = 16;
+
     /**
      * Construct a new Platform.
      *
@@ -193,9 +198,23 @@ public class Platform {
     /**
      * Get the node classifier for current platform.
      *
+     * @param nodeVersion
+     *            node version to get classifier for
      * @return platform node classifier
      */
-    public String getNodeClassifier() {
-        return getCodename() + "-" + getArchitecture().getName();
+    public String getNodeClassifier(FrontendVersion nodeVersion) {
+        return getCodename() + "-" + resolveArchitecture(nodeVersion).getName();
+    }
+
+    private Architecture resolveArchitecture(FrontendVersion nodeVersion) {
+        if (isMac() && architecture == Architecture.ARM64) {
+            Integer nodeMajorVersion = nodeVersion.getMajorVersion();
+            if (nodeMajorVersion == null
+                    || nodeMajorVersion < NODE_VERSION_THRESHOLD_MAC_ARM64) {
+                return Architecture.X64;
+            }
+        }
+
+        return architecture;
     }
 }
