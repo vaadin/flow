@@ -107,6 +107,11 @@ public class StaticFileServer implements StaticFileHandler {
         }
         resource = getStaticResource(requestFilename);
 
+        if (resource != null && resource.getPath().endsWith("/")) {
+            // Directory resources should not be served.
+            return false;
+        }
+
         if (resource == null && shouldFixIncorrectWebjarPaths()
                 && isIncorrectWebjarPath(requestFilename)) {
             // Flow issue #4601

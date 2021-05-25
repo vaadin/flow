@@ -256,6 +256,19 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
+    public void directoryIsNotResourceRequest() throws Exception {
+        setupRequestURI("", "", "/frontend");
+        Mockito.when(servletService.getStaticResource("/frontend"))
+                .thenReturn(new URL("file:///C:/frontend/"));
+        Assert.assertFalse(fileServer.isStaticResourceRequest(request));
+
+        setupRequestURI("", "", "/frontend/.;");
+        Mockito.when(servletService.getStaticResource("/frontend/.;"))
+                .thenReturn(new URL("file:///C:/frontend/"));
+        Assert.assertFalse(fileServer.isStaticResourceRequest(request));
+    }
+
+    @Test
     public void isNotResourceRequestWithContextPath() throws Exception {
         setupRequestURI("/context", "", "/");
         Mockito.when(servletContext.getResource("/")).thenReturn(new URL("file",
