@@ -61,7 +61,8 @@ public class BrowserLiveReloadAccessorImplTest {
         Mockito.when(config.isDevModeLiveReloadEnabled()).thenReturn(true);
 
         VaadinContext context = Mockito.mock(VaadinContext.class);
-        Mockito.when(context.getAttribute(BrowserLiveReload.class))
+        Mockito.when(context.getAttribute(Mockito.eq(BrowserLiveReload.class),
+                Mockito.any()))
                 .thenReturn(Mockito.mock(BrowserLiveReload.class));
         Mockito.when(service.getContext()).thenReturn(context);
 
@@ -81,8 +82,8 @@ public class BrowserLiveReloadAccessorImplTest {
         Mockito.when(service.getContext()).thenReturn(context);
 
         BrowserLiveReload reload = Mockito.mock(BrowserLiveReload.class);
-        Mockito.when(context.getAttribute(BrowserLiveReload.class))
-                .thenReturn(reload);
+        Mockito.when(context.getAttribute(Mockito.eq(BrowserLiveReload.class),
+                Mockito.any())).thenReturn(reload);
 
         Assert.assertSame(reload, access.getLiveReload(service));
     }
