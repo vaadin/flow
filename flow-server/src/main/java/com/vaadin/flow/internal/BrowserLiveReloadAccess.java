@@ -23,7 +23,10 @@ import com.vaadin.flow.server.VaadinService;
  * <p>
  * Class exists only for backwards compatibility with JRebel and HotswapAgent
  * plugins.
+ *
+ * @deprecated Use {@link BrowserLiveReloadAccessor} instead
  */
+@Deprecated
 public class BrowserLiveReloadAccess {
 
     /**

@@ -15,12 +15,15 @@
  */
 package com.vaadin.base.devserver;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.server.VaadinService;
 
 public class BrowserLiveReloadImplTest {
 
@@ -153,6 +156,27 @@ public class BrowserLiveReloadImplTest {
                 });
         Assert.assertEquals(BrowserLiveReload.Backend.SPRING_BOOT_DEVTOOLS,
                 reload.getBackend());
+    }
+
+    @Test
+    public void backwardsCompatibilityClassExists() {
+        // JRebel and HotswapAgent live reload triggering only works if
+        // com.vaadin.flow.internal.BrowserLiveReloadAccess exists on classpath.
+        ClassLoader classLoader = getClass().getClassLoader();
+        String className = "com.vaadin.flow.internal.BrowserLiveReloadAccess";
+        String methodName = "getLiveReload";
+        try {
+            Class<?> clazz = classLoader.loadClass(className);
+            clazz.getMethod(methodName, VaadinService.class);
+            clazz.getDeclaredConstructor().newInstance();
+        } catch (ClassNotFoundException | NoSuchMethodException
+                | InstantiationException | IllegalAccessException
+                | InvocationTargetException e) {
+            e.printStackTrace();
+            Assert.fail(className
+                    + " required on classpath for JRebel / HotswapAgent live reload integration, must be instantiable and have method "
+                    + methodName + " accepting a VaadinService");
+        }
     }
 
 }
