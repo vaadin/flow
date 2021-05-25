@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.FrontendVersion;
 
 public class NodeInstallerTest {
 
@@ -39,7 +40,8 @@ public class NodeInstallerTest {
         String nodeExec = platform.isWindows() ? "node.exe" : "node";
         String prefix = String.format("node-%s-%s",
                 FrontendTools.DEFAULT_NODE_VERSION,
-                platform.getNodeClassifier());
+                platform.getNodeClassifier(new FrontendVersion(
+                        FrontendTools.DEFAULT_NODE_VERSION)));
 
         File targetDir = new File(baseDir + "/installation");
 

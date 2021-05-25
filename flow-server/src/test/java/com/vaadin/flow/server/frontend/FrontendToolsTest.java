@@ -94,7 +94,9 @@ public class FrontendToolsTest {
         nodeVersionCommand.add("--version");
         FrontendVersion node = FrontendUtils.getVersion("node",
                 nodeVersionCommand);
-        Assert.assertEquals(FrontendTools.DEFAULT_NODE_VERSION,
+        Assert.assertEquals(
+                new FrontendVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                        .getFullVersion(),
                 node.getFullVersion());
 
         FrontendTools newTools = new FrontendTools(vaadinHomeDir, null);
@@ -103,14 +105,15 @@ public class FrontendToolsTest {
         npmVersionCommand.add("--version");
         FrontendVersion npm = FrontendUtils.getVersion("npm",
                 npmVersionCommand);
-        Assert.assertEquals("6.14.6", npm.getFullVersion());
+        Assert.assertEquals("7.10.0", npm.getFullVersion());
 
     }
 
     private void prepareNodeDownloadableZipAt(String baseDir, String version) throws IOException {
         Platform platform = Platform.guess();
         String nodeExec = platform.isWindows() ? "node.exe" : "node";
-        String prefix = "node-" + version + "-" + platform.getNodeClassifier();
+        String prefix = "node-" + version + "-"
+                + platform.getNodeClassifier(new FrontendVersion(version));
 
         File downloadDir = new File(baseDir, version);
         FileUtils.forceMkdir(downloadDir);
