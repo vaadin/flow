@@ -48,8 +48,7 @@ public class BundleParserTest {
                 .mock(DeploymentConfiguration.class);
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
-                .thenAnswer(invocation -> invocation.getArgumentAt(1,
-                        String.class));
+                .thenAnswer(invocation -> invocation.getArgument(1));
         Mockito.when(configuration.getFlowResourcesFolder()).thenReturn(
                 "target/" + FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER);
 
