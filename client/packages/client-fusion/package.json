@@ -10,7 +10,9 @@
     "Fusion"
   ],
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "web-test-runner \"test/**/*.test.ts\" --config ../../web-test-runner.config.js",
+    "test:watch": "yarn run test -- --watch"
   },
   "author": "Vaadin Ltd",
   "license": "Apache-2.0",
@@ -26,19 +28,32 @@
     "access": "public"
   },
   "dependencies": {
+    "@swc/cli": "^0.1.42",
+    "@swc/core": "^1.2.58",
     "@vaadin/client-commons": "^21.0.0-alpha2",
     "lit-html": "^1.4.1",
+    "ts-node": "^10.0.0",
     "validator": "^13.6.0"
   },
   "devDependencies": {
+    "@esm-bundle/chai": "^4.3.4",
+    "@open-wc/testing": "^2.5.33",
+    "@swc-node/register": "^1.3.1",
+    "@types/chai": "^4.2.18",
+    "@types/mocha": "^8.2.2",
+    "@types/sinon": "^10.0.0",
+    "@types/sinon-chai": "^3.2.5",
     "@types/validator": "^13.1.3",
+    "@web/dev-server": "^0.1.17",
+    "@web/test-runner": "^0.13.4",
     "abort-controller": "^3.0.0",
     "chai": "^4.3.4",
     "fetch-mock": "^9.11.0",
     "intern": "^4.9.0",
     "lit": "^2.0.0-rc.2",
-    "sinon": "^10.0.0",
+    "sinon": "^11.0.0",
     "sinon-chai": "^3.6.0",
+    "ts-node": "^10.0.0",
     "xhr-mock": "^2.5.1"
   }
 }

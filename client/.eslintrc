@@ -1,9 +1,11 @@
 {
   "extends": ["vaadin"],
+  "root": true,
   "rules": {
     "@typescript-eslint/ban-ts-comment": "off",
-    "max-classes-per-file": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
+    "max-classes-per-file": "off",
+    "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
     "no-restricted-syntax": [
       "error",
       {

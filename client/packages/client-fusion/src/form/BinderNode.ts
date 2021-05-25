@@ -107,10 +107,10 @@ export class BinderNode<T, M extends AbstractModel<T>> {
    */
   get defaultValue(): T {
     if (this.parent && this.parent.model instanceof ArrayModel) {
-      return (
-        this.parent.defaultArrayItemValue ||
-        (this.parent.defaultArrayItemValue = this.parent.model[_ItemModel].createEmptyValue())
-      );
+      this.parent.defaultArrayItemValue =
+        this.parent.defaultArrayItemValue || this.parent.model[_ItemModel].createEmptyValue();
+
+      return this.parent.defaultArrayItemValue;
     }
 
     return this.parent!.defaultValue[this.model[_key]];

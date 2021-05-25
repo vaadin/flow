@@ -1,3 +1,5 @@
+// TODO: Fix linting errors
+/* eslint-disable no-multi-assign */
 import { directive, Part, PropertyPart } from 'lit-html';
 import { _fromString, AbstractModel, getBinderNode } from './Models';
 
@@ -38,6 +40,8 @@ export abstract class AbstractFieldStrategy implements FieldStrategy {
     this.element.value = value;
   }
 
+  // TODO: Fix linting errors
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   set errorMessage(_: string) {}
 
   setAttribute(key: string, val: any) {
@@ -105,6 +109,8 @@ export class SelectedFieldStrategy extends GenericFieldStrategy {
 }
 
 export function getDefaultFieldStrategy(elm: any): FieldStrategy {
+  // TODO: Fix linting errors
+  // eslint-disable-next-line default-case
   switch (elm.localName) {
     case 'vaadin-checkbox':
     case 'vaadin-radio-button':

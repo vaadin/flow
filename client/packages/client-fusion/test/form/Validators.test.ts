@@ -1,4 +1,5 @@
-import intern from 'intern';
+import { assert } from '@open-wc/testing';
+
 // API to test
 import {
   AssertFalse,
@@ -25,11 +26,8 @@ import {
   Size,
 } from '../../src/form';
 
-const { suite, test } = intern.getInterface('tdd');
-const { assert } = intern.getPlugin('chai');
-
-suite('form/Validators', () => {
-  test('custom error message', () => {
+describe('form/Validators', () => {
+  it('custom error message', () => {
     assert.equal(
       new Size({ min: 1, max: 2 }).message,
       'size must be between 1 and 2',
@@ -42,7 +40,7 @@ suite('form/Validators', () => {
     );
   });
 
-  test('Required', () => {
+  it('Required', () => {
     const validator = new Required();
     assert.isTrue(validator.impliesRequired);
     assert.isTrue(validator.validate('foo'));
@@ -51,7 +49,7 @@ suite('form/Validators', () => {
     assert.isTrue(validator.validate(0));
   });
 
-  test('Email', () => {
+  it('Email', () => {
     const validator = new Email();
     assert.isNotTrue(validator.impliesRequired);
     assert.isTrue(validator.validate('foo@vaadin.com'));
@@ -61,7 +59,7 @@ suite('form/Validators', () => {
     assert.isFalse(validator.validate('ñññ@vaadin.c'));
   });
 
-  test('Null', () => {
+  it('Null', () => {
     const validator = new Null();
     assert.isNotTrue(validator.impliesRequired);
     assert.isTrue(validator.validate(null));
@@ -69,7 +67,7 @@ suite('form/Validators', () => {
     assert.isFalse(validator.validate(''));
   });
 
-  test('NotNull', () => {
+  it('NotNull', () => {
     const validator = new NotNull();
     assert.isTrue(validator.impliesRequired);
     assert.isTrue(validator.validate(''));
@@ -77,7 +75,7 @@ suite('form/Validators', () => {
     assert.isFalse(validator.validate(undefined));
   });
 
-  test('NotEmpty', () => {
+  it('NotEmpty', () => {
     const validator = new NotEmpty();
     assert.isTrue(validator.impliesRequired);
     assert.isTrue(validator.validate('a'));
@@ -87,7 +85,7 @@ suite('form/Validators', () => {
     assert.isFalse(validator.validate([]));
   });
 
-  test('NotBlank', () => {
+  it('NotBlank', () => {
     const validator = new NotBlank();
     assert.isTrue(validator.impliesRequired);
     assert.isTrue(validator.validate('a'));
@@ -95,7 +93,7 @@ suite('form/Validators', () => {
     assert.isFalse(validator.validate(undefined));
   });
 
-  test('AssertTrue', () => {
+  it('AssertTrue', () => {
     const validator = new AssertTrue();
     assert.isNotTrue(validator.impliesRequired);
     assert.isTrue(validator.validate('true'));
@@ -110,7 +108,7 @@ suite('form/Validators', () => {
     assert.isFalse(validator.validate(0));
   });
 
-  test('AssertFalse', () => {
+  it('AssertFalse', () => {
     const validator = new AssertFalse();
     assert.isNotTrue(validator.impliesRequired);
     assert.isTrue(validator.validate('false'));
@@ -124,7 +122,7 @@ suite('form/Validators', () => {
     assert.isFalse(validator.validate(true));
   });
 
-  test('IsNumber', () => {
+  it('IsNumber', () => {
     let validator = new IsNumber(false);
     assert.isNotTrue(validator.impliesRequired);
     assert.isTrue(validator.validate(0));
@@ -140,7 +138,7 @@ suite('form/Validators', () => {
     assert.isTrue(validator.validate(undefined));
   });
 
-  test('Min', () => {
+  it('Min', () => {
     let validator = new Min(1);
     assert.isNotTrue(validator.impliesRequired);
     assert.isTrue(validator.validate(1));
@@ -152,7 +150,7 @@ suite('form/Validators', () => {
     assert.isFalse(validator.validate(0.9));
   });
 
-  test('Max', () => {
+  it('Max', () => {
     const validator = new Max(1);
     assert.isNotTrue(validator.impliesRequired);
     assert.isTrue(validator.validate(1));
@@ -160,7 +158,7 @@ suite('form/Validators', () => {
     assert.isFalse(validator.validate(1.1));
   });
 
-  test('DecimalMin', () => {
+  it('DecimalMin', () => {
     let validator = new DecimalMin('30.1');
     assert.isNotTrue(validator.impliesRequired);
     assert.isFalse(validator.validate(1));
@@ -171,7 +169,7 @@ suite('form/Validators', () => {
     assert.isFalse(validator.validate(30.1));
   });
 
-  test('DecimalMax', () => {
+  it('DecimalMax', () => {
     let validator = new DecimalMax('30.1');
     assert.isNotTrue(validator.impliesRequired);
     assert.isTrue(validator.validate(30));
@@ -181,7 +179,7 @@ suite('form/Validators', () => {
     assert.isFalse(validator.validate(30.1));
   });
 
-  test('Negative', () => {
+  it('Negative', () => {
     const validator = new Negative();
     assert.isNotTrue(validator.impliesRequired);
     assert.isTrue(validator.validate(-1));
@@ -190,7 +188,7 @@ suite('form/Validators', () => {
     assert.isFalse(validator.validate(1));
   });
 
-  test('NegativeOrZero', () => {
+  it('NegativeOrZero', () => {
     const validator = new NegativeOrZero();
     assert.isNotTrue(validator.impliesRequired);
     assert.isTrue(validator.validate(-1));
@@ -199,7 +197,7 @@ suite('form/Validators', () => {
     assert.isFalse(validator.validate(1));
   });
 
-  test('Positive', () => {
+  it('Positive', () => {
     const validator = new Positive();
     assert.isNotTrue(validator.impliesRequired);
     assert.isFalse(validator.validate(-1));
@@ -208,7 +206,7 @@ suite('form/Validators', () => {
     assert.isTrue(validator.validate(0.01));
   });
 
-  test('PositiveOrZero', () => {
+  it('PositiveOrZero', () => {
     const validator = new PositiveOrZero();
     assert.isNotTrue(validator.impliesRequired);
     assert.isFalse(validator.validate(-1));
@@ -217,7 +215,7 @@ suite('form/Validators', () => {
     assert.isTrue(validator.validate(0.01));
   });
 
-  test('Size', () => {
+  it('Size', () => {
     const validator = new Size({ min: 2, max: 4 });
     assert.isTrue(validator.impliesRequired);
     assert.isFalse(validator.validate(''));
@@ -230,7 +228,7 @@ suite('form/Validators', () => {
     assert.isNotTrue(minZeroValidator.impliesRequired);
   });
 
-  test('Digits', () => {
+  it('Digits', () => {
     const validator = new Digits({ integer: 2, fraction: 3 });
     assert.isNotTrue(validator.impliesRequired);
     assert.isTrue(validator.validate('11.111'));
@@ -238,7 +236,7 @@ suite('form/Validators', () => {
     assert.isFalse(validator.validate('111.1111'));
   });
 
-  test('Past', () => {
+  it('Past', () => {
     const validator = new Past();
     assert.isNotTrue(validator.impliesRequired);
     assert.isTrue(validator.validate('2019-12-31'), 'past');
@@ -246,7 +244,7 @@ suite('form/Validators', () => {
     assert.isFalse(validator.validate('3000-01-01'), 'future');
   });
 
-  // test("PastOrPresent", () => {
+  // it("PastOrPresent", () => {
   //   const validator = new PastOrPresent();
   //   assert.isNotTrue(validator.impliesRequired);
   //   assert.isTrue(validator.validate("2019-12-31"), 'past');
@@ -254,7 +252,7 @@ suite('form/Validators', () => {
   //   assert.isFalse(validator.validate("3000-01-01"), 'future');
   // });
 
-  test('Future', () => {
+  it('Future', () => {
     const validator = new Future();
     assert.isNotTrue(validator.impliesRequired);
     assert.isFalse(validator.validate('2019-12-31'), 'past');
@@ -262,7 +260,7 @@ suite('form/Validators', () => {
     assert.isTrue(validator.validate('3000-01-01'), 'future');
   });
 
-  // test("FutureOrPresent", () => {
+  // it("FutureOrPresent", () => {
   //   const validator = new FutureOrPresent();
   //   assert.isNotTrue(validator.impliesRequired);
   //   assert.isFalse(validator.validate("2019-12-31"), 'past');
@@ -270,7 +268,7 @@ suite('form/Validators', () => {
   //   assert.isTrue(validator.validate("3000-01-01"), 'future');
   // });
 
-  test('Pattern', () => {
+  it('Pattern', () => {
     let validator = new Pattern(/^(\+\d+)?([ -]?\d+){4,14}$/);
     assert.isNotTrue(validator.impliesRequired);
     assert.isFalse(validator.validate(''));

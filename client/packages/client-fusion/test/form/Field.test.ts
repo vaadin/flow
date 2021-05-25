@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-expressions, no-shadow */
-import { expect } from 'chai';
-import intern from 'intern';
+import { assert, expect } from '@open-wc/testing';
+import sinon from 'sinon';
 import { LitElement, nothing, render } from 'lit';
 import { customElement, query } from 'lit/decorators.js';
 import { html, unsafeStatic } from 'lit/static-html.js';
@@ -21,13 +21,8 @@ import type { BinderNode } from '../../src/form/BinderNode';
 
 import { Order, OrderModel, TestEntity, TestModel } from './TestModels';
 
-const { suite, test, beforeEach, afterEach } = intern.getInterface('tdd');
-const { assert } = intern.getPlugin('chai');
-/// <reference types="sinon">
-const { sinon } = intern.getPlugin('sinon');
-
-suite('form/Field', () => {
-  suite('field with text-field', () => {
+describe('form/Field', () => {
+  describe('field with text-field', () => {
     @customElement('mock-text-field')
     class MockTextFieldElement extends HTMLElement {
       // pretend it’s a Vaadin component to use VaadinFieldStrategy
@@ -112,7 +107,7 @@ suite('form/Field', () => {
       document.body.removeChild(orderViewWithTextField);
     });
 
-    test('should set name attribute', () => {
+    it('should set name attribute', () => {
       sinon.assert.calledOnceWithExactly(orderViewWithTextField.notesField!.setAttributeSpy, 'name', 'notes');
       sinon.assert.calledOnceWithExactly(
         orderViewWithTextField.customerFullNameField!.setAttributeSpy,
@@ -121,13 +116,13 @@ suite('form/Field', () => {
       );
     });
 
-    test('should only set name attribute once', async () => {
+    it('should only set name attribute once', async () => {
       orderViewWithTextField.binder.for(orderViewWithTextField.binder.model.notes).value = 'foo';
       await orderViewWithTextField.updateComplete;
       sinon.assert.calledOnceWithExactly(orderViewWithTextField.notesField!.setAttributeSpy, 'name', 'notes');
     });
 
-    test('should set required property when required', async () => {
+    it('should set required property when required', async () => {
       sinon.assert.calledOnceWithExactly(orderViewWithTextField.customerFullNameField!.requiredSpy.set, true);
       sinon.assert.notCalled(orderViewWithTextField.customerNickNameField!.requiredSpy.set);
 
@@ -140,13 +135,13 @@ suite('form/Field', () => {
       sinon.assert.notCalled(orderViewWithTextField.customerNickNameField!.requiredSpy.set);
     });
 
-    test('should set value property on setValue', async () => {
+    it('should set value property on setValue', async () => {
       orderViewWithTextField.binder.for(orderViewWithTextField.binder.model.notes).value = 'foo';
       await orderViewWithTextField.updateComplete;
       sinon.assert.calledOnceWithExactly(orderViewWithTextField.notesField!.valueSpy.set, 'foo');
     });
 
-    test('should set given non-empty value on reset with argument', async () => {
+    it('should set given non-empty value on reset with argument', async () => {
       const emptyOrder = OrderModel.createEmptyValue();
       orderViewWithTextField.binder.read({
         ...emptyOrder,
@@ -162,7 +157,7 @@ suite('form/Field', () => {
       sinon.assert.calledWith(orderViewWithTextField.customerFullNameField!.valueSpy.set, 'bar');
     });
 
-    test('should set given empty value on reset with argument', async () => {
+    it('should set given empty value on reset with argument', async () => {
       const emptyOrder = OrderModel.createEmptyValue();
       orderViewWithTextField.binder.read({
         ...emptyOrder,
@@ -182,7 +177,7 @@ suite('form/Field', () => {
       sinon.assert.calledWith(orderViewWithTextField.customerFullNameField!.valueSpy.set, '');
     });
 
-    test('should set default value on reset without argument', async () => {
+    it('should set default value on reset without argument', async () => {
       orderViewWithTextField.binder.for(orderViewWithTextField.binder.model.notes).value = 'foo';
       await orderViewWithTextField.updateComplete;
       orderViewWithTextField.notesField!.valueSpy.set.resetHistory();
@@ -193,7 +188,7 @@ suite('form/Field', () => {
       sinon.assert.calledWith(orderViewWithTextField.notesField!.valueSpy.set, '');
     });
 
-    test('should update binder value on setValue', async () => {
+    it('should update binder value on setValue', async () => {
       orderViewWithTextField.requestUpdateSpy.resetHistory();
 
       orderViewWithTextField.binder.for(orderViewWithTextField.binder.model.notes).value = 'foo';
@@ -203,7 +198,7 @@ suite('form/Field', () => {
       sinon.assert.calledOnce(orderViewWithTextField.requestUpdateSpy);
     });
 
-    test('should update binder value on input event', async () => {
+    it('should update binder value on input event', async () => {
       orderViewWithTextField.requestUpdateSpy.resetHistory();
       orderViewWithTextField.notesField!.value = 'foo';
       orderViewWithTextField.notesField!.dispatchEvent(
@@ -215,7 +210,7 @@ suite('form/Field', () => {
       sinon.assert.calledOnce(orderViewWithTextField.requestUpdateSpy);
     });
 
-    test('should update binder value on change event', async () => {
+    it('should update binder value on change event', async () => {
       orderViewWithTextField.requestUpdateSpy.resetHistory();
       orderViewWithTextField.notesField!.value = 'foo';
       orderViewWithTextField.notesField!.dispatchEvent(
@@ -227,7 +222,7 @@ suite('form/Field', () => {
       sinon.assert.calledOnce(orderViewWithTextField.requestUpdateSpy);
     });
 
-    test('should update binder value on blur event', async () => {
+    it('should update binder value on blur event', async () => {
       orderViewWithTextField.requestUpdateSpy.resetHistory();
       orderViewWithTextField.notesField!.value = 'foo';
       orderViewWithTextField.notesField!.dispatchEvent(
@@ -239,7 +234,7 @@ suite('form/Field', () => {
       sinon.assert.calledOnce(orderViewWithTextField.requestUpdateSpy);
     });
 
-    test('should set visited on blur event', async () => {
+    it('should set visited on blur event', async () => {
       const { binder } = orderViewWithTextField;
       const binderNode = binder.for(binder.model.notes);
       expect(binderNode.visited).to.be.false;
@@ -252,7 +247,7 @@ suite('form/Field', () => {
       expect(binderNode.visited).to.be.true;
     });
 
-    suite('number model', () => {
+    describe('number model', () => {
       let view: OrderViewWithTextField;
       let priorityField: MockTextFieldElement;
       let binder: Binder<Order, OrderModel>;
@@ -263,11 +258,11 @@ suite('form/Field', () => {
         priorityField = view.priorityField!;
       });
 
-      test('should set initial zero', async () => {
+      it('should set initial zero', async () => {
         expect(priorityField.value).to.equal('0');
       });
 
-      test('should set number value from binder', async () => {
+      it('should set number value from binder', async () => {
         priorityField.valueSpy.get.resetHistory();
         priorityField.valueSpy.set.resetHistory();
 
@@ -276,7 +271,7 @@ suite('form/Field', () => {
         sinon.assert.calledOnceWithExactly(priorityField.valueSpy.set, 1.2);
       });
 
-      test('should update binder value on typing', async () => {
+      it('should update binder value on typing', async () => {
         const cases: Array<[string, number]> = [
           ['1', 1],
           ['1.', NaN], // not allowed format
@@ -321,7 +316,7 @@ suite('form/Field', () => {
     });
   });
 
-  suite('field with input', () => {
+  describe('field with input', () => {
     @customElement('mock-input')
     class MockInputElement extends HTMLElement {
       __value = '';
@@ -380,7 +375,7 @@ suite('form/Field', () => {
       document.body.removeChild(orderViewWithInput);
     });
 
-    test('should set name and required attributes once', async () => {
+    it('should set name and required attributes once', async () => {
       sinon.assert.calledTwice(orderViewWithInput.customerFullNameField!.setAttributeSpy);
       assert.deepEqual(orderViewWithInput.customerFullNameField!.setAttributeSpy.getCall(0).args, [
         'name',
@@ -402,7 +397,7 @@ suite('form/Field', () => {
       sinon.assert.calledOnce(orderViewWithInput.customerNickNameField!.setAttributeSpy);
     });
 
-    suite('number model', () => {
+    describe('number model', () => {
       let view: OrderViewWithInput;
       let priorityField: MockInputElement;
       let binder: Binder<Order, OrderModel>;
@@ -413,11 +408,11 @@ suite('form/Field', () => {
         priorityField = view.priorityField!;
       });
 
-      test('should set initial zero', async () => {
+      it('should set initial zero', async () => {
         expect(priorityField.value).to.equal('0');
       });
 
-      test('should set number value from binder', async () => {
+      it('should set number value from binder', async () => {
         priorityField.valueSpy.get.resetHistory();
         priorityField.valueSpy.set.resetHistory();
 
@@ -426,7 +421,7 @@ suite('form/Field', () => {
         sinon.assert.calledOnceWithExactly(priorityField.valueSpy.set, 1.2);
       });
 
-      test('should update binder value on typing', async () => {
+      it('should update binder value on typing', async () => {
         const cases: Array<[string, number]> = [
           ['1', 1],
           ['1.', NaN], // not allowed format
@@ -471,7 +466,7 @@ suite('form/Field', () => {
     });
   });
 
-  suite('field/Strategy', () => {
+  describe('field/Strategy', () => {
     const div = document.createElement('div');
     let currentStrategy: FieldStrategy;
     const binder = new (class StrategySpyBinder<T, M extends AbstractModel<T>> extends Binder<T, M> {
@@ -503,7 +498,7 @@ suite('form/Field', () => {
     });
 
     ['div', 'input', 'vaadin-rich-text-editor'].forEach((tag) => {
-      test(`GenericFieldStrategy ${tag}`, async () => {
+      it(`GenericFieldStrategy ${tag}`, async () => {
         /* eslint-disable lit/binding-positions, lit/no-invalid-html */
         const tagName = unsafeStatic(tag);
 
@@ -538,7 +533,7 @@ suite('form/Field', () => {
       { tag: 'vaadin-checkbox', type: '' },
       { tag: 'vaadin-radio-button', type: '' },
     ].forEach(({ tag, type }) => {
-      test(`CheckedFieldStrategy ${tag} ${type}`, async () => {
+      it(`CheckedFieldStrategy ${tag} ${type}`, async () => {
         const tagName = unsafeStatic(tag);
 
         const model = binder.model.fieldBoolean;
@@ -573,7 +568,7 @@ suite('form/Field', () => {
       });
     });
 
-    test(`SelectedFieldStrategy`, async () => {
+    it(`SelectedFieldStrategy`, async () => {
       const model = binder.model.fieldBoolean;
       const binderNode = binder.for(model);
 
@@ -606,7 +601,7 @@ suite('form/Field', () => {
       { model: binder.model.fieldArrayString as AbstractModel<any>, value: ['a', 'b'] },
       { model: binder.model.fieldArrayModel as AbstractModel<any>, value: [{ idString: 'id' }] },
     ].forEach(async ({ model, value }, idx) => {
-      test(`VaadinFieldStrategy ${model.constructor.name} ${idx}`, async () => {
+      it(`VaadinFieldStrategy ${model.constructor.name} ${idx}`, async () => {
         let element;
         const renderElement = () => {
           render(html`<any-vaadin-element-tag ${field(model)}></any-vaadin-element-tag>`, div);
@@ -645,7 +640,7 @@ suite('form/Field', () => {
       });
     });
 
-    test(`Strategy can be overridden in binder`, async () => {
+    it(`Strategy can be overridden in binder`, async () => {
       const element = document.createElement('div');
       class MyStrategy extends AbstractFieldStrategy {
         invalid = true;

@@ -1,20 +1,15 @@
+/* eslint-disable no-new,no-unused-expressions */
 /* tslint:disable: no-unused-expression */
-import intern from 'intern';
-import object from 'intern/lib/interfaces/object';
-
+import { expect } from '@open-wc/testing';
+import sinon from 'sinon';
+import fetchMock from 'fetch-mock/esm/client';
 import { ConnectionState, ConnectionStateStore } from '@vaadin/client-commons';
 import { ConnectClient, EndpointError, EndpointResponseError, EndpointValidationError } from '../src';
-
-const { describe, it, beforeEach, afterEach, after } = intern.getPlugin('interface.bdd');
-const { expect } = intern.getPlugin('chai');
-const { fetchMock } = intern.getPlugin('fetchMock');
-const { sinon } = intern.getPlugin('sinon');
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
 const base = window.location.origin;
 
-/* global btoa localStorage setTimeout URLSearchParams Request Response */
 describe('ConnectClient', () => {
   function myMiddleware(ctx: any, next?: any) {
     return next(ctx);
@@ -385,7 +380,7 @@ describe('ConnectClient', () => {
         const myUrl = 'https://api.example.com/';
         fetchMock.post(myUrl, {});
 
-        const myMiddleware = async (context: any, next?: any) => {
+        const defaultMiddleware = async (context: any, next?: any) => {
           context.request = new Request(myUrl, {
             method: 'POST',
             headers: { ...context.request.headers, 'X-Foo': 'Bar' },
@@ -394,7 +389,7 @@ describe('ConnectClient', () => {
           return next(context);
         };
 
-        client.middlewares = [myMiddleware];
+        client.middlewares = [defaultMiddleware];
         await client.call('FooEndpoint', 'fooMethod', { fooParam: 'foo' });
 
         const { request } = fetchMock.lastCall();
@@ -404,11 +399,11 @@ describe('ConnectClient', () => {
       });
 
       it('should allow modified response', async () => {
-        const myMiddleware = async (_context: any, _next?: any) => {
+        const middleware = async (_context: any, _next?: any) => {
           return new Response('{"baz": "qux"}');
         };
 
-        client.middlewares = [myMiddleware];
+        client.middlewares = [middleware];
         const responseData = await client.call('FooEndpoint', 'fooMethod', { fooParam: 'foo' });
 
         expect(responseData).to.deep.equal({ baz: 'qux' });
@@ -416,8 +411,10 @@ describe('ConnectClient', () => {
 
       it('should invoke middlewares in order', async () => {
         const firstMiddleware = sinon.spy(async (context: any, next?: any) => {
+          // eslint-disable-next-line no-use-before-define
           (expect(secondMiddleware).to.not.be as any).called;
           const response = await next(context);
+          // eslint-disable-next-line no-use-before-define
           (expect(secondMiddleware).to.be as any).calledOnce;
           return response;
         });

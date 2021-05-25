@@ -181,6 +181,8 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
           valueErrors.push({ property, value, validator: new ServerValidator(message), message });
         });
         this.setErrorsWithDescendants(valueErrors);
+        // TODO: fix linting errors
+        // eslint-disable-next-line no-ex-assign
         error = new ValidationError(valueErrors);
       }
       throw error;

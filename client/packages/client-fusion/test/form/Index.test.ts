@@ -15,19 +15,16 @@
  */
 
 /* tslint:disable:max-classes-per-file */
-import intern from 'intern';
+import { assert } from '@open-wc/testing';
 
-const { suite, test, beforeEach } = intern.getInterface('tdd');
-const { assert } = intern.getPlugin('chai');
-
-suite('form/Index', () => {
+describe('form/Index', () => {
   const $wnd = window as any;
 
   beforeEach(() => {
     delete $wnd.Vaadin;
   });
 
-  test('should add registration', async () => {
+  it('should add registration', async () => {
     await import('../../src/form');
     assert.isDefined($wnd.Vaadin);
     assert.isArray($wnd.Vaadin.registrations);

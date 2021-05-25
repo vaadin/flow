@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
+    "importHelpers": true,
     "declaration": true,
     "target": "esnext",
     "module": "esnext",

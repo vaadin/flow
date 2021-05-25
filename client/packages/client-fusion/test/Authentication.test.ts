@@ -1,17 +1,14 @@
-import intern from 'intern';
-import { ConnectClient, InvalidSessionMiddleware, login, logout, LoginResult } from '../src';
-
-const { describe, it, beforeEach, afterEach } = intern.getPlugin('interface.bdd');
-const { expect } = intern.getPlugin('chai');
-const { fetchMock } = intern.getPlugin('fetchMock');
-const { sinon } = intern.getPlugin('sinon');
+/* eslint-disable no-unused-expressions */
+import { expect } from '@open-wc/testing';
+import fetchMock from 'fetch-mock/esm/client';
+import sinon from 'sinon';
+import { ConnectClient, InvalidSessionMiddleware, login, LoginResult, logout } from '../src';
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
 const base = window.location.origin;
 const $wnd = window as any;
 
-/* global btoa localStorage setTimeout URLSearchParams Request Response */
 describe('Authentication', () => {
   const springCsrfToken = 'spring-csrf-token';
   const springCsrfHeaderName = 'X-CSRF-TOKEN';

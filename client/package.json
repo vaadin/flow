@@ -19,15 +19,15 @@
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged"
   },
-  "dependencies": {
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^13.0.0",
+    "@web/dev-server-esbuild": "^0.2.12",
     "eslint": "^7.26.0",
     "eslint-config-vaadin": "^0.4.0",
     "lerna": "^4.0.0",
-    "prettier": "^2.3.0",
-    "typescript": "^4.2.4"
-  },
-  "devDependencies": {
     "lint-staged": "^11.0.0",
-    "simple-git-hooks": "^2.4.1"
+    "prettier": "^2.3.0",
+    "simple-git-hooks": "^2.4.1",
+    "typescript": "^4.2.4"
   }
 }

@@ -1,17 +1,12 @@
 /* eslint-disable lit/no-template-arrow, no-unused-expressions, no-shadow */
-import intern from 'intern';
-import { expect } from 'chai';
+import { assert, expect } from '@open-wc/testing';
+import sinon from 'sinon';
 import { css, html, LitElement } from 'lit';
 import { customElement, query } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 // API to test
 import { Binder, field, Required, ValidationError, Validator, ValueError } from '../../src/form';
 import { IdEntity, IdEntityModel, Order, OrderModel, TestEntity, TestModel } from './TestModels';
-
-const { suite, test, beforeEach, afterEach } = intern.getInterface('tdd');
-const { assert } = intern.getPlugin('chai');
-/// <reference types="sinon">
-const { sinon } = intern.getPlugin('sinon');
 
 @customElement('order-view')
 class OrderView extends LitElement {
@@ -77,7 +72,7 @@ const fireEvent = async (elm: Element, name: string) => {
   return sleep(0);
 };
 
-suite('form/Validation', () => {
+describe('form/Validation', () => {
   let binder: Binder<Order, OrderModel<Order>>;
   const view = document.createElement('div');
 
@@ -85,7 +80,7 @@ suite('form/Validation', () => {
     binder = new Binder(view, OrderModel);
   });
 
-  test('should run all validators per model', async () => {
+  it('should run all validators per model', async () => {
     return binder
       .for(binder.model.customer)
       .validate()
@@ -94,13 +89,13 @@ suite('form/Validation', () => {
       });
   });
 
-  test('should run all nested validations per model', async () => {
+  it('should run all nested validations per model', async () => {
     return binder.validate().then((errors) => {
       expect(errors.map((e) => e.property)).to.eql(['customer.fullName', 'customer.fullName', 'notes']);
     });
   });
 
-  test('should run all validations per array items', async () => {
+  it('should run all validations per array items', async () => {
     binder.for(binder.model.products).appendItem();
     binder.for(binder.model.products).appendItem();
     return binder.validate().then((errors) => {
@@ -116,9 +111,9 @@ suite('form/Validation', () => {
     });
   });
 
-  suite('clearing', () => {
+  describe('clearing', () => {
     ['reset', 'clear'].forEach((methodName) => {
-      test(`should reset validation on ${methodName}`, async () => {
+      it(`should reset validation on ${methodName}`, async () => {
         await binder.validate();
         expect(binder.invalid).to.be.true;
         expect(binder.for(binder.model.customer.fullName).invalid).to.be.true;
@@ -131,8 +126,8 @@ suite('form/Validation', () => {
     });
   });
 
-  suite('submitTo', () => {
-    test('should be able to call submit() if onSubmit is pre configured', async () => {
+  describe('submitTo', () => {
+    it('should be able to call submit() if onSubmit is pre configured', async () => {
       const binder = new Binder(view, TestModel, {
         onSubmit: async () => {
           // do nothing
@@ -143,13 +138,13 @@ suite('form/Validation', () => {
       sinon.assert.calledOnce(binderSubmitToSpy);
     });
 
-    test('should return the result of the endpoint call when calling submit()', async () => {
+    it('should return the result of the endpoint call when calling submit()', async () => {
       const binder = new Binder(view, TestModel, { onSubmit: async (testEntity) => testEntity });
       const result = await binder.submit();
       assert.deepEqual(result, binder.value);
     });
 
-    test('should throw on validation failure', async () => {
+    it('should throw on validation failure', async () => {
       try {
         await binder.submitTo(async () => {
           // do nothing
@@ -160,7 +155,7 @@ suite('form/Validation', () => {
       }
     });
 
-    test('should re-throw on server failure', async () => {
+    it('should re-throw on server failure', async () => {
       binder.for(binder.model.customer.fullName).value = 'foobar';
       binder.for(binder.model.notes).value = 'whatever';
       try {
@@ -173,7 +168,7 @@ suite('form/Validation', () => {
       }
     });
 
-    test('should wrap server validation error', async () => {
+    it('should wrap server validation error', async () => {
       binder.for(binder.model.customer.fullName).value = 'foobar';
       binder.for(binder.model.notes).value = 'whatever';
       try {
@@ -198,7 +193,7 @@ suite('form/Validation', () => {
       }
     });
 
-    test('should wrap server validation error with any message', async () => {
+    it('should wrap server validation error with any message', async () => {
       binder.for(binder.model.customer.fullName).value = 'foobar';
       binder.for(binder.model.notes).value = 'whatever';
       try {
@@ -222,7 +217,7 @@ suite('form/Validation', () => {
       }
     });
 
-    test('record level cross field validation', async () => {
+    it('record level cross field validation', async () => {
       const byPropertyName = (value: string) => (error: ValueError<any>) => {
         const propertyName = typeof error.property === 'string' ? error.property : binder.for(error.property).name;
         return propertyName === value;
@@ -255,28 +250,28 @@ suite('form/Validation', () => {
     });
   });
 
-  suite('model add validator', () => {
+  describe('model add validator', () => {
     let binder: Binder<IdEntity, IdEntityModel<IdEntity>>;
 
     beforeEach(async () => {
       binder = new Binder(view, IdEntityModel);
     });
 
-    test('should not have validation errors for a model without validators', async () => {
+    it('should not have validation errors for a model without validators', async () => {
       assert.isEmpty(await binder.validate());
     });
 
-    test('should not have validation errors for a validator that returns true', async () => {
+    it('should not have validation errors for a validator that returns true', async () => {
       binder.addValidator({ message: 'foo', validate: () => true });
       assert.isEmpty(await binder.validate());
     });
 
-    test('should not have validation errors for a validator that returns an empty array', async () => {
+    it('should not have validation errors for a validator that returns an empty array', async () => {
       binder.addValidator({ message: 'foo', validate: () => [] });
       assert.isEmpty(await binder.validate());
     });
 
-    test('should fail validation after adding a synchronous validator to the model', async () => {
+    it('should fail validation after adding a synchronous validator to the model', async () => {
       binder.addValidator({ message: 'foo', validate: () => false });
       return binder.validate().then((errors) => {
         expect(errors[0].message).to.equal('foo');
@@ -285,7 +280,7 @@ suite('form/Validation', () => {
       });
     });
 
-    test('should fail validation after adding an asynchronous validator to the model', async () => {
+    it('should fail validation after adding an asynchronous validator to the model', async () => {
       class AsyncValidator implements Validator<Order> {
         message = 'bar';
 
@@ -300,13 +295,13 @@ suite('form/Validation', () => {
       });
     });
 
-    test('should not have validations errors after adding validators to properties if property is not required', async () => {
+    it('should not have validations errors after adding validators to properties if property is not required', async () => {
       binder.for(binder.model.idString).addValidator({ message: 'foo', validate: () => false });
       const errors = await binder.validate();
       assert.isEmpty(errors);
     });
 
-    test('should fail after adding validators to properties if property is not required but it has a value', async () => {
+    it('should fail after adding validators to properties if property is not required but it has a value', async () => {
       binder.for(binder.model.idString).value = 'bar';
       binder.for(binder.model.idString).addValidator({ message: 'foo', validate: () => false });
       const errors = await binder.validate();
@@ -315,14 +310,14 @@ suite('form/Validation', () => {
       expect(errors[0].value).to.eql('bar');
     });
 
-    test('should fail after adding validators to properties if required and not value', async () => {
+    it('should fail after adding validators to properties if required and not value', async () => {
       binder.for(binder.model.idString).addValidator({ message: 'foo', validate: () => false });
       binder.for(binder.model.idString).addValidator(new Required());
       const errors = await binder.validate();
       expect(errors.length).to.equal(2);
     });
 
-    test('should fail when validator returns a single ValidationResult', async () => {
+    it('should fail when validator returns a single ValidationResult', async () => {
       binder.addValidator({ message: 'foo', validate: () => ({ property: binder.model.idString }) });
       return binder.validate().then((errors) => {
         expect(errors[0].message).to.equal('foo');
@@ -331,7 +326,7 @@ suite('form/Validation', () => {
       });
     });
 
-    test('should fail when validator returns an array of ValidationResult objects', async () => {
+    it('should fail when validator returns an array of ValidationResult objects', async () => {
       binder.addValidator({ message: 'foo', validate: () => [{ property: binder.model.idString }] });
       return binder.validate().then((errors) => {
         expect(errors[0].message).to.equal('foo');
@@ -340,7 +335,7 @@ suite('form/Validation', () => {
       });
     });
 
-    test('should not cause required by default', async () => {
+    it('should not cause required by default', async () => {
       binder.for(binder.model.idString).addValidator({
         message: 'foo',
         validate: () => false,
@@ -348,7 +343,7 @@ suite('form/Validation', () => {
       expect(binder.for(binder.model.idString).required).to.be.false;
     });
 
-    test('should cause required when having impliesRequired: true', async () => {
+    it('should cause required when having impliesRequired: true', async () => {
       binder.for(binder.model.idString).addValidator({
         message: 'foo',
         validate: () => false,
@@ -362,14 +357,14 @@ suite('form/Validation', () => {
     });
   });
 
-  suite('model add validator (multiple fields)', () => {
+  describe('model add validator (multiple fields)', () => {
     let binder: Binder<TestEntity, TestModel<TestEntity>>;
 
     beforeEach(async () => {
       binder = new Binder(view, TestModel);
     });
 
-    test('should fail when validator returns an array of ValidationResult objects', async () => {
+    it('should fail when validator returns an array of ValidationResult objects', async () => {
       binder.addValidator({
         message: 'foo',
         validate: () => [
@@ -391,7 +386,7 @@ suite('form/Validation', () => {
     });
   });
 
-  suite('field element', () => {
+  describe('field element', () => {
     let orderView: OrderView;
 
     beforeEach(async () => {
@@ -406,13 +401,13 @@ suite('form/Validation', () => {
     });
 
     ['change', 'blur'].forEach((event) => {
-      test(`should validate field on ${event}`, async () => {
+      it(`should validate field on ${event}`, async () => {
         expect(orderView.notes.hasAttribute('invalid')).to.be.false;
         await fireEvent(orderView.notes, event);
         expect(orderView.notes.hasAttribute('invalid')).to.be.true;
       });
 
-      test(`should validate field of nested model on  ${event}`, async () => {
+      it(`should validate field of nested model on  ${event}`, async () => {
         await fireEvent(orderView.add, 'click');
         expect(orderView.description.hasAttribute('invalid')).to.be.false;
         await fireEvent(orderView.description, event);
@@ -420,13 +415,13 @@ suite('form/Validation', () => {
       });
     });
 
-    test(`should not validate field on input when first visit`, async () => {
+    it(`should not validate field on input when first visit`, async () => {
       expect(orderView.notes.hasAttribute('invalid')).to.be.false;
       await fireEvent(orderView.notes, 'input');
       expect(orderView.notes.hasAttribute('invalid')).to.be.false;
     });
 
-    test(`should validate field on input after first visit`, async () => {
+    it(`should validate field on input after first visit`, async () => {
       orderView.notes.value = 'foo';
       await fireEvent(orderView.notes, 'blur');
       expect(orderView.notes.hasAttribute('invalid')).to.be.false;
@@ -436,7 +431,7 @@ suite('form/Validation', () => {
       expect(orderView.notes.hasAttribute('invalid')).to.be.true;
     });
 
-    test(`should validate fields on submit`, async () => {
+    it(`should validate fields on submit`, async () => {
       expect(orderView.notes.hasAttribute('invalid')).to.be.false;
       expect(orderView.fullName.hasAttribute('invalid')).to.be.false;
       expect(orderView.nickName.hasAttribute('invalid')).to.be.false;
@@ -453,7 +448,7 @@ suite('form/Validation', () => {
       expect(orderView.nickName.hasAttribute('invalid')).to.be.false;
     });
 
-    test(`should validate fields of nested model on submit`, async () => {
+    it(`should validate fields of nested model on submit`, async () => {
       expect(orderView.description).to.be.null;
       await fireEvent(orderView.add, 'click');
       await fireEvent(orderView.add, 'click');
@@ -481,7 +476,7 @@ suite('form/Validation', () => {
       expect(String(orderView.priceError.textContent).trim()).to.equal('must be greater than 0');
     });
 
-    test(`should validate fields of arrays on submit`, async () => {
+    it(`should validate fields of arrays on submit`, async () => {
       expect(orderView.description).to.be.null;
       await fireEvent(orderView.add, 'click');
       await fireEvent(orderView.add, 'click');
@@ -500,7 +495,7 @@ suite('form/Validation', () => {
       expect(orderView.price.hasAttribute('invalid')).to.be.true;
     });
 
-    test(`should not submit when just validation fails`, async () => {
+    it(`should not submit when just validation fails`, async () => {
       expect(orderView.description).to.be.null;
       await fireEvent(orderView.add, 'click');
 
@@ -519,7 +514,7 @@ suite('form/Validation', () => {
       }
     });
 
-    test(`should submit when no validation errors`, async () => {
+    it(`should submit when no validation errors`, async () => {
       expect(orderView.description).to.be.null;
       await fireEvent(orderView.add, 'click');
 
@@ -540,7 +535,7 @@ suite('form/Validation', () => {
       expect(item.customer.fullName).to.be.equal('manuel');
     });
 
-    test('should display server validation error', async () => {
+    it('should display server validation error', async () => {
       binder.for(binder.model.customer.fullName).value = 'foobar';
       binder.for(binder.model.notes).value = 'whatever';
       const requestUpdateSpy = sinon.spy(orderView, 'requestUpdate');
@@ -567,7 +562,7 @@ suite('form/Validation', () => {
       }
     });
 
-    test('should display submitting state during submission', async () => {
+    it('should display submitting state during submission', async () => {
       binder.for(binder.model.customer.fullName).value = 'Jane Doe';
       binder.for(binder.model.notes).value = 'foo';
       await orderView.updateComplete;
@@ -591,7 +586,7 @@ suite('form/Validation', () => {
     });
 
     // https://github.com/vaadin/flow/issues/8688
-    test('should update binder properties after submit when a field changes value', async () => {
+    it('should update binder properties after submit when a field changes value', async () => {
       try {
         await orderView.binder.submitTo(async (item) => item);
         expect.fail();
@@ -609,7 +604,7 @@ suite('form/Validation', () => {
       }
     });
 
-    test('should display error for NaN in number field', async () => {
+    it('should display error for NaN in number field', async () => {
       await fireEvent(orderView.add, 'click');
 
       orderView.price.value = 'not a number';

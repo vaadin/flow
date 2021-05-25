@@ -1,16 +1,11 @@
 /* tslint:disable:max-classes-per-file */
-import intern from 'intern';
+import { assert } from '@open-wc/testing';
+import sinon from 'sinon';
 // API to test
 import { LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { Binder, BinderConfiguration } from '../../src/form';
-
 import { Employee, EmployeeModel, Order, OrderModel, TestEntity, TestModel } from './TestModels';
-
-const { suite, test, beforeEach, afterEach } = intern.getInterface('tdd');
-const { assert } = intern.getPlugin('chai');
-/// <reference types="sinon">
-const { sinon } = intern.getPlugin('sinon');
 
 @customElement('lit-order-view')
 class LitOrderView extends LitElement {}
@@ -18,7 +13,7 @@ class LitOrderView extends LitElement {}
 @customElement('lit-employee-view')
 class LitEmployeeView extends LitElement {}
 
-suite('form/Binder', () => {
+describe('form/Binder', () => {
   const litOrderView = document.createElement('lit-order-view') as LitOrderView;
   const requestUpdateStub = sinon.stub(litOrderView, 'requestUpdate').resolves();
 
@@ -26,7 +21,7 @@ suite('form/Binder', () => {
     requestUpdateStub.reset();
   });
 
-  test('should instantiate without type arguments', () => {
+  it('should instantiate without type arguments', () => {
     const binder = new Binder(litOrderView, OrderModel);
 
     assert.isDefined(binder);
@@ -36,13 +31,13 @@ suite('form/Binder', () => {
     assert.isDefined(binder.value.customer.idString);
   });
 
-  test('should instantiate model', () => {
+  it('should instantiate model', () => {
     const binder = new Binder(litOrderView, OrderModel);
 
     assert.instanceOf(binder.model, OrderModel);
   });
 
-  test('should be able to create a binder with a default onchange listener', () => {
+  it('should be able to create a binder with a default onchange listener', () => {
     const binder = new Binder(litOrderView, OrderModel);
 
     binder.for(binder.model.notes).value = 'foo';
@@ -50,7 +45,7 @@ suite('form/Binder', () => {
     sinon.assert.calledTwice(requestUpdateStub);
   });
 
-  test('should be able to create a binder with a custom onchange listener', () => {
+  it('should be able to create a binder with a custom onchange listener', () => {
     let foo = 'bar';
     const config: BinderConfiguration<Order> = {
       onChange: () => {
@@ -65,7 +60,7 @@ suite('form/Binder', () => {
     assert.equal(foo, 'baz');
   });
 
-  suite('name value', () => {
+  describe('name value', () => {
     let binder: Binder<Order, OrderModel<Order>>;
 
     const expectedEmptyOrder: Order = {
@@ -85,26 +80,26 @@ suite('form/Binder', () => {
       requestUpdateStub.reset();
     });
 
-    test('should have name for models', () => {
+    it('should have name for models', () => {
       assert.equal(binder.for(binder.model.notes).name, 'notes');
       assert.equal(binder.for(binder.model.customer.fullName).name, 'customer.fullName');
     });
 
-    test('should have initial defaultValue', () => {
+    it('should have initial defaultValue', () => {
       assert.deepEqual(binder.defaultValue, expectedEmptyOrder);
     });
 
-    test('should have valueOf', () => {
+    it('should have valueOf', () => {
       assert.equal(binder.model.notes.valueOf(), '');
       assert.equal(binder.model.priority.valueOf(), 0);
     });
 
-    test('should have toString', () => {
+    it('should have toString', () => {
       assert.equal(binder.model.notes.valueOf(), '');
       assert.equal(binder.model.priority.toString(), '0');
     });
 
-    test('should have initial value', () => {
+    it('should have initial value', () => {
       assert.equal(binder.value, binder.defaultValue);
       assert.equal(binder.for(binder.model).value, binder.value);
       assert.equal(binder.for(binder.model.notes).value, '');
@@ -114,7 +109,7 @@ suite('form/Binder', () => {
       assert.equal(binder.model.customer.fullName.valueOf(), '');
     });
 
-    test('should change value on setValue', () => {
+    it('should change value on setValue', () => {
       // Sanity check: requestUpdate should not be called
       sinon.assert.notCalled(requestUpdateStub);
 
@@ -123,7 +118,7 @@ suite('form/Binder', () => {
       sinon.assert.calledOnce(requestUpdateStub);
     });
 
-    test('should change value on deep setValue', () => {
+    it('should change value on deep setValue', () => {
       sinon.assert.notCalled(requestUpdateStub);
 
       binder.for(binder.model.customer.fullName).value = 'foo';
@@ -131,7 +126,7 @@ suite('form/Binder', () => {
       sinon.assert.calledOnce(litOrderView.requestUpdate);
     });
 
-    test('should not change defaultValue on setValue', () => {
+    it('should not change defaultValue on setValue', () => {
       binder.for(binder.model.notes).value = 'foo';
       binder.for(binder.model.customer.fullName).value = 'foo';
 
@@ -139,7 +134,7 @@ suite('form/Binder', () => {
       assert.equal(binder.defaultValue.customer.fullName, '');
     });
 
-    test('should reset to default value', () => {
+    it('should reset to default value', () => {
       binder.for(binder.model.notes).value = 'foo';
       binder.for(binder.model.customer.fullName).value = 'foo';
       requestUpdateStub.reset();
@@ -151,7 +146,7 @@ suite('form/Binder', () => {
       sinon.assert.calledOnce(requestUpdateStub);
     });
 
-    test('should reset to provided value', () => {
+    it('should reset to provided value', () => {
       binder.for(binder.model.notes).value = 'foo';
       binder.for(binder.model.customer.fullName).value = 'foo';
       requestUpdateStub.reset();
@@ -170,7 +165,7 @@ suite('form/Binder', () => {
       sinon.assert.calledOnce(requestUpdateStub);
     });
 
-    test('should clear value and default value', () => {
+    it('should clear value and default value', () => {
       binder.read({
         ...expectedEmptyOrder,
         notes: 'bar',
@@ -190,7 +185,7 @@ suite('form/Binder', () => {
       sinon.assert.calledOnce(requestUpdateStub);
     });
 
-    test('should update when clearing validation', async () => {
+    it('should update when clearing validation', async () => {
       binder.clear();
       const binderNode = binder.for(binder.model.customer.fullName);
       await binderNode.validate();
@@ -203,7 +198,7 @@ suite('form/Binder', () => {
       sinon.assert.calledOnce(requestUpdateStub);
     });
 
-    test('should not update excessively when nothing to clear', async () => {
+    it('should not update excessively when nothing to clear', async () => {
       binder.clear();
       const binderNode = binder.for(binder.model.customer.fullName);
       await binderNode.validate();
@@ -215,7 +210,7 @@ suite('form/Binder', () => {
       sinon.assert.notCalled(requestUpdateStub);
     });
 
-    test('should forget visits on clear', () => {
+    it('should forget visits on clear', () => {
       const binderNode = binder.for(binder.model.customer.fullName);
       binderNode.visited = true;
 
@@ -224,14 +219,14 @@ suite('form/Binder', () => {
       assert.isFalse(binderNode.visited);
     });
 
-    test('should be able to set null to object type property', () => {
+    it('should be able to set null to object type property', () => {
       const myBinder: Binder<TestEntity, TestModel<TestEntity>> = new Binder(document.createElement('div'), TestModel);
       myBinder.for(myBinder.model.fieldAny).value = null;
       myBinder.for(myBinder.model.fieldAny).validate();
       assert.isFalse(myBinder.invalid);
     });
 
-    test('should be able to set undefined to object type property', () => {
+    it('should be able to set undefined to object type property', () => {
       const myBinder: Binder<TestEntity, TestModel<TestEntity>> = new Binder(document.createElement('div'), TestModel);
       myBinder.for(myBinder.model.fieldAny).value = undefined;
       myBinder.for(myBinder.model.fieldAny).validate();
@@ -239,7 +234,7 @@ suite('form/Binder', () => {
     });
   });
 
-  suite('optional', () => {
+  describe('optional', () => {
     let binder: Binder<Employee, EmployeeModel<Employee>>;
     const litEmployeeView = document.createElement('lit-employee-view') as LitEmployeeView;
 
@@ -259,12 +254,12 @@ suite('form/Binder', () => {
       return { idString, fullName };
     }
 
-    test('should not initialize optional in empty value', () => {
+    it.only('should not initialize optional in empty value', () => {
       const emptyValue = EmployeeModel.createEmptyValue();
       assert.isUndefined(emptyValue.supervisor);
     });
 
-    test('should not initialize optional in binder value and default value', () => {
+    it('should not initialize optional in binder value and default value', () => {
       assert.isUndefined(binder.defaultValue.supervisor);
       assert.deepEqual(binder.defaultValue, expectedEmptyEmployee);
       // Ensure the key is present in the object
@@ -274,7 +269,7 @@ suite('form/Binder', () => {
       assert.isTrue('supervisor' in binder.value);
     });
 
-    test('should not initialize optional on binderNode access', () => {
+    it('should not initialize optional on binderNode access', () => {
       binder.for(binder.model.supervisor);
 
       assert.isUndefined(binder.defaultValue.supervisor);
@@ -285,7 +280,7 @@ suite('form/Binder', () => {
       assert.isTrue('supervisor' in binder.value);
     });
 
-    test('should initialize parent optional on child binderNode access', () => {
+    it('should initialize parent optional on child binderNode access', () => {
       binder.for(binder.model.supervisor.supervisor);
 
       assert.isDefined(binder.defaultValue.supervisor);
@@ -296,7 +291,7 @@ suite('form/Binder', () => {
       assert.deepEqual(getOnlyEmployeeData(binder.value), getOnlyEmployeeData(expectedEmptyEmployee));
     });
 
-    test('should not become dirty on binderNode access', () => {
+    it('should not become dirty on binderNode access', () => {
       assert.isFalse(binder.dirty);
 
       binder.for(binder.model.supervisor);
@@ -306,7 +301,7 @@ suite('form/Binder', () => {
       assert.isFalse(binder.dirty);
     });
 
-    test('should not fail validation for non-initialised object or array', async () => {
+    it('should not fail validation for non-initialised object or array', async () => {
       await binder.validate();
       assert.isFalse(binder.invalid);
 
@@ -329,7 +324,7 @@ suite('form/Binder', () => {
       assert.isFalse(binder.invalid);
     });
 
-    test('should allow to reset optional object or array', async () => {
+    it('should allow to reset optional object or array', async () => {
       // Start from fields with optional data
       binder.read({
         ...binder.value,
