@@ -33,7 +33,8 @@ public class MainView extends AppLayout {
     private UserInfo userInfo;
     private AccessAnnotationChecker accessChecker;
 
-    public MainView(SecurityUtils securityUtils, AccessAnnotationChecker accessChecker) {
+    public MainView(SecurityUtils securityUtils,
+            AccessAnnotationChecker accessChecker) {
         setId("main-view");
         this.securityUtils = securityUtils;
         this.accessChecker = accessChecker;

@@ -50,8 +50,6 @@ public class SecurityConfig extends VaadinWebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        // Public access for the given view
-        http.authorizeRequests().antMatchers("/").permitAll();
         // Admin only access for given resources
         http.authorizeRequests().antMatchers("/admin-only/**")
                 .hasAnyRole(ROLE_ADMIN);
