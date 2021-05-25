@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.internal;
 
-import javax.servlet.ServletException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -53,7 +52,7 @@ public interface DevModeHandlerManager {
      * @param context
      *            servlet context we are running in
      *
-     * @throws ServletException
+     * @throws VaadinInitializerException
      *             if dev mode can't be initialized
      */
     void initDevModeHandler(Set<Class<?>> classes, VaadinContext context)
