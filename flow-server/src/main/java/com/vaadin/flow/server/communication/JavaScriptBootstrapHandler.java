@@ -18,6 +18,7 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.Optional;
 import java.util.function.Function;
 
 import com.vaadin.flow.component.PushConfiguration;
@@ -25,14 +26,16 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
-import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -198,11 +201,12 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         return stats;
     }
 
-    private JsonValue getErrors() {
+    private JsonValue getErrors(VaadinService service) {
         JsonObject errors = Json.createObject();
-        DevModeHandler devMode = DevModeHandler.getDevModeHandler();
-        if (devMode != null) {
-            String errorMsg = devMode.getFailedOutput();
+        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
+                .getDevModeHandler(service);
+        if (devModeHandler.isPresent()) {
+            String errorMsg = devModeHandler.get().getFailedOutput();
             if (errorMsg != null) {
                 errors.put("webpack-dev-server", errorMsg);
             }
@@ -254,7 +258,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         if (!session.getConfiguration().isProductionMode()) {
             initial.put("stats", getStats());
         }
-        initial.put("errors", getErrors());
+        initial.put("errors", getErrors(request.getService()));
 
         return initial;
     }

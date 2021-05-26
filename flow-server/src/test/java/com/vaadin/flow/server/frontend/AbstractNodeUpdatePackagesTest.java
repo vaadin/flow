@@ -38,6 +38,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+import com.vaadin.flow.testutil.FrontendStubs;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -88,8 +89,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         resourcesDir = new File(baseDir,
                 Paths.get(TARGET, DEFAULT_FLOW_RESOURCES_FOLDER).toString());
 
-        NodeUpdateTestUtil.createStubNode(true, true,
-                baseDir.getAbsolutePath());
+        FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
 
         packageCreator = new TaskGeneratePackageJson(baseDir, generatedDir,
                 resourcesDir, TARGET);

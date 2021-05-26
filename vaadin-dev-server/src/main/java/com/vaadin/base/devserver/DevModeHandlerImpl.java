@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server;
+package com.vaadin.base.devserver;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -47,7 +47,16 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.RequestHandler;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -83,11 +92,12 @@ import static java.net.HttpURLConnection.HTTP_OK;
  *
  * @since 2.0
  */
-public final class DevModeHandler implements RequestHandler {
+public final class DevModeHandlerImpl
+        implements RequestHandler, DevModeHandler {
 
     private static final String START_FAILURE = "Couldn't start dev server because";
 
-    private static final AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
+    private static final AtomicReference<DevModeHandlerImpl> atomicHandler = new AtomicReference<>();
 
     // It's not possible to know whether webpack is ready unless reading output
     // messages. When webpack finishes, it writes either a `Compiled` or a
@@ -145,7 +155,7 @@ public final class DevModeHandler implements RequestHandler {
 
     private final File npmFolder;
 
-    private DevModeHandler(Lookup lookup, int runningPort, File npmFolder,
+    private DevModeHandlerImpl(Lookup lookup, int runningPort, File npmFolder,
             CompletableFuture<Void> waitFor) {
 
         this.npmFolder = npmFolder;
@@ -154,6 +164,12 @@ public final class DevModeHandler implements RequestHandler {
                 .lookup(ApplicationConfiguration.class);
         reuseDevServer = config.reuseDevServer();
         devServerPortFile = getDevServerPortFile(npmFolder);
+
+        BrowserLiveReloadAccessor liveReloadAccess = lookup
+                .lookup(BrowserLiveReloadAccessor.class);
+        liveReload = liveReloadAccess != null
+                ? liveReloadAccess.getLiveReload(config.getContext())
+                : null;
 
         BiConsumer<Void, ? super Throwable> action = (value, exception) -> {
             // this will throw an exception if an exception has been thrown by
@@ -178,7 +194,7 @@ public final class DevModeHandler implements RequestHandler {
      *
      * @return the instance in case everything is alright, null otherwise
      */
-    public static DevModeHandler start(Lookup lookup, File npmFolder,
+    public static DevModeHandlerImpl start(Lookup lookup, File npmFolder,
             CompletableFuture<Void> waitFor) {
         return start(0, lookup, npmFolder, waitFor);
     }
@@ -198,7 +214,7 @@ public final class DevModeHandler implements RequestHandler {
      *
      * @return the instance in case everything is alright, null otherwise
      */
-    public static DevModeHandler start(int runningPort, Lookup lookup,
+    public static DevModeHandlerImpl start(int runningPort, Lookup lookup,
             File npmFolder, CompletableFuture<Void> waitFor) {
         ApplicationConfiguration configuration = lookup
                 .lookup(ApplicationConfiguration.class);
@@ -218,27 +234,8 @@ public final class DevModeHandler implements RequestHandler {
      *
      * @return devModeHandler or {@code null} if not started
      */
-    public static DevModeHandler getDevModeHandler() {
+    public static DevModeHandlerImpl getDevModeHandler() {
         return atomicHandler.get();
-    }
-
-    /**
-     * Set the live reload service instance.
-     *
-     * @param liveReload
-     *            the live reload instance
-     */
-    public void setLiveReload(BrowserLiveReload liveReload) {
-        this.liveReload = liveReload;
-    }
-
-    /**
-     * Get the live reload service instance.
-     *
-     * @return the live reload instance
-     */
-    public BrowserLiveReload getLiveReload() {
-        return liveReload;
     }
 
     @Override
@@ -253,7 +250,7 @@ public final class DevModeHandler implements RequestHandler {
             }
             return false;
         } else {
-            InputStream inputStream = DevModeHandler.class
+            InputStream inputStream = DevModeHandlerImpl.class
                     .getResourceAsStream("dev-mode-not-ready.html");
             IOUtils.copy(inputStream, response.getOutputStream());
             response.setContentType("text/html;charset=utf-8");
@@ -271,18 +268,12 @@ public final class DevModeHandler implements RequestHandler {
         }
     }
 
-    private static DevModeHandler createInstance(int runningPort, Lookup lookup,
-            File npmFolder, CompletableFuture<Void> waitFor) {
-        return new DevModeHandler(lookup, runningPort, npmFolder, waitFor);
+    private static DevModeHandlerImpl createInstance(int runningPort,
+            Lookup lookup, File npmFolder, CompletableFuture<Void> waitFor) {
+        return new DevModeHandlerImpl(lookup, runningPort, npmFolder, waitFor);
     }
 
-    /**
-     * Returns true if it's a request that should be handled by webpack.
-     *
-     * @param request
-     *            the servlet request
-     * @return true if the request should be forwarded to webpack
-     */
+    @Override
     public boolean isDevModeRequest(HttpServletRequest request) {
         String pathInfo = request.getPathInfo();
         if (pathInfo != null
@@ -314,6 +305,7 @@ public final class DevModeHandler implements RequestHandler {
      * @throws IOException
      *             in the case something went wrong like connection refused
      */
+    @Override
     public boolean serveDevModeRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
         // Do not serve requests if dev server starting or failed to start.
@@ -325,7 +317,7 @@ public final class DevModeHandler implements RequestHandler {
         String requestFilename = request.getPathInfo();
 
         if (HandlerHelper.isPathUnsafe(requestFilename)) {
-            getLogger().info(HandlerHelper.UNSAFE_PATH_ERROR_MESSAGE_PATTERN,
+            getLogger().info("Blocked attempt to access file: {}",
                     requestFilename);
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return true;
@@ -398,17 +390,7 @@ public final class DevModeHandler implements RequestHandler {
         return false;
     }
 
-    /**
-     * Prepare a HTTP connection against webpack-dev-server.
-     *
-     * @param path
-     *            the file to request
-     * @param method
-     *            the http method to use
-     * @return the connection
-     * @throws IOException
-     *             on connection error
-     */
+    @Override
     public HttpURLConnection prepareConnection(String path, String method)
             throws IOException {
         URL uri = new URL(WEBPACK_HOST + ":" + getPort() + path);
@@ -525,14 +507,10 @@ public final class DevModeHandler implements RequestHandler {
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(DevModeHandler.class);
+        return LoggerFactory.getLogger(DevModeHandlerImpl.class);
     }
 
-    /**
-     * Return webpack console output when a compilation error happened.
-     *
-     * @return console output if error or null otherwise.
-     */
+    @Override
     public String getFailedOutput() {
         return failedOutput;
     }
@@ -843,21 +821,12 @@ public final class DevModeHandler implements RequestHandler {
         return port;
     }
 
-    /**
-     * Whether the 'webpack-dev-server' should be reused on servlet reload.
-     * Default true.
-     *
-     * @return true in case of reusing the server.
-     */
-    public boolean reuseDevServer() {
-        return reuseDevServer;
-    }
-
-    /**
-     * Stop the webpack-dev-server.
-     */
+    @Override
     public void stop() {
         if (atomicHandler.get() == null) {
+            return;
+        }
+        if (reuseDevServer) {
             return;
         }
 

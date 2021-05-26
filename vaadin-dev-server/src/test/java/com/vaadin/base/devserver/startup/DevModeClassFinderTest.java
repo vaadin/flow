@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.startup;
+package com.vaadin.base.devserver.startup;
 
 import javax.servlet.annotation.HandlesTypes;
 
@@ -40,7 +40,7 @@ import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.SessionInitListener;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.server.startup.DevModeInitializer.DevModeClassFinder;
+import com.vaadin.base.devserver.startup.DevModeInitializer.DevModeClassFinder;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;

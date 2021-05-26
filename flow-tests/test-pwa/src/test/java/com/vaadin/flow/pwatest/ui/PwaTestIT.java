@@ -201,6 +201,9 @@ public class PwaTestIT extends ChromeDeviceTest {
     @Test
     public void compareUncompressedAndCompressedServiceWorkerJS()
             throws IOException {
+        open();
+        waitForServiceWorkerReady();
+
         // test only in production mode
         Assume.assumeTrue(isProductionMode());
 

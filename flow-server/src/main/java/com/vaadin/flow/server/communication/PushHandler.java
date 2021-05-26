@@ -21,6 +21,7 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Collection;
+import java.util.Optional;
 
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
@@ -32,7 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadAccess;
+import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.HandlerHelper;
@@ -318,14 +319,12 @@ public class PushHandler {
         // In development mode we may have a live-reload push channel
         // that should be closed.
 
-        if (isLiveReloadConnection(resource)) {
-            BrowserLiveReloadAccess access = service.getInstantiator()
-                    .getOrCreate(BrowserLiveReloadAccess.class);
-            BrowserLiveReload liveReload = access.getLiveReload(service);
-            if (liveReload.isLiveReload(resource)) {
-                liveReload.onDisconnect(resource);
-                return null;
-            }
+        Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
+                .getLiveReloadFromService(service);
+        if (isLiveReloadConnection(resource) && liveReload.isPresent()
+                && liveReload.get().isLiveReload(resource)) {
+            liveReload.get().onDisconnect(resource);
+            return null;
         }
 
         VaadinServletRequest vaadinRequest = new VaadinServletRequest(
@@ -514,10 +513,8 @@ public class PushHandler {
      */
     void onConnect(AtmosphereResource resource) {
         if (isLiveReloadConnection(resource)) {
-            BrowserLiveReloadAccess access = service.getInstantiator()
-                    .getOrCreate(BrowserLiveReloadAccess.class);
-            BrowserLiveReload liveReload = access.getLiveReload(service);
-            liveReload.onConnect(resource);
+            BrowserLiveReloadAccessor.getLiveReloadFromService(service)
+                    .ifPresent(liveReload -> liveReload.onConnect(resource));
         } else {
             callWithUi(resource, establishCallback);
         }

@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.util.Optional;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
@@ -32,7 +33,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadAccess;
+import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.server.AppShellRegistry;
@@ -107,7 +108,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         configureErrorDialogStyles(indexDocument);
 
-        showWebpackErrors(indexDocument);
+        showWebpackErrors(session.getService(), indexDocument);
 
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
@@ -161,19 +162,16 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private void addDevmodeGizmo(Document indexDocument, VaadinSession session,
             VaadinRequest request) {
         VaadinService service = session.getService();
-        BrowserLiveReloadAccess liveReloadAccess = service.getInstantiator()
-                .getOrCreate(BrowserLiveReloadAccess.class);
-        BrowserLiveReload liveReload = liveReloadAccess != null
-                ? liveReloadAccess.getLiveReload(service)
-                : null;
+        Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
+                .getLiveReloadFromService(service);
 
-        if (liveReload != null) {
+        if (liveReload.isPresent()) {
             Element devmodeGizmo = new Element("vaadin-devmode-gizmo");
             devmodeGizmo.attr("url",
                     BootstrapHandlerHelper.getPushURL(session, request));
-            if (liveReload.getBackend() != null) {
-                devmodeGizmo.attr("backend",
-                        liveReload.getBackend().toString());
+            BrowserLiveReload.Backend backend = liveReload.get().getBackend();
+            if (backend != null) {
+                devmodeGizmo.attr("backend", backend.toString());
             }
             devmodeGizmo.attr("springbootlivereloadport", Integer
                     .toString(Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT));

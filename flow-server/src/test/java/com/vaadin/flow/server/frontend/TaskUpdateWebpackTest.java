@@ -37,6 +37,7 @@ import org.junit.rules.TemporaryFolder;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PwaConfiguration;
+import com.vaadin.flow.testutil.FrontendStubs;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
@@ -78,8 +79,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         frontendGeneratedFolder = new File(baseDir,
                 DEFAULT_PROJECT_FRONTEND_GENERATED_DIR);
 
-        NodeUpdateTestUtil.createStubNode(true, true,
-                baseDir.getAbsolutePath());
+        FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
 
         pwaConfiguration = new PwaConfiguration(
                 AppShell.class.getAnnotation(PWA.class));

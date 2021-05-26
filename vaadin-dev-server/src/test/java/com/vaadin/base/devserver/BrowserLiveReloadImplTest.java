@@ -13,13 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.internal;
+package com.vaadin.base.devserver;
+
+import java.lang.reflect.InvocationTargetException;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.server.VaadinService;
 
 public class BrowserLiveReloadImplTest {
 
@@ -88,7 +92,7 @@ public class BrowserLiveReloadImplTest {
     }
 
     @Test
-    public void getBackend_JRebelInitializerClassLoaded_returnsJREBEL() {
+    public void getBackend_JRebelClassEventListenerClassLoaded_returnsJREBEL() {
         class JRebelInitializer {
         }
         BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl(
@@ -97,7 +101,7 @@ public class BrowserLiveReloadImplTest {
                     protected Class<?> findClass(String name)
                             throws ClassNotFoundException {
                         switch (name) {
-                        case "com.vaadin.flow.server.jrebel.JRebelInitializer":
+                        case "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener":
                             return JRebelInitializer.class;
                         default:
                             throw new ClassNotFoundException();
@@ -152,6 +156,27 @@ public class BrowserLiveReloadImplTest {
                 });
         Assert.assertEquals(BrowserLiveReload.Backend.SPRING_BOOT_DEVTOOLS,
                 reload.getBackend());
+    }
+
+    @Test
+    public void backwardsCompatibilityClassExists() {
+        // JRebel and HotswapAgent live reload triggering only works if
+        // com.vaadin.flow.internal.BrowserLiveReloadAccess exists on classpath.
+        ClassLoader classLoader = getClass().getClassLoader();
+        String className = "com.vaadin.flow.internal.BrowserLiveReloadAccess";
+        String methodName = "getLiveReload";
+        try {
+            Class<?> clazz = classLoader.loadClass(className);
+            clazz.getMethod(methodName, VaadinService.class);
+            clazz.getDeclaredConstructor().newInstance();
+        } catch (ClassNotFoundException | NoSuchMethodException
+                | InstantiationException | IllegalAccessException
+                | InvocationTargetException e) {
+            e.printStackTrace();
+            Assert.fail(className
+                    + " required on classpath for JRebel / HotswapAgent live reload integration, must be instantiable and have method "
+                    + methodName + " accepting a VaadinService");
+        }
     }
 
 }

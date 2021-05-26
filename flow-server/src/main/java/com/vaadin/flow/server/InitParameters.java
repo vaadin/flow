@@ -92,15 +92,14 @@ public class InitParameters implements Serializable {
 
     /**
      * Configuration name for the pattern used to inspect the webpack output to
-     * assure it is up and running. Default value is defined in
-     * {@link DevModeHandler} as the <code>: Compiled</code> expression.
+     * assure it is up and running. Default value is <code>: Compiled</code>.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN = "devmode.webpack.output.success.pattern";
 
     /**
      * Configuration name for the pattern used to inspect the webpack output to
-     * detecting when compilation failed. Default value is defined in
-     * {@link DevModeHandler} as the <code>: Failed</code> expression.
+     * detecting when compilation failed. Default value is
+     * <code>: Failed</code>.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN = "devmode.webpack.output.error.pattern";
 

@@ -1,4 +1,4 @@
-package com.vaadin.flow.server.startup;
+package com.vaadin.base.devserver.startup;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,16 +30,18 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import com.vaadin.base.devserver.DevModeHandlerImpl;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.server.startup.VaadinInitializerException;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
@@ -214,7 +216,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     public void should_Run_Updaters() throws Exception {
         process();
-        assertNotNull(DevModeHandler.getDevModeHandler());
+        assertNotNull(DevModeHandlerImpl.getDevModeHandler());
     }
 
     @Test
@@ -222,28 +224,28 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         webpackFile.delete();
         mainPackageFile.delete();
         process();
-        assertNotNull(DevModeHandler.getDevModeHandler());
+        assertNotNull(DevModeHandlerImpl.getDevModeHandler());
     }
 
     @Test
     public void should_Not_Run_Updaters_when_NoMainPackageFile()
             throws Exception {
-        assertNull(DevModeHandler.getDevModeHandler());
+        assertNull(DevModeHandlerImpl.getDevModeHandler());
         mainPackageFile.delete();
-        assertNull(DevModeHandler.getDevModeHandler());
+        assertNull(DevModeHandlerImpl.getDevModeHandler());
     }
 
     @Test
     public void should_Run_Updaters_when_NoAppPackageFile() throws Exception {
         process();
-        assertNotNull(DevModeHandler.getDevModeHandler());
+        assertNotNull(DevModeHandlerImpl.getDevModeHandler());
     }
 
     @Test
     public void should_Run_Updaters_when_NoWebpackFile() throws Exception {
         webpackFile.delete();
         process();
-        assertNotNull(DevModeHandler.getDevModeHandler());
+        assertNotNull(DevModeHandlerImpl.getDevModeHandler());
     }
 
     @Test
@@ -251,7 +253,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Mockito.when(appConfig.isProductionMode()).thenReturn(true);
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
-        assertNull(DevModeHandler.getDevModeHandler());
+        assertNull(DevModeHandlerImpl.getDevModeHandler());
     }
 
     @Test
@@ -270,11 +272,11 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
         process();
 
-        assertNotNull(DevModeHandler.getDevModeHandler());
+        assertNotNull(DevModeHandlerImpl.getDevModeHandler());
 
         runDestroy();
 
-        assertNull(DevModeHandler.getDevModeHandler());
+        assertNull(DevModeHandlerImpl.getDevModeHandler());
     }
 
     @Test
@@ -415,7 +417,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
-        assertNotNull(DevModeHandler.getDevModeHandler());
+        assertNotNull(DevModeHandlerImpl.getDevModeHandler());
     }
 
     @Test

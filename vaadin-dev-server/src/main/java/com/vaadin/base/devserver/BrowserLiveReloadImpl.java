@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.internal;
+package com.vaadin.base.devserver;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
@@ -27,7 +27,7 @@ import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.internal.BrowserLiveReload;
 
 /**
  * {@link BrowserLiveReload} implementation class.
@@ -37,7 +37,7 @@ import com.vaadin.flow.server.DevModeHandler;
  * @author Vaadin Ltd
  *
  */
-class BrowserLiveReloadImpl implements BrowserLiveReload {
+public class BrowserLiveReloadImpl implements BrowserLiveReload {
 
     private final ClassLoader classLoader;
 
@@ -50,7 +50,7 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
 
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
-                "com.vaadin.flow.server.jrebel.JRebelInitializer"));
+                "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener"));
         IDENTIFIER_CLASSES.put(Backend.HOTSWAP_AGENT, Collections.singletonList(
                 "org.hotswap.agent.plugin.vaadin.VaadinIntegration"));
         IDENTIFIER_CLASSES.put(Backend.SPRING_BOOT_DEVTOOLS, Arrays.asList(
@@ -64,11 +64,6 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
 
     BrowserLiveReloadImpl(ClassLoader classLoader) {
         this.classLoader = classLoader;
-
-        DevModeHandler devModeHandler = DevModeHandler.getDevModeHandler();
-        if (devModeHandler != null) {
-            devModeHandler.setLiveReload(this);
-        }
     }
 
     @Override

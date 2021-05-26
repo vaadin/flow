@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.testutil;
 
 import java.io.File;
 import java.io.IOException;
