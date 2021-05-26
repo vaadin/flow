@@ -50,8 +50,8 @@ public abstract class AbstractTemplateTest {
 
         Instantiator instantiator = Mockito.mock(Instantiator.class);
         Mockito.when(instantiator.createComponent(Mockito.any()))
-                .thenAnswer(invocation -> ReflectTools
-                        .createInstance(invocation.getArgument(0)));
+                .thenAnswer(invocation -> ReflectTools.createInstance(
+                        invocation.getArgumentAt(0, Class.class)));
 
         Mockito.when(service.getInstantiator()).thenReturn(instantiator);
 

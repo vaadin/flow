@@ -80,8 +80,9 @@ public class FrontendDependenciesTest {
                 classFinder.loadClass(AppShellConfigurator.class.getName()))
                 .thenReturn((Class) AppShellConfigurator.class);
 
-        Mockito.doAnswer(invocation -> FrontendDependenciesTest.class
-                .getClassLoader().getResource(invocation.getArgument(0)))
+        Mockito.doAnswer(
+                invocation -> FrontendDependenciesTest.class.getClassLoader()
+                        .getResource(invocation.getArgumentAt(0, String.class)))
                 .when(classFinder).getResource(Mockito.anyString());
     }
 

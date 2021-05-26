@@ -520,10 +520,12 @@ public class VaadinAppShellInitializerTest {
 
         Mockito.when(config.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
-                .thenAnswer(invocation -> invocation.getArgument(1));
+                .thenAnswer(invocation -> invocation.getArgumentAt(1,
+                        String.class));
         Mockito.when(config.getBooleanProperty(Mockito.anyString(),
                 Mockito.anyBoolean()))
-                .thenAnswer(invocation -> invocation.getArgument(1));
+                .thenAnswer(invocation -> invocation.getArgumentAt(1,
+                        Boolean.class));
         return config;
     }
 }

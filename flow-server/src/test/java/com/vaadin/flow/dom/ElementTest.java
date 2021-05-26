@@ -1394,14 +1394,13 @@ public class ElementTest extends AbstractNodeTest {
     public void setResourceAttribute_classAttribute() {
         Element element = ElementFactory.createDiv();
         element.setAttribute("class",
-                (StreamResource) EasyMock.createMock(StreamResource.class));
+                EasyMock.createMock(StreamResource.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void setResourceAttribute_nullAttribute() {
         Element element = ElementFactory.createDiv();
-        element.setAttribute(null,
-                (StreamResource) EasyMock.createMock(StreamResource.class));
+        element.setAttribute(null, EasyMock.createMock(StreamResource.class));
     }
 
     @Test
@@ -1782,7 +1781,7 @@ public class ElementTest extends AbstractNodeTest {
     @Test(expected = UnsupportedOperationException.class)
     public void setResourceAttribute_elementIsText_operationIsNotSupported() {
         Element.createText("").setAttribute("foo",
-                (StreamResource) EasyMock.createMock(StreamResource.class));
+                EasyMock.createMock(StreamResource.class));
     }
 
     @Test

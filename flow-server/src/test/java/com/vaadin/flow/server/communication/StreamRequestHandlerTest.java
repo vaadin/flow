@@ -164,7 +164,7 @@ public class StreamRequestHandlerTest {
         }
         Assert.assertArrayEquals("Output differed from expected", buf,
                 argument.getValue());
-        Mockito.verify(response).setCacheTime(Mockito.anyLong());
+        Mockito.verify(response).setCacheTime(Mockito.anyInt());
         Mockito.verify(response).setContentType("application/octet-stream");
     }
 
@@ -193,7 +193,7 @@ public class StreamRequestHandlerTest {
 
         Assert.assertArrayEquals("Output differed from expected", testBytes,
                 argument.getValue());
-        Mockito.verify(response).setCacheTime(Mockito.anyLong());
+        Mockito.verify(response).setCacheTime(Mockito.anyInt());
         Mockito.verify(response).setContentType("application/octet-stream");
     }
 

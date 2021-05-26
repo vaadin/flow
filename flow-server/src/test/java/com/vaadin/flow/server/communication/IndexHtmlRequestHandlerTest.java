@@ -783,10 +783,12 @@ public class IndexHtmlRequestHandlerTest {
 
         Mockito.when(appConfig.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
-                .thenAnswer(invocation -> invocation.getArgument(1));
+                .thenAnswer(invocation -> invocation.getArgumentAt(1,
+                        String.class));
         Mockito.when(appConfig.getBooleanProperty(Mockito.anyString(),
                 Mockito.anyBoolean()))
-                .thenAnswer(invocation -> invocation.getArgument(1));
+                .thenAnswer(invocation -> invocation.getArgumentAt(1,
+                        Boolean.class));
     }
 
     @Test

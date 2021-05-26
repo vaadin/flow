@@ -53,7 +53,8 @@ public class LitTemplateParserImplTest {
 
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
-                .thenAnswer(invocation -> invocation.getArgument(1));
+                .thenAnswer(invocation -> invocation.getArgumentAt(1,
+                        String.class));
 
         Properties properties = new Properties();
         Mockito.when(configuration.getInitParameters()).thenReturn(properties);
