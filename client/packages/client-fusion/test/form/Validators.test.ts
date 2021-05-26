@@ -1,5 +1,4 @@
 import { assert } from '@open-wc/testing';
-
 // API to test
 import {
   AssertFalse,

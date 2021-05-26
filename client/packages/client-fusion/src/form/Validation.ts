@@ -1,9 +1,5 @@
 import type { Binder } from './Binder';
-// TODO: Fix dependency cycle
-// eslint-disable-next-line import/no-cycle
 import { AbstractModel, getBinderNode, NumberModel } from './Models';
-// TODO: Fix dependency cycle
-// eslint-disable-next-line import/no-cycle
 import { Required } from './Validators';
 
 export interface ValueError<T> {
@@ -23,7 +19,7 @@ export class ValidationError extends Error {
     super(
       [
         'There are validation errors in the form.',
-        ...errors.map((e) => `${e.property} - ${e.validator.constructor.name}${e.message ? `: ${e.message}` : ''}`),
+        ...errors.map((e) => `${e.property} - ${e.validator.constructor.name}${e.message ? ': ' + e.message : ''}`),
       ].join('\n - ')
     );
     this.name = this.constructor.name;
@@ -46,12 +42,7 @@ export interface Validator<T> {
 }
 
 export class ServerValidator implements Validator<any> {
-  message: string;
-
-  constructor(message: string) {
-    this.message = message;
-  }
-
+  constructor(public message: string) {}
   validate = () => false;
 }
 
@@ -59,7 +50,7 @@ export async function runValidator<T>(
   model: AbstractModel<T>,
   validator: Validator<T>
 ): Promise<ReadonlyArray<ValueError<T>>> {
-  const { value } = getBinderNode(model);
+  const value = getBinderNode(model).value;
   // If model is not required and value empty, do not run any validator. Except
   // always validate NumberModel, which has a mandatory builtin validator
   // to indicate NaN input.
@@ -69,13 +60,12 @@ export async function runValidator<T>(
   return (async () => validator.validate(value!, getBinderNode(model).binder))().then((result) => {
     if (result === false) {
       return [{ property: getBinderNode(model).name, value, validator, message: validator.message }];
-    }
-    if (result === true || (Array.isArray(result) && result.length === 0)) {
+    } else if (result === true || (Array.isArray(result) && result.length === 0)) {
       return [];
-    }
-    if (Array.isArray(result)) {
+    } else if (Array.isArray(result)) {
       return result.map((result2) => ({ message: validator.message, ...result2, value, validator }));
+    } else {
+      return [{ message: validator.message, ...result, value, validator }];
     }
-    return [{ message: validator.message, ...result, value, validator }];
   });
 }

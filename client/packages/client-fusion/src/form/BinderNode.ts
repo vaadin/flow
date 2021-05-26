@@ -14,8 +14,6 @@
  * the License.
  */
 import type { Binder } from './Binder';
-// TODO: Fix dependency cycle
-// eslint-disable-next-line import/no-cycle
 import {
   _binderNode,
   _ItemModel,
@@ -47,12 +45,9 @@ function getErrorPropertyName(valueError: ValueError<any>): string {
  * instances.
  */
 export class BinderNode<T, M extends AbstractModel<T>> {
-  private [_visited] = false;
-
+  private [_visited]: boolean = false;
   private [_validators]: ReadonlyArray<Validator<T>>;
-
   private [_ownErrors]?: ReadonlyArray<ValueError<T>>;
-
   private defaultArrayItemValue?: T;
 
   constructor(readonly model: M) {
@@ -107,10 +102,10 @@ export class BinderNode<T, M extends AbstractModel<T>> {
    */
   get defaultValue(): T {
     if (this.parent && this.parent.model instanceof ArrayModel) {
-      this.parent.defaultArrayItemValue =
-        this.parent.defaultArrayItemValue || this.parent.model[_ItemModel].createEmptyValue();
-
-      return this.parent.defaultArrayItemValue;
+      return (
+        this.parent.defaultArrayItemValue ||
+        (this.parent.defaultArrayItemValue = this.parent.model[_ItemModel].createEmptyValue())
+      );
     }
 
     return this.parent!.defaultValue[this.model[_key]];
@@ -316,6 +311,11 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   }
 
   private *getChildBinderNodes(): Generator<BinderNode<any, AbstractModel<any>>> {
+    if (this.value === undefined) {
+      // Undefined value cannot have child properties and items.
+      return;
+    }
+
     if (this.model instanceof ObjectModel) {
       // We need to skip all non-initialised optional fields here in order to
       // prevent infinite recursion for circular references in the model.
@@ -333,11 +333,8 @@ export class BinderNode<T, M extends AbstractModel<T>> {
         }
       }
     } else if (this.model instanceof ArrayModel) {
-      // Only iterate if optional array is initialised
-      if (this.value !== undefined) {
-        for (const childModel of this.model) {
-          yield childModel;
-        }
+      for (const childBinderNode of this.model) {
+        yield childBinderNode;
       }
     }
   }
@@ -361,7 +358,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     return [...this.runOwnValidators(), ...(this.parent ? this.parent.requestValidationWithAncestors() : [])];
   }
 
-  private initializeValue(requiredByChildNode = false) {
+  private initializeValue(requiredByChildNode: boolean = false) {
     // First, make sure parents have value initialized
     if (this.parent && (this.parent.value === undefined || this.parent.defaultValue === undefined)) {
       this.parent.initializeValue(true);
@@ -380,7 +377,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     }
   }
 
-  private setValueState(value: T | undefined, keepPristine = false) {
+  private setValueState(value: T | undefined, keepPristine: boolean = false) {
     const modelParent = this.model[_parent];
     if (modelParent instanceof ObjectModel) {
       // Value contained in object - replace object in parent

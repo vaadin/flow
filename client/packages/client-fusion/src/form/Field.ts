@@ -1,6 +1,5 @@
-// TODO: Fix linting errors
-/* eslint-disable no-multi-assign */
-import { directive, Part, PropertyPart } from 'lit-html';
+import { ElementPart, noChange, nothing, PropertyPart } from 'lit';
+import { directive, Directive, DirectiveParameters, PartInfo, PartType } from 'lit/directive.js';
 import { _fromString, AbstractModel, getBinderNode } from './Models';
 
 interface Field {
@@ -13,37 +12,22 @@ interface FieldState extends Field {
   name: string;
   strategy: FieldStrategy;
 }
-const fieldStateMap = new WeakMap<PropertyPart, FieldState>();
-
 export interface FieldStrategy extends Field {
   element: Element;
 }
 
 export abstract class AbstractFieldStrategy implements FieldStrategy {
   abstract required: boolean;
-
   abstract invalid: boolean;
-
-  element: Element & Field;
-
-  constructor(element: Element & Field) {
-    this.element = element;
-  }
-
+  constructor(public element: Element & Field) {}
   validate = async () => [];
-
   get value() {
     return this.element.value;
   }
-
   set value(value) {
     this.element.value = value;
   }
-
-  // TODO: Fix linting errors
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  set errorMessage(_: string) {}
-
+  set errorMessage(_: string) {} // eslint-disable-line @typescript-eslint/no-empty-function
   setAttribute(key: string, val: any) {
     if (val) {
       this.element.setAttribute(key, '');
@@ -57,11 +41,9 @@ export class VaadinFieldStrategy extends AbstractFieldStrategy {
   set required(value: boolean) {
     this.element.required = value;
   }
-
   set invalid(value: boolean) {
     this.element.invalid = value;
   }
-
   set errorMessage(value: string) {
     this.element.errorMessage = value;
   }
@@ -71,7 +53,6 @@ export class GenericFieldStrategy extends AbstractFieldStrategy {
   set required(value: boolean) {
     this.setAttribute('required', value);
   }
-
   set invalid(value: boolean) {
     this.setAttribute('invalid', value);
   }
@@ -81,7 +62,6 @@ export class CheckedFieldStrategy extends GenericFieldStrategy {
   set value(val: any) {
     (this.element as any).checked = /^(true|on)$/i.test(String(val));
   }
-
   get value() {
     return (this.element as any).checked;
   }
@@ -92,7 +72,6 @@ export class ComboBoxFieldStrategy extends VaadinFieldStrategy {
     const { selectedItem } = this.element as any;
     return selectedItem === null ? undefined : selectedItem;
   }
-
   set value(val: any) {
     (this.element as any).selectedItem = val === undefined ? null : val;
   }
@@ -102,15 +81,12 @@ export class SelectedFieldStrategy extends GenericFieldStrategy {
   set value(val: any) {
     (this.element as any).selected = val;
   }
-
   get value() {
     return (this.element as any).selected;
   }
 }
 
 export function getDefaultFieldStrategy(elm: any): FieldStrategy {
-  // TODO: Fix linting errors
-  // eslint-disable-next-line default-case
   switch (elm.localName) {
     case 'vaadin-checkbox':
     case 'vaadin-radio-button':
@@ -121,98 +97,121 @@ export function getDefaultFieldStrategy(elm: any): FieldStrategy {
       return new SelectedFieldStrategy(elm);
     case 'vaadin-rich-text-editor':
       return new GenericFieldStrategy(elm);
-    case 'input':
-      if (/^(checkbox|radio)$/.test(elm.type)) {
+    default:
+      if (elm.localName === 'input' && /^(checkbox|radio)$/.test(elm.type)) {
         return new CheckedFieldStrategy(elm);
       }
+      return elm.constructor.version ? new VaadinFieldStrategy(elm) : new GenericFieldStrategy(elm);
   }
-  return elm.constructor.version ? new VaadinFieldStrategy(elm) : new GenericFieldStrategy(elm);
 }
 
 /**
  * Binds a form field component into a model.
  *
- * Exmaple usage:
+ * Example usage:
  *
  * ```
  * <vaadin-text-field ...="${field(model.name)}">
  * </vaadin-text-field>
  * ```
  */
-export const field = directive(<T>(model: AbstractModel<T>, effect?: (element: Element) => void) => (part: Part) => {
-  const propertyPart = part as PropertyPart;
-  if (!(part instanceof PropertyPart) || propertyPart.committer.name !== '..') {
-    throw new Error('Only supports ...="" syntax');
-  }
-  let fieldState: FieldState;
-  const element = propertyPart.committer.element as HTMLInputElement & Field;
+export const field = directive(
+  class extends Directive {
+    fieldState?: FieldState;
 
-  const binderNode = getBinderNode(model);
-  const fieldStrategy = binderNode.binder.getFieldStrategy(element);
-
-  const convertFieldValue = (fieldValue: any) => {
-    const fromString = (model as any)[_fromString];
-    return typeof fieldValue === 'string' && fromString ? fromString(fieldValue) : fieldValue;
-  };
-
-  if (fieldStateMap.has(propertyPart)) {
-    fieldState = fieldStateMap.get(propertyPart)!;
-  } else {
-    fieldState = {
-      name: '',
-      value: '',
-      required: false,
-      invalid: false,
-      errorMessage: '',
-      strategy: fieldStrategy,
-    };
-    fieldStateMap.set(propertyPart, fieldState);
-
-    const updateValueFromElement = () => {
-      fieldState.value = fieldState.strategy.value;
-      binderNode.value = convertFieldValue(fieldState.value);
-      if (effect !== undefined) {
-        effect.call(element, element);
+    constructor(partInfo: PartInfo) {
+      super(partInfo);
+      if (partInfo.type !== PartType.PROPERTY && partInfo.type !== PartType.ELEMENT) {
+        throw new Error('Use as "<element {field(...)}" or <element ...={field(...)}"');
       }
-    };
+    }
 
-    element.oninput = () => {
-      updateValueFromElement();
-    };
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    render(model: AbstractModel<any>, effect?: (element: Element) => void) {
+      return nothing;
+    }
 
-    element.onchange = element.onblur = () => {
-      updateValueFromElement();
-      binderNode.visited = true;
-    };
+    update(part: PropertyPart | ElementPart, [model, effect]: DirectiveParameters<this>) {
+      const element = part.element as HTMLInputElement & Field;
 
-    element.checkValidity = () => !fieldState.invalid;
+      const binderNode = getBinderNode(model);
+      const fieldStrategy = binderNode.binder.getFieldStrategy(element);
+
+      const convertFieldValue = (fieldValue: any) => {
+        const fromString = (model as any)[_fromString];
+        return typeof fieldValue === 'string' && fromString ? fromString(fieldValue) : fieldValue;
+      };
+
+      if (!this.fieldState) {
+        this.fieldState = {
+          name: '',
+          value: '',
+          required: false,
+          invalid: false,
+          errorMessage: '',
+          strategy: fieldStrategy,
+        };
+
+        const { fieldState } = this;
+
+        const updateValueFromElement = () => {
+          fieldState.value = fieldState.strategy.value;
+          binderNode.value = convertFieldValue(fieldState.value);
+          if (effect !== undefined) {
+            effect.call(element, element);
+          }
+        };
+
+        element.oninput = () => {
+          updateValueFromElement();
+        };
+
+        const changeBlurHandler = () => {
+          updateValueFromElement();
+          binderNode.visited = true;
+        };
+        element.onblur = changeBlurHandler;
+        element.onchange = changeBlurHandler;
+
+        element.checkValidity = () => !fieldState.invalid;
+      }
+
+      const { fieldState } = this;
+      const { name } = binderNode;
+      if (name !== fieldState.name) {
+        fieldState.name = name;
+        element.setAttribute('name', name);
+      }
+
+      const { value } = binderNode;
+      const valueFromField = convertFieldValue(fieldState.value);
+      if (value !== valueFromField && !(Number.isNaN(value) && Number.isNaN(valueFromField))) {
+        fieldState.value = value;
+        fieldState.strategy.value = value;
+      }
+
+      const { required } = binderNode;
+      if (required !== fieldState.required) {
+        fieldState.required = required;
+        fieldState.strategy.required = required;
+      }
+
+      const firstError = binderNode.ownErrors ? binderNode.ownErrors[0] : undefined;
+      const errorMessage = (firstError && firstError.message) || '';
+      if (errorMessage !== fieldState.errorMessage) {
+        fieldState.errorMessage = errorMessage;
+        fieldState.strategy.errorMessage = errorMessage;
+      }
+
+      const { invalid } = binderNode;
+      if (invalid !== fieldState.invalid) {
+        fieldState.invalid = invalid;
+        fieldState.strategy.invalid = invalid;
+      }
+
+      return noChange;
+    }
   }
-
-  const { name } = binderNode;
-  if (name !== fieldState.name) {
-    fieldState.name = name;
-    element.setAttribute('name', name);
-  }
-
-  const { value } = binderNode;
-  const valueFromField = convertFieldValue(fieldState.value);
-  if (value !== valueFromField && !(Number.isNaN(value) && Number.isNaN(valueFromField))) {
-    fieldState.strategy.value = fieldState.value = value;
-  }
-
-  const { required } = binderNode;
-  if (required !== fieldState.required) {
-    fieldState.strategy.required = fieldState.required = required;
-  }
-
-  const firstError = binderNode.ownErrors ? binderNode.ownErrors[0] : undefined;
-  const errorMessage = (firstError && firstError.message) || '';
-  if (errorMessage !== fieldState.errorMessage) {
-    fieldState.strategy.errorMessage = fieldState.errorMessage = errorMessage;
-  }
-
-  const { invalid } = binderNode;
-  if (invalid !== fieldState.invalid) {
-    fieldState.strategy.invalid = fieldState.invalid = invalid;
-  }
-});
+);

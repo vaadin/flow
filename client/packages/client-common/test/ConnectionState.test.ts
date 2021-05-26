@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
 import { assert, expect } from '@open-wc/testing';
 import sinon from 'sinon';
 import { ConnectionState, ConnectionStateStore } from '../src';

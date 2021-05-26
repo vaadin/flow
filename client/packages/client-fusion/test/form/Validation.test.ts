@@ -2,8 +2,8 @@
 import { assert, expect } from '@open-wc/testing';
 import sinon from 'sinon';
 import { css, html, LitElement } from 'lit';
-import { customElement, query } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
+import { customElement, query } from 'lit/decorators.js';
 // API to test
 import { Binder, field, Required, ValidationError, Validator, ValueError } from '../../src/form';
 import { IdEntity, IdEntityModel, Order, OrderModel, TestEntity, TestModel } from './TestModels';
@@ -11,21 +11,13 @@ import { IdEntity, IdEntityModel, Order, OrderModel, TestEntity, TestModel } fro
 @customElement('order-view')
 class OrderView extends LitElement {
   binder = new Binder(this, OrderModel);
-
   @query('#submitting') submitting!: HTMLInputElement;
-
   @query('#notes') notes!: HTMLInputElement;
-
   @query('#fullName') fullName!: HTMLInputElement;
-
   @query('#nickName') nickName!: HTMLInputElement;
-
   @query('#add') add!: Element;
-
   @query('#description0') description!: HTMLInputElement;
-
   @query('#price0') price!: HTMLInputElement;
-
   @query('#priceError0') priceError!: HTMLOutputElement;
 
   static get styles() {
@@ -35,7 +27,6 @@ class OrderView extends LitElement {
       }
     `;
   }
-
   render() {
     const {
       notes,
@@ -283,7 +274,6 @@ describe('form/Validation', () => {
     it('should fail validation after adding an asynchronous validator to the model', async () => {
       class AsyncValidator implements Validator<Order> {
         message = 'bar';
-
         validate = async () => {
           await sleep(10);
           return false;

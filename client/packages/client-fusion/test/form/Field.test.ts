@@ -2,24 +2,23 @@
 import { assert, expect } from '@open-wc/testing';
 import sinon from 'sinon';
 import { LitElement, nothing, render } from 'lit';
-import { customElement, query } from 'lit/decorators.js';
 import { html, unsafeStatic } from 'lit/static-html.js';
+import { customElement, query } from 'lit/decorators.js';
+import type { BinderNode } from '../../src/form/BinderNode';
 // API to test
 import {
-  AbstractFieldStrategy,
-  AbstractModel,
   Binder,
-  CheckedFieldStrategy,
   field,
-  FieldStrategy,
   GenericFieldStrategy,
-  Required,
+  CheckedFieldStrategy,
   SelectedFieldStrategy,
   VaadinFieldStrategy,
+  Required,
+  AbstractModel,
+  FieldStrategy,
+  AbstractFieldStrategy,
 } from '../../src/form';
-import type { BinderNode } from '../../src/form/BinderNode';
-
-import { Order, OrderModel, TestEntity, TestModel } from './TestModels';
+import { OrderModel, TestModel, TestEntity, Order } from './TestModels';
 
 describe('form/Field', () => {
   describe('field with text-field', () => {
@@ -31,28 +30,22 @@ describe('form/Field', () => {
       }
 
       __value = '';
-
       get value() {
         return this.__value;
       }
-
       set value(value) {
         // Native inputs stringify incoming values
         this.__value = String(value);
       }
-
       valueSpy = sinon.spy(this, 'value', ['get', 'set']);
 
       __required = false;
-
       get required() {
         return this.__required;
       }
-
       set required(value) {
         this.__required = value;
       }
-
       requiredSpy = sinon.spy(this, 'required', ['get', 'set']);
 
       setAttributeSpy = sinon.spy(this, 'setAttribute');
@@ -320,16 +313,13 @@ describe('form/Field', () => {
     @customElement('mock-input')
     class MockInputElement extends HTMLElement {
       __value = '';
-
       get value() {
         return this.__value;
       }
-
       set value(value) {
         // Native inputs stringify incoming values
         this.__value = String(value);
       }
-
       valueSpy = sinon.spy(this, 'value', ['get', 'set']);
 
       setAttributeSpy = sinon.spy(this, 'setAttribute');
@@ -338,7 +328,6 @@ describe('form/Field', () => {
     @customElement('order-view-with-input')
     class OrderViewWithInput extends LitElement {
       requestUpdateSpy = sinon.spy(this, 'requestUpdate');
-
       binder = new Binder(this, OrderModel);
 
       @query('#notesField')
@@ -644,7 +633,6 @@ describe('form/Field', () => {
       const element = document.createElement('div');
       class MyStrategy extends AbstractFieldStrategy {
         invalid = true;
-
         required = true;
       }
 
@@ -653,7 +641,6 @@ describe('form/Field', () => {
           currentStrategy = new MyStrategy(elm);
           return currentStrategy;
         }
-
         constructor(elm: Element) {
           super(elm, TestModel);
         }

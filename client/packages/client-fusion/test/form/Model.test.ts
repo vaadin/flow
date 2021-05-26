@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-expressions */
 import { expect } from '@open-wc/testing';
 // API to test
 import {
@@ -57,7 +56,7 @@ describe('form/Model', () => {
 
   describe('number model', () => {
     it('should contain IsNumber validator by default', async () => {
-      const { validators } = binder.for(binder.model.fieldNumber);
+      const validators = binder.for(binder.model.fieldNumber).validators;
       expect(validators[0]).to.be.instanceOf(IsNumber);
     });
 
@@ -119,7 +118,7 @@ describe('form/Model', () => {
 
     it('should be iterable', async () => {
       [binder.model.fieldArrayString, binder.model.fieldArrayModel].forEach((arrayModel) => {
-        const values = binder.for(arrayModel).value!;
+        const values = binder.for(arrayModel).value;
         const iterator = arrayModel[Symbol.iterator]();
         for (let i = 0; i < values.length; i++) {
           const iteratorResult = iterator.next();
@@ -236,56 +235,56 @@ describe('form/Model', () => {
     });
 
     it('should reuse model instance for the same array item', async () => {
-      const nodes1 = [...binder.model.fieldArrayModel].slice();
-      [0, 1].forEach((i) => expect(nodes1[i].value).to.be.equal(idEntities[i]));
+      const nodes_1 = [...binder.model.fieldArrayModel].slice();
+      [0, 1].forEach((i) => expect(nodes_1[i].value).to.be.equal(idEntities[i]));
 
       binder.for(binder.model.fieldArrayModel).value = idEntities;
-      const nodes2 = [...binder.model.fieldArrayModel].slice();
+      const nodes_2 = [...binder.model.fieldArrayModel].slice();
       [0, 1].forEach((i) => {
-        expect(nodes1[i]).to.be.equal(nodes2[i]);
-        expect(nodes1[i].model).to.be.equal(nodes2[i].model);
-        expect(nodes2[i].value).to.be.equal(idEntities[i]);
+        expect(nodes_1[i]).to.be.equal(nodes_2[i]);
+        expect(nodes_1[i].model).to.be.equal(nodes_2[i].model);
+        expect(nodes_2[i].value).to.be.equal(idEntities[i]);
       });
     });
 
     it('should reuse model instance for the same array item after it is modified', async () => {
-      const nodes1 = [...binder.model.fieldArrayModel].slice();
-      [0, 1].forEach((i) => expect(nodes1[i].value).to.be.equal(idEntities[i]));
+      const nodes_1 = [...binder.model.fieldArrayModel].slice();
+      [0, 1].forEach((i) => expect(nodes_1[i].value).to.be.equal(idEntities[i]));
 
-      binder.for(nodes1[0].model.idString).value = 'foo';
-      binder.for(nodes1[1].model.idString).value = 'bar';
+      binder.for(nodes_1[0].model.idString).value = 'foo';
+      binder.for(nodes_1[1].model.idString).value = 'bar';
 
       binder.for(binder.model.fieldArrayModel).value = idEntities.slice();
       binder.for(binder.model.fieldArrayModel).prependItem();
       binder.for(binder.model.fieldArrayModel).appendItem();
 
-      const nodes2 = [...binder.model.fieldArrayModel].slice();
+      const nodes_2 = [...binder.model.fieldArrayModel].slice();
 
       [0, 1].forEach((i) => {
-        expect(nodes1[i]).to.be.equal(nodes2[i]);
-        expect(nodes1[i].model).to.be.equal(nodes2[i].model);
-        expect(nodes2[i + 1].value).to.be.equal(idEntities[i]);
+        expect(nodes_1[i]).to.be.equal(nodes_2[i]);
+        expect(nodes_1[i].model).to.be.equal(nodes_2[i].model);
+        expect(nodes_2[i + 1].value).to.be.equal(idEntities[i]);
       });
     });
 
     it('should update model keySymbol when inserting items', async () => {
-      const nodes1 = [...binder.model.fieldArrayModel].slice();
-      [0, 1].forEach((i) => expect(nodes1[i].value).to.be.equal(idEntities[i]));
+      const nodes_1 = [...binder.model.fieldArrayModel].slice();
+      [0, 1].forEach((i) => expect(nodes_1[i].value).to.be.equal(idEntities[i]));
 
-      for (let i = 0; i < nodes1.length; i++) {
-        expect(nodes1[i].model[_key]).to.be.equal(i);
+      for (let i = 0; i < nodes_1.length; i++) {
+        expect(nodes_1[i].model[_key]).to.be.equal(i);
       }
 
-      binder.for(nodes1[0].model.idString).value = 'foo';
+      binder.for(nodes_1[0].model.idString).value = 'foo';
       expect(binder.model.fieldArrayModel.valueOf()[0].idString).to.be.equal('foo');
 
       binder.for(binder.model.fieldArrayModel).prependItem();
       expect(binder.model.fieldArrayModel.valueOf()[1].idString).to.be.equal('foo');
 
-      const nodes2 = [...binder.model.fieldArrayModel].slice();
-      expect(nodes2.length).to.be.equal(3);
-      for (let i = 0; i < nodes2.length; i++) {
-        expect(nodes2[i].model[_key]).to.be.equal(i);
+      const nodes_2 = [...binder.model.fieldArrayModel].slice();
+      expect(nodes_2.length).to.be.equal(3);
+      for (let i = 0; i < nodes_2.length; i++) {
+        expect(nodes_2[i].model[_key]).to.be.equal(i);
       }
     });
 
@@ -303,7 +302,7 @@ describe('form/Model', () => {
           expect(cellBinder.value).to.be.equal(matrix[i][j]);
           const [, lastValidator] = cellBinder.validators;
           expect(lastValidator).to.be.instanceOf(Positive);
-          walkedCells += 1;
+          walkedCells++;
         });
       });
       expect(walkedCells).to.equal(4);

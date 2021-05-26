@@ -14,8 +14,9 @@
  * the License.
  */
 
-import { css, html, LitElement, property } from 'lit-element';
-import { classMap } from 'lit-html/directives/class-map';
+import { html, LitElement } from 'lit';
+import { property } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 import { ConnectionState, ConnectionStateStore } from './ConnectionState';
 
 const DEFAULT_STYLE_ID = 'css-loading-indicator';
@@ -26,8 +27,8 @@ const DEFAULT_STYLE_ID = 'css-loading-indicator';
  */
 export class ConnectionIndicator extends LitElement {
   /**
-   * Initialize global connection indicator instance at window.Vaadin.connectionIndicator
-   * and add instance to the document body.
+   * Initialize global connection indicator instance at
+   * window.Vaadin.connectionIndicator and add instance to the document body.
    */
   static create(): ConnectionIndicator {
     const $wnd = window as any;
@@ -43,72 +44,69 @@ export class ConnectionIndicator extends LitElement {
    * The delay before showing the loading indicator, in ms.
    */
   @property({ type: Number })
-  firstDelay = 300;
+  firstDelay: number = 300;
 
   /**
    * The delay before the loading indicator goes into "second" state, in ms.
    */
   @property({ type: Number })
-  secondDelay = 1500;
+  secondDelay: number = 1500;
 
   /**
    * The delay before the loading indicator goes into "third" state, in ms.
    */
   @property({ type: Number })
-  thirdDelay = 5000;
+  thirdDelay: number = 5000;
 
   /**
    * The duration for which the connection state change message is visible,
    * in ms.
    */
   @property({ type: Number })
-  expandedDuration = 2000;
+  expandedDuration: number = 2000;
 
   /**
    * The message shown when the connection goes to connected state.
    */
   @property({ type: String })
-  onlineText = 'Online';
+  onlineText: string = 'Online';
 
   /**
    * The message shown when the connection goes to lost state.
    */
   @property({ type: String })
-  offlineText = 'Connection lost';
+  offlineText: string = 'Connection lost';
 
   /**
    * The message shown when the connection goes to reconnecting state.
    */
   @property({ type: String })
-  reconnectingText = 'Connection lost, trying to reconnect...';
+  reconnectingText: string = 'Connection lost, trying to reconnect...';
 
   @property({ type: Boolean, reflect: true })
-  private offline = false;
+  private offline: boolean = false;
 
   @property({ type: Boolean, reflect: true })
-  private reconnecting = false;
+  private reconnecting: boolean = false;
 
   @property({ type: Boolean, reflect: true })
-  private expanded = false;
+  private expanded: boolean = false;
 
   @property({ type: Boolean, reflect: true })
-  private loading = false;
+  private loading: boolean = false;
 
   @property({ type: String })
   private loadingBarState: LoadingBarState = LoadingBarState.IDLE;
 
-  private applyDefaultThemeState = true;
+  private applyDefaultThemeState: boolean = true;
 
-  private firstTimeout = 0;
+  private firstTimeout: number = 0;
+  private secondTimeout: number = 0;
+  private thirdTimeout: number = 0;
 
-  private secondTimeout = 0;
-
-  private thirdTimeout = 0;
-
-  private expandedTimeout = 0;
+  private expandedTimeout: number = 0;
 
   private connectionStateStore?: ConnectionStateStore;
-
   private readonly connectionStateListener: () => void;
 
   private lastMessageState: ConnectionState = ConnectionState.CONNECTED;
@@ -249,7 +247,7 @@ export class ConnectionIndicator extends LitElement {
       if (!document.getElementById(DEFAULT_STYLE_ID)) {
         const style = document.createElement('style');
         style.id = DEFAULT_STYLE_ID;
-        style.textContent = this.getDefaultStyle().cssText;
+        style.textContent = this.getDefaultStyle();
         document.head.appendChild(style);
       }
     } else {
@@ -260,8 +258,8 @@ export class ConnectionIndicator extends LitElement {
     }
   }
 
-  private getDefaultStyle() {
-    return css`
+  private getDefaultStyle(): string {
+    return `
       @keyframes v-progress-start {
         0% {
           width: 0%;

@@ -19,7 +19,6 @@ export interface IdEntity {
 }
 export class IdEntityModel<T extends IdEntity = IdEntity> extends ObjectModel<T> {
   static createEmptyValue: () => IdEntity;
-
   get idString(): StringModel {
     return this[_getPropertyModel]('idString', StringModel, [false]);
   }
@@ -100,7 +99,7 @@ export interface TestEntity {
   fieldString: string;
   fieldNumber: number;
   fieldBoolean: boolean;
-  fieldObject: Record<string, unknown>;
+  fieldObject: object;
   fieldArrayString: string[];
   fieldArrayModel: IdEntity[];
   fieldMatrixNumber: number[][];
@@ -122,7 +121,7 @@ export class TestModel<T extends TestEntity = TestEntity> extends ObjectModel<T>
   }
 
   get fieldObject() {
-    return this[_getPropertyModel]('fieldObject', ObjectModel, [false]) as ObjectModel<Record<string, unknown>>;
+    return this[_getPropertyModel]('fieldObject', ObjectModel, [false]) as ObjectModel<object>;
   }
 
   get fieldArrayString() {

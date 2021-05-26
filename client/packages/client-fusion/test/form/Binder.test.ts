@@ -1,9 +1,10 @@
 /* tslint:disable:max-classes-per-file */
+
 import { assert } from '@open-wc/testing';
-import sinon from 'sinon';
-// API to test
 import { LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
+import sinon from 'sinon';
+// API to test
 import { Binder, BinderConfiguration } from '../../src/form';
 import { Employee, EmployeeModel, Order, OrderModel, TestEntity, TestModel } from './TestModels';
 
@@ -254,7 +255,7 @@ describe('form/Binder', () => {
       return { idString, fullName };
     }
 
-    it.only('should not initialize optional in empty value', () => {
+    it('should not initialize optional in empty value', () => {
       const emptyValue = EmployeeModel.createEmptyValue();
       assert.isUndefined(emptyValue.supervisor);
     });

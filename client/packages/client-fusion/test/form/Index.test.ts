@@ -13,8 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
-/* tslint:disable:max-classes-per-file */
 import { assert } from '@open-wc/testing';
 
 describe('form/Index', () => {

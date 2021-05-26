@@ -7,5 +7,5 @@ module.exports = {
   browserStartTimeout: 60000, // default 30000
   testsStartTimeout: 60000, // default 10000
   testsFinishTimeout: 60000, // default 20000
-  plugins: [esbuildPlugin({ ts: true })],
+  plugins: [esbuildPlugin({ ts: true, target: 'auto' })],
 };

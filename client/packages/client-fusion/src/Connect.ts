@@ -15,6 +15,40 @@ interface ConnectExceptionData {
   validationErrorData?: ValidationErrorData[];
 }
 
+const throwConnectException = (errorJson: ConnectExceptionData) => {
+  if (errorJson.validationErrorData) {
+    throw new EndpointValidationError(errorJson.message, errorJson.validationErrorData, errorJson.type);
+  } else {
+    throw new EndpointError(errorJson.message, errorJson.type, errorJson.detail);
+  }
+};
+
+/**
+ * Throws a TypeError if the response is not 200 OK.
+ * @param response The response to assert.
+ * @ignore
+ */
+const assertResponseIsOk = async (response: Response): Promise<void> => {
+  if (!response.ok) {
+    const errorText = await response.text();
+    let errorJson: ConnectExceptionData | null;
+    try {
+      errorJson = JSON.parse(errorText);
+    } catch (ignored) {
+      // not a json
+      errorJson = null;
+    }
+
+    if (errorJson !== null) {
+      throwConnectException(errorJson);
+    } else if (errorText !== null && errorText.length > 0) {
+      throw new EndpointResponseError(errorText, response);
+    } else {
+      throw new EndpointError(`expected "200 OK" response, but got ${response.status} ${response.statusText}`);
+    }
+  }
+};
+
 /**
  * An exception that gets thrown for unexpected HTTP response.
  */
@@ -72,7 +106,6 @@ export class EndpointValidationError extends EndpointError {
    * An original validation error message.
    */
   validationErrorMessage: string;
-
   /**
    * An array of the validation errors.
    */
@@ -91,40 +124,6 @@ export class EndpointValidationError extends EndpointError {
   }
 }
 
-const throwConnectException = (errorJson: ConnectExceptionData) => {
-  if (errorJson.validationErrorData) {
-    throw new EndpointValidationError(errorJson.message, errorJson.validationErrorData, errorJson.type);
-  } else {
-    throw new EndpointError(errorJson.message, errorJson.type, errorJson.detail);
-  }
-};
-
-/**
- * Throws a TypeError if the response is not 200 OK.
- * @param response The response to assert.
- * @ignore
- */
-const assertResponseIsOk = async (response: Response): Promise<void> => {
-  if (!response.ok) {
-    const errorText = await response.text();
-    let errorJson: ConnectExceptionData | null;
-    try {
-      errorJson = JSON.parse(errorText);
-    } catch (ignored) {
-      // not a json
-      errorJson = null;
-    }
-
-    if (errorJson !== null) {
-      throwConnectException(errorJson);
-    } else if (errorText !== null && errorText.length > 0) {
-      throw new EndpointResponseError(errorText, response);
-    } else {
-      throw new EndpointError(`expected "200 OK" response, but got ${response.status} ${response.statusText}`);
-    }
-  }
-};
-
 /**
  * An object, containing all data for the particular validation error.
  */
@@ -133,7 +132,6 @@ export class ValidationErrorData {
    * The validation error message.
    */
   message: string;
-
   /**
    * The parameter name that caused the validation error.
    */
@@ -248,7 +246,7 @@ export class ConnectClient {
   /**
    * The Vaadin endpoint prefix
    */
-  prefix = '/connect';
+  prefix: string = '/connect';
 
   /**
    * The array of middlewares that are invoked during a call.
@@ -308,12 +306,11 @@ export class ConnectClient {
 
     // helper to keep the undefined value in object after JSON.stringify
     const nullForUndefined = (obj: any): any => {
-      Object.keys(obj).forEach((property) => {
+      for (const property in obj) {
         if (obj[property] === undefined) {
           obj[property] = null;
         }
-      });
-
+      }
       return obj;
     };
 
@@ -374,8 +371,9 @@ export class ConnectClient {
         return ((context) => {
           if (typeof middleware === 'function') {
             return middleware(context, next);
+          } else {
+            return (middleware as MiddlewareClass).invoke(context, next);
           }
-          return (middleware as MiddlewareClass).invoke(context, next);
         }) as MiddlewareNext;
       },
       // Initialize reduceRight the accumulator with `fetchNext`
