@@ -370,8 +370,7 @@ public class WebComponentBootstrapHandlerTest {
 
         Mockito.when(provider.getApplicationResource(Mockito.anyString()))
                 .thenAnswer(answer -> WebComponentBootstrapHandlerTest.class
-                        .getClassLoader()
-                        .getResource(answer.getArgumentAt(0, String.class)));
+                        .getClassLoader().getResource(answer.getArgument(0)));
 
         Mockito.when(provider.getClientResourceAsStream(
                 "META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
