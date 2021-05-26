@@ -15,6 +15,13 @@
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.javadoc.skip>true</maven.javadoc.skip>
     </properties>
-
+    <dependencies>
+        <dependency>
+            <groupId>com.github.fluorumlabs</groupId>
+            <artifactId>jext-apt</artifactId>
+            <version>1.0.0-2104282</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies> 
 </project>
 
