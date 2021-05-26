@@ -1,4 +1,4 @@
-package com.vaadin.flow.server.startup.fusion;
+package com.vaadin.base.devserver;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
@@ -22,7 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
-
+import com.vaadin.base.devserver.startup.DevModeInitializer;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.VaadinServlet;
@@ -30,8 +30,6 @@ import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.fusion.EndpointGeneratorTaskFactoryImpl;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-import com.vaadin.base.devserver.startup.DevModeInitializer;
-import com.vaadin.base.devserver.DevModeHandlerImpl;
 
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.TARGET;
@@ -101,6 +99,7 @@ public class DevModeInitializerEndpointTest {
         Lookup lookup = Mockito.mock(Lookup.class);
         Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
+
         Mockito.doReturn(new EndpointGeneratorTaskFactoryImpl()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
 
