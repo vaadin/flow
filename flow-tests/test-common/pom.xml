@@ -19,7 +19,7 @@
         <dependency>
             <groupId>com.github.fluorumlabs</groupId>
             <artifactId>jext-apt</artifactId>
-            <version>1.0.0-2104282</version>
+            <version>1.0.0-2105261</version>
             <scope>compile</scope>
         </dependency>
     </dependencies> 
