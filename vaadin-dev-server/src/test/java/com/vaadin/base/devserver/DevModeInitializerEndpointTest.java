@@ -31,6 +31,8 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.fusion.EndpointGeneratorTaskFactoryImpl;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
+import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubWebpackServer;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
@@ -91,6 +93,9 @@ public class DevModeInitializerEndpointTest {
         Mockito.when(appConfig.getBuildFolder()).thenReturn(TARGET);
         Mockito.when(appConfig.getFlowResourcesFolder())
                 .thenReturn(TARGET + "/" + DEFAULT_FLOW_RESOURCES_FOLDER);
+
+        createStubNode(false, true, baseDir);
+        createStubWebpackServer("Compiled", 500, baseDir, true);
 
         servletContext = mockServletContext();
         ServletRegistration vaadinServletRegistration = Mockito
