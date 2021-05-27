@@ -25,7 +25,7 @@ export enum ConnectionState {
    * 'offline' event, or the server not being reached after a number of reconnect
    * attempts.
    */
-  CONNECTION_LOST = 'connection-lost'
+  CONNECTION_LOST = 'connection-lost',
 }
 
 export type ConnectionStateChangeListener = (previous: ConnectionState, current: ConnectionState) => void;
@@ -35,7 +35,7 @@ export class ConnectionStateStore {
 
   private stateChangeListeners: Set<ConnectionStateChangeListener> = new Set();
 
-  private loadingCount: number = 0;
+  private loadingCount = 0;
 
   constructor(initialState: ConnectionState) {
     this.connectionState = initialState;
@@ -50,7 +50,7 @@ export class ConnectionStateStore {
       navigator.serviceWorker.ready.then((registration) => {
         registration?.active?.postMessage({
           method: 'Vaadin.ServiceWorker.isConnectionLost',
-          id: 'Vaadin.ServiceWorker.isConnectionLost'
+          id: 'Vaadin.ServiceWorker.isConnectionLost',
         });
       });
     }

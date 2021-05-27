@@ -44,69 +44,72 @@ export class ConnectionIndicator extends LitElement {
    * The delay before showing the loading indicator, in ms.
    */
   @property({ type: Number })
-  firstDelay: number = 300;
+  firstDelay = 300;
 
   /**
    * The delay before the loading indicator goes into "second" state, in ms.
    */
   @property({ type: Number })
-  secondDelay: number = 1500;
+  secondDelay = 1500;
 
   /**
    * The delay before the loading indicator goes into "third" state, in ms.
    */
   @property({ type: Number })
-  thirdDelay: number = 5000;
+  thirdDelay = 5000;
 
   /**
    * The duration for which the connection state change message is visible,
    * in ms.
    */
   @property({ type: Number })
-  expandedDuration: number = 2000;
+  expandedDuration = 2000;
 
   /**
    * The message shown when the connection goes to connected state.
    */
   @property({ type: String })
-  onlineText: string = 'Online';
+  onlineText = 'Online';
 
   /**
    * The message shown when the connection goes to lost state.
    */
   @property({ type: String })
-  offlineText: string = 'Connection lost';
+  offlineText = 'Connection lost';
 
   /**
    * The message shown when the connection goes to reconnecting state.
    */
   @property({ type: String })
-  reconnectingText: string = 'Connection lost, trying to reconnect...';
+  reconnectingText = 'Connection lost, trying to reconnect...';
 
   @property({ type: Boolean, reflect: true })
-  private offline: boolean = false;
+  private offline = false;
 
   @property({ type: Boolean, reflect: true })
-  private reconnecting: boolean = false;
+  private reconnecting = false;
 
   @property({ type: Boolean, reflect: true })
-  private expanded: boolean = false;
+  private expanded = false;
 
   @property({ type: Boolean, reflect: true })
-  private loading: boolean = false;
+  private loading = false;
 
   @property({ type: String })
   private loadingBarState: LoadingBarState = LoadingBarState.IDLE;
 
-  private applyDefaultThemeState: boolean = true;
+  private applyDefaultThemeState = true;
 
-  private firstTimeout: number = 0;
-  private secondTimeout: number = 0;
-  private thirdTimeout: number = 0;
+  private firstTimeout = 0;
 
-  private expandedTimeout: number = 0;
+  private secondTimeout = 0;
+
+  private thirdTimeout = 0;
+
+  private expandedTimeout = 0;
 
   private connectionStateStore?: ConnectionStateStore;
+
   private readonly connectionStateListener: () => void;
 
   private lastMessageState: ConnectionState = ConnectionState.CONNECTED;
