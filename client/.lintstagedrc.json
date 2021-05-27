@@ -1,4 +1,4 @@
 {
   "packages/**/src/**/*.{js,ts}": ["eslint --fix"],
-  "*.{js,ts,json}": ["prettier --write --plugin prettier-plugin-package"]
+  "*.{js,ts,json}": ["prettier --write"]
 }

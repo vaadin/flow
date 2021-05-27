@@ -8,6 +8,7 @@
     "packages/*"
   ],
   "scripts": {
+    "postinstall": "npx simple-git-hooks",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -16,9 +17,6 @@
   },
   "author": "Vaadin Ltd",
   "license": "Apache-2.0",
-  "simple-git-hooks": {
-    "pre-commit": "npx lint-staged"
-  },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.0.0",
     "@web/dev-server-esbuild": "^0.2.12",
