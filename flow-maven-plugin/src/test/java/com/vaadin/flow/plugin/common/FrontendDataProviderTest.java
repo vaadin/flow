@@ -132,7 +132,7 @@ public class FrontendDataProviderTest {
         cssFile = createFile(sourceDirectory, "test.css");
         htmlFile = createFile(sourceDirectory, "test.html");
 
-        Mockito.doAnswer(invocation -> invocation.getArgumentAt(0, Set.class))
+        Mockito.doAnswer(invocation -> invocation.getArgument(0))
                 .when(translator).applyTheme(any());
 
         Mockito.when(generator.generateWebComponentModules(any(File.class)))
