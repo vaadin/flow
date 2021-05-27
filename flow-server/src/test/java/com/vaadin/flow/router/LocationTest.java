@@ -275,4 +275,12 @@ public class LocationTest {
         Assert.assertEquals("bar=a b ñ & ?",
                 location.getQueryParameters().getQueryString());
     }
+
+    @Test
+    public void colonInLocationPath_locationIsParsed() {
+        Location location = new Location("abc:foo/bar?baz");
+        Assert.assertEquals("abc:foo/bar", location.getPath());
+        Assert.assertEquals("baz",
+                location.getQueryParameters().getQueryString());
+    }
 }
