@@ -8,6 +8,7 @@
     "packages/*"
   ],
   "scripts": {
+    "build": "lerna run build",
     "lint": "lerna run lint",
     "postinstall": "simple-git-hooks",
     "test": "lerna run test",
