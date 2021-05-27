@@ -67,13 +67,12 @@ export async function login(username: string, password: string, options?: LoginO
         redirectUrl: savedUrl,
         defaultUrl,
       };
-    } else {
-      return {
-        error: true,
-        errorTitle: 'Incorrect username or password.',
-        errorMessage: 'Check that you have entered the correct username and password and try again.',
-      };
     }
+    return {
+      error: true,
+      errorTitle: 'Incorrect username or password.',
+      errorMessage: 'Check that you have entered the correct username and password and try again.',
+    };
   } catch (e) {
     return {
       error: true,

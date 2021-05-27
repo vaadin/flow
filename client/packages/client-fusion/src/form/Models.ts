@@ -44,10 +44,13 @@ export abstract class AbstractModel<T> {
   }
 
   readonly [_parent]: ModelParent<T>;
+
   readonly [_validators]: ReadonlyArray<Validator<T>>;
+
   readonly [_optional]: boolean;
 
   [_binderNode]?: BinderNode<T, this>;
+
   [_key]: keyof any;
 
   constructor(parent: ModelParent<T>, key: keyof any, optional: boolean, ...validators: ReadonlyArray<Validator<T>>) {
@@ -60,8 +63,9 @@ export abstract class AbstractModel<T> {
   toString() {
     return String(this.valueOf());
   }
+
   valueOf(): T {
-    const value = getBinderNode(this).value;
+    const { value } = getBinderNode(this);
     if (value === undefined) {
       throw new TypeError('Value is undefined');
     }
@@ -73,11 +77,13 @@ export abstract class PrimitiveModel<T> extends AbstractModel<T> {}
 
 export class BooleanModel extends PrimitiveModel<boolean> implements HasFromString<boolean> {
   static createEmptyValue = Boolean;
+
   [_fromString] = Boolean;
 }
 
 export class NumberModel extends PrimitiveModel<number> implements HasFromString<number> {
   static createEmptyValue = Number;
+
   constructor(
     parent: ModelParent<number>,
     key: keyof any,
@@ -87,6 +93,7 @@ export class NumberModel extends PrimitiveModel<number> implements HasFromString
     // Prepend a built-in validator to indicate NaN input
     super(parent, key, optional, new IsNumber(optional), ...validators);
   }
+
   [_fromString](str: string): number {
     return isNumeric(str) ? Number.parseFloat(str) : NaN;
   }
@@ -94,6 +101,7 @@ export class NumberModel extends PrimitiveModel<number> implements HasFromString
 
 export class StringModel extends PrimitiveModel<string> implements HasFromString<string> {
   static createEmptyValue = String;
+
   [_fromString] = String;
 }
 
@@ -141,7 +149,9 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
   }
 
   private readonly [_ItemModel]: ModelConstructor<T, M>;
+
   private readonly itemModelArgs: ReadonlyArray<any>;
+
   private readonly itemModels: M[] = [];
 
   constructor(

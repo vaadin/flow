@@ -18,16 +18,23 @@ export interface FieldStrategy extends Field {
 
 export abstract class AbstractFieldStrategy implements FieldStrategy {
   abstract required: boolean;
+
   abstract invalid: boolean;
+
   constructor(public element: Element & Field) {}
+
   validate = async () => [];
+
   get value() {
     return this.element.value;
   }
+
   set value(value) {
     this.element.value = value;
   }
+
   set errorMessage(_: string) {} // eslint-disable-line @typescript-eslint/no-empty-function
+
   setAttribute(key: string, val: any) {
     if (val) {
       this.element.setAttribute(key, '');
@@ -41,9 +48,11 @@ export class VaadinFieldStrategy extends AbstractFieldStrategy {
   set required(value: boolean) {
     this.element.required = value;
   }
+
   set invalid(value: boolean) {
     this.element.invalid = value;
   }
+
   set errorMessage(value: string) {
     this.element.errorMessage = value;
   }
@@ -53,6 +62,7 @@ export class GenericFieldStrategy extends AbstractFieldStrategy {
   set required(value: boolean) {
     this.setAttribute('required', value);
   }
+
   set invalid(value: boolean) {
     this.setAttribute('invalid', value);
   }
@@ -62,6 +72,7 @@ export class CheckedFieldStrategy extends GenericFieldStrategy {
   set value(val: any) {
     (this.element as any).checked = /^(true|on)$/i.test(String(val));
   }
+
   get value() {
     return (this.element as any).checked;
   }
@@ -72,6 +83,7 @@ export class ComboBoxFieldStrategy extends VaadinFieldStrategy {
     const { selectedItem } = this.element as any;
     return selectedItem === null ? undefined : selectedItem;
   }
+
   set value(val: any) {
     (this.element as any).selectedItem = val === undefined ? null : val;
   }
@@ -81,6 +93,7 @@ export class SelectedFieldStrategy extends GenericFieldStrategy {
   set value(val: any) {
     (this.element as any).selected = val;
   }
+
   get value() {
     return (this.element as any).selected;
   }

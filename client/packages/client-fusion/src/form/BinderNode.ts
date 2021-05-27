@@ -45,9 +45,12 @@ function getErrorPropertyName(valueError: ValueError<any>): string {
  * instances.
  */
 export class BinderNode<T, M extends AbstractModel<T>> {
-  private [_visited]: boolean = false;
+  private [_visited] = false;
+
   private [_validators]: ReadonlyArray<Validator<T>>;
+
   private [_ownErrors]?: ReadonlyArray<ValueError<T>>;
+
   private defaultArrayItemValue?: T;
 
   constructor(readonly model: M) {
@@ -358,7 +361,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     return [...this.runOwnValidators(), ...(this.parent ? this.parent.requestValidationWithAncestors() : [])];
   }
 
-  private initializeValue(requiredByChildNode: boolean = false) {
+  private initializeValue(requiredByChildNode = false) {
     // First, make sure parents have value initialized
     if (this.parent && (this.parent.value === undefined || this.parent.defaultValue === undefined)) {
       this.parent.initializeValue(true);
@@ -377,7 +380,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     }
   }
 
-  private setValueState(value: T | undefined, keepPristine: boolean = false) {
+  private setValueState(value: T | undefined, keepPristine = false) {
     const modelParent = this.model[_parent];
     if (modelParent instanceof ObjectModel) {
       // Value contained in object - replace object in parent

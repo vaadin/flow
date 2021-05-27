@@ -33,21 +33,26 @@ interface DecimalAttributes extends ValueNumberAttributes {
 
 abstract class AbstractValidator<T> implements Validator<T> {
   message = 'invalid';
+
   impliesRequired = false;
+
   constructor(attrs?: ValidatorAttributes) {
     if (attrs && attrs.message) {
       this.message = attrs.message;
     }
   }
+
   abstract validate(value: T): boolean | Promise<boolean>;
 }
 
 export class Required<T> extends AbstractValidator<T> {
   impliesRequired = true;
+
   validate(value: T) {
     if (typeof value === 'string' || Array.isArray(value)) {
       return value.length > 0;
-    } else if (typeof value === 'number') {
+    }
+    if (typeof value === 'number') {
       return Number.isFinite(value);
     }
     return value !== undefined;
@@ -66,6 +71,7 @@ abstract class NumberValidator<T> extends AbstractValidator<T> {
   constructor(attrs?: ValidatorAttributes) {
     super(attrs);
   }
+
   validate(value: T) {
     return isNumeric(String(value));
   }
@@ -73,6 +79,7 @@ abstract class NumberValidator<T> extends AbstractValidator<T> {
 
 export class IsNumber extends NumberValidator<number | undefined> {
   optional: boolean;
+
   constructor(optional: boolean, attrs?: ValidatorAttributes) {
     super({ message: 'must be a number', ...attrs });
     this.optional = optional;
@@ -85,6 +92,7 @@ export class IsNumber extends NumberValidator<number | undefined> {
 
 abstract class ValueNumberValidator<T> extends NumberValidator<T> {
   value: number;
+
   constructor(attrs: ValueNumberAttributes | number | string) {
     super(_asValidatorAttributes(attrs));
     const val = _value(attrs);
@@ -97,6 +105,7 @@ export class Email extends AbstractValidator<string> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be a well-formed email address', ...attrs });
   }
+
   validate(value: string) {
     return isEmail(value);
   }
@@ -105,6 +114,7 @@ export class Null extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be null', ...attrs });
   }
+
   validate(value: any) {
     return value == null;
   }
@@ -113,6 +123,7 @@ export class NotNull extends Required<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must not be null', ...attrs });
   }
+
   validate(value: any) {
     return !new Null().validate(value);
   }
@@ -121,6 +132,7 @@ export class NotEmpty extends Required<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must not be empty', ...attrs });
   }
+
   validate(value: any) {
     return super.validate(value) && new NotNull().validate(value) && value.length > 0;
   }
@@ -129,6 +141,7 @@ export class NotBlank extends Required<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must not be blank', ...attrs });
   }
+
   validate(value: any) {
     return new NotEmpty().validate(value);
   }
@@ -137,6 +150,7 @@ export class AssertTrue extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be true', ...attrs });
   }
+
   validate(value: any) {
     return isBoolean(String(value)) && String(value) === 'true';
   }
@@ -145,6 +159,7 @@ export class AssertFalse extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be false', ...attrs });
   }
+
   validate(value: any) {
     return !new AssertTrue().validate(value);
   }
@@ -161,6 +176,7 @@ export class Min extends ValueNumberValidator<any> {
       ..._asValueNumberAttributes(attrs),
     });
   }
+
   validate(value: any) {
     return super.validate(value) && isFloat(String(value), { min: this.value });
   }
@@ -172,6 +188,7 @@ export class Max extends ValueNumberValidator<any> {
       ..._asValueNumberAttributes(attrs),
     });
   }
+
   validate(value: any) {
     return super.validate(value) && isFloat(String(value), { max: this.value });
   }
@@ -183,6 +200,7 @@ function _inclusive(attrs: DecimalAttributes | string | number) {
 
 export class DecimalMin extends ValueNumberValidator<any> {
   inclusive: boolean;
+
   constructor(attrs: DecimalAttributes | string | number) {
     super({
       message: `must be greater than ${_inclusive(attrs) ? 'or equal to ' : ''}${_value(attrs)}`,
@@ -190,12 +208,14 @@ export class DecimalMin extends ValueNumberValidator<any> {
     });
     this.inclusive = _inclusive(attrs);
   }
+
   validate(value: any) {
     return super.validate(value) && isFloat(String(value), { [this.inclusive ? 'min' : 'gt']: this.value });
   }
 }
 export class DecimalMax extends ValueNumberValidator<any> {
   inclusive: boolean;
+
   constructor(attrs: DecimalAttributes | string | number) {
     super({
       message: `must be less than ${_inclusive(attrs) ? 'or equal to ' : ''}${_value(attrs)}`,
@@ -203,6 +223,7 @@ export class DecimalMax extends ValueNumberValidator<any> {
     });
     this.inclusive = _inclusive(attrs);
   }
+
   validate(value: any) {
     return super.validate(value) && isFloat(String(value), { [this.inclusive ? 'max' : 'lt']: this.value });
   }
@@ -211,6 +232,7 @@ export class Negative extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be less than 0', ...attrs });
   }
+
   validate(value: any) {
     return toFloat(`${value}`) < 0;
   }
@@ -219,6 +241,7 @@ export class NegativeOrZero extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be less than or equal to 0', ...attrs });
   }
+
   validate(value: any) {
     return toFloat(`${value}`) <= 0;
   }
@@ -227,6 +250,7 @@ export class Positive extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be greater than 0', ...attrs });
   }
+
   validate(value: any) {
     return toFloat(`${value}`) > 0;
   }
@@ -235,6 +259,7 @@ export class PositiveOrZero extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be greater than or equal to 0', ...attrs });
   }
+
   validate(value: any) {
     return toFloat(`${value}`) >= 0;
   }
@@ -250,7 +275,9 @@ function _max(attrs: SizeAttributes) {
 
 export class Size extends AbstractValidator<string> {
   min: number;
+
   max: number;
+
   constructor(attrs: SizeAttributes) {
     super({ message: `size must be between ${_min(attrs)} and ${_max(attrs)}`, ...attrs });
     this.min = _min(attrs);
@@ -259,6 +286,7 @@ export class Size extends AbstractValidator<string> {
       this.impliesRequired = true;
     }
   }
+
   validate(value: string) {
     if (this.min && this.min > 0 && !new Required().validate(value)) {
       return false;
@@ -269,7 +297,9 @@ export class Size extends AbstractValidator<string> {
 
 export class Digits extends AbstractValidator<string> {
   integer: number;
+
   fraction: number;
+
   constructor(attrs: DigitAttributes) {
     super({
       message: `numeric value out of bounds (<${attrs.integer} digits>.<${attrs.fraction} digits> expected)`,
@@ -278,6 +308,7 @@ export class Digits extends AbstractValidator<string> {
     this.integer = attrs.integer;
     this.fraction = attrs.fraction;
   }
+
   validate(value: any) {
     return (
       String(toFloat(`${value}`)).replace(/(.*)\.\d+/, '$1').length === this.integer &&
@@ -290,6 +321,7 @@ export class Past extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be a past date', ...attrs });
   }
+
   validate(value: any) {
     return isBefore(value);
   }
@@ -312,6 +344,7 @@ export class Future extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be a future date', ...attrs });
   }
+
   validate(value: any) {
     return isAfter(value);
   }
@@ -342,6 +375,7 @@ function _regexp(attrs: PatternAttributes | string | RegExp) {
 
 export class Pattern extends AbstractValidator<string> {
   regexp: RegExp;
+
   constructor(attrs: PatternAttributes | string | RegExp) {
     super({
       message: `must match the following regular expression: ${_regexp(attrs)}`,
@@ -349,6 +383,7 @@ export class Pattern extends AbstractValidator<string> {
     });
     this.regexp = _regexp(attrs);
   }
+
   validate(value: any) {
     return matches(value, this.regexp);
   }

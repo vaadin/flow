@@ -106,6 +106,7 @@ export class EndpointValidationError extends EndpointError {
    * An original validation error message.
    */
   validationErrorMessage: string;
+
   /**
    * An array of the validation errors.
    */
@@ -132,6 +133,7 @@ export class ValidationErrorData {
    * The validation error message.
    */
   message: string;
+
   /**
    * The parameter name that caused the validation error.
    */
@@ -246,7 +248,7 @@ export class ConnectClient {
   /**
    * The Vaadin endpoint prefix
    */
-  prefix: string = '/connect';
+  prefix = '/connect';
 
   /**
    * The array of middlewares that are invoked during a call.
@@ -371,9 +373,8 @@ export class ConnectClient {
         return ((context) => {
           if (typeof middleware === 'function') {
             return middleware(context, next);
-          } else {
-            return (middleware as MiddlewareClass).invoke(context, next);
           }
+          return (middleware as MiddlewareClass).invoke(context, next);
         }) as MiddlewareNext;
       },
       // Initialize reduceRight the accumulator with `fetchNext`
