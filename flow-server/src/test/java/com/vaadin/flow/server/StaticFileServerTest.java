@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
@@ -30,6 +31,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
@@ -37,12 +40,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
@@ -257,15 +263,29 @@ public class StaticFileServerTest implements Serializable {
 
     @Test
     public void directoryIsNotResourceRequest() throws Exception {
+        final TemporaryFolder folder = TemporaryFolder.builder().build();
+        folder.create();
+
         setupRequestURI("", "", "/frontend");
         Mockito.when(servletService.getStaticResource("/frontend"))
-                .thenReturn(new URL("file:///C:/frontend/"));
+                .thenReturn(folder.getRoot().toURI().toURL());
         Assert.assertFalse(fileServer.isStaticResourceRequest(request));
 
-        setupRequestURI("", "", "/frontend/.;");
-        Mockito.when(servletService.getStaticResource("/frontend/.;"))
-                .thenReturn(new URL("file:///C:/frontend/"));
+        File archiveFile = new File(folder.getRoot(), "fake.jar");
+        archiveFile.createNewFile();
+        Path tempArchive = archiveFile.toPath();
+
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+                Files.newOutputStream(tempArchive))) {
+            zipOutputStream.putNextEntry(new ZipEntry("/frontend"));
+            zipOutputStream.closeEntry();
+        }
+        setupRequestURI("", "", "/frontend/");
+        Mockito.when(servletService.getStaticResource("/frontend/")).thenReturn(
+                new URL("jar:file:/" + tempArchive.toString() + "!/frontend"));
         Assert.assertFalse(fileServer.isStaticResourceRequest(request));
+
+        folder.delete();
     }
 
     @Test
