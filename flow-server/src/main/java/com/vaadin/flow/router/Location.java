@@ -246,6 +246,7 @@ public class Location implements Serializable {
         }
 
         if (query == null) {
+            // decoding of parameters is done in QueryParameters::parseParams
             query = path.substring(beginIndex + 1);
         }
 
