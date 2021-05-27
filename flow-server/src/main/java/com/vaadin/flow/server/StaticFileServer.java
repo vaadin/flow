@@ -115,31 +115,8 @@ public class StaticFileServer implements StaticFileHandler {
         }
         resource = getStaticResource(requestFilename);
 
-        if (resource != null) {
-            try {
-                URI resourceURI = resource.toURI();
-                if (resource.getProtocol().equals("jar")) {
-                    try (FileSystem fileSystem = FileSystems.newFileSystem(
-                            resourceURI, Collections.emptyMap());) {
-
-                        final Path path = fileSystem.getPath(resource.getPath()
-                                .substring(resource.getPath().lastIndexOf("!")
-                                        + 1));
-                        if (Files.isDirectory(path)) {
-                            // Directory resources should not be served.
-                            return false;
-                        }
-                    } catch (IOException e) {
-                        getLogger().debug("failed to read zip file", e);
-                    }
-                } else if (resource.getProtocol().equals("file")
-                        && Files.isDirectory(Paths.get(resourceURI))) {
-                    return false;
-                }
-            } catch (URISyntaxException e) {
-                getLogger().debug("Syntax error in uri from getStaticResource",
-                        e);
-            }
+        if (resource != null && resourceIsDirectory(resource)) {
+            return false;
         }
 
         if (resource == null && shouldFixIncorrectWebjarPaths()
@@ -149,6 +126,35 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         return resource != null;
+    }
+
+    private boolean resourceIsDirectory(URL resource) {
+        URI resourceURI = null;
+        try {
+            resourceURI = resource.toURI();
+        } catch (URISyntaxException e) {
+            getLogger().debug("Syntax error in uri from getStaticResource", e);
+            // Return false as we couldn't determine if the resource is a
+            // directory.
+            return false;
+        }
+
+        if (resource.getProtocol().equals("jar")) {
+            try (FileSystem fileSystem = FileSystems.newFileSystem(resourceURI,
+                    Collections.emptyMap())) {
+                // Get the file path inside the jar.
+                final Path path = fileSystem.getPath(resource.getPath()
+                        .substring(resource.getPath().lastIndexOf("!") + 1));
+
+                return Files.isDirectory(path);
+            } catch (IOException e) {
+                getLogger().debug("failed to read zip file", e);
+            }
+        }
+
+        // If not a jar check if a file path direcotry.
+        return resource.getProtocol().equals("file")
+                && Files.isDirectory(Paths.get(resourceURI));
     }
 
     @Override

@@ -269,7 +269,8 @@ public class StaticFileServerTest implements Serializable {
         setupRequestURI("", "", "/frontend");
         Mockito.when(servletService.getStaticResource("/frontend"))
                 .thenReturn(folder.getRoot().toURI().toURL());
-        Assert.assertFalse(fileServer.isStaticResourceRequest(request));
+        Assert.assertFalse("Folder on disk should not be a static resource.",
+                fileServer.isStaticResourceRequest(request));
 
         File archiveFile = new File(folder.getRoot(), "fake.jar");
         archiveFile.createNewFile();
@@ -277,13 +278,29 @@ public class StaticFileServerTest implements Serializable {
 
         try (ZipOutputStream zipOutputStream = new ZipOutputStream(
                 Files.newOutputStream(tempArchive))) {
-            zipOutputStream.putNextEntry(new ZipEntry("/frontend"));
+            // Create a file to the zip
+            zipOutputStream.putNextEntry(new ZipEntry("/file"));
+            zipOutputStream.closeEntry();
+            // Create a directory to the zip
+            zipOutputStream.putNextEntry(new ZipEntry("frontend/"));
             zipOutputStream.closeEntry();
         }
-        setupRequestURI("", "", "/frontend/");
-        Mockito.when(servletService.getStaticResource("/frontend/")).thenReturn(
-                new URL("jar:file:/" + tempArchive.toString() + "!/frontend"));
-        Assert.assertFalse(fileServer.isStaticResourceRequest(request));
+        setupRequestURI("", "", "/frontend/.");
+        Mockito.when(servletService.getStaticResource("/frontend/."))
+                .thenReturn(new URL("jar:file:/"
+                        + tempArchive.toString().replaceAll("\\\\", "/")
+                        + "!/frontend/"));
+        Assert.assertFalse(
+                "Folder 'frontend' in jar should not be a static resource.",
+                fileServer.isStaticResourceRequest(request));
+        setupRequestURI("", "", "/file.txt");
+        Mockito.when(servletService.getStaticResource("/file.txt"))
+                .thenReturn(new URL("jar:file:/"
+                        + tempArchive.toString().replaceAll("\\\\", "/")
+                        + "!/file.txt"));
+        Assert.assertTrue(
+                "File 'file.txt' inside jar should be a static resource.",
+                fileServer.isStaticResourceRequest(request));
 
         folder.delete();
     }
