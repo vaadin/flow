@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.security.Principal;
+import java.util.Objects;
 import java.util.function.Function;
 
 import javax.annotation.security.DenyAll;
@@ -199,12 +200,34 @@ public class AccessAnnotationChecker implements Serializable {
      *
      * @param cls
      *            the class to check
-     * @return the entity that is responsible for security settings for the
-     *         method passed
-     * @throws IllegalArgumentException
-     *             if the method is not public
+     * @return the first annotated class in <code>cls</code>'s hierarchy with
+     *          that annotated with one of the access annotations,
+     *          starting from the input <code>cls</code> class itself, going up
+     *          in the hierarchy. Note that interfaces are ignored.
+     *          <p>
+     *          If no class in the hierarchy was annotated with any of the access
+     *          annotations, the <code>cls</code> input parameter itself would be
+     *          returned.
+     *          <p>
+     *          Access annotations that being checked against are:
+     *          <code>@AnonymousAllowed</code>
+     *          <code>@PermitAll</code>,
+     *          <code>@RolesAllowed</code>
+     *          <code>DenyAll</code>
+     *
+     * @throws NullPointerException
+     *             if the input <code>cls</code> is null
      */
     public AnnotatedElement getSecurityTarget(Class<?> cls) {
+        Objects.requireNonNull(cls, "The input Class must not be null.");
+
+        Class<?> clazz = cls;
+        while (clazz != null && clazz != Object.class) {
+            if (hasSecurityAnnotation(clazz)) {
+                return clazz;
+            }
+            clazz = clazz.getSuperclass();
+        }
         return cls;
     }
 
@@ -240,7 +263,7 @@ public class AccessAnnotationChecker implements Serializable {
         return false;
     }
 
-    private boolean hasSecurityAnnotation(Method method) {
+    private boolean hasSecurityAnnotation(AnnotatedElement method) {
         return method.isAnnotationPresent(AnonymousAllowed.class)
                 || method.isAnnotationPresent(PermitAll.class)
                 || method.isAnnotationPresent(DenyAll.class)
