@@ -29,6 +29,10 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-dev-server</artifactId>
+        </dependency> 
+        <dependency>
+            <groupId>com.vaadin</groupId>
             <artifactId>flow-polymer-template</artifactId>
             <version>${vaadin.flow.version}</version>
         </dependency>

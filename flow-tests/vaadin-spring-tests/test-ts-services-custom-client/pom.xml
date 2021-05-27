@@ -30,6 +30,11 @@
 
         <dependency>
             <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-dev-server</artifactId>
+        </dependency> 
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
             <artifactId>fusion-endpoint</artifactId>
             <version>${vaadin.flow.version}</version>
         </dependency>
