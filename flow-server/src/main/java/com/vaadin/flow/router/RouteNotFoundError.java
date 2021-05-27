@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.internal.DefaultErrorHandler;
 
 /**
  * This is a basic default error view shown on routing exceptions.
@@ -38,6 +39,7 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.DIV)
+@DefaultErrorHandler
 public class RouteNotFoundError extends Component
         implements HasErrorParameter<NotFoundException> {
 
