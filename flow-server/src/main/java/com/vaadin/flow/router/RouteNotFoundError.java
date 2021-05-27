@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.internal.DefaultErrorHandler;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 /**
@@ -40,6 +41,7 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
  */
 @Tag(Tag.DIV)
 @AnonymousAllowed
+@DefaultErrorHandler
 public class RouteNotFoundError extends Component
         implements HasErrorParameter<NotFoundException> {
 
