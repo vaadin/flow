@@ -140,6 +140,8 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
             session.lock();
             try {
                 session.setAttribute(RouteStoreWrapper.class, null);
+                routeStores.values().forEach(BeanStore::destroy);
+                routeStores.clear();
             } finally {
                 session.unlock();
                 if (sessionDestroyListenerRegistration != null) {
@@ -308,7 +310,7 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
         private boolean resetUI() {
             for (UI ui : getVaadinSession().getUIs()) {
                 String windowName = getWindowName(ui);
-                if (ui != currentUI
+                if (ui != currentUI && windowName != null
                         && windowName.equals(getWindowName(currentUI))) {
                     currentUI = ui;
                     return true;

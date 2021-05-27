@@ -135,7 +135,11 @@ public abstract class AbstractScopeTest {
         doCallRealMethod().when(session)
                 .getAttribute(Mockito.any(String.class));
 
+        doCallRealMethod().when(session).addUI(Mockito.any());
+        doCallRealMethod().when(session).removeUI(Mockito.any());
+
         doCallRealMethod().when(session).getService();
+        doCallRealMethod().when(session).getUIs();
 
         when(session.getState()).thenReturn(VaadinSessionState.OPEN);
 
