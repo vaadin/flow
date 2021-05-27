@@ -11,8 +11,10 @@
   ],
   "scripts": {
     "build": "tsc --isolatedModules",
+    "lint": "eslint --fix src/**/*.{ts,js}",
     "test": "web-test-runner \"test/**/*.test.ts\" --config ../../web-test-runner.config.js",
-    "test:watch": "yarn run test -- --watch"
+    "test:watch": "yarn run test -- --watch",
+    "typecheck": "tsc --noEmit"
   },
   "author": "Vaadin Ltd",
   "license": "Apache-2.0",

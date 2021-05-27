@@ -8,8 +8,10 @@
     "packages/*"
   ],
   "scripts": {
-    "postinstall": "npx simple-git-hooks",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "lerna run lint",
+    "postinstall": "simple-git-hooks",
+    "test": "lerna run test",
+    "typecheck": "lerna run typecheck"
   },
   "repository": {
     "type": "git",
