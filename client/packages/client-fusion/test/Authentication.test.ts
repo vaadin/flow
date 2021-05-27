@@ -1,7 +1,7 @@
 import { expect } from '@open-wc/testing';
-import fetchMock from 'fetch-mock/esm/client.js';
+import fetchMock from 'fetch-mock/esm/client';
 import sinon from 'sinon';
-import { ConnectClient, InvalidSessionMiddleware, login, LoginResult, logout } from '../src';
+import { ConnectClient, InvalidSessionMiddleware, login, LoginResult, logout, OnInvalidSessionCallback } from '../src';
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
@@ -13,10 +13,7 @@ describe('Authentication', () => {
   const springCsrfHeaderName = 'X-CSRF-TOKEN';
   const requestHeaders: Record<string, string> = {};
   const vaadinCsrfToken = '6a60700e-852b-420f-a126-a1c61b73d1ba';
-  const happyCaseLogoutResponseText =
-    '<head><meta name="_csrf" content="spring-csrf-token"></meta><meta name="_csrf_header" content="X-CSRF-TOKEN"></meta></head><script>window.Vaadin = {TypeScript: {"csrfToken":"' +
-    vaadinCsrfToken +
-    '"}};</script>';
+  const happyCaseLogoutResponseText = `<head><meta name="_csrf" content="spring-csrf-token"></meta><meta name="_csrf_header" content="X-CSRF-TOKEN"></meta></head><script>window.Vaadin = {TypeScript: {"csrfToken":"${vaadinCsrfToken}"}};</script>`;
   const happyCaseLoginResponseText = '';
   const happyCaseResponseHeaders = {
     'Vaadin-CSRF': vaadinCsrfToken,
@@ -253,7 +250,7 @@ describe('Authentication', () => {
 
     // when the page has been opend too long the session has expired
     it('should retry when expired spring csrf metas in the doc', async () => {
-      const expiredSpringCsrfToken = 'expired-' + springCsrfToken;
+      const expiredSpringCsrfToken = `expired-${springCsrfToken}`;
 
       setupSpringCsrfMetaTags(expiredSpringCsrfToken);
 
@@ -283,18 +280,20 @@ describe('Authentication', () => {
     afterEach(() => fetchMock.restore());
 
     it('should invoke the onInvalidSession callback on 401 response', async () => {
-      fetchMock.post(base + '/connect/FooEndpoint/fooMethod', 401);
+      fetchMock.post(`${base}/connect/FooEndpoint/fooMethod`, 401);
 
       const invalidSessionCallback = sinon.spy(() => {
         // mock to pass authentication
         fetchMock.restore();
-        fetchMock.post(base + '/connect/FooEndpoint/fooMethod', { fooData: 'foo' });
+        fetchMock.post(`${base}/connect/FooEndpoint/fooMethod`, { fooData: 'foo' });
+
         return {
           error: false,
           token: 'csrf-token',
         };
       });
-      const middleware = new InvalidSessionMiddleware(invalidSessionCallback);
+
+      const middleware = new InvalidSessionMiddleware(invalidSessionCallback as unknown as OnInvalidSessionCallback);
 
       const client = new ConnectClient({ middlewares: [middleware] });
 
@@ -302,14 +301,13 @@ describe('Authentication', () => {
 
       expect(invalidSessionCallback.calledOnce).to.be.true;
 
-      const headers = fetchMock.lastOptions().headers;
-      expect(headers).to.deep.include({
+      expect(fetchMock.lastOptions()?.headers).to.deep.include({
         'x-csrf-token': 'csrf-token',
       });
     });
 
     it('should not invoke the onInvalidSession callback on 200 response', async () => {
-      fetchMock.post(base + '/connect/FooEndpoint/fooMethod', { fooData: 'foo' });
+      fetchMock.post(`${base}/connect/FooEndpoint/fooMethod`, { fooData: 'foo' });
 
       const invalidSessionCallback = sinon.spy();
       const middleware = new InvalidSessionMiddleware(invalidSessionCallback);

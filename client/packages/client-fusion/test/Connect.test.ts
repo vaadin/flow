@@ -1,7 +1,8 @@
+/* eslint-disable no-new */
 /* tslint:disable: no-unused-expression */
 import { expect } from '@open-wc/testing';
 import { ConnectionState, ConnectionStateStore } from '@vaadin/client-commons';
-import fetchMock from 'fetch-mock/esm/client.js';
+import fetchMock from 'fetch-mock/esm/client';
 import sinon from 'sinon';
 import { ConnectClient, EndpointError, EndpointResponseError, EndpointValidationError } from '../src';
 
@@ -10,11 +11,11 @@ import { ConnectClient, EndpointError, EndpointResponseError, EndpointValidation
 const base = window.location.origin;
 
 describe('ConnectClient', () => {
-  function myMiddleware(ctx: any, next?: any) {
-    return next(ctx);
-  }
+  let myMiddleware: (ctx: any, next?: any) => any;
 
   beforeEach(() => {
+    myMiddleware = (ctx: any, next?: any) => next(ctx);
+
     const connectionStateStore = new ConnectionStateStore(ConnectionState.CONNECTED);
     (window as any).Vaadin = { connectionState: connectionStateStore };
     localStorage.clear();
@@ -45,7 +46,7 @@ describe('ConnectClient', () => {
 
   it('should transition to CONNECTION_LOST on offline and to CONNECTED on subsequent online if Flow.client.TypeScript not loaded', async () => {
     new ConnectClient();
-    let $wnd = window as any;
+    const $wnd = window as any;
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
     $wnd.dispatchEvent(new Event('offline'));
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
@@ -55,7 +56,7 @@ describe('ConnectClient', () => {
 
   it('should transition to CONNECTION_LOST on offline and to CONNECTED on subsequent online if Flow is loaded but Flow.client.TypeScript not loaded', async () => {
     new ConnectClient();
-    let $wnd = window as any;
+    const $wnd = window as any;
     $wnd.Vaadin.Flow = {};
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
     $wnd.dispatchEvent(new Event('offline'));
@@ -66,7 +67,7 @@ describe('ConnectClient', () => {
 
   it('should not transition connection state if Flow loaded', async () => {
     new ConnectClient();
-    let $wnd = window as any;
+    const $wnd = window as any;
     $wnd.Vaadin.Flow = {};
     $wnd.Vaadin.Flow.clients = {};
     $wnd.Vaadin.Flow.clients.TypeScript = {};
@@ -114,7 +115,7 @@ describe('ConnectClient', () => {
   });
 
   describe('call method', () => {
-    beforeEach(() => fetchMock.post(base + '/connect/FooEndpoint/fooMethod', { fooData: 'foo' }));
+    beforeEach(() => fetchMock.post(`${base}/connect/FooEndpoint/fooMethod`, { fooData: 'foo' }));
 
     afterEach(() => fetchMock.restore());
 
@@ -146,7 +147,7 @@ describe('ConnectClient', () => {
       await client.call('FooEndpoint', 'fooMethod');
 
       expect(fetchMock.calls()).to.have.lengthOf(1);
-      expect(fetchMock.lastUrl()).to.equal(base + '/connect/FooEndpoint/fooMethod');
+      expect(fetchMock.lastUrl()).to.equal(`${base}/connect/FooEndpoint/fooMethod`);
     });
 
     it('should return Promise', () => {
@@ -161,39 +162,36 @@ describe('ConnectClient', () => {
     });
 
     it('should set connection state to LOADING followed by CONNECTED on successful fetch', async () => {
-      let $wnd = window as any;
+      const $wnd = window as any;
       const stateChangeListener = sinon.fake();
       $wnd.Vaadin.connectionState.addStateChangeListener(stateChangeListener);
 
       await client.call('FooEndpoint', 'fooMethod');
-      (expect(stateChangeListener).to.be as any).calledWithExactly(ConnectionState.LOADING, ConnectionState.CONNECTED);
+      expect(stateChangeListener).to.be.calledWithExactly(ConnectionState.LOADING, ConnectionState.CONNECTED);
     });
 
     it('should set connection state to CONNECTION_LOST on network failure', async () => {
-      let $wnd = window as any;
+      const $wnd = window as any;
       const stateChangeListener = sinon.fake();
       $wnd.Vaadin.connectionState.addStateChangeListener(stateChangeListener);
-      fetchMock.post(base + '/connect/FooEndpoint/reject', Promise.reject(new TypeError('Network failure')));
+      fetchMock.post(`${base}/connect/FooEndpoint/reject`, Promise.reject(new TypeError('Network failure')));
       try {
         await client.call('FooEndpoint', 'reject');
       } catch (error) {
         // expected
       } finally {
-        (expect(stateChangeListener).to.be as any).calledWithExactly(
-          ConnectionState.LOADING,
-          ConnectionState.CONNECTION_LOST
-        );
+        expect(stateChangeListener).to.be.calledWithExactly(ConnectionState.LOADING, ConnectionState.CONNECTION_LOST);
       }
     });
 
     it('should  set connection state to CONNECTED upon server error', async () => {
-      let $wnd = window as any;
+      const $wnd = window as any;
       const body = 'Unexpected error';
       const errorResponse = new Response(body, {
         status: 500,
         statusText: 'Internal Server Error',
       });
-      fetchMock.post(base + '/connect/FooEndpoint/vaadinConnectResponse', errorResponse);
+      fetchMock.post(`${base}/connect/FooEndpoint/vaadinConnectResponse`, errorResponse);
 
       try {
         await client.call('FooEndpoint', 'vaadinConnectResponse');
@@ -207,8 +205,7 @@ describe('ConnectClient', () => {
     it('should use JSON request headers', async () => {
       await client.call('FooEndpoint', 'fooMethod');
 
-      const headers = fetchMock.lastOptions().headers;
-      expect(headers).to.deep.include({
+      expect(fetchMock.lastOptions()?.headers).to.deep.include({
         accept: 'application/json',
         'content-type': 'application/json',
       });
@@ -217,8 +214,7 @@ describe('ConnectClient', () => {
     it('should set header for preventing CSRF', async () => {
       await client.call('FooEndpoint', 'fooMethod');
 
-      const headers = fetchMock.lastOptions().headers;
-      expect(headers).to.deep.include({
+      expect(fetchMock.lastOptions()?.headers).to.deep.include({
         'x-csrf-token': '',
       });
     });
@@ -234,8 +230,7 @@ describe('ConnectClient', () => {
 
       await client.call('FooEndpoint', 'fooMethod');
 
-      const headers = fetchMock.lastOptions().headers;
-      expect(headers).to.deep.include({
+      expect(fetchMock.lastOptions()?.headers).to.deep.include({
         'x-csrf-token': 'foo',
       });
 
@@ -249,7 +244,7 @@ describe('ConnectClient', () => {
     });
 
     it('should reject if response is not ok', async () => {
-      fetchMock.post(base + '/connect/FooEndpoint/notFound', 404);
+      fetchMock.post(`${base}/connect/FooEndpoint/notFound`, 404);
       try {
         await client.call('FooEndpoint', 'notFound');
       } catch (err) {
@@ -263,7 +258,7 @@ describe('ConnectClient', () => {
         type: 'java.lang.IllegalStateException',
         detail: { one: 'two' },
       };
-      fetchMock.post(base + '/connect/FooEndpoint/vaadinException', {
+      fetchMock.post(`${base}/connect/FooEndpoint/vaadinException`, {
         body: expectedObject,
         status: 400,
       });
@@ -284,7 +279,7 @@ describe('ConnectClient', () => {
         status: 500,
         statusText: 'Internal Server Error',
       });
-      fetchMock.post(base + '/connect/FooEndpoint/vaadinConnectResponse', errorResponse);
+      fetchMock.post(`${base}/connect/FooEndpoint/vaadinConnectResponse`, errorResponse);
 
       try {
         await client.call('FooEndpoint', 'vaadinConnectResponse');
@@ -306,7 +301,7 @@ describe('ConnectClient', () => {
           },
         ],
       };
-      fetchMock.post(base + '/connect/FooEndpoint/validationException', {
+      fetchMock.post(`${base}/connect/FooEndpoint/validationException`, {
         body: expectedObject,
         status: 400,
       });
@@ -323,7 +318,7 @@ describe('ConnectClient', () => {
     });
 
     it('should reject if fetch is rejected', async () => {
-      fetchMock.post(base + '/connect/FooEndpoint/reject', Promise.reject(new TypeError('Network failure')));
+      fetchMock.post(`${base}/connect/FooEndpoint/reject`, Promise.reject(new TypeError('Network failure')));
 
       try {
         await client.call('FooEndpoint', 'reject');
@@ -333,21 +328,21 @@ describe('ConnectClient', () => {
     });
 
     it('should fetch from custom prefix', async () => {
-      fetchMock.post(base + '/fooPrefix/BarEndpoint/barMethod', { barData: 'bar' });
+      fetchMock.post(`${base}/fooPrefix/BarEndpoint/barMethod`, { barData: 'bar' });
 
       client.prefix = '/fooPrefix';
       const data = await client.call('BarEndpoint', 'barMethod');
 
       expect(data).to.deep.equal({ barData: 'bar' });
-      expect(fetchMock.lastUrl()).to.equal(base + '/fooPrefix/BarEndpoint/barMethod');
+      expect(fetchMock.lastUrl()).to.equal(`${base}/fooPrefix/BarEndpoint/barMethod`);
     });
 
     it('should pass 3rd argument as JSON request body', async () => {
       await client.call('FooEndpoint', 'fooMethod', { fooParam: 'foo' });
 
-      const request = fetchMock.lastCall().request;
+      const request = fetchMock.lastCall()?.request;
       expect(request).to.exist;
-      expect(await request.json()).to.deep.equal({ fooParam: 'foo' });
+      expect(await request?.json()).to.deep.equal({ fooParam: 'foo' });
     });
 
     describe('middleware invocation', () => {
@@ -357,7 +352,7 @@ describe('ConnectClient', () => {
         });
         client.middlewares = [spyMiddleware];
 
-        (expect(spyMiddleware).to.not.be as any).called;
+        expect(spyMiddleware).to.not.be.called;
       });
 
       it('should invoke middleware during call', async () => {
@@ -372,35 +367,34 @@ describe('ConnectClient', () => {
 
         await client.call('FooEndpoint', 'fooMethod', { fooParam: 'foo' });
 
-        (expect(spyMiddleware).to.be as any).calledOnce;
+        expect(spyMiddleware).to.be.calledOnce;
       });
 
       it('should allow modified request', async () => {
         const myUrl = 'https://api.example.com/';
         fetchMock.post(myUrl, {});
 
-        const myMiddleware = async (context: any, next?: any) => {
+        myMiddleware = async (context, next) => {
           context.request = new Request(myUrl, {
             method: 'POST',
             headers: { ...context.request.headers, 'X-Foo': 'Bar' },
             body: '{"baz": "qux"}',
           });
+
           return next(context);
         };
 
         client.middlewares = [myMiddleware];
         await client.call('FooEndpoint', 'fooMethod', { fooParam: 'foo' });
 
-        const request = fetchMock.lastCall().request;
-        expect(request.url).to.equal(myUrl);
-        expect(request.headers.get('X-Foo')).to.equal('Bar');
-        expect(await request.text()).to.equal('{"baz": "qux"}');
+        const request = fetchMock.lastCall()?.request;
+        expect(request?.url).to.equal(myUrl);
+        expect(request?.headers.get('X-Foo')).to.equal('Bar');
+        expect(await request?.text()).to.equal('{"baz": "qux"}');
       });
 
       it('should allow modified response', async () => {
-        const myMiddleware = async (_context: any, _next?: any) => {
-          return new Response('{"baz": "qux"}');
-        };
+        myMiddleware = async (_context: any, _next?: any) => new Response('{"baz": "qux"}');
 
         client.middlewares = [myMiddleware];
         const responseData = await client.call('FooEndpoint', 'fooMethod', { fooParam: 'foo' });
@@ -410,27 +404,29 @@ describe('ConnectClient', () => {
 
       it('should invoke middlewares in order', async () => {
         const firstMiddleware = sinon.spy(async (context: any, next?: any) => {
-          (expect(secondMiddleware).to.not.be as any).called;
+          // eslint-disable-next-line no-use-before-define
+          expect(secondMiddleware).to.not.be.called;
           const response = await next(context);
-          (expect(secondMiddleware).to.be as any).calledOnce;
+          // eslint-disable-next-line no-use-before-define
+          expect(secondMiddleware).to.be.calledOnce;
           return response;
         });
 
         const secondMiddleware = sinon.spy(async (context: any, next?: any) => {
-          (expect(firstMiddleware).to.be as any).calledOnce;
+          expect(firstMiddleware).to.be.calledOnce;
           return next(context);
         });
 
         client.middlewares = [firstMiddleware, secondMiddleware];
 
-        (expect(firstMiddleware).to.not.be as any).called;
-        (expect(secondMiddleware).to.not.be as any).called;
+        expect(firstMiddleware).to.not.be.called;
+        expect(secondMiddleware).to.not.be.called;
 
         await client.call('FooEndpoint', 'fooMethod', { fooParam: 'foo' });
 
-        (expect(firstMiddleware).to.be as any).calledOnce;
-        (expect(secondMiddleware).to.be as any).calledOnce;
-        (expect(firstMiddleware).to.be as any).calledBefore(secondMiddleware);
+        expect(firstMiddleware).to.be.calledOnce;
+        expect(secondMiddleware).to.be.calledOnce;
+        expect(firstMiddleware).to.be.calledBefore(secondMiddleware);
       });
 
       it('should carry the context and the response', async () => {

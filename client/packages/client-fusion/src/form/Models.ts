@@ -1,4 +1,7 @@
+// TODO: Fix dependency cycle
+
 import isNumeric from 'validator/es/lib/isNumeric';
+// eslint-disable-next-line import/no-cycle
 import { BinderNode } from './BinderNode';
 import type { Validator } from './Validation';
 import { IsNumber } from './Validators';
@@ -13,6 +16,14 @@ export const _getPropertyModel = Symbol('getPropertyModel');
 
 const _properties = Symbol('properties');
 const _optional = Symbol('optional');
+
+export function getBinderNode<M extends AbstractModel<any>, T = ModelValue<M>>(model: M): BinderNode<T, M> {
+  if (!model[_binderNode]) {
+    model[_binderNode] = new BinderNode(model);
+  }
+
+  return model[_binderNode]!;
+}
 
 interface HasFromString<T> {
   [_fromString](value: string): T;
@@ -137,9 +148,12 @@ export class ObjectModel<T> extends AbstractModel<T> {
     C extends new (parent: ModelParent<NonNullable<T[N]>>, key: keyof any, optional: boolean, ...args: any[]) => any
   >(name: N, ValueModel: C, valueModelArgs: any[]): InstanceType<C> {
     const [optional, ...rest] = valueModelArgs;
-    return this[_properties][name] !== undefined
-      ? (this[_properties][name] as InstanceType<C>)
-      : (this[_properties][name] = new ValueModel(this, name, optional, ...rest));
+
+    if (this[_properties][name] === undefined) {
+      this[_properties][name] = new ValueModel(this, name, optional, ...rest);
+    }
+
+    return this[_properties][name] as InstanceType<C>;
   }
 }
 
@@ -186,8 +200,4 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
       yield getBinderNode(itemModel);
     }
   }
-}
-
-export function getBinderNode<M extends AbstractModel<any>, T = ModelValue<M>>(model: M): BinderNode<T, M> {
-  return model[_binderNode] || (model[_binderNode] = new BinderNode(model));
 }

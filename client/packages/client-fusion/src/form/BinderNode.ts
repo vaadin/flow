@@ -13,7 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+// TODO: Fix dependency cycle
+
 import type { Binder } from './Binder';
+// eslint-disable-next-line import/no-cycle
 import {
   _binderNode,
   _ItemModel,
@@ -105,10 +108,11 @@ export class BinderNode<T, M extends AbstractModel<T>> {
    */
   get defaultValue(): T {
     if (this.parent && this.parent.model instanceof ArrayModel) {
-      return (
-        this.parent.defaultArrayItemValue ||
-        (this.parent.defaultArrayItemValue = this.parent.model[_ItemModel].createEmptyValue())
-      );
+      if (!this.parent.defaultArrayItemValue) {
+        this.parent.defaultArrayItemValue = this.parent.model[_ItemModel].createEmptyValue();
+      }
+
+      return this.parent.defaultArrayItemValue;
     }
 
     return this.parent!.defaultValue[this.model[_key]];

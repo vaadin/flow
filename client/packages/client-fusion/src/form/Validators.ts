@@ -68,10 +68,6 @@ function _value(attrs: ValueNumberAttributes | number | string) {
 }
 
 abstract class NumberValidator<T> extends AbstractValidator<T> {
-  constructor(attrs?: ValidatorAttributes) {
-    super(attrs);
-  }
-
   validate(value: T) {
     return isNumeric(String(value));
   }
@@ -364,13 +360,19 @@ export class Future extends AbstractValidator<any> {
 // }
 
 function _regexp(attrs: PatternAttributes | string | RegExp) {
-  return typeof attrs === 'string'
-    ? new RegExp(attrs)
-    : attrs instanceof RegExp
-    ? attrs
-    : typeof attrs.regexp === 'string'
-    ? new RegExp(attrs.regexp)
-    : attrs.regexp;
+  if (typeof attrs === 'string') {
+    return new RegExp(attrs);
+  }
+
+  if (attrs instanceof RegExp) {
+    return attrs;
+  }
+
+  if (typeof attrs.regexp === 'string') {
+    return new RegExp(attrs.regexp);
+  }
+
+  return attrs.regexp;
 }
 
 export class Pattern extends AbstractValidator<string> {

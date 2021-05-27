@@ -11,13 +11,21 @@ import { IdEntity, IdEntityModel, Order, OrderModel, TestEntity, TestModel } fro
 @customElement('order-view')
 class OrderView extends LitElement {
   binder = new Binder(this, OrderModel);
+
   @query('#submitting') submitting!: HTMLInputElement;
+
   @query('#notes') notes!: HTMLInputElement;
+
   @query('#fullName') fullName!: HTMLInputElement;
+
   @query('#nickName') nickName!: HTMLInputElement;
+
   @query('#add') add!: Element;
+
   @query('#description0') description!: HTMLInputElement;
+
   @query('#price0') price!: HTMLInputElement;
+
   @query('#priceError0') priceError!: HTMLOutputElement;
 
   static get styles() {
@@ -27,6 +35,7 @@ class OrderView extends LitElement {
       }
     `;
   }
+
   render() {
     const {
       notes,
@@ -236,7 +245,7 @@ describe('form/Validation', () => {
       return binder.validate().then((errors) => {
         const crossFieldError = errors.find(byPropertyName('customer.nickName'));
         expect(crossFieldError).not.to.be.undefined;
-        crossFieldError && expect(crossFieldError.message).to.equal('cannot be the same');
+        expect(crossFieldError?.message).to.equal('cannot be the same');
       });
     });
   });
@@ -274,6 +283,7 @@ describe('form/Validation', () => {
     it('should fail validation after adding an asynchronous validator to the model', async () => {
       class AsyncValidator implements Validator<Order> {
         message = 'bar';
+
         validate = async () => {
           await sleep(10);
           return false;

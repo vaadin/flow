@@ -8,66 +8,6 @@ $wnd.Vaadin.registrations.push({
   is: 'endpoint',
 });
 
-interface ConnectExceptionData {
-  message: string;
-  type: string;
-  detail?: any;
-  validationErrorData?: ValidationErrorData[];
-}
-
-const throwConnectException = (errorJson: ConnectExceptionData) => {
-  if (errorJson.validationErrorData) {
-    throw new EndpointValidationError(errorJson.message, errorJson.validationErrorData, errorJson.type);
-  } else {
-    throw new EndpointError(errorJson.message, errorJson.type, errorJson.detail);
-  }
-};
-
-/**
- * Throws a TypeError if the response is not 200 OK.
- * @param response The response to assert.
- * @ignore
- */
-const assertResponseIsOk = async (response: Response): Promise<void> => {
-  if (!response.ok) {
-    const errorText = await response.text();
-    let errorJson: ConnectExceptionData | null;
-    try {
-      errorJson = JSON.parse(errorText);
-    } catch (ignored) {
-      // not a json
-      errorJson = null;
-    }
-
-    if (errorJson !== null) {
-      throwConnectException(errorJson);
-    } else if (errorText !== null && errorText.length > 0) {
-      throw new EndpointResponseError(errorText, response);
-    } else {
-      throw new EndpointError(`expected "200 OK" response, but got ${response.status} ${response.statusText}`);
-    }
-  }
-};
-
-/**
- * An exception that gets thrown for unexpected HTTP response.
- */
-export class EndpointResponseError extends Error {
-  /**
-   * The optional response object, containing the HTTP response error
-   */
-  response: Response;
-
-  /**
-   * @param message the `message` property value
-   * @param response the `response` property value
-   */
-  constructor(message: string, response: Response) {
-    super(message);
-    this.response = response;
-  }
-}
-
 /**
  * An exception that gets thrown when the Vaadin backend responds
  * with not ok status.
@@ -124,6 +64,66 @@ export class EndpointValidationError extends EndpointError {
     this.validationErrorData = validationErrorData;
   }
 }
+
+/**
+ * An exception that gets thrown for unexpected HTTP response.
+ */
+export class EndpointResponseError extends Error {
+  /**
+   * The optional response object, containing the HTTP response error
+   */
+  response: Response;
+
+  /**
+   * @param message the `message` property value
+   * @param response the `response` property value
+   */
+  constructor(message: string, response: Response) {
+    super(message);
+    this.response = response;
+  }
+}
+
+interface ConnectExceptionData {
+  message: string;
+  type: string;
+  detail?: any;
+  validationErrorData?: ValidationErrorData[];
+}
+
+const throwConnectException = (errorJson: ConnectExceptionData) => {
+  if (errorJson.validationErrorData) {
+    throw new EndpointValidationError(errorJson.message, errorJson.validationErrorData, errorJson.type);
+  } else {
+    throw new EndpointError(errorJson.message, errorJson.type, errorJson.detail);
+  }
+};
+
+/**
+ * Throws a TypeError if the response is not 200 OK.
+ * @param response The response to assert.
+ * @ignore
+ */
+const assertResponseIsOk = async (response: Response): Promise<void> => {
+  if (!response.ok) {
+    const errorText = await response.text();
+    let errorJson: ConnectExceptionData | null;
+    try {
+      errorJson = JSON.parse(errorText);
+    } catch (ignored) {
+      // not a json
+      errorJson = null;
+    }
+
+    if (errorJson !== null) {
+      throwConnectException(errorJson);
+    } else if (errorText !== null && errorText.length > 0) {
+      throw new EndpointResponseError(errorText, response);
+    } else {
+      throw new EndpointError(`expected "200 OK" response, but got ${response.status} ${response.statusText}`);
+    }
+  }
+};
 
 /**
  * An object, containing all data for the particular validation error.
@@ -307,14 +307,14 @@ export class ConnectClient {
     };
 
     // helper to keep the undefined value in object after JSON.stringify
-    const nullForUndefined = (obj: any): any => {
-      for (const property in obj) {
-        if (obj[property] === undefined) {
-          obj[property] = null;
+    const nullForUndefined = (obj: Record<string, unknown>): Record<string, unknown> =>
+      Object.keys(obj).reduce((_obj, property) => {
+        if (_obj[property] === undefined) {
+          _obj[property] = null;
         }
-      }
-      return obj;
-    };
+
+        return _obj;
+      }, obj);
 
     const request = new Request(`${this.prefix}/${endpoint}/${method}`, {
       method: 'POST',

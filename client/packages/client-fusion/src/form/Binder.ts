@@ -1,7 +1,12 @@
-import { BinderNode } from './BinderNode';
-import { _parent, AbstractModel, ModelConstructor } from './Models';
-import { runValidator, ServerValidator, ValidationError, Validator, ValueError } from './Validation';
+// TODO: Fix dependency cycle
 
+// eslint-disable-next-line import/no-cycle
+import { BinderNode } from './BinderNode';
+// eslint-disable-next-line import/no-cycle
+import { _parent, AbstractModel, ModelConstructor } from './Models';
+// eslint-disable-next-line import/no-cycle
+import { runValidator, ServerValidator, ValidationError, Validator, ValueError } from './Validation';
+// eslint-disable-next-line import/no-cycle
 import { FieldStrategy, getDefaultFieldStrategy } from './Field';
 
 const _submitting = Symbol('submitting');
@@ -174,8 +179,9 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
           valueErrors.push({ property, value, validator: new ServerValidator(message), message });
         });
         this.setErrorsWithDescendants(valueErrors);
-        error = new ValidationError(valueErrors);
+        throw new ValidationError(valueErrors);
       }
+
       throw error;
     } finally {
       this[_submitting] = false;

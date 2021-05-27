@@ -1,6 +1,6 @@
 /* tslint:disable:max-classes-per-file */
 
-import { assert } from '@open-wc/testing';
+import { assert, expect } from '@open-wc/testing';
 import { LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import sinon from 'sinon';
@@ -43,7 +43,7 @@ describe('form/Binder', () => {
 
     binder.for(binder.model.notes).value = 'foo';
 
-    sinon.assert.calledTwice(requestUpdateStub);
+    expect(requestUpdateStub).to.be.calledTwice;
   });
 
   it('should be able to create a binder with a custom onchange listener', () => {
@@ -62,7 +62,7 @@ describe('form/Binder', () => {
   });
 
   describe('name value', () => {
-    let binder: Binder<Order, OrderModel<Order>>;
+    let binder: Binder<Order, OrderModel>;
 
     const expectedEmptyOrder: Order = {
       idString: '',
@@ -112,19 +112,19 @@ describe('form/Binder', () => {
 
     it('should change value on setValue', () => {
       // Sanity check: requestUpdate should not be called
-      sinon.assert.notCalled(requestUpdateStub);
+      expect(requestUpdateStub).to.not.be.called;
 
       binder.for(binder.model.notes).value = 'foo';
       assert.equal(binder.value.notes, 'foo');
-      sinon.assert.calledOnce(requestUpdateStub);
+      expect(requestUpdateStub).to.be.calledOnce;
     });
 
     it('should change value on deep setValue', () => {
-      sinon.assert.notCalled(requestUpdateStub);
+      expect(requestUpdateStub).to.not.be.called;
 
       binder.for(binder.model.customer.fullName).value = 'foo';
       assert.equal(binder.value.customer.fullName, 'foo');
-      sinon.assert.calledOnce(litOrderView.requestUpdate);
+      expect(requestUpdateStub).to.be.calledOnce;
     });
 
     it('should not change defaultValue on setValue', () => {
@@ -144,7 +144,7 @@ describe('form/Binder', () => {
 
       assert.equal(binder.value.notes, '');
       assert.equal(binder.value.customer.fullName, '');
-      sinon.assert.calledOnce(requestUpdateStub);
+      expect(requestUpdateStub).to.be.calledOnce;
     });
 
     it('should reset to provided value', () => {
@@ -163,7 +163,7 @@ describe('form/Binder', () => {
 
       assert.equal(binder.value.notes, 'bar');
       assert.equal(binder.value.customer.fullName, 'bar');
-      sinon.assert.calledOnce(requestUpdateStub);
+      expect(requestUpdateStub).to.be.calledOnce;
     });
 
     it('should clear value and default value', () => {
@@ -183,7 +183,7 @@ describe('form/Binder', () => {
 
       assert.deepEqual(binder.value, expectedEmptyOrder);
       assert.deepEqual(binder.defaultValue, expectedEmptyOrder);
-      sinon.assert.calledOnce(requestUpdateStub);
+      expect(requestUpdateStub).to.be.calledOnce;
     });
 
     it('should update when clearing validation', async () => {
@@ -196,7 +196,7 @@ describe('form/Binder', () => {
       binder.clear();
 
       assert.isFalse(binderNode.invalid);
-      sinon.assert.calledOnce(requestUpdateStub);
+      expect(requestUpdateStub).to.be.calledOnce;
     });
 
     it('should not update excessively when nothing to clear', async () => {
@@ -208,7 +208,7 @@ describe('form/Binder', () => {
       requestUpdateStub.reset();
 
       binder.clear();
-      sinon.assert.notCalled(requestUpdateStub);
+      expect(requestUpdateStub).to.not.be.called;
     });
 
     it('should forget visits on clear', () => {
