@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -38,7 +38,6 @@ import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.RoutesChangedListener;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.shared.Registration;
 
@@ -413,7 +412,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      * Register a child handler if parent registered or leave as is if child
      * registered.
      * <p>
-     * If the target is not related to the registered handler then throw
+     * If the target is not related to the registered handler and neither
+     * handler is annotated as {@link DefaultErrorHandler} then throw
      * configuration exception as only one handler for each exception type is
      * allowed.
      *
@@ -421,6 +421,10 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      *            target being handled
      * @param exceptionType
      *            type of the handled exception
+     * @throws InvalidRouteConfigurationException
+     *             thrown if multiple exception handlers are registered for the
+     *             same exception without relation or the other being a default
+     *             handler
      */
     private void handleRegisteredExceptionType(
             Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap,
@@ -432,11 +436,15 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (registered.isAssignableFrom(target)) {
             exceptionTargetsMap.put(exceptionType, target);
         } else if (!target.isAssignableFrom(registered)) {
-            String msg = String.format(
-                    "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
-                    target.getName(), registered.getName(),
-                    exceptionType.getName());
-            throw new InvalidRouteLayoutConfigurationException(msg);
+            if (registered.isAnnotationPresent(DefaultErrorHandler.class)) {
+                exceptionTargetsMap.put(exceptionType, target);
+            } else if (!target.isAnnotationPresent(DefaultErrorHandler.class)) {
+                String msg = String.format(
+                        "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
+                        target.getName(), registered.getName(),
+                        exceptionType.getName());
+                throw new InvalidRouteConfigurationException(msg);
+            }
         }
     }
 

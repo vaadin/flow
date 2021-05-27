@@ -1,4 +1,4 @@
-package com.vaadin.flow.server.startup.fusion;
+package com.vaadin.base.devserver;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
@@ -22,17 +22,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
-
+import com.vaadin.base.devserver.startup.DevModeInitializer;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.fusion.EndpointGeneratorTaskFactoryImpl;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-import com.vaadin.flow.server.startup.DevModeInitializer;
 
+import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubWebpackServer;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
@@ -64,44 +64,33 @@ public class DevModeInitializerEndpointTest {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setup() throws Exception {
         assertNull("No DevModeHandler should be available at test start",
-                DevModeHandler.getDevModeHandler());
+                DevModeHandlerImpl.getDevModeHandler());
 
         temporaryFolder.create();
         baseDir = temporaryFolder.getRoot().getPath();
-
-        Files.write(new File(baseDir, "package.json").toPath(),
-                "{}".getBytes(StandardCharsets.UTF_8));
-
-        final File generatedDirectory = new File(baseDir,
-                Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
-        FileUtils.forceMkdir(generatedDirectory);
-
-        Files.write(new File(generatedDirectory, "package.json").toPath(),
-                "{}".getBytes(StandardCharsets.UTF_8));
+        Boolean enablePnpm = Boolean.TRUE;
 
         appConfig = Mockito.mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenAnswer(invocation -> invocation.getArgumentAt(1,
-                        String.class));
-        Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
-                null)).thenReturn(baseDir);
-        Mockito.when(appConfig.enableDevServer()).thenReturn(true);
-        Mockito.when(appConfig.isPnpmEnabled()).thenReturn(true);
-        Mockito.when(appConfig.getBooleanProperty(
-                Mockito.matches(SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE),
-                Mockito.anyBoolean())).thenReturn(false);
-        Mockito.when(appConfig.getBuildFolder()).thenReturn(TARGET);
-        Mockito.when(appConfig.getFlowResourcesFolder())
-                .thenReturn(TARGET + "/" + DEFAULT_FLOW_RESOURCES_FOLDER);
+        mockApplicationConfiguration(appConfig, enablePnpm);
 
-        servletContext = mockServletContext();
+        createStubNode(false, true, baseDir);
+        createStubWebpackServer("Compiled", 500, baseDir, true);
+
+        // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
+        new File(baseDir, "node_modules/.modules.yaml").createNewFile();
+
+        servletContext = Mockito.mock(ServletContext.class);
         ServletRegistration vaadinServletRegistration = Mockito
                 .mock(ServletRegistration.class);
+
+        Mockito.when(servletContext
+                .getAttribute(ApplicationConfiguration.class.getName()))
+                .thenReturn(appConfig);
 
         Lookup lookup = Mockito.mock(Lookup.class);
         Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
+
         Mockito.doReturn(new EndpointGeneratorTaskFactoryImpl()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
 
@@ -138,13 +127,13 @@ public class DevModeInitializerEndpointTest {
 
     @After
     public void teardown() throws Exception {
-        final DevModeHandler devModeHandler = DevModeHandler
+        final DevModeHandlerImpl devModeHandler = DevModeHandlerImpl
                 .getDevModeHandler();
         if (devModeHandler != null) {
             devModeHandler.stop();
             // Wait until dev mode handler has stopped.
-            while (DevModeHandler.getDevModeHandler() != null) {
-                Thread.sleep(200);
+            while (DevModeHandlerImpl.getDevModeHandler() != null) {
+                Thread.sleep(200); // NOSONAR
             }
         }
 
@@ -215,9 +204,9 @@ public class DevModeInitializerEndpointTest {
 
     private void waitForDevModeServer() throws NoSuchMethodException,
             IllegalAccessException, InvocationTargetException {
-        DevModeHandler handler = DevModeHandler.getDevModeHandler();
+        DevModeHandlerImpl handler = DevModeHandlerImpl.getDevModeHandler();
         Assert.assertNotNull(handler);
-        Method join = DevModeHandler.class.getDeclaredMethod("join");
+        Method join = DevModeHandlerImpl.class.getDeclaredMethod("join");
         join.setAccessible(true);
         join.invoke(handler);
     }
@@ -228,6 +217,27 @@ public class DevModeInitializerEndpointTest {
                 context.getAttribute(ApplicationConfiguration.class.getName()))
                 .thenReturn(appConfig);
         return context;
+    }
+
+    private void mockApplicationConfiguration(
+            ApplicationConfiguration appConfig, boolean enablePnpm) {
+        Mockito.when(appConfig.isProductionMode()).thenReturn(false);
+        Mockito.when(appConfig.enableDevServer()).thenReturn(true);
+        Mockito.when(appConfig.isPnpmEnabled()).thenReturn(enablePnpm);
+
+        Mockito.when(appConfig.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
+                .thenAnswer(invocation -> invocation.getArgument(1));
+        Mockito.when(appConfig.getBooleanProperty(Mockito.anyString(),
+                Mockito.anyBoolean()))
+                .thenAnswer(invocation -> invocation.getArgument(1));
+
+        Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
+                null)).thenReturn(baseDir);
+        Mockito.when(appConfig.getBuildFolder()).thenReturn(TARGET);
+        Mockito.when(appConfig.getFlowResourcesFolder()).thenReturn(
+                Paths.get(TARGET, FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER)
+                        .toString());
     }
 
 }

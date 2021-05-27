@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,6 +37,7 @@ import org.junit.rules.TemporaryFolder;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PwaConfiguration;
+import com.vaadin.flow.testutil.FrontendStubs;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
@@ -78,8 +79,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         frontendGeneratedFolder = new File(baseDir,
                 DEFAULT_PROJECT_FRONTEND_GENERATED_DIR);
 
-        NodeUpdateTestUtil.createStubNode(true, true,
-                baseDir.getAbsolutePath());
+        FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
 
         pwaConfiguration = new PwaConfiguration(
                 AppShell.class.getAnnotation(PWA.class));

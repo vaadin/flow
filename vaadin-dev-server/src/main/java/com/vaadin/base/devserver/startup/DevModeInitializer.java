@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.startup;
+package com.vaadin.base.devserver.startup;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -62,11 +62,11 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.base.devserver.DevModeHandlerImpl;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.PWA;
@@ -81,6 +81,9 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.server.startup.VaadinInitializerException;
+import com.vaadin.flow.server.startup.VaadinServletContextStartupInitializer;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 
@@ -386,7 +389,7 @@ public class DevModeInitializer
         CompletableFuture<Void> nodeTasksFuture = CompletableFuture
                 .runAsync(runnable);
 
-        DevModeHandler.start(
+        DevModeHandlerImpl.start(
                 Lookup.compose(lookup,
                         Lookup.of(config, ApplicationConfiguration.class)),
                 builder.getNpmFolder(), nodeTasksFuture);
@@ -400,7 +403,7 @@ public class DevModeInitializer
     }
 
     /**
-     * Shows whether {@link DevModeHandler} has been already started or not.
+     * Shows whether {@link DevModeHandlerImpl} has been already started or not.
      *
      * @deprecated Use {@link #isDevModeAlreadyStarted(VaadinContext)} instead
      *             by wrapping {@link ServletContext} with
@@ -408,7 +411,7 @@ public class DevModeInitializer
      *
      * @param servletContext
      *            The servlet context, not <code>null</code>
-     * @return <code>true</code> if {@link DevModeHandler} has already been
+     * @return <code>true</code> if {@link DevModeHandlerImpl} has already been
      *         started, <code>false</code> - otherwise
      */
     @Deprecated
@@ -419,11 +422,11 @@ public class DevModeInitializer
     }
 
     /**
-     * Shows whether {@link DevModeHandler} has been already started or not.
+     * Shows whether {@link DevModeHandlerImpl} has been already started or not.
      *
      * @param context
      *            The {@link VaadinContext}, not <code>null</code>
-     * @return <code>true</code> if {@link DevModeHandler} has already been
+     * @return <code>true</code> if {@link DevModeHandlerImpl} has already been
      *         started, <code>false</code> - otherwise
      */
     public static boolean isDevModeAlreadyStarted(VaadinContext context) {
@@ -443,8 +446,8 @@ public class DevModeInitializer
 
     @Override
     public void contextDestroyed(ServletContextEvent ctx) {
-        DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        if (handler != null && !handler.reuseDevServer()) {
+        DevModeHandlerImpl handler = DevModeHandlerImpl.getDevModeHandler();
+        if (handler != null) {
             handler.stop();
         }
     }
@@ -536,9 +539,10 @@ public class DevModeInitializer
                 Matcher dirVfsMatcher = VFS_DIRECTORY_REGEX.matcher(urlString);
                 if (jarVfsMatcher.find()) {
                     String vfsJar = jarVfsMatcher.group(1);
-                    if (vfsJars.add(vfsJar))
+                    if (vfsJars.add(vfsJar)) { // NOSONAR
                         frontendFiles.add(
                                 getPhysicalFileOfJBossVfsJar(new URL(vfsJar)));
+                    }
                 } else if (dirVfsMatcher.find()) {
                     URL vfsDirUrl = new URL(urlString.substring(0,
                             urlString.lastIndexOf(resourcesFolder)));

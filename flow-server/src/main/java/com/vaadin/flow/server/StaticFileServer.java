@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -72,7 +72,7 @@ public class StaticFileServer implements StaticFileHandler {
     private final List<String> manifestPaths;
 
     // Matcher to match string starting with '/themes/[theme-name]/'
-    protected static final Pattern APP_THEME_PATTERN = Pattern
+    public static final Pattern APP_THEME_PATTERN = Pattern
             .compile("^\\/themes\\/[\\s\\S]+?\\/");
 
     /**

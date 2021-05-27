@@ -60,11 +60,9 @@ import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 
-import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @NotThreadSafe
@@ -211,7 +209,6 @@ public class VaadinAppShellInitializerTest {
     @Before
     public void setup() throws Exception {
         logger = mockLog(VaadinAppShellInitializer.class);
-        assertNull(getDevModeHandler());
 
         mocks = new MockServletServiceSessionSetup();
 
@@ -521,12 +518,10 @@ public class VaadinAppShellInitializerTest {
 
         Mockito.when(config.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
-                .thenAnswer(invocation -> invocation.getArgumentAt(1,
-                        String.class));
+                .thenAnswer(invocation -> invocation.getArgument(1));
         Mockito.when(config.getBooleanProperty(Mockito.anyString(),
                 Mockito.anyBoolean()))
-                .thenAnswer(invocation -> invocation.getArgumentAt(1,
-                        Boolean.class));
+                .thenAnswer(invocation -> invocation.getArgument(1));
         return config;
     }
 }

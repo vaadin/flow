@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,6 +35,8 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
+import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.StaticFileHandlerFactory;
 import com.vaadin.flow.server.VaadinContext;
@@ -54,7 +56,8 @@ import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
         DeprecatedPolymerPublishedEventHandler.class,
         EndpointGeneratorTaskFactory.class,
         ApplicationConfigurationFactory.class, AbstractLookupInitializer.class,
-        AppShellPredicate.class, StaticFileHandlerFactory.class })
+        AppShellPredicate.class, StaticFileHandlerFactory.class,
+        DevModeHandlerManager.class, BrowserLiveReloadAccessor.class })
 public class LookupServletContainerInitializer
         implements ClassLoaderAwareServletContainerInitializer {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -50,8 +50,8 @@ public abstract class AbstractTemplateTest {
 
         Instantiator instantiator = Mockito.mock(Instantiator.class);
         Mockito.when(instantiator.createComponent(Mockito.any()))
-                .thenAnswer(invocation -> ReflectTools.createInstance(
-                        invocation.getArgumentAt(0, Class.class)));
+                .thenAnswer(invocation -> ReflectTools
+                        .createInstance(invocation.getArgument(0)));
 
         Mockito.when(service.getInstantiator()).thenReturn(instantiator);
 

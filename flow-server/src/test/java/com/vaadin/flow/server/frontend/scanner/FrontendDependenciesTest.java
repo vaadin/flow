@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -80,9 +80,8 @@ public class FrontendDependenciesTest {
                 classFinder.loadClass(AppShellConfigurator.class.getName()))
                 .thenReturn((Class) AppShellConfigurator.class);
 
-        Mockito.doAnswer(
-                invocation -> FrontendDependenciesTest.class.getClassLoader()
-                        .getResource(invocation.getArgumentAt(0, String.class)))
+        Mockito.doAnswer(invocation -> FrontendDependenciesTest.class
+                .getClassLoader().getResource(invocation.getArgument(0)))
                 .when(classFinder).getResource(Mockito.anyString());
     }
 

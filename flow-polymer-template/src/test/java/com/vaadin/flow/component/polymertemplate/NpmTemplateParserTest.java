@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -58,8 +58,7 @@ public class NpmTemplateParserTest {
 
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
-                .thenAnswer(invocation -> invocation.getArgumentAt(1,
-                        String.class));
+                .thenAnswer(invocation -> invocation.getArgument(1));
         Mockito.when(configuration.getFlowResourcesFolder()).thenReturn(
                 "target/" + FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER);
 
@@ -83,8 +82,7 @@ public class NpmTemplateParserTest {
         Mockito.when(
                 resourceProvider.getApplicationResource(Mockito.anyString()))
                 .thenAnswer(invocation -> NpmTemplateParserTest.class
-                        .getResource('/'
-                                + invocation.getArgumentAt(0, String.class)));
+                        .getResource("/" + invocation.getArgument(0)));
     }
 
     @Test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -370,8 +370,7 @@ public class WebComponentBootstrapHandlerTest {
 
         Mockito.when(provider.getApplicationResource(Mockito.anyString()))
                 .thenAnswer(answer -> WebComponentBootstrapHandlerTest.class
-                        .getClassLoader()
-                        .getResource(answer.getArgumentAt(0, String.class)));
+                        .getClassLoader().getResource(answer.getArgument(0)));
 
         Mockito.when(provider.getClientResourceAsStream(
                 "META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH

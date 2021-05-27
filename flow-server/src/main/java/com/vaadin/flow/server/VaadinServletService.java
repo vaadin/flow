@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
@@ -95,12 +96,12 @@ public class VaadinServletService extends VaadinService {
                         e);
             }
         }
+
         if (getDeploymentConfiguration().enableDevServer()) {
-            DevModeHandler handler = DevModeHandler.getDevModeHandler();
-            if (handler != null) {
-                handlers.add(0, handler);
-            }
+            DevModeHandlerManager.getDevModeHandler(this)
+                    .ifPresent(handlers::add);
         }
+
         addBootstrapHandler(handlers);
         return handlers;
     }

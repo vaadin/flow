@@ -1,4 +1,4 @@
-package com.vaadin.flow.server.startup;
+package com.vaadin.base.devserver.startup;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
@@ -28,14 +28,13 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.server.AbstractConfiguration;
-import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.InitParameters;
+import com.vaadin.base.devserver.DevModeHandlerImpl;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.TaskGenerateConnect;
 import com.vaadin.flow.server.frontend.TaskGenerateOpenApi;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -43,13 +42,13 @@ import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
+import static com.vaadin.base.devserver.DevModeHandlerImpl.getDevModeHandler;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
-import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubWebpackServer;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 
@@ -211,9 +210,9 @@ public class DevModeInitializerTestBase {
 
     protected void waitForDevModeServer() throws NoSuchMethodException,
             IllegalAccessException, InvocationTargetException {
-        DevModeHandler handler = DevModeHandler.getDevModeHandler();
+        DevModeHandlerImpl handler = DevModeHandlerImpl.getDevModeHandler();
         Assert.assertNotNull(handler);
-        Method join = DevModeHandler.class.getDeclaredMethod("join");
+        Method join = DevModeHandlerImpl.class.getDeclaredMethod("join");
         join.setAccessible(true);
         join.invoke(handler);
     }
@@ -230,12 +229,10 @@ public class DevModeInitializerTestBase {
 
         Mockito.when(appConfig.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
-                .thenAnswer(invocation -> invocation.getArgumentAt(1,
-                        String.class));
+                .thenAnswer(invocation -> invocation.getArgument(1));
         Mockito.when(appConfig.getBooleanProperty(Mockito.anyString(),
                 Mockito.anyBoolean()))
-                .thenAnswer(invocation -> invocation.getArgumentAt(1,
-                        Boolean.class));
+                .thenAnswer(invocation -> invocation.getArgument(1));
 
         Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 null)).thenReturn(baseDir);

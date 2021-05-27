@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.router;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -28,6 +26,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Represents a relative URL made up of path segments and query parameters, but
@@ -238,9 +238,15 @@ public class Location implements Serializable {
             return QueryParameters.empty();
         }
         String query;
+
         try {
             query = new java.net.URI(path).getQuery();
         } catch (URISyntaxException ignore) { // NOSONAR
+            query = null;
+        }
+
+        if (query == null) {
+            // decoding of parameters is done in QueryParameters
             query = path.substring(beginIndex + 1);
         }
 

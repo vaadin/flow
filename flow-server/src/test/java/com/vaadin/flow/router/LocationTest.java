@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -292,6 +292,14 @@ public class LocationTest {
     public void locationWithUrlEncodedCharacters() {
         Location location = new Location("foo?bar=a%20b%20%C3%B1%20%26%20%3F");
         Assert.assertEquals("bar=a b ñ & ?",
+                location.getQueryParameters().getQueryString());
+    }
+
+    @Test
+    public void colonInLocationPath_locationIsParsed() {
+        Location location = new Location("abc:foo/bar?baz");
+        Assert.assertEquals("abc:foo/bar", location.getPath());
+        Assert.assertEquals("baz",
                 location.getQueryParameters().getQueryString());
     }
 }

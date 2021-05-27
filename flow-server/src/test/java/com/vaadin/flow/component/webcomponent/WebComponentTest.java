@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,7 +20,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -30,6 +30,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -145,21 +146,24 @@ public class WebComponentTest {
                 element);
 
         webComponent.setProperty(intConfiguration, 1);
-        verify(element, Mockito.times(1)).executeJs(Matchers.anyString(),
-                Matchers.any(), Matchers.any());
+        verify(element, Mockito.times(1)).executeJs(
+                ArgumentMatchers.anyString(), ArgumentMatchers.any(),
+                ArgumentMatchers.any());
         webComponent.setProperty(doubleConfiguration, 1.0);
-        verify(element, Mockito.times(2)).executeJs(Matchers.anyString(),
-                Matchers.any(), Matchers.any());
+        verify(element, Mockito.times(2)).executeJs(
+                ArgumentMatchers.anyString(), ArgumentMatchers.any(),
+                ArgumentMatchers.any());
         webComponent.setProperty(stringConfiguration, "asd");
-        verify(element, Mockito.times(3)).executeJs(Matchers.anyString(),
-                Matchers.any(), Matchers.any());
+        verify(element, Mockito.times(3)).executeJs(
+                ArgumentMatchers.anyString(), ArgumentMatchers.any(),
+                ArgumentMatchers.any());
         webComponent.setProperty(booleanConfiguration, true);
-        verify(element, Mockito.times(4)).executeJs(Matchers.anyString(),
-                Matchers.any(), Matchers.any());
-        // JsonValue has a different number of arguments, so the invocation
-        // will be registered to a different overload
+        verify(element, Mockito.times(4)).executeJs(
+                ArgumentMatchers.anyString(), ArgumentMatchers.any(),
+                ArgumentMatchers.any());
+        // JsonValue has a different number of arguments
         webComponent.setProperty(jsonConfiguration, Json.create(true));
-        verify(element, Mockito.times(1)).executeJs(Matchers.anyString(),
-                Matchers.any());
+        verify(element, Mockito.times(5)).executeJs(
+                ArgumentMatchers.anyString(), ArgumentMatchers.any());
     }
 }

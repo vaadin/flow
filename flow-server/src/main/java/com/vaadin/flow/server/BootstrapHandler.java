@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -63,9 +63,11 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadAccess;
+import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
@@ -608,7 +610,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             setupPwa(document, context);
 
             if (!config.isProductionMode()) {
-                showWebpackErrors(document);
+                showWebpackErrors(context.getService(), document);
             }
 
             BootstrapPageResponse response = new BootstrapPageResponse(
@@ -1194,21 +1196,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         deploymentConfiguration.isDevModeLiveReloadEnabled());
 
                 VaadinService service = session.getService();
-                BrowserLiveReloadAccess liveReloadAccess = service
-                        .getInstantiator()
-                        .getOrCreate(BrowserLiveReloadAccess.class);
-                BrowserLiveReload liveReload = liveReloadAccess != null
-                        ? liveReloadAccess.getLiveReload(service)
-                        : null;
+                Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
+                        .getLiveReloadFromService(service);
 
                 // With V15+ bootstrap, gizmo is added to generated index.html
-                if (liveReload != null
+                if (liveReload.isPresent()
                         && deploymentConfiguration.useV14Bootstrap()) {
                     appConfig.put("liveReloadUrl", BootstrapHandlerHelper
                             .getPushURL(session, request));
-                    if (liveReload.getBackend() != null) {
-                        appConfig.put("liveReloadBackend",
-                                liveReload.getBackend().toString());
+                    BrowserLiveReload.Backend backend = liveReload.get()
+                            .getBackend();
+                    if (backend != null) {
+                        appConfig.put("liveReloadBackend", backend.toString());
                     }
                     appConfig.put("springBootLiveReloadPort",
                             Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT);
@@ -1490,10 +1489,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return pushJSPath;
     }
 
-    protected static void showWebpackErrors(Document document) {
-        DevModeHandler devMode = DevModeHandler.getDevModeHandler();
-        if (devMode != null) {
-            String errorMsg = devMode.getFailedOutput();
+    protected static void showWebpackErrors(VaadinService service,
+            Document document) {
+        Optional<DevModeHandler> devServer = DevModeHandlerManager
+                .getDevModeHandler(service);
+        if (devServer.isPresent()) {
+            String errorMsg = devServer.get().getFailedOutput();
             if (errorMsg != null) {
                 // Make error lines more prominent
                 errorMsg = errorMsg.replaceAll("(ERROR.+?\n)", "<b>$1</b>");
