@@ -18,7 +18,6 @@ package com.vaadin.base.devserver;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,8 +47,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
-import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.InitParameters;
@@ -99,6 +98,10 @@ public final class DevModeHandlerImpl
 
     private static final AtomicReference<DevModeHandlerImpl> atomicHandler = new AtomicReference<>();
 
+    // webpack dev-server allows " character if passed through, need to
+    // explicitly check requests for it
+    private static final Pattern WEBPACK_ILLEGAL_CHAR_PATTERN = Pattern
+            .compile("\"|%22");
     // It's not possible to know whether webpack is ready unless reading output
     // messages. When webpack finishes, it writes either a `Compiled` or a
     // `Failed` in the last line
@@ -316,7 +319,9 @@ public final class DevModeHandlerImpl
         // a valid request for webpack-dev-server should start with '/VAADIN/'
         String requestFilename = request.getPathInfo();
 
-        if (HandlerHelper.isPathUnsafe(requestFilename)) {
+        if (HandlerHelper.isPathUnsafe(requestFilename)
+                || WEBPACK_ILLEGAL_CHAR_PATTERN.matcher(requestFilename)
+                        .find()) {
             getLogger().info("Blocked attempt to access file: {}",
                     requestFilename);
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -393,6 +398,7 @@ public final class DevModeHandlerImpl
     @Override
     public HttpURLConnection prepareConnection(String path, String method)
             throws IOException {
+        // path should have been checked at this point for any outside requests
         URL uri = new URL(WEBPACK_HOST + ":" + getPort() + path);
         HttpURLConnection connection = (HttpURLConnection) uri.openConnection();
         connection.setRequestMethod(method);
