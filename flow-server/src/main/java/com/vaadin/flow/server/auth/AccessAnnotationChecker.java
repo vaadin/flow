@@ -210,10 +210,12 @@ public class AccessAnnotationChecker implements Serializable {
      *         returned.
      *         <p>
      *         Access annotations that being checked are:
-     *         - <code>@AnonymousAllowed</code>
-     *         - <code>@PermitAll</code>
-     *         - <code>@RolesAllowed</code>
-     *         - <code>DenyAll</code>
+     *         <ul>
+     *         <li><code>@AnonymousAllowed</code>
+     *         <li><code>@PermitAll</code>
+     *         <li><code>@RolesAllowed</code>
+     *         <li><code>DenyAll</code>
+     *         </ul>
      *
      * @throws NullPointerException
      *             if the input <code>cls</code> is null
