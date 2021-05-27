@@ -356,28 +356,12 @@ public class VaadinServletContextInitializer
             ApplicationRouteRegistry registry = ApplicationRouteRegistry
                     .getInstance(new VaadinServletContext(
                             event.getServletContext()));
-
-            Set<Class<? extends Component>> errorComponents = findBySuperType(
+            Stream<Class<? extends Component>> hasErrorComponents = findBySuperType(
                     getErrorParameterPackages(), HasErrorParameter.class)
                             .filter(Component.class::isAssignableFrom)
-                            // Replace Flow default with custom version for
-                            // Spring
-                            .filter(clazz -> clazz != RouteNotFoundError.class)
-                            .map(clazz -> (Class<? extends Component>) clazz)
-                            .collect(Collectors.toSet());
-
-            // If there is no custom HasErrorParameter<? super
-            // NotFoundException>
-            // add SpringRouteNotFoundError, with Spring Boot specific hints
-            if (errorComponents.stream().noneMatch(clazz -> {
-                Class<?> exceptionType = ReflectTools.getGenericInterfaceType(
-                        clazz, HasErrorParameter.class);
-                return exceptionType != null && exceptionType
-                        .isAssignableFrom(NotFoundException.class);
-            })) {
-                errorComponents.add(SpringRouteNotFoundError.class);
-            }
-            registry.setErrorNavigationTargets(errorComponents);
+                            .map(clazz -> (Class<? extends Component>) clazz);
+            registry.setErrorNavigationTargets(
+                    hasErrorComponents.collect(Collectors.toSet()));
         }
     }
 

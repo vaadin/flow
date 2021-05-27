@@ -138,9 +138,14 @@ public class VaadinServletContextInitializerTest {
             throws Exception {
         // given
         initDefaultMocks();
+        final VaadinServletContextInitializer initializer = getStubbedVaadinServletContextInitializer();
         Runnable when = initRouteNotFoundMocksAndGetContextInitializedMockCall(
-                getStubbedVaadinServletContextInitializer());
+                initializer);
 
+        PowerMockito.doAnswer(invocation -> Stream.of(RouteNotFoundError.class,
+                SpringRouteNotFoundError.class)).when(initializer,
+                        "findBySuperType", Mockito.anyCollection(),
+                        Mockito.eq(HasErrorParameter.class));
         // when
         when.run();
 

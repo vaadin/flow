@@ -5,9 +5,11 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.router.internal.DefaultErrorHandler;
 import com.vaadin.flow.server.frontend.FrontendVersion;
 import org.springframework.boot.SpringBootVersion;
 
+@DefaultErrorHandler
 public class SpringRouteNotFoundError extends RouteNotFoundError {
 
     @Override
