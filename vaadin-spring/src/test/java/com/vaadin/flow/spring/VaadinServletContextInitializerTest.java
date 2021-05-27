@@ -7,7 +7,6 @@ import javax.servlet.ServletContextListener;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -17,7 +16,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
@@ -29,7 +27,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
@@ -39,13 +39,11 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
-import com.vaadin.flow.server.startup.DevModeInitializer;
 import com.vaadin.flow.server.startup.ServletDeployer;
 import com.vaadin.flow.spring.router.SpringRouteNotFoundError;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ DevModeInitializer.class,
-        VaadinServletContextInitializer.class, ServletDeployer.class,
+@PrepareForTest({ VaadinServletContextInitializer.class, ServletDeployer.class,
         AutoConfigurationPackages.class })
 public class VaadinServletContextInitializerTest {
 
@@ -64,6 +62,15 @@ public class VaadinServletContextInitializerTest {
     @Mock
     private Executor executor;
 
+    @Mock
+    private ApplicationConfiguration appConfig;
+
+    @Mock
+    private Lookup lookup;
+
+    @Mock
+    private DevModeHandlerManager devModeHandlerManager;
+
     @Before
     public void init() {
         MockitoAnnotations.openMocks(this);
@@ -72,7 +79,6 @@ public class VaadinServletContextInitializerTest {
                 .thenReturn(Collections.singletonMap("foo", executor));
 
         PowerMockito.mockStatic(ServletDeployer.class);
-        PowerMockito.mockStatic(DevModeInitializer.class);
         PowerMockito.mockStatic(AutoConfigurationPackages.class);
     }
 
@@ -81,25 +87,24 @@ public class VaadinServletContextInitializerTest {
             throws Exception {
         initDefaultMocks();
 
+        Mockito.when(
+                devModeHandlerManager.isDevModeAlreadyStarted(Mockito.any()))
+                .thenReturn(false);
+        Mockito.when(devModeHandlerManager.getHandlesTypes())
+                .thenReturn(new Class<?>[0]);
+
+        Mockito.when(appConfig.enableDevServer()).thenReturn(true);
+
         VaadinServletContextInitializer vaadinServletContextInitializer = getStubbedVaadinServletContextInitializer();
 
         // Simulate Spring context start only
         vaadinServletContextInitializer.onStartup(servletContext);
 
-        try (MockedStatic<DevModeInitializer> theMock = Mockito
-                .mockStatic(DevModeInitializer.class)) {
-            // IMPORTANT: Call the static method we want to verify.
-            // In our case, we want to check if Dev Mode has been started within
-            // onStartup() call,
-            // that means DevModeInitializer.initDevModeHandler() should has
-            // been called exactly one time
-            DevModeInitializer.initDevModeHandler(Mockito.mock(Set.class),
-                    Mockito.mock(VaadinContext.class));
-            theMock.verify(() -> DevModeInitializer.initDevModeHandler(
-                    Mockito.any(), Mockito.any(VaadinContext.class)));
-            theMock.verifyNoMoreInteractions();
-        }
-
+        // In our case, we want to check if Dev Mode has been started within
+        // onStartup() call, that means DevModeInitializer.initDevModeHandler()
+        // should have been called exactly one time.
+        Mockito.verify(devModeHandlerManager).initDevModeHandler(Mockito.any(),
+                Mockito.any(VaadinContext.class));
     }
 
     @Test
@@ -107,27 +112,25 @@ public class VaadinServletContextInitializerTest {
             throws Exception {
         initDefaultMocks();
 
+        Mockito.when(
+                devModeHandlerManager.isDevModeAlreadyStarted(Mockito.any()))
+                .thenReturn(true);
+        Mockito.when(devModeHandlerManager.getHandlesTypes())
+                .thenReturn(new Class<?>[0]);
+
+        Mockito.when(appConfig.enableDevServer()).thenReturn(true);
+
         VaadinServletContextInitializer vaadinServletContextInitializer = getStubbedVaadinServletContextInitializer();
 
-        DevModeInitializer devModeInitializer = getStubbedDevModeInitializer();
-
-        // Simulate Servlet container start -> Spring context start
-        devModeInitializer.process(Collections.emptySet(), servletContext);
+        // Simulate Spring context start only
         vaadinServletContextInitializer.onStartup(servletContext);
 
-        try (MockedStatic<DevModeInitializer> theMock = Mockito
-                .mockStatic(DevModeInitializer.class)) {
-            // IMPORTANT: Call the static method we want to verify.
-            // In our case, we want to check if Dev Mode has been started within
-            // onStartup() call,
-            // that means DevModeInitializer.initDevModeHandler() should has
-            // been called exactly one time
-            DevModeInitializer.initDevModeHandler(Mockito.mock(Set.class),
-                    Mockito.mock(VaadinContext.class));
-            theMock.verify(() -> DevModeInitializer.initDevModeHandler(
-                    Mockito.any(), Mockito.any(VaadinContext.class)));
-            theMock.verifyNoMoreInteractions();
-        }
+        // In our case, we want to check if Dev Mode has been started within
+        // onStartup() call, that means DevModeInitializer.initDevModeHandler()
+        // should not have been called.
+        Mockito.verify(devModeHandlerManager, Mockito.never())
+                .initDevModeHandler(Mockito.any(),
+                        Mockito.any(VaadinContext.class));
     }
 
     @Test
@@ -246,14 +249,6 @@ public class VaadinServletContextInitializerTest {
         };
     }
 
-    private DevModeInitializer getStubbedDevModeInitializer() throws Exception {
-
-        PowerMockito.when(DevModeInitializer.class, "isDevModeAlreadyStarted",
-                servletContext).thenCallRealMethod();
-
-        return new DevModeInitializer();
-    }
-
     private VaadinServletContextInitializer getStubbedVaadinServletContextInitializer()
             throws Exception {
         VaadinServletContextInitializer vaadinServletContextInitializerMock = PowerMockito
@@ -287,6 +282,7 @@ public class VaadinServletContextInitializerTest {
         mockApplicationContext();
         mockEnvironment();
         mockServletContext();
+        mockDevModeHandlerManager();
     }
 
     private void mockServletContext() {
@@ -304,13 +300,11 @@ public class VaadinServletContextInitializerTest {
         Mockito.when(servletContext.getServletRegistrations())
                 .thenReturn(new HashMap<>());
 
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-
         Mockito.when(servletContext
                 .getAttribute(ApplicationConfiguration.class.getName()))
                 .thenReturn(appConfig);
-
+        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
+                .thenReturn(lookup);
     }
 
     private void mockEnvironment() {
@@ -328,5 +322,10 @@ public class VaadinServletContextInitializerTest {
     private void mockApplicationContext() {
         Mockito.when(applicationContext.getEnvironment())
                 .thenReturn(environment);
+    }
+
+    private void mockDevModeHandlerManager() {
+        Mockito.when(lookup.lookup(DevModeHandlerManager.class))
+                .thenReturn(devModeHandlerManager);
     }
 }

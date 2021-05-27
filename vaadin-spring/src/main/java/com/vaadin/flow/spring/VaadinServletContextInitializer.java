@@ -61,6 +61,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.LookupInitializer;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.NotFoundException;
@@ -69,7 +71,6 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
-import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServletContext;
@@ -78,11 +79,11 @@ import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
-import com.vaadin.flow.server.startup.DevModeInitializer;
 import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
 import com.vaadin.flow.server.startup.ServletDeployer;
 import com.vaadin.flow.server.startup.ServletVerifier;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializer;
+import com.vaadin.flow.server.startup.VaadinInitializerException;
 import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
@@ -417,12 +418,27 @@ public class VaadinServletContextInitializer
     private class DevModeServletContextListener
             implements FailFastServletContextListener {
 
+        private transient DevModeHandlerManager devModeHandlerManager;
+
         @Override
         public void failFastContextInitialized(ServletContextEvent event)
                 throws ServletException {
+            VaadinServletContext vaadinContext = new VaadinServletContext(
+                    event.getServletContext());
 
             ApplicationConfiguration config = ApplicationConfiguration
                     .get(new VaadinServletContext(event.getServletContext()));
+
+            Lookup lookup = vaadinContext.getAttribute(Lookup.class);
+            devModeHandlerManager = lookup.lookup(DevModeHandlerManager.class);
+            if (devModeHandlerManager == null) {
+                throw new RuntimeException(
+                        "no DevModeHandlerManager implementation found but "
+                                + "but dev server enabled. Either disable by "
+                                + "setting vaadin.enableDevServer=false (and "
+                                + "run the build-frontend maven goal) or "
+                                + "include the vaadin-dev-server dependency");
+            }
 
             if (config == null || config.isProductionMode()
                     || !config.enableDevServer()
@@ -441,8 +457,8 @@ public class VaadinServletContextInitializer
 
             List<Class<? extends Annotation>> annotations = new ArrayList<>();
             List<Class<?>> superTypes = new ArrayList<>();
-            collectHandleTypes(DevModeInitializer.class, annotations,
-                    superTypes);
+            collectHandleTypes(devModeHandlerManager.getHandlesTypes(),
+                    annotations, superTypes);
 
             Set<Class<?>> classes = findByAnnotationOrSuperType(basePackages,
                     customLoader, annotations, superTypes)
@@ -454,9 +470,9 @@ public class VaadinServletContextInitializer
                     ms);
 
             try {
-                DevModeInitializer.initDevModeHandler(classes,
-                        event.getServletContext());
-            } catch (ServletException e) {
+                devModeHandlerManager.initDevModeHandler(classes,
+                        new VaadinServletContext(event.getServletContext()));
+            } catch (VaadinInitializerException e) {
                 throw new RuntimeException(
                         "Unable to initialize Vaadin DevModeHandler", e);
             }
@@ -468,9 +484,10 @@ public class VaadinServletContextInitializer
 
         @Override
         public void contextDestroyed(ServletContextEvent sce) {
-            DevModeHandler handler = DevModeHandler.getDevModeHandler();
-            if (handler != null && !handler.reuseDevServer()) {
-                handler.stop();
+            if (devModeHandlerManager != null) {
+                DevModeHandler devModeHandler = devModeHandlerManager
+                        .getDevModeHandler();
+                devModeHandler.stop();
             }
         }
 
@@ -488,12 +505,17 @@ public class VaadinServletContextInitializer
         }
 
         private boolean isDevModeAlreadyStarted(ServletContext servletContext) {
-            if (DevModeInitializer.isDevModeAlreadyStarted(servletContext)) {
-                if (getLogger().isDebugEnabled()) {
-                    getLogger().debug(
-                            "Skipped DevModeHandler initialization as it has been already initialized");
+            if (devModeHandlerManager != null) {
+                VaadinServletContext vaadinContext = new VaadinServletContext(
+                        servletContext);
+                if (devModeHandlerManager
+                        .isDevModeAlreadyStarted(vaadinContext)) {
+                    if (getLogger().isDebugEnabled()) {
+                        getLogger().debug(
+                                "Skipped DevModeHandler initialization as it has been already initialized");
+                    }
+                    return true;
                 }
-                return true;
             }
             return false;
         }
@@ -734,18 +756,27 @@ public class VaadinServletContextInitializer
     }
 
     private List<String> getLookupPackages() {
-        return Stream.concat(getDefaultPackages().stream(),
-                Stream.of("com.vaadin.flow.server.frontend.fusion",
-                        "com.vaadin.flow.component.polymertemplate.rpc"))
+        return Stream
+                .concat(getDefaultPackages().stream(),
+                        Stream.of("com.vaadin.flow.server.frontend.fusion",
+                                "com.vaadin.flow.component.polymertemplate.rpc",
+                                "com.vaadin.base.devserver"))
                 .collect(Collectors.toList());
     }
 
     private static void collectHandleTypes(Class<?> clazz,
             List<Class<? extends Annotation>> annotations,
             List<Class<?>> superTypes) {
-        HandlesTypes handleTypes = clazz.getAnnotation(HandlesTypes.class);
+        HandlesTypes handlesTypes = clazz.getAnnotation(HandlesTypes.class);
+        assert handlesTypes != null;
+        collectHandleTypes(handlesTypes.value(), annotations, superTypes);
+    }
+
+    private static void collectHandleTypes(Class<?>[] handleTypes,
+            List<Class<? extends Annotation>> annotations,
+            List<Class<?>> superTypes) {
         assert handleTypes != null;
-        for (Class<?> type : handleTypes.value()) {
+        for (Class<?> type : handleTypes) {
             if (type.isAnnotation()) {
                 annotations.add((Class<? extends Annotation>) type);
             } else {
