@@ -287,7 +287,7 @@ public class StaticFileServerTest implements Serializable {
         }
         setupRequestURI("", "", "/frontend/.");
         Mockito.when(servletService.getStaticResource("/frontend/."))
-                .thenReturn(new URL("jar:file:/"
+                .thenReturn(new URL("jar:file:///"
                         + tempArchive.toString().replaceAll("\\\\", "/")
                         + "!/frontend/"));
         Assert.assertFalse(
@@ -295,7 +295,7 @@ public class StaticFileServerTest implements Serializable {
                 fileServer.isStaticResourceRequest(request));
         setupRequestURI("", "", "/file.txt");
         Mockito.when(servletService.getStaticResource("/file.txt"))
-                .thenReturn(new URL("jar:file:/"
+                .thenReturn(new URL("jar:file:///"
                         + tempArchive.toString().replaceAll("\\\\", "/")
                         + "!/file.txt"));
         Assert.assertTrue(
