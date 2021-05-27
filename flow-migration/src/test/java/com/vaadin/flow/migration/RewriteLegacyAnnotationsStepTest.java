@@ -74,7 +74,7 @@ public class RewriteLegacyAnnotationsStepTest {
                 Arrays.asList(sourceRoot1, sourceRoot2));
 
         Mockito.doAnswer(invocation -> Class
-                .forName(invocation.getArgumentAt(0, String.class)))
+                .forName(invocation.getArgument(0)))
                 .when(finder).loadClass(Mockito.any(String.class));
     }
 
