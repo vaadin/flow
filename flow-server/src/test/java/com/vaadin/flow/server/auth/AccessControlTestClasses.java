@@ -282,15 +282,14 @@ public class AccessControlTestClasses {
 
     @Route("no-annotation-anonymous-by-grandparent")
     public static class NoAnnotationAnonymousAllowedByGrandParentView
-            extends NoAnnotationAnonymousAllowedByParentView{
+            extends NoAnnotationAnonymousAllowedByParentView {
     }
 
     @PermitAll
     public static class PermitAllGrandParentView {
     }
 
-    public static class PermitAllParentView
-            extends PermitAllGrandParentView {
+    public static class PermitAllParentView extends PermitAllGrandParentView {
     }
 
     @Route("no-annotation-permitall-by-grandparent")
@@ -303,7 +302,7 @@ public class AccessControlTestClasses {
     }
 
     public static class RolesAllowedUserParentView
-            extends RolesAllowedUserGrandParentView{
+            extends RolesAllowedUserGrandParentView {
     }
 
     @Route("no-annotation-roles-allowed-user-by-grandparent")
@@ -316,7 +315,7 @@ public class AccessControlTestClasses {
     }
 
     public static class RolesAllowedAdminParentView
-            extends RolesAllowedAdminGrandParentView{
+            extends RolesAllowedAdminGrandParentView {
     }
 
     @Route("no-annotation-roles-allowed-admin-by-grandparent")
@@ -328,8 +327,7 @@ public class AccessControlTestClasses {
     public static class DenyAllGrandParentView {
     }
 
-    public static class DenyAllParentView
-            extends DenyAllGrandParentView {
+    public static class DenyAllParentView extends DenyAllGrandParentView {
     }
 
     @Route("no-annotation-denyall-by-grandparent")

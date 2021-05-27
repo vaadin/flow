@@ -336,7 +336,7 @@ public class ViewAccessCheckerTest {
     @Test
     public void anonymousAccess_to_noAnnotationAnonymousAllowedByParent_allowed() {
         Result result = checkAccess(
-                NoAnnotationAnonymousAllowedByParentView.class,null);
+                NoAnnotationAnonymousAllowedByParentView.class, null);
         Assert.assertTrue(result.wasTargetViewRendered());
     }
 
@@ -356,8 +356,8 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void anonymousAccess_to_noAnnotationDenyAllByGrandParentView_denied() {
-        Result result = checkAccess(
-                NoAnnotationDenyAllByGrandParentView.class, null);
+        Result result = checkAccess(NoAnnotationDenyAllByGrandParentView.class,
+                null);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
@@ -393,8 +393,7 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void loggedInNoRolesAccess_to_noAnnotationDenyAllByGrandParentView_denied() {
-        Result result = checkAccess(
-                NoAnnotationDenyAllByGrandParentView.class,
+        Result result = checkAccess(NoAnnotationDenyAllByGrandParentView.class,
                 User.USER_NO_ROLES);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
@@ -426,15 +425,13 @@ public class ViewAccessCheckerTest {
     @Test
     public void loggedInUserRoleAccess_to_noAnnotationPermitAllByGrandParentView_allowed() {
         Result result = checkAccess(
-                NoAnnotationPermitAllByGrandParentView.class,
-                User.NORMAL_USER);
+                NoAnnotationPermitAllByGrandParentView.class, User.NORMAL_USER);
         Assert.assertTrue(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInUserRoleAccess_to_noAnnotationDenyAllByGrandParentView_denied() {
-        Result result = checkAccess(
-                NoAnnotationDenyAllByGrandParentView.class,
+        Result result = checkAccess(NoAnnotationDenyAllByGrandParentView.class,
                 User.NORMAL_USER);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
@@ -466,15 +463,13 @@ public class ViewAccessCheckerTest {
     @Test
     public void loggedInAdminRoleAccess_to_noAnnotationPermitAllByGrandParentView_allowed() {
         Result result = checkAccess(
-                NoAnnotationPermitAllByGrandParentView.class,
-                User.ADMIN);
+                NoAnnotationPermitAllByGrandParentView.class, User.ADMIN);
         Assert.assertTrue(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInAdminRoleAccess_to_noAnnotationDenyAllByGrandParentView_denied() {
-        Result result = checkAccess(
-                NoAnnotationDenyAllByGrandParentView.class,
+        Result result = checkAccess(NoAnnotationDenyAllByGrandParentView.class,
                 User.ADMIN);
         Assert.assertFalse(result.wasTargetViewRendered());
     }

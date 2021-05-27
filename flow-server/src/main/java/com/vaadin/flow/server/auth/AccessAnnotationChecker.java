@@ -201,19 +201,17 @@ public class AccessAnnotationChecker implements Serializable {
      * @param cls
      *            the class to check
      * @return the first annotated class in <code>cls</code>'s hierarchy with
-     *          that annotated with one of the access annotations,
-     *          starting from the input <code>cls</code> class itself, going up
-     *          in the hierarchy. Note that interfaces are ignored.
-     *          <p>
-     *          If no class in the hierarchy was annotated with any of the access
-     *          annotations, the <code>cls</code> input parameter itself would be
-     *          returned.
-     *          <p>
-     *          Access annotations that being checked against are:
-     *          <code>@AnonymousAllowed</code>
-     *          <code>@PermitAll</code>,
-     *          <code>@RolesAllowed</code>
-     *          <code>DenyAll</code>
+     *         that annotated with one of the access annotations, starting from
+     *         the input <code>cls</code> class itself, going up in the
+     *         hierarchy. Note that interfaces are ignored.
+     *         <p>
+     *         If no class in the hierarchy was annotated with any of the access
+     *         annotations, the <code>cls</code> input parameter itself would be
+     *         returned.
+     *         <p>
+     *         Access annotations that being checked against are:
+     *         <code>@AnonymousAllowed</code> <code>@PermitAll</code>
+     *         <code>@RolesAllowed</code> <code>DenyAll</code>
      *
      * @throws NullPointerException
      *             if the input <code>cls</code> is null
