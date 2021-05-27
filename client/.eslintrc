@@ -1,6 +1,6 @@
 {
   "extends": ["vaadin"],
-  "root": true,
+  "plugins": ["chai-friendly"],
   "rules": {
     "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
@@ -20,6 +20,9 @@
         "selector": "WithStatement",
         "message": "`with` is disallowed in strict mode because it makes code impossible to predict and optimize."
       }
-    ]
+    ],
+
+    "no-unused-expressions": "off",
+    "chai-friendly/no-unused-expressions": "error"
   }
 }
