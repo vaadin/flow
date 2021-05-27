@@ -238,15 +238,17 @@ public class Location implements Serializable {
             return QueryParameters.empty();
         }
         String query;
+
         try {
             query = new java.net.URI(path).getQuery();
         } catch (URISyntaxException ignore) { // NOSONAR
-            query = path.substring(beginIndex + 1);
+            query = null;
         }
 
         if (query == null) {
             query = path.substring(beginIndex + 1);
         }
+
         return QueryParameters.fromString(query);
     }
 
