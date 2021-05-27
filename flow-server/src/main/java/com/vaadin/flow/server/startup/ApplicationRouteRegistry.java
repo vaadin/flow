@@ -23,14 +23,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +39,6 @@ import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteNotFoundError;
-import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
@@ -232,9 +228,6 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
     }
 
     private AtomicReference<Class<?>> pwaConfigurationClass = new AtomicReference<>();
-    private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
-            .of(RouteNotFoundError.class, InternalServerError.class)
-            .collect(Collectors.toSet());
 
     private final ArrayList<NavigationTargetFilter> routeFilters = new ArrayList<>();
 
@@ -354,9 +347,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
 
         exceptionTargetsMap.putAll(getConfiguration().getExceptionHandlers());
 
-        errorNavigationTargets.stream()
-                .filter(target -> !defaultErrorHandlers.contains(target))
-                .filter(this::allErrorFiltersMatch)
+        errorNavigationTargets.stream().filter(this::allErrorFiltersMatch)
                 .filter(handler -> !Modifier.isAbstract(handler.getModifiers()))
                 .forEach(target -> addErrorTarget(target, exceptionTargetsMap));
 

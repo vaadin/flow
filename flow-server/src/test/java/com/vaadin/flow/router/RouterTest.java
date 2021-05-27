@@ -58,6 +58,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Enter;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Leave;
+import com.vaadin.flow.router.internal.DefaultErrorHandler;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
@@ -2510,24 +2511,65 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void fail_for_multiple_of_the_same_class()
+    public void fail_for_multiple_classes_extending_the_same_exception_class()
             throws InvalidRouteConfigurationException {
-        setErrorNavigationTargets(ErrorTarget.class, RouteNotFoundError.class);
+        expectedEx.expect(InvalidRouteConfigurationException.class);
+        setErrorNavigationTargets(ErrorTarget.class,
+                CustomNotFoundTarget.class);
+    }
 
-        int result = router.navigate(ui, new Location("exception"),
+    @Route("npe")
+    @Tag(Tag.DIV)
+    public static class NpeNavigationTarget extends Component {
+        public NpeNavigationTarget() {
+            throw new NullPointerException("Null was found");
+        }
+    }
+
+    @Tag(Tag.DIV)
+    @DefaultErrorHandler
+    public static class DefaultNullPointerException extends Component
+            implements HasErrorParameter<NullPointerException> {
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<NullPointerException> parameter) {
+            return HttpServletResponse.SC_UNAUTHORIZED;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class NullPointerExceptionHandler extends Component
+            implements HasErrorParameter<NullPointerException> {
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<NullPointerException> parameter) {
+            return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    @Test // spring #661
+    public void pick_custom_from_multiple_error_targets_when_other_is_default_annotated() {
+        setNavigationTargets(NpeNavigationTarget.class);
+        setErrorNavigationTargets(DefaultNullPointerException.class,
+                NullPointerExceptionHandler.class);
+
+        int result = router.navigate(ui, new Location("npe"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Non existent route should have returned.",
-                HttpServletResponse.SC_NOT_FOUND, result);
+        Assert.assertEquals(
+                "Null pointer should return the server error of the custom implementation.",
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
 
         Assert.assertEquals(
                 "Expected the extending class to be used instead of the super class",
-                ErrorTarget.class, getUIComponent());
+                NullPointerExceptionHandler.class, getUIComponent());
     }
 
     @Test
     public void do_not_accept_same_exception_targets() {
 
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expect(InvalidRouteConfigurationException.class);
         expectedEx.expectMessage(startsWith(
                 "Only one target for an exception should be defined. Found "));
 
