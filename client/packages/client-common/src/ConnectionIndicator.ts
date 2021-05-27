@@ -22,6 +22,16 @@ import { ConnectionState, ConnectionStateStore } from './ConnectionState';
 const DEFAULT_STYLE_ID = 'css-loading-indicator';
 
 /**
+ * The loading indicator states
+ */
+export const enum LoadingBarState {
+  IDLE = '',
+  FIRST = 'first',
+  SECOND = 'second',
+  THIRD = 'third',
+}
+
+/**
  * Component showing loading and connection indicator. When added to DOM,
  * listens for changes on `window.Vaadin.connectionState` ConnectionStateStore.
  */
@@ -122,7 +132,9 @@ export class ConnectionIndicator extends LitElement {
       this.expandedTimeout = this.timeoutFor(
         this.expandedTimeout,
         this.expanded,
-        () => (this.expanded = false),
+        () => {
+          this.expanded = false;
+        },
         this.expandedDuration
       );
     };
@@ -214,21 +226,27 @@ export class ConnectionIndicator extends LitElement {
     this.firstTimeout = this.timeoutFor(
       this.firstTimeout,
       loading,
-      () => (this.loadingBarState = LoadingBarState.FIRST),
+      () => {
+        this.loadingBarState = LoadingBarState.FIRST;
+      },
       this.firstDelay
     );
 
     this.secondTimeout = this.timeoutFor(
       this.secondTimeout,
       loading,
-      () => (this.loadingBarState = LoadingBarState.SECOND),
+      () => {
+        this.loadingBarState = LoadingBarState.SECOND;
+      },
       this.secondDelay
     );
 
     this.thirdTimeout = this.timeoutFor(
       this.thirdTimeout,
       loading,
-      () => (this.loadingBarState = LoadingBarState.THIRD),
+      () => {
+        this.loadingBarState = LoadingBarState.THIRD;
+      },
       this.thirdDelay
     );
   }
@@ -445,16 +463,6 @@ export class ConnectionIndicator extends LitElement {
   static get instance(): ConnectionIndicator {
     return ConnectionIndicator.create();
   }
-}
-
-/**
- * The loading indicator states
- */
-export const enum LoadingBarState {
-  IDLE = '',
-  FIRST = 'first',
-  SECOND = 'second',
-  THIRD = 'third',
 }
 
 if (customElements.get('vaadin-connection-indicator') === undefined) {
