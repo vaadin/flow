@@ -7,7 +7,8 @@ import java.util.Stack;
 import java.util.regex.Pattern;
 
 final class IndentationUtils {
-    private static final Pattern emptyOrWhiteSpaceLinePattern = Pattern.compile("^\\s*$");
+    private static final Pattern emptyOrWhiteSpaceLinePattern = Pattern
+            .compile("^\\s*$");
 
     static String unifyIndentation(String code, int indentation)
             throws IndentationSyntaxException {
