@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
@@ -30,6 +31,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
@@ -37,12 +40,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
@@ -253,6 +259,68 @@ public class StaticFileServerTest implements Serializable {
         setupRequestURI("", "", null);
         Mockito.when(servletContext.getResource("/")).thenReturn(null);
         Assert.assertFalse(fileServer.isStaticResourceRequest(request));
+    }
+
+    @Test
+    public void directoryIsNotResourceRequest() throws Exception {
+        final TemporaryFolder folder = TemporaryFolder.builder().build();
+        folder.create();
+
+        setupRequestURI("", "", "/frontend");
+        // generate URL so it is not ending with / so that we test the correct
+        // method
+        String rootAbsolutePath = folder.getRoot().getAbsolutePath()
+                .replaceAll("\\\\", "/");
+        if (rootAbsolutePath.endsWith("/")) {
+            rootAbsolutePath = rootAbsolutePath.substring(0,
+                    rootAbsolutePath.length() - 1);
+        }
+        final URL folderPath = new URL("file:///" + rootAbsolutePath);
+
+        Mockito.when(servletService.getStaticResource("/frontend"))
+                .thenReturn(folderPath);
+        Assert.assertFalse("Folder on disk should not be a static resource.",
+                fileServer.isStaticResourceRequest(request));
+
+        // Test any path ending with / to be seen as a directory
+        setupRequestURI("", "", "/fake");
+        Mockito.when(servletService.getStaticResource("/fake"))
+                .thenReturn(new URL("file:///fake/"));
+        Assert.assertFalse(
+                "Fake should not check the file system nor be a static resource.",
+                fileServer.isStaticResourceRequest(request));
+
+        File archiveFile = new File(folder.getRoot(), "fake.jar");
+        archiveFile.createNewFile();
+        Path tempArchive = archiveFile.toPath();
+
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+                Files.newOutputStream(tempArchive))) {
+            // Create a file to the zip
+            zipOutputStream.putNextEntry(new ZipEntry("/file"));
+            zipOutputStream.closeEntry();
+            // Create a directory to the zip
+            zipOutputStream.putNextEntry(new ZipEntry("frontend/"));
+            zipOutputStream.closeEntry();
+        }
+        setupRequestURI("", "", "/frontend/.");
+        Mockito.when(servletService.getStaticResource("/frontend/."))
+                .thenReturn(new URL("jar:file:///"
+                        + tempArchive.toString().replaceAll("\\\\", "/")
+                        + "!/frontend"));
+        Assert.assertFalse(
+                "Folder 'frontend' in jar should not be a static resource.",
+                fileServer.isStaticResourceRequest(request));
+        setupRequestURI("", "", "/file.txt");
+        Mockito.when(servletService.getStaticResource("/file.txt"))
+                .thenReturn(new URL("jar:file:///"
+                        + tempArchive.toString().replaceAll("\\\\", "/")
+                        + "!/file.txt"));
+        Assert.assertTrue(
+                "File 'file.txt' inside jar should be a static resource.",
+                fileServer.isStaticResourceRequest(request));
+
+        folder.delete();
     }
 
     @Test
