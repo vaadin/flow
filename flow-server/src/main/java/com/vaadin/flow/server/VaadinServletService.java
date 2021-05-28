@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.communication.FaviconHandler;
@@ -98,8 +99,17 @@ public class VaadinServletService extends VaadinService {
         }
 
         if (getDeploymentConfiguration().enableDevServer()) {
-            DevModeHandlerManager.getDevModeHandler(this)
-                    .ifPresent(handlers::add);
+            Optional<DevModeHandler> handlerManager = DevModeHandlerManager
+                    .getDevModeHandler(this);
+            if (handlerManager.isPresent()) {
+                handlers.add(handlerManager.get());
+            } else {
+                getLogger()
+                        .warn("no DevModeHandlerManager implementation found "
+                                + "but dev server enabled. Include the "
+                                + "com.vaadin.vaadin-dev-server maven "
+                                + "dependency.");
+            }
         }
 
         addBootstrapHandler(handlers);
