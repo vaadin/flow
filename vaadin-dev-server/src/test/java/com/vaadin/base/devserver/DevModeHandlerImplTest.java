@@ -643,7 +643,8 @@ public class DevModeHandlerImplTest {
     @Test
     public void serveDevModeRequest_uriForDevmodeGizmo_goesToWebpack()
             throws Exception {
-        HttpServletRequest request = prepareRequest("/VAADIN/build/vaadin-devmodeGizmo-f679dbf313191ec3d018.cache.js");
+        HttpServletRequest request = prepareRequest(
+                "/VAADIN/build/vaadin-devmodeGizmo-f679dbf313191ec3d018.cache.js");
         HttpServletResponse response = prepareResponse();
 
         final String manifestJsonResponse = "{ \"sw.js\": "
@@ -662,7 +663,8 @@ public class DevModeHandlerImplTest {
     @Test
     public void serveDevModeRequest_uriWithScriptInjected_returnsImmediatelyAndSetsForbiddenStatus()
             throws Exception {
-        HttpServletRequest request = prepareRequest("/VAADIN/build/vaadin-devmodeGizmo-f679dbf313191ec3d018.cache%3f%22onload=%22alert(1)");
+        HttpServletRequest request = prepareRequest(
+                "/VAADIN/build/vaadin-devmodeGizmo-f679dbf313191ec3d018.cache%3f%22onload=%22alert(1)");
         HttpServletResponse response = prepareResponse();
 
         final String manifestJsonResponse = "{ \"sw.js\": "
