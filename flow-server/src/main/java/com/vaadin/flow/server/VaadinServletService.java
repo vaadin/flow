@@ -107,8 +107,7 @@ public class VaadinServletService extends VaadinService {
                 getLogger()
                         .warn("no DevModeHandlerManager implementation found "
                                 + "but dev server enabled. Include the "
-                                + "com.vaadin.vaadin-dev-server maven "
-                                + "dependency.");
+                                + "com.vaadin.vaadin-dev-server dependency.");
             }
         }
 
