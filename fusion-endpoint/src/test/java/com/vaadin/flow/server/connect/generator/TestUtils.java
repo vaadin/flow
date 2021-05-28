@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 
 import static com.vaadin.flow.server.connect.generator.IndentationUtils.unifyIndentation;
-import static com.vaadin.flow.server.connect.generator.IndentationUtils.unifyIndentationCI;
 
 public final class TestUtils {
     private TestUtils() {
@@ -68,9 +67,9 @@ public final class TestUtils {
 
         try {
             Assert.assertEquals(msg,
-                    isCI ? unifyIndentationCI(expected)
+                    isCI ? expected.replaceAll("\\s+", " ").trim()
                             : unifyIndentation(expected, 2),
-                    isCI ? unifyIndentationCI(actual)
+                    isCI ? actual.replaceAll("\\s++", " ").trim()
                             : unifyIndentation(actual, 2));
         } catch (IndentationUtils.IndentationSyntaxException e) {
             throw new AssertionError("Failed to unify indentation", e);
