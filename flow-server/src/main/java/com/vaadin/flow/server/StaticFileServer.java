@@ -21,8 +21,18 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -96,6 +106,10 @@ public class StaticFileServer implements StaticFileHandler {
         }
         resource = getStaticResource(requestFilename);
 
+        if (resource != null && resourceIsDirectory(resource)) {
+            return false;
+        }
+
         if (resource == null && shouldFixIncorrectWebjarPaths()
                 && isIncorrectWebjarPath(requestFilename)) {
             // Flow issue #4601
@@ -103,6 +117,38 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         return resource != null;
+    }
+
+    private boolean resourceIsDirectory(URL resource) {
+        if (resource.getPath().endsWith("/")) {
+            return true;
+        }
+        URI resourceURI = null;
+        try {
+            resourceURI = resource.toURI();
+        } catch (URISyntaxException e) {
+            getLogger().debug("Syntax error in uri from getStaticResource", e);
+            // Return false as we couldn't determine if the resource is a
+            // directory.
+            return false;
+        }
+
+        if (resource.getProtocol().equals("jar")) {
+            try (FileSystem fileSystem = FileSystems.newFileSystem(resourceURI,
+                    Collections.emptyMap())) {
+                // Get the file path inside the jar.
+                final Path path = fileSystem.getPath(resource.getPath()
+                        .substring(resource.getPath().lastIndexOf("!") + 1));
+
+                return Files.isDirectory(path);
+            } catch (IOException e) {
+                getLogger().debug("failed to read zip file", e);
+            }
+        }
+
+        // If not a jar check if a file path direcotry.
+        return resource.getProtocol().equals("file")
+                && Files.isDirectory(Paths.get(resourceURI));
     }
 
     @Override
@@ -169,13 +215,12 @@ public class StaticFileServer implements StaticFileHandler {
      * resource). The {@code null} return value means that the resource won't be
      * exposed as a Web resource even if it's a resource available via
      * {@link ServletContext}.
-     * 
+     *
      * @param path
      *            the path for the resource
      * @return the resource located at the named path to expose it via Web, or
      *         {@code null} if there is no resource at that path or it should
      *         not be exposed
-     * 
      * @see VaadinService#getStaticResource(String)
      */
     protected URL getStaticResource(String path) {
