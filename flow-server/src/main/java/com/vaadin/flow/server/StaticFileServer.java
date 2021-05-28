@@ -129,6 +129,9 @@ public class StaticFileServer implements StaticFileHandler {
     }
 
     private boolean resourceIsDirectory(URL resource) {
+        if (resource.getPath().endsWith("/")) {
+            return true;
+        }
         URI resourceURI = null;
         try {
             resourceURI = resource.toURI();

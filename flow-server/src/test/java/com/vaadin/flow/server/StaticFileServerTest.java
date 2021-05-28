@@ -267,9 +267,27 @@ public class StaticFileServerTest implements Serializable {
         folder.create();
 
         setupRequestURI("", "", "/frontend");
+        // generate URL so it is not ending with / so that we test the correct
+        // method
+        String rootAbsolutePath = folder.getRoot().getAbsolutePath()
+                .replaceAll("\\\\", "/");
+        if (rootAbsolutePath.endsWith("/")) {
+            rootAbsolutePath = rootAbsolutePath.substring(0,
+                    rootAbsolutePath.length() - 1);
+        }
+        final URL folderPath = new URL("file:///" + rootAbsolutePath);
+
         Mockito.when(servletService.getStaticResource("/frontend"))
-                .thenReturn(folder.getRoot().toURI().toURL());
+                .thenReturn(folderPath);
         Assert.assertFalse("Folder on disk should not be a static resource.",
+                fileServer.isStaticResourceRequest(request));
+
+        // Test any path ending with / to be seen as a directory
+        setupRequestURI("", "", "/fake");
+        Mockito.when(servletService.getStaticResource("/fake"))
+                .thenReturn(new URL("file:///fake/"));
+        Assert.assertFalse(
+                "Fake should not check the file system nor be a static resource.",
                 fileServer.isStaticResourceRequest(request));
 
         File archiveFile = new File(folder.getRoot(), "fake.jar");
@@ -289,7 +307,7 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(servletService.getStaticResource("/frontend/."))
                 .thenReturn(new URL("jar:file:///"
                         + tempArchive.toString().replaceAll("\\\\", "/")
-                        + "!/frontend/"));
+                        + "!/frontend"));
         Assert.assertFalse(
                 "Folder 'frontend' in jar should not be a static resource.",
                 fileServer.isStaticResourceRequest(request));
