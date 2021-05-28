@@ -21,7 +21,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -62,15 +61,9 @@ public final class TestUtils {
 
     public static void equalsIgnoreWhiteSpaces(String msg, String expected,
             String actual) {
-        boolean isCI = Optional.ofNullable(System.getenv("CI"))
-                .map(value -> value.equals("true")).orElse(false);
-
         try {
-            Assert.assertEquals(msg,
-                    isCI ? expected.replaceAll("\\s+", " ").trim()
-                            : unifyIndentation(expected, 2),
-                    isCI ? actual.replaceAll("\\s++", " ").trim()
-                            : unifyIndentation(actual, 2));
+            Assert.assertEquals(msg, unifyIndentation(expected, 2),
+                    unifyIndentation(actual, 2));
         } catch (IndentationUtils.IndentationSyntaxException e) {
             throw new AssertionError("Failed to unify indentation", e);
         }
