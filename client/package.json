@@ -10,7 +10,7 @@
   "scripts": {
     "build": "lerna run build",
     "lint": "lerna run lint",
-    "postinstall": "simple-git-hooks && lerna bootstrap",
+    "postinstall": "lerna bootstrap",
     "test": "lerna run test",
     "typecheck": "lerna run typecheck"
   },
