@@ -21,7 +21,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -607,6 +606,46 @@ public class DevModeHandlerTest {
         Assert.assertTrue("expected a body child",
                 document.body().children().size() > 0);
         Mockito.verify(response).setContentType("text/html;charset=utf-8");
+    }
+
+    @Test
+    public void serveDevModeRequest_uriForDevmodeGizmo_goesToWebpack()
+            throws Exception {
+        HttpServletRequest request = prepareRequest(
+                "/VAADIN/build/vaadin-devmodeGizmo-f679dbf313191ec3d018.cache.js");
+        HttpServletResponse response = prepareResponse();
+
+        final String manifestJsonResponse = "{ \"sw.js\": "
+                + "\"sw.js\", \"index.html\": \"index.html\" }";
+        int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
+
+        DevModeHandler devModeHandler = DevModeHandler.start(port,
+                createDevModeLookup(), npmFolder,
+                CompletableFuture.completedFuture(null));
+        devModeHandler.join();
+
+        assertTrue(devModeHandler.serveDevModeRequest(request, response));
+        assertEquals(HTTP_OK, responseStatus);
+    }
+
+    @Test
+    public void serveDevModeRequest_uriWithScriptInjected_returnsImmediatelyAndSetsForbiddenStatus()
+            throws Exception {
+        HttpServletRequest request = prepareRequest(
+                "/VAADIN/build/vaadin-devmodeGizmo-f679dbf313191ec3d018.cache%3f%22onload=%22alert(1)");
+        HttpServletResponse response = prepareResponse();
+
+        final String manifestJsonResponse = "{ \"sw.js\": "
+                + "\"sw.js\", \"index.html\": \"index.html\" }";
+        int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
+
+        DevModeHandler devModeHandler = DevModeHandler.start(port,
+                createDevModeLookup(), npmFolder,
+                CompletableFuture.completedFuture(null));
+        devModeHandler.join();
+
+        assertTrue(devModeHandler.serveDevModeRequest(request, response));
+        assertEquals(HTTP_FORBIDDEN, responseStatus);
     }
 
     @Test
