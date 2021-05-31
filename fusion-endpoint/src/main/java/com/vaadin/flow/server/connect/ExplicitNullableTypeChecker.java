@@ -41,35 +41,13 @@ public class ExplicitNullableTypeChecker {
      * @return a result of check
      */
     public static boolean isRequired(AnnotatedElement element) {
-        return Stream.of(element.getAnnotations())
-                .anyMatch(annotation -> "nonnull".equalsIgnoreCase(
-                        annotation.annotationType().getSimpleName()));
-    }
-
-    /**
-     * Checks if the reflected element should be required (not nullable) in the
-     * generated Typescript code.
-     *
-     * @param element
-     *            an element to be required
-     * @return a result of check
-     */
-    public static boolean isRequired(Field element) {
-        return element.getType().isPrimitive()
-                || isRequired((AnnotatedElement) element);
-    }
-
-    /**
-     * Checks if the reflected element should be required (not nullable) in the
-     * generated Typescript code.
-     *
-     * @param element
-     *            an element to be required
-     * @return a result of check
-     */
-    public static boolean isRequired(Parameter element) {
-        return element.getType().isPrimitive()
-                || isRequired((AnnotatedElement) element);
+        return (element instanceof Field
+                && ((Field) element).getType().isPrimitive())
+                || (element instanceof Parameter
+                        && ((Parameter) element).getType().isPrimitive())
+                || Stream.of(element.getAnnotations())
+                        .anyMatch(annotation -> "nonnull".equalsIgnoreCase(
+                                annotation.annotationType().getSimpleName()));
     }
 
     /**
