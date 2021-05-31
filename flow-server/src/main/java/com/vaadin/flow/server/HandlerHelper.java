@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -26,8 +27,6 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.communication.PwaHandler;
