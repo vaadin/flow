@@ -51,6 +51,7 @@ public abstract class AbstractUIScopedTest extends AbstractScopeTest {
     @After
     public void clearUI() {
         ui = null;
+        UI.setCurrent(null);
     }
 
     protected UI mockUI() {
