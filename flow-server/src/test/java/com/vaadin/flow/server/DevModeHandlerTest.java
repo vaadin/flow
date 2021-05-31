@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.ConnectException;
-import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
