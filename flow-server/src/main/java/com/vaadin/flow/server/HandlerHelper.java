@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.server;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;

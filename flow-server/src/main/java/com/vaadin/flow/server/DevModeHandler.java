@@ -91,6 +91,10 @@ public final class DevModeHandler implements RequestHandler {
 
     private static final AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
 
+    // webpack dev-server allows " character if passed through, need to
+    // explicitly check requests for it
+    private static final Pattern WEBPACK_ILLEGAL_CHAR_PATTERN = Pattern
+            .compile("\"|%22");
     // It's not possible to know whether webpack is ready unless reading output
     // messages. When webpack finishes, it writes either a `Compiled` or a
     // `Failed` in the last line
@@ -321,8 +325,10 @@ public final class DevModeHandler implements RequestHandler {
         // a valid request for webpack-dev-server should start with '/VAADIN/'
         String requestFilename = request.getPathInfo();
 
-        if (HandlerHelper.isPathUnsafe(requestFilename)) {
-            getLogger().info(HandlerHelper.UNSAFE_PATH_ERROR_MESSAGE_PATTERN,
+        if (HandlerHelper.isPathUnsafe(requestFilename)
+                || WEBPACK_ILLEGAL_CHAR_PATTERN.matcher(requestFilename)
+                        .find()) {
+            getLogger().info("Blocked attempt to access file: {}",
                     requestFilename);
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return true;
@@ -408,6 +414,7 @@ public final class DevModeHandler implements RequestHandler {
      */
     public HttpURLConnection prepareConnection(String path, String method)
             throws IOException {
+        // path should have been checked at this point for any outside requests
         URL uri = new URL(WEBPACK_HOST + ":" + getPort() + path);
         HttpURLConnection connection = (HttpURLConnection) uri.openConnection();
         connection.setRequestMethod(method);
