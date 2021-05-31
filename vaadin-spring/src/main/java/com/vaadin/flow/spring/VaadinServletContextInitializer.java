@@ -413,6 +413,11 @@ public class VaadinServletContextInitializer
             ApplicationConfiguration config = ApplicationConfiguration
                     .get(new VaadinServletContext(event.getServletContext()));
 
+            if (config == null || config.isProductionMode() || !config
+                    .enableDevServer()) {
+                return;
+            }
+
             Lookup lookup = vaadinContext.getAttribute(Lookup.class);
             devModeHandlerManager = lookup.lookup(DevModeHandlerManager.class);
             if (devModeHandlerManager == null) {
@@ -423,10 +428,7 @@ public class VaadinServletContextInitializer
                                 + "run the build-frontend maven goal) or "
                                 + "include the vaadin-dev-server dependency");
             }
-
-            if (config == null || config.isProductionMode()
-                    || !config.enableDevServer()
-                    || isDevModeAlreadyStarted(event.getServletContext())) {
+            if (isDevModeAlreadyStarted(event.getServletContext())) {
                 return;
             }
 
