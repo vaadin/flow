@@ -35,7 +35,7 @@ public interface DevModeHandler extends RequestHandler {
      * Prepare a HTTP connection against webpack-dev-server.
      *
      * @param path
-     *            the file to request
+     *            the file to request, needs to be safe
      * @param method
      *            the http method to use
      * @return the connection
