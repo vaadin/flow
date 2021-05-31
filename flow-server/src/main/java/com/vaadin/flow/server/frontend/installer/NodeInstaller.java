@@ -491,7 +491,8 @@ public class NodeInstaller {
                     .resolve(getNodeDownloadFilename(nodeVersion));
             tmpDirectory = getTempDirectory();
             archive = resolveArchive("node", nodeVersion,
-                    platform.getNodeClassifier(),
+                    platform.getNodeClassifier(
+                            new FrontendVersion(nodeVersion)),
                     platform.getArchiveExtension());
             nodeExecutable = platform.isWindows() ? "node.exe" : "node";
         }
@@ -536,7 +537,8 @@ public class NodeInstaller {
         }
 
         private String getLongNodeFilename(String nodeVersion) {
-            return "node-" + nodeVersion + "-" + platform.getNodeClassifier();
+            return "node-" + nodeVersion + "-" + platform
+                    .getNodeClassifier(new FrontendVersion(nodeVersion));
         }
 
         /**
