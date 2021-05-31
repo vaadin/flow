@@ -557,8 +557,8 @@ public class DevModeHandlerTest {
                 + "\"sw.js\", \"index.html\": \"index.html\" }";
         int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
 
-        DevModeHandlerImpl devModeHandler = DevModeHandlerImpl.start(port,
-                createDevModeLookup(), npmFolder,
+        DevModeHandler devModeHandler = DevModeHandler.start(port,
+                configuration, npmFolder,
                 CompletableFuture.completedFuture(null));
         devModeHandler.join();
 
@@ -577,8 +577,8 @@ public class DevModeHandlerTest {
                 + "\"sw.js\", \"index.html\": \"index.html\" }";
         int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
 
-        DevModeHandlerImpl devModeHandler = DevModeHandlerImpl.start(port,
-                createDevModeLookup(), npmFolder,
+        DevModeHandler devModeHandler = DevModeHandler.start(port,
+                configuration, npmFolder,
                 CompletableFuture.completedFuture(null));
         devModeHandler.join();
 
