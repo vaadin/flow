@@ -102,7 +102,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     private static final Pattern FULLY_QUALIFIED_NAME_PATTERN = Pattern.compile(
             "(" + JAVA_NAME_PATTERN + "(\\." + JAVA_NAME_PATTERN + ")*)");
     private static final Pattern ARRAY_TYPE_NAME_PATTERN = Pattern
-            .compile("Array<(.*)>");
+            .compile("Array<(.*) \\| undefined>");
     private static final Pattern MAPPED_TYPE_NAME_PATTERN = Pattern
             .compile("\\{ \\[key: string\\]: (.*); \\}");
     private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern
@@ -984,7 +984,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         if (schema instanceof ArraySchema) {
             ArraySchema arraySchema = (ArraySchema) schema;
             Schema inner = arraySchema.getItems();
-            return String.format("Array<%s>%s", this.getTypeDeclaration(inner),
+            return String.format("Array<%s | undefined>%s", this.getTypeDeclaration(inner),
                     optionalSuffix);
         } else if (GeneratorUtils.isNotBlank(schema.get$ref())) {
             return getSimpleRef(schema.get$ref()) + optionalSuffix;

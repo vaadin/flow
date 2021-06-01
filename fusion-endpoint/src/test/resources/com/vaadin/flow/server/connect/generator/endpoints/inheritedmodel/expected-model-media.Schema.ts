@@ -9,7 +9,7 @@ import XML from './XML';
 export default interface Schema {
   ref?: string;
   _default?: any;
-  _enum?: Array<any>;
+  _enum?: Array<any | undefined>;
   additionalProperties?: any;
   deprecated?: boolean;
   description?: string;
@@ -35,7 +35,7 @@ export default interface Schema {
   pattern?: string;
   properties?: { [key: string]: Schema; };
   readOnly?: boolean;
-  required?: Array<string>;
+  required?: Array<string | undefined>;
   title?: string;
   type?: string;
   uniqueItems?: boolean;

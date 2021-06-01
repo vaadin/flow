@@ -22,8 +22,8 @@ function _echoInstant(
 export {_echoInstant as echoInstant};
 
 function _echoListLocalDateTime(
-    localDateTimeList?: Array<string>
-): Promise<Array<string> | undefined> {
+    localDateTimeList?: Array<string | undefined>
+): Promise<Array<string | undefined> | undefined> {
   return client.call('DateTimeEndpoint', 'echoListLocalDateTime', {localDateTimeList});
 }
 export {_echoListLocalDateTime as echoListLocalDateTime};

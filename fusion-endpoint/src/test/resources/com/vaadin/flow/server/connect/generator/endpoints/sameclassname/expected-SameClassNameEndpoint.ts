@@ -10,7 +10,7 @@ import SameClassNameModel from './com/vaadin/flow/server/connect/generator/endpo
 import SubpackageSameClassNameModel from './com/vaadin/flow/server/connect/generator/endpoints/sameclassname/subpackage/SameClassNameModel';
 
 function _getMyClass(
-    sameClassNameModel?: Array<SubpackageSameClassNameModel>
+    sameClassNameModel?: Array<SubpackageSameClassNameModel | undefined>
 ): Promise<SameClassNameModel | undefined> {
   return client.call('SameClassNameEndpoint', 'getMyClass', {sameClassNameModel});
 }
@@ -18,7 +18,7 @@ export {_getMyClass as getMyClass};
 
 function _getSubpackageModelList(
     sameClassNameModel?: { [key: string]: SubpackageSameClassNameModel; }
-): Promise<Array<SubpackageSameClassNameModel> | undefined> {
+): Promise<Array<SubpackageSameClassNameModel | undefined> | undefined> {
   return client.call('SameClassNameEndpoint', 'getSubpackageModelList', {sameClassNameModel});
 }
 export {_getSubpackageModelList as getSubpackageModelList};

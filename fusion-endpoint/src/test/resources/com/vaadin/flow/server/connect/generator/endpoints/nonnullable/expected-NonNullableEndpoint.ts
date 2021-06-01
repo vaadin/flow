@@ -19,7 +19,7 @@ function _echoMap(
 export {_echoMap as echoMap};
 
 function _echoNonNullMode(
-  nonNullableModels: Array<NonNullableModel>
+  nonNullableModels: Array<NonNullableModel | undefined>
 ): Promise<NonNullableModel | undefined> {
   return client.call('NonNullableEndpoint', 'echoNonNullMode', {nonNullableModels});
 }

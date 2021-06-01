@@ -50,7 +50,7 @@ export {_getAllUserRolesMap as getAllUserRolesMap};
  *
  * Return list of users
  */
-function _getAllUsers(): Promise<Array<User> | undefined> {
+function _getAllUsers(): Promise<Array<User | undefined> | undefined> {
   return client.call('JsonTestEndpoint', 'getAllUsers');
 }
 export {_getAllUsers as getAllUsers};
@@ -62,8 +62,8 @@ export {_getAllUsers as getAllUsers};
  * Return array of int
  */
 function _getArrayInt(
-    input?: Array<string>
-): Promise<Array<number> | undefined> {
+    input?: Array<string | undefined>
+): Promise<Array<number | undefined> | undefined> {
   return client.call('JsonTestEndpoint', 'getArrayInt', {input});
 }
 export {_getArrayInt as getArrayInt};
@@ -124,7 +124,7 @@ function _inputBeanTypeLocal(
 export {_inputBeanTypeLocal as inputBeanTypeLocal};
 
 function _optionalParameter(
-    parameter?: Array<string>,
+    parameter?: Array<string | undefined>,
     requiredParameter?: string
 ): Promise<void> {
   return client.call('JsonTestEndpoint', 'optionalParameter', {parameter, requiredParameter});
