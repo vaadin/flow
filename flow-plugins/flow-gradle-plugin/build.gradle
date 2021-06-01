@@ -10,7 +10,6 @@ plugins {
     id 'com.gradle.plugin-publish' version '0.11.0'
     id 'org.jetbrains.kotlin.jvm' version '1.4.31'
     id 'maven'
-    id 'org.jetbrains.dokka' version '1.4.32'
 }
 
 /***********************************************************************************************************************
@@ -44,11 +43,6 @@ sourceSets {
         compileClasspath += sourceSets.main.output + configurations.testRuntime
         runtimeClasspath += output + compileClasspath
     }
-}
-
-task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
 }
 
 /***********************************************************************************************************************

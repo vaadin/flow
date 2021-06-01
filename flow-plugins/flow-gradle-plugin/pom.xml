@@ -70,7 +70,6 @@
                             <arguments>
                                 <argument>clean</argument>
                                 <argument>build</argument>
-                                <argument>javadocJar</argument>
                                 <argument>-x</argument>
                                 <argument>functionalTest</argument>
                                 <argument>-S</argument>
