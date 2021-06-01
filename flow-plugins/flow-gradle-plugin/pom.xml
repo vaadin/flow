@@ -70,6 +70,7 @@
                             <arguments>
                                 <argument>clean</argument>
                                 <argument>build</argument>
+                                <argument>javadocJar</argument>
                                 <argument>-x</argument>
                                 <argument>functionalTest</argument>
                                 <argument>-S</argument>
@@ -127,6 +128,11 @@
                                     <type>jar</type>
                                     <classifier>sources</classifier>
                                 </artifact>
+                                <artifact>
+                                    <file>target/${project.artifactId}-${project.version}-javadoc.jar</file>
+                                    <type>jar</type>
+                                    <classifier>javadoc</classifier>
+                                </artifact>
                             </artifacts>
                         </configuration>
                     </execution>
@@ -146,44 +152,6 @@
             <properties>
                 <gradle.executable>gradlew.bat</gradle.executable>
             </properties>
-        </profile>
-
-        <profile>
-            <id>skipTests</id>
-            <activation>
-                <property>
-                    <name>skipTests</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <!-- execute Gradle command -->
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>3.0.0</version>
-                        <executions>
-                            <execution>
-                                <id>gradle</id>
-                                <phase>prepare-package</phase>
-                                <configuration>
-                                    <executable>${gradle.executable}</executable>
-                                    <arguments>
-                                        <argument>clean</argument>
-                                        <argument>build</argument>
-                                        <argument>-x</argument>
-                                        <argument>functionalTest</argument>
-                                        <argument>-S</argument>
-                                    </arguments>
-                                </configuration>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
     </profiles>
 </project>

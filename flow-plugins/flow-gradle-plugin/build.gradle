@@ -9,6 +9,7 @@ plugins {
     id 'idea'
     id 'com.gradle.plugin-publish' version '0.11.0'
     id 'org.jetbrains.kotlin.jvm' version '1.4.31'
+    id 'org.jetbrains.dokka' version '1.4.32'
 }
 
 /***********************************************************************************************************************
@@ -40,6 +41,11 @@ sourceSets {
 
 configurations {
     functionalTestImplementation.extendsFrom testImplementation
+}
+
+task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
 }
 
 /***********************************************************************************************************************
