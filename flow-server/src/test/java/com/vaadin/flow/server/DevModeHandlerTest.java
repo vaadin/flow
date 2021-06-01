@@ -795,12 +795,10 @@ public class DevModeHandlerTest {
 
         Mockito.when(appConfig.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
-                .thenAnswer(invocation -> invocation.getArgumentAt(1,
-                        String.class));
+                .thenAnswer(invocation -> invocation.getArgument(1));
         Mockito.when(appConfig.getBooleanProperty(Mockito.anyString(),
                 Mockito.anyBoolean()))
-                .thenAnswer(invocation -> invocation.getArgumentAt(1,
-                        Boolean.class));
+                .thenAnswer(invocation -> invocation.getArgument(1));
     }
 
     public static HttpServer createStubWebpackTcpListener(int port, int status,

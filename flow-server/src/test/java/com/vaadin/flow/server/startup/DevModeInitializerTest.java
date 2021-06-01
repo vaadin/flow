@@ -420,15 +420,15 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         final Map<String, Object> servletContextAttributes = new HashMap<>();
         Mockito.doAnswer(answer -> {
-            String key = answer.getArgumentAt(0, String.class);
-            Object value = answer.getArgumentAt(1, Object.class);
+            String key = answer.getArgument(0);
+            Object value = answer.getArgument(1);
             servletContextAttributes.putIfAbsent(key, value);
             return null;
         }).when(servletContext).setAttribute(Mockito.anyString(),
                 Mockito.anyObject());
         Mockito.when(servletContext.getAttribute(Mockito.anyString()))
                 .thenAnswer(answer -> servletContextAttributes
-                        .get(answer.getArgumentAt(0, String.class)));
+                        .get(answer.getArgument(0)));
 
         Mockito.when(servletContext
                 .getAttribute(ApplicationConfiguration.class.getName()))
