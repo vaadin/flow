@@ -45,6 +45,8 @@ import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationPermitAl
 import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationDenyAllByGrandParentView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationRolesAllowedUserByGrandParentView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationRolesAllowedAdminByGrandParentView;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationDenyAllAsInterfacesIgnoredView;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationPermitAllByGrandParentAsInterfacesIgnoredView;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -55,7 +57,7 @@ public class ViewAccessCheckerTest {
 
     private enum User {
         USER_NO_ROLES, NORMAL_USER, ADMIN
-    };
+    }
 
     private ViewAccessChecker viewAccessChecker;
 
@@ -487,6 +489,41 @@ public class ViewAccessCheckerTest {
         Result result = checkAccess(
                 NoAnnotationRolesAllowedAdminByGrandParentView.class,
                 User.ADMIN);
+        Assert.assertTrue(result.wasTargetViewRendered());
+    }
+
+    @Test
+    public void anyAccess_to_noAnnotationDenyAllAsInterfacesIgnoredView_denied() {
+        Assert.assertFalse(
+                checkAccess(NoAnnotationDenyAllAsInterfacesIgnoredView.class,
+                        null).wasTargetViewRendered());
+
+        Assert.assertFalse(
+                checkAccess(NoAnnotationDenyAllAsInterfacesIgnoredView.class,
+                        User.USER_NO_ROLES).wasTargetViewRendered());
+
+        Assert.assertFalse(
+                checkAccess(NoAnnotationDenyAllAsInterfacesIgnoredView.class,
+                        User.NORMAL_USER).wasTargetViewRendered());
+
+        Assert.assertFalse(
+                checkAccess(NoAnnotationDenyAllAsInterfacesIgnoredView.class,
+                        User.ADMIN).wasTargetViewRendered());
+    }
+
+    @Test
+    public void anonymousAccess_to_noAnnotationPermitAllByGrandParentAsInterfacesIgnoredView_denied() {
+        Result result = checkAccess(
+                NoAnnotationPermitAllByGrandParentAsInterfacesIgnoredView.class,
+                null);
+        Assert.assertFalse(result.wasTargetViewRendered());
+    }
+
+    @Test
+    public void loggedInNoRolesAccess_to_noAnnotationPermitAllByGrandParentAsInterfacesIgnoredView_allowed() {
+        Result result = checkAccess(
+                NoAnnotationPermitAllByGrandParentAsInterfacesIgnoredView.class,
+                User.USER_NO_ROLES);
         Assert.assertTrue(result.wasTargetViewRendered());
     }
 

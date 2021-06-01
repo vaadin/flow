@@ -334,4 +334,18 @@ public class AccessControlTestClasses {
     public static class NoAnnotationDenyAllByGrandParentView
             extends DenyAllParentView {
     }
+
+    @AnonymousAllowed
+    public interface CustomComponent {
+    }
+
+    @Route("no-annotation-denyall-as-interfaces-ignored")
+    public static class NoAnnotationDenyAllAsInterfacesIgnoredView
+            implements CustomComponent {
+    }
+
+    @Route("no-annotation-permitall-from-parent-and-interfaces-ignored")
+    public static class NoAnnotationPermitAllByGrandParentAsInterfacesIgnoredView
+            extends PermitAllParentView implements CustomComponent {
+    }
 }
