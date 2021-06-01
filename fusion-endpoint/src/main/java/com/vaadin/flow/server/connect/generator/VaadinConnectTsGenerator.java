@@ -112,17 +112,6 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     private List<Tag> tags;
 
-    private static class VaadinConnectTSOnlyGenerator extends DefaultGenerator {
-        @Override
-        public File writeToFile(String filename, String contents)
-                throws IOException {
-            if (filename.endsWith(TS)) {
-                return super.writeToFile(filename, contents);
-            }
-            return null;
-        }
-    }
-
     /**
      * Create vaadin ts codegen instance.
      */
@@ -984,8 +973,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         if (schema instanceof ArraySchema) {
             ArraySchema arraySchema = (ArraySchema) schema;
             Schema inner = arraySchema.getItems();
-            return String.format("Array<%s | undefined>%s", this.getTypeDeclaration(inner),
-                    optionalSuffix);
+            return String.format("Array<%s | undefined>%s",
+                    this.getTypeDeclaration(inner), optionalSuffix);
         } else if (GeneratorUtils.isNotBlank(schema.get$ref())) {
             return getSimpleRef(schema.get$ref()) + optionalSuffix;
         } else if (schema.getAdditionalProperties() != null) {
@@ -1086,6 +1075,23 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
                 prop.datatype, (List<Map<String, String>>) options.param(0)));
     }
 
+    @Override
+    public String toEnumVarName(String name, String datatype) {
+        // Keep the same Java enum name in TS
+        return name;
+    }
+
+    private static class VaadinConnectTSOnlyGenerator extends DefaultGenerator {
+        @Override
+        public File writeToFile(String filename, String contents)
+                throws IOException {
+            if (filename.endsWith(TS)) {
+                return super.writeToFile(filename, contents);
+            }
+            return null;
+        }
+    }
+
     /**
      * Parameter information object which is used to store body parameters in a
      * convenient way to process in the template.
@@ -1139,11 +1145,5 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         public boolean isRequired() {
             return isRequired;
         }
-    }
-
-    @Override
-    public String toEnumVarName(String name, String datatype) {
-        // Keep the same Java enum name in TS
-        return name;
     }
 }
