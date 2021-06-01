@@ -26,8 +26,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.RouteRegistry;
 
 public class RouteNotFoundErrorTest {
 
@@ -63,9 +63,8 @@ public class RouteNotFoundErrorTest {
         Mockito.when(event.getSource()).thenReturn(router);
         RouteRegistry registry = Mockito.mock(RouteRegistry.class);
         Mockito.when(router.getRegistry()).thenReturn(registry);
-        RouteData data = new RouteData(Collections.emptyList(), "bar",
-                Collections.emptyList(), RouteTarget.class,
-                Collections.emptyList());
+        RouteData data = new RouteData(RouterLayout.class, "bar",
+                Collections.emptyList(), RouteTarget.class);
         Mockito.when(registry.getRegisteredRoutes())
                 .thenReturn(Collections.singletonList(data));
 
