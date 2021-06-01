@@ -14,7 +14,6 @@
 	<modules>
 		<module>flow-plugin-base</module>
 		<module>flow-maven-plugin</module>
-		<module>flow-gradle-plugin</module>
 	</modules>
 	<build>
 		<plugins>
@@ -33,4 +32,15 @@
 			</plugin>
 		</plugins>
 	</build>
+        <profiles>
+                <profile>
+                        <id>gradle</id>
+                        <activation>
+                                <jdk>(,16]</jdk>
+                        </activation>
+                        <modules>
+                                <module>flow-gradle-plugin</module>
+                        </modules>
+               </profile>
+        </profiles>
 </project>
