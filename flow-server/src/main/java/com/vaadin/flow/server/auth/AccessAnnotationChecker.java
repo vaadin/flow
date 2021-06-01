@@ -203,7 +203,7 @@ public class AccessAnnotationChecker implements Serializable {
      * @return the first annotated class in {@code cls}'s hierarchy that
      *         annotated with one of the access annotations, starting from the
      *         input {@code cls} class itself, going up in the hierarchy.
-     *         WARNING: Note that interfaces are ignored.
+     *         <em>Note:</em> interfaces in the {@code cls}'s hierarchy are ignored.
      *         <p>
      *         If no class in the hierarchy was annotated with any of the access
      *         annotations, the {@code cls} input parameter itself would be
