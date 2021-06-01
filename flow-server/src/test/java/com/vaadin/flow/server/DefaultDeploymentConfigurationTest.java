@@ -283,6 +283,7 @@ public class DefaultDeploymentConfigurationTest {
             ApplicationConfiguration appConfig, Properties initParameters) {
         Mockito.when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
+        Mockito.when(appConfig.getBuildFolder()).thenReturn(".");
         return new DefaultDeploymentConfiguration(appConfig,
                 DefaultDeploymentConfigurationTest.class, initParameters);
     }
