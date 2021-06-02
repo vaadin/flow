@@ -230,6 +230,13 @@ class TestProject {
      */
     val settingsFile: File get() = File(dir, "settings.gradle")
 
+    private fun createGradleRunner(): GradleRunner = GradleRunner.create()
+        .withProjectDir(dir)
+        .withPluginClasspath()
+        .withDebug(true) // use --debug to catch ReflectionsException: https://github.com/vaadin/vaadin-gradle-plugin/issues/99
+        .forwardOutput()   // a must, otherwise ./gradlew check freezes on windows!
+        .withGradleVersion("5.0")
+
     override fun toString(): String = "TestProject(dir=$dir)"
 
     /**
@@ -264,13 +271,8 @@ class TestProject {
         expect(true, "$buildFile doesn't exist, can't run build") { buildFile.exists() }
 
         println("$dir/./gradlew ${args.joinToString(" ")}")
-        val result: BuildResult = GradleRunner.create()
-            .withProjectDir(dir)
-            .withArguments(args.toList() + "--stacktrace" + "--console=plain" + (if (debug) "--debug" else "--info"))
-            .withPluginClasspath()
-            .withDebug(debug)
-            .forwardOutput()   // a must, otherwise ./gradlew check freezes on windows!
-            .withGradleVersion("5.0")
+        val result: BuildResult = createGradleRunner()
+            .withArguments(args.toList() + "--stacktrace" + "--info")
             .build()
 
         if (checkTasksSuccessful) {
@@ -282,6 +284,16 @@ class TestProject {
             }
         }
         return result
+    }
+
+    /**
+     * Runs and fails the build on this project;
+     */
+    fun buildAndFail(vararg args: String): BuildResult {
+        println("$dir/./gradlew ${args.joinToString(" ")}")
+        return createGradleRunner()
+                .withArguments(args.toList() + "--stacktrace" + "--info")
+                .buildAndFail()
     }
 
     /**
