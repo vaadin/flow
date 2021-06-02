@@ -36,7 +36,8 @@
                 <profile>
                         <id>gradle</id>
                         <activation>
-                                <jdk>(,16]</jdk>
+                                <!-- gradle plugin will not work in jdk16+ until we migrate to gradle 7.0 -->
+                                <jdk>(,15]</jdk>
                         </activation>
                         <modules>
                                 <module>flow-gradle-plugin</module>
