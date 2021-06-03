@@ -57,6 +57,7 @@ import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -74,6 +75,7 @@ import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 
+@NotThreadSafe
 public class StaticFileServerTest implements Serializable {
 
     private OverrideableStaticFileServer fileServer;
@@ -340,6 +342,8 @@ public class StaticFileServerTest implements Serializable {
     @Test
     public void openingJarFileSystemForDifferentFilesInSameJar_existingFileSystemIsUsed()
             throws IOException, URISyntaxException {
+        Assert.assertTrue("Can not run concurrently with other test",
+                StaticFileServer.openFileSystems.isEmpty());
 
         final TemporaryFolder folder = TemporaryFolder.builder().build();
         folder.create();
@@ -370,15 +374,15 @@ public class StaticFileServerTest implements Serializable {
         fileServer.getFileSystem(fileResourceURL.toURI());
 
         Assert.assertEquals("Same file should be marked for both resources",
-                (Integer) 2, fileServer.openFileSystems.entrySet().iterator()
-                        .next().getValue());
+                (Integer) 2, StaticFileServer.openFileSystems.entrySet()
+                        .iterator().next().getValue());
         fileServer.closeFileSystem(folderResourceURL.toURI());
         Assert.assertEquals("Closing resource should be removed from jar uri",
-                (Integer) 1, fileServer.openFileSystems.entrySet().iterator()
-                        .next().getValue());
+                (Integer) 1, StaticFileServer.openFileSystems.entrySet()
+                        .iterator().next().getValue());
         fileServer.closeFileSystem(fileResourceURL.toURI());
         Assert.assertTrue("Closing last resource should clear marking",
-                fileServer.openFileSystems.isEmpty());
+                StaticFileServer.openFileSystems.isEmpty());
 
         try {
             FileSystems.getFileSystem(folderResourceURL.toURI());
@@ -392,6 +396,9 @@ public class StaticFileServerTest implements Serializable {
     public void concurrentRequestsToJarResources_checksAreCorrect()
             throws IOException, InterruptedException, ExecutionException,
             URISyntaxException {
+        Assert.assertTrue("Can not run concurrently with other test",
+                StaticFileServer.openFileSystems.isEmpty());
+
         final TemporaryFolder folder = TemporaryFolder.builder().build();
         folder.create();
 
@@ -450,7 +457,7 @@ public class StaticFileServerTest implements Serializable {
                 + exceptions + "}", exceptions.isEmpty());
 
         Assert.assertFalse("Folder URI should have been cleared",
-                fileServer.openFileSystems
+                StaticFileServer.openFileSystems
                         .containsKey(folderResourceURL.toURI()));
         try {
             FileSystems.getFileSystem(folderResourceURL.toURI());

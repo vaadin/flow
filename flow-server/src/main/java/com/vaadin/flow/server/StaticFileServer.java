@@ -78,8 +78,8 @@ public class StaticFileServer implements StaticFileHandler {
             .compile("^\\/themes\\/[\\s\\S]+?\\/");
 
     // Mapped uri is for the jar file
-    Map<URI, Integer> openFileSystems = new HashMap<>();
-    private Object fileSystemLock = new Object();
+    static final Map<URI, Integer> openFileSystems = new HashMap<>();
+    private static final Object fileSystemLock = new Object();
 
     /**
      * Constructs a file server.
@@ -188,8 +188,9 @@ public class StaticFileServer implements StaticFileHandler {
     FileSystem getFileSystem(URI resourceURI) throws IOException {
         synchronized (fileSystemLock) {
             URI fileURI = getFileURI(resourceURI);
-            if (openFileSystems.containsKey(fileURI)) {
-                openFileSystems.put(fileURI, openFileSystems.get(fileURI) + 1);
+
+            if (openFileSystems.computeIfPresent(fileURI,
+                    (key, value) -> value + 1) != null) {
                 // Get filesystem is for the file to get the correct provider
                 return FileSystems.getFileSystem(resourceURI);
             }
@@ -206,19 +207,13 @@ public class StaticFileServer implements StaticFileHandler {
         synchronized (fileSystemLock) {
             try {
                 URI fileURI = getFileURI(resourceURI);
-                if (!openFileSystems.containsKey(fileURI)) {
-                    getLogger().debug("Tried to close non existent key {}",
-                            fileURI);
-                    return;
-                }
-                final Integer integer = openFileSystems.get(fileURI);
-                if (integer == 1) {
+                final Integer locks = openFileSystems.computeIfPresent(fileURI,
+                        (key, value) -> value - 1);
+                if (locks != null && locks == 0) {
                     openFileSystems.remove(fileURI);
                     // Get filesystem is for the file to get the correct
                     // provider
                     FileSystems.getFileSystem(resourceURI).close();
-                } else {
-                    openFileSystems.put(fileURI, integer - 1);
                 }
             } catch (IOException ioe) {
                 getLogger().error("Failed to close FileSystem for '{}'",
