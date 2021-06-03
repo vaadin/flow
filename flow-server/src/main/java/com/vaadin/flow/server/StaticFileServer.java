@@ -35,7 +35,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -80,7 +79,7 @@ public class StaticFileServer implements StaticFileHandler {
 
     // Mapped uri is for the jar file
     Map<URI, Integer> openFileSystems = new HashMap<>();
-    private ReentrantLock lock = new ReentrantLock();
+    private Object fileSystemLock = new Object();
 
     /**
      * Constructs a file server.
@@ -187,8 +186,7 @@ public class StaticFileServer implements StaticFileHandler {
 
     // Package protected for feature verification purpose
     FileSystem getFileSystem(URI resourceURI) throws IOException {
-        lock.lock();
-        try {
+        synchronized (fileSystemLock) {
             URI fileURI = getFileURI(resourceURI);
             if (openFileSystems.containsKey(fileURI)) {
                 openFileSystems.put(fileURI, openFileSystems.get(fileURI) + 1);
@@ -200,35 +198,33 @@ public class StaticFileServer implements StaticFileHandler {
                     Collections.emptyMap());
             openFileSystems.put(fileURI, 1);
             return fileSystem;
-        } finally {
-            lock.unlock();
         }
     }
 
     // Package protected for feature verification purpose
     void closeFileSystem(URI resourceURI) {
-        lock.lock();
-        try {
-            URI fileURI = getFileURI(resourceURI);
-            if (!openFileSystems.containsKey(fileURI)) {
-                getLogger().debug("Tried to close non existent key {}",
-                        fileURI);
-                return;
+        synchronized (fileSystemLock) {
+            try {
+                URI fileURI = getFileURI(resourceURI);
+                if (!openFileSystems.containsKey(fileURI)) {
+                    getLogger().debug("Tried to close non existent key {}",
+                            fileURI);
+                    return;
+                }
+                final Integer integer = openFileSystems.get(fileURI);
+                if (integer == 1) {
+                    openFileSystems.remove(fileURI);
+                    // Get filesystem is for the file to get the correct
+                    // provider
+                    FileSystems.getFileSystem(resourceURI).close();
+                } else {
+                    openFileSystems.put(fileURI, integer - 1);
+                }
+            } catch (IOException ioe) {
+                getLogger().error("Failed to close FileSystem for '{}'",
+                        resourceURI);
+                getLogger().debug("Exception closing FileSystem", ioe);
             }
-            final Integer integer = openFileSystems.get(fileURI);
-            if (integer == 1) {
-                openFileSystems.remove(fileURI);
-                // Get filesystem is for the file to get the correct provider
-                FileSystems.getFileSystem(resourceURI).close();
-            } else {
-                openFileSystems.put(fileURI, integer - 1);
-            }
-        } catch (IOException ioe) {
-            getLogger().error("Failed to close FileSystem for '{}'",
-                    resourceURI);
-            getLogger().debug("Exception closing FileSystem", ioe);
-        } finally {
-            lock.unlock();
         }
     }
 
