@@ -34,15 +34,13 @@ targetCompatibility = 1.8
 
 sourceSets {
     functionalTest {
-        kotlin {
-            srcDir file('src/functionalTest/kotlin')
-        }
-        resources {
-            srcDir file('src/functionalTest/resources')
-        }
-        compileClasspath += sourceSets.main.output + configurations.testRuntime
-        runtimeClasspath += output + compileClasspath
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
     }
+}
+
+configurations {
+    functionalTestImplementation.extendsFrom testImplementation
 }
 
 task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
@@ -65,12 +63,12 @@ repositories {
 }
 
 dependencies {
-    compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.31")
+    compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.32")
 
     compile("com.vaadin:flow-plugin-base:${pom.parent.version}")
 
-    testCompile("junit:junit:4.12")
-    testCompile("org.jetbrains.kotlin:kotlin-test:1.4.31")
+    testImplementation("junit:junit:4.12")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.4.32")
 }
 
 idea {
