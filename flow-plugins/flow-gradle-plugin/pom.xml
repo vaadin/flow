@@ -128,6 +128,11 @@
                                     <type>jar</type>
                                     <classifier>sources</classifier>
                                 </artifact>
+                                <artifact>
+                                    <file>target/${project.artifactId}-${project.version}-javadoc.jar</file>
+                                    <type>jar</type>
+                                    <classifier>javadoc</classifier>
+                                </artifact>
                             </artifacts>
                         </configuration>
                     </execution>
