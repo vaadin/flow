@@ -382,7 +382,6 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 compile("com.vaadin:flow:$flowVersion")
             }
             vaadin {
-                pnpmEnable = true
                 requireHomeNodeExec = true
                 nodeVersion = "v12.10.0"
                 nodeDownloadRoot = "http://localhost:8080/non-existent"
@@ -399,16 +398,13 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         System.setProperty("user.home", testProject.dir.absolutePath)
 
         try {
-            result = GradleRunner.create()
-                .withProjectDir(testProject.dir)
-                .withArguments(listOf("vaadinPrepareFrontend", "--info", "--stacktrace", "-Duser.home=${testProject.dir.absolutePath}"))
-                .withPluginClasspath()
-                .buildAndFail()
+            result = testProject.buildAndFail("vaadinPrepareFrontend",
+                    "-Duser.home=${testProject.dir.absolutePath}")
         } finally {
             // Return original user home value
             System.setProperty("user.home", originalUserHome)
         }
-        // the task should fail download the node.js
+        // the task should fail to download the node.js
         result.expectTaskOutcome("vaadinPrepareFrontend", TaskOutcome.FAILED)
         expect(true, result.output) {
             result.output.contains("Could not download http://localhost:8080/v12.10.0/")
