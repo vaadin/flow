@@ -27,19 +27,33 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -321,6 +335,188 @@ public class StaticFileServerTest implements Serializable {
                 fileServer.isStaticResourceRequest(request));
 
         folder.delete();
+    }
+
+    @Test
+    public void openingJarFileSystemForDifferentFilesInSameJar_existingFileSystemIsUsed()
+            throws IOException, URISyntaxException {
+
+        final TemporaryFolder folder = TemporaryFolder.builder().build();
+        folder.create();
+
+        File archiveFile = new File(folder.getRoot(), "fake.jar");
+        archiveFile.createNewFile();
+        Path tempArchive = archiveFile.toPath();
+
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+                Files.newOutputStream(tempArchive))) {
+            // Create a file to the zip
+            zipOutputStream.putNextEntry(new ZipEntry("/file"));
+            zipOutputStream.closeEntry();
+            // Create a directory to the zip
+            zipOutputStream.putNextEntry(new ZipEntry("frontend/"));
+            zipOutputStream.closeEntry();
+        }
+
+        final URL folderResourceURL = new URL(
+                "jar:file:///" + tempArchive.toString().replaceAll("\\\\", "/")
+                        + "!/frontend");
+
+        final URL fileResourceURL = new URL(
+                "jar:file:///" + tempArchive.toString().replaceAll("\\\\", "/")
+                        + "!/file.txt");
+
+        fileServer.getFileSystem(folderResourceURL.toURI());
+        fileServer.getFileSystem(fileResourceURL.toURI());
+
+        Assert.assertEquals("Same file should be marked for both resources",
+                (Integer) 2, fileServer.openFileSystems.entrySet().iterator()
+                        .next().getValue());
+        fileServer.closeFileSystem(folderResourceURL.toURI());
+        Assert.assertEquals("Closing resource should be removed from jar uri",
+                (Integer) 1, fileServer.openFileSystems.entrySet().iterator()
+                        .next().getValue());
+        fileServer.closeFileSystem(fileResourceURL.toURI());
+        Assert.assertTrue("Closing last resource should clear marking",
+                fileServer.openFileSystems.isEmpty());
+
+        try {
+            FileSystems.getFileSystem(folderResourceURL.toURI());
+            Assert.fail("Jar FileSystem should have been closed");
+        } catch (FileSystemNotFoundException fsnfe) {
+            // This should happen as we should not have an open FileSystem here.
+        }
+    }
+
+    @Test
+    public void concurrentRequestsToJarResources_checksAreCorrect()
+            throws IOException, InterruptedException, ExecutionException,
+            URISyntaxException {
+        final TemporaryFolder folder = TemporaryFolder.builder().build();
+        folder.create();
+
+        File archiveFile = new File(folder.getRoot(), "fake.jar");
+        archiveFile.createNewFile();
+        Path tempArchive = archiveFile.toPath();
+
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+                Files.newOutputStream(tempArchive))) {
+            // Create a file to the zip
+            zipOutputStream.putNextEntry(new ZipEntry("/file"));
+            zipOutputStream.closeEntry();
+            // Create a directory to the zip
+            zipOutputStream.putNextEntry(new ZipEntry("frontend/"));
+            zipOutputStream.closeEntry();
+        }
+        setupRequestURI("", "", "/frontend/.");
+        final URL folderResourceURL = new URL(
+                "jar:file:///" + tempArchive.toString().replaceAll("\\\\", "/")
+                        + "!/frontend");
+        Mockito.when(servletService.getStaticResource("/frontend/."))
+                .thenReturn(folderResourceURL);
+
+        int THREADS = 5;
+
+        List<Callable<Result>> folderNotResource = IntStream.range(0, THREADS)
+                .mapToObj(i -> {
+                    Callable<Result> callable = () -> {
+                        try {
+                            if (fileServer.isStaticResourceRequest(request)) {
+                                throw new IllegalArgumentException(
+                                        "Folder 'frontend' in jar should not be a static resource.");
+                            }
+                        } catch (Exception e) {
+                            return new Result(e);
+                        }
+                        return new Result(null);
+                    };
+                    return callable;
+                }).collect(Collectors.toList());
+
+        ExecutorService executor = Executors.newFixedThreadPool(THREADS);
+        List<Future<Result>> futures = executor.invokeAll(folderNotResource);
+        List<String> exceptions = new ArrayList<>();
+
+        executor.shutdown();
+
+        for (Future<Result> resultFuture : futures) {
+            Result result = resultFuture.get();
+            if (result.exception != null) {
+                exceptions.add(result.exception.getMessage());
+            }
+        }
+
+        Assert.assertTrue("There were exceptions in concurrent requests {"
+                + exceptions + "}", exceptions.isEmpty());
+
+        Assert.assertFalse("Folder URI should have been cleared",
+                fileServer.openFileSystems
+                        .containsKey(folderResourceURL.toURI()));
+        try {
+            FileSystems.getFileSystem(folderResourceURL.toURI());
+            Assert.fail("FileSystem for folder resource should be closed");
+        } catch (FileSystemNotFoundException fsnfe) {
+            // This should happen as we should not have an open FileSystem here.
+        }
+
+        setupRequestURI("", "", "/file.txt");
+        final URL fileResourceURL = new URL(
+                "jar:file:///" + tempArchive.toString().replaceAll("\\\\", "/")
+                        + "!/file.txt");
+        Mockito.when(servletService.getStaticResource("/file.txt"))
+                .thenReturn(fileResourceURL);
+
+        List<Callable<Result>> fileIsResource = IntStream.range(0, THREADS)
+                .mapToObj(i -> {
+                    Callable<Result> callable = () -> {
+                        try {
+                            if (!fileServer.isStaticResourceRequest(request)) {
+                                throw new IllegalArgumentException(
+                                        "File 'file.txt' inside jar should be a static resource.");
+                            }
+                        } catch (Exception e) {
+                            return new Result(e);
+                        }
+                        return new Result(null);
+                    };
+                    return callable;
+                }).collect(Collectors.toList());
+
+        executor = Executors.newFixedThreadPool(THREADS);
+        futures = executor.invokeAll(fileIsResource);
+        exceptions = new ArrayList<>();
+
+        executor.shutdown();
+
+        for (Future<Result> resultFuture : futures) {
+            Result result = resultFuture.get();
+            if (result.exception != null) {
+                exceptions.add(result.exception.getMessage());
+            }
+        }
+
+        Assert.assertTrue("There were exceptions in concurrent requests {"
+                + exceptions + "}", exceptions.isEmpty());
+
+        Assert.assertFalse("URI should have been cleared",
+                fileServer.openFileSystems
+                        .containsKey(fileResourceURL.toURI()));
+        try {
+            FileSystems.getFileSystem(fileResourceURL.toURI());
+            Assert.fail("FileSystem for file resource should be closed");
+        } catch (FileSystemNotFoundException fsnfe) {
+            // This should happen as we should not have an open FileSystem here.
+        }
+
+        folder.delete();
+    }
+
+    private static class Result {
+        final Exception exception;
+
+        Result(Exception exception) {
+            this.exception = exception;
+        }
     }
 
     @Test
