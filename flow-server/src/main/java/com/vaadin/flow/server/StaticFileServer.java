@@ -148,7 +148,7 @@ public class StaticFileServer implements StaticFileHandler {
             return false;
         }
 
-        if (resource.getProtocol().equals("jar")) {
+        if ("jar".equals(resource.getProtocol())) {
             // Get the file path in jar
             final String pathInJar = resource.getPath()
                     .substring(resource.getPath().lastIndexOf("!") + 1);
@@ -165,12 +165,32 @@ public class StaticFileServer implements StaticFileHandler {
             }
         }
 
-        // If not a jar check if a file path direcotry.
-        return resource.getProtocol().equals("file")
+        // If not a jar check if a file path directory.
+        return "file".equals(resource.getProtocol())
                 && Files.isDirectory(Paths.get(resourceURI));
     }
 
+    /**
+     * Get the file URI for the resource jar file. Returns give URI if
+     * URI.scheme is not of type jar.
+     *
+     * The URI for a file inside a jar is composed as
+     * 'jar:file://...pathToJar.../jarFile.jar!/pathToFile'
+     *
+     * the first step strips away the initial scheme 'jar:' leaving us with
+     * 'file://...pathToJar.../jarFile.jar!/pathToFile' from which we remove the
+     * inside jar path giving the end result
+     * 'file://...pathToJar.../jarFile.jar'
+     *
+     * @param resourceURI
+     *            resource URI to get file URI for
+     * @return file URI for resource jar or given resource if not a jar schemed
+     *         URI
+     */
     private URI getFileURI(URI resourceURI) {
+        if (!"jar".equals(resourceURI.getScheme())) {
+            return resourceURI;
+        }
         try {
             String scheme = resourceURI.getRawSchemeSpecificPart();
             int jarPartIndex = scheme.indexOf("!/");
