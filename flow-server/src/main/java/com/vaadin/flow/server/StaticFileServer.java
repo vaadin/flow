@@ -32,7 +32,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -74,6 +76,10 @@ public class StaticFileServer implements StaticFileHandler {
     // Matcher to match string starting with '/themes/[theme-name]/'
     public static final Pattern APP_THEME_PATTERN = Pattern
             .compile("^\\/themes\\/[\\s\\S]+?\\/");
+
+    // Mapped uri is for the jar file
+    static final Map<URI, Integer> openFileSystems = new HashMap<>();
+    private static final Object fileSystemLock = new Object();
 
     /**
      * Constructs a file server.
@@ -142,22 +148,99 @@ public class StaticFileServer implements StaticFileHandler {
             return false;
         }
 
-        if (resource.getProtocol().equals("jar")) {
-            try (FileSystem fileSystem = FileSystems.newFileSystem(resourceURI,
-                    Collections.emptyMap())) {
+        if ("jar".equals(resource.getProtocol())) {
+            // Get the file path in jar
+            final String pathInJar = resource.getPath()
+                    .substring(resource.getPath().lastIndexOf("!") + 1);
+            try {
+                FileSystem fileSystem = getFileSystem(resourceURI);
                 // Get the file path inside the jar.
-                final Path path = fileSystem.getPath(resource.getPath()
-                        .substring(resource.getPath().lastIndexOf("!") + 1));
+                final Path path = fileSystem.getPath(pathInJar);
 
                 return Files.isDirectory(path);
             } catch (IOException e) {
                 getLogger().debug("failed to read zip file", e);
+            } finally {
+                closeFileSystem(resourceURI);
             }
         }
 
-        // If not a jar check if a file path direcotry.
-        return resource.getProtocol().equals("file")
+        // If not a jar check if a file path directory.
+        return "file".equals(resource.getProtocol())
                 && Files.isDirectory(Paths.get(resourceURI));
+    }
+
+    /**
+     * Get the file URI for the resource jar file. Returns give URI if
+     * URI.scheme is not of type jar.
+     *
+     * The URI for a file inside a jar is composed as
+     * 'jar:file://...pathToJar.../jarFile.jar!/pathToFile'
+     *
+     * the first step strips away the initial scheme 'jar:' leaving us with
+     * 'file://...pathToJar.../jarFile.jar!/pathToFile' from which we remove the
+     * inside jar path giving the end result
+     * 'file://...pathToJar.../jarFile.jar'
+     *
+     * @param resourceURI
+     *            resource URI to get file URI for
+     * @return file URI for resource jar or given resource if not a jar schemed
+     *         URI
+     */
+    private URI getFileURI(URI resourceURI) {
+        if (!"jar".equals(resourceURI.getScheme())) {
+            return resourceURI;
+        }
+        try {
+            String scheme = resourceURI.getRawSchemeSpecificPart();
+            int jarPartIndex = scheme.indexOf("!/");
+            if (jarPartIndex != -1) {
+                scheme = scheme.substring(0, jarPartIndex);
+            }
+            return new URI(scheme);
+        } catch (URISyntaxException syntaxException) {
+            throw new IllegalArgumentException(syntaxException.getMessage(),
+                    syntaxException);
+        }
+    }
+
+    // Package protected for feature verification purpose
+    FileSystem getFileSystem(URI resourceURI) throws IOException {
+        synchronized (fileSystemLock) {
+            URI fileURI = getFileURI(resourceURI);
+
+            if (openFileSystems.computeIfPresent(fileURI,
+                    (key, value) -> value + 1) != null) {
+                // Get filesystem is for the file to get the correct provider
+                return FileSystems.getFileSystem(resourceURI);
+            }
+            // Opened filesystem is for the file to get the correct provider
+            FileSystem fileSystem = FileSystems.newFileSystem(resourceURI,
+                    Collections.emptyMap());
+            openFileSystems.put(fileURI, 1);
+            return fileSystem;
+        }
+    }
+
+    // Package protected for feature verification purpose
+    void closeFileSystem(URI resourceURI) {
+        synchronized (fileSystemLock) {
+            try {
+                URI fileURI = getFileURI(resourceURI);
+                final Integer locks = openFileSystems.computeIfPresent(fileURI,
+                        (key, value) -> value - 1);
+                if (locks != null && locks == 0) {
+                    openFileSystems.remove(fileURI);
+                    // Get filesystem is for the file to get the correct
+                    // provider
+                    FileSystems.getFileSystem(resourceURI).close();
+                }
+            } catch (IOException ioe) {
+                getLogger().error("Failed to close FileSystem for '{}'",
+                        resourceURI);
+                getLogger().debug("Exception closing FileSystem", ioe);
+            }
+        }
     }
 
     @Override
