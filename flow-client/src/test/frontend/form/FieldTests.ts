@@ -279,11 +279,11 @@ suite("form/Field", () => {
       });
 
       test('should update binder value on typing', async () => {
-        const cases: Array<[string, number]> = [
+        const cases: Array<[string, number | undefined]> = [
           ['1', 1],
           ['1.', NaN], // not allowed format
           ['1.2', 1.2],
-          ['', NaN],
+          ['', undefined],
           ['not a number', NaN],
           ['.', NaN],
           ['.1', 0.1],
@@ -420,11 +420,11 @@ suite("form/Field", () => {
       });
 
       test('should update binder value on typing', async () => {
-        const cases: Array<[string, number]> = [
+        const cases: Array<[string, number | undefined]> = [
           ['1', 1],
           ['1.', NaN], // not allowed format
           ['1.2', 1.2],
-          ['', NaN],
+          ['', undefined],
           ['not a number', NaN],
           ['.', NaN],
           ['.1', 0.1],
