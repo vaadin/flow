@@ -555,9 +555,9 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         if (matcher.find()) {
             String arrayItemType = matcher.group(1);
 
-            String variableName = arrayItemType.endsWith(" | undefined")
+            String variableName = arrayItemType.endsWith(OPTIONAL_SUFFIX)
                     ? arrayItemType.substring(0,
-                            arrayItemType.lastIndexOf(" | undefined"))
+                            arrayItemType.lastIndexOf(OPTIONAL_SUFFIX))
                     : arrayItemType;
             return "Array" + MODEL + "<" + getModelVariableType(variableName)
                     + ", " + getModelFullType(variableName) + ">";
