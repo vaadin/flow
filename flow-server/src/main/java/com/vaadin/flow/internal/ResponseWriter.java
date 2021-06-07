@@ -92,6 +92,13 @@ public class ResponseWriter implements Serializable {
     /**
      * Writes the contents and content type (if available) of the given
      * resourceUrl to the response.
+     * <p>
+     * WARNING: note that this should not be used for a {@code resourceUrl} that
+     * represents a directory! For security reasons, the directory contents
+     * should not be ever written into the {@code response}, and the
+     * implementation which is used for setting the content length relies on
+     * {@link URLConnection#getContentLengthLong()} method which returns
+     * incorrect values for directories.
      *
      * @param filenameWithPath
      *            the name of the file being sent
