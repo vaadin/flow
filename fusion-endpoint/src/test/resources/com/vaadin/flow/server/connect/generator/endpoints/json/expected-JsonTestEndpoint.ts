@@ -40,7 +40,7 @@ export {_fullFQNMethod as fullFQNMethod};
  *
  * Return map of user and roles
  */
-function _getAllUserRolesMap(): Promise<{ [key: string]: User; } | undefined> {
+function _getAllUserRolesMap(): Promise<Record<string, User | undefined> | undefined> {
   return client.call('JsonTestEndpoint', 'getAllUserRolesMap');
 }
 export {_getAllUserRolesMap as getAllUserRolesMap};
@@ -63,7 +63,7 @@ export {_getAllUsers as getAllUsers};
  */
 function _getArrayInt(
     input?: Array<string | undefined>
-): Promise<Array<number | undefined> | undefined> {
+): Promise<Array<number> | undefined> {
   return client.call('JsonTestEndpoint', 'getArrayInt', {input});
 }
 export {_getArrayInt as getArrayInt};
@@ -75,7 +75,7 @@ export {_getArrayInt as getArrayInt};
  * Return boolean value
  */
 function _getBooleanValue(
-    input?: { [key: string]: User; }
+    input?: Record<string, User | undefined>
 ): Promise<boolean> {
   return client.call('JsonTestEndpoint', 'getBooleanValue', {input});
 }

@@ -102,9 +102,9 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     private static final Pattern FULLY_QUALIFIED_NAME_PATTERN = Pattern.compile(
             "(" + JAVA_NAME_PATTERN + "(\\." + JAVA_NAME_PATTERN + ")*)");
     private static final Pattern ARRAY_TYPE_NAME_PATTERN = Pattern
-            .compile("Array<(.*) \\| undefined>");
+            .compile("Array<(.*)>");
     private static final Pattern MAPPED_TYPE_NAME_PATTERN = Pattern
-            .compile("\\{ \\[key: string\\]: (.*); \\}");
+            .compile("Record<string, (.*)>");
     private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern
             .compile("^(string|number|boolean)");
     private static final String OPERATION = "operation";
@@ -553,7 +553,12 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     private String getModelFullType(String name) {
         Matcher matcher = ARRAY_TYPE_NAME_PATTERN.matcher(name);
         if (matcher.find()) {
-            String variableName = matcher.group(1);
+            String arrayItemType = matcher.group(1);
+
+            String variableName = arrayItemType.endsWith(" | undefined")
+                    ? arrayItemType.substring(0,
+                            arrayItemType.lastIndexOf(" | undefined"))
+                    : arrayItemType;
             return "Array" + MODEL + "<" + getModelVariableType(variableName)
                     + ", " + getModelFullType(variableName) + ">";
         }
@@ -973,13 +978,13 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         if (schema instanceof ArraySchema) {
             ArraySchema arraySchema = (ArraySchema) schema;
             Schema inner = arraySchema.getItems();
-            return String.format("Array<%s | undefined>%s",
+            return String.format("Array<%s>%s",
                     this.getTypeDeclaration(inner), optionalSuffix);
         } else if (GeneratorUtils.isNotBlank(schema.get$ref())) {
             return getSimpleRef(schema.get$ref()) + optionalSuffix;
         } else if (schema.getAdditionalProperties() != null) {
             Schema inner = (Schema) schema.getAdditionalProperties();
-            return String.format("{ [key: string]: %s; }%s",
+            return String.format("Record<string, %s>%s",
                     getTypeDeclaration(inner), optionalSuffix);
         } else if (schema instanceof ComposedSchema) {
             return getTypeDeclarationFromComposedSchema((ComposedSchema) schema,

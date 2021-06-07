@@ -17,15 +17,15 @@ function _getMyClass(
 export {_getMyClass as getMyClass};
 
 function _getSubpackageModelList(
-    sameClassNameModel?: { [key: string]: SubpackageSameClassNameModel; }
+    sameClassNameModel?: Record<string, SubpackageSameClassNameModel | undefined>
 ): Promise<Array<SubpackageSameClassNameModel | undefined> | undefined> {
   return client.call('SameClassNameEndpoint', 'getSubpackageModelList', {sameClassNameModel});
 }
 export {_getSubpackageModelList as getSubpackageModelList};
 
 function _getSubpackageModelMap(
-    sameClassNameModel?: { [key: string]: SameClassNameModel; }
-): Promise<{ [key: string]: SubpackageSameClassNameModel; } | undefined> {
+    sameClassNameModel?: Record<string, SameClassNameModel | undefined>
+): Promise<Record<string, SubpackageSameClassNameModel | undefined> | undefined> {
   return client.call('SameClassNameEndpoint', 'getSubpackageModelMap', {sameClassNameModel});
 }
 export {_getSubpackageModelMap as getSubpackageModelMap};

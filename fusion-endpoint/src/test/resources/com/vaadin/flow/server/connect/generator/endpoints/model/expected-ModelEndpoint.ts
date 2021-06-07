@@ -35,7 +35,7 @@ function _getArrayOfAccount(): Promise<Array<Account | undefined> | undefined> {
 }
 export {_getArrayOfAccount as getArrayOfAccount};
 
-function _getMapGroups(): Promise<{ [key: string]: Group; } | undefined> {
+function _getMapGroups(): Promise<Record<string, Group | undefined> | undefined> {
   return client.call('ModelEndpoint', 'getMapGroups');
 }
 export {_getMapGroups as getMapGroups};

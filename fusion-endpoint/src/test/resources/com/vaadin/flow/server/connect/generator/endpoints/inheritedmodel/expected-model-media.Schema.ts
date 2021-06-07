@@ -17,7 +17,7 @@ export default interface Schema {
   example?: any;
   exclusiveMaximum?: boolean;
   exclusiveMinimum?: boolean;
-  extensions?: { [key: string]: any; };
+  extensions?: Record<string, any | undefined>;
   externalDocs?: ExternalDocumentation;
   format?: string;
   maxItems?: number;
@@ -33,7 +33,7 @@ export default interface Schema {
   not?: Schema;
   nullable?: boolean;
   pattern?: string;
-  properties?: { [key: string]: Schema; };
+  properties?: Record<string, Schema | undefined>;
   readOnly?: boolean;
   required?: Array<string | undefined>;
   title?: string;
