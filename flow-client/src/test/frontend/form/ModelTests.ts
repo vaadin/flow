@@ -65,14 +65,14 @@ suite("form/Model", () => {
     });
 
     suite('_fromString', () => {
-      let fromString: (str: string) => number;
+      let fromString: (str: string) => number | undefined;
 
       beforeEach(() => {
         fromString = binder.model.fieldNumber[_fromString];
       });
 
       test('should disallow empty string', async () => {
-        expect(fromString('')).to.satisfy(Number.isNaN);
+        expect(fromString('')).to.equal(undefined);
       });
 
       test('should integer format', async () => {
