@@ -4,10 +4,10 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "declaration": true,
-    "target": "esnext",
+    "target": "es2019",
     "module": "esnext",
     "moduleResolution": "node",
-    "lib": ["esnext", "es2018", "dom"],
+    "lib": ["es2019", "dom"],
     "strict": true,
     "importsNotUsedAsValues": "error"
   },

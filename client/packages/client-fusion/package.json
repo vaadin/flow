@@ -2,8 +2,8 @@
   "name": "@vaadin/client-fusion",
   "version": "21.0.0-alpha2",
   "description": "Vaadin Fusion client utils",
-  "main": "index.js",
-  "module": "index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "repository": "vaadin/flow/client",
   "keywords": [
     "Vaadin",
