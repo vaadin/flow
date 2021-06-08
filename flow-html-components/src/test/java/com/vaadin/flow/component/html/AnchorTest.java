@@ -15,11 +15,25 @@
  */
 package com.vaadin.flow.component.html;
 
-import com.vaadin.flow.component.Text;
+import java.util.Optional;
+
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.AbstractStreamResource;
+
 public class AnchorTest extends ComponentTest {
+
+    private UI ui;
+
+    @After
+    public void tearDown() {
+        ui = null;
+        UI.setCurrent(null);
+    }
 
     @Test
     public void removeHref() {
@@ -60,12 +74,169 @@ public class AnchorTest extends ComponentTest {
                 anchor.getElement().getAttribute("router-ignore"));
     }
 
+    @Test
+    public void setTargetValue_useEnum_targetIsSet() {
+        Anchor anchor = new Anchor();
+        anchor.setTarget(AnchorTarget.PARENT);
+
+        Assert.assertEquals(Optional.of(AnchorTarget.PARENT.getValue()),
+                anchor.getTarget());
+        Assert.assertEquals(AnchorTarget.PARENT, anchor.getTargetValue());
+    }
+
+    @Test
+    public void setTargetValue_useObject_targetIsSet() {
+        Anchor anchor = new Anchor();
+        anchor.setTarget(AnchorTargetValue.forString("foo"));
+
+        Assert.assertEquals(Optional.of("foo"), anchor.getTarget());
+        Assert.assertEquals("foo", anchor.getTargetValue().getValue());
+    }
+
+    @Test
+    public void getTargetValue_useEnumStringValue_targetIsReturned() {
+        Anchor anchor = new Anchor();
+        anchor.setTarget(AnchorTarget.SELF.getValue());
+
+        Assert.assertEquals(Optional.of(AnchorTarget.SELF.getValue()),
+                anchor.getTarget());
+        Assert.assertEquals(AnchorTarget.SELF, anchor.getTargetValue());
+    }
+
+    @Test
+    public void getTargetValue_useSomeStringValue_targetIsReturned() {
+        Anchor anchor = new Anchor();
+        anchor.setTarget("foo");
+
+        Assert.assertEquals(Optional.of("foo"), anchor.getTarget());
+        Assert.assertEquals("foo", anchor.getTargetValue().getValue());
+    }
+
+    @Test
+    public void disabledAnchor_hrefIsRemoved_enableAnchor_hrefIsRestored() {
+        Anchor anchor = new Anchor("foo", "bar");
+        anchor.setEnabled(false);
+
+        Assert.assertFalse(anchor.getElement().hasAttribute("href"));
+
+        anchor.setEnabled(true);
+        Assert.assertTrue(anchor.getElement().hasAttribute("href"));
+        Assert.assertEquals("foo", anchor.getHref());
+    }
+
+    @Test
+    public void disabledAnchor_setHrefWhenDisabled_enableAnchor_hrefIsPreserved() {
+        Anchor anchor = new Anchor("foo", "bar");
+        anchor.setEnabled(false);
+
+        anchor.setHref("baz");
+
+        anchor.setEnabled(true);
+
+        Assert.assertTrue(anchor.getElement().hasAttribute("href"));
+        Assert.assertEquals("baz", anchor.getHref());
+    }
+
+    @Test
+    public void disabledAnchor_setResourceWhenDisabled_enableAnchor_resourceIsPreserved() {
+        Anchor anchor = new Anchor("foo", "bar");
+        anchor.setEnabled(false);
+
+        mockUI();
+        anchor.setHref(new AbstractStreamResource() {
+
+            @Override
+            public String getName() {
+                return "baz";
+            }
+        });
+        String href = anchor.getHref();
+
+        anchor.setEnabled(true);
+
+        Assert.assertTrue(anchor.getElement().hasAttribute("href"));
+        Assert.assertEquals(href, anchor.getHref());
+    }
+
+    @Test
+    public void disabledAnchor_setResource_hrefIsRemoved_enableAnchor_hrefIsRestored() {
+        mockUI();
+        AbstractStreamResource resource = new AbstractStreamResource() {
+
+            @Override
+            public String getName() {
+                return "foo";
+            }
+
+        };
+        Anchor anchor = new Anchor(resource, "bar");
+        String href = anchor.getHref();
+        anchor.setEnabled(false);
+
+        Assert.assertFalse(anchor.getElement().hasAttribute("href"));
+
+        anchor.setEnabled(true);
+        Assert.assertEquals(href, anchor.getHref());
+    }
+
+    @Test
+    public void disabledAnchor_setResourceWhenDisabled_hrefIsPreserved() {
+        mockUI();
+        AbstractStreamResource resource = new AbstractStreamResource() {
+
+            @Override
+            public String getName() {
+                return "foo";
+            }
+
+        };
+        Anchor anchor = new Anchor(resource, "bar");
+        String href = anchor.getHref();
+        anchor.setEnabled(false);
+
+        anchor.setHref(new AbstractStreamResource() {
+
+            @Override
+            public String getName() {
+                return "baz";
+            }
+        });
+
+        Assert.assertTrue(anchor.getElement().hasAttribute("href"));
+        Assert.assertNotEquals(href, anchor.getHref());
+    }
+
+    @Test
+    public void disabledAnchor_setResource_setHrefViaElementWhenDisabled_enableAnchor_hrefIsRestored() {
+        mockUI();
+        AbstractStreamResource resource = new AbstractStreamResource() {
+
+            @Override
+            public String getName() {
+                return "foo";
+            }
+
+        };
+        Anchor anchor = new Anchor(resource, "bar");
+        anchor.setEnabled(false);
+
+        anchor.getElement().setAttribute("href", "baz");
+
+        anchor.setEnabled(true);
+        Assert.assertEquals("baz", anchor.getHref());
+    }
+
     // Other test methods in super class
 
     @Override
     protected void addProperties() {
         addStringProperty("href", "", false);
         addOptionalStringProperty("target");
+    }
+
+    private void mockUI() {
+        ui = new UI();
+        UI.setCurrent(ui);
     }
 
 }
