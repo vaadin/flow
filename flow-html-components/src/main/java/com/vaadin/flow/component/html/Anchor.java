@@ -41,6 +41,9 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
     private static final PropertyDescriptor<String, Optional<String>> targetDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("target", "");
 
+    private String disabledHref;
+    private AbstractStreamResource resource;
+
     /**
      * Creates a new empty anchor component.
      */
@@ -132,6 +135,7 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
      *            the resource value, not null
      */
     public void setHref(AbstractStreamResource href) {
+        resource = href;
         getElement().setAttribute("href", href);
     }
 
@@ -178,6 +182,83 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
      */
     public Optional<String> getTarget() {
         return get(targetDescriptor);
+    }
+
+<<<<<<< HEAD
+=======
+    /**
+     * Sets the target window, tab or frame for this anchor. The target may be
+     * the one of these special values:
+     * <ul>
+     * <li><code>AnchorTarget.DEFAULT</code>: Removes the target value. This has
+     * the same effect as setting the target to <code>AnchorTarget.SELF</code>.
+     * <li><code>AnchorTarget.SELF</code>: Opens the link in the current
+     * context.
+     * <li><code>AnchorTarget.BLANK</code>: Opens the link in a new unnamed
+     * context.
+     * <li><code>AnchorTarget.PARENT</code>: Opens the link in the parent
+     * context, or the current context if there is no parent context.
+     * <li><code>AnchorTarget.TOP</code>: Opens the link in the top most
+     * grandparent context, or the current context if there is no parent
+     * context.
+     * </ul>
+     *
+     * @param target
+     *            the target value, not null
+     */
+    public void setTarget(AnchorTargetValue target) {
+        Objects.requireNonNull(target, "target cannot be null.");
+        setTarget(target.getValue());
+    }
+
+    /**
+     * Gets the target window, tab or frame value for this anchor.
+     *
+     * @see #setTarget(AnchorTargetValue)
+     * @see #getTarget()
+     *
+     * @return the target window value , or {@link AnchorTarget#DEFAULT} if no
+     *         target has been set
+     */
+    public AnchorTargetValue getTargetValue() {
+        Optional<String> target = getTarget();
+
+        if (target.isPresent()) {
+            return AnchorTargetValue.forString(target.get());
+        }
+        return AnchorTarget.DEFAULT;
+    }
+
+    @Override
+    public void onEnabledStateChanged(boolean enabled) {
+        super.onEnabledStateChanged(enabled);
+        if (enabled) {
+            if (resource == null) {
+                restoreHref();
+            } else {
+                restoreResource();
+            }
+            disabledHref = null;
+        } else {
+            disabledHref = getHref();
+            removeHref();
+        }
+    }
+
+    private void restoreHref() {
+        if (!getElement().hasAttribute("href")) {
+            // only set attribute value back if attribute has not been set
+            // somehow when component was disabled
+            setHref(disabledHref);
+        }
+    }
+
+    private void restoreResource() {
+        if (!getElement().hasAttribute("href")) {
+            // only set attribute value back if attribute has not been set
+            // somehow when component was disabled
+            setHref(resource);
+        }
     }
 
 }
