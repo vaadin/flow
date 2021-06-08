@@ -109,7 +109,8 @@ class SchemaResolver {
         return createNullableWrapper(nestedTypeSchema, true);
     }
 
-    Schema createNullableWrapper(Schema nestedTypeSchema, boolean shouldBeNullable) {
+    Schema createNullableWrapper(Schema nestedTypeSchema,
+            boolean shouldBeNullable) {
         if (!shouldBeNullable) {
             return nestedTypeSchema;
         }

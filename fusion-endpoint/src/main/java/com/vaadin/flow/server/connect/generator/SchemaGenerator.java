@@ -121,8 +121,9 @@ class SchemaGenerator {
         schema.setProperties(new TreeMap<>());
         for (ResolvedFieldDeclaration resolvedFieldDeclaration : serializableFields) {
             String name = resolvedFieldDeclaration.getName();
-            Schema type = openApiObjectGenerator.parseResolvedTypeToSchema(
-                    resolvedFieldDeclaration.getType())
+            Schema type = openApiObjectGenerator
+                    .parseResolvedTypeToSchema(
+                            resolvedFieldDeclaration.getType())
                     // Field is already checked to be optional, so we don't need
                     // it to be nullable
                     .nullable(null);

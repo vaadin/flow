@@ -253,11 +253,14 @@ public class SchemaResolverTest {
 
         Assert.assertTrue(schema instanceof ComposedSchema);
         Assert.assertEquals(1, ((ComposedSchema) schema).getAllOf().size());
-        Assert.assertTrue(((ComposedSchema) schema).getAllOf().get(0) instanceof ObjectSchema);;
+        Assert.assertTrue(((ComposedSchema) schema).getAllOf()
+                .get(0) instanceof ObjectSchema);
+        ;
         Assert.assertTrue(schema.getNullable());
         String beanRef = schemaResolver
                 .getFullQualifiedNameRef(TestBean.class.getCanonicalName());
-        Assert.assertEquals(beanRef, ((ComposedSchema) schema).getAllOf().get(0).get$ref());
+        Assert.assertEquals(beanRef,
+                ((ComposedSchema) schema).getAllOf().get(0).get$ref());
 
         Assert.assertEquals(1, schemaResolver.getFoundTypes().size());
     }
@@ -269,10 +272,12 @@ public class SchemaResolverTest {
         Schema schema = schemaResolver.parseResolvedTypeToSchema(resolvedType);
         Assert.assertTrue(schema instanceof ComposedSchema);
         Assert.assertEquals(1, ((ComposedSchema) schema).getAllOf().size());
-        Assert.assertTrue(((ComposedSchema) schema).getAllOf().get(0) instanceof ObjectSchema);
+        Assert.assertTrue(((ComposedSchema) schema).getAllOf()
+                .get(0) instanceof ObjectSchema);
         String beanRef = schemaResolver.getFullQualifiedNameRef(
                 TestIterableBean.class.getCanonicalName());
-        Assert.assertEquals(beanRef, ((ComposedSchema) schema).getAllOf().get(0).get$ref());
+        Assert.assertEquals(beanRef,
+                ((ComposedSchema) schema).getAllOf().get(0).get$ref());
         Assert.assertEquals(1, schemaResolver.getFoundTypes().size());
     }
 

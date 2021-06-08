@@ -666,7 +666,8 @@ public class OpenApiObjectGenerator {
                 .replaceAll(methodDeclaration.resolve().getReturnType());
         Schema schema = parseResolvedTypeToSchema(resolvedType);
         schema.setDescription("");
-        if (GeneratorUtils.isTrue(schema.getNullable()) && isRequired(methodDeclaration)) {
+        if (GeneratorUtils.isTrue(schema.getNullable())
+                && isRequired(methodDeclaration)) {
             schema.setNullable(null);
         }
         usedTypes.putAll(collectUsedTypesFromSchema(schema));
@@ -708,7 +709,8 @@ public class OpenApiObjectGenerator {
                         paramsDescription.remove(parameter.getNameAsString()));
             }
             requestSchema.addProperties(name, paramSchema);
-            if (GeneratorUtils.isNotTrue(paramSchema.getNullable()) || isRequired(parameter)) {
+            if (GeneratorUtils.isNotTrue(paramSchema.getNullable())
+                    || isRequired(parameter)) {
                 requestSchema.addRequiredItem(name);
             }
             paramSchema.setNullable(null);
