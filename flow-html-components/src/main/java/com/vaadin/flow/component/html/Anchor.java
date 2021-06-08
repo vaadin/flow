@@ -43,6 +43,9 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
             .optionalAttributeWithDefault("target",
                     AnchorTarget.DEFAULT.getValue());
 
+    private String disabledHref;
+    private AbstractStreamResource resource;
+
     /**
      * Creates a new empty anchor component.
      */
@@ -104,8 +107,8 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
     }
 
     /**
-     * Creates an anchor component with the given href and components
-     * as children of this component.
+     * Creates an anchor component with the given href and components as
+     * children of this component.
      *
      * @see #setHref(AbstractStreamResource)
      * @see #add(Component...)
@@ -154,6 +157,7 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
      *            the resource value, not null
      */
     public void setHref(AbstractStreamResource href) {
+        resource = href;
         getElement().setAttribute("href", href);
     }
 
@@ -243,6 +247,38 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
             return AnchorTargetValue.forString(target.get());
         }
         return AnchorTarget.DEFAULT;
+    }
+
+    @Override
+    public void onEnabledStateChanged(boolean enabled) {
+        super.onEnabledStateChanged(enabled);
+        if (enabled) {
+            if (resource == null) {
+                restoreHref();
+            } else {
+                restoreResource();
+            }
+            disabledHref = null;
+        } else {
+            disabledHref = getHref();
+            removeHref();
+        }
+    }
+
+    private void restoreHref() {
+        if (!getElement().hasAttribute("href")) {
+            // only set attribute value back if attribute has not been set
+            // somehow when component was disabled
+            setHref(disabledHref);
+        }
+    }
+
+    private void restoreResource() {
+        if (!getElement().hasAttribute("href")) {
+            // only set attribute value back if attribute has not been set
+            // somehow when component was disabled
+            setHref(resource);
+        }
     }
 
 }
