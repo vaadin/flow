@@ -356,6 +356,7 @@ public class WidgetUtil {
      */
     public static native boolean equalsInJS(Object obj1, Object obj2)
     /*-{
+      $wnd.console.error( 'xxx' +obj1+' , '+obj2+', '+(obj1==obj2));
       return obj1==obj2;
     }-*/;
 
