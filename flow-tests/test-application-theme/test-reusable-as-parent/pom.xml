@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>flow-test-use-reusable-as-parent</artifactId>
-    <name>Test reusable application theme as parent</name>
+    <name>Test reusable application theme as parent in production mode</name>
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>

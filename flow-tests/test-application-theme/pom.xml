@@ -16,7 +16,9 @@
     <modules>
         <module>reusable-theme</module>
         <module>test-theme-reusable</module>
+        <module>test-theme-reusable/pom-dev-mode.xml</module>
         <module>test-reusable-as-parent</module>
+        <module>test-reusable-as-parent/pom-dev-mode.xml</module>
         <module>test-theme-live-reload</module>
         <module>test-theme-component-live-reload</module>
         <module>test-theme-switch-live-reload</module>
