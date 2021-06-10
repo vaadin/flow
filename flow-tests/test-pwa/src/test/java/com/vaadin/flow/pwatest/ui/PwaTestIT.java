@@ -30,6 +30,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -40,6 +41,7 @@ import com.vaadin.flow.testutil.ChromeDeviceTest;
 
 public class PwaTestIT extends ChromeDeviceTest {
 
+    @Ignore("https://github.com/vaadin/flow/issues/11201")
     @Test
     public void testPwaResources() throws IOException {
         open();
