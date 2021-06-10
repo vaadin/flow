@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -30,6 +31,7 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
         executeScript("fetch('/context/view/reset_frontend')");
     }
 
+    @Ignore("https://github.com/vaadin/flow/issues/11210")
     @Test
     public void liveReloadOnTouchedFrontendFile() {
         open();
