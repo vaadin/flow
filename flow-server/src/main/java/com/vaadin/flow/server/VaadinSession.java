@@ -17,8 +17,10 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionActivationListener;
 import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
+import javax.servlet.http.HttpSessionEvent;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -67,7 +69,8 @@ import com.vaadin.flow.shared.communication.PushMode;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class VaadinSession implements HttpSessionBindingListener, Serializable {
+public class VaadinSession implements HttpSessionBindingListener,
+        HttpSessionActivationListener, Serializable {
 
     private static final String SESSION_NOT_LOCKED_MESSAGE = "Cannot access state in VaadinSession or UI without locking the session.";
 
@@ -137,6 +140,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private final Attributes attributes = new Attributes();
 
     private final StreamResourceRegistry resourceRegistry;
+
+    private transient String removeBeforePassivate = null;
 
     /**
      * Creates a new VaadinSession tied to a VaadinService.
@@ -334,6 +339,11 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         }
         assert this.configuration == null : "Configuration can only be set once";
         this.configuration = configuration;
+        if (!configuration.isProductionMode()) {
+            // TODO Add an option to allow keeping the session also in dev mode
+            this.removeBeforePassivate = getService().getSessionAttributeName();
+        }
+
     }
 
     /**
@@ -1065,5 +1075,22 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public String getCsrfToken() {
         return csrfToken;
+    }
+
+    @Override
+    public void sessionWillPassivate(HttpSessionEvent se) {
+        if (removeBeforePassivate != null) {
+            /*
+             * Remove the VaadinSession from session before storing it so that
+             * it does not prevent serialization of other parts of the session,
+             * such as authentication info.
+             */
+            se.getSession().removeAttribute(removeBeforePassivate);
+        }
+    }
+
+    @Override
+    public void sessionDidActivate(HttpSessionEvent se) {
+        // Intentionally empty
     }
 }

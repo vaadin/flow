@@ -2215,7 +2215,7 @@ public abstract class VaadinService implements Serializable {
      *
      * @return the attribute name used for storing the VaadinSession
      */
-    protected String getSessionAttributeName() {
+    String getSessionAttributeName() {
         return VaadinSession.class.getName() + "." + getServiceName();
     }
 
