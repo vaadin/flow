@@ -41,6 +41,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
+import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -131,6 +132,25 @@ public class TaskUpdatePackages extends NodeUpdater {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    @Override
+    String writePackageFile(JsonObject json) throws IOException {
+        return super.writePackageFile(orderKeys(json));
+    }
+
+    private JsonObject orderKeys(JsonObject object) {
+        String[] keys = object.keys();
+        Arrays.sort(keys);
+        JsonObject result = Json.createObject();
+        for (String key : keys) {
+            JsonValue value = object.get(key);
+            if (value instanceof JsonObject) {
+                value = orderKeys((JsonObject) value);
+            }
+            result.put(key, value);
+        }
+        return result;
     }
 
     private boolean updatePackageJsonDependencies(JsonObject packageJson,
