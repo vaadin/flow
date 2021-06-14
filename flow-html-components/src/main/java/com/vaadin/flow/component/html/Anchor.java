@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.html;
 
-import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
@@ -186,49 +185,6 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
      */
     public Optional<String> getTarget() {
         return get(targetDescriptor);
-    }
-
-    /**
-     * Sets the target window, tab or frame for this anchor. The target may be
-     * the one of these special values:
-     * <ul>
-     * <li><code>AnchorTarget.DEFAULT</code>: Removes the target value. This has
-     * the same effect as setting the target to <code>AnchorTarget.SELF</code>.
-     * <li><code>AnchorTarget.SELF</code>: Opens the link in the current
-     * context.
-     * <li><code>AnchorTarget.BLANK</code>: Opens the link in a new unnamed
-     * context.
-     * <li><code>AnchorTarget.PARENT</code>: Opens the link in the parent
-     * context, or the current context if there is no parent context.
-     * <li><code>AnchorTarget.TOP</code>: Opens the link in the top most
-     * grandparent context, or the current context if there is no parent
-     * context.
-     * </ul>
-     *
-     * @param target
-     *            the target value, not null
-     */
-    public void setTarget(AnchorTargetValue target) {
-        Objects.requireNonNull(target, "target cannot be null.");
-        setTarget(target.getValue());
-    }
-
-    /**
-     * Gets the target window, tab or frame value for this anchor.
-     *
-     * @see #setTarget(AnchorTargetValue)
-     * @see #getTarget()
-     *
-     * @return the target window value , or {@link AnchorTarget#DEFAULT} if no
-     *         target has been set
-     */
-    public AnchorTargetValue getTargetValue() {
-        Optional<String> target = getTarget();
-
-        if (target.isPresent()) {
-            return AnchorTargetValue.forString(target.get());
-        }
-        return AnchorTarget.DEFAULT;
     }
 
     @Override
