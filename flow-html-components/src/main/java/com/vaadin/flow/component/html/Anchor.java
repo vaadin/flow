@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
@@ -187,8 +188,6 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
         return get(targetDescriptor);
     }
 
-<<<<<<< HEAD
-=======
     /**
      * Sets the target window, tab or frame for this anchor. The target may be
      * the one of these special values:
