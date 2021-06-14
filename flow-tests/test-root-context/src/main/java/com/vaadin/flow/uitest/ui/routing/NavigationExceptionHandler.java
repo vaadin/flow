@@ -16,12 +16,18 @@
 package com.vaadin.flow.uitest.ui.routing;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.ErrorParameter;
+import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.ParentLayout;
 
-@Route("ise")
-public class ISETargetView extends Div {
+@ParentLayout(NavigationExceptionLayout.class)
+public class NavigationExceptionHandler extends Div
+        implements HasErrorParameter<NavigationException> {
 
-    public ISETargetView() {
-        throw new IllegalStateException();
+    @Override
+    public int setErrorParameter(BeforeEnterEvent event,
+            ErrorParameter<NavigationException> parameter) {
+        return 500;
     }
 }
