@@ -71,15 +71,15 @@ abstract class NumberValidator<T> extends AbstractValidator<T> {
   }
 }
 
-export class IsNumber extends NumberValidator<number | undefined> {
+export class IsNumber extends NumberValidator<number | null | undefined> {
   optional: boolean;
   constructor(optional: boolean, attrs?: ValidatorAttributes) {
     super({ message: 'must be a number', ...attrs });
     this.optional = optional;
   }
 
-  validate(value: number | undefined) {
-    return (this.optional && value === undefined) || super.validate(value);
+  validate(value: number | null | undefined) {
+    return (this.optional && (value === null || value === undefined)) || super.validate(value);
   }
 }
 
@@ -97,8 +97,8 @@ export class Email extends AbstractValidator<string> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be a well-formed email address', ...attrs });
   }
-  validate(value: string | undefined) {
-    return value === undefined || isEmail(value);
+  validate(value: string | null | undefined) {
+    return !value || isEmail(value);
   }
 }
 export class Null extends AbstractValidator<any> {
