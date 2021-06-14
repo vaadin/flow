@@ -15,19 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui.routing;
 
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.ErrorParameter;
-import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.router.ParentLayout;
+public class NavigationException extends RuntimeException {
 
-@ParentLayout(ISELayout.class)
-public class ISEHandler extends Div
-        implements HasErrorParameter<IllegalStateException> {
-
-    @Override
-    public int setErrorParameter(BeforeEnterEvent event,
-            ErrorParameter<IllegalStateException> parameter) {
-        return 500;
-    }
 }
