@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,19 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui.routing;
 
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.ErrorParameter;
-import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.router.ParentLayout;
+public class NavigationException extends RuntimeException {
 
-@ParentLayout(ISELayout.class)
-public class ISEHandler extends Div
-        implements HasErrorParameter<IllegalStateException> {
-
-    @Override
-    public int setErrorParameter(BeforeEnterEvent event,
-            ErrorParameter<IllegalStateException> parameter) {
-        return 500;
-    }
 }

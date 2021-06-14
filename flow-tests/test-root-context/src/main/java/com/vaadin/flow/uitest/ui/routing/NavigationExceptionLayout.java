@@ -16,12 +16,15 @@
 package com.vaadin.flow.uitest.ui.routing;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.RouterLayout;
 
-@Route("ise")
-public class ISETargetView extends Div {
+public class NavigationExceptionLayout extends Div
+        implements RouterLayout, BeforeEnterObserver {
 
-    public ISETargetView() {
-        throw new IllegalStateException();
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        event.forwardTo(NavigationExceptionTargetView.class);
     }
 }
