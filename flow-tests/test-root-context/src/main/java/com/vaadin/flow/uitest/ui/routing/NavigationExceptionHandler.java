@@ -21,13 +21,13 @@ import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.ParentLayout;
 
-@ParentLayout(ISELayout.class)
-public class ISEHandler extends Div
-        implements HasErrorParameter<IllegalStateException> {
+@ParentLayout(NavigationExceptionLayout.class)
+public class NavigationExceptionHandler extends Div
+        implements HasErrorParameter<NavigationException> {
 
     @Override
     public int setErrorParameter(BeforeEnterEvent event,
-            ErrorParameter<IllegalStateException> parameter) {
+            ErrorParameter<NavigationException> parameter) {
         return 500;
     }
 }
