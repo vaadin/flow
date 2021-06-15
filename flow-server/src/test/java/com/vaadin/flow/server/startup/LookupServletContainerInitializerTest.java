@@ -213,6 +213,11 @@ public class LookupServletContainerInitializerTest {
         Assert.assertEquals(ArrayList.class, collection.iterator().next());
     }
 
+    @Test(expected = ServletException.class)
+    public void process_classSetIsNull_throws() throws ServletException {
+        initializer.process(null, Mockito.mock(ServletContext.class));
+    }
+
     private Lookup mockLookup(ServletContext context, Class<?>... classes)
             throws ServletException {
         ArgumentCaptor<Lookup> lookupCapture = ArgumentCaptor
