@@ -199,6 +199,10 @@ public class StaticFileServer implements StaticFileHandler {
     FileSystem getFileSystem(URI resourceURI) throws IOException {
         synchronized (fileSystemLock) {
             URI fileURI = getFileURI(resourceURI);
+            if (!fileURI.getScheme().equals("file")) {
+                throw new IOException(
+                        "Can not read scheme '" + fileURI.getScheme() + "'");
+            }
 
             if (openFileSystems.computeIfPresent(fileURI,
                     (key, value) -> value + 1) != null) {
