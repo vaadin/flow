@@ -343,19 +343,8 @@ public class StaticFileServerTest implements Serializable {
                 "Fake should not check the file system nor be a static resource.",
                 fileServer.isStaticResourceRequest(request));
 
-        File archiveFile = new File(folder.getRoot(), "fake.jar");
-        archiveFile.createNewFile();
-        Path tempArchive = archiveFile.toPath();
+        Path tempArchive = generateZipArchive(folder);
 
-        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
-                Files.newOutputStream(tempArchive))) {
-            // Create a file to the zip
-            zipOutputStream.putNextEntry(new ZipEntry("/file"));
-            zipOutputStream.closeEntry();
-            // Create a directory to the zip
-            zipOutputStream.putNextEntry(new ZipEntry("frontend/"));
-            zipOutputStream.closeEntry();
-        }
         setupRequestURI("", "", "/frontend/.");
         Mockito.when(servletService.getStaticResource("/frontend/."))
                 .thenReturn(new URL("jar:file:///"
@@ -377,7 +366,8 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void jarWarFileScheme_() throws IOException {
+    public void isStaticResource_jarWarFileScheme_detectsAsStaticResources()
+            throws IOException {
         Assert.assertTrue("Can not run concurrently with other test",
                 StaticFileServer.openFileSystems.isEmpty());
 
@@ -387,28 +377,12 @@ public class StaticFileServerTest implements Serializable {
         File archiveFile = new File(folder.getRoot(), "fake.jar");
         archiveFile.createNewFile();
         Path tempArchive = archiveFile.toPath();
-
-        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
-                Files.newOutputStream(tempArchive))) {
-            // Create a file to the zip
-            zipOutputStream.putNextEntry(new ZipEntry("/file"));
-            zipOutputStream.closeEntry();
-            // Create a directory to the zip
-            zipOutputStream.putNextEntry(new ZipEntry("frontend/"));
-            zipOutputStream.closeEntry();
-        }
         File warFile = new File(folder.getRoot(), "war.jar");
         warFile.createNewFile();
         Path warArchive = warFile.toPath();
 
-        try (ZipOutputStream warOutputStream = new ZipOutputStream(
-                Files.newOutputStream(warArchive))) {
-            // Create a file to the zip
-            warOutputStream.putNextEntry(new ZipEntry(archiveFile.getName()));
-            warOutputStream.write(Files.readAllBytes(tempArchive));
+        generateJarInJar(archiveFile, tempArchive, warArchive);
 
-            warOutputStream.closeEntry();
-        }
         // Instantiate URL stream handler factory to be able to handle war:
         WarURLStreamHandlerFactory.getInstance();
 
@@ -428,8 +402,8 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void jarInaJar_fileIsLoadedCorrectly()
-            throws IOException, URISyntaxException {
+    public void isStaticResource_jarInAJar_detectsAsStaticResources()
+            throws IOException {
         Assert.assertTrue("Can not run concurrently with other test",
                 StaticFileServer.openFileSystems.isEmpty());
 
@@ -440,27 +414,11 @@ public class StaticFileServerTest implements Serializable {
         archiveFile.createNewFile();
         Path tempArchive = archiveFile.toPath();
 
-        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
-                Files.newOutputStream(tempArchive))) {
-            // Create a file to the zip
-            zipOutputStream.putNextEntry(new ZipEntry("/file"));
-            zipOutputStream.closeEntry();
-            // Create a directory to the zip
-            zipOutputStream.putNextEntry(new ZipEntry("frontend/"));
-            zipOutputStream.closeEntry();
-        }
         File warFile = new File(folder.getRoot(), "war.jar");
         warFile.createNewFile();
         Path warArchive = warFile.toPath();
 
-        try (ZipOutputStream warOutputStream = new ZipOutputStream(
-                Files.newOutputStream(warArchive))) {
-            // Create a file to the zip
-            warOutputStream.putNextEntry(new ZipEntry(archiveFile.getName()));
-            warOutputStream.write(Files.readAllBytes(tempArchive));
-
-            warOutputStream.closeEntry();
-        }
+        generateJarInJar(archiveFile, tempArchive, warArchive);
 
         setupRequestURI("", "", "/frontend/.");
         Mockito.when(servletService.getStaticResource("/frontend/."))
@@ -480,15 +438,7 @@ public class StaticFileServerTest implements Serializable {
         folder.delete();
     }
 
-    @Test
-    public void openingJarFileSystemForDifferentFilesInSameJar_existingFileSystemIsUsed()
-            throws IOException, URISyntaxException {
-        Assert.assertTrue("Can not run concurrently with other test",
-                StaticFileServer.openFileSystems.isEmpty());
-
-        final TemporaryFolder folder = TemporaryFolder.builder().build();
-        folder.create();
-
+    private Path generateZipArchive(TemporaryFolder folder) throws IOException {
         File archiveFile = new File(folder.getRoot(), "fake.jar");
         archiveFile.createNewFile();
         Path tempArchive = archiveFile.toPath();
@@ -502,6 +452,41 @@ public class StaticFileServerTest implements Serializable {
             zipOutputStream.putNextEntry(new ZipEntry("frontend/"));
             zipOutputStream.closeEntry();
         }
+        return tempArchive;
+    }
+
+    private void generateJarInJar(File archiveFile, Path tempArchive,
+            Path warArchive) throws IOException {
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+                Files.newOutputStream(tempArchive))) {
+            // Create a file to the zip
+            zipOutputStream.putNextEntry(new ZipEntry("/file"));
+            zipOutputStream.closeEntry();
+            // Create a directory to the zip
+            zipOutputStream.putNextEntry(new ZipEntry("frontend/"));
+            zipOutputStream.closeEntry();
+        }
+
+        try (ZipOutputStream warOutputStream = new ZipOutputStream(
+                Files.newOutputStream(warArchive))) {
+            // Create a file to the zip
+            warOutputStream.putNextEntry(new ZipEntry(archiveFile.getName()));
+            warOutputStream.write(Files.readAllBytes(tempArchive));
+
+            warOutputStream.closeEntry();
+        }
+    }
+
+    @Test
+    public void openingJarFileSystemForDifferentFilesInSameJar_existingFileSystemIsUsed()
+            throws IOException, URISyntaxException {
+        Assert.assertTrue("Can not run concurrently with other test",
+                StaticFileServer.openFileSystems.isEmpty());
+
+        final TemporaryFolder folder = TemporaryFolder.builder().build();
+        folder.create();
+
+        Path tempArchive = generateZipArchive(folder);
 
         final URL folderResourceURL = new URL(
                 "jar:file:///" + tempArchive.toString().replaceAll("\\\\", "/")
@@ -543,19 +528,8 @@ public class StaticFileServerTest implements Serializable {
         final TemporaryFolder folder = TemporaryFolder.builder().build();
         folder.create();
 
-        File archiveFile = new File(folder.getRoot(), "fake.jar");
-        archiveFile.createNewFile();
-        Path tempArchive = archiveFile.toPath();
+        Path tempArchive = generateZipArchive(folder);
 
-        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
-                Files.newOutputStream(tempArchive))) {
-            // Create a file to the zip
-            zipOutputStream.putNextEntry(new ZipEntry("/file"));
-            zipOutputStream.closeEntry();
-            // Create a directory to the zip
-            zipOutputStream.putNextEntry(new ZipEntry("frontend/"));
-            zipOutputStream.closeEntry();
-        }
         setupRequestURI("", "", "/frontend/.");
         final URL folderResourceURL = new URL(
                 "jar:file:///" + tempArchive.toString().replaceAll("\\\\", "/")
