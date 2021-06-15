@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.Constants;
+
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_JAR_DEFAULT;
@@ -63,7 +65,13 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
     public void execute() {
         long start = System.nanoTime();
         log().info("Copying frontend resources from jar files ...");
-        TaskCopyLocalFrontendFiles.createTargetFolder(targetDirectory);
+        // Always create target/flow-frontend/themes directory in order to
+        // assure target/flow-frontend dir has been created and prepare for
+        // potential themes copying (themes dir will be just empty if no theme
+        // resources found)
+        final File targetThemesDirectory = new File(targetDirectory,
+                Constants.APPLICATION_THEME_ROOT);
+        TaskCopyLocalFrontendFiles.createTargetFolder(targetThemesDirectory);
         JarContentsManager jarContentsManager = new JarContentsManager();
         for (File location : resourceLocations) {
             if (location.isDirectory()) {
@@ -74,6 +82,10 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                         new File(location,
                                 COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT),
                         targetDirectory);
+                TaskCopyLocalFrontendFiles.copyLocalResources(
+                        new File(location,
+                                Constants.RESOURCES_THEME_JAR_DEFAULT),
+                        targetThemesDirectory);
             } else {
                 jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
                         location, RESOURCES_FRONTEND_DEFAULT, targetDirectory,
