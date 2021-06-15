@@ -61,6 +61,15 @@ public class LookupServletContainerInitializer
     @Override
     public void process(Set<Class<?>> classSet, ServletContext servletContext)
             throws ServletException {
+        if (classSet == null) {
+            throw new ServletException(ServletContainerInitializer.class
+                    .getSimpleName() + " is called but the "
+                    + "provided set of classes is 'null'. "
+                    + LookupInitializer.class + " always presents "
+                    + "and has to be passed to the 'onStartup' method as an argument "
+                    + "in the set of classes if the servlet container supports Servlet 3.0 specification. "
+                    + "The propject configuration is broken somehow or you are using Servlet 3.0 incompatible container.");
+        }
         if (!classSet.contains(LookupInitializer.class)) {
             // this is a specific case for OSGi (PAX web): at some point it may
             // decide to apply ServletContainerInitializers for non WAR case
