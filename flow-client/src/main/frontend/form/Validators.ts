@@ -79,7 +79,7 @@ export class IsNumber extends NumberValidator<number | null | undefined> {
   }
 
   validate(value: number | null | undefined) {
-    return (this.optional && (value === null || value === undefined)) || super.validate(value);
+    return (this.optional && value == null) || super.validate(value);
   }
 }
 
