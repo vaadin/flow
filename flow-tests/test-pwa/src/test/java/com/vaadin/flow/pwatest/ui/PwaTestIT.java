@@ -100,9 +100,11 @@ public class PwaTestIT extends ChromeDeviceTest {
 
         // test service worker initialization
         elements = head.findElements(By.tagName("script")).stream()
-                .filter(webElement -> webElement.getAttribute("innerHTML")
-                        .startsWith("if ('serviceWorker' in navigator)"))
-                .collect(Collectors.toList());
+                .filter(webElement -> {
+                    String innerHtml = webElement.getAttribute("innerHTML");
+                    return innerHtml != null && innerHtml
+                            .startsWith("if ('serviceWorker' in navigator)");
+                }).collect(Collectors.toList());
         Assert.assertEquals(1, elements.size());
 
         String serviceWorkerInit = elements.get(0).getAttribute("innerHTML");
