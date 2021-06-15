@@ -428,6 +428,59 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
+    public void jarInaJar_fileIsLoadedCorrectly()
+            throws IOException, URISyntaxException {
+        Assert.assertTrue("Can not run concurrently with other test",
+                StaticFileServer.openFileSystems.isEmpty());
+
+        final TemporaryFolder folder = TemporaryFolder.builder().build();
+        folder.create();
+
+        File archiveFile = new File(folder.getRoot(), "fake.jar");
+        archiveFile.createNewFile();
+        Path tempArchive = archiveFile.toPath();
+
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+                Files.newOutputStream(tempArchive))) {
+            // Create a file to the zip
+            zipOutputStream.putNextEntry(new ZipEntry("/file"));
+            zipOutputStream.closeEntry();
+            // Create a directory to the zip
+            zipOutputStream.putNextEntry(new ZipEntry("frontend/"));
+            zipOutputStream.closeEntry();
+        }
+        File warFile = new File(folder.getRoot(), "war.jar");
+        warFile.createNewFile();
+        Path warArchive = warFile.toPath();
+
+        try (ZipOutputStream warOutputStream = new ZipOutputStream(
+                Files.newOutputStream(warArchive))) {
+            // Create a file to the zip
+            warOutputStream.putNextEntry(new ZipEntry(archiveFile.getName()));
+            warOutputStream.write(Files.readAllBytes(tempArchive));
+
+            warOutputStream.closeEntry();
+        }
+
+        setupRequestURI("", "", "/frontend/.");
+        Mockito.when(servletService.getStaticResource("/frontend/."))
+                .thenReturn(new URL("jar:" + warFile.toURI().toURL() + "!/"
+                        + archiveFile.getName() + "!/frontend"));
+        Assert.assertTrue(
+                "Request should return as static request as we can not determine non file resources in jar files.",
+                fileServer.isStaticResourceRequest(request));
+        setupRequestURI("", "", "/file.txt");
+        Mockito.when(servletService.getStaticResource("/file.txt"))
+                .thenReturn(new URL("jar:" + warFile.toURI().toURL() + "!/"
+                        + archiveFile.getName() + "!/file.txt"));
+        Assert.assertTrue(
+                "Request should return as static request as we can not determine non file resources in jar files.",
+                fileServer.isStaticResourceRequest(request));
+
+        folder.delete();
+    }
+
+    @Test
     public void openingJarFileSystemForDifferentFilesInSameJar_existingFileSystemIsUsed()
             throws IOException, URISyntaxException {
         Assert.assertTrue("Can not run concurrently with other test",
