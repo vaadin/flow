@@ -142,7 +142,7 @@ public class StaticFileServer implements StaticFileHandler {
         if ("jar".equals(resource.getProtocol())) {
             // Get the file path in jar
             final String pathInJar = resource.getPath()
-                    .substring(resource.getPath().lastIndexOf("!") + 1);
+                    .substring(resource.getPath().indexOf('!') + 1);
             try {
                 FileSystem fileSystem = getFileSystem(resourceURI);
                 // Get the file path inside the jar.
@@ -150,7 +150,7 @@ public class StaticFileServer implements StaticFileHandler {
 
                 return Files.isDirectory(path);
             } catch (IOException e) {
-                getLogger().debug("failed to read zip file", e);
+                getLogger().debug("failed to read jar file contents", e);
             } finally {
                 closeFileSystem(resourceURI);
             }
@@ -200,8 +200,9 @@ public class StaticFileServer implements StaticFileHandler {
         synchronized (fileSystemLock) {
             URI fileURI = getFileURI(resourceURI);
             if (!fileURI.getScheme().equals("file")) {
-                throw new IOException(
-                        "Can not read scheme '" + fileURI.getScheme() + "'");
+                throw new IOException("Can not read scheme '"
+                        + fileURI.getScheme() + "' for resource " + resourceURI
+                        + " and will determine this as not a folder");
             }
 
             if (openFileSystems.computeIfPresent(fileURI,

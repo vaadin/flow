@@ -377,8 +377,7 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void jarInaJar_fileIsLoadedCorrectly()
-            throws IOException, URISyntaxException {
+    public void jarWarFileScheme_() throws IOException {
         Assert.assertTrue("Can not run concurrently with other test",
                 StaticFileServer.openFileSystems.isEmpty());
 
@@ -414,7 +413,7 @@ public class StaticFileServerTest implements Serializable {
         WarURLStreamHandlerFactory.getInstance();
 
         final URL folderResourceURL = new URL(
-                "jar:war:" + warFile.toURI().toURL().toString() + "!/"
+                "jar:war:" + warFile.toURI().toURL() + "!/"
                         + archiveFile.getName() + "!/frontend");
 
         setupRequestURI("", "", "/frontend/.");
@@ -424,6 +423,8 @@ public class StaticFileServerTest implements Serializable {
         Assert.assertTrue(
                 "Request should return as static request as we can not determine non file resources in jar files.",
                 fileServer.isStaticResourceRequest(request));
+
+        folder.delete();
     }
 
     @Test
@@ -616,18 +617,19 @@ public class StaticFileServerTest implements Serializable {
     @Test
     public void isNotResourceRequestWithContextPath() throws Exception {
         setupRequestURI("/context", "", "/");
-        Mockito.when(servletContext.getResource("/")).thenReturn(new URL("file",
-                "", -1,
-                "flow/flow-tests/non-root-context-test/src/main/webapp/",
-                new URLStreamHandler() {
+        Mockito.when(servletContext.getResource("/"))
+                .thenReturn(new URL("file", "", -1,
+                        "flow/flow-tests/non-root-context-test/src/main/webapp/",
+                        new URLStreamHandler() {
 
-                    @Override
-                    protected URLConnection openConnection(URL u)
-                            throws IOException {
-                        URLConnection mock = Mockito.mock(URLConnection.class);
-                        return mock;
-                    }
-                }));
+                            @Override
+                            protected URLConnection openConnection(URL u)
+                                    throws IOException {
+                                URLConnection mock = Mockito
+                                        .mock(URLConnection.class);
+                                return mock;
+                            }
+                        }));
 
         Assert.assertFalse(fileServer.isStaticResourceRequest(request));
     }
