@@ -15,7 +15,10 @@
  */
 package com.vaadin.flow.pwatest.ui;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -26,11 +29,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
 import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -39,9 +39,11 @@ import org.openqa.selenium.mobile.NetworkConnection;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 public class PwaTestIT extends ChromeDeviceTest {
 
-    @Ignore("https://github.com/vaadin/flow/issues/11201")
     @Test
     public void testPwaResources() throws IOException {
         open();
@@ -84,6 +86,9 @@ public class PwaTestIT extends ChromeDeviceTest {
         String href = elements.get(0).getAttribute("href");
         Assert.assertTrue(href + " didn't respond with resource", exists(href));
         // Verify user values in manifest.webmanifest
+        if (!href.startsWith(getRootURL())) {
+            href = getRootURL() + '/' + href;
+        }
         JsonObject manifest = readJsonFromUrl(href);
         Assert.assertEquals(ParentLayout.PWA_NAME, manifest.getString("name"));
         Assert.assertEquals(ParentLayout.PWA_SHORT_NAME,
