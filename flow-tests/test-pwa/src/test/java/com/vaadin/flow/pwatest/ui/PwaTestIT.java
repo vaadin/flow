@@ -47,6 +47,8 @@ public class PwaTestIT extends ChromeDeviceTest {
     @Test
     public void testPwaResources() throws IOException {
         open();
+
+        checkLogsForErrors();
         WebElement head = findElement(By.tagName("head"));
 
         // test mobile capable
@@ -290,5 +292,10 @@ public class PwaTestIT extends ChromeDeviceTest {
     private boolean isProductionMode() throws IOException {
         JsonObject stats = readJsonFromUrl(getRootURL() + "?v-r=init");
         return stats.getObject("appConfig").getBoolean("productionMode");
+    }
+
+    private String getInnerHtml(WebElement element) {
+        return (String) getCommandExecutor()
+                .executeScript("return arguments[0].innerHTML;", element);
     }
 }
