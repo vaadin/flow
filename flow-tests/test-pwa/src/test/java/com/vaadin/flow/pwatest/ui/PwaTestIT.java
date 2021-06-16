@@ -102,17 +102,12 @@ public class PwaTestIT extends ChromeDeviceTest {
 
         // test service worker initialization
         elements = head.findElements(By.tagName("script")).stream()
-                .filter(webElement -> {
-                    String innerHtml = webElement.getAttribute("innerHTML");
-                    System.out.println("aaaaaaaaaa " + innerHtml + " , "
-                            + getInnerHtml(webElement));
-                    innerHtml = getInnerHtml(webElement);
-                    return innerHtml != null && innerHtml
-                            .startsWith("if ('serviceWorker' in navigator)");
-                }).collect(Collectors.toList());
+                .filter(webElement -> getInnerHtml(webElement)
+                        .startsWith("if ('serviceWorker' in navigator)"))
+                .collect(Collectors.toList());
         Assert.assertEquals(1, elements.size());
 
-        String serviceWorkerInit = elements.get(0).getAttribute("innerHTML");
+        String serviceWorkerInit = getInnerHtml(=elements.get(0));
         Pattern pattern = Pattern
                 .compile("navigator.serviceWorker.register\\('([^']+)'\\)");
         Matcher matcher = pattern.matcher(serviceWorkerInit);
@@ -297,7 +292,8 @@ public class PwaTestIT extends ChromeDeviceTest {
     }
 
     private String getInnerHtml(WebElement element) {
-        return (String) getCommandExecutor()
+        Object result = getCommandExecutor()
                 .executeScript("return arguments[0].innerHTML;", element);
+        return result == null ? "" : result.toString();
     }
 }
