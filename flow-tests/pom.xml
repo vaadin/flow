@@ -317,48 +317,7 @@
             </activation>
 
             <modules>
-                <module>test-mixed</module>
-                <module>test-mixed/pom-npm.xml</module>
-                <module>test-dev-mode</module>
                 <module>test-pwa</module>
-                <module>test-pwa/pom-production.xml</module>
-                <module>test-root-ui-context</module>
-                <module>test-router-custom-context</module>
-                <module>test-live-reload</module>
-                <module>test-jetty-reload</module>
-
-                <module>test-scalability</module>
-                <module>test-memory-leaks</module>
-                <module>test-servlet</module>
-                <module>test-themes</module>
-                <module>servlet-containers</module>
-
-                <!-- web component embedding -->
-                <module>test-embedding</module>
-
-                <!-- tests running in both modes -->
-                <module>test-misc</module>
-
-                <module>test-mixed/pom-pnpm-production.xml</module>
-                <module>test-mixed/pom-npm-production.xml</module>
-                <module>test-npm-only-features</module>
-                <module>test-multi-war</module>
-                <module>test-ccdm</module>
-                <module>test-ccdm/pom-production.xml</module>
-                <module>test-ccdm-flow-navigation</module>
-                <module>test-ccdm-flow-navigation/pom-production.xml</module>
-
-                <module>test-root-context</module>
-				
-                <module>test-v14-bootstrap</module>
-                <module>test-v14-bootstrap/pom-production.xml</module>
-				
-                <module>test-custom-route-registry</module>
-                <!-- tests are disabled in this module, this reference is for maven version plugin -->
-                <module>test-no-theme</module>
-                <!-- move theme tests to the end, because theme switch live reload-->
-                <!-- test impacts startup test-->
-                <module>test-application-theme</module>
             </modules>
         </profile>
         <profile>
