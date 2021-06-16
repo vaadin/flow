@@ -104,7 +104,9 @@ public class PwaTestIT extends ChromeDeviceTest {
         elements = head.findElements(By.tagName("script")).stream()
                 .filter(webElement -> {
                     String innerHtml = webElement.getAttribute("innerHTML");
-                    System.out.println("aaaaaaaaaa " + innerHtml);
+                    System.out.println("aaaaaaaaaa " + innerHtml + " , "
+                            + getInnerHtml(webElement));
+                    innerHtml = getInnerHtml(webElement);
                     return innerHtml != null && innerHtml
                             .startsWith("if ('serviceWorker' in navigator)");
                 }).collect(Collectors.toList());
