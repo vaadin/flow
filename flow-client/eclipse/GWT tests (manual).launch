@@ -27,4 +27,3 @@
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dgwt.args='-war target/www-test -logLevel INFO -prod -ea -sourceLevel 1.8 -runStyle Manual:1 -style PRETTY'"/>
 </launchConfiguration>
-

@@ -39,7 +39,7 @@
                                 <jdk>(,16]</jdk>
                         </activation>
                         <modules>
-                            <module>flow-gradle-plugin</module>
+                                <module>flow-gradle-plugin</module>
                         </modules>
                </profile>
         </profiles>
