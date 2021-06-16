@@ -17,6 +17,15 @@ function _getComplexTypeParams(
 }
 export {_getComplexTypeParams as getComplexTypeParams};
 
+function _send(
+  text: string | undefined,
+  chatPartnerId: number
+ ): Promise<void> {
+  return client.call('ComplexTypeParamsEndpoint', 'send', {text, chatPartnerId});
+ }
+export {_send as send};
+
 export const ComplexTypeParamsEndpoint = Object.freeze({
   getComplexTypeParams: _getComplexTypeParams,
+  send: _send,
 });
