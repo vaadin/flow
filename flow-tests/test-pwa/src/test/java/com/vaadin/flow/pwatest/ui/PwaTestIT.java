@@ -107,7 +107,7 @@ public class PwaTestIT extends ChromeDeviceTest {
                 .collect(Collectors.toList());
         Assert.assertEquals(1, elements.size());
 
-        String serviceWorkerInit = getInnerHtml(=elements.get(0));
+        String serviceWorkerInit = getInnerHtml(elements.get(0));
         Pattern pattern = Pattern
                 .compile("navigator.serviceWorker.register\\('([^']+)'\\)");
         Matcher matcher = pattern.matcher(serviceWorkerInit);
