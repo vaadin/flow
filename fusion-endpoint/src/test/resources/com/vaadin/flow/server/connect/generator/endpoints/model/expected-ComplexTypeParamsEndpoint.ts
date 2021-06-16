@@ -10,8 +10,8 @@ import Account from './com/vaadin/flow/server/connect/generator/endpoints/model/
 import Group from './com/vaadin/flow/server/connect/generator/endpoints/model/ModelEndpoint/Group';
 
 function _getComplexTypeParams(
-    accounts?: Array<Account | undefined>,
-    groups?: Record<string, Group | undefined>
+    accounts: Array<Account | undefined> | undefined,
+    groups: Record<string, Group | undefined> | undefined
 ): Promise<void> {
   return client.call('ComplexTypeParamsEndpoint', 'getComplexTypeParams', {accounts, groups});
 }
