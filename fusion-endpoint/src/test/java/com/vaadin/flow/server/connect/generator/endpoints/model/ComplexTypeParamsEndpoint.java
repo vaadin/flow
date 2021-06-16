@@ -27,6 +27,6 @@ public class ComplexTypeParamsEndpoint {
     }
 
     public void send(String text, int chatPartnerId) {
-        
+
     }
 }
