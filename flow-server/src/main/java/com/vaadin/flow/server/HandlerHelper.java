@@ -175,9 +175,17 @@ public class HandlerHelper implements Serializable {
                 requestedPathWithoutServletMapping.get(),
                 requestTypeParameter)) {
             return true;
+        } else if (isUploadRequest(requestedPathWithoutServletMapping.get())) {
+            return true;
         }
 
         return false;
+    }
+
+    private static boolean isUploadRequest(
+            String requestedPathWithoutServletMapping) {
+        return requestedPathWithoutServletMapping
+                .matches("VAADIN/dynamic/resource/.*/.*/upload");
     }
 
     static boolean isInternalRequestInsideServlet(
