@@ -48,7 +48,8 @@ public class PwaTestIT extends ChromeDeviceTest {
     public void testPwaResources() throws IOException {
         open();
 
-        checkLogsForErrors();
+        checkLogsForErrors(
+                msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
         WebElement head = findElement(By.tagName("head"));
 
         // test mobile capable
