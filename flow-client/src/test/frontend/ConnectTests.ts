@@ -128,8 +128,10 @@ describe('ConnectClient', () => {
   });
 
   describe('call method', () => {
-    beforeEach(() => fetchMock
-      .post(base + '/connect/FooEndpoint/fooMethod', {fooData: 'foo'})
+    beforeEach(() => {
+        fetchMock.post(base + '/connect/FooEndpoint/fooMethod', {fooData: 'foo'});
+        fetchMock.post(base + '/connect/FooEndpoint/fooMethodWithNullValue', {fooData: 'foo', propWithNullValue: null})
+      }
     );
 
     afterEach(() => fetchMock.restore());
@@ -267,6 +269,12 @@ describe('ConnectClient', () => {
 
     it('should resolve to response JSON data', async() => {
       const data = await client.call('FooEndpoint', 'fooMethod');
+      expect(data).to.deep.equal({fooData: 'foo'});
+    });
+
+    it('should transform null value to undefined from response JSON data', async() => {
+      const data = await client.call('FooEndpoint', 'fooMethodWithNullValue');
+      expect(data['propWithNullValue']).to.be.undefined;
       expect(data).to.deep.equal({fooData: 'foo'});
     });
 
