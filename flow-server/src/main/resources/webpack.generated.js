@@ -47,7 +47,7 @@ const projectStaticAssetsFolders = [
   frontendFolder
 ];
 
-const projectStaticAssetsOutputFolder = [to-be-generated-by-flow];
+const projectStaticAssetsOutputFolder = '[to-be-generated-by-flow]';
 
 // Folders in the project which can contain application themes
 const themeProjectFolders = projectStaticAssetsFolders.map((folder) =>
@@ -110,8 +110,9 @@ if (devMode) {
   // target/frontend/themes folder
   themeName = extractThemeName(flowFrontendThemesFolder);
   const parentThemePaths = findParentThemes(themeName, themeOptions);
-  const currentThemeFolders = projectStaticAssetsFolders
-    .map((folder) => path.resolve(folder, "themes", themeName));
+  const currentThemeFolders = [...projectStaticAssetsFolders
+    .map((folder) => path.resolve(folder, "themes", themeName)),
+    path.resolve(flowFrontendThemesFolder, themeName)];
   // Watch the components folders for component styles update in both
   // current theme and parent themes. Other folders or CSS files except
   // 'styles.css' should be referenced from `styles.css` anyway, so no need
@@ -279,7 +280,7 @@ module.exports = {
 
     ...(devMode && themeName ? [new ExtraWatchWebpackPlugin({
       files: [],
-      dirs: [...themeWatchFolders]
+      dirs: themeWatchFolders
     }), new ThemeLiveReloadPlugin(processThemeResourcesCallback)] : []),
 
     new StatsPlugin({
