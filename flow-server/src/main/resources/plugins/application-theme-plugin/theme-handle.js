@@ -198,8 +198,9 @@ function extractThemeName(frontendGeneratedFolder) {
 }
 
 /**
- * Finds all the parent themes located in the project themes folders with
- * respect to the given custom theme with {@code themeName}.
+ * Finds all the parent themes located in the project themes folders and in
+ * the JAR dependencies with respect to the given custom theme with
+ * {@code themeName}.
  * @param {string} themeName given custom theme name to look parents for
  * @param {object} options application theme plugin mandatory options,
  * @see {@link ApplicationThemePlugin}
@@ -207,7 +208,7 @@ function extractThemeName(frontendGeneratedFolder) {
  * given custom theme
  */
 function findParentThemes(themeName, options) {
-  const existingThemeFolders = options.themeProjectFolders.filter(
+  const existingThemeFolders = [options.themeResourceFolder, ...options.themeProjectFolders].filter(
     (folder) => fs.existsSync(folder));
   return collectParentThemes(themeName, existingThemeFolders, false);
 }
