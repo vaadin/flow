@@ -40,6 +40,7 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.tests.util.TestUtil;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
@@ -178,7 +179,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         URLConnection urlConnection = Mockito.mock(URLConnection.class);
         Mockito.when(urlConnection.getContent()).thenReturn(virtualFile);
 
-        URL.setURLStreamHandlerFactory(protocol -> {
+        TestUtil.setURLStreamHandlerFactory(protocol -> {
             if (protocol.equals("vfs")) {
                 return new URLStreamHandler() {
                     @Override
@@ -189,6 +190,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             }
             return null;
         });
+
         URL url = new URL("vfs://some-non-existent-place" + path);
 
         loadingFsResources_allFilesExist(Collections.singletonList(url),
