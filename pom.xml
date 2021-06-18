@@ -36,6 +36,7 @@
         <module>fusion-endpoint</module>
         <module>build-tools</module>
 		<module>vaadin-dev-server</module>
+        <module>flow-jandex</module>
     </modules>
 
     <organization>
