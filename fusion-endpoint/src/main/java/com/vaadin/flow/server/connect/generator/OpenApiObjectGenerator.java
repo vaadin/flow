@@ -51,11 +51,11 @@ import com.github.javaparser.ast.expr.LiteralStringValueExpr;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithSimpleName;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.javadoc.Javadoc;
 import com.github.javaparser.javadoc.JavadocBlockTag;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
-import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.resolution.types.parametrization.ResolvedTypeParametersMap;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ClassLoaderTypeSolver;
@@ -109,19 +109,20 @@ public class OpenApiObjectGenerator {
     private static final String VAADIN_CONNECT_OAUTH2_SECURITY_SCHEME = "vaadin-connect-oauth2";
     private static final String VAADIN_CONNECT_OAUTH2_TOKEN_URL = "/oauth/token";
     private final EndpointNameChecker endpointNameChecker = new EndpointNameChecker();
-    private List<Path> javaSourcePaths = new ArrayList<>();
+    private final List<Path> javaSourcePaths = new ArrayList<>();
     private OpenApiConfiguration configuration;
-    private Map<String, ResolvedReferenceType> usedTypes;
+    private Map<String, GeneratorType> usedTypes;
     private Map<ClassOrInterfaceDeclaration, String> endpointsJavadoc;
     private Map<String, TypeDeclaration<?>> nonEndpointMap;
     private Map<String, ClassOrInterfaceDeclaration> endpointExposedMap;
     private Map<String, String> qualifiedNameToPath;
     private Map<String, PathItem> pathItems;
+    // private Map<String, GeneratorType> typeRegistry;
     private Set<String> generatedSchema;
     private OpenAPI openApiModel;
     private ClassLoader typeResolverClassLoader;
     private SchemaGenerator schemaGenerator;
-    private SchemaResolver schemaResolver;
+    private SchemaResolver resolver;
     private boolean needsDeferrableImport = false;
 
     private static Logger getLogger() {
@@ -184,13 +185,13 @@ public class OpenApiObjectGenerator {
         return openApiModel;
     }
 
-    Schema parseResolvedTypeToSchema(ResolvedType resolvedType) {
-        return schemaResolver.parseResolvedTypeToSchema(resolvedType);
+    Schema parseResolvedTypeToSchema(GeneratorType type) {
+        return resolver.parseResolvedTypeToSchema(type);
     }
 
-    Class<?> getClassFromReflection(ResolvedReferenceType resolvedType)
+    Class<?> getClassFromReflection(GeneratorType type)
             throws ClassNotFoundException {
-        String fullyQualifiedName = getFullyQualifiedName(resolvedType);
+        String fullyQualifiedName = getFullyQualifiedName(type);
         if (typeResolverClassLoader != null) {
             return Class.forName(fullyQualifiedName, true,
                     typeResolverClassLoader);
@@ -213,7 +214,8 @@ public class OpenApiObjectGenerator {
         generatedSchema = new HashSet<>();
         endpointsJavadoc = new HashMap<>();
         schemaGenerator = new SchemaGenerator(this);
-        schemaResolver = new SchemaResolver();
+        // typeRegistry = new HashMap<>();
+        resolver = new SchemaResolver(usedTypes);
         needsDeferrableImport = false;
         ParserConfiguration parserConfiguration = createParserConfiguration();
 
@@ -227,8 +229,7 @@ public class OpenApiObjectGenerator {
                 .forEach(sourceRoot -> parseSourceRoot(sourceRoot,
                         this::process));
 
-        for (Map.Entry<String, ResolvedReferenceType> entry : usedTypes
-                .entrySet()) {
+        for (Map.Entry<String, GeneratorType> entry : usedTypes.entrySet()) {
             List<Schema> schemas = createSchemasFromQualifiedNameAndType(
                     entry.getKey(), entry.getValue());
             schemas.forEach(schema -> {
@@ -472,14 +473,13 @@ public class OpenApiObjectGenerator {
             parentSchema.setName(fullQualifiedName);
             result.add(parentSchema);
             extendedTypes.forEach(parentType -> {
-                ResolvedReferenceType resolvedParentType = parentType.resolve();
-                String parentQualifiedName = resolvedParentType
-                        .getQualifiedName();
-                String parentRef = schemaResolver
+                GeneratorType type = new GeneratorType(parentType.resolve());
+                String parentQualifiedName = type.asResolvedType()
+                        .asReferenceType().getQualifiedName();
+                String parentRef = SchemaResolver
                         .getFullQualifiedNameRef(parentQualifiedName);
                 parentSchema.addAllOfItem(new ObjectSchema().$ref(parentRef));
-                schemaResolver.addFoundTypes(parentQualifiedName,
-                        resolvedParentType);
+                usedTypes.put(parentQualifiedName, type);
             });
             // The inserting order matters for `allof` property.
             parentSchema.addAllOfItem(schema);
@@ -489,26 +489,24 @@ public class OpenApiObjectGenerator {
     }
 
     private List<Schema> createSchemasFromQualifiedNameAndType(
-            String qualifiedName, ResolvedReferenceType resolvedReferenceType) {
+            String qualifiedName, GeneratorType type) {
         List<Schema> list = parseNonEndpointClassAsSchema(qualifiedName);
         if (list.isEmpty()) {
-            return parseReferencedTypeAsSchema(resolvedReferenceType);
+            return parseReferencedTypeAsSchema(type);
         } else {
             return list;
         }
     }
 
-    private Map<String, ResolvedReferenceType> collectUsedTypesFromSchema(
+    private Map<String, GeneratorType> collectUsedTypesFromSchema(
             Schema schema) {
-        Map<String, ResolvedReferenceType> map = new HashMap<>();
+        Map<String, GeneratorType> map = new HashMap<>();
         if (GeneratorUtils.isNotBlank(schema.getName())
                 || GeneratorUtils.isNotBlank(schema.get$ref())) {
             String name = GeneratorUtils.firstNonBlank(schema.getName(),
-                    schemaResolver.getSimpleRef(schema.get$ref()));
-            ResolvedReferenceType resolvedReferenceType = schemaResolver
-                    .getFoundTypeByQualifiedName(name);
-            if (resolvedReferenceType != null) {
-                map.put(name, resolvedReferenceType);
+                    SchemaResolver.getSimpleRef(schema.get$ref()));
+            if (usedTypes.containsKey(name)) {
+                map.put(name, usedTypes.get(name));
             } else {
                 getLogger().info(
                         "Can't find the type information of class '{}'. "
@@ -662,15 +660,15 @@ public class OpenApiObjectGenerator {
     private MediaType createReturnMediaType(MethodDeclaration methodDeclaration,
             ResolvedTypeParametersMap resolvedTypeParametersMap) {
         MediaType mediaItem = new MediaType();
-        ResolvedType resolvedType = resolvedTypeParametersMap
-                .replaceAll(methodDeclaration.resolve().getReturnType());
-        Schema schema = parseResolvedTypeToSchema(resolvedType);
+        Type returnType = methodDeclaration.getType();
+        Schema schema = parseResolvedTypeToSchema(
+                new GeneratorType(returnType));
         schema.setDescription("");
         if (GeneratorUtils.isTrue(schema.getNullable())
                 && isRequired(methodDeclaration)) {
             schema.setNullable(null);
         }
-        usedTypes.putAll(collectUsedTypesFromSchema(schema));
+        // usedTypes.putAll(collectUsedTypesFromSchema(schema));
         mediaItem.schema(schema);
         return mediaItem;
     }
@@ -697,9 +695,8 @@ public class OpenApiObjectGenerator {
         requestBodyObject.schema(requestSchema);
 
         methodDeclaration.getParameters().forEach(parameter -> {
-            ResolvedType resolvedType = resolvedTypeParametersMap
-                    .replaceAll(parameter.resolve().getType());
-            Schema paramSchema = parseResolvedTypeToSchema(resolvedType);
+            Schema paramSchema = parseResolvedTypeToSchema(
+                    new GeneratorType(parameter.getType()));
             paramSchema.setDescription("");
             usedTypes.putAll(collectUsedTypesFromSchema(paramSchema));
             String name = (isReservedWord(parameter.getNameAsString()) ? "_"
@@ -724,24 +721,24 @@ public class OpenApiObjectGenerator {
     }
 
     @SuppressWarnings("squid:S1872")
-    private List<Schema> parseReferencedTypeAsSchema(
-            ResolvedReferenceType resolvedType) {
+    private List<Schema> parseReferencedTypeAsSchema(GeneratorType type) {
         List<Schema> results = new ArrayList<>();
 
         Schema schema = schemaGenerator
-                .createSingleSchemaFromResolvedType(resolvedType);
-        String qualifiedName = resolvedType.getQualifiedName();
+                .createSingleSchemaFromResolvedType(type);
+        ResolvedReferenceType resolvedReferenceType = type.asResolvedType()
+                .asReferenceType();
+        String qualifiedName = resolvedReferenceType.getQualifiedName();
         generatedSchema.add(qualifiedName);
 
-        List<ResolvedReferenceType> directAncestors = resolvedType
+        List<ResolvedReferenceType> directAncestors = resolvedReferenceType
                 .getDirectAncestors().stream()
                 .filter(parent -> parent.getTypeDeclaration().isClass()
                         && !Object.class.getName()
                                 .equals(parent.getQualifiedName()))
                 .collect(Collectors.toList());
 
-        if (directAncestors.isEmpty()
-                || resolvedType.getTypeDeclaration().isEnum()) {
+        if (directAncestors.isEmpty() || type.isEnum()) {
             results.add(schema);
             results.addAll(generatedRelatedSchemas(schema));
         } else {
@@ -751,11 +748,11 @@ public class OpenApiObjectGenerator {
             for (ResolvedReferenceType directAncestor : directAncestors) {
                 String ancestorQualifiedName = directAncestor
                         .getQualifiedName();
-                String parentRef = schemaResolver
+                String parentRef = SchemaResolver
                         .getFullQualifiedNameRef(ancestorQualifiedName);
                 parentSchema.addAllOfItem(new ObjectSchema().$ref(parentRef));
-                schemaResolver.addFoundTypes(ancestorQualifiedName,
-                        directAncestor);
+                usedTypes.put(ancestorQualifiedName,
+                        new GeneratorType(directAncestor));
             }
             parentSchema.addAllOfItem(schema);
             results.addAll(generatedRelatedSchemas(parentSchema));
@@ -783,14 +780,13 @@ public class OpenApiObjectGenerator {
      * {@see Related discussion about FullyQualifiedName and CanonicalName:
      * https://github.com/javaparser/javaparser/issues/1480}
      *
-     * @param resolvedReferenceType
+     * @param type
      *            the type to get fully qualified name
      * @return fully qualified name
      */
-    private String getFullyQualifiedName(
-            ResolvedReferenceType resolvedReferenceType) {
-        ResolvedReferenceTypeDeclaration typeDeclaration = resolvedReferenceType
-                .getTypeDeclaration();
+    private String getFullyQualifiedName(GeneratorType type) {
+        ResolvedReferenceTypeDeclaration typeDeclaration = type.asResolvedType()
+                .asReferenceType().getTypeDeclaration();
         String packageName = typeDeclaration.getPackageName();
         String canonicalName = typeDeclaration.getQualifiedName();
         if (GeneratorUtils.isBlank(packageName)) {

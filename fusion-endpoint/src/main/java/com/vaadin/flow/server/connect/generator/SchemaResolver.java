@@ -15,26 +15,13 @@
  */
 package com.vaadin.flow.server.connect.generator;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.github.javaparser.resolution.declarations.ResolvedEnumConstantDeclaration;
-import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
-import com.github.javaparser.resolution.types.ResolvedPrimitiveType;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
-import com.github.javaparser.resolution.types.ResolvedType;
-import com.github.javaparser.utils.Pair;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.ComposedSchema;
@@ -49,67 +36,109 @@ import io.swagger.v3.oas.models.media.StringSchema;
 class SchemaResolver {
 
     private static final String SCHEMA_REF_PREFIX = "#/components/schemas/";
-    private final Map<String, ResolvedReferenceType> foundTypes = new HashMap<>();
+    private final Map<String, GeneratorType> usedTypes;
 
-    Schema parseResolvedTypeToSchema(ResolvedType resolvedType) {
-        if (resolvedType.isArray()) {
-            return createNullableWrapper(createArraySchema(resolvedType));
-        } else if (isNumberType(resolvedType)) {
+    SchemaResolver(Map<String, GeneratorType> usedTypes) {
+        this.usedTypes = usedTypes;
+    }
+
+    /**
+     * This method is needed because the {@link Schema#set$ref(String)} method
+     * won't append "#/components/schemas/" if the ref contains `.`.
+     *
+     * @param qualifiedName
+     *            full qualified name of the class
+     * @return the ref in format of "#/components/schemas/com.my.example.Model"
+     */
+    static String getFullQualifiedNameRef(String qualifiedName) {
+        return SCHEMA_REF_PREFIX + qualifiedName;
+    }
+
+    static String getSimpleRef(String ref) {
+        if (GeneratorUtils.contains(ref, SCHEMA_REF_PREFIX)) {
+            return GeneratorUtils.substringAfter(ref, SCHEMA_REF_PREFIX);
+        }
+        return ref;
+    }
+
+    Schema parseResolvedTypeToSchema(GeneratorType type) {
+        if (type.isArray()) {
+            return createNullableWrapper(createArraySchema(type));
+        }
+
+        if (type.isNumber()) {
             return createNullableWrapper(new NumberSchema(),
-                    !resolvedType.isPrimitive());
-        } else if (isStringType(resolvedType)) {
+                    !type.isPrimitive());
+        }
+
+        if (type.isString()) {
             return createNullableWrapper(new StringSchema());
-        } else if (isCollectionType(resolvedType)) {
-            return createNullableWrapper(
-                    createCollectionSchema(resolvedType.asReferenceType()));
-        } else if (isBooleanType(resolvedType)) {
+        }
+
+        if (type.isCollection()) {
+            return createNullableWrapper(createCollectionSchema(type));
+        }
+
+        if (type.isBoolean()) {
             return createNullableWrapper(new BooleanSchema(),
-                    !resolvedType.isPrimitive());
-        } else if (isMapType(resolvedType)) {
-            return createNullableWrapper(createMapSchema(resolvedType));
-        } else if (isDateType(resolvedType)) {
+                    !type.isPrimitive());
+        }
+
+        if (type.isMap()) {
+            return createNullableWrapper(createMapSchema(type));
+        }
+
+        if (type.isDate()) {
             return createNullableWrapper(new DateSchema());
-        } else if (isDateTimeType(resolvedType)) {
+        }
+
+        if (type.isDateTime()) {
             return createNullableWrapper(new DateTimeSchema());
-        } else if (isOptionalType(resolvedType)) {
-            return createOptionalSchema(resolvedType.asReferenceType());
-        } else if (isUnhandledJavaType(resolvedType)) {
+        }
+
+        if (type.isOptional()) {
+            return createOptionalSchema(type);
+        }
+
+        if (type.isUnhandled()) {
             return createNullableWrapper(new ObjectSchema());
-        } else if (isTypeOf(resolvedType, Enum.class)) {
-            return createNullableWrapper(createEnumTypeSchema(resolvedType));
         }
-        return createNullableWrapper(createUserBeanSchema(resolvedType));
+
+        if (type.isEnum()) {
+            return createNullableWrapper(createEnumTypeSchema(type));
+        }
+
+        return createNullableWrapper(createUserBeanSchema(type));
     }
 
-    private Schema createArraySchema(ResolvedType type) {
+    private Schema createArraySchema(GeneratorType type) {
         ArraySchema array = new ArraySchema();
-        array.items(parseResolvedTypeToSchema(
-                type.asArrayType().getComponentType()));
+        array.items(parseResolvedTypeToSchema(type.getItemType()));
         return array;
     }
 
-    private Schema createCollectionSchema(ResolvedReferenceType type) {
+    private Schema createCollectionSchema(GeneratorType type) {
         ArraySchema array = new ArraySchema();
-        List<Pair<ResolvedTypeParameterDeclaration, ResolvedType>> typeParametersMap = type
-                .getTypeParametersMap();
-        if (!typeParametersMap.isEmpty()) {
-            ResolvedType collectionParameterType = typeParametersMap.get(0).b;
-            array.items(parseResolvedTypeToSchema(collectionParameterType));
+        List<GeneratorType> typeArguments = type.getTypeArguments();
+
+        if (!typeArguments.isEmpty()) {
+            array.items(parseResolvedTypeToSchema(typeArguments.get(0)));
         }
+
         return array;
     }
 
-    private Schema createOptionalSchema(ResolvedReferenceType type) {
-        ResolvedType typeInOptional = type.getTypeParametersMap().get(0).b;
-        Schema nestedTypeSchema = parseResolvedTypeToSchema(typeInOptional);
+    private Schema createOptionalSchema(GeneratorType type) {
+        Schema nestedTypeSchema = parseResolvedTypeToSchema(
+                type.getTypeArguments().get(0));
         return createNullableWrapper(nestedTypeSchema);
     }
 
-    Schema createNullableWrapper(Schema nestedTypeSchema) {
+    private Schema createNullableWrapper(Schema nestedTypeSchema) {
         return createNullableWrapper(nestedTypeSchema, true);
     }
 
-    Schema createNullableWrapper(Schema nestedTypeSchema,
+    private Schema createNullableWrapper(Schema nestedTypeSchema,
             boolean shouldBeNullable) {
         if (!shouldBeNullable) {
             return nestedTypeSchema;
@@ -126,123 +155,28 @@ class SchemaResolver {
         return nullableSchema;
     }
 
-    private Schema createMapSchema(ResolvedType type) {
+    private Schema createMapSchema(GeneratorType type) {
         Schema mapSchema = new MapSchema();
-        List<Pair<ResolvedTypeParameterDeclaration, ResolvedType>> typeParametersMap = type
-                .asReferenceType().getTypeParametersMap();
-        if (typeParametersMap.size() == 2) {
+        List<GeneratorType> typeArguments = type.getTypeArguments();
+
+        if (typeArguments.size() == 2) {
             // Assumed that Map always has the first type parameter as `String`
-            // and
-            // the second is for its value type
-            ResolvedType mapValueType = typeParametersMap.get(1).b;
+            // and the second is for its value type
             mapSchema.additionalProperties(
-                    parseResolvedTypeToSchema(mapValueType));
+                    parseResolvedTypeToSchema(typeArguments.get(1)));
         }
         return mapSchema;
     }
 
-    private boolean isOptionalType(ResolvedType resolvedType) {
-        return resolvedType.isReferenceType()
-                && isTypeOf(resolvedType, Optional.class);
-    }
-
-    private boolean isUnhandledJavaType(ResolvedType resolvedType) {
-        return resolvedType.isReferenceType() && resolvedType.asReferenceType()
-                .getQualifiedName().startsWith("java.");
-    }
-
-    private boolean isDateTimeType(ResolvedType resolvedType) {
-        return resolvedType.isReferenceType() && isTypeOf(resolvedType,
-                LocalDateTime.class, Instant.class, LocalTime.class);
-    }
-
-    private boolean isDateType(ResolvedType resolvedType) {
-        return resolvedType.isReferenceType()
-                && isTypeOf(resolvedType, Date.class, LocalDate.class);
-    }
-
-    private boolean isNumberType(ResolvedType type) {
-        if (type.isPrimitive()) {
-            ResolvedPrimitiveType resolvedPrimitiveType = type.asPrimitive();
-            return resolvedPrimitiveType != ResolvedPrimitiveType.BOOLEAN
-                    && resolvedPrimitiveType != ResolvedPrimitiveType.CHAR;
-        } else {
-            return isTypeOf(type, Number.class);
-        }
-    }
-
-    private boolean isCollectionType(ResolvedType type) {
-        return !type.isPrimitive() && (isTypeOf(type, Collection.class)
-                || isType(type, Iterable.class));
-    }
-
-    private boolean isMapType(ResolvedType type) {
-        return !type.isPrimitive() && isTypeOf(type, Map.class);
-    }
-
-    private boolean isBooleanType(ResolvedType type) {
-        if (type.isPrimitive()) {
-            return type.asPrimitive() == ResolvedPrimitiveType.BOOLEAN;
-        } else {
-            return isTypeOf(type, Boolean.class);
-        }
-    }
-
-    private boolean isStringType(ResolvedType type) {
-        if (type.isPrimitive()) {
-            return type.asPrimitive() == ResolvedPrimitiveType.CHAR;
-        } else {
-            return isTypeOf(type, String.class, Character.class);
-        }
-    }
-
-    /**
-     * Checks if the given type refers to the given class.
-     *
-     * @param type
-     *            type type to check
-     * @param clazz
-     *            the class to match with
-     * @return true if the type is referring to the given class, false otherwise
-     */
-    private boolean isType(ResolvedType type, Class<?> clazz) {
-        if (!type.isReferenceType()) {
-            return false;
-        }
-        return clazz.getName()
-                .equals(type.asReferenceType().getQualifiedName());
-    }
-
-    /**
-     * Checks if the given type can be cast to one of the given classes.
-     *
-     * @param type
-     *            type type to check
-     * @param clazz
-     *            the classes to match with
-     * @return true if the type can be cast to one of the given classes, false
-     *         otherwise
-     */
-    private boolean isTypeOf(ResolvedType type, Class<?>... clazz) {
-        if (!type.isReferenceType()) {
-            return false;
-        }
-        List<String> classes = Arrays.stream(clazz).map(Class::getName)
-                .collect(Collectors.toList());
-        return classes.contains(type.asReferenceType().getQualifiedName())
-                || type.asReferenceType().getAllAncestors().stream()
-                        .map(ResolvedReferenceType::getQualifiedName)
-                        .anyMatch(classes::contains);
-    }
-
-    private Schema createEnumTypeSchema(ResolvedType resolvedType) {
-        ResolvedReferenceType type = resolvedType.asReferenceType();
-        List<String> entries = type.getTypeDeclaration().asEnum()
-                .getEnumConstants().stream()
+    private Schema createEnumTypeSchema(GeneratorType type) {
+        ResolvedReferenceType resolvedReferenceType = type.asResolvedType()
+                .asReferenceType();
+        List<String> entries = resolvedReferenceType.getTypeDeclaration()
+                .asEnum().getEnumConstants().stream()
                 .map(ResolvedEnumConstantDeclaration::getName)
                 .collect(Collectors.toList());
-        String qualifiedName = type.getQualifiedName();
-        foundTypes.put(qualifiedName, type);
+        String qualifiedName = resolvedReferenceType.getQualifiedName();
+        usedTypes.put(qualifiedName, type);
         StringSchema schema = new StringSchema();
         schema.name(qualifiedName);
         schema.setEnum(entries);
@@ -250,45 +184,15 @@ class SchemaResolver {
         return schema;
     }
 
-    private Schema createUserBeanSchema(ResolvedType resolvedType) {
-        if (resolvedType.isReferenceType()) {
-            String qualifiedName = resolvedType.asReferenceType()
-                    .getQualifiedName();
-            foundTypes.put(qualifiedName, resolvedType.asReferenceType());
+    private Schema createUserBeanSchema(GeneratorType type) {
+        if (type.isReference()) {
+            ResolvedReferenceType resolvedReferenceType = type.asResolvedType()
+                    .asReferenceType();
+            String qualifiedName = resolvedReferenceType.getQualifiedName();
+            usedTypes.put(qualifiedName, type);
             return new ObjectSchema().name(qualifiedName)
                     .$ref(getFullQualifiedNameRef(qualifiedName));
         }
         return new ObjectSchema();
-    }
-
-    /**
-     * This method is needed because the {@link Schema#set$ref(String)} method
-     * won't append "#/components/schemas/" if the ref contains `.`.
-     *
-     * @param qualifiedName
-     *            full qualified name of the class
-     * @return the ref in format of "#/components/schemas/com.my.example.Model"
-     */
-    String getFullQualifiedNameRef(String qualifiedName) {
-        return SCHEMA_REF_PREFIX + qualifiedName;
-    }
-
-    String getSimpleRef(String ref) {
-        if (GeneratorUtils.contains(ref, SCHEMA_REF_PREFIX)) {
-            return GeneratorUtils.substringAfter(ref, SCHEMA_REF_PREFIX);
-        }
-        return ref;
-    }
-
-    void addFoundTypes(String qualifiedName, ResolvedReferenceType type) {
-        foundTypes.put(qualifiedName, type);
-    }
-
-    ResolvedReferenceType getFoundTypeByQualifiedName(String qualifiedName) {
-        return foundTypes.get(qualifiedName);
-    }
-
-    Map<String, ResolvedReferenceType> getFoundTypes() {
-        return foundTypes;
     }
 }
