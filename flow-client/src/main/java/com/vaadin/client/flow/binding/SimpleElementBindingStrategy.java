@@ -15,7 +15,6 @@
  */
 package com.vaadin.client.flow.binding;
 
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -733,7 +732,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // which are updated on the client side, e.g. when synchronizing
             // properties to the server (won't work for readonly properties).
             if (WidgetUtil.isUndefined(domValue)
-                    || !Objects.equals(domValue, treeValue)) {
+                    || !WidgetUtil.equals(domValue, treeValue)) {
                 Reactive.runWithComputation(null,
                         () -> WidgetUtil.setJsProperty(element, name,
                                 PolymerUtils.createModelTree(treeValue)));
