@@ -327,7 +327,7 @@ public class WidgetUtil {
      * types and Java {@link Object#equals(Object)} method) or as JS values.
      * 
      * @param obj1
-     *            a an object
+     *            an object
      * 
      * @param obj2
      *            an object to be compared with {@code a} for deep equality
@@ -347,7 +347,7 @@ public class WidgetUtil {
      * E.g. it means that an empty string equals to {@code 0}.
      * 
      * @param obj1
-     *            a an object
+     *            an object
      * 
      * @param obj2
      *            an object to be compared with {@code a} for deep equality
