@@ -18,7 +18,6 @@ package com.vaadin.flow.uitest.ui;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -31,7 +30,6 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
         executeScript("fetch('/context/view/reset_frontend')");
     }
 
-    @Ignore("https://github.com/vaadin/flow/issues/11210")
     @Test
     public void liveReloadOnTouchedFrontendFile() {
         open();
@@ -39,7 +37,7 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
         // when: the frontend code is updated
         WebElement codeField = findElement(
                 By.id(FrontendLiveReloadView.FRONTEND_CODE_TEXT));
-        String oldCode = codeField.getAttribute("value");
+        String oldCode = getValue(codeField);
         String newCode = oldCode.replace("Custom component contents",
                 "Updated component contents");
         codeField.clear();
@@ -70,7 +68,7 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
         // when: a webpack error occurs during frontend file edit
         WebElement codeField = findElement(
                 By.id(FrontendLiveReloadView.FRONTEND_CODE_TEXT));
-        String oldCode = codeField.getAttribute("value");
+        String oldCode = getValue(codeField);
         String erroneousCode = "{" + oldCode;
         codeField.clear();
         codeField.sendKeys(erroneousCode); // illegal TS
@@ -86,5 +84,11 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
 
         // then: the error box is not shown and the view is reloaded
         waitForElementNotPresent(By.className("v-system-error"));
+    }
+
+    private String getValue(WebElement element) {
+        Object result = getCommandExecutor()
+                .executeScript("return arguments[0].value;", element);
+        return result == null ? "" : result.toString();
     }
 }
