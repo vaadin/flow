@@ -1,6 +1,9 @@
 package com.vaadin.tests.util;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
+import java.net.URL;
+import java.net.URLStreamHandlerFactory;
 import java.util.Iterator;
 
 import org.junit.Assert;
@@ -66,5 +69,31 @@ public class TestUtil {
             }
         }
         return false;
+    }
+
+    /**
+     * Set the given URL stream handler factory. In case a factory has already
+     * been set then force set using reflection.
+     *
+     * @param factory
+     *            stream handler factory to set
+     */
+    public static void setURLStreamHandlerFactory(
+            URLStreamHandlerFactory factory) {
+        try {
+            URL.setURLStreamHandlerFactory(factory);
+        } catch (Error e) {
+            // Factory already set.
+            // Force it via reflection
+            try {
+                final Field factoryField = URL.class
+                        .getDeclaredField("factory");
+                factoryField.setAccessible(true);
+                factoryField.set(null, factory);
+            } catch (NoSuchFieldException | IllegalAccessException e1) {
+                throw new Error(
+                        "Could not access factory field on URL class: {}", e);
+            }
+        }
     }
 }

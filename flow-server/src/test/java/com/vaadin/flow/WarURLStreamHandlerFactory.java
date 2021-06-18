@@ -9,6 +9,8 @@ import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 import java.security.Permission;
 
+import com.vaadin.tests.util.TestUtil;
+
 public class WarURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
     private static final String WAR_PROTOCOL = "war";
@@ -49,7 +51,7 @@ public class WarURLStreamHandlerFactory implements URLStreamHandlerFactory {
         // factory
         this.registered = register;
         if (register) {
-            URL.setURLStreamHandlerFactory(this);
+            TestUtil.setURLStreamHandlerFactory(this);
         }
     }
 
