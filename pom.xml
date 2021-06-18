@@ -701,6 +701,7 @@
                 <module>flow-dev-deps</module>
                 <module>flow-server-production-mode</module>
                 <module>build-tools</module>
+                <module>flow-jandex</module>
             </modules>
         </profile>
         <profile>
