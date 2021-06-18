@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit";
+import { LitElement, html } from "lit-element";
 import "./InjectedTemplate.js";
 
 export class InjectingTemplate extends LitElement {
