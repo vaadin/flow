@@ -80,10 +80,10 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     public void testBindExistingPropertyWithDifferentType() {
-        //set nuymber as a proeprty value for DOM elememnt
+        //set number as a property value for DOM elememnt
         double value= setNumberValue(element, "bar");
         
-        // set string as a StateTree proeprty value
+        // set string as a StateTree property value
         properties.getProperty("bar").setValue(""+value);
 
         Binder.bind(node, element);

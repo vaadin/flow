@@ -344,7 +344,7 @@ public class WidgetUtil {
      * Checks whether the objects are equal as JS values.
      * <p>
      * This check ignores object types and checks the values via JS {@code ==}.
-     * It means that an empty string equals to {@code 0} e.g.
+     * E.g. it means that an empty string equals to {@code 0}.
      * 
      * @param obj1
      *            a an object
