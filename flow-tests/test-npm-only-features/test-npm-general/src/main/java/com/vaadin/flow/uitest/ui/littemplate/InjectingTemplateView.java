@@ -8,7 +8,7 @@ import com.vaadin.flow.router.Route;
 
 @Route(value = "com.vaadin.flow.uitest.ui.littemplate.InjectingTemplateView")
 @Tag("injecting-lit-template")
-@JsModule("./lit-templates/InjectingTemplate.js")
+@JsModule("./lit/InjectingTemplate.js")
 public class InjectingTemplateView extends LitTemplate {
 
     @Id("injected")

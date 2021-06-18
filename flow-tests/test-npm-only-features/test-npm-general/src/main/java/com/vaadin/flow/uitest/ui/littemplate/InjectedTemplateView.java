@@ -5,7 +5,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.littemplate.LitTemplate;
 
 @Tag("injected-lit-template")
-@JsModule("./lit-templates/InjectedTemplate.js")
+@JsModule("./lit/InjectedTemplate.js")
 public class InjectedTemplateView extends LitTemplate {
 
     public InjectedTemplateView() {
