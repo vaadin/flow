@@ -146,6 +146,16 @@ public class AppViewIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void should_transformJavaNullValueToUndefined_when_gettingResponseFromEndpoint() {
+        WebElement button = testComponent.$(TestBenchElement.class)
+                .id("getObjectWithNullValues");
+        button.click();
+
+        // Wait for the server connect response
+        verifyContent("undefined");
+    }
+
+    @Test
     public void should_notAbleToRequestAdminOnly_when_NotLoggedIn() {
         verifyCallingAdminService("Access denied");
     }

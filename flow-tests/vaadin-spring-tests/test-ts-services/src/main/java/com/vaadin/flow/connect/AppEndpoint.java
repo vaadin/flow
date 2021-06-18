@@ -75,4 +75,9 @@ public class AppEndpoint {
                 + VaadinRequest.getCurrent().getUserPrincipal().getName() + "!";
     }
 
+    @AnonymousAllowed
+    public ObjectWithNullValues getObjectWithNullValues() {
+        return new ObjectWithNullValues();
+    }
+
 }
