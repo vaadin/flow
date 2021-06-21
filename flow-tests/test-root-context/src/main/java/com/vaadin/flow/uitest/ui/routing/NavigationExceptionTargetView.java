@@ -13,20 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.connect.generator.endpoints.model;
+package com.vaadin.flow.uitest.ui.routing;
 
-import java.util.List;
-import java.util.Map;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.Route;
 
-import com.vaadin.flow.server.connect.Endpoint;
+@Route("navigation-exception")
+public class NavigationExceptionTargetView extends Div {
 
-@Endpoint
-public class ComplexTypeParamsEndpoint {
-    public void getComplexTypeParams(List<ModelEndpoint.Account> accounts,
-            Map<String, ModelEndpoint.Group> groups) {
-    }
-
-    public void send(String text, int chatPartnerId) {
-
+    public NavigationExceptionTargetView() {
+        throw new NavigationException();
     }
 }

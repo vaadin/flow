@@ -48,6 +48,16 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
     static ApplicationConfiguration get(VaadinContext context) {
         return context.getAttribute(ApplicationConfiguration.class, () -> {
             Lookup lookup = context.getAttribute(Lookup.class);
+            if (lookup == null) {
+                throw new IllegalStateException("The application "
+                        + Lookup.class.getSimpleName()
+                        + " instance is not found in the " + VaadinContext.class
+                        + " instance. It means that "
+                        + "the container has not executed "
+                        + Lookup.class.getSimpleName()
+                        + " initialization code: so either the container is not Servlet 3.0 compatible"
+                        + " or project configuration is broken.");
+            }
             ApplicationConfigurationFactory factory = lookup
                     .lookup(ApplicationConfigurationFactory.class);
             return factory.create(context);

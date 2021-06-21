@@ -2,7 +2,7 @@
 Please READ these instructions & USE the issue template below, Thank You!
 
 Only use GitHub issues for bugs and feature requests.   
-For general support from the community, use https://vaadin.com/forum or Vaadin discord chat https://discord.gg/MYFq5RTbBn instead.
+For general support from the community, use https://stackoverflow.com/questions/tagged/vaadin (or tag vaadin-flow) or Vaadin discord chat https://discord.gg/MYFq5RTbBn instead.
 
 NOTE: Issues concerning certain UI components should go to the components repository https://github.com/vaadin/vaadin-flow-components .
 
