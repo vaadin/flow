@@ -208,6 +208,16 @@ public class HandlerHelperTest {
     }
 
     @Test
+    public void isFrameworkInternalRequest_fakeUploadUrl() {
+        VaadinServletRequest request = createVaadinRequest(
+                "VAADIN/dynamic/resource/../../../upload",
+                "", null);
+
+        Assert.assertFalse(HandlerHelper.isFrameworkInternalRequest("/*",
+                request.getHttpServletRequest()));
+    }
+
+    @Test
     public void isFrameworkInternalRequest_staticFileUrl() {
         VaadinServletRequest request = createVaadinRequest(
                 "VAADIN/static/file.png", "", null);
