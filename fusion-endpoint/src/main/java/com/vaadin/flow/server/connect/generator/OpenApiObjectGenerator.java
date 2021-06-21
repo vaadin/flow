@@ -229,7 +229,8 @@ public class OpenApiObjectGenerator {
                 .forEach(sourceRoot -> parseSourceRoot(sourceRoot,
                         this::process));
 
-        for (Map.Entry<String, GeneratorType> entry : usedTypes.entrySet()) {
+        for (Map.Entry<String, GeneratorType> entry : new ArrayList<>(
+                usedTypes.entrySet())) {
             List<Schema> schemas = createSchemasFromQualifiedNameAndType(
                     entry.getKey(), entry.getValue());
             schemas.forEach(schema -> {
@@ -661,8 +662,9 @@ public class OpenApiObjectGenerator {
             ResolvedTypeParametersMap resolvedTypeParametersMap) {
         MediaType mediaItem = new MediaType();
         Type returnType = methodDeclaration.getType();
-        Schema schema = parseResolvedTypeToSchema(
-                new GeneratorType(returnType));
+        Schema schema = parseResolvedTypeToSchema(new GeneratorType(returnType,
+                methodDeclaration.resolve().getReturnType(),
+                resolvedTypeParametersMap));
         schema.setDescription("");
         if (GeneratorUtils.isTrue(schema.getNullable())
                 && isRequired(methodDeclaration)) {
@@ -695,8 +697,9 @@ public class OpenApiObjectGenerator {
         requestBodyObject.schema(requestSchema);
 
         methodDeclaration.getParameters().forEach(parameter -> {
-            Schema paramSchema = parseResolvedTypeToSchema(
-                    new GeneratorType(parameter.getType()));
+            Schema paramSchema = parseResolvedTypeToSchema(new GeneratorType(
+                    parameter.getType(), parameter.resolve().getType(),
+                    resolvedTypeParametersMap));
             paramSchema.setDescription("");
             usedTypes.putAll(collectUsedTypesFromSchema(paramSchema));
             String name = (isReservedWord(parameter.getNameAsString()) ? "_"

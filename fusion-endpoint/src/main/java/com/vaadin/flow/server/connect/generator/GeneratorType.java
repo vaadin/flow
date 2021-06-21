@@ -16,19 +16,36 @@ import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.resolution.types.ResolvedPrimitiveType;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
+import com.github.javaparser.resolution.types.parametrization.ResolvedTypeParametersMap;
 
 class GeneratorType {
     private final Type type;
     private final ResolvedType resolvedType;
-
-    GeneratorType(ResolvedType resolvedType) {
-        this.type = null;
-        this.resolvedType = resolvedType;
-    }
+    private final boolean isResolvable;
 
     GeneratorType(Type type) {
         this.type = type;
         resolvedType = type.resolve();
+        isResolvable = true;
+    }
+
+    GeneratorType(ResolvedType resolvedType) {
+        this.type = null;
+        this.resolvedType = resolvedType;
+        isResolvable = true;
+    }
+
+    /**
+     * Applicable for template types (like T or U).
+     * @param type
+     * @param resolvedType
+     * @param resolvedTypeParametersMap
+     */
+    GeneratorType(Type type, ResolvedType resolvedType,
+            ResolvedTypeParametersMap resolvedTypeParametersMap) {
+        this.type = type;
+        this.resolvedType = resolvedTypeParametersMap.replaceAll(resolvedType);
+        this.isResolvable = false;
     }
 
     boolean hasType() {
@@ -140,17 +157,19 @@ class GeneratorType {
     }
 
     GeneratorType getItemType() {
-        return hasType()
+        return hasType() && isResolvable
                 ? new GeneratorType(type.asArrayType().getComponentType())
                 : new GeneratorType(
                         resolvedType.asArrayType().getComponentType());
     }
 
     List<GeneratorType> getTypeArguments() {
-        return hasType() ? type.asClassOrInterfaceType().getTypeArguments()
-                .map(nodeList -> nodeList.stream().map(GeneratorType::new)
-                        .collect(Collectors.toList()))
-                .orElseGet(this::getTypeArgumentsFallback)
+        return hasType() && isResolvable
+                ? type.asClassOrInterfaceType().getTypeArguments()
+                        .map(nodeList -> nodeList.stream()
+                                .map(GeneratorType::new)
+                                .collect(Collectors.toList()))
+                        .orElseGet(this::getTypeArgumentsFallback)
                 : getTypeArgumentsFallback();
     }
 
