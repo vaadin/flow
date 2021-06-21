@@ -303,7 +303,7 @@ export class ConnectClient {
     const headers: Record<string, string> = {
       Accept: 'application/json',
       'Content-Type': 'application/json',
-      'X-CSRF-Token': ($wnd.Vaadin.TypeScript && $wnd.Vaadin.TypeScript.csrfToken) || '',
+      'X-CSRF-Token': this.getCsrfTokenFromCookie(),
     };
 
     // helper to keep the undefined value in object after JSON.stringify
@@ -387,5 +387,15 @@ export class ConnectClient {
 
   private isFlowLoaded(): boolean {
     return $wnd.Vaadin.Flow?.clients?.TypeScript !== undefined;
+  }
+
+  private getCsrfTokenFromCookie(): string {
+    const csrfCookieNamePrefix = 'csrfToken=';
+    return (
+      document.cookie
+        .split(/;[ ]?/)
+        .filter((cookie) => cookie.startsWith(csrfCookieNamePrefix))
+        .map((cookie) => cookie.slice(csrfCookieNamePrefix.length))[0] || ''
+    );
   }
 }
