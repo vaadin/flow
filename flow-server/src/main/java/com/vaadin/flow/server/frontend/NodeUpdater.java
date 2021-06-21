@@ -88,7 +88,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_MAIN_VALUE = "index";
     private static final String DEP_VERSION_KEY = "version";
     private static final String DEP_VERSION_DEFAULT = "1.0.0";
-    private static final String ROUTER_VERSION = "1.7.2";
+    private static final String ROUTER_VERSION = "1.7.4";
     protected static final String POLYMER_VERSION = "3.2.0";
 
     /**

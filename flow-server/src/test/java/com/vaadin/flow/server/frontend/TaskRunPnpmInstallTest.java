@@ -462,7 +462,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 + "\"vaadin\": {"
                   + "\"dependencies\": {"
                     + "\"lit\": \"2.0.0-rc.1\","
-                    + "\"@vaadin/router\": \"1.7.2\","
+                    + "\"@vaadin/router\": \"1.7.4\","
                     + "\"@polymer/polymer\": \"3.2.0\","
                   + "},"
                   + "\"devDependencies\": {"
@@ -472,7 +472,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 + "},"
                 + "\"dependencies\": {"
                   + "\"lit\": \"2.0.0-rc.1\","
-                  + "\"@vaadin/router\": \"1.7.2\","
+                  + "\"@vaadin/router\": \"1.7.4\","
                   + "\"@polymer/polymer\": \"3.2.0\","
                 + "},"
                 + "\"devDependencies\": {"
@@ -493,7 +493,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 generatedVersionsFile, StandardCharsets.UTF_8));
         Assert.assertEquals(
                 "{" + "\"lit\":\"2.0.0-rc.1\","
-                        + "\"@vaadin/router\":\"1.7.2\","
+                        + "\"@vaadin/router\":\"1.7.4\","
                         + "\"@polymer/polymer\":\"3.2.0\","
                         + "\"css-loader\":\"4.2.1\","
                         + "\"file-loader\":\"6.1.0\"" + "}",
