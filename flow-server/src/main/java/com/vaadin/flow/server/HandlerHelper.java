@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.communication.PwaHandler;
+import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -175,9 +176,20 @@ public class HandlerHelper implements Serializable {
                 requestedPathWithoutServletMapping.get(),
                 requestTypeParameter)) {
             return true;
+        } else if (isUploadRequest(requestedPathWithoutServletMapping.get())) {
+            return true;
         }
 
         return false;
+    }
+
+    private static boolean isUploadRequest(
+            String requestedPathWithoutServletMapping) {
+        // First key is uiId
+        // Second key is security key
+        return requestedPathWithoutServletMapping
+                .matches(StreamRequestHandler.DYN_RES_PREFIX
+                        + "(\\d+)/([0-9a-z-]*)/upload");
     }
 
     static boolean isInternalRequestInsideServlet(
