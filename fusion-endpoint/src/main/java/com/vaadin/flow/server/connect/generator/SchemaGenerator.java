@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.resolution.declarations.ResolvedEnumConstantDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
@@ -80,10 +81,11 @@ class SchemaGenerator {
         return schema;
     }
 
-    Schema parseTypeToSchema(Type javaType, String description) {
+    Schema toSchema(Type javaType, List<AnnotationExpr> annotations,
+            String description) {
         try {
-            Schema schema = openApiObjectGenerator
-                    .parseResolvedTypeToSchema(new GeneratorType(javaType));
+            Schema schema = openApiObjectGenerator.parseResolvedTypeToSchema(
+                    new GeneratorType(javaType), annotations);
             if (GeneratorUtils.isNotBlank(description)) {
                 schema.setDescription(description);
             }
@@ -189,9 +191,8 @@ class SchemaGenerator {
             Optional<String> fieldDescription = field.getJavadoc()
                     .map(javadoc -> javadoc.getDescription().toText());
             field.getVariables().forEach(variableDeclarator -> {
-                Schema propertySchema = parseTypeToSchema(
-                        variableDeclarator.getType(),
-                        fieldDescription.orElse(""));
+                Schema propertySchema = toSchema(variableDeclarator.getType(),
+                        field.getAnnotations(), fieldDescription.orElse(""));
                 if (GeneratorUtils.isNotBlank(propertySchema.get$ref())) {
                     // Schema extensions, e. g., `x-annotations` we use, are
                     // not supported for the Reference Object Schema.
@@ -200,12 +201,6 @@ class SchemaGenerator {
                     wrapperSchema.name(propertySchema.getName());
                     wrapperSchema.addAllOfItem(propertySchema);
                     propertySchema = wrapperSchema;
-                }
-                if (GeneratorUtils.isTrue(propertySchema.getNullable())
-                        && isRequired(field)) {
-                    // Temporarily set nullable to indicate this property is
-                    // not required
-                    propertySchema.setNullable(null);
                 }
                 addFieldAnnotationsToSchema(field, propertySchema);
                 properties.put(variableDeclarator.getNameAsString(),

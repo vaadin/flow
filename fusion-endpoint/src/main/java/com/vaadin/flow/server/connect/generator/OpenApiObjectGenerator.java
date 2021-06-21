@@ -95,8 +95,6 @@ import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.connect.EndpointExposed;
 import com.vaadin.flow.server.connect.EndpointNameChecker;
 
-import static com.vaadin.flow.server.connect.ExplicitNullableTypeChecker.isRequired;
-
 /**
  * Java parser class which scans for all {@link Endpoint} classes and produces
  * OpenApi json.
@@ -186,7 +184,12 @@ public class OpenApiObjectGenerator {
     }
 
     Schema parseResolvedTypeToSchema(GeneratorType type) {
-        return resolver.parseResolvedTypeToSchema(type);
+        return new SchemaResolver(type, usedTypes).resolve();
+    }
+
+    Schema parseResolvedTypeToSchema(GeneratorType type,
+            List<AnnotationExpr> annotations) {
+        return new SchemaResolver(type, annotations, usedTypes).resolve();
     }
 
     Class<?> getClassFromReflection(GeneratorType type)
@@ -214,8 +217,6 @@ public class OpenApiObjectGenerator {
         generatedSchema = new HashSet<>();
         endpointsJavadoc = new HashMap<>();
         schemaGenerator = new SchemaGenerator(this);
-        // typeRegistry = new HashMap<>();
-        resolver = new SchemaResolver(usedTypes);
         needsDeferrableImport = false;
         ParserConfiguration parserConfiguration = createParserConfiguration();
 
@@ -662,14 +663,12 @@ public class OpenApiObjectGenerator {
             ResolvedTypeParametersMap resolvedTypeParametersMap) {
         MediaType mediaItem = new MediaType();
         Type returnType = methodDeclaration.getType();
-        Schema schema = parseResolvedTypeToSchema(new GeneratorType(returnType,
-                methodDeclaration.resolve().getReturnType(),
-                resolvedTypeParametersMap));
+        Schema schema = parseResolvedTypeToSchema(
+                new GeneratorType(returnType,
+                        methodDeclaration.resolve().getReturnType(),
+                        resolvedTypeParametersMap),
+                methodDeclaration.getAnnotations());
         schema.setDescription("");
-        if (GeneratorUtils.isTrue(schema.getNullable())
-                && isRequired(methodDeclaration)) {
-            schema.setNullable(null);
-        }
         // usedTypes.putAll(collectUsedTypesFromSchema(schema));
         mediaItem.schema(schema);
         return mediaItem;
@@ -697,9 +696,11 @@ public class OpenApiObjectGenerator {
         requestBodyObject.schema(requestSchema);
 
         methodDeclaration.getParameters().forEach(parameter -> {
-            Schema paramSchema = parseResolvedTypeToSchema(new GeneratorType(
-                    parameter.getType(), parameter.resolve().getType(),
-                    resolvedTypeParametersMap));
+            Schema paramSchema = parseResolvedTypeToSchema(
+                    new GeneratorType(parameter.getType(),
+                            parameter.resolve().getType(),
+                            resolvedTypeParametersMap),
+                    parameter.getAnnotations());
             paramSchema.setDescription("");
             usedTypes.putAll(collectUsedTypesFromSchema(paramSchema));
             String name = (isReservedWord(parameter.getNameAsString()) ? "_"
@@ -709,8 +710,7 @@ public class OpenApiObjectGenerator {
                         paramsDescription.remove(parameter.getNameAsString()));
             }
             requestSchema.addProperties(name, paramSchema);
-            if (GeneratorUtils.isNotTrue(paramSchema.getNullable())
-                    || isRequired(parameter)) {
+            if (GeneratorUtils.isNotTrue(paramSchema.getNullable())) {
                 requestSchema.addRequiredItem(name);
             }
             paramSchema.setNullable(null);

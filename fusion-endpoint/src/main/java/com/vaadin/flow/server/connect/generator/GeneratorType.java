@@ -18,6 +18,8 @@ import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.resolution.types.parametrization.ResolvedTypeParametersMap;
 
+import com.vaadin.flow.server.connect.ExplicitNullableTypeChecker;
+
 class GeneratorType {
     private final Type type;
     private final ResolvedType resolvedType;
@@ -37,6 +39,7 @@ class GeneratorType {
 
     /**
      * Applicable for template types (like T or U).
+     *
      * @param type
      * @param resolvedType
      * @param resolvedTypeParametersMap
@@ -108,6 +111,11 @@ class GeneratorType {
 
     boolean isReference() {
         return resolvedType.isReferenceType();
+    }
+
+    boolean isRequired() {
+        return isPrimitive() || hasType() && isResolvable
+                && ExplicitNullableTypeChecker.isRequired(type.getAnnotations());
     }
 
     boolean isString() {

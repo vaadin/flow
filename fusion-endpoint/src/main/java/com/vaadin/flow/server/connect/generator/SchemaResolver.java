@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.resolution.declarations.ResolvedEnumConstantDeclaration;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import io.swagger.v3.oas.models.media.ArraySchema;
@@ -33,12 +34,25 @@ import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 
+import com.vaadin.flow.server.connect.ExplicitNullableTypeChecker;
+
 class SchemaResolver {
 
     private static final String SCHEMA_REF_PREFIX = "#/components/schemas/";
     private final Map<String, GeneratorType> usedTypes;
+    private final GeneratorType type;
+    private final List<AnnotationExpr> nodeAnnotations;
 
-    SchemaResolver(Map<String, GeneratorType> usedTypes) {
+    SchemaResolver(GeneratorType type, Map<String, GeneratorType> usedTypes) {
+        this.type = type;
+        this.nodeAnnotations = null;
+        this.usedTypes = usedTypes;
+    }
+
+    SchemaResolver(GeneratorType type, List<AnnotationExpr> nodeAnnotations,
+            Map<String, GeneratorType> usedTypes) {
+        this.type = type;
+        this.nodeAnnotations = nodeAnnotations;
         this.usedTypes = usedTypes;
     }
 
@@ -61,84 +75,7 @@ class SchemaResolver {
         return ref;
     }
 
-    Schema parseResolvedTypeToSchema(GeneratorType type) {
-        if (type.isArray()) {
-            return createNullableWrapper(createArraySchema(type));
-        }
-
-        if (type.isNumber()) {
-            return createNullableWrapper(new NumberSchema(),
-                    !type.isPrimitive());
-        }
-
-        if (type.isString()) {
-            return createNullableWrapper(new StringSchema());
-        }
-
-        if (type.isCollection()) {
-            return createNullableWrapper(createCollectionSchema(type));
-        }
-
-        if (type.isBoolean()) {
-            return createNullableWrapper(new BooleanSchema(),
-                    !type.isPrimitive());
-        }
-
-        if (type.isMap()) {
-            return createNullableWrapper(createMapSchema(type));
-        }
-
-        if (type.isDate()) {
-            return createNullableWrapper(new DateSchema());
-        }
-
-        if (type.isDateTime()) {
-            return createNullableWrapper(new DateTimeSchema());
-        }
-
-        if (type.isOptional()) {
-            return createOptionalSchema(type);
-        }
-
-        if (type.isUnhandled()) {
-            return createNullableWrapper(new ObjectSchema());
-        }
-
-        if (type.isEnum()) {
-            return createNullableWrapper(createEnumTypeSchema(type));
-        }
-
-        return createNullableWrapper(createUserBeanSchema(type));
-    }
-
-    private Schema createArraySchema(GeneratorType type) {
-        ArraySchema array = new ArraySchema();
-        array.items(parseResolvedTypeToSchema(type.getItemType()));
-        return array;
-    }
-
-    private Schema createCollectionSchema(GeneratorType type) {
-        ArraySchema array = new ArraySchema();
-        List<GeneratorType> typeArguments = type.getTypeArguments();
-
-        if (!typeArguments.isEmpty()) {
-            array.items(parseResolvedTypeToSchema(typeArguments.get(0)));
-        }
-
-        return array;
-    }
-
-    private Schema createOptionalSchema(GeneratorType type) {
-        Schema nestedTypeSchema = parseResolvedTypeToSchema(
-                type.getTypeArguments().get(0));
-        return createNullableWrapper(nestedTypeSchema);
-    }
-
-    private Schema createNullableWrapper(Schema nestedTypeSchema) {
-        return createNullableWrapper(nestedTypeSchema, true);
-    }
-
-    private Schema createNullableWrapper(Schema nestedTypeSchema,
+    private static Schema createNullableWrapper(Schema nestedTypeSchema,
             boolean shouldBeNullable) {
         if (!shouldBeNullable) {
             return nestedTypeSchema;
@@ -155,7 +92,84 @@ class SchemaResolver {
         return nullableSchema;
     }
 
-    private Schema createMapSchema(GeneratorType type) {
+    Schema resolve() {
+        if (type.isArray()) {
+            return createNullableWrapper(createArraySchema());
+        }
+
+        if (type.isNumber()) {
+            return createNullableWrapper(new NumberSchema());
+        }
+
+        if (type.isString()) {
+            return createNullableWrapper(new StringSchema());
+        }
+
+        if (type.isCollection()) {
+            return createNullableWrapper(createCollectionSchema());
+        }
+
+        if (type.isBoolean()) {
+            return createNullableWrapper(new BooleanSchema());
+        }
+
+        if (type.isMap()) {
+            return createNullableWrapper(createMapSchema());
+        }
+
+        if (type.isDate()) {
+            return createNullableWrapper(new DateSchema());
+        }
+
+        if (type.isDateTime()) {
+            return createNullableWrapper(new DateTimeSchema());
+        }
+
+        if (type.isOptional()) {
+            return createOptionalSchema();
+        }
+
+        if (type.isUnhandled()) {
+            return createNullableWrapper(new ObjectSchema());
+        }
+
+        if (type.isEnum()) {
+            return createNullableWrapper(createEnumTypeSchema());
+        }
+
+        return createNullableWrapper(createUserBeanSchema());
+    }
+
+    private Schema createArraySchema() {
+        ArraySchema array = new ArraySchema();
+        array.items(
+                new SchemaResolver(type.getItemType(), usedTypes).resolve());
+        return array;
+    }
+
+    private Schema createCollectionSchema() {
+        ArraySchema array = new ArraySchema();
+        List<GeneratorType> typeArguments = type.getTypeArguments();
+
+        if (!typeArguments.isEmpty()) {
+            array.items(new SchemaResolver(typeArguments.get(0), usedTypes)
+                    .resolve());
+        }
+
+        return array;
+    }
+
+    private Schema createOptionalSchema() {
+        return createNullableWrapper(
+                new SchemaResolver(type.getTypeArguments().get(0), usedTypes)
+                        .resolve());
+    }
+
+    private Schema createNullableWrapper(Schema nestedTypeSchema) {
+        return createNullableWrapper(nestedTypeSchema, !isRequired());
+    }
+
+    private Schema createMapSchema() {
         Schema mapSchema = new MapSchema();
         List<GeneratorType> typeArguments = type.getTypeArguments();
 
@@ -163,12 +177,13 @@ class SchemaResolver {
             // Assumed that Map always has the first type parameter as `String`
             // and the second is for its value type
             mapSchema.additionalProperties(
-                    parseResolvedTypeToSchema(typeArguments.get(1)));
+                    new SchemaResolver(typeArguments.get(1), usedTypes)
+                            .resolve());
         }
         return mapSchema;
     }
 
-    private Schema createEnumTypeSchema(GeneratorType type) {
+    private Schema createEnumTypeSchema() {
         ResolvedReferenceType resolvedReferenceType = type.asResolvedType()
                 .asReferenceType();
         List<String> entries = resolvedReferenceType.getTypeDeclaration()
@@ -184,7 +199,7 @@ class SchemaResolver {
         return schema;
     }
 
-    private Schema createUserBeanSchema(GeneratorType type) {
+    private Schema createUserBeanSchema() {
         if (type.isReference()) {
             ResolvedReferenceType resolvedReferenceType = type.asResolvedType()
                     .asReferenceType();
@@ -194,5 +209,11 @@ class SchemaResolver {
                     .$ref(getFullQualifiedNameRef(qualifiedName));
         }
         return new ObjectSchema();
+    }
+
+    private boolean isRequired() {
+        return (nodeAnnotations != null
+                && ExplicitNullableTypeChecker.isRequired(nodeAnnotations))
+                || type.isRequired();
     }
 }

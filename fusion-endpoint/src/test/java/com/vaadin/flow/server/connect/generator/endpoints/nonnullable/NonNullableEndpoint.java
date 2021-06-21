@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import com.vaadin.flow.server.connect.Endpoint;
 
 @Endpoint
@@ -61,7 +63,7 @@ public class NonNullableEndpoint {
         int shouldBeNotNullByDefault;
         int first, second, third;
         Optional<Integer> nullableInteger;
-        List<Map<String, String>> listOfMapNullable;
+        List<@NonNull Map<String, @NonNull String>> listOfMapNullable;
         List<Map<String, String>> listOfMapNullableNotNull;
     }
 
