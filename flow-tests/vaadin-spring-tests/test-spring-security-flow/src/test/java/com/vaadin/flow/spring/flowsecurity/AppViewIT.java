@@ -1,5 +1,9 @@
 package com.vaadin.flow.spring.flowsecurity;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -7,9 +11,11 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.component.button.testbench.ButtonElement;
 import com.vaadin.flow.component.login.testbench.LoginFormElement;
 import com.vaadin.flow.component.login.testbench.LoginOverlayElement;
+import com.vaadin.flow.component.upload.testbench.UploadElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -246,6 +252,27 @@ public class AppViewIT extends ChromeBrowserTest {
         shouldBeTextFile = getDriver().getPageSource();
         Assert.assertTrue(
                 shouldBeTextFile.contains("Public document for all users"));
+    }
+
+    @Test
+    public void upload_file_in_private_view() throws IOException {
+        open("private");
+        loginUser();
+        UploadElement upload = $(UploadElement.class).first();
+        File tmpFile = File.createTempFile("security-flow-image", ".png");
+        InputStream imageStream = getClass().getClassLoader()
+                .getResourceAsStream("image.png");
+        IOUtils.copyLarge(imageStream, new FileOutputStream(tmpFile));
+        tmpFile.deleteOnExit();
+        upload.upload(tmpFile);
+
+        TestBenchElement text = $("p").id("uploadText");
+        TestBenchElement img = $("img").id("uploadImage");
+
+        Assert.assertEquals("Loan application uploaded by John the User",
+                text.getText());
+        Assert.assertTrue(img.getPropertyString("src")
+                .contains("/VAADIN/dynamic/resource/"));
     }
 
     private void navigateTo(String path) {

@@ -62,6 +62,11 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-upload-flow</artifactId>
+            <version>${vaadin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
             <artifactId>vaadin-ordered-layout-flow</artifactId>
             <version>${vaadin.version}</version>
         </dependency>
@@ -88,6 +93,12 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-login-testbench</artifactId>
+            <version>${vaadin.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-upload-testbench</artifactId>
             <version>${vaadin.version}</version>
             <scope>test</scope>
         </dependency>
