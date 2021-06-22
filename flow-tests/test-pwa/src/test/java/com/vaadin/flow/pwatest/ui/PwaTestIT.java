@@ -15,7 +15,10 @@
  */
 package com.vaadin.flow.pwatest.ui;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -26,8 +29,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
@@ -38,11 +39,17 @@ import org.openqa.selenium.mobile.NetworkConnection;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 public class PwaTestIT extends ChromeDeviceTest {
 
     @Test
     public void testPwaResources() throws IOException {
         open();
+
+        checkLogsForErrors(
+                msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
         WebElement head = findElement(By.tagName("head"));
 
         // test mobile capable
@@ -82,6 +89,9 @@ public class PwaTestIT extends ChromeDeviceTest {
         String href = elements.get(0).getAttribute("href");
         Assert.assertTrue(href + " didn't respond with resource", exists(href));
         // Verify user values in manifest.webmanifest
+        if (!href.startsWith(getRootURL())) {
+            href = getRootURL() + '/' + href;
+        }
         JsonObject manifest = readJsonFromUrl(href);
         Assert.assertEquals(ParentLayout.PWA_NAME, manifest.getString("name"));
         Assert.assertEquals(ParentLayout.PWA_SHORT_NAME,
@@ -93,12 +103,12 @@ public class PwaTestIT extends ChromeDeviceTest {
 
         // test service worker initialization
         elements = head.findElements(By.tagName("script")).stream()
-                .filter(webElement -> webElement.getAttribute("innerHTML")
+                .filter(webElement -> getInnerHtml(webElement)
                         .startsWith("if ('serviceWorker' in navigator)"))
                 .collect(Collectors.toList());
         Assert.assertEquals(1, elements.size());
 
-        String serviceWorkerInit = elements.get(0).getAttribute("innerHTML");
+        String serviceWorkerInit = getInnerHtml(elements.get(0));
         Pattern pattern = Pattern
                 .compile("navigator.serviceWorker.register\\('([^']+)'\\)");
         Matcher matcher = pattern.matcher(serviceWorkerInit);
@@ -280,5 +290,11 @@ public class PwaTestIT extends ChromeDeviceTest {
     private boolean isProductionMode() throws IOException {
         JsonObject stats = readJsonFromUrl(getRootURL() + "?v-r=init");
         return stats.getObject("appConfig").getBoolean("productionMode");
+    }
+
+    private String getInnerHtml(WebElement element) {
+        Object result = getCommandExecutor()
+                .executeScript("return arguments[0].innerHTML;", element);
+        return result == null ? "" : result.toString();
     }
 }

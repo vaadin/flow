@@ -79,6 +79,21 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals("foo", element.getTitle());
     }
 
+    public void testBindExistingPropertyWithDifferentType() {
+        //set number as a property value for DOM elememnt
+        double value= setNumberValue(element, "bar");
+        
+        // set string as a StateTree property value
+        properties.getProperty("bar").setValue(""+value);
+
+        Binder.bind(node, element);
+
+        Reactive.flush();
+
+        // the type should not be changed
+        assertEquals("number", getPropertyType(element, "bar"));
+    }
+
     public void testBindNewProperty() {
         Binder.bind(node, element);
 
@@ -1613,7 +1628,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals("", element.getStyle().getDisplay());
     }
 
-
     /**
      * The element is in shadowroot and state node is hidden. The element gets
      * attribute "hidden" and "display: none".
@@ -1653,7 +1667,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertNull(element.getAttribute("hidden"));
         assertEquals("inline-block", element.getStyle().getDisplay());
     }
-
 
     /**
      * The StateNode is visible (the visibility is true).
@@ -1956,6 +1969,17 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
             element.addEventListener = function(){
             }
         }
+    }-*/;
+
+    private native String getPropertyType(Object obj, String name)
+    /*-{
+       return typeof obj[name];
+    }-*/;
+    
+    private native double setNumberValue(Object obj, String name)
+    /*-{
+       obj[name] =2;
+       return 2;
     }-*/;
 
 }

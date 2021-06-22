@@ -82,7 +82,7 @@ function filterCommits(commits){
           arrBranch.push(branch[1]);
           arrTitle.push(`${commit.title} (#${commit.number}) (CP: ${branch[1]})`);
           arrUser.push(`@${commit.user.login}`);
-          arrMergedBy.push(`@{commit.merged_by.login}`);
+          arrMergedBy.push(`@${commit.merged_by.login}`);
         }
       })
     }

@@ -198,6 +198,34 @@ public class HandlerHelperTest {
     }
 
     @Test
+    public void isFrameworkInternalRequest_uploadUrl() {
+        VaadinServletRequest request = createVaadinRequest(
+                "VAADIN/dynamic/resource/1/e83d6b6d-2b75-4960-8922-5431f4a23e49/upload",
+                "", null);
+
+        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
+                request.getHttpServletRequest()));
+    }
+
+    @Test
+    public void isFrameworkInternalRequest_fakeUploadUrl() {
+        VaadinServletRequest request = createVaadinRequest(
+                "VAADIN/dynamic/resource/../../../upload", "", null);
+
+        Assert.assertFalse(HandlerHelper.isFrameworkInternalRequest("/*",
+                request.getHttpServletRequest()));
+    }
+
+    @Test
+    public void isFrameworkInternalRequest_staticFileUrl() {
+        VaadinServletRequest request = createVaadinRequest(
+                "VAADIN/static/file.png", "", null);
+
+        Assert.assertFalse(HandlerHelper.isFrameworkInternalRequest("/*",
+                request.getHttpServletRequest()));
+    }
+
+    @Test
     public void getPathIfInsideServlet_default_servlet() {
         String servletMapping = "/*";
         Assert.assertEquals(Optional.of(""),
@@ -274,7 +302,7 @@ public class HandlerHelperTest {
                 .getPathIfInsideServlet(servletMapping, "/foo/bar"));
     }
 
-    private VaadinRequest createVaadinRequest(String requestPath,
+    private VaadinServletRequest createVaadinRequest(String requestPath,
             String servletPath, RequestType type) {
         HttpServletRequest servletRequest = createRequest(requestPath, type);
         if (servletPath.equals("/*")) {

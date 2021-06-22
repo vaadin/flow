@@ -20,11 +20,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -37,14 +35,19 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
-import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
+import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
 
 @NotThreadSafe
 public class TaskUpdatePackagesNpmTest {
@@ -306,6 +309,66 @@ public class TaskUpdatePackagesNpmTest {
         Assert.assertFalse(VAADIN_CORE_NPM_PACKAGE
                 + " version should not be written to vaadin dependencies in package.json",
                 vaadinDependencies.hasKey(VAADIN_CORE_NPM_PACKAGE));
+    }
+
+    @Test
+    public void passUnorderedApplicationDependenciesAndReadUnorderedPackageJson_resultingPackageJsonIsOrdered()
+            throws IOException {
+        createBasicVaadinVersionsJson();
+
+        LinkedHashMap<String, String> map = new LinkedHashMap<>();
+        map.put("foo", "bar");
+        // "bar" is lexicographically before the "foo" but in the linked hash
+        // map it's set after
+        map.put("baz", "foobar");
+
+        JsonObject packageJson = getOrCreatePackageJson();
+        JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        // Json object preserve the order of keys
+        dependencies.put("foo-pack", "bar");
+        dependencies.put("baz-pack", "foobar");
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
+                packageJson.toJson(), StandardCharsets.UTF_8);
+
+        TaskUpdatePackages task = createTask(map);
+
+        task.execute();
+
+        // now read the package json file
+        packageJson = getOrCreatePackageJson();
+
+        checkOrder("", packageJson);
+    }
+
+    private void checkOrder(String path, JsonObject object) {
+        String[] keys = object.keys();
+        if (path.isEmpty()) {
+            Assert.assertTrue("Keys in the package Json are not sorted",
+                    isSorted(keys));
+        } else {
+            Assert.assertTrue(
+                    "Keys for the object " + path
+                            + " in the package Json are not sorted",
+                    isSorted(keys));
+        }
+        for (String key : keys) {
+            JsonValue value = object.get(key);
+            if (value instanceof JsonObject) {
+                checkOrder(path + "/" + key, (JsonObject) value);
+            }
+        }
+    }
+
+    private boolean isSorted(String[] array) {
+        if (array.length < 2) {
+            return true;
+        }
+        for (int i = 0; i < array.length - 1; i++) {
+            if (array[i].compareTo(array[i + 1]) > 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void createBasicVaadinVersionsJson() {

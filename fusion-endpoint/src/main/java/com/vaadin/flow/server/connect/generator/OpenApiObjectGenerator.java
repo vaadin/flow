@@ -707,10 +707,7 @@ public class OpenApiObjectGenerator {
                         paramsDescription.remove(parameter.getNameAsString()));
             }
             requestSchema.addProperties(name, paramSchema);
-            if (GeneratorUtils.isNotTrue(paramSchema.getNullable())) {
-                requestSchema.addRequiredItem(name);
-            }
-            paramSchema.setNullable(null);
+            requestSchema.addRequiredItem(name);
         });
         if (!paramsDescription.isEmpty()) {
             requestSchema.addExtension(

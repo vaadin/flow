@@ -20,11 +20,11 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.RouterLayout;
 
-public class ISELayout extends Div
+public class NavigationExceptionLayout extends Div
         implements RouterLayout, BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        event.forwardTo(ISETargetView.class);
+        event.forwardTo(NavigationExceptionTargetView.class);
     }
 }

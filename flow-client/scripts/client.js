@@ -15,7 +15,6 @@
  */
 
 const fs = require('fs');
-const mkdirp = require('mkdirp');
 
 const fromDir = "target/classes/META-INF/resources/VAADIN/static/client/";
 const fromFileRegex = /^client-.*\.cache\.js$/;
@@ -39,9 +38,9 @@ ${clientSource}
 fs.writeFileSync(sourceDir + toFile, clientSource, 'utf8');
 
 // Write to target (copy '.d.ts' and '.js' files from sourceDir)
-mkdirp(targetDir);
+fs.mkdirSync(targetDir, {recursive: true});
 fs.readdirSync(sourceDir)
-  .filter(s => s.endsWith('.d.ts') ||s.endsWith('.js'))
+  .filter(s => s.endsWith('.d.ts') || s.endsWith('.js'))
   .forEach(file => fs.copyFileSync(sourceDir + file, targetDir + file));
 
 // Check that chromedriver version matches in flow and intern
