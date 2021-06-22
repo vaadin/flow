@@ -10,6 +10,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-server</artifactId>
             <version>${project.version}</version>
@@ -22,17 +26,7 @@
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
-            <version>0.9.12</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.dom4j</groupId>
-                    <artifactId>dom4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.code.gson</groupId>
-                    <artifactId>gson</artifactId>
-                </exclusion>
-        </exclusions>
+            <version>0.9.11</version>
         </dependency>
         <dependency>
             <groupId>org.zeroturnaround</groupId>
