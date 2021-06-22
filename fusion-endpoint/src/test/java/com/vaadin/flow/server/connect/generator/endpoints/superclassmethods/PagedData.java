@@ -21,6 +21,8 @@ import java.util.List;
 
 import com.vaadin.flow.server.connect.EndpointExposed;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 @EndpointExposed
 public interface PagedData<T> {
     default int size() {
@@ -28,6 +30,10 @@ public interface PagedData<T> {
     }
 
     default List<T> getPage(int pageSize, int pageNumber) {
+        return Collections.emptyList();
+    }
+
+    default List<@NonNull T> getNonnullablePage(int pageSize, int pageNumber) {
         return Collections.emptyList();
     }
 }

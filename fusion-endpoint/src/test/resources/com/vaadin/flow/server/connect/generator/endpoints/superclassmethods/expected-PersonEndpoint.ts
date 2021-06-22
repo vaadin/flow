@@ -15,6 +15,14 @@ function _delete(
 }
 export {_delete as delete};
 
+function _getNonnullablePage(
+  pageSize: number,
+  pageNumber: number
+): Promise<Array<Person> | undefined> {
+return client.call('PersonEndpoint', 'getNonnullablePage', {pageSize, pageNumber});
+}
+export {_getNonnullablePage as getNonnullablePage};
+
 function _get(
     id: number | undefined
 ): Promise<Person | undefined> {
@@ -44,6 +52,7 @@ export {_update as update};
 
 export const PersonEndpoint = Object.freeze({
   delete: _delete,
+  getNonnullablePage: _getNonnullablePage,
   get: _get,
   getPage: _getPage,
   size: _size,
