@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -199,6 +200,7 @@ class GeneratorType {
 
     private List<GeneratorType> getTypeArgumentsFallback() {
         return resolvedType.asReferenceType().getTypeParametersMap().stream()
+                .filter(Objects::nonNull)
                 .map(parameter -> new GeneratorType(parameter.b))
                 .collect(Collectors.toList());
     }
