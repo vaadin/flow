@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import com.github.javaparser.ast.expr.AnnotationExpr;
-import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 
 /**
  * A checker for TypeScript null compatibility in Vaadin endpoint methods
