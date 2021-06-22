@@ -8,6 +8,8 @@ Vaadin Flow
 
 **To contribute, first refer to [Contribution Guide](/CONTRIBUTING.md) for general instructions and requirements for contributing code to Flow.**
 
+**For issues related to [Vaadin Fusion](https://vaadin.com/fusion), please refer to the https://github.com/vaadin/fusion repository.**
+
 Join Vaadin Flow community chat in https://discord.gg/MYFq5RTbBn
 
 The `master` branch is the latest version (8.0) that targets the [Vaadin platform 21.0](https://github.com/vaadin/platform). See other branches for other **supported** framework versions:
