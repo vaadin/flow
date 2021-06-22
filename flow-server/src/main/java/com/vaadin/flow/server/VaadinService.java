@@ -201,28 +201,6 @@ public abstract class VaadinService implements Serializable {
      */
     public VaadinService(DeploymentConfiguration deploymentConfiguration) {
         this.deploymentConfiguration = deploymentConfiguration;
-
-        final String classLoaderName = getDeploymentConfiguration()
-                .getClassLoaderName();
-        if (classLoaderName != null) {
-            try {
-                final Class<?> classLoaderClass = getClass().getClassLoader()
-                        .loadClass(classLoaderName);
-                final Constructor<?> c = classLoaderClass
-                        .getConstructor(ClassLoader.class);
-                setClassLoader((ClassLoader) c.newInstance(
-                        new Object[] { getClass().getClassLoader() }));
-            } catch (final Exception e) {
-                throw new RuntimeException(
-                        "Could not find specified class loader: "
-                                + classLoaderName,
-                        e);
-            }
-        }
-
-        if (getClassLoader() == null) {
-            setDefaultClassLoader();
-        }
     }
 
     /**
@@ -246,6 +224,7 @@ public abstract class VaadinService implements Serializable {
      *             if a problem occurs when creating the service
      */
     public void init() throws ServiceException {
+        doSetClassLoader();
         instantiator = createInstantiator();
 
         // init the router now so that registry will be available for
@@ -2398,5 +2377,30 @@ public abstract class VaadinService implements Serializable {
     public static String getCsrfTokenAttributeName() {
         return VaadinSession.class.getName() + "."
                 + ApplicationConstants.CSRF_TOKEN;
+    }
+
+    private void doSetClassLoader() {
+        final String classLoaderName = getDeploymentConfiguration() == null
+                ? null
+                : getDeploymentConfiguration().getClassLoaderName();
+        if (classLoaderName != null) {
+            try {
+                final Class<?> classLoaderClass = getClass().getClassLoader()
+                        .loadClass(classLoaderName);
+                final Constructor<?> c = classLoaderClass
+                        .getConstructor(ClassLoader.class);
+                setClassLoader((ClassLoader) c.newInstance(
+                        new Object[] { getClass().getClassLoader() }));
+            } catch (final Exception e) {
+                throw new RuntimeException(
+                        "Could not find specified class loader: "
+                                + classLoaderName,
+                        e);
+            }
+        }
+
+        if (getClassLoader() == null) {
+            setDefaultClassLoader();
+        }
     }
 }
