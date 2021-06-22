@@ -115,12 +115,10 @@ public class OpenApiObjectGenerator {
     private Map<String, ClassOrInterfaceDeclaration> endpointExposedMap;
     private Map<String, String> qualifiedNameToPath;
     private Map<String, PathItem> pathItems;
-    // private Map<String, GeneratorType> typeRegistry;
     private Set<String> generatedSchema;
     private OpenAPI openApiModel;
     private ClassLoader typeResolverClassLoader;
     private SchemaGenerator schemaGenerator;
-    private SchemaResolver resolver;
     private boolean needsDeferrableImport = false;
 
     private static Logger getLogger() {
@@ -669,7 +667,6 @@ public class OpenApiObjectGenerator {
                         resolvedTypeParametersMap),
                 methodDeclaration.getAnnotations());
         schema.setDescription("");
-        // usedTypes.putAll(collectUsedTypesFromSchema(schema));
         mediaItem.schema(schema);
         return mediaItem;
     }
