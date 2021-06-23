@@ -51,7 +51,6 @@ import com.github.javaparser.ast.expr.LiteralStringValueExpr;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithSimpleName;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.javadoc.Javadoc;
 import com.github.javaparser.javadoc.JavadocBlockTag;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
@@ -660,11 +659,10 @@ public class OpenApiObjectGenerator {
     private MediaType createReturnMediaType(MethodDeclaration methodDeclaration,
             ResolvedTypeParametersMap resolvedTypeParametersMap) {
         MediaType mediaItem = new MediaType();
-        Type returnType = methodDeclaration.getType();
         Schema schema = parseResolvedTypeToSchema(
-                new GeneratorType(returnType,
-                        methodDeclaration.resolve().getReturnType(),
-                        resolvedTypeParametersMap),
+                new GeneratorType(methodDeclaration.getType(),
+                        resolvedTypeParametersMap.replaceAll(
+                                methodDeclaration.resolve().getReturnType())),
                 methodDeclaration.getAnnotations());
         schema.setDescription("");
         mediaItem.schema(schema);
@@ -695,8 +693,8 @@ public class OpenApiObjectGenerator {
         methodDeclaration.getParameters().forEach(parameter -> {
             Schema paramSchema = parseResolvedTypeToSchema(
                     new GeneratorType(parameter.getType(),
-                            parameter.resolve().getType(),
-                            resolvedTypeParametersMap),
+                            resolvedTypeParametersMap
+                                    .replaceAll(parameter.resolve().getType())),
                     parameter.getAnnotations());
             paramSchema.setDescription("");
             usedTypes.putAll(collectUsedTypesFromSchema(paramSchema));

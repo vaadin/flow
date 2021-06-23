@@ -15,13 +15,14 @@ function _delete(
 }
 export {_delete as delete};
 
-function _getNonnullablePage(
+function _getNonNullablePage(
   pageSize: number,
-  pageNumber: number
+  pageNumber: number,
+  parameters: Record<string, Person> | undefined
 ): Promise<Array<Person> | undefined> {
-return client.call('PersonEndpoint', 'getNonnullablePage', {pageSize, pageNumber});
+return client.call('PersonEndpoint', 'getNonNullablePage', {pageSize, pageNumber, parameters});
 }
-export {_getNonnullablePage as getNonnullablePage};
+export {_getNonNullablePage as getNonNullablePage};
 
 function _get(
     id: number | undefined
@@ -52,7 +53,7 @@ export {_update as update};
 
 export const PersonEndpoint = Object.freeze({
   delete: _delete,
-  getNonnullablePage: _getNonnullablePage,
+  getNonNullablePage: _getNonNullablePage,
   get: _get,
   getPage: _getPage,
   size: _size,

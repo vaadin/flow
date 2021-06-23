@@ -23,12 +23,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
 import com.github.javaparser.resolution.types.ResolvedArrayType;
@@ -36,8 +34,6 @@ import com.github.javaparser.resolution.types.ResolvedPrimitiveType;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.utils.Pair;
-import com.google.common.collect.Maps;
-
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.ComposedSchema;
@@ -295,7 +291,7 @@ public class SchemaResolverTest {
         Type type = mock(Type.class);
         Mockito.doReturn(resolvedType).when(type).resolve();
         Map<String, GeneratorType> usedTypes = new HashMap<>();
-        
+
         SchemaResolver schemaResolver = new SchemaResolver(new GeneratorType(type), usedTypes);
         Schema schema = schemaResolver.resolve();
         Assert.assertTrue(schema instanceof ComposedSchema);

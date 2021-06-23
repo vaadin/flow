@@ -43,6 +43,12 @@ public class NonNullableEndpoint {
         return Collections.emptyMap();
     }
 
+    @Nonnull
+    public Map<String, @NonNull NonNullableModel> echoNonNullableMap(
+            @Nonnull List<@NonNull String> nonNullableList) {
+        return Collections.emptyMap();
+    }
+
     public NonNullableEndpoint.ReturnType getNotNullReturnType() {
         return new ReturnType();
     }

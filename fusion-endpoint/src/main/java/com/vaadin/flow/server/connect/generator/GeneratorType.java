@@ -27,12 +27,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
 import com.github.javaparser.resolution.types.ResolvedPrimitiveType;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
-import com.github.javaparser.resolution.types.parametrization.ResolvedTypeParametersMap;
+import com.github.javaparser.utils.Pair;
 
 import com.vaadin.flow.server.connect.ExplicitNullableTypeChecker;
 
@@ -43,7 +45,7 @@ class GeneratorType {
 
     GeneratorType(Type type) {
         this.type = type;
-        resolvedType = type.resolve();
+        this.resolvedType = type.resolve();
         isResolvable = true;
     }
 
@@ -53,18 +55,16 @@ class GeneratorType {
         isResolvable = true;
     }
 
-    /**
-     * Applicable for template types (like T or U).
-     *
-     * @param type
-     * @param resolvedType
-     * @param resolvedTypeParametersMap
-     */
-    GeneratorType(Type type, ResolvedType resolvedType,
-            ResolvedTypeParametersMap resolvedTypeParametersMap) {
+    GeneratorType(Type type, ResolvedType resolvedType) {
         this.type = type;
-        this.resolvedType = resolvedTypeParametersMap.replaceAll(resolvedType);
-        this.isResolvable = false;
+        this.resolvedType = resolvedType;
+        isResolvable = false;
+    }
+
+    private static boolean isType(ResolvedReferenceType type,
+            Class<?>... classes) {
+        return Arrays.stream(classes).map(Class::getName).anyMatch(
+                className -> className.equals(type.getQualifiedName()));
     }
 
     boolean hasType() {
@@ -80,30 +80,31 @@ class GeneratorType {
             return resolvedType.asPrimitive() == ResolvedPrimitiveType.BOOLEAN;
         }
 
-        return isType(Boolean.class);
+        return isAssignableType(Boolean.class);
     }
 
     boolean isCollection() {
         return !resolvedType.isPrimitive()
-                && (isType(Collection.class) || isType(Iterable.class));
+                && (isAssignableType(Collection.class)
+                        || isExactType(Iterable.class));
     }
 
     boolean isDate() {
         return resolvedType.isReferenceType()
-                && isType(Date.class, LocalDate.class);
+                && isAssignableType(Date.class, LocalDate.class);
     }
 
     boolean isDateTime() {
-        return resolvedType.isReferenceType()
-                && isType(LocalDateTime.class, Instant.class, LocalTime.class);
+        return resolvedType.isReferenceType() && isAssignableType(
+                LocalDateTime.class, Instant.class, LocalTime.class);
     }
 
     boolean isEnum() {
-        return isType(Enum.class);
+        return isAssignableType(Enum.class);
     }
 
     boolean isMap() {
-        return !resolvedType.isPrimitive() && isType(Map.class);
+        return !resolvedType.isPrimitive() && isAssignableType(Map.class);
     }
 
     boolean isNumber() {
@@ -113,12 +114,13 @@ class GeneratorType {
             return resolvedPrimitiveType != ResolvedPrimitiveType.BOOLEAN
                     && resolvedPrimitiveType != ResolvedPrimitiveType.CHAR;
         } else {
-            return isType(Number.class);
+            return isAssignableType(Number.class);
         }
     }
 
     boolean isOptional() {
-        return resolvedType.isReferenceType() && isType(Optional.class);
+        return resolvedType.isReferenceType()
+                && isAssignableType(Optional.class);
     }
 
     boolean isPrimitive() {
@@ -130,9 +132,8 @@ class GeneratorType {
     }
 
     boolean isRequired() {
-        return isPrimitive()
-                || hasType() && isResolvable && ExplicitNullableTypeChecker
-                        .isRequired(type.getAnnotations());
+        return isPrimitive() || hasType() && ExplicitNullableTypeChecker
+                .isRequired(type.getAnnotations());
     }
 
     boolean isString() {
@@ -140,7 +141,7 @@ class GeneratorType {
             return resolvedType.asPrimitive() == ResolvedPrimitiveType.CHAR;
         }
 
-        return isType(String.class, Character.class);
+        return isAssignableType(String.class, Character.class);
     }
 
     boolean isUnhandled() {
@@ -149,28 +150,36 @@ class GeneratorType {
     }
 
     /**
+     * Checks if the given type refers to the given class.
+     *
+     * @param classes
+     *            the class to match with
+     * @return true if the type is referring to the given class, false otherwise
+     */
+    boolean isExactType(Class<?>... classes) {
+        return resolvedType.isReferenceType()
+                && isType(resolvedType.asReferenceType(), classes);
+    }
+
+    /**
      * Checks if the given type can be cast to one of the given classes.
      *
-     * @param clazz
+     * @param classes
      *            the classes to match with
      * @return true if the type can be cast to one of the given classes, false
      *         otherwise
      */
-    boolean isType(Class<?>... clazz) {
+    boolean isAssignableType(Class<?>... classes) {
         if (!resolvedType.isReferenceType()) {
             return false;
         }
 
-        List<String> classes = Arrays.stream(clazz).map(Class::getName)
-                .collect(Collectors.toList());
-
         ResolvedReferenceType resolvedReferenceType = resolvedType
                 .asReferenceType();
 
-        return classes.contains(resolvedReferenceType.getQualifiedName())
+        return isType(resolvedReferenceType, classes)
                 || resolvedReferenceType.getAllAncestors().stream()
-                        .map(ResolvedReferenceType::getQualifiedName)
-                        .anyMatch(classes::contains);
+                        .anyMatch(ancestor -> isType(ancestor, classes));
     }
 
     ResolvedType asResolvedType() {
@@ -182,20 +191,45 @@ class GeneratorType {
     }
 
     GeneratorType getItemType() {
-        return hasType() && isResolvable
-                ? new GeneratorType(type.asArrayType().getComponentType())
-                : new GeneratorType(
-                        resolvedType.asArrayType().getComponentType());
+        if (hasType()) {
+            Type componentType = type.asArrayType().getComponentType();
+
+            if (isResolvable) {
+                return new GeneratorType(componentType);
+            }
+
+            return new GeneratorType(componentType,
+                    resolvedType.asArrayType().getComponentType());
+        }
+
+        return new GeneratorType(resolvedType.asArrayType().getComponentType());
     }
 
     List<GeneratorType> getTypeArguments() {
-        return hasType() && isResolvable
-                ? type.asClassOrInterfaceType().getTypeArguments()
-                        .map(nodeList -> nodeList.stream()
-                                .map(GeneratorType::new)
-                                .collect(Collectors.toList()))
-                        .orElseGet(this::getTypeArgumentsFallback)
-                : getTypeArgumentsFallback();
+        if (hasType()) {
+            return type.asClassOrInterfaceType().getTypeArguments()
+                    .map(typeArguments -> {
+                        if (isResolvable) {
+                            return typeArguments.stream()
+                                    .map(GeneratorType::new)
+                                    .collect(Collectors.toList());
+                        }
+
+                        List<Pair<ResolvedTypeParameterDeclaration, ResolvedType>> typeParameters = resolvedType
+                                .asReferenceType().getTypeParametersMap();
+
+                        return IntStream
+                                .range(0,
+                                        Math.min(typeArguments.size(),
+                                                typeParameters.size()))
+                                .mapToObj(i -> new GeneratorType(
+                                        typeArguments.get(i),
+                                        typeParameters.get(i).b))
+                                .collect(Collectors.toList());
+                    }).orElseGet(this::getTypeArgumentsFallback);
+        }
+
+        return getTypeArgumentsFallback();
     }
 
     private List<GeneratorType> getTypeArgumentsFallback() {

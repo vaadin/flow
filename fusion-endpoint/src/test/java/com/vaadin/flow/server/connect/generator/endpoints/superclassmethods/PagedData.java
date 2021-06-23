@@ -18,6 +18,7 @@ package com.vaadin.flow.server.connect.generator.endpoints.superclassmethods;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import com.vaadin.flow.server.connect.EndpointExposed;
 
@@ -33,7 +34,7 @@ public interface PagedData<T> {
         return Collections.emptyList();
     }
 
-    default List<@NonNull T> getNonnullablePage(int pageSize, int pageNumber) {
+    default List<@NonNull T> getNonNullablePage(int pageSize, int pageNumber, Map<String, @NonNull T> parameters) {
         return Collections.emptyList();
     }
 }
