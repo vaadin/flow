@@ -130,6 +130,14 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD = "devmode.liveReload.enabled";
 
     /**
+     * Configuration parameter name for enabling session serialization in
+     * development.
+     *
+     * @since
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION = "devmode.serializeSession.enabled";
+
+    /**
      * I18N provider property.
      */
     public static final String I18N_PROVIDER = "i18n.provider";

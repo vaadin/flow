@@ -2180,8 +2180,13 @@ public abstract class VaadinService implements Serializable {
      * @return the VaadinSession or null if no session was found
      */
     protected VaadinSession readFromHttpSession(WrappedSession wrappedSession) {
-        return (VaadinSession) wrappedSession
+        VaadinSession session = (VaadinSession) wrappedSession
                 .getAttribute(getSessionAttributeName());
+        if (session != null && !session.valid) {
+            wrappedSession.removeAttribute(getSessionAttributeName());
+            return null;
+        }
+        return session;
     }
 
     /**
@@ -2215,7 +2220,7 @@ public abstract class VaadinService implements Serializable {
      *
      * @return the attribute name used for storing the VaadinSession
      */
-    protected String getSessionAttributeName() {
+    String getSessionAttributeName() {
         return VaadinSession.class.getName() + "." + getServiceName();
     }
 

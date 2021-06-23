@@ -138,6 +138,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private final StreamResourceRegistry resourceRegistry;
 
+    private transient boolean serialize = true;
+
+    transient boolean valid = true;
+
     /**
      * Creates a new VaadinSession tied to a VaadinService.
      *
@@ -334,6 +338,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         }
         assert this.configuration == null : "Configuration can only be set once";
         this.configuration = configuration;
+        if (!configuration.isProductionMode()
+                && !configuration.isDevModeSerializeSession()) {
+            this.serialize = false;
+        }
     }
 
     /**
@@ -1018,12 +1026,25 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     private void readObject(ObjectInputStream stream)
             throws IOException, ClassNotFoundException {
+        boolean wasSerialized = stream.readBoolean();
+        this.valid = wasSerialized;
+        if (!wasSerialized) {
+            return;
+        }
         Map<Class<?>, CurrentInstance> old = CurrentInstance.setCurrent(this);
         try {
             stream.defaultReadObject();
             pendingAccessQueue = new ConcurrentLinkedQueue<>();
         } finally {
             CurrentInstance.restoreInstances(old);
+        }
+    }
+
+    private void writeObject(java.io.ObjectOutputStream stream)
+            throws IOException {
+        stream.writeBoolean(this.serialize);
+        if (this.serialize) {
+            stream.defaultWriteObject();
         }
     }
 
