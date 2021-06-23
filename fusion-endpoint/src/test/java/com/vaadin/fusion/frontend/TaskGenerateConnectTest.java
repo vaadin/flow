@@ -1,4 +1,4 @@
-package com.vaadin.flow.server.frontend.fusion;
+package com.vaadin.fusion.frontend;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +31,7 @@ public class TaskGenerateConnectTest {
         outputDirectory = temporaryFolder.newFolder();
         properties = temporaryFolder.newFile("application.properties");
         openApiJson = new File(getClass().getResource(
-                "../../connect/generator/openapi/esmodule-generator"
+                "../generator/openapi/esmodule-generator"
                         + "-TwoEndpointsThreeMethods.json")
                 .getPath());
     }

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend.fusion;
+package com.vaadin.fusion.frontend;
 
 import java.io.File;
 import java.io.IOException;

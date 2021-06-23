@@ -5,8 +5,6 @@ import javax.servlet.ServletRegistration;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,7 +26,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.fusion.EndpointGeneratorTaskFactoryImpl;
+import com.vaadin.fusion.frontend.EndpointGeneratorTaskFactoryImpl;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;

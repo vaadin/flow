@@ -1,4 +1,4 @@
-package com.vaadin.flow.server.startup.fusion;
+package com.vaadin.fusion.startup;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;

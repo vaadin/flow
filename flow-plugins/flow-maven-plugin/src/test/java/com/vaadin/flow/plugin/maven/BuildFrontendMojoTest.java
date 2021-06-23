@@ -76,7 +76,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.fusion.Endpoint;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.fusion.EndpointGeneratorTaskFactoryImpl;
+import com.vaadin.fusion.frontend.EndpointGeneratorTaskFactoryImpl;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 

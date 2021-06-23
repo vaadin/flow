@@ -1,4 +1,4 @@
-package com.vaadin.flow.server.frontend.fusion;
+package com.vaadin.fusion.frontend;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
