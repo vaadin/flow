@@ -783,7 +783,7 @@ public class ElementTest extends AbstractNodeTest {
         // Get instance right away to see that changes are live
         Set<String> classList = element.getClassList();
 
-        element.setAttribute("class", "foo bar");
+        element.setAttribute("class", "       foo bar ");
 
         Assert.assertEquals(2, classList.size());
         Assert.assertTrue(classList.contains("foo"));
