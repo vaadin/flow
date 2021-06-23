@@ -59,7 +59,28 @@ async function getAllCommits(){
   }
 }
 
-function filterCommits(commits){
+async function getCommit(commitURL){
+  try {
+    const options = {
+      headers:
+      {
+        'User-Agent': 'Vaadin Cherry Pick',
+        'Authorization': `token ${token}`,
+        'Content-Type': 'application/json',
+      }
+    };
+    
+    res = await axios.get(commitURL, options);
+    data = res.data;
+
+    return data;
+  } catch (error) {
+    console.error(`Cannot get the commit. ${error}`);
+    process.exit(1);
+  }
+}
+
+async function filterCommits(commits){
   for (let commit of commits) {
     let target = false;
     let picked = false;
@@ -72,17 +93,18 @@ function filterCommits(commits){
       }
     }
     if(target === true && picked === false){
+      let singleCommit = await getCommit(commit.url);
       commit.labels.forEach(label => {
         let branch = /target\/(.*)/.exec(label.name);
         if (branch){
-          console.log(commit.number, commit.user.login, commit.url, commit.merge_commit_sha, branch[1]);
+          console.log(commit.number, commit.user.login, commit.url, commit.merge_commit_sha, branch[1], singleCommit.merged_by.login);
           arrPR.push(commit.number);
           arrSHA.push(commit.merge_commit_sha);
           arrURL.push(commit.url);
           arrBranch.push(branch[1]);
           arrTitle.push(`${commit.title} (#${commit.number}) (CP: ${branch[1]})`);
           arrUser.push(`@${commit.user.login}`);
-          arrMergedBy.push(`@${commit.merged_by.login}`);
+          arrMergedBy.push(`@${singleCommit.merged_by.login}`);
         }
       })
     }
