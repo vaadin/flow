@@ -34,7 +34,8 @@ public interface PagedData<T> {
         return Collections.emptyList();
     }
 
-    default List<@NonNull T> getNonNullablePage(int pageSize, int pageNumber, Map<String, @NonNull T> parameters) {
+    default List<@NonNull T> getNonNullablePage(int pageSize, int pageNumber,
+            Map<String, @NonNull T> parameters) {
         return Collections.emptyList();
     }
 }

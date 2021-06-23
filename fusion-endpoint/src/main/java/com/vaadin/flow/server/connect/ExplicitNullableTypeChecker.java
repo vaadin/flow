@@ -59,8 +59,9 @@ public class ExplicitNullableTypeChecker {
      * @return a result of check
      */
     public static boolean isRequired(List<AnnotationExpr> annotations) {
-        return annotations != null && annotations.stream().anyMatch(annotation -> "nonnull"
-                .equalsIgnoreCase(annotation.getName().getIdentifier()));
+        return annotations != null && annotations.stream()
+                .anyMatch(annotation -> "nonnull".equalsIgnoreCase(
+                        annotation.getName().getIdentifier()));
     }
 
     /**

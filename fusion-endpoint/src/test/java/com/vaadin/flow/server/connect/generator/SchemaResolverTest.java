@@ -64,7 +64,8 @@ public class SchemaResolverTest {
         when(arrayResolvedType.getComponentType()).thenReturn(stringType);
 
         Map<String, GeneratorType> usedTypes = new HashMap<>();
-        SchemaResolver schemaResolver = new SchemaResolver(new GeneratorType(arrayType), usedTypes);
+        SchemaResolver schemaResolver = new SchemaResolver(
+                new GeneratorType(arrayType), usedTypes);
 
         Schema schema = schemaResolver.resolve();
         Assert.assertTrue(schema instanceof ArraySchema);
@@ -80,7 +81,8 @@ public class SchemaResolverTest {
                 ResolvedPrimitiveType.INT);
 
         Map<String, GeneratorType> usedTypes = new HashMap<>();
-        SchemaResolver schemaResolver = new SchemaResolver(new GeneratorType(numberType), usedTypes);
+        SchemaResolver schemaResolver = new SchemaResolver(
+                new GeneratorType(numberType), usedTypes);
         Schema schema = schemaResolver.resolve();
         Assert.assertTrue(schema instanceof NumberSchema);
         Assert.assertNull(schema.getNullable());
@@ -92,7 +94,8 @@ public class SchemaResolverTest {
         ResolvedType numberType = mockReferencedTypeOf(Number.class);
 
         Map<String, GeneratorType> usedTypes = new HashMap<>();
-        SchemaResolver schemaResolver = new SchemaResolver(new GeneratorType(numberType), usedTypes);
+        SchemaResolver schemaResolver = new SchemaResolver(
+                new GeneratorType(numberType), usedTypes);
         Schema schema = schemaResolver.resolve();
         Assert.assertTrue(schema instanceof NumberSchema);
         Assert.assertTrue(schema.getNullable());
@@ -103,7 +106,8 @@ public class SchemaResolverTest {
     public void should_ReturnNullableStringSchema_When_GivenTypeIsAString() {
         ResolvedType resolvedType = mockReferencedTypeOf(String.class);
         Map<String, GeneratorType> usedTypes = new HashMap<>();
-        SchemaResolver schemaResolver = new SchemaResolver(new GeneratorType(resolvedType), usedTypes);
+        SchemaResolver schemaResolver = new SchemaResolver(
+                new GeneratorType(resolvedType), usedTypes);
         Schema schema = schemaResolver.resolve();
 
         Assert.assertTrue(schema instanceof StringSchema);
@@ -123,7 +127,8 @@ public class SchemaResolverTest {
         when(resolvedReferenceType.getTypeParametersMap()).thenReturn(pairs);
 
         Map<String, GeneratorType> usedTypes = new HashMap<>();
-        SchemaResolver schemaResolver = new SchemaResolver(new GeneratorType(resolvedType), usedTypes);
+        SchemaResolver schemaResolver = new SchemaResolver(
+                new GeneratorType(resolvedType), usedTypes);
         Schema schema = schemaResolver.resolve();
 
         Assert.assertTrue(schema instanceof ArraySchema);
@@ -138,7 +143,8 @@ public class SchemaResolverTest {
         ResolvedType resolvedType = mockPrimitiveTypeOf(
                 ResolvedPrimitiveType.BOOLEAN);
         Map<String, GeneratorType> usedTypes = new HashMap<>();
-        SchemaResolver schemaResolver = new SchemaResolver(new GeneratorType(resolvedType), usedTypes);
+        SchemaResolver schemaResolver = new SchemaResolver(
+                new GeneratorType(resolvedType), usedTypes);
         Schema schema = schemaResolver.resolve();
 
         Assert.assertTrue(schema instanceof BooleanSchema);
@@ -150,7 +156,8 @@ public class SchemaResolverTest {
     public void should_ReturnNullableBoolean_When_GivenTypeIsABoxedBoolean() {
         ResolvedType resolvedType = mockReferencedTypeOf(Boolean.class);
         Map<String, GeneratorType> usedTypes = new HashMap<>();
-        SchemaResolver schemaResolver = new SchemaResolver(new GeneratorType(resolvedType), usedTypes);
+        SchemaResolver schemaResolver = new SchemaResolver(
+                new GeneratorType(resolvedType), usedTypes);
         Schema schema = schemaResolver.resolve();
 
         Assert.assertTrue(schema instanceof BooleanSchema);
@@ -164,12 +171,15 @@ public class SchemaResolverTest {
         ResolvedType resolvedType = mockReferencedTypeOf(Map.class);
         Mockito.doReturn(resolvedType).when(type).resolve();
 
-        GeneratorType generatorType = Mockito.spy(new GeneratorType(resolvedType));
-        Mockito.doReturn(Arrays.asList(null, new GeneratorType(mockReferencedTypeOf(Number.class))))
+        GeneratorType generatorType = Mockito
+                .spy(new GeneratorType(resolvedType));
+        Mockito.doReturn(Arrays.asList(null,
+                new GeneratorType(mockReferencedTypeOf(Number.class))))
                 .when(generatorType).getTypeArguments();
 
         Map<String, GeneratorType> usedTypes = new HashMap<>();
-        SchemaResolver schemaResolver = new SchemaResolver(generatorType, usedTypes);
+        SchemaResolver schemaResolver = new SchemaResolver(generatorType,
+                usedTypes);
         Schema schema = schemaResolver.resolve();
 
         Assert.assertTrue(schema instanceof MapSchema);
@@ -183,7 +193,8 @@ public class SchemaResolverTest {
     public void should_ReturnNullableDate_When_GivenTypeIsADate() {
         ResolvedType resolvedType = mockReferencedTypeOf(Date.class);
         Map<String, GeneratorType> usedTypes = new HashMap<>();
-        SchemaResolver schemaResolver = new SchemaResolver(new GeneratorType(resolvedType), usedTypes);
+        SchemaResolver schemaResolver = new SchemaResolver(
+                new GeneratorType(resolvedType), usedTypes);
         Schema schema = schemaResolver.resolve();
 
         Assert.assertTrue(schema instanceof DateSchema);
@@ -195,7 +206,8 @@ public class SchemaResolverTest {
     public void should_ReturnNullableDate_When_GivenTypeIsAInstant() {
         ResolvedType resolvedType = mockReferencedTypeOf(Instant.class);
         Map<String, GeneratorType> usedTypes = new HashMap<>();
-        SchemaResolver schemaResolver = new SchemaResolver(new GeneratorType(resolvedType), usedTypes);
+        SchemaResolver schemaResolver = new SchemaResolver(
+                new GeneratorType(resolvedType), usedTypes);
         Schema schema = schemaResolver.resolve();
 
         Assert.assertTrue(schema instanceof DateTimeSchema);
@@ -215,7 +227,8 @@ public class SchemaResolverTest {
         when(resolvedReferenceType.getTypeParametersMap()).thenReturn(pairs);
 
         Map<String, GeneratorType> usedTypes = new HashMap<>();
-        SchemaResolver schemaResolver = new SchemaResolver(new GeneratorType(resolvedType), usedTypes);
+        SchemaResolver schemaResolver = new SchemaResolver(
+                new GeneratorType(resolvedType), usedTypes);
         Schema schema = schemaResolver.resolve();
 
         Assert.assertTrue(schema instanceof StringSchema);
@@ -230,11 +243,13 @@ public class SchemaResolverTest {
         Mockito.doReturn(resolvedType).when(type).resolve();
 
         GeneratorType generatorType = Mockito.spy(new GeneratorType(type));
-        Mockito.doReturn(Arrays.asList(new GeneratorType(mockReferencedTypeOf(TestBean.class))))
+        Mockito.doReturn(Arrays.asList(
+                new GeneratorType(mockReferencedTypeOf(TestBean.class))))
                 .when(generatorType).getTypeArguments();
 
         Map<String, GeneratorType> usedTypes = new HashMap<>();
-        SchemaResolver schemaResolver = new SchemaResolver(generatorType, usedTypes);
+        SchemaResolver schemaResolver = new SchemaResolver(generatorType,
+                usedTypes);
         Schema schema = schemaResolver.resolve();
 
         Assert.assertTrue(schema instanceof ComposedSchema);
@@ -252,7 +267,8 @@ public class SchemaResolverTest {
     public void should_ReturnNullableObject_When_GivenTypeIsAnUnhandledJavaType() {
         ResolvedType resolvedType = mockReferencedTypeOf(Class.class);
         Map<String, GeneratorType> usedTypes = new HashMap<>();
-        SchemaResolver schemaResolver = new SchemaResolver(new GeneratorType(resolvedType), usedTypes);
+        SchemaResolver schemaResolver = new SchemaResolver(
+                new GeneratorType(resolvedType), usedTypes);
         Schema schema = schemaResolver.resolve();
 
         Assert.assertNotNull(schema);
@@ -266,7 +282,8 @@ public class SchemaResolverTest {
         Type type = mock(Type.class);
         Mockito.doReturn(resolvedType).when(type).resolve();
         Map<String, GeneratorType> usedTypes = new HashMap<>();
-        SchemaResolver schemaResolver = new SchemaResolver(new GeneratorType(type), usedTypes);
+        SchemaResolver schemaResolver = new SchemaResolver(
+                new GeneratorType(type), usedTypes);
 
         Schema schema = schemaResolver.resolve();
 
@@ -292,7 +309,8 @@ public class SchemaResolverTest {
         Mockito.doReturn(resolvedType).when(type).resolve();
         Map<String, GeneratorType> usedTypes = new HashMap<>();
 
-        SchemaResolver schemaResolver = new SchemaResolver(new GeneratorType(type), usedTypes);
+        SchemaResolver schemaResolver = new SchemaResolver(
+                new GeneratorType(type), usedTypes);
         Schema schema = schemaResolver.resolve();
         Assert.assertTrue(schema instanceof ComposedSchema);
         Assert.assertEquals(1, ((ComposedSchema) schema).getAllOf().size());
