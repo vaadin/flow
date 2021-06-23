@@ -23,8 +23,7 @@ import org.junit.Test;
 import java.util.Collections;
 
 /**
- * IterableEndpointGenerationTest,
- * created on 21/12/2020 23.00
+ * IterableEndpointGenerationTest, created on 21/12/2020 23.00
  * 
  * @author nikolaigorokhov
  */

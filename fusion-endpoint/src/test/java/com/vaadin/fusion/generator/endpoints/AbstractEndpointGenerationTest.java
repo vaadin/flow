@@ -538,8 +538,9 @@ public abstract class AbstractEndpointGenerationTest
             sortTagsAndSchemas(generated);
             sortTagsAndSchemas(expected);
 
-            TestUtils.equalsIgnoreWhiteSpaces("The generated OpenAPI does not match",
-                    expected.toString(), generated.toString());
+            TestUtils.equalsIgnoreWhiteSpaces(
+                    "The generated OpenAPI does not match", expected.toString(),
+                    generated.toString());
 
         } catch (URISyntaxException e) {
             throw new IllegalStateException("Can't compare OpenAPI json.", e);
@@ -695,7 +696,8 @@ public abstract class AbstractEndpointGenerationTest
                 .startsWith("com.vaadin.fusion")
                 || DENY_LIST_CHECKING_ABSOLUTE_PATH.contains(expectedClass)) {
             // the class comes from jars
-            TestUtils.equalsIgnoreWhiteSpaces(errorMessage, expectedTs, actualContent);
+            TestUtils.equalsIgnoreWhiteSpaces(errorMessage, expectedTs,
+                    actualContent);
             return;
         }
         removeAbsolutePathAndCompare(expectedClass, expectedTs, errorMessage,

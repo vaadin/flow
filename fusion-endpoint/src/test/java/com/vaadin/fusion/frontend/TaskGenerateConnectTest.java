@@ -30,10 +30,9 @@ public class TaskGenerateConnectTest {
     public void setUp() throws IOException {
         outputDirectory = temporaryFolder.newFolder();
         properties = temporaryFolder.newFile("application.properties");
-        openApiJson = new File(getClass().getResource(
-                "../generator/openapi/esmodule-generator"
-                        + "-TwoEndpointsThreeMethods.json")
-                .getPath());
+        openApiJson = new File(
+                getClass().getResource("../generator/openapi/esmodule-generator"
+                        + "-TwoEndpointsThreeMethods.json").getPath());
     }
 
     @Test

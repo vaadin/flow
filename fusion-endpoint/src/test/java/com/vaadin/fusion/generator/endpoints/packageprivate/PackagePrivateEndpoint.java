@@ -4,8 +4,7 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.fusion.Endpoint;
 
 /**
- * PackagePrivateEndpoint,
- * created on 03/12/2020 18.22
+ * PackagePrivateEndpoint, created on 03/12/2020 18.22
  * 
  * @author nikolaigorokhov
  */

@@ -38,8 +38,7 @@ public class TaskGenerateOpenApiImpl extends AbstractTaskConnectGenerator
      * Create a task for generating OpenAPI spec.
      *
      * @param javaSourceFolder
-     *            source paths of the project containing
-     *            {@link Endpoint}
+     *            source paths of the project containing {@link Endpoint}
      * @param classLoader
      *            The class loader which should be used to resolved types in the
      *            source paths.

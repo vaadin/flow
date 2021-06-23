@@ -47,7 +47,8 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
 
         JsonObject apiJson = readJsonFile(openApiJsonOutput);
 
-        String modelName = TsFormEndpoint.MyEntity.class.getName().replace('$', '.');
+        String modelName = TsFormEndpoint.MyEntity.class.getName().replace('$',
+                '.');
 
         JsonObject props = apiJson.getObject("components").getObject("schemas")
                 .getObject(modelName).getArray("allOf").getObject(1)
@@ -75,10 +76,10 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
 
         generateTsEndpoints();
 
-        String entityIdPath = TsFormEndpoint.MyEntityId.class.getName().replaceAll("[\\.\\$]",
-                "/");
-        String entityPath = TsFormEndpoint.MyEntity.class.getName().replaceAll("[\\.\\$]",
-                "/");
+        String entityIdPath = TsFormEndpoint.MyEntityId.class.getName()
+                .replaceAll("[\\.\\$]", "/");
+        String entityPath = TsFormEndpoint.MyEntity.class.getName()
+                .replaceAll("[\\.\\$]", "/");
 
         File entityIdFile = new File(outputDirectory.getRoot(),
                 entityIdPath + ".ts");

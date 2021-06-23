@@ -60,7 +60,8 @@ public final class TestUtils {
     public static void equalsIgnoreWhiteSpaces(String msg, String expected,
             String actual) {
         try {
-            Assert.assertEquals(msg, IndentationUtils.unifyIndentation(expected, 2),
+            Assert.assertEquals(msg,
+                    IndentationUtils.unifyIndentation(expected, 2),
                     IndentationUtils.unifyIndentation(actual, 2));
         } catch (IndentationUtils.IndentationSyntaxException e) {
             throw new AssertionError("Failed to unify indentation", e);
