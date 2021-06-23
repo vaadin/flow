@@ -20,11 +20,11 @@ import java.util.Objects;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.TaskGenerateConnect;
-import com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator;
-import com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator;
+import com.vaadin.fusion.generator.VaadinConnectClientGenerator;
+import com.vaadin.fusion.generator.VaadinConnectTsGenerator;
 
-import static com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator.CONNECT_CLIENT_NAME;
-import static com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator.CUSTOM_CONNECT_CLIENT_NAME;
+import static com.vaadin.fusion.generator.VaadinConnectClientGenerator.CONNECT_CLIENT_NAME;
+import static com.vaadin.fusion.generator.VaadinConnectClientGenerator.CUSTOM_CONNECT_CLIENT_NAME;
 
 /**
  * Generate the Vaadin TS files for endpoints, and the Client API file.

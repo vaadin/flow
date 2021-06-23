@@ -21,7 +21,8 @@ import java.util.Objects;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.TaskGenerateOpenApi;
-import com.vaadin.flow.server.connect.generator.OpenApiSpecGenerator;
+import com.vaadin.fusion.Endpoint;
+import com.vaadin.fusion.generator.OpenApiSpecGenerator;
 
 /**
  * Generate OpenAPI json file for Vaadin Endpoints.
@@ -38,7 +39,7 @@ public class TaskGenerateOpenApiImpl extends AbstractTaskConnectGenerator
      *
      * @param javaSourceFolder
      *            source paths of the project containing
-     *            {@link com.vaadin.flow.server.connect.Endpoint}
+     *            {@link Endpoint}
      * @param classLoader
      *            The class loader which should be used to resolved types in the
      *            source paths.

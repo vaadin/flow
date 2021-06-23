@@ -32,7 +32,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.server.frontend.TaskGenerateOpenApi;
-import com.vaadin.flow.server.connect.generator.OpenApiSpecGenerator;
+import com.vaadin.fusion.generator.OpenApiSpecGenerator;
 
 /**
  * This test suite is only for triggering the OpenAPI generator. For the actual
