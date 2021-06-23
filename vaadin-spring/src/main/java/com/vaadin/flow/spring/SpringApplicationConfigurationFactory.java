@@ -19,10 +19,8 @@ import java.util.Map;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
 
@@ -39,9 +37,8 @@ public class SpringApplicationConfigurationFactory
     @Override
     protected ApplicationConfigurationImpl doCreate(VaadinContext context,
             FallbackChunk chunk, Map<String, String> properties) {
-        VaadinServletContext servletContext = (VaadinServletContext) context;
-        ApplicationContext appContext = WebApplicationContextUtils
-                .getWebApplicationContext(servletContext.getContext());
+        ApplicationContext appContext = SpringLookupInitializer
+                .getApplicationContext(context);
         Environment env = appContext.getBean(Environment.class);
         // Collect any vaadin.XZY properties from application.properties
         SpringServlet.PROPERTY_NAMES.stream()

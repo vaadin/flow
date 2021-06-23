@@ -175,7 +175,14 @@ public class SpringLookupInitializer extends LookupInitializer {
         super.initialize(context, services, bootstrap);
     }
 
-    private WebApplicationContext getApplicationContext(VaadinContext context) {
+    /**
+     * Gets a {@link WebApplicationContext} instance for the {@code context}.
+     * 
+     * @param context
+     *            a Vaadin context
+     * @return a {@link WebApplicationContext} instance for the {@code context}
+     */
+    static WebApplicationContext getApplicationContext(VaadinContext context) {
         VaadinServletContext servletContext = (VaadinServletContext) context;
         WebApplicationContext appContext = WebApplicationContextUtils
                 .getWebApplicationContext(servletContext.getContext());
