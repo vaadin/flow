@@ -207,7 +207,7 @@ async function createPR(title, head, base){
 async function main(){
   let allCommits = await getAllCommits();
   filterCommits(allCommits);
-  //await cherryPickCommits();
+  await cherryPickCommits();
 
 }
 
