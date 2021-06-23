@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
@@ -37,6 +36,8 @@ import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.utils.Pair;
 
 import com.vaadin.flow.server.connect.ExplicitNullableTypeChecker;
+
+import static com.vaadin.flow.server.connect.generator.GeneratorUtils.zip;
 
 class GeneratorType {
     private final Type type;
@@ -218,14 +219,10 @@ class GeneratorType {
                         List<Pair<ResolvedTypeParameterDeclaration, ResolvedType>> typeParameters = resolvedType
                                 .asReferenceType().getTypeParametersMap();
 
-                        return IntStream
-                                .range(0,
-                                        Math.min(typeArguments.size(),
-                                                typeParameters.size()))
-                                .mapToObj(i -> new GeneratorType(
-                                        typeArguments.get(i),
-                                        typeParameters.get(i).b))
-                                .collect(Collectors.toList());
+                        return zip(typeArguments, typeParameters,
+                                (argument, parameterPair) -> new GeneratorType(
+                                        argument, parameterPair.b))
+                                                .collect(Collectors.toList());
                     }).orElseGet(this::getTypeArgumentsFallback);
         }
 
