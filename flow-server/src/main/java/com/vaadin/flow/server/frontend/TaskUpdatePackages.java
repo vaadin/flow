@@ -125,7 +125,31 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     @Override
     String writePackageFile(JsonObject json) throws IOException {
-        return super.writePackageFile(orderKeys(json));
+        if (json.hasKey(DEPENDENCIES)) {
+            JsonObject deps = json.get(DEPENDENCIES);
+            sortObject(deps);
+        }
+        if (json.hasKey(DEV_DEPENDENCIES)) {
+            JsonObject deps = json.get(DEV_DEPENDENCIES);
+            sortObject(deps);
+        }
+        if (json.hasKey(VAADIN_DEP_KEY)) {
+            JsonObject vaadin = json.get(VAADIN_DEP_KEY);
+            sortObject(vaadin);
+        }
+        return super.writePackageFile(json);
+    }
+
+    private void sortObject(JsonObject object) {
+        JsonObject ordered = orderKeys(object);
+        for (String key : object.keys()) {
+            object.remove(key);
+        }
+        // add ordered keys back
+        for (String key : ordered.keys()) {
+            JsonValue value = ordered.get(key);
+            object.put(key, value);
+        }
     }
 
     private JsonObject orderKeys(JsonObject object) {

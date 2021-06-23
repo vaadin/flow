@@ -33,14 +33,15 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.Json;
 import elemental.json.JsonException;
@@ -253,6 +254,13 @@ public abstract class NodeUpdater implements FallibleCommand {
             packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
             packageJson.put(DEPENDENCIES, Json.createObject());
             packageJson.put(DEV_DEPENDENCIES, Json.createObject());
+        } else {
+            if (!packageJson.hasKey(DEPENDENCIES)) {
+                packageJson.put(DEPENDENCIES, Json.createObject());
+            }
+            if (!packageJson.hasKey(DEV_DEPENDENCIES)) {
+                packageJson.put(DEV_DEPENDENCIES, Json.createObject());
+            }
         }
 
         addVaadinDefaultsToJson(packageJson);
