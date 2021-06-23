@@ -667,7 +667,7 @@ public abstract class AbstractEndpointGenerationTest
                 expectedClass, expectedResource.getPath());
         String actualContent = readFile(outputFilePath);
         if (!expectedClass.getPackage().getName()
-                .startsWith("com.vaadin.flow.server")) {
+                .startsWith("com.vaadin.fusion")) {
             // the class comes from jars
             Assert.assertEquals(errorMessage, expectedTs, actualContent);
             return;
@@ -692,7 +692,7 @@ public abstract class AbstractEndpointGenerationTest
                 expectedClass, expectedResource.getPath());
         String actualContent = readFile(outputFilePath);
         if (!expectedClass.getPackage().getName()
-                .startsWith("com.vaadin.flow.server")
+                .startsWith("com.vaadin.fusion")
                 || DENY_LIST_CHECKING_ABSOLUTE_PATH.contains(expectedClass)) {
             // the class comes from jars
             TestUtils.equalsIgnoreWhiteSpaces(errorMessage, expectedTs, actualContent);

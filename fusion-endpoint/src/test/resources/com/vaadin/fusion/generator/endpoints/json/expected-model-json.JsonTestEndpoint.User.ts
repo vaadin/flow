@@ -1,7 +1,7 @@
 import Role from './Role';
 
 /**
- * This module is generated from com.vaadin.connect.generator.endpoints.json.JsonTestEndpoint.User.
+ * This module is generated from com.vaadin.fusion.generator.endpoints.json.JsonTestEndpoint.User.
  * All changes to this file are overridden. Please consider to make changes in the corresponding Java file if necessary.
  */
 

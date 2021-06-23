@@ -1,6 +1,6 @@
-import Version from '../../../../../../../../fasterxml/jackson/core/Version';
+import Version from '../../../../../../fasterxml/jackson/core/Version';
 import ParentModel from './ParentModel';
-import ArraySchema from '../../../../../../../../../io/swagger/v3/oas/models/media/ArraySchema';
+import ArraySchema from '../../../../../../../io/swagger/v3/oas/models/media/ArraySchema';
 
 /**
  * This module is generated from com.vaadin.fusion.generator.endpoints.inheritedmodel.InheritedModelEndpoint.ChildModel.
