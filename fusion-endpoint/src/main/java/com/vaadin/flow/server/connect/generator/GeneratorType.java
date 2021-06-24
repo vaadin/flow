@@ -62,12 +62,6 @@ class GeneratorType {
         isResolvable = false;
     }
 
-    private static boolean isType(ResolvedReferenceType type,
-            Class<?>... classes) {
-        return Arrays.stream(classes).map(Class::getName).anyMatch(
-                className -> className.equals(type.getQualifiedName()));
-    }
-
     boolean hasType() {
         return type != null;
     }
@@ -234,5 +228,10 @@ class GeneratorType {
                 .filter(Objects::nonNull)
                 .map(parameter -> new GeneratorType(parameter.b))
                 .collect(Collectors.toList());
+    }
+
+    private boolean isType(ResolvedReferenceType type, Class<?>... classes) {
+        return Arrays.stream(classes).map(Class::getName).anyMatch(
+                className -> className.equals(type.getQualifiedName()));
     }
 }
