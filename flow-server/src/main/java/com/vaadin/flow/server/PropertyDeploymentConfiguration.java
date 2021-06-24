@@ -29,7 +29,6 @@ import com.vaadin.flow.shared.communication.PushMode;
 import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REQUEST_TIMING;
@@ -265,13 +264,6 @@ public class PropertyDeploymentConfiguration
                 && enableDevServer(); // gizmo excluded from prod bundle
     }
 
-    @Override
-    public boolean isDevModeSerializeSession() {
-        return getBooleanProperty(
-                SERVLET_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION, false);
-
-    }
-
     /**
      * Checks whether the given {@code property} is the property explicitly set
      * in this deployment configuration (not in it's parent config).
@@ -292,7 +284,7 @@ public class PropertyDeploymentConfiguration
     }
 
     /**
-     * Returns parent application configuration.
+     * Returns parent application configuration;
      * 
      * @return the parent config
      */

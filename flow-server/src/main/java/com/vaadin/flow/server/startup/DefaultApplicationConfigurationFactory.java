@@ -41,6 +41,7 @@ import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
@@ -89,6 +90,13 @@ public class DefaultApplicationConfigurationFactory
         @Override
         public FallbackChunk getFallbackChunk() {
             return fallbackChunk;
+        }
+
+        @Override
+        public boolean isDevModeSerializeSession() {
+            return getBooleanProperty(
+                    APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION,
+                    false);
         }
 
     }

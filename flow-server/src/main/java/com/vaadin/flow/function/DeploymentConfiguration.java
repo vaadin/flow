@@ -314,21 +314,11 @@ public interface DeploymentConfiguration
     }
 
     /**
-     * Checks if development mode live reload is enabled or not.
+     * Checks if dev mode live reload is enabled or not.
      *
      * @return {@code true} if dev mode live reload is enabled, {@code false}
      *         otherwise
      */
     boolean isDevModeLiveReloadEnabled();
-
-    /**
-     * Checks if development mode session serialization is enabled or not.
-     * <p>
-     * By default session serialization is disabled in development mode.
-     *
-     * @return {@code true} if dev mode session serialization is enabled,
-     *         {@code false} otherwise
-     */
-    boolean isDevModeSerializeSession();
 
 }

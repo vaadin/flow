@@ -30,7 +30,6 @@ public class MockDeploymentConfiguration
     private boolean brotli = false;
     private boolean eagerServerLoad = false;
     private boolean devModeLiveReloadEnabled = false;
-    private boolean devModeSerializeSession = false;
 
     public MockDeploymentConfiguration() {
         super(Collections.emptyMap());
@@ -188,11 +187,6 @@ public class MockDeploymentConfiguration
     @Override
     public boolean isDevModeLiveReloadEnabled() {
         return devModeLiveReloadEnabled;
-    }
-
-    @Override
-    public boolean isDevModeSerializeSession() {
-        return devModeSerializeSession;
     }
 
     public void setEagerServerLoad(boolean includeBootsrapInitialUidl) {

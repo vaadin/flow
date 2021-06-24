@@ -48,6 +48,7 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
 /**
@@ -1037,8 +1038,11 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private void writeObject(java.io.ObjectOutputStream stream)
             throws IOException {
         boolean serialize = true;
-        if (configuration.isProductionMode()
-                && !configuration.isDevModeSerializeSession()) {
+
+        ApplicationConfiguration appConfiguration = ApplicationConfiguration
+                .get(getService().getContext());
+        if (appConfiguration.isProductionMode()
+                && !appConfiguration.isDevModeSerializeSession()) {
             serialize = false;
         }
 
