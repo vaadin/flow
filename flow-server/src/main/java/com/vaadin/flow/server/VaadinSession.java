@@ -547,6 +547,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            and the session is not locked
      */
     public void checkHasLock(String message) {
+        assert deserializedAsEmpty == false : "The session was discarded during serialization and should not be used";
         if (configuration == null || configuration.isProductionMode()) {
             assert hasLock() : message;
         } else if (!hasLock()) {
