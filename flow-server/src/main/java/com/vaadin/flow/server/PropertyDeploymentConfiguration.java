@@ -15,16 +15,6 @@
  */
 package com.vaadin.flow.server;
 
-import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REQUEST_TIMING;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_SYNC_ID_CHECK;
-
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
@@ -35,6 +25,16 @@ import java.util.Properties;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
+
+import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REQUEST_TIMING;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_SYNC_ID_CHECK;
 
 /**
  * The property handling implementation of {@link DeploymentConfiguration} based

@@ -2182,7 +2182,7 @@ public abstract class VaadinService implements Serializable {
     protected VaadinSession readFromHttpSession(WrappedSession wrappedSession) {
         VaadinSession session = (VaadinSession) wrappedSession
                 .getAttribute(getSessionAttributeName());
-        if (session != null && !session.valid) {
+        if (session != null && session.deserializedAsEmpty) {
             wrappedSession.removeAttribute(getSessionAttributeName());
             return null;
         }
@@ -2220,7 +2220,7 @@ public abstract class VaadinService implements Serializable {
      *
      * @return the attribute name used for storing the VaadinSession
      */
-    String getSessionAttributeName() {
+    protected String getSessionAttributeName() {
         return VaadinSession.class.getName() + "." + getServiceName();
     }
 

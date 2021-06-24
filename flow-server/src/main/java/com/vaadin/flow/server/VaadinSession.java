@@ -140,7 +140,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private transient boolean serialize = true;
 
-    transient boolean valid = true;
+    transient boolean deserializedAsEmpty = false;
 
     /**
      * Creates a new VaadinSession tied to a VaadinService.
@@ -1027,7 +1027,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private void readObject(ObjectInputStream stream)
             throws IOException, ClassNotFoundException {
         boolean wasSerialized = stream.readBoolean();
-        this.valid = wasSerialized;
+        this.deserializedAsEmpty = !wasSerialized;
         if (!wasSerialized) {
             return;
         }
