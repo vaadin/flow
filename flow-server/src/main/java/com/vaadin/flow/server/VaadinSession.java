@@ -1012,6 +1012,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Override default deserialization logic to account for transient
      * {@link #pendingAccessQueue}.
+     * <p>
+     * If a session was not serialized in writeObject, then only marks that this
+     * VaadinSession instance should not be used. The instance is removed by
+     * {@link VaadinService#readFromHttpSession(WrappedSession)}.
      *
      * @param stream
      *            the object to read
