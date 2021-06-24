@@ -210,9 +210,15 @@ public abstract class NodeUpdater implements FallibleCommand {
             packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
         }
 
+        addDefaultObjects(packageJson);
         addVaadinDefaultsToJson(packageJson);
 
         return packageJson;
+    }
+
+    private void addDefaultObjects(JsonObject json) {
+        computeIfAbsent(json, DEPENDENCIES, Json::createObject);
+        computeIfAbsent(json, DEV_DEPENDENCIES, Json::createObject);
     }
 
     JsonObject getResourcesPackageJson() throws IOException {

@@ -35,6 +35,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
+import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -115,6 +116,42 @@ public class TaskUpdatePackages extends NodeUpdater {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    @Override
+    String writePackageFile(JsonObject json) throws IOException {
+        sortObject(json, DEPENDENCIES);
+        sortObject(json, DEV_DEPENDENCIES);
+        sortObject(json, VAADIN_DEP_KEY);
+        return super.writePackageFile(json);
+    }
+
+    private void sortObject(JsonObject json, String key) {
+        if (!json.hasKey(key)) {
+            return;
+        }
+        JsonObject object = json.get(key);
+        JsonObject ordered = orderKeys(object);
+        Stream.of(object.keys()).forEach(object::remove);
+        // add ordered keys back
+        Stream.of(ordered.keys()).forEach(prop -> {
+            JsonValue value = ordered.get(prop);
+            object.put(prop, value);
+        });
+    }
+
+    private JsonObject orderKeys(JsonObject object) {
+        String[] keys = object.keys();
+        Arrays.sort(keys);
+        JsonObject result = Json.createObject();
+        for (String key : keys) {
+            JsonValue value = object.get(key);
+            if (value instanceof JsonObject) {
+                value = orderKeys((JsonObject) value);
+            }
+            result.put(key, value);
+        }
+        return result;
     }
 
     private boolean updatePackageJsonDependencies(JsonObject packageJson,
