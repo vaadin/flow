@@ -1046,7 +1046,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
         ApplicationConfiguration appConfiguration = ApplicationConfiguration
                 .get(getService().getContext());
-        if (appConfiguration.isProductionMode()
+        if (!appConfiguration.isProductionMode()
                 && !appConfiguration.isDevModeSessionSerializationEnabled()) {
             serialize = false;
         }
