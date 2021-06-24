@@ -50,11 +50,13 @@ public class ClassAttributeHandler extends CustomAttribute {
         Set<String> classList = element.getClassList();
         classList.clear();
 
-        if (value.isEmpty()) {
+        String classValue = value.trim();
+
+        if (classValue.isEmpty()) {
             return;
         }
 
-        String[] parts = value.split("\\s+");
+        String[] parts = classValue.split("\\s+");
         classList.addAll(Arrays.asList(parts));
     }
 
