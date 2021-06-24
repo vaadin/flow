@@ -19,8 +19,12 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -46,6 +50,7 @@ import elemental.json.JsonValue;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
 
@@ -324,6 +329,18 @@ public class TaskUpdatePackagesNpmTest {
 
         JsonObject packageJson = getOrCreatePackageJson();
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+
+        packageJson.remove(DEPENDENCIES);
+
+        packageJson.put("name", "a");
+        packageJson.put("license", "b");
+        packageJson.put("version", "c");
+
+        LinkedHashSet<String> mainKeys = new LinkedHashSet<>(
+                Arrays.asList(packageJson.keys()));
+
+        packageJson.put(DEPENDENCIES, dependencies);
+
         // Json object preserve the order of keys
         dependencies.put("foo-pack", "bar");
         dependencies.put("baz-pack", "foobar");
@@ -337,7 +354,27 @@ public class TaskUpdatePackagesNpmTest {
         // now read the package json file
         packageJson = getOrCreatePackageJson();
 
-        checkOrder("", packageJson);
+        List<String> list = Arrays.asList(packageJson.keys());
+        // the "vaadin" key is the last one
+        Assert.assertEquals(list.size() - 1, list.indexOf(VAADIN_DEP_KEY));
+
+        List<String> keysBeforeDeps = new ArrayList<>();
+
+        for (String key : packageJson.keys()) {
+            if (key.equals(DEV_DEPENDENCIES) || key.equals(DEPENDENCIES)) {
+                break;
+            }
+            if (mainKeys.contains(key)) {
+                keysBeforeDeps.add(key);
+            }
+        }
+
+        // the order of the main keys is the same
+        Assert.assertArrayEquals(mainKeys.toArray(), keysBeforeDeps.toArray());
+
+        checkOrder(DEPENDENCIES, packageJson.getObject(DEPENDENCIES));
+        checkOrder(DEV_DEPENDENCIES, packageJson.getObject(DEV_DEPENDENCIES));
+        checkOrder(VAADIN_DEP_KEY, packageJson.getObject(VAADIN_DEP_KEY));
     }
 
     private void checkOrder(String path, JsonObject object) {

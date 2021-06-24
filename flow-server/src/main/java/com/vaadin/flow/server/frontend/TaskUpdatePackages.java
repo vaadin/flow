@@ -125,7 +125,24 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     @Override
     String writePackageFile(JsonObject json) throws IOException {
-        return super.writePackageFile(orderKeys(json));
+        sortObject(json, DEPENDENCIES);
+        sortObject(json, DEV_DEPENDENCIES);
+        sortObject(json, VAADIN_DEP_KEY);
+        return super.writePackageFile(json);
+    }
+
+    private void sortObject(JsonObject json, String key) {
+        if (!json.hasKey(key)) {
+            return;
+        }
+        JsonObject object = json.get(key);
+        JsonObject ordered = orderKeys(object);
+        Stream.of(object.keys()).forEach(object::remove);
+        // add ordered keys back
+        Stream.of(ordered.keys()).forEach(prop -> {
+            JsonValue value = ordered.get(prop);
+            object.put(prop, value);
+        });
     }
 
     private JsonObject orderKeys(JsonObject object) {
