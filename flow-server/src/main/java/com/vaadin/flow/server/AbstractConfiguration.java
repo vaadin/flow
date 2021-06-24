@@ -120,10 +120,29 @@ public interface AbstractConfiguration extends Serializable {
                 false);
     }
 
+    /**
+     * Return the defined build folder for the used build system.
+     * <p>
+     * Default value is <code>target</code> used by maven and the gradle plugin
+     * will set it to <code>build</code>.
+     *
+     * @return build folder name, default {@code target}
+     */
     default String getBuildFolder() {
         return getStringProperty(InitParameters.BUILD_FOLDER, Constants.TARGET);
     }
 
+    /**
+     * Get the location for flow resources inside the build folder.
+     * <p>
+     * Default will be <code>target/flow-frontend</code> where target is the
+     * defined buildFolder see {@link #getBuildFolder()}.
+     * <p>
+     * Note! The path is made using Paths.get which will use File.separator that
+     * is OS dependent.
+     *
+     * @return flow resources folder, default {@code target/flow-frontend}
+     */
     default String getFlowResourcesFolder() {
         return Paths.get(getBuildFolder(),
                 FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER).toString();
