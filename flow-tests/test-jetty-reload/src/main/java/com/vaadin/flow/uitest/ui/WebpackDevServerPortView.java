@@ -47,9 +47,10 @@ public class WebpackDevServerPortView extends Div {
         portSpan.setId(WEBPACK_PORT_ID);
         add(portSpan);
 
-        final NativeButton triggerButton = new NativeButton("Trigger reload", event -> {
-            triggerJettyReload();
-        });
+        final NativeButton triggerButton = new NativeButton("Trigger reload",
+                event -> {
+                    triggerJettyReload();
+                });
         triggerButton.setId(TRIGGER_RELOAD_ID);
         add(triggerButton);
     }

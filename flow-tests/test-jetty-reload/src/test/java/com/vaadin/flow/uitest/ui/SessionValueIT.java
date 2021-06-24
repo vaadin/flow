@@ -27,19 +27,21 @@ import net.jcip.annotations.NotThreadSafe;
 @NotThreadSafe
 public class SessionValueIT extends ChromeBrowserTest {
 
-        @Test
-        public void sessionValuePreservedOnRefresh() throws InterruptedException {
-                open();
-                TestBenchElement div = $("div").id("customAttribute");
-                String customAttribute = div.getText().replace("The custom value in the session is: ", "");
+    @Test
+    public void sessionValuePreservedOnRefresh() throws InterruptedException {
+        open();
+        TestBenchElement div = $("div").id("customAttribute");
+        String customAttribute = div.getText()
+                .replace("The custom value in the session is: ", "");
 
-                // trigger jetty reload
-                findElement(By.id(WebpackDevServerPortView.TRIGGER_RELOAD_ID)).click();
+        // trigger jetty reload
+        findElement(By.id(WebpackDevServerPortView.TRIGGER_RELOAD_ID)).click();
 
-                waitForElementPresent(By.id("customAttribute"));
-                div = $("div").id("customAttribute");
-                String customAttributeAfterReload = div.getText().replace("The custom value in the session is: ", "");
-                Assert.assertEquals(customAttribute, customAttributeAfterReload);
+        waitForElementPresent(By.id("customAttribute"));
+        div = $("div").id("customAttribute");
+        String customAttributeAfterReload = div.getText()
+                .replace("The custom value in the session is: ", "");
+        Assert.assertEquals(customAttribute, customAttributeAfterReload);
 
-        }
+    }
 }

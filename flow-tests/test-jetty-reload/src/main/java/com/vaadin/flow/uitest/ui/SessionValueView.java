@@ -18,14 +18,16 @@ public class SessionValueView extends Div {
     // Test that session values outside VaadinSession are preserved on reload
     public SessionValueView() {
 
-        final NativeButton triggerButton = new NativeButton("Trigger reload", event -> {
-            WebpackDevServerPortView.triggerJettyReload();
-        });
+        final NativeButton triggerButton = new NativeButton("Trigger reload",
+                event -> {
+                    WebpackDevServerPortView.triggerJettyReload();
+                });
         triggerButton.setId(WebpackDevServerPortView.TRIGGER_RELOAD_ID);
         add(triggerButton);
 
         WrappedSession session = VaadinSession.getCurrent().getSession();
-        String customAttribute = (String) session.getAttribute("custom-attribute");
+        String customAttribute = (String) session
+                .getAttribute("custom-attribute");
         if (customAttribute == null) {
             customAttribute = UUID.randomUUID().toString();
             session.setAttribute("custom-attribute", customAttribute);
