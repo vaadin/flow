@@ -252,21 +252,18 @@ public abstract class NodeUpdater implements FallibleCommand {
             packageJson = Json.createObject();
             packageJson.put(DEP_NAME_KEY, DEP_NAME_DEFAULT);
             packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
-            packageJson.put(DEPENDENCIES, Json.createObject());
-            packageJson.put(DEV_DEPENDENCIES, Json.createObject());
-        } else {
-            if (!packageJson.hasKey(DEPENDENCIES)) {
-                packageJson.put(DEPENDENCIES, Json.createObject());
-            }
-            if (!packageJson.hasKey(DEV_DEPENDENCIES)) {
-                packageJson.put(DEV_DEPENDENCIES, Json.createObject());
-            }
         }
 
+        addDefaultObjects(packageJson);
         addVaadinDefaultsToJson(packageJson);
         addWebpackPlugins(packageJson);
 
         return packageJson;
+    }
+
+    private void addDefaultObjects(JsonObject json) {
+        computeIfAbsent(json, DEPENDENCIES, Json::createObject);
+        computeIfAbsent(json, DEV_DEPENDENCIES, Json::createObject);
     }
 
     private void addWebpackPlugins(JsonObject packageJson) {
