@@ -135,7 +135,7 @@ public class InitParameters implements Serializable {
      *
      * @since
      */
-    public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION = "devmode.serializeSession";
+    public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION = "devmode.sessionSerialization.enabled";
 
     /**
      * I18N provider property.

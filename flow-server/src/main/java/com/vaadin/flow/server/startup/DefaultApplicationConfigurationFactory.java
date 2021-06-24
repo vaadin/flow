@@ -93,7 +93,7 @@ public class DefaultApplicationConfigurationFactory
         }
 
         @Override
-        public boolean isDevModeSerializeSession() {
+        public boolean isDevModeSessionSerializationEnabled() {
             return getBooleanProperty(
                     APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION,
                     false);

@@ -96,6 +96,6 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
      * @return {@code true} if dev mode session serialization is enabled,
      *         {@code false} otherwise
      */
-    boolean isDevModeSerializeSession();
+    boolean isDevModeSessionSerializationEnabled();
 
 }
