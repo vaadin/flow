@@ -138,9 +138,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private final StreamResourceRegistry resourceRegistry;
 
-    private transient boolean serialize = true;
-
-    transient boolean deserializedAsEmpty = false;
+    private transient boolean deserializedAsEmpty;
 
     /**
      * Creates a new VaadinSession tied to a VaadinService.
@@ -338,10 +336,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         }
         assert this.configuration == null : "Configuration can only be set once";
         this.configuration = configuration;
-        if (!configuration.isProductionMode()
-                && !configuration.isDevModeSerializeSession()) {
-            this.serialize = false;
-        }
     }
 
     /**
@@ -1042,8 +1036,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private void writeObject(java.io.ObjectOutputStream stream)
             throws IOException {
-        stream.writeBoolean(this.serialize);
-        if (this.serialize) {
+        boolean serialize = true;
+        if (configuration.isProductionMode()
+                && !configuration.isDevModeSerializeSession()) {
+            serialize = false;
+        }
+
+        stream.writeBoolean(serialize);
+        if (serialize) {
             stream.defaultWriteObject();
         }
     }
@@ -1086,5 +1086,13 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public String getCsrfToken() {
         return csrfToken;
+    }
+
+    /**
+     * Checks if the session was deserialized without content and should be
+     * ignored and removed.
+     */
+    boolean isDeserializedAsEmpty() {
+        return deserializedAsEmpty;
     }
 }
