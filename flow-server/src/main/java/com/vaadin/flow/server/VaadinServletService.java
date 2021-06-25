@@ -314,4 +314,9 @@ public class VaadinServletService extends VaadinService {
     protected VaadinContext constructVaadinContext() {
         return new VaadinServletContext(getServlet().getServletContext());
     }
+
+    @Override
+    protected void setDefaultClassLoader() {
+        setClassLoader(getServlet().getServletContext().getClassLoader());
+    }
 }

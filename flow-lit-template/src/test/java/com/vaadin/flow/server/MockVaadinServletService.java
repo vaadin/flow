@@ -108,6 +108,13 @@ public class MockVaadinServletService extends VaadinServletService {
     }
 
     @Override
+    public void setClassLoader(ClassLoader classLoader) {
+        if (classLoader != null) {
+            super.setClassLoader(classLoader);
+        }
+    }
+
+    @Override
     public void init() {
         try {
             MockVaadinServlet servlet = (MockVaadinServlet) getServlet();
