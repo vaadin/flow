@@ -48,6 +48,7 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
 /**
@@ -137,6 +138,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private final Attributes attributes = new Attributes();
 
     private final StreamResourceRegistry resourceRegistry;
+
+    private transient boolean deserializedAsEmpty;
 
     /**
      * Creates a new VaadinSession tied to a VaadinService.
@@ -544,6 +547,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            and the session is not locked
      */
     public void checkHasLock(String message) {
+        assert deserializedAsEmpty == false : "The session was discarded during serialization and should not be used";
         if (configuration == null || configuration.isProductionMode()) {
             assert hasLock() : message;
         } else if (!hasLock()) {
@@ -1008,6 +1012,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Override default deserialization logic to account for transient
      * {@link #pendingAccessQueue}.
+     * <p>
+     * If a session was not serialized in writeObject, then only marks that this
+     * VaadinSession instance should not be used. The instance is removed by
+     * {@link VaadinService#readFromHttpSession(WrappedSession)}.
      *
      * @param stream
      *            the object to read
@@ -1018,12 +1026,34 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     private void readObject(ObjectInputStream stream)
             throws IOException, ClassNotFoundException {
+        boolean wasSerialized = stream.readBoolean();
+        this.deserializedAsEmpty = !wasSerialized;
+        if (!wasSerialized) {
+            return;
+        }
         Map<Class<?>, CurrentInstance> old = CurrentInstance.setCurrent(this);
         try {
             stream.defaultReadObject();
             pendingAccessQueue = new ConcurrentLinkedQueue<>();
         } finally {
             CurrentInstance.restoreInstances(old);
+        }
+    }
+
+    private void writeObject(java.io.ObjectOutputStream stream)
+            throws IOException {
+        boolean serialize = true;
+
+        ApplicationConfiguration appConfiguration = ApplicationConfiguration
+                .get(getService().getContext());
+        if (!appConfiguration.isProductionMode()
+                && !appConfiguration.isDevModeSessionSerializationEnabled()) {
+            serialize = false;
+        }
+
+        stream.writeBoolean(serialize);
+        if (serialize) {
+            stream.defaultWriteObject();
         }
     }
 
@@ -1065,5 +1095,13 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public String getCsrfToken() {
         return csrfToken;
+    }
+
+    /**
+     * Checks if the session was deserialized without content and should be
+     * ignored and removed.
+     */
+    boolean isDeserializedAsEmpty() {
+        return deserializedAsEmpty;
     }
 }

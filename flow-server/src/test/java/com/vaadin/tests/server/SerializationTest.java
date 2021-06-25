@@ -7,14 +7,28 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
+
+import org.mockito.Mockito;
 
 import junit.framework.TestCase;
 
 public class SerializationTest extends TestCase {
 
     public void testVaadinSession() throws Exception {
-        VaadinSession session = new VaadinSession(null);
+        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        ApplicationConfiguration applicationConfiguration = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(service.getContext()).thenReturn(context);
+        Mockito.when(context.getAttribute(Mockito.any(), Mockito.any()))
+                .thenReturn(applicationConfiguration);
+        Mockito.when(applicationConfiguration.isProductionMode())
+                .thenReturn(true);
+        VaadinSession session = new VaadinSession(service);
 
         session = serializeAndDeserialize(session);
 

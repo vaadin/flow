@@ -1,0 +1,20 @@
+<Configure id="testWebapp" class="org.eclipse.jetty.webapp.WebAppContext">
+    <Get id="sh" name="sessionHandler">
+        <Set name="sessionCache">
+            <New class="org.eclipse.jetty.server.session.DefaultSessionCache">
+                <Arg>
+                    <Ref id="sh"/>
+                </Arg>
+                <Set name="sessionDataStore">
+                    <New class="org.eclipse.jetty.server.session.FileSessionDataStore">
+                        <Set name="storeDir">
+                            <New class="java.io.File">
+                                <Arg>jetty-sessions</Arg>
+                            </New>
+                        </Set>
+                    </New>
+                </Set>
+            </New>
+        </Set>
+    </Get>
+</Configure>

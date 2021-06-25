@@ -47,6 +47,7 @@ import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 
@@ -63,6 +64,14 @@ public class SessionRouteRegistryTest {
 
         vaadinService = Mockito.mock(MockService.class);
         Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        ApplicationConfiguration applicationConfiguration = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(vaadinService.getContext()).thenReturn(context);
+        Mockito.when(context.getAttribute(Mockito.any(), Mockito.any()))
+                .thenReturn(applicationConfiguration);
+        Mockito.when(applicationConfiguration.isProductionMode())
+                .thenReturn(true);
 
         VaadinService.setCurrent(vaadinService);
 

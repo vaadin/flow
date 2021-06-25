@@ -61,6 +61,7 @@
                 <artifactId>jetty-maven-plugin</artifactId>
                 <configuration>
                     <!-- Scan target/scantrigger in 1 second intervals -->
+                    <contextXml>${project.basedir}/context.xml</contextXml>
                     <scanIntervalSeconds>1</scanIntervalSeconds>
                     <scanTargetPatterns>
                         <scanTargetPattern>

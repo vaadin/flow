@@ -2173,6 +2173,10 @@ public abstract class VaadinService implements Serializable {
      * Performs the actual read of the VaadinSession from the underlying HTTP
      * session after sanity checks have been performed.
      * <p>
+     * If a VaadinSession that was ignored during serialization is found, it is
+     * removed from the session and {@code null} is returned so a new, proper
+     * session can be created.
+     * <p>
      * Called by {@link #loadSession(WrappedSession)}.
      *
      * @param wrappedSession
@@ -2180,8 +2184,13 @@ public abstract class VaadinService implements Serializable {
      * @return the VaadinSession or null if no session was found
      */
     protected VaadinSession readFromHttpSession(WrappedSession wrappedSession) {
-        return (VaadinSession) wrappedSession
+        VaadinSession session = (VaadinSession) wrappedSession
                 .getAttribute(getSessionAttributeName());
+        if (session != null && session.isDeserializedAsEmpty()) {
+            wrappedSession.removeAttribute(getSessionAttributeName());
+            return null;
+        }
+        return session;
     }
 
     /**

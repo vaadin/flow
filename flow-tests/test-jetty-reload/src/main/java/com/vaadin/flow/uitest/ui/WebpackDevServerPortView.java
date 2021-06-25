@@ -49,15 +49,19 @@ public class WebpackDevServerPortView extends Div {
 
         final NativeButton triggerButton = new NativeButton("Trigger reload",
                 event -> {
-                    try {
-                        touch(new File(
-                                System.getProperty("jetty.scantrigger")));
-                    } catch (IOException ioException) {
-                        throw new UncheckedIOException(ioException);
-                    }
+                    triggerJettyReload();
                 });
         triggerButton.setId(TRIGGER_RELOAD_ID);
         add(triggerButton);
+    }
+
+    public static void triggerJettyReload() {
+        try {
+            touch(new File(System.getProperty("jetty.scantrigger")));
+        } catch (IOException ioException) {
+            throw new UncheckedIOException(ioException);
+        }
+
     }
 
     private static void touch(File file) throws IOException {

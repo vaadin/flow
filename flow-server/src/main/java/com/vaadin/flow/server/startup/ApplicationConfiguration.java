@@ -88,4 +88,14 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
      */
     FallbackChunk getFallbackChunk();
 
+    /**
+     * Checks if development mode session serialization is enabled or not.
+     * <p>
+     * By default session serialization is disabled in development mode.
+     *
+     * @return {@code true} if dev mode session serialization is enabled,
+     *         {@code false} otherwise
+     */
+    boolean isDevModeSessionSerializationEnabled();
+
 }
