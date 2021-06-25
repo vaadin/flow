@@ -1,9 +1,12 @@
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -11,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -124,6 +128,36 @@ public class VaadinServletServiceTest {
         Assert.assertTrue(UsageStatistics.getEntries()
                 .anyMatch(e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER
                         .equals(e.getName())));
+    }
+
+    @Test
+    public void init_classLoaderIsSetUsingServletContext()
+            throws ServiceException {
+        VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
+        ServletContext context = Mockito.mock(ServletContext.class);
+        Mockito.when(servlet.getServletContext()).thenReturn(context);
+
+        ClassLoader loader = Mockito.mock(ClassLoader.class);
+        Mockito.when(context.getClassLoader()).thenReturn(loader);
+
+        VaadinServletService service = new VaadinServletService(servlet,
+                mocks.getDeploymentConfiguration()) {
+            @Override
+            protected Instantiator createInstantiator()
+                    throws ServiceException {
+                return Mockito.mock(Instantiator.class);
+            }
+
+            @Override
+            protected List<RequestHandler> createRequestHandlers()
+                    throws ServiceException {
+                return Collections.emptyList();
+            }
+        };
+
+        service.init();
+
+        Assert.assertSame(loader, service.getClassLoader());
     }
 
     private String testLocation(String base, String contextPath,
