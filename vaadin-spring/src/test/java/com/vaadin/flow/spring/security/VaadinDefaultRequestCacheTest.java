@@ -7,10 +7,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.server.HandlerHelper.RequestType;
-import com.vaadin.flow.server.connect.Endpoint;
-import com.vaadin.flow.server.connect.EndpointRegistry;
-import com.vaadin.flow.server.connect.VaadinConnectControllerConfiguration;
-import com.vaadin.flow.server.connect.VaadinEndpointProperties;
+import com.vaadin.fusion.Endpoint;
+import com.vaadin.fusion.EndpointRegistry;
+import com.vaadin.fusion.VaadinConnectControllerConfiguration;
+import com.vaadin.fusion.VaadinEndpointProperties;
 import com.vaadin.flow.spring.SpringBootAutoConfiguration;
 import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 

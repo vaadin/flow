@@ -744,7 +744,7 @@ public class VaadinServletContextInitializer
     private List<String> getLookupPackages() {
         return Stream
                 .concat(getDefaultPackages().stream(),
-                        Stream.of("com.vaadin.flow.server.frontend.fusion",
+                        Stream.of("com.vaadin.fusion.frontend",
                                 "com.vaadin.flow.component.polymertemplate.rpc",
                                 "com.vaadin.base.devserver"))
                 .collect(Collectors.toList());
