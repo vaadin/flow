@@ -199,7 +199,8 @@ public final class BundleLitParser {
             // "node_modules/@vaadin/flow-frontend/" instead of "./"
             // "target/flow-frontend/" instead of "./"
             if (name.contains(FLOW_NPM_PACKAGE_NAME) || name.contains(service
-                    .getDeploymentConfiguration().getFlowResourcesFolder())) {
+                    .getDeploymentConfiguration().getFlowResourcesFolder()
+                    .replaceAll("\\\\", "/"))) {
                 alternativeFileName = alternativeFileName.replaceFirst("\\./",
                         "");
             }
