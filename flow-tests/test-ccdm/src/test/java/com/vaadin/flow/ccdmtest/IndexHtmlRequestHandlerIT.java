@@ -35,10 +35,10 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
     }
 
     @Test
-    public void indexHtmlRequestListener_openRootURL_shouldHaveModifiedLabel() {
+    public void indexHtmlRequestListener_openRootURL_shouldHaveModifiedOutput() {
         openTestUrl("/");
-        waitForElementPresent(By.tagName("label"));
-        String content = findElement(By.tagName("label")).getText();
+        waitForElementPresent(By.tagName("output"));
+        String content = findElement(By.tagName("output")).getText();
         Assert.assertEquals(
                 "The page should have label element which is added by a listener",
                 "Modified page", content);

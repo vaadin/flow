@@ -384,24 +384,6 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_include_token_in_dom_when_return_not_null_csrfToken_in_session()
-            throws IOException {
-        Mockito.when(session.getCsrfToken()).thenReturn("foo");
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                createVaadinRequest("/"), response);
-
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
-        Document document = Jsoup.parse(indexHtml);
-
-        Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(1, scripts.size());
-        Assert.assertTrue(scripts.get(0).childNode(0).toString().contains(
-                "window.Vaadin = {TypeScript: {\"csrfToken\":\"foo\""));
-        Assert.assertEquals("", scripts.get(0).attr("initial"));
-    }
-
-    @Test
     public void should_include_spring_csrf_token_in_meta_tags_when_return_not_null_spring_csrf_in_request()
             throws IOException {
         VaadinRequest request = Mockito.spy(createVaadinRequest("/"));
@@ -472,21 +454,6 @@ public class IndexHtmlRequestHandlerTest {
                 .getElementsByAttribute(SPRING_CSRF_ATTRIBUTE).size());
         Assert.assertEquals(0,
                 document.head().getElementsByAttribute("_csrf_header").size());
-    }
-
-    @Test
-    public void should_not_include_token_in_dom_when_referer_is_service_worker()
-            throws IOException {
-        Mockito.when(session.getCsrfToken()).thenReturn("foo");
-        VaadinServletRequest vaadinRequest = createVaadinRequest("/");
-        Mockito.when(((HttpServletRequest) vaadinRequest.getRequest())
-                .getHeader("referer"))
-                .thenReturn("http://somewhere.test/sw.js");
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                vaadinRequest, response);
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
-        Assert.assertFalse(indexHtml.contains("csrfToken"));
     }
 
     @Test

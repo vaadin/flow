@@ -410,11 +410,11 @@ public abstract class VaadinService implements Serializable {
                     .lookupAll(InstantiatorFactory.class);
             instantiators = new ArrayList<>(factories.size());
             for (InstantiatorFactory factory : factories) {
-                Instantiator instantiator = factory.createInstantitor(this);
+                Instantiator inst = factory.createInstantitor(this);
                 // if the existing instantiator is converted to new API then
                 // let's respect its deprecated method
-                if (instantiator != null && instantiator.init(this)) {
-                    instantiators.add(instantiator);
+                if (inst != null && inst.init(this)) {
+                    instantiators.add(inst);
                 }
             }
         }
@@ -2129,8 +2129,6 @@ public abstract class VaadinService implements Serializable {
             WrappedSession wrappedSession) {
         assert VaadinSession.hasLock(this, wrappedSession);
         writeToHttpSession(wrappedSession, session);
-        wrappedSession.setAttribute(getCsrfTokenAttributeName(),
-                session.getCsrfToken());
         session.refreshTransients(wrappedSession, this);
     }
 
@@ -2194,7 +2192,6 @@ public abstract class VaadinService implements Serializable {
     public void removeSession(WrappedSession wrappedSession) {
         assert VaadinSession.hasLock(this, wrappedSession);
         removeFromHttpSession(wrappedSession);
-        wrappedSession.removeAttribute(getCsrfTokenAttributeName());
     }
 
     /**
@@ -2388,15 +2385,5 @@ public abstract class VaadinService implements Serializable {
     public void setBootstrapUrlPredicate(
             BootstrapUrlPredicate bootstrapUrlPredicate) {
         this.bootstrapUrlPredicate = bootstrapUrlPredicate;
-    }
-
-    /**
-     * Get the name of the CSRF Token attribute in HTTP session.
-     *
-     * @return the attribute name string
-     */
-    public static String getCsrfTokenAttributeName() {
-        return VaadinSession.class.getName() + "."
-                + ApplicationConstants.CSRF_TOKEN;
     }
 }
