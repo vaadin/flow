@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
@@ -138,9 +139,18 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
                 .mock(ApplicationConfiguration.class);
         Mockito.when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        Mockito.when(context.getAttribute(
+                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
+                .thenReturn(appConfig);
         VaadinService service = new VaadinServletService(new VaadinServlet(),
                 new DefaultDeploymentConfiguration(appConfig, getClass(),
-                        initParameters));
+                        initParameters)) {
+            @Override
+            public VaadinContext getContext() {
+                return context;
+            }
+        };
         VaadinSession session = new TestSession(service);
 
         TestBeanStore store = new TestBeanStore(session);
