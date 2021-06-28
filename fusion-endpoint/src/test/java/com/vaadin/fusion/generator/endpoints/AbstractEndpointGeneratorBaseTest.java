@@ -79,8 +79,7 @@ public abstract class AbstractEndpointGeneratorBaseTest {
                 : TestUtils
                         .readProperties(customApplicationProperties.getPath());
         new OpenApiSpecGenerator(applicationProperties).generateOpenApiSpec(
-                TestUtils.getClassFilePath(testPackage),
-                openApiJsonOutput);
+                TestUtils.getClassFilePath(testPackage), openApiJsonOutput);
     }
 
     protected List<File> getTsFiles(File directory) {

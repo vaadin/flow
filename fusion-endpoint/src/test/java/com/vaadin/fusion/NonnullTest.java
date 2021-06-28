@@ -38,7 +38,8 @@ public class NonnullTest {
 
         @Test
         public void should_haveNonNullableField() {
-            assertTrue(field.getAnnotatedType().isAnnotationPresent(Nonnull.class));
+            assertTrue(field.getAnnotatedType()
+                    .isAnnotationPresent(Nonnull.class));
         }
 
         @Test
