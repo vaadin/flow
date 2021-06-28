@@ -18,7 +18,6 @@ package com.vaadin.flow.spring.instantiator;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -48,8 +47,8 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.ServiceInitEvent;
-import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.StaticFileHandlerFactory;
+import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServletService;
@@ -185,6 +184,9 @@ public class SpringInstantiatorTest {
 
         ServletConfig config = Mockito.mock(ServletConfig.class);
         ServletContext servletContext = Mockito.mock(ServletContext.class);
+
+        Mockito.when(servletContext.getClassLoader())
+                .thenReturn(servlet.getClass().getClassLoader());
 
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
