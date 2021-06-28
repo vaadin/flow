@@ -59,18 +59,17 @@ public class MiscelaneousIT extends ChromeBrowserTest {
     @Test
     public void handlesIncorrectIconProperly() {
         List<LogEntry> entries = getLogEntries(Level.WARNING);
+        List<String> msgs = entries.stream().map(LogEntry::getMessage)
+                .filter(msg -> !msg.contains("HTML Imports is deprecated"))
+                .collect(Collectors.toList());
         // The icon doesn't exist: it means that it WON'T be handled by the
         // Vaadin servlet at all and
         // there will be an error message: this is expected. But this should be
         // the only error message in the log
-        if (entries.size() >= 1) {
-            Assert.assertEquals(
-                    "Console log messages are: "
-                            + entries.stream().map(LogEntry::getMessage)
-                                    .collect(Collectors.joining(", ")),
-                    1, entries.size());
-            Assert.assertTrue(entries.get(0).getMessage()
-                    .contains("Failed to load resource"));
+        if (msgs.size() >= 1) {
+            Assert.assertEquals("Console log messages are: " + msgs, 1,
+                    msgs.size());
+            Assert.assertTrue(msgs.get(0).contains("Failed to load resource"));
         }
 
         // regardless of image absence the View should be rendered properly (the
