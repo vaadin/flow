@@ -16,7 +16,9 @@
 
 package com.vaadin.flow.server;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -49,10 +51,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,6 +91,8 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * An abstraction of the underlying technology, e.g. servlets, for handling
@@ -216,28 +216,6 @@ public abstract class VaadinService implements Serializable {
      */
     public VaadinService(DeploymentConfiguration deploymentConfiguration) {
         this.deploymentConfiguration = deploymentConfiguration;
-
-        final String classLoaderName = getDeploymentConfiguration()
-                .getClassLoaderName();
-        if (classLoaderName != null) {
-            try {
-                final Class<?> classLoaderClass = getClass().getClassLoader()
-                        .loadClass(classLoaderName);
-                final Constructor<?> c = classLoaderClass
-                        .getConstructor(ClassLoader.class);
-                setClassLoader((ClassLoader) c.newInstance(
-                        new Object[] { getClass().getClassLoader() }));
-            } catch (final Exception e) {
-                throw new RuntimeException(
-                        "Could not find specified class loader: "
-                                + classLoaderName,
-                        e);
-            }
-        }
-
-        if (getClassLoader() == null) {
-            setDefaultClassLoader();
-        }
     }
 
     /**
@@ -261,6 +239,7 @@ public abstract class VaadinService implements Serializable {
      *             if a problem occurs when creating the service
      */
     public void init() throws ServiceException {
+        doSetClassLoader();
         instantiator = createInstantiator();
 
         // init the router now so that registry will be available for
@@ -283,8 +262,8 @@ public abstract class VaadinService implements Serializable {
 
             requestHandlers = Collections.unmodifiableCollection(handlers);
 
-            dependencyFilters = Collections.unmodifiableCollection(
-                    Stream.concat(instantiator.getDependencyFilters(
+            dependencyFilters = Collections.unmodifiableCollection(Stream
+                    .concat(instantiator.getDependencyFilters(
                             event.getAddedDependencyFilters()),
                             new BundleFilterFactory().createFilters(this))
                     .collect(Collectors.toList()));
@@ -1720,13 +1699,16 @@ public abstract class VaadinService implements Serializable {
                  */
 
                 // Ensure that the browser does not cache expired responses.
-                // iOS 6 Safari requires this (https://github.com/vaadin/framework/issues/3226)
+                // iOS 6 Safari requires this
+                // (https://github.com/vaadin/framework/issues/3226)
                 response.setHeader("Cache-Control", "no-cache");
                 // If Content-Type is not set, browsers assume text/html and may
-                // complain about the empty response body (https://github.com/vaadin/framework/issues/4167)
+                // complain about the empty response body
+                // (https://github.com/vaadin/framework/issues/4167)
                 response.setHeader("Content-Type", "text/plain");
 
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Session expired");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN,
+                        "Session expired");
             }
         } catch (IOException e) {
             throw new ServiceException(e);
@@ -1779,9 +1761,8 @@ public abstract class VaadinService implements Serializable {
      *            {@code null}, body will be used
      * @return A JSON string to be sent to the client
      */
-    public static String createCriticalNotificationJSON(
-            String caption, String message, String details, String url,
-            String querySelector) {
+    public static String createCriticalNotificationJSON(String caption,
+            String message, String details, String url, String querySelector) {
         try {
             JsonObject appError = Json.createObject();
             putValueOrJsonNull(appError, "caption", caption);
@@ -2393,6 +2374,31 @@ public abstract class VaadinService implements Serializable {
             runnable.run();
         } finally {
             setCurrent(null);
+        }
+    }
+
+    private void doSetClassLoader() {
+        final String classLoaderName = getDeploymentConfiguration() == null
+                ? null
+                : getDeploymentConfiguration().getClassLoaderName();
+        if (classLoaderName != null) {
+            try {
+                final Class<?> classLoaderClass = getClass().getClassLoader()
+                        .loadClass(classLoaderName);
+                final Constructor<?> c = classLoaderClass
+                        .getConstructor(ClassLoader.class);
+                setClassLoader((ClassLoader) c.newInstance(
+                        new Object[] { getClass().getClassLoader() }));
+            } catch (final Exception e) {
+                throw new RuntimeException(
+                        "Could not find specified class loader: "
+                                + classLoaderName,
+                        e);
+            }
+        }
+
+        if (getClassLoader() == null) {
+            setDefaultClassLoader();
         }
     }
 }
