@@ -46,6 +46,10 @@ public class RouteNotFoundError extends Component
     @Override
     public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<NotFoundException> parameter) {
+        LoggerFactory.getLogger(RouteNotFoundError.class)
+                .info(parameter.hasCustomMessage()
+                        ? parameter.getCustomMessage()
+                        : "Route is not found", parameter.getCaughtException());
         String path = event.getLocation().getPath();
         String additionalInfo = "";
         if (parameter.hasCustomMessage()) {
