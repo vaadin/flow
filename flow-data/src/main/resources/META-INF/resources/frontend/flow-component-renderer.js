@@ -93,6 +93,7 @@ class FlowComponentRenderer extends PolymerElement {
           if (this.firstChild &&
                   typeof this.firstChild.click === "function" &&
                       event.target === this ){
+              event.stopPropagation();
               this.firstChild.click();
           }
       });
