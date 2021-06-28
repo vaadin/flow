@@ -41,20 +41,24 @@ public class ExplicitNullableTypeChecker {
      * @return a result of check
      */
     public static boolean isRequired(AnnotatedElement element) {
-        boolean isPrimitive = false;
+        if ((element instanceof Field
+                && ((Field) element).getType().isPrimitive())
+                || (element instanceof Parameter
+                        && ((Parameter) element).getType().isPrimitive())) {
+            return true;
+        }
+
         Stream<Annotation> annotations = Stream.of(element.getAnnotations());
 
         if (element instanceof Field) {
-            isPrimitive = ((Field) element).getType().isPrimitive();
             annotations = Stream.concat(annotations, Stream
                     .of(((Field) element).getAnnotatedType().getAnnotations()));
         } else if (element instanceof Parameter) {
-            isPrimitive = ((Parameter) element).getType().isPrimitive();
             annotations = Stream.concat(annotations, Stream.of(
                     ((Parameter) element).getAnnotatedType().getAnnotations()));
         }
 
-        return isPrimitive || annotations.anyMatch(annotation -> "nonnull"
+        return annotations.anyMatch(annotation -> "nonnull"
                 .equalsIgnoreCase(annotation.annotationType().getSimpleName()));
     }
 
