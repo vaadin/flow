@@ -28,8 +28,12 @@ import com.vaadin.fusion.Endpoint;
 @Endpoint
 public class NonNullableEndpoint {
 
+    public int getNonNullableIndex() {
+        return 0;
+    }
+
     @Nonnull
-    public String getNullableString(String input) {
+    public String getNonNullableString(String input) {
         return "";
     }
 
