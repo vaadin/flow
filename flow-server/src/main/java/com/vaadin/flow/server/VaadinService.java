@@ -2377,16 +2377,6 @@ public abstract class VaadinService implements Serializable {
         }
     }
 
-    /**
-     * Get the name of the CSRF Token attribute in HTTP session.
-     *
-     * @return the attribute name string
-     */
-    public static String getCsrfTokenAttributeName() {
-        return VaadinSession.class.getName() + "."
-                + ApplicationConstants.CSRF_TOKEN;
-    }
-
     private void doSetClassLoader() {
         final String classLoaderName = getDeploymentConfiguration() == null
                 ? null
