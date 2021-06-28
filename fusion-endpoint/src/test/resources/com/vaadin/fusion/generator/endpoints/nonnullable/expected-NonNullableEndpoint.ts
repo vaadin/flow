@@ -9,6 +9,7 @@ import client from './connect-client.default';
 import NonNullableModel from './com/vaadin/fusion/generator/endpoints/nonnullable/NonNullableEndpoint/NonNullableModel';
 import ParameterType from './com/vaadin/fusion/generator/endpoints/nonnullable/NonNullableEndpoint/ParameterType';
 import ReturnType from './com/vaadin/fusion/generator/endpoints/nonnullable/NonNullableEndpoint/ReturnType';
+import VaadinNonNullableModel from './com/vaadin/fusion/generator/endpoints/nonnullable/NonNullableEndpoint/VaadinNonNullableModel';
 
 function _echoMap(
   shouldBeNotNull: boolean
@@ -33,6 +34,14 @@ function _echoNonNullableMap(
 }
 
 export {_echoNonNullableMap as echoNonNullableMap};
+
+function _echoVaadinNonNullableMap (
+  nonNullableParameter: Array<string>
+): Promise<Record<string, VaadinNonNullableModel>> {
+  return client.call ('NonNullableEndpoint', 'echoVaadinNonNullableMap', {nonNullableParameter});
+}
+
+export {_echoVaadinNonNullableMap as echoVaadinNonNullableMap};
 
 function _getNotNullReturnType(): Promise<ReturnType | undefined> {
   return client.call('NonNullableEndpoint', 'getNotNullReturnType');
@@ -66,6 +75,7 @@ export const NonNullableEndpoint = Object.freeze({
   echoMap: _echoMap,
   echoNonNullModel: _echoNonNullModel,
   echoNonNullableMap: _echoNonNullableMap,
+  echoVaadinNonNullableMap: _echoVaadinNonNullableMap,
   getNotNullReturnType: _getNotNullReturnType,
   getNullableString: _getNullableString,
   sendParameterType: _sendParameterType,
