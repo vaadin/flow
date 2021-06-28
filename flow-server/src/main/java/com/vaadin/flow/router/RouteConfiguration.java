@@ -509,8 +509,10 @@ public class RouteConfiguration implements Serializable {
         Optional<String> targetUrl = handledRegistry
                 .getTargetUrl(navigationTarget, parameters);
         if (!targetUrl.isPresent()) {
-            throw new NotFoundException(
-                    "No route found for the given navigation target and parameters!");
+            throw new NotFoundException(String.format(
+                    "No route found for the given navigation target '%s' and parameters '%s'",
+                    navigationTarget.getClass().getName(),
+                    parameters.toString()));
         }
         return targetUrl.get();
     }
