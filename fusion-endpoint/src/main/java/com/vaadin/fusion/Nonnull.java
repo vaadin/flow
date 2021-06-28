@@ -7,8 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to mark either field, method, parameter or collection item type
- * as non-nullable. It is used by Typescript Generator as a source of type
+ * Annotation to mark either field, method, parameter or collection item type as
+ * non-nullable. It is used by Typescript Generator as a source of type
  * nullability information.
  *
  * Since Typescript Generator works with any annotation with case-insensitive
