@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.littemplate.internal;
 
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.stream.Stream;
 
@@ -58,7 +59,8 @@ public class LitTemplateParserImplTest {
         Properties properties = new Properties();
         Mockito.when(configuration.getInitParameters()).thenReturn(properties);
         Mockito.when(configuration.getFlowResourcesFolder()).thenReturn(
-                "target/" + FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER);
+                Paths.get("target", FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER)
+                        .toString());
 
         Instantiator instantiator = Mockito.mock(Instantiator.class);
         Mockito.when(instantiator.getServiceInitListeners())
@@ -220,6 +222,23 @@ public class LitTemplateParserImplTest {
     }
 
     @Test
+    public void getTemplateContent_nonLocalTemplateInTargetFolder_rootElementParsed() {
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
+                .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
+        LitTemplateParser.TemplateData templateContent = LitTemplateParserImpl
+                .getInstance().getTemplateContent(HelloWorld2.class,
+                        HelloWorld2.class.getAnnotation(Tag.class).value(),
+                        service);
+
+        Assert.assertEquals("Template should contain one child", 2,
+                templateContent.getTemplateElement().childNodeSize());
+
+        Assert.assertEquals("Template should have 3 divs", 3, templateContent
+                .getTemplateElement().getElementsByTag("div").size());
+    }
+
+    @Test
     public void severalJsModuleAnnotations_theFirstFileDoesNotExist_fileWithContentIsChosen() {
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
@@ -293,6 +312,11 @@ public class LitTemplateParserImplTest {
     @Tag("hello-world")
     @JsModule("./src/hello-world-lit.js")
     public class HelloWorld extends LitTemplate {
+    }
+
+    @Tag("hello-world")
+    @JsModule("./src/hello-world2.js")
+    public class HelloWorld2 extends LitTemplate {
     }
 
     @Tag("my-lit-element-view")

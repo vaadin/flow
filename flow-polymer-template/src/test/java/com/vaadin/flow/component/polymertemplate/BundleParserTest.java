@@ -3,6 +3,7 @@ package com.vaadin.flow.component.polymertemplate;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.stream.Stream;
 
@@ -32,6 +33,7 @@ public class BundleParserTest {
     private static JsonObject stats;
 
     private MockVaadinServletService service;
+    private DeploymentConfiguration configuration;
 
     @BeforeClass
     public static void initClass() throws IOException {
@@ -44,13 +46,13 @@ public class BundleParserTest {
 
     @Before
     public void init() {
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
         Mockito.when(configuration.getFlowResourcesFolder()).thenReturn(
-                "target/" + FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER);
+                Paths.get("target", FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER)
+                        .toString());
 
         Properties properties = new Properties();
         Mockito.when(configuration.getInitParameters()).thenReturn(properties);
@@ -77,6 +79,15 @@ public class BundleParserTest {
 
     @Test
     public void nonLocalTemplate_sourcesShouldBeFoundInTargetFolder() {
+        final String source = BundleParser.getSourceFromStatistics(
+                "./src/hello-world2.js", stats, service);
+        Assert.assertNotNull("Source expected in stats.json", source);
+    }
+
+    @Test
+    public void nonLocalTemplate_windowsPath_sourcesShouldBeFoundInTargetFolder() {
+        Mockito.when(configuration.getFlowResourcesFolder()).thenReturn(
+                "target\\" + FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER);
         final String source = BundleParser.getSourceFromStatistics(
                 "./src/hello-world2.js", stats, service);
         Assert.assertNotNull("Source expected in stats.json", source);
