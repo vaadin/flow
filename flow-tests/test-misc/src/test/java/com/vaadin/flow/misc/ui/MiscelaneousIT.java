@@ -17,6 +17,7 @@ package com.vaadin.flow.misc.ui;
 
 import java.util.List;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -63,7 +64,11 @@ public class MiscelaneousIT extends ChromeBrowserTest {
         // there will be an error message: this is expected. But this should be
         // the only error message in the log
         if (entries.size() >= 1) {
-            Assert.assertEquals(1, entries.size());
+            Assert.assertEquals(
+                    "Console log messages are: "
+                            + entries.stream().map(LogEntry::getMessage)
+                                    .collect(Collectors.joining(", ")),
+                    1, entries.size());
             Assert.assertTrue(entries.get(0).getMessage()
                     .contains("Failed to load resource"));
         }
