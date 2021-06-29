@@ -199,6 +199,21 @@ public class FrontendVersionTest {
                 test.isNewerThan(new FrontendVersion("2.0.0-RC1")));
     }
 
+    @Test
+    public void buildIdentifierNumbers_returnsAsExpected() {
+
+        FrontendVersion test = new FrontendVersion("2.0.0-alpha6");
+        assertTrue("2.0.0-alpha6 should be older than 2.0.0-alpha13",
+                test.isOlderThan(new FrontendVersion("2.0.0-alpha13")));
+
+        test = new FrontendVersion("2.0.0.alpha20");
+        assertTrue("2.0.0-alpha20 should be newer than 2.0.0-alpha13",
+                test.isNewerThan(new FrontendVersion("2.0.0-alpha13")));
+
+        assertTrue("same versions should equal",
+                test.isEqualTo(new FrontendVersion("2.0.0.alpha20")));
+    }
+
     private void assertVersion(FrontendVersion version, int major, int minor,
             int revision, String build) {
         Assert.assertEquals(

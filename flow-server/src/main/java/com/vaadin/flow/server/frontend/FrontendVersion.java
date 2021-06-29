@@ -17,6 +17,8 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Version object for frontend versions comparison and handling.
@@ -27,6 +29,13 @@ import java.util.Objects;
  */
 public class FrontendVersion
         implements Serializable, Comparable<FrontendVersion> {
+
+    /**
+     * Parses the buildIdentifier to String + Integer for instance beta1 =>
+     * 'beta' and '1'
+     */
+    private final Pattern buildIdentifierParser = Pattern
+            .compile("(\\D*)(\\d*)");
 
     /**
      * The version number of this release. For example "6.2.0". Always in the
@@ -306,9 +315,27 @@ public class FrontendVersion
                     && other.buildIdentifier.isEmpty()) {
                 return -1;
             }
-            return buildIdentifier.compareToIgnoreCase(other.buildIdentifier);
+            return compareBuildIdentifier(other);
         }
         return 0;
+    }
+
+    private int compareBuildIdentifier(FrontendVersion other) {
+        final Matcher thisMatcher = buildIdentifierParser
+                .matcher(buildIdentifier);
+        final Matcher otherMatcher = buildIdentifierParser
+                .matcher(other.buildIdentifier);
+        if (thisMatcher.groupCount() == 2 && otherMatcher.groupCount() == 2) {
+            thisMatcher.find();
+            otherMatcher.find();
+            if (thisMatcher.group(1).compareTo(otherMatcher.group(1)) != 0) {
+                return thisMatcher.group(1)
+                        .compareToIgnoreCase(otherMatcher.group(1));
+            }
+            return Integer.parseInt(thisMatcher.group(2))
+                    - Integer.parseInt(otherMatcher.group(2));
+        }
+        return buildIdentifier.compareToIgnoreCase(other.buildIdentifier);
     }
 
     private String getInvalidVersionMessage(String name, String version) {
