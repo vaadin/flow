@@ -35,7 +35,7 @@ public class AnchorInsideTemplateIT extends ChromeBrowserTest {
 
         String href = anchor.getAttribute("href");
         MatcherAssert.assertThat(href,
-                CoreMatchers.startsWith("VAADIN/dynamic/resource"));
+                CoreMatchers.containsString("VAADIN/dynamic/resource"));
     }
 
 }
