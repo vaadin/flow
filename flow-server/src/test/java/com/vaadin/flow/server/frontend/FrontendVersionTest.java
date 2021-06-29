@@ -214,6 +214,13 @@ public class FrontendVersionTest {
                 test.isEqualTo(new FrontendVersion("2.0.0.alpha20")));
     }
 
+    @Test
+    public void testAgainstVersionWithValueInBuildInfo() {
+        FrontendVersion test = new FrontendVersion("2.0.0-alpha3");
+        assertTrue("2.0.0-alpha3 should be older than 2.0.0.5",
+                test.isOlderThan(new FrontendVersion("2.0.0.5")));
+    }
+
     private void assertVersion(FrontendVersion version, int major, int minor,
             int revision, String build) {
         Assert.assertEquals(

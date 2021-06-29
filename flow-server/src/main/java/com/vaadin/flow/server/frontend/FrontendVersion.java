@@ -329,6 +329,12 @@ public class FrontendVersion
             thisMatcher.find();
             otherMatcher.find();
             if (thisMatcher.group(1).compareTo(otherMatcher.group(1)) != 0) {
+                // Empty alphabetical matcher is worth more than one with value
+                // so we need to reverse the check orderin that case.
+                if (otherMatcher.group(1).isEmpty()) {
+                    return otherMatcher.group(1)
+                            .compareToIgnoreCase(thisMatcher.group(1));
+                }
                 return thisMatcher.group(1)
                         .compareToIgnoreCase(otherMatcher.group(1));
             }
