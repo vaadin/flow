@@ -31,7 +31,7 @@ public class FrontendVersion
         implements Serializable, Comparable<FrontendVersion> {
 
     /**
-     * Parses the buildIdentifier to String + Integer for instance beta1 =>
+     * Parses the buildIdentifier to String + Integer for instance beta1 returns
      * 'beta' and '1'
      */
     private final Pattern buildIdentifierParser = Pattern
