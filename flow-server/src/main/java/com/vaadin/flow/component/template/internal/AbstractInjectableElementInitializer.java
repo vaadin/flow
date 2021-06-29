@@ -120,6 +120,7 @@ public abstract class AbstractInjectableElementInitializer
         result.put("id", attributeStrategy);
         result.put("class", attributeStrategy);
         result.put("style", attributeStrategy);
+        result.put("href", attributeStrategy);
         result.put("theme", attributeStrategy);
         result.put("title", attributeStrategy);
         result.put("hidden", attributeStrategy);
