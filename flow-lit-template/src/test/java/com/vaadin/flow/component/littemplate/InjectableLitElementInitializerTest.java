@@ -49,6 +49,13 @@ public class InjectableLitElementInitializerTest {
     }
 
     @Test
+    public void initializeElement_setHref_hrefIsSetAsAttribute() {
+        initializer.accept(Collections.singletonMap("href", "foo"));
+
+        Assert.assertEquals("foo", element.getAttribute("href"));
+    }
+
+    @Test
     public void initializeElement_setTheme_themeIsSetAsAttribute() {
         initializer.accept(Collections.singletonMap("theme", "foo"));
 
