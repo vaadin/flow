@@ -6,8 +6,13 @@ import junit.framework.TestSuite;
 import com.google.gwt.junit.tools.GWTTestSuite;
 
 import com.vaadin.client.communication.GwtAtmoshperePushConnectionTest;
+<<<<<<< HEAD
 import com.vaadin.client.communication.GwtDefaultReconnectDialogTest;
+=======
+import com.vaadin.client.communication.GwtDefaultConnectionStateHandlerTest;
+>>>>>>> 3123cfd2ae... fix: use textContent instead of innerHTML for error elements (#11354)
 import com.vaadin.client.flow.GwtBasicElementBinderTest;
+import com.vaadin.client.flow.GwtErrotHandlerTest;
 import com.vaadin.client.flow.GwtEventHandlerTest;
 import com.vaadin.client.flow.GwtMultipleBindingTest;
 import com.vaadin.client.flow.GwtPolymerModelTest;
@@ -53,6 +58,7 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtDependencyLoaderTest.class);
         suite.addTestSuite(GwtMessageHandlerTest.class);
         suite.addTestSuite(GwtMultipleBindingTest.class);
+        suite.addTestSuite(GwtErrotHandlerTest.class);
         return suite;
     }
 }
