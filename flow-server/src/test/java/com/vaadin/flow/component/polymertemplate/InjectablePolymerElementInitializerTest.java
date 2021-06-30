@@ -49,6 +49,13 @@ public class InjectablePolymerElementInitializerTest {
     }
 
     @Test
+    public void initializeElement_setHref_hrefIsSetAsAttribute() {
+        initializer.accept(Collections.singletonMap("href", "foo"));
+
+        Assert.assertEquals("foo", element.getAttribute("href"));
+    }
+
+    @Test
     public void initializeElement_setAttributeBinding_attributeIsIgnored() {
         initializer.accept(Collections.singletonMap("class$", "foo"));
 
