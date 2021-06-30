@@ -13,7 +13,6 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Tag("simple-lit-template-no-shadow-root")
 @JsModule("lit-templates/simple-lit-template-no-shadow-root.js")
-@NpmPackage(value = "lit", version = "2.0.0-rc.1")
 @Route(value = "com.vaadin.flow.uitest.ui.littemplate.SimpleLitTemplateNoShadowRootView", layout = ViewTestLayout.class)
 public class SimpleLitTemplateNoShadowRootView extends LitTemplate {
 
