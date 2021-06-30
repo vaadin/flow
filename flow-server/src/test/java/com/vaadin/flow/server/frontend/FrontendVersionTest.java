@@ -206,7 +206,7 @@ public class FrontendVersionTest {
         assertTrue("2.0.0-alpha6 should be older than 2.0.0-alpha13",
                 test.isOlderThan(new FrontendVersion("2.0.0-alpha13")));
 
-        test = new FrontendVersion("2.0.0.alpha20");
+        test = new FrontendVersion("2.0.0-alpha20");
         assertTrue("2.0.0-alpha20 should be newer than 2.0.0-alpha13",
                 test.isNewerThan(new FrontendVersion("2.0.0-alpha13")));
         assertFalse("2.0.0-alpha20 should be newer than 2.0.0-alpha13",

@@ -326,7 +326,8 @@ public class FrontendVersion
         final Matcher otherMatcher = buildIdentifierParser
                 .matcher(other.buildIdentifier);
         if (thisMatcher.find() && otherMatcher.find()) {
-            if (thisMatcher.group(1).compareTo(otherMatcher.group(1)) != 0) {
+            if (thisMatcher.group(1)
+                    .compareToIgnoreCase(otherMatcher.group(1)) != 0) {
                 // If we do not have a text identifier assume newer
                 // If other doesn't have text identifier assume older
                 if (thisMatcher.group(1).isEmpty()) {
