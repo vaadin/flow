@@ -23,6 +23,7 @@ import org.junit.Test;
 public class AppViewIT extends ChromeBrowserTest {
 
     private static final String ROOT_PAGE_HEADER_TEXT = "Welcome to the Java Bank of Vaadin";
+    private static final String ANOTHER_PUBLIC_PAGE_HEADER_TEXT = "Another public view for testing";
     private static final int SERVER_PORT = 8888;
     private static final String USER_FULLNAME = "John the User";
     private static final String ADMIN_FULLNAME = "Emma the Admin";
@@ -107,6 +108,12 @@ public class AppViewIT extends ChromeBrowserTest {
     public void root_page_does_not_require_login() {
         open("");
         assertRootPageShown();
+    }
+
+    @Test
+    public void other_public_page_does_not_require_login() {
+        open("another");
+        assertAnotherPublicPageShown();
     }
 
     @Test
@@ -299,6 +306,12 @@ public class AppViewIT extends ChromeBrowserTest {
         waitUntil(drive -> $("h1").attribute("id", "header").exists());
         String headerText = $("h1").id("header").getText();
         Assert.assertEquals(ROOT_PAGE_HEADER_TEXT, headerText);
+    }
+
+    private void assertAnotherPublicPageShown() {
+        waitUntil(drive -> $("h1").attribute("id", "header").exists());
+        String headerText = $("h1").id("header").getText();
+        Assert.assertEquals(ANOTHER_PUBLIC_PAGE_HEADER_TEXT, headerText);
     }
 
     private void assertPrivatePageShown(String fullName) {
