@@ -2,25 +2,28 @@ package com.vaadin.flow.spring.security;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.annotation.security.RolesAllowed;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.RouteTarget;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
-import com.vaadin.fusion.VaadinConnectControllerConfiguration;
-import com.vaadin.fusion.VaadinEndpointProperties;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.spring.SpringBootAutoConfiguration;
 import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 import com.vaadin.flow.spring.SpringServlet;
 import com.vaadin.flow.spring.SpringVaadinServletService;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
+import com.vaadin.fusion.VaadinConnectControllerConfiguration;
+import com.vaadin.fusion.VaadinEndpointProperties;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -132,14 +135,15 @@ public class RequestUtilTest {
                 .isFrameworkInternalRequest(createRequest("/foo", null)));
     }
 
-    @Test
-    public void testAnonymousRouteRequest_rootServlet() {
+    @Route("")
+    @AnonymousAllowed
+    public static class PublicRootView extends Component {
 
     }
 
-    @Route("")
+    @Route("other")
     @AnonymousAllowed
-    public static class PublicView extends Component {
+    public static class AnotherPublicView extends Component {
 
     }
 
@@ -153,9 +157,15 @@ public class RequestUtilTest {
     public void testAnonymousRouteRequest_rootMappedServlet_publicView() {
         Mockito.when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/*");
-        setupMockServlet("/", PublicView.class);
+        SpringServlet servlet = setupMockServlet();
+        addRoute(servlet, PublicRootView.class);
+        addRoute(servlet, AnotherPublicView.class);
 
         MockHttpServletRequest request = createRequest(null);
+        request.setServletPath("/");
+        Assert.assertTrue(requestUtil.isAnonymousRoute(request));
+
+        request = createRequest("other");
         request.setServletPath("/");
         Assert.assertTrue(requestUtil.isAnonymousRoute(request));
     }
@@ -164,9 +174,15 @@ public class RequestUtilTest {
     public void testAnonymousRouteRequest_rootMappedServlet_notAView() {
         Mockito.when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/*");
-        setupMockServlet("/", PublicView.class);
+        SpringServlet servlet = setupMockServlet();
+        addRoute(servlet, PublicRootView.class);
+        addRoute(servlet, AnotherPublicView.class);
 
         MockHttpServletRequest request = createRequest(null);
+        request.setServletPath("/bar");
+        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+
+        request = createRequest("other");
         request.setServletPath("/bar");
         Assert.assertFalse(requestUtil.isAnonymousRoute(request));
     }
@@ -175,7 +191,7 @@ public class RequestUtilTest {
     public void testAnonymousRouteRequest_rootMappedServlet_privateView() {
         Mockito.when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/*");
-        setupMockServlet("/admin", AdminView.class);
+        addRoute(setupMockServlet(), AdminView.class);
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/admin");
@@ -186,9 +202,15 @@ public class RequestUtilTest {
     public void testAnonymousRouteRequest_fooMappedServlet_publicView() {
         Mockito.when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/foo/*");
-        setupMockServlet("", PublicView.class);
+        SpringServlet servlet = setupMockServlet();
+        addRoute(servlet, PublicRootView.class);
+        addRoute(servlet, AnotherPublicView.class);
 
         MockHttpServletRequest request = createRequest(null);
+        request.setServletPath("/foo/");
+        Assert.assertTrue(requestUtil.isAnonymousRoute(request));
+
+        request = createRequest("other");
         request.setServletPath("/foo/");
         Assert.assertTrue(requestUtil.isAnonymousRoute(request));
     }
@@ -197,9 +219,15 @@ public class RequestUtilTest {
     public void testAnonymousRouteRequest_fooMappedServlet_notAView() {
         Mockito.when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/foo/*");
-        setupMockServlet("", PublicView.class);
+        SpringServlet servlet = setupMockServlet();
+        addRoute(servlet, PublicRootView.class);
+        addRoute(servlet, AnotherPublicView.class);
 
         MockHttpServletRequest request = createRequest(null);
+        request.setServletPath("/foo/bar");
+        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+
+        request = createRequest("other");
         request.setServletPath("/foo/bar");
         Assert.assertFalse(requestUtil.isAnonymousRoute(request));
     }
@@ -208,7 +236,7 @@ public class RequestUtilTest {
     public void testAnonymousRouteRequest_fooMappedServlet_privateView() {
         Mockito.when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/foo/*");
-        setupMockServlet("admin", AdminView.class);
+        addRoute(setupMockServlet(), AdminView.class);
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/foo/admin");
@@ -219,34 +247,57 @@ public class RequestUtilTest {
     public void testAnonymousRouteRequest_fooMappedServlet_publicViewPathOutsideServlet() {
         Mockito.when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/foo/*");
-        setupMockServlet("", PublicView.class);
+        SpringServlet servlet = setupMockServlet();
+        addRoute(servlet, PublicRootView.class);
+        addRoute(servlet, AnotherPublicView.class);
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/");
         Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        request = createRequest("other");
+        request.setServletPath("/");
+        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
     }
 
-    private void setupMockServlet(String viewRoute,
-            Class<? extends Component> view) {
+    private SpringServlet setupMockServlet() {
         SpringServlet servlet = Mockito.mock(SpringServlet.class);
         SpringVaadinServletService service = Mockito
                 .mock(SpringVaadinServletService.class);
         Router router = Mockito.mock(Router.class);
         RouteRegistry routeRegistry = Mockito.mock(RouteRegistry.class);
-        NavigationRouteTarget publicNavigationTarget = Mockito
-                .mock(NavigationRouteTarget.class);
-        RouteTarget publicRouteTarget = Mockito.mock(RouteTarget.class);
 
         Mockito.when(springServletRegistration.getServlet())
                 .thenReturn(servlet);
         Mockito.when(servlet.getService()).thenReturn(service);
         Mockito.when(service.getRouter()).thenReturn(router);
         Mockito.when(router.getRegistry()).thenReturn(routeRegistry);
-        Mockito.when(routeRegistry.getNavigationRouteTarget(viewRoute))
-                .thenReturn(publicNavigationTarget);
-        Mockito.when(publicNavigationTarget.getRouteTarget())
+        return servlet;
+    }
+
+    private void addRoute(SpringServlet servlet,
+            Class<? extends Component> view) {
+
+        Optional<Route> route = AnnotationReader.getAnnotationFor(view,
+                Route.class);
+
+        if (!route.isPresent()) {
+            throw new IllegalArgumentException(
+                    "Unable find a @Route annotation");
+        }
+
+        String path = RouteUtil.getRoutePath(view, route.get());
+        RouteRegistry routeRegistry = servlet.getService().getRouter()
+                .getRegistry();
+        RouteTarget publicRouteTarget = Mockito.mock(RouteTarget.class);
+        NavigationRouteTarget navigationTarget = Mockito
+                .mock(NavigationRouteTarget.class);
+
+        Mockito.when(routeRegistry.getNavigationRouteTarget(path))
+                .thenReturn(navigationTarget);
+        Mockito.when(navigationTarget.getRouteTarget())
                 .thenReturn(publicRouteTarget);
         Mockito.when(publicRouteTarget.getTarget()).thenReturn((Class) view);
+
     }
 
     static MockHttpServletRequest createRequest(String pathInfo) {

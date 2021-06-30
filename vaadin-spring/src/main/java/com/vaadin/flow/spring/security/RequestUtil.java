@@ -106,6 +106,15 @@ public class RequestUtil {
         return false;
     }
 
+    /**
+     * Checks whether the request targets a Flow route that is public, i.e.
+     * marked as @{@link AnonymousAllowed}.
+     *
+     * @param request
+     *            the servlet request
+     * @return {@code true} if the request is targeting an anonymous route,
+     *         {@code false} otherwise
+     */
     public boolean isAnonymousRoute(HttpServletRequest request) {
         String vaadinMapping = configurationProperties.getUrlMapping();
         String requestedPath = getRequestPathInsideContext(request);
@@ -115,6 +124,12 @@ public class RequestUtil {
             return false;
         }
         String path = maybePath.get();
+        if (path.startsWith("/")) {
+            // Requested path includes a beginning "/" but route mapping is done
+            // without one
+            path = path.substring(1);
+        }
+
         SpringServlet servlet = springServletRegistration.getServlet();
         VaadinService service = servlet.getService();
         Router router = service.getRouter();
