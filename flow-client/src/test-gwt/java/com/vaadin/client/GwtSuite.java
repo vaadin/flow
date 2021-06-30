@@ -1,13 +1,14 @@
 package com.vaadin.client;
 
-import com.vaadin.client.communication.GwtDefaultConnectionStateHandlerTest;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import com.google.gwt.junit.tools.GWTTestSuite;
 
 import com.vaadin.client.communication.GwtAtmoshperePushConnectionTest;
+import com.vaadin.client.communication.GwtDefaultConnectionStateHandlerTest;
 import com.vaadin.client.flow.GwtBasicElementBinderTest;
+import com.vaadin.client.flow.GwtErrotHandlerTest;
 import com.vaadin.client.flow.GwtEventHandlerTest;
 import com.vaadin.client.flow.GwtMultipleBindingTest;
 import com.vaadin.client.flow.GwtPolymerModelTest;
@@ -53,6 +54,7 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtMessageHandlerTest.class);
         suite.addTestSuite(GwtMultipleBindingTest.class);
         suite.addTestSuite(GwtDefaultConnectionStateHandlerTest.class);
+        suite.addTestSuite(GwtErrotHandlerTest.class);
         return suite;
     }
 }
