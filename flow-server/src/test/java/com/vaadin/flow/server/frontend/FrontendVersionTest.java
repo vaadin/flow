@@ -209,6 +209,13 @@ public class FrontendVersionTest {
         test = new FrontendVersion("2.0.0.alpha20");
         assertTrue("2.0.0-alpha20 should be newer than 2.0.0-alpha13",
                 test.isNewerThan(new FrontendVersion("2.0.0-alpha13")));
+        assertFalse("2.0.0-alpha20 should be newer than 2.0.0-alpha13",
+                test.isOlderThan(new FrontendVersion("2.0.0-alpha13")));
+
+        assertTrue("2.0.0-alpha13 should not be older than 2.0.0-alpha20",
+                new FrontendVersion("2.0.0-alpha13").isOlderThan(test));
+        assertFalse("2.0.0-alpha13 should not be older than 2.0.0-alpha20",
+                new FrontendVersion("2.0.0-alpha13").isNewerThan(test));
 
         assertTrue("same versions should equal",
                 test.isEqualTo(new FrontendVersion("2.0.0.alpha20")));
@@ -216,9 +223,30 @@ public class FrontendVersionTest {
 
     @Test
     public void testAgainstVersionWithValueInBuildInfo() {
-        FrontendVersion test = new FrontendVersion("2.0.0-alpha3");
+        FrontendVersion alpha3 = new FrontendVersion("2.0.0-alpha3");
+        FrontendVersion five = new FrontendVersion("2.0.0.5");
+        FrontendVersion fifteen = new FrontendVersion("2.0.0.15");
+
         assertTrue("2.0.0-alpha3 should be older than 2.0.0.5",
-                test.isOlderThan(new FrontendVersion("2.0.0.5")));
+                alpha3.isOlderThan(five));
+        assertFalse("2.0.0-alpha3 should be older than 2.0.0.5",
+                alpha3.isNewerThan(five));
+
+        assertTrue("2.0.0.5 should be newer than 2.0.0-alpha3",
+                five.isNewerThan(alpha3));
+        assertFalse("2.0.0.5 should be newer than 2.0.0-alpha3",
+                five.isOlderThan(alpha3));
+
+        assertTrue("2.0.0.5 should be older than 2.0.0.15",
+                five.isOlderThan(fifteen));
+        assertFalse("2.0.0.5 should be older than 2.0.0.15",
+                five.isNewerThan(fifteen));
+
+        assertTrue("2.0.0.15 should be newer than 2.0.0.5",
+                fifteen.isNewerThan(five));
+        assertFalse("2.0.0.15 should be newer than 2.0.0.5",
+                fifteen.isOlderThan(five));
+
     }
 
     private void assertVersion(FrontendVersion version, int major, int minor,

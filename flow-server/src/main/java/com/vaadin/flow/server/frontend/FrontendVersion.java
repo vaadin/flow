@@ -325,15 +325,14 @@ public class FrontendVersion
                 .matcher(buildIdentifier);
         final Matcher otherMatcher = buildIdentifierParser
                 .matcher(other.buildIdentifier);
-        if (thisMatcher.groupCount() == 2 && otherMatcher.groupCount() == 2) {
-            thisMatcher.find();
-            otherMatcher.find();
+        if (thisMatcher.find() && otherMatcher.find()) {
             if (thisMatcher.group(1).compareTo(otherMatcher.group(1)) != 0) {
-                // Empty alphabetical matcher is worth more than one with value
-                // so we need to reverse the check orderin that case.
-                if (otherMatcher.group(1).isEmpty()) {
-                    return otherMatcher.group(1)
-                            .compareToIgnoreCase(thisMatcher.group(1));
+                // If we do not have a text identifier assume newer
+                // If other doesn't have text identifier assume older
+                if (thisMatcher.group(1).isEmpty()) {
+                    return 1;
+                } else if (otherMatcher.group(1).isEmpty()) {
+                    return -1;
                 }
                 return thisMatcher.group(1)
                         .compareToIgnoreCase(otherMatcher.group(1));
