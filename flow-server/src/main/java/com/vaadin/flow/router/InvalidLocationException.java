@@ -32,8 +32,8 @@ public class InvalidLocationException extends RuntimeException {
      *            the detail message. The detail message is saved for later
      *            retrieval by the {@link #getMessage()} method.
      */
-    public InvalidLocationException(String msg) {
-        super(msg);
+    public InvalidLocationException(String message) {
+        super(message);
     }
 
     /**
@@ -50,7 +50,7 @@ public class InvalidLocationException extends RuntimeException {
      *            unknown.)
      * @since 1.4
      */
-    public InvalidLocationException(String msg, Throwable cause) {
-        super(msg, cause);
+    public InvalidLocationException(String message, Throwable cause) {
+        super(message, cause);
     }
 }
