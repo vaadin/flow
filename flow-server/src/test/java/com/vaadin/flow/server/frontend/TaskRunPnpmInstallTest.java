@@ -45,7 +45,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     public void setUp() throws IOException {
         super.setUp();
 
-        // create an empty package.json so as pnpm can be run without error
+        // create an empty package.json so as pnpm can be run without
+        // error
         FileUtils.write(new File(getNodeUpdater().npmFolder, PACKAGE_JSON),
                 "{}", StandardCharsets.UTF_8);
     }
@@ -56,7 +57,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
 
-        // Write package json file: dialog doesn't pin its Overlay version which
+        // Write package json file: dialog doesn't pin its Overlay
+        // version which
         // is transitive dependency.
         FileUtils.write(packageJson,
                 "{\"dependencies\": {"
@@ -71,7 +73,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         File overlayPackageJson = new File(getNodeUpdater().nodeModulesFolder,
                 "@vaadin/vaadin-overlay/package.json");
 
-        // The resulting version should be the one specified via platform
+        // The resulting version should be the one specified via
+        // platform
         // versions file
         JsonObject overlayPackage = Json.parse(FileUtils
                 .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
@@ -86,7 +89,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         File nodeModules = getNodeUpdater().nodeModulesFolder;
         FileUtils.forceMkdir(nodeModules);
 
-        // create a fake file in the node modules dir to check that it's removed
+        // create a fake file in the node modules dir to check that it's
+        // removed
         File fakeFile = new File(nodeModules, ".fake.file");
         fakeFile.createNewFile();
 
@@ -103,7 +107,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
 
-        // create some package.json file so pnpm does some installation into
+        // create some package.json file so pnpm does some installation
+        // into
         // node_modules folder
         FileUtils.write(packageJson,
                 "{\"dependencies\": {" + "\"pnpm\": \"5.15.1\"}}",
@@ -112,7 +117,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         getNodeUpdater().modified = true;
         createTask().execute();
 
-        // create a fake file in the node modules dir to check that it's removed
+        // create a fake file in the node modules dir to check that it's
+        // removed
         File fakeFile = new File(getNodeUpdater().nodeModulesFolder,
                 ".fake.file");
         fakeFile.createNewFile();
@@ -461,7 +467,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             "{"
                 + "\"vaadin\": {"
                   + "\"dependencies\": {"
-                    + "\"lit\": \"2.0.0-rc.1\","
+                    + "\"lit\": \"2.0.0-rc.2\","
                     + "\"@vaadin/router\": \"1.7.4\","
                     + "\"@polymer/polymer\": \"3.2.0\","
                   + "},"
@@ -471,7 +477,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                   + "}"
                 + "},"
                 + "\"dependencies\": {"
-                  + "\"lit\": \"2.0.0-rc.1\","
+                  + "\"lit\": \"2.0.0-rc.2\","
                   + "\"@vaadin/router\": \"1.7.4\","
                   + "\"@polymer/polymer\": \"3.2.0\","
                 + "},"
@@ -492,7 +498,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
                 generatedVersionsFile, StandardCharsets.UTF_8));
         Assert.assertEquals(
-                "{" + "\"lit\":\"2.0.0-rc.1\","
+                "{" + "\"lit\":\"2.0.0-rc.2\","
                         + "\"@vaadin/router\":\"1.7.4\","
                         + "\"@polymer/polymer\":\"3.2.0\","
                         + "\"css-loader\":\"4.2.1\","
