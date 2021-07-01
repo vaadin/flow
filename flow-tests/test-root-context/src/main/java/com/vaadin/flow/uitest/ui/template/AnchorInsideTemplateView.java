@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -28,7 +29,8 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("anchor-in-template")
-@JsModule("./AnchorInTemplate.js")
+@JsModule("AnchorInTemplate.js")
+@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/AnchorInTemplate.html")
 @Route("com.vaadin.flow.uitest.ui.template.AnchorInsideTemplateView")
 public class AnchorInsideTemplateView extends PolymerTemplate<TemplateModel> {
 
