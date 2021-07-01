@@ -114,7 +114,7 @@ public class NumberRenderer<SOURCE> extends BasicRenderer<SOURCE, Number> {
      */
     public NumberRenderer(ValueProvider<SOURCE, Number> valueProvider,
             Locale locale) {
-        this(valueProvider, "%s", locale);
+        this(valueProvider, NumberFormat.getInstance(locale));
     }
 
     /**
