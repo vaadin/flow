@@ -1,0 +1,14 @@
+<link rel="import" href="/frontend/bower_components/polymer/polymer-element.html">
+
+<dom-module id="anchor-in-template">
+    <template>
+        <a href="" download id="anchor">Download</a>
+    </template>
+    <script>
+        class AnchorInTemplate extends Polymer.Element {
+            static get is() { return 'anchor-in-template' }
+            
+        }
+        customElements.define(AnchorInTemplate.is, AnchorInTemplate);
+    </script>
+</dom-module>
