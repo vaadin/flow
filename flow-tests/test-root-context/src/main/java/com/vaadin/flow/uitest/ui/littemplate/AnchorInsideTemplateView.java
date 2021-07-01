@@ -27,7 +27,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 
 @Tag("anchor-in-template")
-@JsModule("./lit-templates/AnchorInTemplate.js")
+@JsModule("./lit/AnchorInTemplate.js")
 @Route("com.vaadin.flow.uitest.ui.littemplate.AnchorInsideTemplateView")
 public class AnchorInsideTemplateView extends LitTemplate {
 
