@@ -63,10 +63,8 @@ public class TaskUpdateThemeImportTest {
         npmFolder = temporaryFolder.getRoot();
         frontendDirectory = new File(projectRoot, DEFAULT_FRONTEND_DIR);
 
-        File generated = new File(npmFolder, DEFAULT_GENERATED_DIR);
-        themeImportFile = new File(
-                new File(generated, APPLICATION_THEME_ROOT),
-                "theme-generated.js");
+        File generated = new File(frontendDirectory, "generated");
+        themeImportFile = new File(generated, "theme-generated.js");
 
         dummyThemeClass = Mockito.mock(AbstractTheme.class).getClass();
         customTheme = new ThemeDefinition(dummyThemeClass, CUSTOM_VARIANT_NAME,

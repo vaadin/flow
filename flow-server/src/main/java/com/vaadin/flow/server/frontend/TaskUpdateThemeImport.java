@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,12 +30,16 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 
 /**
  * Task for generating the theme-generated.js file for importing application
  * theme.
+ * <p>
+ * Generated file is generated into <code>./frontend/generated</code>
  *
  * @since
  */
@@ -50,11 +55,10 @@ public class TaskUpdateThemeImport implements FallibleCommand {
 
     TaskUpdateThemeImport(File npmFolder, ThemeDefinition theme,
             File frontendDirectory) {
-        File generatedDir = new File(npmFolder,
-                System.getProperty(PARAM_GENERATED_DIR, DEFAULT_GENERATED_DIR));
-        this.themeImportFile = new File(
-                new File(generatedDir, APPLICATION_THEME_ROOT),
-                "theme-generated.js");
+        File generatedDir = new File(new File(npmFolder.getAbsolutePath(),
+                System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR)),
+                "generated");
+        this.themeImportFile = new File(generatedDir, "theme-generated.js");
         this.theme = theme;
         this.frontendDirectory = frontendDirectory;
         this.npmFolder = npmFolder;
@@ -80,9 +84,9 @@ public class TaskUpdateThemeImport implements FallibleCommand {
 
         try {
             FileUtils.write(themeImportFile, String.format(
-                    "import {applyTheme as _applyTheme} from 'themes/%s/%s.generated.js';%n"
+                    "import {applyTheme as _applyTheme} from 'generated/%s.generated.js';%n"
                             + "export const applyTheme = _applyTheme;%n",
-                    theme.getName(), theme.getName()), StandardCharsets.UTF_8);
+                    theme.getName()), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new ExecutionFailedException(
                     "Unable to write theme import file", e);

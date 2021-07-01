@@ -97,11 +97,12 @@ if (watchDogPort) {
 const flowFrontendThemesFolder = path.resolve(flowFrontendFolder, 'themes');
 const themeOptions = {
   devMode: devMode,
-  // The following matches target/frontend/themes/theme-generated.js
+  // The following matches ./frontend/generated/theme-generated.js
   // and for theme in JAR that is copied to target/frontend/themes/
   themeResourceFolder: flowFrontendThemesFolder,
   themeProjectFolders: themeProjectFolders,
   projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
+  frontendGeneratedFolder: path.resolve(frontendFolder, "generated"),
 };
 let themeName = undefined;
 let themeWatchFolders = undefined;

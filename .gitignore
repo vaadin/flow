@@ -47,3 +47,4 @@ flow-tests/**/types.d.ts
 package.json
 package-lock.json
 /flow-tests/**/*.generated.js
+/flow-tests/**/frontend/generated/
