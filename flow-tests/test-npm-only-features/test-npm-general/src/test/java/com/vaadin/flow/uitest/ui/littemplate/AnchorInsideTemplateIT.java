@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.template;
+package com.vaadin.flow.uitest.ui.littemplate;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;

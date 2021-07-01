@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.template;
+package com.vaadin.flow.uitest.ui.littemplate;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -21,16 +21,15 @@ import java.nio.charset.StandardCharsets;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("anchor-in-template")
-@JsModule("./AnchorInTemplate.js")
-@Route("com.vaadin.flow.uitest.ui.template.AnchorInsideTemplateView")
-public class AnchorInsideTemplateView extends PolymerTemplate<TemplateModel> {
+@JsModule("./lit/AnchorInTemplate.js")
+@Route("com.vaadin.flow.uitest.ui.littemplate.AnchorInsideTemplateView")
+public class AnchorInsideTemplateView extends LitTemplate {
 
     @Id("anchor")
     private Anchor anchor;
