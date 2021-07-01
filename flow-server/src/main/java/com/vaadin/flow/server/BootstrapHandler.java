@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.server;
 
+import javax.servlet.http.HttpServletRequest;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -64,10 +66,10 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
-import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
@@ -99,6 +101,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @since 1.0
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
+
+    public static final String SERVICE_WORKER_HEADER = "Service-Worker";
 
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "window.Vaadin.Flow.gwtStatsEvents = [];"
@@ -480,6 +484,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (isFrameworkInternalRequest(request)) {
             // Never accidentally send a bootstrap page for what is considered
             // an internal request
+            return false;
+        }
+        if (request.getHeader(SERVICE_WORKER_HEADER) != null) {
             return false;
         }
         return super.canHandleRequest(request);
