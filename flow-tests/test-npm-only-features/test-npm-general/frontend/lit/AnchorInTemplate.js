@@ -1,5 +1,5 @@
 
-import { LitElement, html } from "lit";
+import { LitElement, html } from "lit-element";
 
 export class AnchorInTemplate extends LitElement {
   render() {
