@@ -48,7 +48,6 @@ public class InvalidLocationException extends RuntimeException {
      *            {@link #getCause()} method). (A <tt>null</tt> value is
      *            permitted, and indicates that the cause is nonexistent or
      *            unknown.)
-     * @since 1.4
      */
     public InvalidLocationException(String message, Throwable cause) {
         super(message, cause);
