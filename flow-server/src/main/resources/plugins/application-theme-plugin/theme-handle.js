@@ -23,7 +23,7 @@ const path = require('path');
 const generateThemeFile = require('./theme-generator');
 const {copyStaticAssets, copyThemeResources} = require('./theme-copy');
 
-// matches theme folder name in 'themes/my-theme/my-theme.generated.js'
+// matches theme name 'my-theme' in 'generated/my-theme.generated.js'
 const nameRegex = /generated\/(.*).generated.js/;
 
 let prevThemeName = undefined;

@@ -95,6 +95,7 @@ if (watchDogPort) {
 }
 
 const flowFrontendThemesFolder = path.resolve(flowFrontendFolder, 'themes');
+const frontendGeneratedFolder = path.resolve(frontendFolder, "generated");
 const themeOptions = {
   devMode: devMode,
   // The following matches ./frontend/generated/theme-generated.js
@@ -102,14 +103,14 @@ const themeOptions = {
   themeResourceFolder: flowFrontendThemesFolder,
   themeProjectFolders: themeProjectFolders,
   projectStaticAssetsOutputFolder: projectStaticAssetsOutputFolder,
-  frontendGeneratedFolder: path.resolve(frontendFolder, "generated"),
+  frontendGeneratedFolder: frontendGeneratedFolder
 };
 let themeName = undefined;
 let themeWatchFolders = undefined;
 if (devMode) {
   // Current theme name is being extracted from theme-generated.js located in
-  // target/frontend/themes folder
-  themeName = extractThemeName(flowFrontendThemesFolder);
+  // frontend/generated folder
+  themeName = extractThemeName(frontendGeneratedFolder);
   const parentThemePaths = findParentThemes(themeName, themeOptions);
   const currentThemeFolders = [...projectStaticAssetsFolders
     .map((folder) => path.resolve(folder, "themes", themeName)),
