@@ -134,7 +134,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   }
 
   if (themeProperties.parent) {
-    themeFile += `import {applyTheme as applyBaseTheme} from 'generated/${themeProperties.parent}.generated.js';`;
+    themeFile += `import {applyTheme as applyBaseTheme} from './theme-${themeProperties.parent}.generated.js';`;
   }
 
   themeFile += createLinkReferences;

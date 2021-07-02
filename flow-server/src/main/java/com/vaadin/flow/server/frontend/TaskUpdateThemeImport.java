@@ -36,7 +36,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 
 /**
- * Task for generating the theme-generated.js file for importing application
+ * Task for generating the theme.js file for importing application
  * theme.
  * <p>
  * Generated file is generated into <code>./frontend/generated</code>
@@ -58,7 +58,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         File generatedDir = new File(new File(npmFolder.getAbsolutePath(),
                 System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR)),
                 "generated");
-        this.themeImportFile = new File(generatedDir, "theme-generated.js");
+        this.themeImportFile = new File(generatedDir, "theme.js");
         this.theme = theme;
         this.frontendDirectory = frontendDirectory;
         this.npmFolder = npmFolder;
@@ -84,7 +84,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
 
         try {
             FileUtils.write(themeImportFile, String.format(
-                    "import {applyTheme as _applyTheme} from 'generated/%s.generated.js';%n"
+                    "import {applyTheme as _applyTheme} from 'generated/theme-%s.generated.js';%n"
                             + "export const applyTheme = _applyTheme;%n",
                     theme.getName()), StandardCharsets.UTF_8);
         } catch (IOException e) {

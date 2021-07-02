@@ -146,9 +146,9 @@ public class TaskUpdateImports extends NodeUpdater {
 
             if (hasApplicationTheme) {
                 // If we define a theme name we need to import
-                // theme/theme-generated.js
+                // theme/theme.js
                 lines.add(
-                        "import {applyTheme} from 'generated/theme-generated.js';");
+                        "import {applyTheme} from 'generated/theme.js';");
                 lines.add("applyTheme(document);");
             }
 
