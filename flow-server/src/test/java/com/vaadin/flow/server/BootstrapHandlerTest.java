@@ -1549,6 +1549,28 @@ public class BootstrapHandlerTest {
         Assert.assertFalse(bootstrapHandler.canHandleRequest(request));
     }
 
+    @Test
+    public void serviceWorkerRequest_canNotHanldeRequest() {
+        BootstrapHandler bootstrapHandler = new BootstrapHandler();
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+
+        Mockito.when(request.getHeader(BootstrapHandler.SERVICE_WORKER_HEADER))
+                .thenReturn("script");
+
+        Assert.assertFalse(bootstrapHandler.canHandleRequest(request));
+    }
+
+    @Test
+    public void notServiceWorkerRequest_canHanldeRequest() {
+        BootstrapHandler bootstrapHandler = new BootstrapHandler();
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+
+        Mockito.when(request.getHeader(BootstrapHandler.SERVICE_WORKER_HEADER))
+                .thenReturn(null);
+
+        Assert.assertTrue(bootstrapHandler.canHandleRequest(request));
+    }
+
     public static Location requestToLocation(VaadinRequest request) {
         return new Location(request.getPathInfo(),
                 QueryParameters.full(request.getParameterMap()));
