@@ -86,3 +86,38 @@ then add the plugin with required options to `plugins` in the generated file
     }),
  ]
 ```
+
+### Logs from plugins and loaders
+
+To set logging for the plugins one can add to the `webpack.config.js`
+file:
+```js
+  {
+    stats: {
+      logging: 'log'
+    }
+  }
+```
+
+where the accepted logging levels are:
+- 'none', false - disable logging
+- 'error' - errors only
+- 'warn' - errors and warnings only
+- 'info' - errors, warnings, and info messages
+- 'log', true - errors, warnings, info messages, log messages, groups, clears. Collapsed groups are displayed in a collapsed state.
+- 'verbose' - log everything except debug and trace. Collapsed groups are displayed in expanded state.
+
+For debug level logs one should have the settings as:
+
+```js
+  {
+    stats: {
+      logging: 'log',
+      loggingDebug: [
+        'theme-loader',
+        'ApplicationThemePlugin',
+        'FlowIdPlugin'
+      ]
+    }
+  }
+```

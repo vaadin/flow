@@ -63,10 +63,8 @@ public class TaskUpdateThemeImportTest {
         npmFolder = temporaryFolder.getRoot();
         frontendDirectory = new File(projectRoot, DEFAULT_FRONTEND_DIR);
 
-        File generated = new File(npmFolder, DEFAULT_GENERATED_DIR);
-        themeImportFile = new File(
-                new File(generated, APPLICATION_THEME_ROOT),
-                "theme-generated.js");
+        File generated = new File(frontendDirectory, "generated");
+        themeImportFile = new File(generated, "theme.js");
 
         dummyThemeClass = Mockito.mock(AbstractTheme.class).getClass();
         customTheme = new ThemeDefinition(dummyThemeClass, CUSTOM_VARIANT_NAME,
@@ -111,14 +109,14 @@ public class TaskUpdateThemeImportTest {
                 CUSTOM_THEME_NAME), customThemeDirCreatedSuccessfully);
 
         Assert.assertFalse(
-                "\"theme-generated.js\" should not exist before"
+                "\"theme.js\" should not exist before"
                         + " executing TaskUpdateThemeImport.",
                 themeImportFile.exists());
 
         taskUpdateThemeImport.execute();
 
         Assert.assertTrue(
-                "\"theme-generated.js\" should be created as the "
+                "\"theme.js\" should be created as the "
                         + "result of executing TaskUpdateThemeImport.",
                 themeImportFile.exists());
     }
@@ -142,14 +140,14 @@ public class TaskUpdateThemeImportTest {
                 customThemeDirCreatedSuccessfully);
 
         Assert.assertFalse(
-                "\"theme-generated.js\" should not exist before"
+                "\"theme.js\" should not exist before"
                         + " executing TaskUpdateThemeImport.",
                 themeImportFile.exists());
 
         taskUpdateThemeImport.execute();
 
         Assert.assertTrue(
-                "\"theme-generated.js\" should be created as the "
+                "\"theme.js\" should be created as the "
                         + "result of executing TaskUpdateThemeImport.",
                 themeImportFile.exists());
     }
@@ -173,14 +171,14 @@ public class TaskUpdateThemeImportTest {
                 customThemeDirCreatedSuccessfully);
 
         Assert.assertFalse(
-                "\"theme-generated.js\" should not exist before"
+                "\"theme.js\" should not exist before"
                         + " executing TaskUpdateThemeImport.",
                 themeImportFile.exists());
 
         taskUpdateThemeImport.execute();
 
         Assert.assertTrue(
-                "\"theme-generated.js\" should be created as the "
+                "\"theme.js\" should be created as the "
                         + "result of executing TaskUpdateThemeImport.",
                 themeImportFile.exists());
     }
@@ -202,14 +200,14 @@ public class TaskUpdateThemeImportTest {
                 customThemeDirCreatedSuccessfully);
 
         Assert.assertFalse(
-                "\"theme-generated.js\" should not exist before"
+                "\"theme.js\" should not exist before"
                         + " executing TaskUpdateThemeImport.",
                 themeImportFile.exists());
 
         taskUpdateThemeImport.execute();
 
         Assert.assertTrue(
-                "\"theme-generated.js\" should be created as the "
+                "\"theme.js\" should be created as the "
                         + "result of executing TaskUpdateThemeImport.",
                 themeImportFile.exists());
     }
@@ -228,12 +226,12 @@ public class TaskUpdateThemeImportTest {
                 CUSTOM_THEME_NAME, DEFAULT_FRONTEND_DIR, APPLICATION_THEME_ROOT,
                 CUSTOM_THEME_NAME), customThemeDirCreatedSuccessfully);
 
-        Assert.assertFalse("\"theme-generated.js\" should not exist before"
+        Assert.assertFalse("\"theme.js\" should not exist before"
             + " executing TaskUpdateThemeImport.", themeImportFile.exists());
 
         taskUpdateThemeImport.execute();
 
-        Assert.assertTrue("\"theme-generated.js\" should be created as the "
+        Assert.assertTrue("\"theme.js\" should be created as the "
                 + "result of executing TaskUpdateThemeImport.",
             themeImportFile.exists());
 
@@ -242,7 +240,7 @@ public class TaskUpdateThemeImportTest {
 
         taskUpdateThemeImport.execute();
 
-        Assert.assertFalse("\"theme-generated.js\" should not exist before"
+        Assert.assertFalse("\"theme.js\" should not exist before"
             + " executing TaskUpdateThemeImport.", themeImportFile.exists());
     }
 

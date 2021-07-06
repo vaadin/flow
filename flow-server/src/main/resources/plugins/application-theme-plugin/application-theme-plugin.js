@@ -40,6 +40,9 @@ class ApplicationThemePlugin {
     if (!this.options.themeProjectFolders) {
       throw new Error("Missing themeProjectFolders path array");
     }
+    if (!this.options.frontendGeneratedFolder) {
+      throw new Error("Missing frontendGeneratedFolder path");
+    }
   }
 
   apply(compiler) {

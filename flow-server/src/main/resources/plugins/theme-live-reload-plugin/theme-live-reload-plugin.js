@@ -80,7 +80,7 @@ class ThemeLiveReloadPlugin {
           // styles and theme generated file in one run to not have webpack
           // compile error
           if (deletedComponentStyleFile && !themeGeneratedFileDeleted) {
-            const themeGeneratedPath = "./frontend/themes/" + themeName + "/" + themeName + ".generated.js";
+            const themeGeneratedPath = "./frontend/generated/theme-" + themeName + ".generated.js";
 
             logger.warn("Custom theme component style sheet '" + deletedComponentStyleFile + "' has been deleted.\n\n" +
               "You should also delete '" + themeGeneratedPath + "' (simultaneously) with the component stylesheet'.\n" +

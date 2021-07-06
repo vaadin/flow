@@ -134,7 +134,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   }
 
   if (themeProperties.parent) {
-    themeFile += `import {applyTheme as applyBaseTheme} from 'themes/${themeProperties.parent}/${themeProperties.parent}.generated.js';`;
+    themeFile += `import {applyTheme as applyBaseTheme} from './theme-${themeProperties.parent}.generated.js';`;
   }
 
   themeFile += createLinkReferences;
@@ -164,7 +164,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   // styles.css will always be available as we write one if it doesn't exist.
   let filename = path.basename(styles);
   let variable = camelCase(filename);
-  imports.push(`import ${variable} from './${filename}';\n`);
+  imports.push(`import ${variable} from 'themes/${themeName}/${filename}';\n`);
 
   /* Lumo must be first so that custom styles override Lumo styles */
   const lumoImports = themeProperties.lumoImports || ["color", "typography"];
@@ -193,7 +193,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   if (fs.existsSync(document)) {
     filename = path.basename(document);
     variable = camelCase(filename);
-    imports.push(`import ${variable} from './${filename}';\n`);
+    imports.push(`import ${variable} from 'themes/${themeName}/${filename}';\n`);
     globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n    `);
   }
 
@@ -237,7 +237,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
     const tag = filename.replace('.css', '');
     const variable = camelCase(filename);
     imports.push(
-      `import ${variable} from './${themeComponentsFolder}/${filename}';\n`
+      `import ${variable} from 'themes/${themeName}/${themeComponentsFolder}/${filename}';\n`
     );
 // Don't format as the generated file formatting will get wonky!
     const componentString = `registerStyles(
