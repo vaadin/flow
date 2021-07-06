@@ -115,7 +115,7 @@ public class NumberRenderer<SOURCE>
      */
     public NumberRenderer(ValueProvider<SOURCE, Number> valueProvider,
             Locale locale) {
-        this(valueProvider, "%s", locale);
+        this(valueProvider, NumberFormat.getInstance(locale));
     }
 
     /**
