@@ -20,10 +20,8 @@ import java.util.Objects;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.TaskGenerateConnect;
-import com.vaadin.fusion.generator.VaadinConnectClientGenerator;
-import com.vaadin.fusion.generator.VaadinConnectTsGenerator;
+import com.vaadin.fusion.generator.Generator;
 
-import static com.vaadin.fusion.generator.VaadinConnectClientGenerator.CONNECT_CLIENT_NAME;
 import static com.vaadin.fusion.generator.VaadinConnectClientGenerator.CUSTOM_CONNECT_CLIENT_NAME;
 
 /**
@@ -32,10 +30,9 @@ import static com.vaadin.fusion.generator.VaadinConnectClientGenerator.CUSTOM_CO
 public class TaskGenerateConnectImpl extends AbstractTaskConnectGenerator
         implements TaskGenerateConnect {
 
-    private final File outputFolder;
-    private final File openApi;
-    private final File connectClientFile;
     private final File frontendDirectory;
+    private final File openApi;
+    private final File outputFolder;
 
     TaskGenerateConnectImpl(File applicationProperties, File openApi,
             File outputFolder, File frontendDirectory) {
@@ -46,7 +43,6 @@ public class TaskGenerateConnectImpl extends AbstractTaskConnectGenerator
                 "Vaadin output folder should not be null.");
         this.openApi = openApi;
         this.outputFolder = outputFolder;
-        this.connectClientFile = new File(outputFolder, CONNECT_CLIENT_NAME);
         this.frontendDirectory = frontendDirectory;
     }
 
@@ -57,11 +53,8 @@ public class TaskGenerateConnectImpl extends AbstractTaskConnectGenerator
         String customName = customConnectClient.exists()
                 ? ("../" + CUSTOM_CONNECT_CLIENT_NAME)
                 : null;
-        if (VaadinConnectTsGenerator.launch(openApi, outputFolder,
-                customName)) {
-            new VaadinConnectClientGenerator(readApplicationProperties())
-                    .generateVaadinConnectClientFile(
-                            connectClientFile.toPath());
-        }
+
+        new Generator(openApi, outputFolder, readApplicationProperties(),
+                customName).start();
     }
 }
