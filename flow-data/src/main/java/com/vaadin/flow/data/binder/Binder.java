@@ -2427,7 +2427,7 @@ public class Binder<BEAN> implements Serializable {
      * Gets the validation error of this form.
      * <p>
      * If none has been set with
-     * {@link #setValidationErrorHandler(BinderValidationErrorHandler), the
+     * {@link #setValidationErrorHandler(BinderValidationErrorHandler)}, the
      * default implementation is returned.
      *
      * @return the error handler used, never <code>null</code>
