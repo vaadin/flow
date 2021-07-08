@@ -86,8 +86,7 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
          * apiTemplateFiles map. as with models, add multiple entries with
          * different extensions for multiple files per class
          */
-        apiTemplateFiles.put("TypeScriptApiTemplate.mustache",
-                Generator.TS);
+        apiTemplateFiles.put("TypeScriptApiTemplate.mustache", Generator.TS);
         modelTemplateFiles.put("EntityTemplate.mustache", Generator.TS);
         modelTemplateFiles.put("EntityModelTemplate.mustache",
                 Generator.MODEL_TS);
@@ -138,11 +137,271 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
         handlebars.registerHelper("getModelFullType", getModelFullTypeHelper());
     }
 
+    /**
+     * Location to write api files. You can use the apiPackage() as defined when
+     * the class is instantiated
+     */
+    @Override
+    public String apiFileFolder() {
+        return outputFolder;
+    }
+
+    @Override
+    public String escapeQuotationMark(String input) {
+        // remove ', " to avoid code injection
+        return input.replace("\"", "").replace("'", "");
+    }
+
+    /**
+     * Escapes a reserved word as defined in the `reservedWords` array. Handle
+     * escaping those terms here. This logic is only called if a variable
+     * matches the reserved words
+     *
+     * @return the escaped term
+     */
+    @Override
+    public String escapeReservedWord(String name) {
+        return this.reservedWordsMappings().getOrDefault(name, "_" + name);
+    }
+
+    @Override
+    public String escapeUnsafeCharacters(String input) {
+        // Escape opening/closing block comment to avoid code injection
+        return input.replace("*/", "*_/").replace("/*", "/_*");
+    }
+
+    @Override
+    public CodegenModel fromModel(String name, Schema schema,
+            Map<String, Schema> allDefinitions) {
+        CodegenModel codegenModel = super.fromModel(name, schema,
+                allDefinitions);
+        Set<String> imports = collectImportsFromSchema(schema);
+        imports.removeIf(type -> type.equals(name)); // Remove self imports
+        codegenModel.setImports(imports);
+        return codegenModel;
+    }
+
+    @Override
+    public CodegenOperation fromOperation(String path, String httpMethod,
+            Operation operation, Map<String, Schema> schemas, OpenAPI openAPI) {
+        if (!"POST".equalsIgnoreCase(httpMethod)) {
+            throw getGeneratorException(
+                    "Code generator only supports POST requests.");
+        }
+        Matcher matcher = PATH_REGEX.matcher(path);
+        if (!matcher.matches()) {
+            throw getGeneratorException(
+                    "Path must be in form of \"/<EndpointName>/<MethodName>\".");
+        }
+        CodegenOperation codegenOperation = super.fromOperation(path,
+                httpMethod, operation, schemas, openAPI);
+        String endpointName = matcher.group(1);
+        String methodName = matcher.group(2);
+        codegenOperation.getVendorExtensions()
+                .put(EXTENSION_VAADIN_CONNECT_METHOD_NAME, methodName);
+        codegenOperation.getVendorExtensions()
+                .put(EXTENSION_VAADIN_CONNECT_SERVICE_NAME, endpointName);
+        validateOperationTags(path, httpMethod, operation);
+        return codegenOperation;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public CodegenParameter fromRequestBody(RequestBody body,
+            Map<String, Schema> schemas, Set<String> imports) {
+        CodegenParameter codegenParameter = super.fromRequestBody(body, schemas,
+                imports);
+        Schema requestBodySchema = getRequestBodySchema(body);
+        if (requestBodySchema != null) {
+            imports.addAll(collectImportsFromSchema(requestBodySchema));
+            List<ParameterInformation> paramsList = getParamsList(
+                    requestBodySchema);
+            codegenParameter.getVendorExtensions()
+                    .put(EXTENSION_VAADIN_CONNECT_PARAMETERS, paramsList);
+        }
+        return codegenParameter;
+    }
+
+    @Override
+    public String getDefaultTemplateDir() {
+        return templateDir;
+    }
+
+    /**
+     * Returns human-friendly help for the generator. Provide the consumer with
+     * help tips, parameters here
+     *
+     * @return A string value for the help message
+     */
+    public String getHelp() {
+        return "Generates a Vaadin endpoint wrappers.";
+    }
+
+    /**
+     * Configures a friendly name for the generator. This will be used by the
+     * generator to select the library with the -l flag.
+     *
+     * @return the friendly name for the generator
+     */
+    public String getName() {
+        return GENERATOR_NAME;
+    }
+
+    @Override
+    public String getSchemaType(Schema schema) {
+        if (isNullableWrapperSchema(schema)
+                && schema instanceof ComposedSchema) {
+            Schema wrappedSchema = ((ComposedSchema) schema).getAllOf().get(0);
+            return super.getSchemaType(wrappedSchema);
+        }
+        return super.getSchemaType(schema);
+    }
+
+    /**
+     * Configures the type of generator.
+     *
+     * @return the CodegenType for this generator
+     * @see io.swagger.codegen.CodegenType
+     */
+    @Override
+    public CodegenType getTag() {
+        return CodegenType.CLIENT;
+    }
+
+    @Override
+    public String getTypeDeclaration(Schema schema) {
+        String optionalSuffix = "";
+        if (GeneratorUtils.isTrue(schema.getNullable())) {
+            optionalSuffix = Generator.OPTIONAL_SUFFIX;
+        }
+        if (schema instanceof ArraySchema) {
+            ArraySchema arraySchema = (ArraySchema) schema;
+            Schema inner = arraySchema.getItems();
+            return String.format("Array<%s>%s", this.getTypeDeclaration(inner),
+                    optionalSuffix);
+        } else if (GeneratorUtils.isNotBlank(schema.get$ref())) {
+            return getSimpleRef(schema.get$ref()) + optionalSuffix;
+        } else if (schema.getAdditionalProperties() != null) {
+            Schema inner = (Schema) schema.getAdditionalProperties();
+            return String.format("Record<string, %s>%s",
+                    getTypeDeclaration(inner), optionalSuffix);
+        } else if (schema instanceof ComposedSchema) {
+            return getTypeDeclarationFromComposedSchema((ComposedSchema) schema,
+                    optionalSuffix);
+        } else {
+            return super.getTypeDeclaration(schema) + optionalSuffix;
+        }
+    }
+
+    /**
+     * Location to write model files. You can use the modelPackage() as defined
+     * when the class is instantiated
+     */
+    @Override
+    public String modelFileFolder() {
+        return outputFolder;
+    }
+
+    @Override
+    public Map<String, Object> postProcessAllModels(
+            Map<String, Object> processedModels) {
+        Map<String, Object> postProcessAllModels = super.postProcessAllModels(
+                processedModels);
+        for (Map.Entry<String, Object> modelEntry : postProcessAllModels
+                .entrySet()) {
+            Map<String, Object> model = (Map<String, Object>) modelEntry
+                    .getValue();
+            List<Map<String, Object>> imports = (List<Map<String, Object>>) model
+                    .get("imports");
+            adjustImportInformationForModel(imports,
+                    (String) model.get("classname"));
+        }
+
+        printDebugMessage(processedModels, "=== All models data ===");
+
+        return postProcessAllModels;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> postProcessOperations(Map<String, Object> objs) {
+        Map<String, Object> operations = (Map<String, Object>) objs
+                .get("operations");
+        String classname = (String) operations.get("classname");
+        for (Tag tag : tags) {
+            if (tag.getName().equals(classname)) {
+                objs.put(VAADIN_CONNECT_CLASS_DESCRIPTION,
+                        tag.getDescription());
+                setVaadinFilePath(objs, tag);
+                break;
+            }
+        }
+        if (objs.get(VAADIN_CONNECT_CLASS_DESCRIPTION) == null) {
+            warnNoClassInformation(classname);
+        }
+
+        if ((operations.get(OPERATION) instanceof List)) {
+            List<CodegenOperation> codegenOperations = (List<CodegenOperation>) operations
+                    .get(OPERATION);
+            setShouldShowTsDoc(codegenOperations);
+        }
+        Map<String, Object> postProcessOperations = super.postProcessOperations(
+                objs);
+        List<Map<String, Object>> imports = (List<Map<String, Object>>) objs
+                .get("imports");
+        adjustImportInformationForEndpoints(imports);
+
+        printDebugMessage(postProcessOperations, "=== All operations data ===");
+        return postProcessOperations;
+    }
+
+    @Override
+    public void preprocessOpenAPI(OpenAPI openAPI) {
+        super.processOpenAPI(openAPI);
+        List<Tag> openAPITags = openAPI.getTags();
+        this.tags = openAPITags != null ? openAPITags : Collections.emptyList();
+    }
+
+    @Override
+    public String toApiName(String name) {
+        return initialCaps(name);
+    }
+
+    @Override
+    public String toEnumVarName(String name, String datatype) {
+        // Keep the same Java enum name in TS
+        return name;
+    }
+
+    @Override
+    public String toModelFilename(String name) {
+        if (!GeneratorUtils.contains(name, ".")) {
+            return super.toModelFilename(name);
+        }
+        String packageName = GeneratorUtils.substringBeforeLast(name, ".");
+        packageName = packageName.replaceAll("\\.", "/");
+
+        String modelName = GeneratorUtils.substringAfterLast(name, ".");
+        modelName = super.toModelFilename(modelName);
+
+        return packageName + "/" + modelName;
+    }
+
+    @Override
+    public String toModelName(String name) {
+        return name;
+    }
+
     @Override
     protected void addImport(CodegenModel m, String type) {
         if (!GeneratorUtils.equals(m.getName(), type)) {
             super.addImport(m, type);
         }
+    }
+
+    @Override
+    protected String getTemplateDir() {
+        return templateDir;
     }
 
     /**
@@ -200,15 +459,6 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
         adjustImportInformation(imports, modelFilePath);
     }
 
-    /**
-     * Location to write api files. You can use the apiPackage() as defined when
-     * the class is instantiated
-     */
-    @Override
-    public String apiFileFolder() {
-        return outputFolder;
-    }
-
     private Set<String> collectImportsFromSchema(Schema schema) {
         Set<String> imports = new HashSet<>();
         if (GeneratorUtils.isNotBlank(schema.get$ref())) {
@@ -237,30 +487,6 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
         return "./" + GeneratorUtils.replaceChars(qualifiedName, '.', '/');
     }
 
-    @Override
-    public String escapeQuotationMark(String input) {
-        // remove ', " to avoid code injection
-        return input.replace("\"", "").replace("'", "");
-    }
-
-    /**
-     * Escapes a reserved word as defined in the `reservedWords` array. Handle
-     * escaping those terms here. This logic is only called if a variable
-     * matches the reserved words
-     *
-     * @return the escaped term
-     */
-    @Override
-    public String escapeReservedWord(String name) {
-        return this.reservedWordsMappings().getOrDefault(name, "_" + name);
-    }
-
-    @Override
-    public String escapeUnsafeCharacters(String input) {
-        // Escape opening/closing block comment to avoid code injection
-        return input.replace("*/", "*_/").replace("/*", "/_*");
-    }
-
     private String fixNameForModel(String name) {
         name = removeOptionalSuffix(name);
         if (ARRAY_TYPE_NAME_PATTERN.matcher(name).find()) {
@@ -272,58 +498,6 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
             name = GeneratorUtils.capitalize(name);
         }
         return name + Generator.MODEL;
-    }
-
-    @Override
-    public CodegenModel fromModel(String name, Schema schema,
-            Map<String, Schema> allDefinitions) {
-        CodegenModel codegenModel = super.fromModel(name, schema,
-                allDefinitions);
-        Set<String> imports = collectImportsFromSchema(schema);
-        imports.removeIf(type -> type.equals(name)); // Remove self imports
-        codegenModel.setImports(imports);
-        return codegenModel;
-    }
-
-    @Override
-    public CodegenOperation fromOperation(String path, String httpMethod,
-            Operation operation, Map<String, Schema> schemas, OpenAPI openAPI) {
-        if (!"POST".equalsIgnoreCase(httpMethod)) {
-            throw getGeneratorException(
-                    "Code generator only supports POST requests.");
-        }
-        Matcher matcher = PATH_REGEX.matcher(path);
-        if (!matcher.matches()) {
-            throw getGeneratorException(
-                    "Path must be in form of \"/<EndpointName>/<MethodName>\".");
-        }
-        CodegenOperation codegenOperation = super.fromOperation(path,
-                httpMethod, operation, schemas, openAPI);
-        String endpointName = matcher.group(1);
-        String methodName = matcher.group(2);
-        codegenOperation.getVendorExtensions()
-                .put(EXTENSION_VAADIN_CONNECT_METHOD_NAME, methodName);
-        codegenOperation.getVendorExtensions()
-                .put(EXTENSION_VAADIN_CONNECT_SERVICE_NAME, endpointName);
-        validateOperationTags(path, httpMethod, operation);
-        return codegenOperation;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public CodegenParameter fromRequestBody(RequestBody body,
-            Map<String, Schema> schemas, Set<String> imports) {
-        CodegenParameter codegenParameter = super.fromRequestBody(body, schemas,
-                imports);
-        Schema requestBodySchema = getRequestBodySchema(body);
-        if (requestBodySchema != null) {
-            imports.addAll(collectImportsFromSchema(requestBodySchema));
-            List<ParameterInformation> paramsList = getParamsList(
-                    requestBodySchema);
-            codegenParameter.getVendorExtensions()
-                    .put(EXTENSION_VAADIN_CONNECT_PARAMETERS, paramsList);
-        }
-        return codegenParameter;
     }
 
     private Helper<String> getClassNameFromImportsHelper() {
@@ -342,11 +516,6 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
         return Collections.emptyList();
     }
 
-    @Override
-    public String getDefaultTemplateDir() {
-        return templateDir;
-    }
-
     private String getDescriptionFromParameterExtension(String paramName,
             Schema requestSchema) {
         if (requestSchema.getExtensions() == null) {
@@ -356,16 +525,6 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
                 .getExtensions()
                 .get(OpenApiObjectGenerator.EXTENSION_VAADIN_CONNECT_PARAMETERS_DESCRIPTION);
         return paramDescription.getOrDefault(paramName, "");
-    }
-
-    /**
-     * Returns human-friendly help for the generator. Provide the consumer with
-     * help tips, parameters here
-     *
-     * @return A string value for the help message
-     */
-    public String getHelp() {
-        return "Generates a Vaadin endpoint wrappers.";
     }
 
     private String getModelArguments(CodegenProperty property,
@@ -439,8 +598,7 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
         if (matcher.find()) {
             return matcher.group(1);
         }
-        return Generator.MODEL + "Type<" + getModelFullType(variableName)
-                + ">";
+        return Generator.MODEL + "Type<" + getModelFullType(variableName) + ">";
     }
 
     private Helper<String> getMultipleLinesHelper() {
@@ -454,16 +612,6 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
             }
             return buffer;
         };
-    }
-
-    /**
-     * Configures a friendly name for the generator. This will be used by the
-     * generator to select the library with the -l flag.
-     *
-     * @return the friendly name for the generator
-     */
-    public String getName() {
-        return GENERATOR_NAME;
     }
 
     private List<ParameterInformation> getParamsList(Schema requestSchema) {
@@ -501,16 +649,6 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
         return null;
     }
 
-    @Override
-    public String getSchemaType(Schema schema) {
-        if (isNullableWrapperSchema(schema)
-                && schema instanceof ComposedSchema) {
-            Schema wrappedSchema = ((ComposedSchema) schema).getAllOf().get(0);
-            return super.getSchemaType(wrappedSchema);
-        }
-        return super.getSchemaType(schema);
-    }
-
     private String getSimpleNameFromComplexType(String dataType,
             List<Map<String, String>> imports) {
         Matcher matcher = FULLY_QUALIFIED_NAME_PATTERN.matcher(dataType);
@@ -545,47 +683,6 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
             return GeneratorUtils.substringAfterLast(qualifiedName, ".");
         }
         return qualifiedName;
-    }
-
-    /**
-     * Configures the type of generator.
-     *
-     * @return the CodegenType for this generator
-     * @see io.swagger.codegen.CodegenType
-     */
-    @Override
-    public CodegenType getTag() {
-        return CodegenType.CLIENT;
-    }
-
-    @Override
-    protected String getTemplateDir() {
-        return templateDir;
-    }
-
-    @Override
-    public String getTypeDeclaration(Schema schema) {
-        String optionalSuffix = "";
-        if (GeneratorUtils.isTrue(schema.getNullable())) {
-            optionalSuffix = Generator.OPTIONAL_SUFFIX;
-        }
-        if (schema instanceof ArraySchema) {
-            ArraySchema arraySchema = (ArraySchema) schema;
-            Schema inner = arraySchema.getItems();
-            return String.format("Array<%s>%s", this.getTypeDeclaration(inner),
-                    optionalSuffix);
-        } else if (GeneratorUtils.isNotBlank(schema.get$ref())) {
-            return getSimpleRef(schema.get$ref()) + optionalSuffix;
-        } else if (schema.getAdditionalProperties() != null) {
-            Schema inner = (Schema) schema.getAdditionalProperties();
-            return String.format("Record<string, %s>%s",
-                    getTypeDeclaration(inner), optionalSuffix);
-        } else if (schema instanceof ComposedSchema) {
-            return getTypeDeclarationFromComposedSchema((ComposedSchema) schema,
-                    optionalSuffix);
-        } else {
-            return super.getTypeDeclaration(schema) + optionalSuffix;
-        }
     }
 
     private String getTypeDeclarationFromComposedSchema(
@@ -667,75 +764,6 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
         return hasOnlyOneSchemaInAllOf && hasNoOneOfAndAnyOf;
     }
 
-    /**
-     * Location to write model files. You can use the modelPackage() as defined
-     * when the class is instantiated
-     */
-    @Override
-    public String modelFileFolder() {
-        return outputFolder;
-    }
-
-    @Override
-    public Map<String, Object> postProcessAllModels(
-            Map<String, Object> processedModels) {
-        Map<String, Object> postProcessAllModels = super.postProcessAllModels(
-                processedModels);
-        for (Map.Entry<String, Object> modelEntry : postProcessAllModels
-                .entrySet()) {
-            Map<String, Object> model = (Map<String, Object>) modelEntry
-                    .getValue();
-            List<Map<String, Object>> imports = (List<Map<String, Object>>) model
-                    .get("imports");
-            adjustImportInformationForModel(imports,
-                    (String) model.get("classname"));
-        }
-
-        printDebugMessage(processedModels, "=== All models data ===");
-
-        return postProcessAllModels;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public Map<String, Object> postProcessOperations(Map<String, Object> objs) {
-        Map<String, Object> operations = (Map<String, Object>) objs
-                .get("operations");
-        String classname = (String) operations.get("classname");
-        for (Tag tag : tags) {
-            if (tag.getName().equals(classname)) {
-                objs.put(VAADIN_CONNECT_CLASS_DESCRIPTION,
-                        tag.getDescription());
-                setVaadinFilePath(objs, tag);
-                break;
-            }
-        }
-        if (objs.get(VAADIN_CONNECT_CLASS_DESCRIPTION) == null) {
-            warnNoClassInformation(classname);
-        }
-
-        if ((operations.get(OPERATION) instanceof List)) {
-            List<CodegenOperation> codegenOperations = (List<CodegenOperation>) operations
-                    .get(OPERATION);
-            setShouldShowTsDoc(codegenOperations);
-        }
-        Map<String, Object> postProcessOperations = super.postProcessOperations(
-                objs);
-        List<Map<String, Object>> imports = (List<Map<String, Object>>) objs
-                .get("imports");
-        adjustImportInformationForEndpoints(imports);
-
-        printDebugMessage(postProcessOperations, "=== All operations data ===");
-        return postProcessOperations;
-    }
-
-    @Override
-    public void preprocessOpenAPI(OpenAPI openAPI) {
-        super.processOpenAPI(openAPI);
-        List<Tag> openAPITags = openAPI.getTags();
-        this.tags = openAPITags != null ? openAPITags : Collections.emptyList();
-    }
-
     private void printDebugMessage(Object data, String message) {
         if (isDebugConnectMavenPlugin()) {
             logger.info(message);
@@ -776,36 +804,6 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
             objs.put(VAADIN_FILE_PATH, tag.getExtensions()
                     .get(OpenApiObjectGenerator.EXTENSION_VAADIN_FILE_PATH));
         }
-    }
-
-    @Override
-    public String toApiName(String name) {
-        return initialCaps(name);
-    }
-
-    @Override
-    public String toEnumVarName(String name, String datatype) {
-        // Keep the same Java enum name in TS
-        return name;
-    }
-
-    @Override
-    public String toModelFilename(String name) {
-        if (!GeneratorUtils.contains(name, ".")) {
-            return super.toModelFilename(name);
-        }
-        String packageName = GeneratorUtils.substringBeforeLast(name, ".");
-        packageName = packageName.replaceAll("\\.", "/");
-
-        String modelName = GeneratorUtils.substringAfterLast(name, ".");
-        modelName = super.toModelFilename(modelName);
-
-        return packageName + "/" + modelName;
-    }
-
-    @Override
-    public String toModelName(String name) {
-        return name;
     }
 
     private void validateOperationTags(String path, String httpMethod,

@@ -2,13 +2,15 @@ package com.vaadin.fusion.generator;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.Set;
-import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +20,8 @@ public class GeneratorDirectory {
     private final Logger logger = LoggerFactory
             .getLogger(GeneratorDirectory.class.getName());
     private final File outputDirectory;
+    private final GeneratorFileVisitor visitor = new GeneratorFileVisitor(
+            logger);
 
     public GeneratorDirectory(File outputDirectory) {
         this.outputDirectory = outputDirectory;
@@ -32,72 +36,19 @@ public class GeneratorDirectory {
             return;
         }
 
-        removeStaleFiles(files);
-        removeEmptyDirectories();
-    }
+        visitor.setGeneratedFiles(files);
 
-    private boolean isEmpty(File directory) {
-        try (Stream<Path> entries = Files.list(directory.toPath())) {
-            return !entries.findFirst().isPresent();
-        } catch (IOException e) {
-            logDirectoryIOException(directory, e);
-            return false;
-        }
-    }
-
-    private void logDirectoryIOException(File directory, IOException e) {
-        logger.info(String.format(
-                "Failed to access folder '%s' while cleaning generated sources.",
-                directory.getAbsolutePath()), e);
-    }
-
-    private void removeEmptyDirectories() {
-        try (Stream<Path> paths = Files.walk(outputDirectory.toPath())) {
-            paths.map(Path::toFile).filter(File::isDirectory)
-                    .filter(this::isEmpty).forEach(directory -> {
-                        logger.info("Removing empty folder '{}'.",
-                                directory.getAbsolutePath());
-                        removeFile(directory);
-                    });
-        } catch (IOException e) {
-            logDirectoryIOException(outputDirectory, e);
-        }
-    }
-
-    private void removeFile(File file) {
         try {
-            FileUtils.forceDelete(file);
+            Files.walkFileTree(outputDirectory.toPath(), visitor);
         } catch (IOException e) {
             logger.info(String.format(
-                    "Failed to remove '%s' while cleaning the generated folder.",
-                    file.getAbsolutePath()), e);
+                    "Failed to access folder '%s' while cleaning generated sources.",
+                    outputDirectory.toPath().toAbsolutePath()), e);
         }
     }
 
-    private void removeStaleFiles(Set<File> files) {
-        try (Stream<Path> paths = Files.walk(outputDirectory.toPath())) {
-            paths.map(Path::toFile).filter(File::isFile).filter(file -> {
-                if (files.contains(file)) {
-                    return false;
-                }
-
-                final String fileName = file.getName();
-
-                return !fileName.equals(
-                        VaadinConnectClientGenerator.CONNECT_CLIENT_NAME)
-                        && !fileName.equals(FrontendUtils.BOOTSTRAP_FILE_NAME)
-                        && !fileName.equals(FrontendUtils.THEME_IMPORTS_NAME)
-                        && !fileName
-                                .equals(FrontendUtils.THEME_IMPORTS_D_TS_NAME)
-                        && !fileName.endsWith(".generated.js");
-            }).forEach(file -> {
-                logger.info("Removing stale generated file '{}'.",
-                        file.getAbsolutePath());
-                removeFile(file);
-            });
-        } catch (IOException e) {
-            logDirectoryIOException(outputDirectory, e);
-        }
+    public Path toPath() {
+        return outputDirectory.toPath();
     }
 
     @Override
@@ -105,7 +56,68 @@ public class GeneratorDirectory {
         return outputDirectory.toString();
     }
 
-    public Path toPath() {
-        return outputDirectory.toPath();
+    static class GeneratorFileVisitor extends SimpleFileVisitor<Path> {
+        private final Logger logger;
+        private Set<File> generatedFiles;
+
+        GeneratorFileVisitor(final Logger logger) {
+            this.logger = logger;
+        }
+
+        @Override
+        public FileVisitResult postVisitDirectory(final Path path,
+                final IOException exc) {
+            try (DirectoryStream<Path> stream = Files
+                    .newDirectoryStream(path)) {
+                if (!stream.iterator().hasNext()) {
+                    remove(path);
+                }
+            } catch (IOException e) {
+                logger.info(String.format(
+                        "Failed to access folder '%s' while cleaning generated sources.",
+                        path.toAbsolutePath()), e);
+            }
+
+            return FileVisitResult.CONTINUE;
+        }
+
+        public void setGeneratedFiles(final Set<File> generatedFiles) {
+            this.generatedFiles = generatedFiles;
+        }
+
+        @Override
+        public FileVisitResult visitFile(final Path path,
+                final BasicFileAttributes attr) {
+            File file = path.toFile();
+
+            if (generatedFiles.contains(file)) {
+                return FileVisitResult.CONTINUE;
+            }
+
+            final String fileName = file.getName();
+
+            if (fileName
+                    .equals(VaadinConnectClientGenerator.CONNECT_CLIENT_NAME)
+                    || fileName.equals(FrontendUtils.BOOTSTRAP_FILE_NAME)
+                    || fileName.equals(FrontendUtils.THEME_IMPORTS_NAME)
+                    || fileName.equals(FrontendUtils.THEME_IMPORTS_D_TS_NAME)
+                    || fileName.endsWith(".generated.js")) {
+                return FileVisitResult.CONTINUE;
+            }
+
+            remove(path);
+
+            return FileVisitResult.CONTINUE;
+        }
+
+        private void remove(Path path) {
+            try {
+                Files.delete(path);
+            } catch (IOException e) {
+                logger.info(String.format(
+                        "Failed to remove '%s' while cleaning the generated folder.",
+                        path.toAbsolutePath()), e);
+            }
+        }
     }
 }

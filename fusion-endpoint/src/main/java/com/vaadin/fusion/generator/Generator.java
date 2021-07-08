@@ -48,18 +48,6 @@ public class Generator {
                 : null;
     }
 
-    private boolean generateTypescriptCode(OpenAPI openAPI) {
-        CodegenConfigurator configurator = parser.getConfigurator();
-
-        Set<File> files = TypescriptCodeGenerator.generateFiles(
-                configurator.toClientOptInput().openAPI(openAPI));
-
-        outputDirectory.clean(files);
-
-        return files.stream()
-                .anyMatch(file -> file.getName().endsWith(Generator.TS));
-    }
-
     public void start() {
         if (parser == null) {
             outputDirectory.clean();
@@ -77,5 +65,17 @@ public class Generator {
             outputDirectory.clean();
             throw e;
         }
+    }
+
+    private boolean generateTypescriptCode(OpenAPI openAPI) {
+        CodegenConfigurator configurator = parser.getConfigurator();
+
+        Set<File> files = TypescriptCodeGenerator.generateFiles(
+                configurator.toClientOptInput().openAPI(openAPI));
+
+        outputDirectory.clean(files);
+
+        return files.stream()
+                .anyMatch(file -> file.getName().endsWith(Generator.TS));
     }
 }
