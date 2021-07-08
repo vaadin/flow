@@ -46,7 +46,7 @@ public class LocationTest {
         assertEquals(Arrays.asList("foo", "bar", ""), location.getSegments());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InvalidLocationException.class)
     public void parseLocationStartingWithSlash() {
         new Location("/foo/bar");
     }
@@ -242,24 +242,27 @@ public class LocationTest {
 
     @Test
     public void locationShouldBeRelative() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage("Relative path cannot contain .. segments");
+        expectedEx.expect(InvalidLocationException.class);
+        expectedEx.expectMessage(
+                "Relative path '../element' cannot contain .. segments");
 
         new Location("../element");
     }
 
     @Test
     public void locationShouldNotEndWithDotDotSegment() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage("Relative path cannot contain .. segments");
+        expectedEx.expect(InvalidLocationException.class);
+        expectedEx.expectMessage(
+                "Relative path 'element/..' cannot contain .. segments");
 
         new Location("element/..");
     }
 
     @Test
     public void dotDotLocationShouldNotWork() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage("Relative path cannot contain .. segments");
+        expectedEx.expect(InvalidLocationException.class);
+        expectedEx
+                .expectMessage("Relative path '..' cannot contain .. segments");
 
         new Location("..");
     }

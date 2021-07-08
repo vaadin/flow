@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.router;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -29,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Represents a relative URL made up of path segments and query parameters, but
@@ -51,8 +51,10 @@ public class Location implements Serializable {
      *
      * @param location
      *            the relative location, not <code>null</code>
+     * @throws InvalidLocationException
+     *             If the given string cannot be used for the {@link Location}
      */
-    public Location(String location) {
+    public Location(String location) throws InvalidLocationException {
         this(parsePath(location.trim()), parseParams(location.trim()));
     }
 
@@ -69,8 +71,11 @@ public class Location implements Serializable {
      *            query parameters information, not {@code null}
      * @throws IllegalArgumentException
      *             if location string contains query parameters inside
+     * @throws InvalidLocationException
+     *             If the given string cannot be used for the {@link Location}
      */
-    public Location(String location, QueryParameters queryParameters) {
+    public Location(String location, QueryParameters queryParameters)
+            throws InvalidLocationException {
         this(parsePath(location.trim()), queryParameters);
 
         if (location.contains(QUERY_SEPARATOR)) {
@@ -296,7 +301,8 @@ public class Location implements Serializable {
      * @param path
      *            the (decoded) path to check, not null
      */
-    private static void verifyRelativePath(String path) {
+    private static void verifyRelativePath(String path)
+            throws InvalidLocationException {
         assert path != null;
 
         try {
@@ -307,17 +313,17 @@ public class Location implements Serializable {
             if (uri.isAbsolute()) {
                 // "A URI is absolute if, and only if, it has a scheme
                 // component"
-                throw new IllegalArgumentException(
-                        "Relative path cannot contain an URI scheme");
+                throw new InvalidLocationException("Relative path '" + path
+                        + "' cannot contain an URI scheme");
             } else if (uri.getPath().startsWith("/")) {
-                throw new IllegalArgumentException(
-                        "Relative path cannot start with /");
+                throw new InvalidLocationException(
+                        "Relative path '" + path + "' cannot start with /");
             } else if (hasIncorrectParentSegments(uri.getRawPath())) {
-                throw new IllegalArgumentException(
-                        "Relative path cannot contain .. segments");
+                throw new InvalidLocationException("Relative path '" + path
+                        + "' cannot contain .. segments");
             }
         } catch (URISyntaxException | UnsupportedEncodingException e) {
-            throw new IllegalArgumentException("Cannot parse path: " + path, e);
+            throw new InvalidLocationException("Cannot parse path: " + path, e);
         }
 
         // All is OK if we get here
