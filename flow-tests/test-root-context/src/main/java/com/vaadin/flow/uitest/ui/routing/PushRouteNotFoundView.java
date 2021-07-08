@@ -17,7 +17,13 @@ package com.vaadin.flow.uitest.ui.routing;
 
 import javax.servlet.http.HttpServletResponse;
 
+import java.util.Collection;
+import java.util.Optional;
+
 import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -25,6 +31,7 @@ import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.uitest.ui.NonExitingImageView;
 
 @ParentLayout(PushLayout.class)
 public class PushRouteNotFoundView extends RouteNotFoundError {
@@ -40,6 +47,19 @@ public class PushRouteNotFoundView extends RouteNotFoundError {
         if (PUSH_NON_EXISTENT_PATH.equals(path)) {
             isPushPath = true;
             return HttpServletResponse.SC_NOT_FOUND;
+        } else if (NonExitingImageView.IMAGE_NON_EXISTENT.equals(path)) {
+            Collection<UI> uIs = event.getUI().getSession().getUIs();
+            Optional<UI> viewUi = uIs.stream().filter(ui -> ComponentUtil
+                    .getData(ui, NonExitingImageView.ID) != null).findFirst();
+            if (viewUi.isPresent()) {
+                viewUi.get().access(() -> {
+                    Div div = new Div();
+                    div.setId("not-found-invoked");
+                    div.setText("RouteNotFoundError view is called");
+                    viewUi.get().add(div);
+                });
+            }
+            return super.setErrorParameter(event, parameter);
         } else {
             return super.setErrorParameter(event, parameter);
         }

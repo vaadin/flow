@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpHeaders;
 import org.hamcrest.CoreMatchers;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -1905,5 +1906,128 @@ public class BootstrapHandlerTest {
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element.contains(
                                 BootstrapHandler.SAFARI_10_1_SCRIPT_NOMODULE_FIX)));
+    }
+
+    @Test
+    public void canHandleRequest_requestHasNoAcceptHeader_returnsFalse() {
+        BootstrapHandler handler = new BootstrapHandler();
+
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        Mockito.when(request.getHeaderNames())
+                .thenReturn(Collections.emptyEnumeration());
+        Assert.assertFalse(handler.canHandleRequest(request));
+    }
+
+    @Test
+    public void canHandleRequest_requestHasAcceptHeaderAndHasNoReferer_returnsTrue() {
+        BootstrapHandler handler = new BootstrapHandler();
+
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        Mockito.when(request.getHeaderNames()).thenReturn(
+                Collections.enumeration(Arrays.asList(HttpHeaders.ACCEPT)));
+        Assert.assertTrue(handler.canHandleRequest(request));
+    }
+
+    @Test
+    public void canHandleRequest_requestHasAcceptHeaderAndHasReferer_contentTypeIsText_returnsTrue() {
+        BootstrapHandler handler = new BootstrapHandler();
+
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        Mockito.when(request.getHeaderNames())
+                .thenReturn(Collections.enumeration(Arrays
+                        .asList(HttpHeaders.ACCEPT, HttpHeaders.REFERER)));
+
+        Mockito.when(request.getHeaders(HttpHeaders.ACCEPT)).thenReturn(
+                Collections.enumeration(Collections.singleton("text/html")));
+        Assert.assertTrue(handler.canHandleRequest(request));
+    }
+
+    @Test
+    public void canHandleRequest_requestHasAcceptHeaderAndHasReferer_contentTypeIsTextWithWeight1_returnsTrue() {
+        BootstrapHandler handler = new BootstrapHandler();
+
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        Mockito.when(request.getHeaderNames())
+                .thenReturn(Collections.enumeration(Arrays
+                        .asList(HttpHeaders.ACCEPT, HttpHeaders.REFERER)));
+
+        Mockito.when(request.getHeaders(HttpHeaders.ACCEPT))
+                .thenReturn(Collections
+                        .enumeration(Collections.singleton("text/html;q=1.0")));
+        Assert.assertTrue(handler.canHandleRequest(request));
+    }
+
+    @Test
+    public void canHandleRequest_requestHasAcceptHeaderAndHasReferer_contentTypeIsXhtml_returnsTrue() {
+        BootstrapHandler handler = new BootstrapHandler();
+
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        Mockito.when(request.getHeaderNames())
+                .thenReturn(Collections.enumeration(Arrays
+                        .asList(HttpHeaders.ACCEPT, HttpHeaders.REFERER)));
+
+        Mockito.when(request.getHeaders(HttpHeaders.ACCEPT))
+                .thenReturn(Collections.enumeration(
+                        Collections.singleton("application/xhtml+xml")));
+        Assert.assertTrue(handler.canHandleRequest(request));
+    }
+
+    @Test
+    public void canHandleRequest_requestHasAcceptHeaderAndHasReferer_contentTypeIsXhtmlWithWeight1_returnsTrue() {
+        BootstrapHandler handler = new BootstrapHandler();
+
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        Mockito.when(request.getHeaderNames())
+                .thenReturn(Collections.enumeration(Arrays
+                        .asList(HttpHeaders.ACCEPT, HttpHeaders.REFERER)));
+
+        Mockito.when(request.getHeaders(HttpHeaders.ACCEPT))
+                .thenReturn(Collections.enumeration(
+                        Collections.singleton("application/xhtml+xml;q=1.0")));
+        Assert.assertTrue(handler.canHandleRequest(request));
+    }
+
+    @Test
+    public void canHandleRequest_requestHasAcceptHeaderAndHasReferer_contentTypeIsImage_returnsFalse() {
+        BootstrapHandler handler = new BootstrapHandler();
+
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        Mockito.when(request.getHeaderNames())
+                .thenReturn(Collections.enumeration(Arrays
+                        .asList(HttpHeaders.ACCEPT, HttpHeaders.REFERER)));
+
+        Mockito.when(request.getHeaders(HttpHeaders.ACCEPT)).thenReturn(
+                Collections.enumeration(Collections.singleton("image/jpeg")));
+        Assert.assertFalse(handler.canHandleRequest(request));
+    }
+
+    @Test
+    public void canHandleRequest_requestHasAcceptHeaderAndHasReferer_contentTypeIsXhtmlWithWeightLess1_returnsTrue() {
+        BootstrapHandler handler = new BootstrapHandler();
+
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        Mockito.when(request.getHeaderNames())
+                .thenReturn(Collections.enumeration(Arrays
+                        .asList(HttpHeaders.ACCEPT, HttpHeaders.REFERER)));
+
+        Mockito.when(request.getHeaders(HttpHeaders.ACCEPT))
+                .thenReturn(Collections.enumeration(
+                        Collections.singleton("application/xhtml+xml;q=9.0")));
+        Assert.assertFalse(handler.canHandleRequest(request));
+    }
+
+    @Test
+    public void canHandleRequest_requestHasAcceptHeaderAndHasReferer_contentTypeIsTextWithWeightLess1_returnsTrue() {
+        BootstrapHandler handler = new BootstrapHandler();
+
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        Mockito.when(request.getHeaderNames())
+                .thenReturn(Collections.enumeration(Arrays
+                        .asList(HttpHeaders.ACCEPT, HttpHeaders.REFERER)));
+
+        Mockito.when(request.getHeaders(HttpHeaders.ACCEPT))
+                .thenReturn(Collections
+                        .enumeration(Collections.singleton("text/html;q=9.0")));
+        Assert.assertFalse(handler.canHandleRequest(request));
     }
 }

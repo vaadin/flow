@@ -26,8 +26,10 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -35,11 +37,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.http.HttpHeaders;
+import org.apache.http.entity.ContentType;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -109,6 +114,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     static final String VIEWPORT = "viewport";
     private static final String META_TAG = "meta";
     private static final String SCRIPT_TAG = "script";
+
+    private static final String TEXT_HTML_TYPE_WEIGHT = ContentType.TEXT_HTML
+            .getMimeType() + ";q=1.0";
+    private static final String XHTML_TYPE_WEIGHT = ContentType.APPLICATION_XHTML_XML
+            .getMimeType() + ";q=1.0";
 
     /**
      * Location of client nocache file, relative to the context root.
@@ -481,6 +491,34 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         writeBootstrapPage(response, document.outerHtml());
 
         return true;
+    }
+
+    @Override
+    protected boolean canHandleRequest(VaadinRequest request) {
+        ArrayList<String> headers = Collections.list(request.getHeaderNames());
+        if (!headers.contains(HttpHeaders.ACCEPT)) {
+            return false;
+        }
+        if (!headers.contains(HttpHeaders.REFERER)) {
+            return true;
+        }
+        Set<String> typesWithWeight = getAcceptTypes(request);
+        // text/html or application/xhtml+xml mime types should have weight 1.0
+        return typesWithWeight.contains(ContentType.TEXT_HTML.getMimeType())
+                || typesWithWeight.contains(TEXT_HTML_TYPE_WEIGHT)
+                || typesWithWeight.contains(
+                        ContentType.APPLICATION_XHTML_XML.getMimeType())
+                || typesWithWeight.contains(XHTML_TYPE_WEIGHT);
+    }
+
+    private Set<String> getAcceptTypes(VaadinRequest request) {
+        Set<String> result = new HashSet<>();
+        ArrayList<String> accept = Collections
+                .list(request.getHeaders(HttpHeaders.ACCEPT));
+        for (String type : accept) {
+            result.addAll(Arrays.asList(type.split(",")));
+        }
+        return result;
     }
 
     private void writeBootstrapPage(VaadinResponse response, String html)
