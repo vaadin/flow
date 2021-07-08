@@ -16,6 +16,7 @@
 package com.vaadin.flow.router;
 
 import javax.servlet.http.HttpServletResponse;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,6 +30,15 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -50,20 +60,12 @@ import com.vaadin.flow.router.internal.DefaultErrorHandler;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
 
 import static com.vaadin.flow.router.internal.RouteModelTest.parameters;
 import static com.vaadin.flow.router.internal.RouteModelTest.varargs;
@@ -1664,7 +1666,7 @@ public class RouterTest extends RoutingTestBase {
         // doesn't throw
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InvalidLocationException.class)
     public void resolveNavigation_pathContainsDots_pathIsRelative_noException() {
         router.resolveNavigationTarget("/../dsfsdfsdf", Collections.emptyMap());
         // Location explicitly disallows ".." segments
