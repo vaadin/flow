@@ -180,21 +180,21 @@ public class SystemErrorHandler {
         if (caption != null) {
             Element captionDiv = document.createDivElement();
             captionDiv.setClassName("caption");
-            captionDiv.setInnerHTML(caption);
+            captionDiv.setTextContent(caption);
             systemErrorContainer.appendChild(captionDiv);
             Console.error(caption);
         }
         if (message != null) {
             Element messageDiv = document.createDivElement();
             messageDiv.setClassName("message");
-            messageDiv.setInnerHTML(message);
+            messageDiv.setTextContent(message);
             systemErrorContainer.appendChild(messageDiv);
             Console.error(message);
         }
         if (details != null) {
             Element detailsDiv = document.createDivElement();
             detailsDiv.setClassName("details");
-            detailsDiv.setInnerHTML(details);
+            detailsDiv.setTextContent(details);
             systemErrorContainer.appendChild(detailsDiv);
             Console.error(details);
         }
