@@ -98,6 +98,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class BootstrapHandler extends SynchronizedRequestHandler {
 
     public static final String POLYFILLS_JS = "frontend://bower_components/webcomponentsjs/webcomponents-loader.js";
+    public static final String SERVICE_WORKER_HEADER = "Service-Worker";
 
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "window.Vaadin.Flow.gwtStatsEvents = [];"
@@ -462,6 +463,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return super.resolveVaadinUri(uri, frontendRootUrl,
                     servletPathToContextRoot);
         }
+
+    }
+
+    @Override
+    protected boolean canHandleRequest(VaadinRequest request) {
+        if (request.getHeader(SERVICE_WORKER_HEADER) != null) {
+            return false;
+        }
+        return super.canHandleRequest(request);
 
     }
 

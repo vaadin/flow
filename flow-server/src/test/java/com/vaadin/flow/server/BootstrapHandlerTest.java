@@ -1899,11 +1899,33 @@ public class BootstrapHandlerTest {
 
         Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
                 request, null, session, testUI, this::contextRootRelativePath));
-
         Elements allElements = page.head().getAllElements();
         Assert.assertTrue("fix for Safari 10.1 script nomodule should be added",
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element.contains(
                                 BootstrapHandler.SAFARI_10_1_SCRIPT_NOMODULE_FIX)));
     }
+
+    @Test
+    public void serviceWorkerRequest_canNotHanldeRequest() {
+        BootstrapHandler bootstrapHandler = new BootstrapHandler();
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+
+        Mockito.when(request.getHeader(BootstrapHandler.SERVICE_WORKER_HEADER))
+                .thenReturn("script");
+
+        Assert.assertFalse(bootstrapHandler.canHandleRequest(request));
+    }
+
+    @Test
+    public void notServiceWorkerRequest_canHanldeRequest() {
+        BootstrapHandler bootstrapHandler = new BootstrapHandler();
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+
+        Mockito.when(request.getHeader(BootstrapHandler.SERVICE_WORKER_HEADER))
+                .thenReturn(null);
+
+        Assert.assertTrue(bootstrapHandler.canHandleRequest(request));
+    }
+
 }
