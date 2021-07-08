@@ -17,6 +17,7 @@ package com.vaadin.flow.templatemodel;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -28,6 +29,7 @@ import net.bytebuddy.description.method.ParameterList;
 import net.bytebuddy.description.type.TypeDescription.Generic;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import net.bytebuddy.dynamic.loading.MultipleParentClassLoader;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.implementation.bind.annotation.AllArguments;
@@ -246,7 +248,12 @@ public class TemplateModelProxyHandler implements Serializable {
 
                 // Create the class
                 .name(proxyClassName).make()
-                .load(classLoader, ClassLoadingStrategy.Default.WRAPPER)
+                // In an OSGi Context we need two classloaders. The one from the
+                // Bundle that calls this ("classloader") + the Classloader
+                // the TemplateModelProxyHandler
+                .load(new MultipleParentClassLoader(Arrays.asList(classLoader,
+                        TemplateModelProxyHandler.class.getClassLoader())),
+                        ClassLoadingStrategy.Default.WRAPPER)
                 .getLoaded();
 
         return (node, modelType) -> {
