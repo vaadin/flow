@@ -160,7 +160,7 @@ public class OpenApiSpecBasedTests {
         VaadinConnectClientGenerator vaadinConnectClientGenerator = new VaadinConnectClientGenerator(
                 outputDirectory.getRoot().toPath(), new Properties());
         // First generating round
-        vaadinConnectClientGenerator.generateVaadinConnectClientFile(
+        vaadinConnectClientGenerator.generate(
 
         );
 

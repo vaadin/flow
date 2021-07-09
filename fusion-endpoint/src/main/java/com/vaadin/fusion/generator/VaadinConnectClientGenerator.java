@@ -79,7 +79,7 @@ public class VaadinConnectClientGenerator {
     /**
      * Generates the client file in the file specified.
      */
-    public void generateVaadinConnectClientFile() {
+    public void generate() {
         String generatedDefaultClientTs = getDefaultClientTsTemplate()
                 .replace("{{PREFIX}}", endpointPrefix);
         try {

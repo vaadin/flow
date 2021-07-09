@@ -95,7 +95,7 @@ public class VaadinConnectClientGeneratorTest {
                         .getResource("application.properties.for.testing")
                         .getPath()));
 
-        generator.generateVaadinConnectClientFile();
+        generator.generate();
 
         Path outputPath = generator.getOutputFilePath();
 
@@ -113,7 +113,7 @@ public class VaadinConnectClientGeneratorTest {
         VaadinConnectClientGenerator generator = new VaadinConnectClientGenerator(
                 temporaryFolder.getRoot().toPath(), new Properties());
 
-        generator.generateVaadinConnectClientFile();
+        generator.generate();
 
         Path outputPath = generator.getOutputFilePath();
 
