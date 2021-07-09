@@ -17,8 +17,8 @@ function _delete(
 function _getNonNullablePage(
   pageSize: number,
   pageNumber: number,
-  parameters: Record<string, Person> | undefined
-): Promise<Array<Person> | undefined> {
+  parameters: Readonly<Record<string, Person>> | undefined
+): Promise<ReadonlyArray<Person> | undefined> {
   return client.call('PersonEndpoint', 'getNonNullablePage', {pageSize, pageNumber, parameters});
 }
 
@@ -31,7 +31,7 @@ function _get(
 function _getPage(
   pageSize: number,
   pageNumber: number
-): Promise<Array<Person | undefined> | undefined> {
+): Promise<ReadonlyArray<Person | undefined> | undefined> {
   return client.call('PersonEndpoint', 'getPage', {pageSize, pageNumber});
 }
 

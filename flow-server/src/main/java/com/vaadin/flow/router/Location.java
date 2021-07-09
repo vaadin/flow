@@ -53,9 +53,11 @@ public class Location implements Serializable {
      *
      * @param location
      *            the relative location or <code>null</code> which is
-     *            interpreted as <code>""</code>
+     *            interpreted as <code>""</code>]
+     * @throws InvalidLocationException
+     *             If the given string cannot be used for the {@link Location}
      */
-    public Location(String location) {
+    public Location(String location) throws InvalidLocationException {
         this(parsePath(ensureRelativeNonNull(location), true),
                 parseParams(ensureRelativeNonNull(location)));
     }
@@ -89,8 +91,11 @@ public class Location implements Serializable {
      *            query parameters information, not {@code null}
      * @throws IllegalArgumentException
      *             if location string contains query parameters inside
+     * @throws InvalidLocationException
+     *             If the given string cannot be used for the {@link Location}
      */
-    public Location(String location, QueryParameters queryParameters) {
+    public Location(String location, QueryParameters queryParameters)
+            throws InvalidLocationException {
         this(parsePath(ensureRelativeNonNull(location), false),
                 queryParameters);
     }
@@ -298,17 +303,17 @@ public class Location implements Serializable {
             if (uri.isAbsolute()) {
                 // "A URI is absolute if, and only if, it has a scheme
                 // component"
-                throw new IllegalArgumentException(
+                throw new InvalidLocationException(
                         "Relative path cannot contain an URI scheme");
             } else if (uri.getPath().startsWith("/")) {
-                throw new IllegalArgumentException(
+                throw new InvalidLocationException(
                         "Relative path cannot start with /");
             } else if (hasIncorrectParentSegments(uri.getRawPath())) {
-                throw new IllegalArgumentException(
+                throw new InvalidLocationException(
                         "Relative path cannot contain .. segments");
             }
         } catch (URISyntaxException | UnsupportedEncodingException e) {
-            throw new IllegalArgumentException("Cannot parse path: " + path, e);
+            throw new InvalidLocationException("Cannot parse path: " + path, e);
         }
 
         // All is OK if we get here

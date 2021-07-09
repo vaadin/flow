@@ -20,8 +20,8 @@ function _echoInstant(
 }
 
 function _echoListLocalDateTime(
-  localDateTimeList: Array<string | undefined> | undefined
-): Promise<Array<string | undefined> | undefined> {
+  localDateTimeList: ReadonlyArray<string | undefined> | undefined
+): Promise<ReadonlyArray<string | undefined> | undefined> {
   return client.call('DateTimeEndpoint', 'echoListLocalDateTime', {localDateTimeList});
 }
 
@@ -44,8 +44,8 @@ function _echoLocalTime(
 }
 
 function _echoMapInstant(
-  mapInstant: Record<string, string | undefined> | undefined
-): Promise<Record<string, string | undefined> | undefined> {
+  mapInstant: Readonly<Record<string, string | undefined>> | undefined
+): Promise<Readonly<Record<string, string | undefined>> | undefined> {
   return client.call('DateTimeEndpoint', 'echoMapInstant', {mapInstant});
 }
 

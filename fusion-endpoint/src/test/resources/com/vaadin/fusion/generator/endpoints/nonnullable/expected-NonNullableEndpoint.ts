@@ -13,25 +13,25 @@ import type VaadinNonNullableModel from './com/vaadin/fusion/generator/endpoints
 
 function _echoMap(
   shouldBeNotNull: boolean
-): Promise<Record<string, NonNullableModel | undefined>> {
+): Promise<Readonly<Record<string, NonNullableModel | undefined>>> {
   return client.call('NonNullableEndpoint', 'echoMap', {shouldBeNotNull});
 }
 
 function _echoNonNullModel(
-  nonNullableModels: Array<NonNullableModel | undefined>
+  nonNullableModels: ReadonlyArray<NonNullableModel | undefined>
 ): Promise<NonNullableModel | undefined> {
   return client.call('NonNullableEndpoint', 'echoNonNullModel', {nonNullableModels});
 }
 
 function _echoNonNullableMap(
-  nonNullableList: Array<string>
-): Promise<Record<string, NonNullableModel>> {
+  nonNullableList: ReadonlyArray<string>
+): Promise<Readonly<Record<string, NonNullableModel>>> {
   return client.call('NonNullableEndpoint', 'echoNonNullableMap', {nonNullableList});
 }
 
 function _echoVaadinNonNullableMap(
-  nonNullableParameter: Array<string>
-): Promise<Record<string, VaadinNonNullableModel>> {
+  nonNullableParameter: ReadonlyArray<string>
+): Promise<Readonly<Record<string, VaadinNonNullableModel>>> {
   return client.call ('NonNullableEndpoint', 'echoVaadinNonNullableMap', {nonNullableParameter});
 }
 

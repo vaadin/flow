@@ -261,7 +261,7 @@ public class LocationTest {
 
     @Test
     public void locationShouldBeRelative() {
-        expectedEx.expect(IllegalArgumentException.class);
+        expectedEx.expect(InvalidLocationException.class);
         expectedEx.expectMessage("Relative path cannot contain .. segments");
 
         new Location("../element");
@@ -269,7 +269,7 @@ public class LocationTest {
 
     @Test
     public void locationShouldNotEndWithDotDotSegment() {
-        expectedEx.expect(IllegalArgumentException.class);
+        expectedEx.expect(InvalidLocationException.class);
         expectedEx.expectMessage("Relative path cannot contain .. segments");
 
         new Location("element/..");
@@ -277,7 +277,7 @@ public class LocationTest {
 
     @Test
     public void dotDotLocationShouldNotWork() {
-        expectedEx.expect(IllegalArgumentException.class);
+        expectedEx.expect(InvalidLocationException.class);
         expectedEx.expectMessage("Relative path cannot contain .. segments");
 
         new Location("..");

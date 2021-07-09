@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2021 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.fusion.generator;
 
 import java.io.File;
@@ -46,7 +61,7 @@ import com.vaadin.fusion.EndpointNameChecker;
 
 public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
     private static final Pattern ARRAY_TYPE_NAME_PATTERN = Pattern
-            .compile("Array<(.*)>");
+            .compile("ReadonlyArray<(.*)>");
     private static final String EXTENSION_VAADIN_CONNECT_METHOD_NAME = "x-vaadin-connect-method-name";
     private static final String EXTENSION_VAADIN_CONNECT_PARAMETERS = "x-vaadin-connect-parameters";
     private static final String EXTENSION_VAADIN_CONNECT_SERVICE_NAME = "x-vaadin-connect-endpoint-name";
@@ -60,7 +75,7 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
     private static final Pattern FULLY_QUALIFIED_NAME_PATTERN = Pattern.compile(
             "(" + JAVA_NAME_PATTERN + "(\\." + JAVA_NAME_PATTERN + ")*)");
     private static final Pattern MAPPED_TYPE_NAME_PATTERN = Pattern
-            .compile("Record<string, (.*)>");
+            .compile("Readonly<Record<string, (.*)>>");
     private static final String OPERATION = "operation";
     private static final Pattern PATH_REGEX = Pattern
             .compile("^/([^/{}\n\t]+)/([^/{}\n\t]+)$");
@@ -277,13 +292,13 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
         if (schema instanceof ArraySchema) {
             ArraySchema arraySchema = (ArraySchema) schema;
             Schema inner = arraySchema.getItems();
-            return String.format("Array<%s>%s", this.getTypeDeclaration(inner),
-                    optionalSuffix);
+            return String.format("ReadonlyArray<%s>%s",
+                    this.getTypeDeclaration(inner), optionalSuffix);
         } else if (GeneratorUtils.isNotBlank(schema.get$ref())) {
             return getSimpleRef(schema.get$ref()) + optionalSuffix;
         } else if (schema.getAdditionalProperties() != null) {
             Schema inner = (Schema) schema.getAdditionalProperties();
-            return String.format("Record<string, %s>%s",
+            return String.format("Readonly<Record<string, %s>>%s",
                     getTypeDeclaration(inner), optionalSuffix);
         } else if (schema instanceof ComposedSchema) {
             return getTypeDeclarationFromComposedSchema((ComposedSchema) schema,
@@ -557,8 +572,8 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
         }
         matcher = MAPPED_TYPE_NAME_PATTERN.matcher(name);
         if (matcher.find()) {
-            return "Object" + Generator.MODEL + "<{ [key: string]: "
-                    + getModelVariableType(matcher.group(1)) + "; }>";
+            return "Object" + Generator.MODEL + "<Readonly<Record<string, "
+                    + getModelVariableType(matcher.group(1)) + ">>>";
         }
         return fixNameForModel(name);
     }
