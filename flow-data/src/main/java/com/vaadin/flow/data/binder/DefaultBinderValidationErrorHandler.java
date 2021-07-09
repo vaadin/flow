@@ -33,8 +33,11 @@ import com.vaadin.flow.dom.ThemeList;
  * validity and error message is set based on a {@link ValidationResult}
  * <li>If the field's class may have a theme (e.g. implements {@link HasTheme}
  * or {@link HasElement}) then theme name derived from the {@link ErrorLevel} of
- * the {@link ValidationResult} instance is applied.
+ * the {@link ValidationResult} instance is applied. E.g., for
+ * {@link ErrorLevel#WARNING} the element will get the "theme"="warning"
+ * attribute and value in HTML.
  * </ul>
+ * 
  * 
  * @author Vaadin Ltd
  * @since
