@@ -25,8 +25,6 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.core.models.AuthorizationValue;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.vaadin.fusion.generator.Generator.TS;
 
@@ -75,7 +73,7 @@ class OpenAPIParser {
 
     private static String getDefaultClientPath(String path) {
         path = path != null ? path
-                : VaadinConnectClientGenerator.CONNECT_CLIENT_IMPORT_PATH;
+                : ConnectClientGenerator.CONNECT_CLIENT_IMPORT_PATH;
         return path.endsWith(TS)
                 ? path.substring(0, path.length() - TS.length())
                 : path;

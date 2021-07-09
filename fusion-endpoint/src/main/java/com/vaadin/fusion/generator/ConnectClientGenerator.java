@@ -37,7 +37,7 @@ import static com.vaadin.fusion.generator.Generator.TS;
  * Generates the Vaadin connect-client file, based on the application
  * properties, if provided.
  */
-public class VaadinConnectClientGenerator {
+public class ConnectClientGenerator {
     static final String DEFAULT_PREFIX = "/connect";
     static final String DEFAULT_URL_MAPPING = "/*";
     static final String PREFIX = "vaadin.endpoint.prefix";
@@ -50,7 +50,7 @@ public class VaadinConnectClientGenerator {
     public static final String CUSTOM_CONNECT_CLIENT_NAME = CUSTOM_CLIENT_FILE_NAME
             + TS;
     private static final Logger logger = LoggerFactory
-            .getLogger(VaadinConnectClientGenerator.class);
+            .getLogger(ConnectClientGenerator.class);
     private final String endpointPrefix;
     private final Path outputFilePath;
 
@@ -63,8 +63,8 @@ public class VaadinConnectClientGenerator {
      * @param outputDirectory
      *            the directory to generate the default client into
      */
-    public VaadinConnectClientGenerator(Path outputDirectory,
-            Properties applicationProperties) {
+    public ConnectClientGenerator(Path outputDirectory,
+                                  Properties applicationProperties) {
         final String prefix = (String) applicationProperties
                 .getOrDefault(PREFIX, DEFAULT_PREFIX);
         final String urlMapping = (String) applicationProperties

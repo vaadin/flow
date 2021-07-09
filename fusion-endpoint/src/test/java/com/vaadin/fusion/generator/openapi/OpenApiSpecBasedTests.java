@@ -31,8 +31,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
+import com.vaadin.fusion.generator.ConnectClientGenerator;
 import com.vaadin.fusion.generator.Generator;
-import com.vaadin.fusion.generator.VaadinConnectClientGenerator;
 import com.vaadin.fusion.utils.TestUtils;
 
 import static org.junit.Assert.assertEquals;
@@ -47,35 +47,6 @@ public class OpenApiSpecBasedTests {
 
     @BeforeClass
     public static void beforeClass() {
-    }
-
-    private void assertClassGeneratedTs(String expectedClass) {
-        Path outputFilePath = outputDirectory.getRoot().toPath()
-                .resolve(expectedClass + ".ts");
-        String actualTs;
-        try {
-            actualTs = StringUtils.toEncodedString(
-                    Files.readAllBytes(outputFilePath), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-        String expectedTs = TestUtils.readResource(getClass()
-                .getResource(String.format("expected-%s.ts", expectedClass)));
-
-        TestUtils.equalsIgnoreWhiteSpaces(
-                String.format("Class '%s' has unexpected json produced",
-                        expectedClass),
-                expectedTs, actualTs);
-    }
-
-    private File getResourcePath(String resourceName) {
-        return new File(getClass().getResource(resourceName).getPath());
-    }
-
-    private String readFileInTempDir(String fileName) throws IOException {
-        Path outputPath = outputDirectory.getRoot().toPath().resolve(fileName);
-        return StringUtils.toEncodedString(Files.readAllBytes(outputPath),
-                StandardCharsets.UTF_8);
     }
 
     @Test
@@ -157,12 +128,10 @@ public class OpenApiSpecBasedTests {
 
     @Test
     public void should_RemoveStaleGeneratedFiles_When_OpenAPIInputChanges() {
-        VaadinConnectClientGenerator vaadinConnectClientGenerator = new VaadinConnectClientGenerator(
+        ConnectClientGenerator connectClientGenerator = new ConnectClientGenerator(
                 outputDirectory.getRoot().toPath(), new Properties());
         // First generating round
-        vaadinConnectClientGenerator.generate(
-
-        );
+        connectClientGenerator.generate();
 
         new Generator(
                 getResourcePath(
@@ -232,6 +201,35 @@ public class OpenApiSpecBasedTests {
 
         new Generator(getResourcePath("wrong-input-path-openapi.json"),
                 outputDirectory.getRoot()).start();
+    }
+
+    private void assertClassGeneratedTs(String expectedClass) {
+        Path outputFilePath = outputDirectory.getRoot().toPath()
+                .resolve(expectedClass + ".ts");
+        String actualTs;
+        try {
+            actualTs = StringUtils.toEncodedString(
+                    Files.readAllBytes(outputFilePath), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        String expectedTs = TestUtils.readResource(getClass()
+                .getResource(String.format("expected-%s.ts", expectedClass)));
+
+        TestUtils.equalsIgnoreWhiteSpaces(
+                String.format("Class '%s' has unexpected json produced",
+                        expectedClass),
+                expectedTs, actualTs);
+    }
+
+    private File getResourcePath(String resourceName) {
+        return new File(getClass().getResource(resourceName).getPath());
+    }
+
+    private String readFileInTempDir(String fileName) throws IOException {
+        Path outputPath = outputDirectory.getRoot().toPath().resolve(fileName);
+        return StringUtils.toEncodedString(Files.readAllBytes(outputPath),
+                StandardCharsets.UTF_8);
     }
 
 }

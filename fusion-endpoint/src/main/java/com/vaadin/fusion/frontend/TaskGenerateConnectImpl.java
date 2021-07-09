@@ -22,7 +22,7 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.TaskGenerateConnect;
 import com.vaadin.fusion.generator.Generator;
 
-import static com.vaadin.fusion.generator.VaadinConnectClientGenerator.CUSTOM_CONNECT_CLIENT_NAME;
+import static com.vaadin.fusion.generator.ConnectClientGenerator.CUSTOM_CONNECT_CLIENT_NAME;
 
 /**
  * Generate the Vaadin TS files for endpoints, and the Client API file.

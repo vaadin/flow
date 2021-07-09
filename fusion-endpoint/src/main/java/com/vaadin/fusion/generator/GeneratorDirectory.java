@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
-public class GeneratorDirectory {
+class GeneratorDirectory {
     private final Logger logger = LoggerFactory
             .getLogger(GeneratorDirectory.class.getName());
     private final File outputDirectory;
@@ -97,7 +97,7 @@ public class GeneratorDirectory {
             final String fileName = file.getName();
 
             if (fileName
-                    .equals(VaadinConnectClientGenerator.CONNECT_CLIENT_NAME)
+                    .equals(ConnectClientGenerator.CONNECT_CLIENT_NAME)
                     || fileName.equals(FrontendUtils.BOOTSTRAP_FILE_NAME)
                     || fileName.equals(FrontendUtils.THEME_IMPORTS_NAME)
                     || fileName.equals(FrontendUtils.THEME_IMPORTS_D_TS_NAME)

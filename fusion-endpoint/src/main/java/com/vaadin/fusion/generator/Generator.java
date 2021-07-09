@@ -13,7 +13,7 @@ public class Generator {
     public static final String OPTIONAL_SUFFIX = " | undefined";
     public static final String TS = ".ts";
     public static final String MODEL_TS = MODEL + TS;
-    private final VaadinConnectClientGenerator clientGenerator;
+    private final ConnectClientGenerator clientGenerator;
     private final GeneratorDirectory outputDirectory;
     private final OpenAPIParser parser;
     private final BarrelGenerator barrelGenerator;
@@ -44,7 +44,7 @@ public class Generator {
                         TypescriptCodeGenerator.class, defaultClientPath)
                 : null;
         clientGenerator = properties != null
-                ? new VaadinConnectClientGenerator(outputDirectory.toPath(),
+                ? new ConnectClientGenerator(outputDirectory.toPath(),
                         properties)
                 : null;
         barrelGenerator = new BarrelGenerator(outputDirectory.toPath());

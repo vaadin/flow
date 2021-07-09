@@ -28,22 +28,22 @@ import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.fusion.utils.TestUtils;
 
-public class VaadinConnectClientGeneratorTest {
+public class ConnectClientGeneratorTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
-    public void relativizeEndpointPrefixWithUrlMapping_should_work_with_both_default_values() {
-        VaadinConnectClientGenerator generator = new VaadinConnectClientGenerator(
+    public void relativizeEndpointPrefixWithUrlMapping_Should_workWithBothDefaultValues() {
+        ConnectClientGenerator generator = new ConnectClientGenerator(
                 temporaryFolder.getRoot().toPath(), new Properties());
         String result = generator.relativizeEndpointPrefixWithUrlMapping(
-                VaadinConnectClientGenerator.DEFAULT_PREFIX, "/*");
+                ConnectClientGenerator.DEFAULT_PREFIX, "/*");
         Assert.assertEquals("connect", result);
     }
 
     @Test
-    public void relativizeEndpointPrefixWithUrlMapping_should_work_with_custom_url_mapping_and_custom_endpoint_prefix() {
-        VaadinConnectClientGenerator generator = new VaadinConnectClientGenerator(
+    public void relativizeEndpointPrefixWithUrlMapping_should_workWithCustomUrlMappingAndCustomEndpointPrefix() {
+        ConnectClientGenerator generator = new ConnectClientGenerator(
                 temporaryFolder.getRoot().toPath(), new Properties());
         String result = generator.relativizeEndpointPrefixWithUrlMapping(
                 "/my-connect", "/myapp/*");
@@ -51,17 +51,17 @@ public class VaadinConnectClientGeneratorTest {
     }
 
     @Test
-    public void relativizeEndpointPrefixWithUrlMapping_should_work_with_custom_url_mapping_and_default_endpoint_prefix() {
-        VaadinConnectClientGenerator generator = new VaadinConnectClientGenerator(
+    public void relativizeEndpointPrefixWithUrlMapping_should_workWithCustomUrlMappingAndDefaultEndpointPrefix() {
+        ConnectClientGenerator generator = new ConnectClientGenerator(
                 temporaryFolder.getRoot().toPath(), new Properties());
         String result = generator.relativizeEndpointPrefixWithUrlMapping(
-                VaadinConnectClientGenerator.DEFAULT_PREFIX, "/myapp/*");
+                ConnectClientGenerator.DEFAULT_PREFIX, "/myapp/*");
         Assert.assertEquals("../connect", result);
     }
 
     @Test
-    public void relativizeEndpointPrefixWithUrlMapping_should_work_with_default_url_mapping_and_custom_endpoint_prefix() {
-        VaadinConnectClientGenerator generator = new VaadinConnectClientGenerator(
+    public void relativizeEndpointPrefixWithUrlMapping_should_workWithDefaultUrlMappingAndCustomEndpointPrefix() {
+        ConnectClientGenerator generator = new ConnectClientGenerator(
                 temporaryFolder.getRoot().toPath(), new Properties());
         String result = generator
                 .relativizeEndpointPrefixWithUrlMapping("/my-connect", "/*");
@@ -69,8 +69,8 @@ public class VaadinConnectClientGeneratorTest {
     }
 
     @Test
-    public void relativizeEndpointPrefixWithUrlMapping_should_work_with_multiple_level_url_mapping_and_custom_endpoint_prefix() {
-        VaadinConnectClientGenerator generator = new VaadinConnectClientGenerator(
+    public void relativizeEndpointPrefixWithUrlMapping_Should_WorkWithMultipleLevelUrlMappingAndCustomEndpointPrefix() {
+        ConnectClientGenerator generator = new ConnectClientGenerator(
                 temporaryFolder.getRoot().toPath(), new Properties());
         String result = generator.relativizeEndpointPrefixWithUrlMapping(
                 "/my-connect", "/myapp/yourapp/*");
@@ -78,8 +78,8 @@ public class VaadinConnectClientGeneratorTest {
     }
 
     @Test
-    public void relativizeEndpointPrefixWithUrlMapping_should_work_with_multiple_level_url_mapping_and_multiple_level_endpoint_prefix() {
-        VaadinConnectClientGenerator generator = new VaadinConnectClientGenerator(
+    public void relativizeEndpointPrefixWithUrlMapping_Should_WorkWithMultipleLevelUrlMappingAndMultipleLevelEndpointPrefix() {
+        ConnectClientGenerator generator = new ConnectClientGenerator(
                 temporaryFolder.getRoot().toPath(), new Properties());
         String result = generator.relativizeEndpointPrefixWithUrlMapping(
                 "/my-connect/your-connect", "/myapp/yourapp/*");
@@ -89,7 +89,7 @@ public class VaadinConnectClientGeneratorTest {
     @Test
     public void should_GenerateConnectClientDefault_When_ApplicationPropertiesInput()
             throws Exception {
-        VaadinConnectClientGenerator generator = new VaadinConnectClientGenerator(
+        ConnectClientGenerator generator = new ConnectClientGenerator(
                 temporaryFolder.getRoot().toPath(),
                 TestUtils.readProperties(getClass()
                         .getResource("application.properties.for.testing")
@@ -110,7 +110,7 @@ public class VaadinConnectClientGeneratorTest {
     @Test
     public void should_GenerateConnectClientDefault_When_NoApplicationPropertiesInput()
             throws Exception {
-        VaadinConnectClientGenerator generator = new VaadinConnectClientGenerator(
+        ConnectClientGenerator generator = new ConnectClientGenerator(
                 temporaryFolder.getRoot().toPath(), new Properties());
 
         generator.generate();

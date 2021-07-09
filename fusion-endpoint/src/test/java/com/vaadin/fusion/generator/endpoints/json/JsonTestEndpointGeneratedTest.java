@@ -25,7 +25,7 @@ import org.junit.Test;
 
 import com.vaadin.fusion.generator.Generator;
 import com.vaadin.fusion.generator.OpenApiSpecGenerator;
-import com.vaadin.fusion.generator.VaadinConnectClientGenerator;
+import com.vaadin.fusion.generator.ConnectClientGenerator;
 import com.vaadin.fusion.generator.endpoints.AbstractEndpointGenerationTest;
 import com.vaadin.fusion.utils.TestUtils;
 
@@ -86,7 +86,7 @@ public class JsonTestEndpointGeneratedTest
     @Test
     public void should_GenerateOpenApi_When_NoApplicationPropertiesInput() {
         String expectedImport = String.format("import client from '%s';",
-                VaadinConnectClientGenerator.CONNECT_CLIENT_IMPORT_PATH);
+                ConnectClientGenerator.CONNECT_CLIENT_IMPORT_PATH);
         verifyGenerationFully(null,
                 getClass().getResource("expected-openapi.json"));
 
