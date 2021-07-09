@@ -10,12 +10,11 @@
 import client from './connect-client.default';
 
 function _firstMethod(
-    value?: boolean
+  value?: boolean
 ): Promise<void> {
   return client.call('FooBarEndpoint', 'firstMethod', {value}, {requireCredentials: false});
 }
-export {_firstMethod as firstMethod};
 
-export const FooBarEndpoint = Object.freeze({
-  firstMethod: _firstMethod,
-});
+export {
+  _firstMethod as firstMethod,
+};
