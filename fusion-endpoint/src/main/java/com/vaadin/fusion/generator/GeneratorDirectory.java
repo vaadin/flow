@@ -96,8 +96,7 @@ class GeneratorDirectory {
 
             final String fileName = file.getName();
 
-            if (fileName
-                    .equals(ConnectClientGenerator.CONNECT_CLIENT_NAME)
+            if (fileName.equals(ConnectClientGenerator.CONNECT_CLIENT_NAME)
                     || fileName.equals(FrontendUtils.BOOTSTRAP_FILE_NAME)
                     || fileName.equals(FrontendUtils.THEME_IMPORTS_NAME)
                     || fileName.equals(FrontendUtils.THEME_IMPORTS_D_TS_NAME)

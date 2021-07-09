@@ -64,7 +64,7 @@ public class ConnectClientGenerator {
      *            the directory to generate the default client into
      */
     public ConnectClientGenerator(Path outputDirectory,
-                                  Properties applicationProperties) {
+            Properties applicationProperties) {
         final String prefix = (String) applicationProperties
                 .getOrDefault(PREFIX, DEFAULT_PREFIX);
         final String urlMapping = (String) applicationProperties

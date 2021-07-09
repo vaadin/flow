@@ -37,8 +37,8 @@ public class BarrelGeneratorTest {
         Path outputPath = barrelGenerator.getOutputFilePath();
 
         assertTrue(outputPath.toFile().exists());
-        String expected = TestUtils.readResource(
-                getClass().getResource("expected-barrel.ts"));
+        String expected = TestUtils
+                .readResource(getClass().getResource("expected-barrel.ts"));
         String actual = StringUtils.toEncodedString(
                 Files.readAllBytes(outputPath), StandardCharsets.UTF_8).trim();
 

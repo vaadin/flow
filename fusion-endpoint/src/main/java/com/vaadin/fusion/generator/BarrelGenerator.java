@@ -38,7 +38,8 @@ class BarrelGenerator {
                 .collect(Collectors.joining("\n"));
 
         String exports = String.format("export {\n%s\n};",
-                tagList.stream().map(tag -> String.format("  %s", tag.getName()))
+                tagList.stream()
+                        .map(tag -> String.format("  %s", tag.getName()))
                         .collect(Collectors.joining(",\n")));
 
         String content = String.format("%s\n\n%s", imports, exports);
