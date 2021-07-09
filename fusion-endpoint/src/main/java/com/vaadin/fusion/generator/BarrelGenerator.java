@@ -14,39 +14,47 @@ import org.slf4j.LoggerFactory;
 
 import static com.vaadin.fusion.generator.Generator.TS;
 
-public class BarrelGenerator {
-    static final String BARREL_FILE_NAME = "endpoints";
-    static final String BARREL_NAME = BARREL_FILE_NAME + TS;
+class BarrelGenerator {
+    public static final String BARREL_FILE_NAME = "endpoints";
+    public static final String BARREL_NAME = BARREL_FILE_NAME + TS;
     private static final Logger log = LoggerFactory
-            .getLogger(VaadinConnectClientGenerator.class);
+            .getLogger(ConnectClientGenerator.class);
 
-    private final Path outputPath;
+    private final Path outputFilePath;
 
     public BarrelGenerator(Path outputFolder) {
-        outputPath = outputFolder.resolve(BARREL_NAME);
+        outputFilePath = outputFolder.resolve(BARREL_NAME);
     }
 
     public void generate(OpenAPI openAPI) {
-        List<Tag> tags = openAPI.getTags();
+        List<Tag> tagList = openAPI.getTags();
 
-        String imports = tags.stream().map(tag -> String
+        if (tagList == null || tagList.isEmpty()) {
+            return;
+        }
+
+        String imports = tagList.stream().map(tag -> String
                 .format("import * as %1$s from \"./%1$s\";", tag.getName()))
                 .collect(Collectors.joining("\n"));
 
         String exports = String.format("export {\n%s\n};",
-                tags.stream().map(tag -> String.format("  %s", tag.getName()))
+                tagList.stream().map(tag -> String.format("  %s", tag.getName()))
                         .collect(Collectors.joining(",\n")));
 
         String content = String.format("%s\n\n%s", imports, exports);
 
         try {
-            log.info("writing file {}", outputPath);
-            FileUtils.writeStringToFile(outputPath.toFile(), content,
+            log.info("writing file {}", outputFilePath);
+            FileUtils.writeStringToFile(outputFilePath.toFile(), content,
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
             String errorMessage = String.format("Error writing file at %s",
-                    outputPath.toString());
-            log.error(errorMessage, outputPath, e);
+                    outputFilePath.toString());
+            log.error(errorMessage, outputFilePath, e);
         }
+    }
+
+    public Path getOutputFilePath() {
+        return outputFilePath;
     }
 }
