@@ -51,7 +51,7 @@ public interface BinderValidationErrorHandler extends Serializable {
      * previously set with {@link #handleError}.
      *
      * @param field
-     *            the field with an invalid value
+     *            the field to clear the previous error from
      */
     void clearError(HasValue<?, ?> field);
 }
