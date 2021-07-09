@@ -28,6 +28,9 @@ import io.swagger.v3.parser.core.models.SwaggerParseResult;
 
 import static com.vaadin.fusion.generator.Generator.TS;
 
+/**
+ * Parses the OpenAPI file to an object to make it consumable for other tools.
+ */
 class OpenAPIParser {
     private static final String CLIENT_PATH_TEMPLATE_PROPERTY = "vaadinConnectDefaultClientPath";
     private final CodegenConfigurator configurator;
@@ -120,11 +123,5 @@ class OpenAPIParser {
         }
 
         return openAPI;
-    }
-
-    public static class NoOpenApiFileException extends RuntimeException {
-        public NoOpenApiFileException() {
-            super("OpenAPI file does not exist");
-        }
     }
 }

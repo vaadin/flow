@@ -42,30 +42,15 @@ class GeneratorDirectory {
     private final GeneratorFileVisitor visitor = new GeneratorFileVisitor(
             logger);
 
-    /**
-     * Initializes wrapper class.
-     *
-     * @param outputDirectory
-     *            a directory to wrap onto
-     */
-    public GeneratorDirectory(File outputDirectory) {
+    GeneratorDirectory(File outputDirectory) {
         this.outputDirectory = outputDirectory;
     }
 
-    /**
-     * Cleans a generator directory.
-     */
-    public void clean() {
+    void clean() {
         clean(Collections.emptySet());
     }
 
-    /**
-     * Cleans a generator directory.
-     *
-     * @param files
-     *            a list of non-stale generated files
-     */
-    public void clean(Set<File> files) {
+    void clean(Set<File> files) {
         if (!outputDirectory.exists()) {
             return;
         }
@@ -81,7 +66,7 @@ class GeneratorDirectory {
         }
     }
 
-    public Path toPath() {
+    Path toPath() {
         return outputDirectory.toPath();
     }
 

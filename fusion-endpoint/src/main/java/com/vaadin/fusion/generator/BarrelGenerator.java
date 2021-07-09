@@ -41,23 +41,11 @@ class BarrelGenerator {
 
     private final Path outputFilePath;
 
-    /**
-     * Initializes generator.
-     *
-     * @param outputFolder
-     *            the directory to generate the barrel file into
-     */
-    public BarrelGenerator(Path outputFolder) {
+    BarrelGenerator(Path outputFolder) {
         outputFilePath = outputFolder.resolve(BARREL_NAME);
     }
 
-    /**
-     * Starts the generation.
-     *
-     * @param openAPI
-     *            an object with Open API specification.
-     */
-    public void generate(OpenAPI openAPI) {
+    void generate(OpenAPI openAPI) {
         List<Tag> tagList = openAPI.getTags();
 
         if (tagList == null || tagList.isEmpty()) {
@@ -86,7 +74,7 @@ class BarrelGenerator {
         }
     }
 
-    public Path getOutputFilePath() {
+    Path getOutputFilePath() {
         return outputFilePath;
     }
 }
