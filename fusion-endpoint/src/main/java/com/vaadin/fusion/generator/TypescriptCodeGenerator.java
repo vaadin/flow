@@ -59,6 +59,11 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.fusion.EndpointNameChecker;
 
+/**
+ * Vaadin fusion JavaScript generator implementation for swagger-codegen. Some
+ * parts of the implementation are copied from
+ * {@link io.swagger.codegen.languages.JavascriptClientCodegen}
+ */
 public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
     private static final Pattern ARRAY_TYPE_NAME_PATTERN = Pattern
             .compile("ReadonlyArray<(.*)>");
@@ -126,6 +131,13 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
         typeMapping.put("Date", "string");
     }
 
+    /**
+     * Performs file generation on the specified input.
+     *
+     * @param input
+     *            input options.
+     * @return a set of generated files.
+     */
     public static Set<File> generateFiles(ClientOptInput input) {
         return new TypescriptCodeGeneratorImpl().opts(input).generate().stream()
                 .filter(Objects::nonNull).collect(Collectors.toSet());
