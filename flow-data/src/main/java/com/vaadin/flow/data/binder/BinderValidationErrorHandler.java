@@ -20,11 +20,11 @@ import java.io.Serializable;
 import com.vaadin.flow.component.HasValue;
 
 /**
- * Handler for applying effects to {@link HasValue} based on its
- * {@link ValidationResult}. *
- * {@link Binder#setValidationErrorHandler(BinderValidationErrorHandler)
- * Register} an instance of this class to be able to customize validation error
- * handling.
+ * Handler for applying effects to {@link HasValue} components in
+ * {@link Binder} based on {@link ValidationResult} for the user input. Use
+ * {@link Binder#setValidationErrorHandler(BinderValidationErrorHandler)}
+ * to register an instance of this class to be able to customize validation
+ * error handling.
  *
  * 
  * @see DefaultBinderValidationErrorHandler
