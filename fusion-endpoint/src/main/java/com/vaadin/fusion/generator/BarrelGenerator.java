@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2021 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.fusion.generator;
 
 import java.io.IOException;
@@ -14,6 +29,10 @@ import org.slf4j.LoggerFactory;
 
 import static com.vaadin.fusion.generator.Generator.TS;
 
+/**
+ * Performs the generation of a barrel file for importing all endpoints at once
+ * at the frontend side.
+ */
 class BarrelGenerator {
     public static final String BARREL_FILE_NAME = "endpoints";
     public static final String BARREL_NAME = BARREL_FILE_NAME + TS;
@@ -22,10 +41,22 @@ class BarrelGenerator {
 
     private final Path outputFilePath;
 
+    /**
+     * Initializes generator.
+     *
+     * @param outputFolder
+     *            the directory to generate the barrel file into
+     */
     public BarrelGenerator(Path outputFolder) {
         outputFilePath = outputFolder.resolve(BARREL_NAME);
     }
 
+    /**
+     * Starts the generation.
+     *
+     * @param openAPI
+     *            an object with Open API specification.
+     */
     public void generate(OpenAPI openAPI) {
         List<Tag> tagList = openAPI.getTags();
 

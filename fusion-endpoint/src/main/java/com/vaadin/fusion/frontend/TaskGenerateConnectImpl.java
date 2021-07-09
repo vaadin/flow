@@ -25,7 +25,7 @@ import com.vaadin.fusion.generator.Generator;
 import static com.vaadin.fusion.generator.ConnectClientGenerator.CUSTOM_CONNECT_CLIENT_NAME;
 
 /**
- * Generate the Vaadin TS files for endpoints, and the Client API file.
+ * Starts the generation of TS files for endpoints.
  */
 public class TaskGenerateConnectImpl extends AbstractTaskConnectGenerator
         implements TaskGenerateConnect {
