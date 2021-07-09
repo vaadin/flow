@@ -2440,7 +2440,8 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
-     * Sets the validation error handler to update error status for fields.
+     * Sets the validation error handler to update error status for fields
+     * when the user input is validated.
      * <p>
      * The error handler is invoked by methods
      * {@link #handleError(HasValue, ValidationResult)} and
