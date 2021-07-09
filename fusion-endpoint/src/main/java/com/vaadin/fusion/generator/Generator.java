@@ -16,6 +16,7 @@ public class Generator {
     private final VaadinConnectClientGenerator clientGenerator;
     private final GeneratorDirectory outputDirectory;
     private final OpenAPIParser parser;
+    private final BarrelGenerator barrelGenerator;
 
     public Generator(File openApiJsonFile, File generatedFrontendDirectory) {
         this(openApiJsonFile, generatedFrontendDirectory, null, null);
@@ -46,6 +47,7 @@ public class Generator {
                 ? new VaadinConnectClientGenerator(outputDirectory.toPath(),
                         properties)
                 : null;
+        barrelGenerator = new BarrelGenerator(outputDirectory.toPath());
     }
 
     public void start() {
@@ -59,7 +61,8 @@ public class Generator {
             boolean hasGeneratedSuccessfully = generateTypescriptCode(openAPI);
 
             if (clientGenerator != null && hasGeneratedSuccessfully) {
-                clientGenerator.generateVaadinConnectClientFile();
+                clientGenerator.generate();
+                barrelGenerator.generate(openAPI);
             }
         } catch (IllegalStateException e) {
             outputDirectory.clean();
