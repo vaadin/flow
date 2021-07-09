@@ -23,7 +23,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -44,6 +46,11 @@ class GeneratorDirectory {
 
     GeneratorDirectory(File outputDirectory) {
         this.outputDirectory = outputDirectory;
+    }
+
+    @Override
+    public String toString() {
+        return outputDirectory.toString();
     }
 
     void clean() {
@@ -70,12 +77,12 @@ class GeneratorDirectory {
         return outputDirectory.toPath();
     }
 
-    @Override
-    public String toString() {
-        return outputDirectory.toString();
-    }
-
     static class GeneratorFileVisitor extends SimpleFileVisitor<Path> {
+        private static final List<String> filesToKeep = Arrays.asList(
+                ConnectClientGenerator.CONNECT_CLIENT_NAME,
+                FrontendUtils.BOOTSTRAP_FILE_NAME,
+                FrontendUtils.THEME_IMPORTS_NAME,
+                FrontendUtils.THEME_IMPORTS_D_TS_NAME);
         private final Logger logger;
         private Set<File> generatedFiles;
 
@@ -115,10 +122,7 @@ class GeneratorDirectory {
 
             final String fileName = file.getName();
 
-            if (fileName.equals(ConnectClientGenerator.CONNECT_CLIENT_NAME)
-                    || fileName.equals(FrontendUtils.BOOTSTRAP_FILE_NAME)
-                    || fileName.equals(FrontendUtils.THEME_IMPORTS_NAME)
-                    || fileName.equals(FrontendUtils.THEME_IMPORTS_D_TS_NAME)
+            if (filesToKeep.contains(fileName)
                     || fileName.endsWith(".generated.js")) {
                 return FileVisitResult.CONTINUE;
             }
