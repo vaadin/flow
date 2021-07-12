@@ -79,7 +79,7 @@ public class Location implements Serializable {
         this(parsePath(location.trim()), queryParameters);
 
         if (location.contains(QUERY_SEPARATOR)) {
-            throw new IllegalArgumentException(
+            throw new InvalidLocationException(
                     "Location string can not contain query parameters in this constructor");
         }
     }

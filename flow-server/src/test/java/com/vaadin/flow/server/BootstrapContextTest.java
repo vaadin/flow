@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +29,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouterLayout;
@@ -68,16 +70,24 @@ public class BootstrapContextTest {
     @Before
     public void setUp() throws ServiceException {
         MockVaadinSession session = new MockVaadinSession();
+        session.lock();
         ui = new UI();
         ui.getInternals().setSession(session);
 
         session.getService().init();
+        VaadinSession.setCurrent(session);
+    }
+
+    @After
+    public void tearDown() {
+        ui.getSession().unlock();
+        CurrentInstance.clearAll();
     }
 
     @Test
     public void getPushAnnotation_routeTargetPresents_pushFromTheClassDefinitionIsUsed() {
-        ui.getInternals().getRouter().getRegistry().setRoute("foo", MainView.class,
-                Collections.emptyList());
+        ui.getInternals().getRouter().getRegistry().setRoute("foo",
+                MainView.class, Collections.emptyList());
         Mockito.when(request.getPathInfo()).thenReturn("/foo");
 
         BootstrapContext context = new BootstrapContext(request,
@@ -93,8 +103,8 @@ public class BootstrapContextTest {
 
     @Test
     public void getPushAnnotation_routeTargetPresents_pushDefinedOnParentLayout_pushFromTheClassDefinitionIsUsed() {
-        ui.getInternals().getRouter().getRegistry().setRoute("foo", OtherView.class,
-                Collections.singletonList(MainView.class));
+        ui.getInternals().getRouter().getRegistry().setRoute("foo",
+                OtherView.class, Collections.singletonList(MainView.class));
         Mockito.when(request.getPathInfo()).thenReturn("/foo");
 
         BootstrapContext context = new BootstrapContext(request,
