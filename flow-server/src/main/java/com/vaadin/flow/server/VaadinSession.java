@@ -202,6 +202,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             // it as soon as we acquire the lock.
             service.fireSessionDestroy(this);
         }
+        session = null;
     }
 
     /**
@@ -886,10 +887,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                 + this.state + "->" + state;
 
         this.state = state;
-
-        if (VaadinSessionState.CLOSED.equals(state)) {
-            session = null;
-        }
     }
 
     private boolean isValidChange(VaadinSessionState newState) {
