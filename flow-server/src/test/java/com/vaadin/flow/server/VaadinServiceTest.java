@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -110,24 +109,6 @@ public class VaadinServiceTest {
 
         Assert.assertEquals("SessionDestroyListeners not called exactly once",
                 1, listener.callCount);
-    }
-
-    @Test
-    public void fireSessionDestroy_sessionStateIsSetToClosed()
-            throws ServletException, ServiceException {
-        VaadinService service = createService();
-
-        AtomicReference<VaadinSessionState> stateRef = new AtomicReference<>();
-        MockVaadinSession vaadinSession = new MockVaadinSession(service) {
-            @Override
-            protected void setState(VaadinSessionState state) {
-                stateRef.set(state);
-            }
-        };
-
-        service.fireSessionDestroy(vaadinSession);
-
-        Assert.assertEquals(VaadinSessionState.CLOSED, stateRef.get());
     }
 
     @Test
