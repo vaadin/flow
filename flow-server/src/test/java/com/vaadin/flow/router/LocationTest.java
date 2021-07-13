@@ -204,7 +204,7 @@ public class LocationTest {
                 location.getQueryParameters().getParameters());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InvalidLocationException.class)
     public void locationWithParamsInUrlAndParameters() {
         new Location("foo/bar/?one&two=222", getQueryParameters());
     }
