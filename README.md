@@ -20,5 +20,7 @@ The `master` branch is the latest version (8.0) that targets the [Vaadin platfor
 |  2.5   |  14.5.x (LTS)                                                   |  2.5.x                                                  |
 |  2.6   |  14.6.x (PRERELEASE)                                            |  2.6.x                                                  |
 |  5.0   |  18.0.x                                                         |  5.x                                                    |
-|  6.0   |  19.0.x (LATEST)                                                |  6.x                                                    |
-|  7.0   |  20.0.x (PRERELEASE until 2/6/21)                               |  7.x                                                    |
+|  6.0   |  19.0.x                                                         |  6.x                                                    |
+|  7.0   |  20.0.x (LATEST)                                                |  7.x                                                    |
+|  8.0   |  21.0.x (PRERELEASE until 09/01/2021)                           |  8.x                                                    |
+|  master|  22.0.x (PRERELEASE)                                            |  9.x                                                    |
