@@ -1687,6 +1687,57 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Assert.assertTrue(validatorIsExecuted.get());
     }
 
+    @Test
+    public void setValidationErrorHandler_handlerIsSet_handlerMethodsAreCalled() {
+        TestTextField testField = new TestTextField();
+
+        class TestErrorHandler implements BinderValidationErrorHandler {
+
+            private ValidationResult result;
+            private boolean clearIsCalled;
+
+            @Override
+            public void handleError(HasValue<?, ?> field,
+                    ValidationResult result) {
+                Assert.assertSame(testField, field);
+                this.result = result;
+                clearIsCalled = false;
+            }
+
+            @Override
+            public void clearError(HasValue<?, ?> field) {
+                Assert.assertSame(testField, field);
+                result = null;
+                clearIsCalled = true;
+            }
+        }
+        ;
+
+        TestErrorHandler handler = new TestErrorHandler();
+        binder.setValidationErrorHandler(handler);
+
+        binder.forField(testField).asRequired()
+                .withValidator((val, context) -> {
+                    if ("bar".equals(val)) {
+                        return ValidationResult.error("foo");
+                    }
+                    return ValidationResult.ok();
+                }).bind(Person::getFirstName, Person::setFirstName);
+        binder.setBean(new Person());
+
+        testField.setValue("bar");
+
+        Assert.assertTrue(handler.result.isError());
+        Assert.assertFalse(handler.clearIsCalled);
+
+        testField.setValue("foo");
+
+        Assert.assertNull(handler.result);
+        Assert.assertTrue(handler.clearIsCalled);
+
+        Assert.assertSame(handler, binder.getValidationErrorHandler());
+    }
+
     private TestTextField createNullRejectingFieldWithEmptyValue(
             String emptyValue) {
         return new TestTextField() {
