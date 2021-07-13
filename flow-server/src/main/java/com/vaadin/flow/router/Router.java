@@ -16,6 +16,7 @@
 package com.vaadin.flow.router;
 
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -37,6 +38,7 @@ import com.vaadin.flow.router.internal.InternalRedirectHandler;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.router.internal.ResolveRequest;
 import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.ErrorRouteRegistry;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
@@ -85,8 +87,8 @@ public class Router implements Serializable {
      *            the Vaadin request that bootstraps the provided UI
      */
     public void initializeUI(UI ui, VaadinRequest initRequest) {
-        Location location = getLocationForRequest(initRequest.getPathInfo(),
-                initRequest.getParameterMap());
+        Location location = getLocationForRequest(ui.getSession(),
+                initRequest.getPathInfo(), initRequest.getParameterMap());
         ui.getPage().getHistory().setHistoryStateChangeHandler(e -> navigate(ui,
                 e.getLocation(), e.getTrigger(), e.getState().orElse(null)));
 
@@ -98,8 +100,8 @@ public class Router implements Serializable {
         }
     }
 
-    private Location getLocationForRequest(String pathInfo,
-            Map<String, String[]> parameterMap) {
+    private Location getLocationForRequest(VaadinSession session,
+            String pathInfo, Map<String, String[]> parameterMap) {
         final String path;
         if (pathInfo == null) {
             path = "";
@@ -113,9 +115,9 @@ public class Router implements Serializable {
 
         try {
             return new Location(path, queryParameters);
-        } catch (IllegalArgumentException iae) {
-            LoggerFactory.getLogger(Router.class.getName())
-                    .warn("Exception when parsing location path {}", path, iae);
+        } catch (InvalidLocationException invalidLocationException) {
+            session.getErrorHandler()
+                    .error(new ErrorEvent(invalidLocationException));
         }
 
         int index = path.indexOf('?');
@@ -150,7 +152,17 @@ public class Router implements Serializable {
      */
     public Optional<NavigationState> resolveNavigationTarget(String pathInfo,
             Map<String, String[]> parameterMap) {
-        Location location = getLocationForRequest(pathInfo, parameterMap);
+        // this method must be called with a session instance in the context
+        VaadinSession session = VaadinSession.getCurrent();
+        if (session == null) {
+            throw new IllegalStateException(
+                    "There is no VaadinSession instance available in the context via VaadinSession.getCurrent(). "
+                            + "It means that the method is called outsie a session lock. "
+                            + "Make sure that the method is called either inside request dispatcher thread (with an implicit session lock) or"
+                            + "your are using VaadinSession::access() to run the command with a proper lock from a custom thread.");
+        }
+        Location location = getLocationForRequest(session, pathInfo,
+                parameterMap);
         NavigationState resolve = null;
         try {
             resolve = getRouteResolver()
