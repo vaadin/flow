@@ -323,13 +323,31 @@ public class BeanPropertySet<T> implements PropertySet<T> {
                     .map(descriptor -> new BeanPropertyDefinition<>(this,
                             instanceKey.type, descriptor))
                     .collect(Collectors.toMap(PropertyDefinition::getName,
-                            Function.identity()));
+                            Function.identity(), this::mergePropertyDefinitions,
+                            HashMap::new));
         } catch (IntrospectionException e) {
             throw new IllegalArgumentException(
                     "Cannot find property descriptors for "
                             + instanceKey.type.getName(),
                     e);
         }
+    }
+
+    private PropertyDefinition<T, ?> mergePropertyDefinitions(
+            PropertyDefinition<T, ?> def1, PropertyDefinition<T, ?> def2) {
+        if (!def1.getType().equals(def2.getType())) {
+            throw new IllegalStateException(String.format(
+                    "Two property definition for property %s are discovered with different types: %s and %s",
+                    def1.getName(), def1.getType(), def2.getType()));
+        }
+        if (!def1.getPropertyHolderType()
+                .equals(def2.getPropertyHolderType())) {
+            throw new IllegalStateException(String.format(
+                    "Two property definition for property %s are discovered with different holder types: %s and %s",
+                    def1.getName(), def1.getPropertyHolderType(),
+                    def2.getPropertyHolderType()));
+        }
+        return def1;
     }
 
     private BeanPropertySet(InstanceKey<T> instanceKey,
