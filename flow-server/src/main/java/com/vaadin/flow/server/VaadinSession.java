@@ -78,6 +78,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     @Deprecated
     public static final String UI_PARAMETER = InitParameters.UI_PARAMETER;
 
+    static final String CLOSE_SESSION_EXPLICITLY = "vaadin.close-session."
+            + UUID.randomUUID().toString();
+
     /**
      * Configuration for the session.
      */
@@ -202,7 +205,21 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             // it as soon as we acquire the lock.
             service.fireSessionDestroy(this);
         }
-        session = null;
+        // Vaadin session attribut is removed from HTTP session in two cases:
+        // either Vaadin session is closed explicitly by VaadinService or HTTP
+        // session is invalidated (and all attributes are removed from it). In
+        // the latter case the session field should be set to {@code null}
+        // Immediately to avoid using HTTP session object which is invalid (its
+        // methods throw exceptions).
+        try {
+            lock();
+            if (getAttribute(CLOSE_SESSION_EXPLICITLY) == null) {
+                session = null;
+            }
+            setAttribute(CLOSE_SESSION_EXPLICITLY, null);
+        } finally {
+            unlock();
+        }
     }
 
     /**
@@ -887,6 +904,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                 + this.state + "->" + state;
 
         this.state = state;
+        if (VaadinSessionState.CLOSED.equals(state)) {
+            session = null;
+        }
     }
 
     private boolean isValidChange(VaadinSessionState newState) {
