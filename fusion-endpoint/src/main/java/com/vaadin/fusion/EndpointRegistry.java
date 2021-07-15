@@ -87,7 +87,13 @@ public class EndpointRegistry {
                 .orElse(beanType.getSimpleName());
     }
 
-    void registerEndpoint(Object endpointBean) {
+    /**
+     * Registers the specified endpoint.
+     * 
+     * @param endpointBean
+     *            the endpoint that is going to be added in the registry
+     */
+    public void registerEndpoint(Object endpointBean) {
         // Check the bean type instead of the implementation type in
         // case of e.g. proxies
         Class<?> beanType = ClassUtils.getUserClass(endpointBean.getClass());
