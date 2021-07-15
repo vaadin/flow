@@ -43,7 +43,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
-import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 import com.vaadin.flow.component.HasValue.ValueChangeListener;
@@ -1514,6 +1513,8 @@ public class Binder<BEAN> implements Serializable {
 
     private BinderValidationStatusHandler<BEAN> statusHandler;
 
+    private BinderValidationErrorHandler errorHandler = new DefaultBinderValidationErrorHandler();
+
     private Set<Binding<BEAN, ?>> changedBindings = new LinkedHashSet<>();
 
     private boolean validatorsDisabled = false;
@@ -2418,6 +2419,47 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
+     * Gets the validation error of this form.
+     * <p>
+     * If none has been set with
+     * {@link #setValidationErrorHandler(BinderValidationErrorHandler)}, the
+     * default implementation is returned.
+     *
+     * @return the error handler used, never <code>null</code>
+     * @see #handleError(HasValue, ValidationResult)
+     * @see #clearError(HasValue)
+     * @see DefaultBinderValidationErrorHandler
+     */
+    public BinderValidationErrorHandler getValidationErrorHandler() {
+        return errorHandler;
+    }
+
+    /**
+     * Sets the validation error handler to update error status for fields when
+     * the user input is validated.
+     * <p>
+     * The error handler is invoked by methods
+     * {@link #handleError(HasValue, ValidationResult)} and
+     * {@link #clearError(HasValue)}.
+     * <p>
+     * {@link DefaultBinderValidationErrorHandler} instance is used if the
+     * handler is not explicitly set.
+     *
+     * @param handler
+     *            the status handler to set, not <code>null</code>
+     * @throws NullPointerException
+     *             for <code>null</code> status handler
+     * @see #handleError(HasValue, ValidationResult)
+     * @see #clearError(HasValue)
+     */
+    public void setValidationErrorHandler(
+            BinderValidationErrorHandler handler) {
+        Objects.requireNonNull(handler, "Cannot set a null "
+                + BinderValidationErrorHandler.class.getSimpleName());
+        errorHandler = handler;
+    }
+
+    /**
      * Adds status change listener to the binder.
      * <p>
      * The {@link Binder} status is changed whenever any of the following
@@ -2535,6 +2577,8 @@ public class Binder<BEAN> implements Serializable {
     /**
      * Handles a validation error emitted when trying to write the value of the
      * given field.
+     * <p>
+     * TODO:
      *
      * @param field
      *            the field with the invalid value
@@ -2542,24 +2586,19 @@ public class Binder<BEAN> implements Serializable {
      *            the validation error result
      */
     protected void handleError(HasValue<?, ?> field, ValidationResult result) {
-        if (field instanceof HasValidation) {
-            HasValidation fieldWithValidation = (HasValidation) field;
-            fieldWithValidation.setInvalid(true);
-            fieldWithValidation.setErrorMessage(result.getErrorMessage());
-        }
+        getValidationErrorHandler().handleError(field, result);
     }
 
     /**
      * Clears the error condition of the given field, if any.
+     * <p>
+     * TODO
      *
      * @param field
      *            the field with an invalid value
      */
     protected void clearError(HasValue<?, ?> field) {
-        if (field instanceof HasValidation) {
-            HasValidation fieldWithValidation = (HasValidation) field;
-            fieldWithValidation.setInvalid(false);
-        }
+        getValidationErrorHandler().clearError(field);
     }
 
     /**
