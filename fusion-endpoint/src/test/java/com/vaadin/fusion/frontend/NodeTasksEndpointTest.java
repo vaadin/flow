@@ -90,7 +90,8 @@ public class NodeTasksEndpointTest {
 
         File packageJson = new File(dir, "package.json");
 
-        JsonObject content = Json.parse(FileUtils.readFileToString(packageJson, UTF_8));
+        JsonObject content = Json
+                .parse(FileUtils.readFileToString(packageJson, UTF_8));
 
         assertTrue(content.hasKey("dependencies"));
 

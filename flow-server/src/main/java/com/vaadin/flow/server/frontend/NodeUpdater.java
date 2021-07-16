@@ -72,7 +72,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     public static final String GENERATED_PREFIX = "GENERATED/";
 
-    public  static final String DEPENDENCIES = "dependencies";
+    public static final String DEPENDENCIES = "dependencies";
     public static final String VAADIN_DEP_KEY = "vaadin";
     public static final String HASH_KEY = "hash";
     public static final String DEV_DEPENDENCIES = "devDependencies";
@@ -505,7 +505,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         return new FrontendVersion(json.getString(key));
     }
 
-    protected String writePackageFile(JsonObject packageJson) throws IOException {
+    protected String writePackageFile(JsonObject packageJson)
+            throws IOException {
         return writePackageFile(packageJson, new File(npmFolder, PACKAGE_JSON));
     }
 
