@@ -260,6 +260,7 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
      *
      * @return A string value for the help message
      */
+    @Override
     public String getHelp() {
         return "Generates a Vaadin endpoint wrappers.";
     }
@@ -270,6 +271,7 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
      *
      * @return the friendly name for the generator
      */
+    @Override
     public String getName() {
         return GENERATOR_NAME;
     }
@@ -631,7 +633,7 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
     private Helper<String> getMultipleLinesHelper() {
         return (context, options) -> {
             Options.Buffer buffer = options.buffer();
-            String[] lines = context.split("\n");
+            String[] lines = context.split("\n", -1);
             Context parent = options.context;
             Template fn = options.fn;
             for (String line : lines) {
