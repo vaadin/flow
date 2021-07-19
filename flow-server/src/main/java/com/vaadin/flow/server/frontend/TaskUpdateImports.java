@@ -315,6 +315,11 @@ public class TaskUpdateImports extends NodeUpdater {
             return getAbsentPackagesMessage();
         }
 
+        @Override
+        protected String getThemeIdPrefix() {
+            return "fallback_" + super.getThemeIdPrefix();
+        }
+
         File getGeneratedFallbackFile() {
             return generatedFallBack;
         }
