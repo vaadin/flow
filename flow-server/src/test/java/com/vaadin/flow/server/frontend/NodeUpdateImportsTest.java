@@ -141,6 +141,11 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         Assert.assertThat(mainContent, CoreMatchers.containsString(
                 "addCssBlock(`<custom-style><style>${$css_0}</style></custom-style>`);"));
 
+        Assert.assertThat(mainContent, CoreMatchers
+                .containsString("import $css_5 from 'Frontend/foo.css';"));
+        Assert.assertThat(mainContent, CoreMatchers.containsString(
+                "addCssBlock(`<dom-module id=\"flow_css_mod_5\" theme-for=\"foo-bar\"><template><style>${$css_5}</style></template></dom-module>`);"));
+
         // Contains theme imports
         Assert.assertThat(mainContent, CoreMatchers.containsString(
                 "import '@vaadin/vaadin-lumo-styles/color.js';"));
@@ -191,7 +196,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         Assert.assertThat(fallBackContent, CoreMatchers.containsString(
                 "import $css_0 from 'Frontend/extra-css.css';"));
         Assert.assertThat(fallBackContent, CoreMatchers.containsString(
-                "addCssBlock(`<dom-module id=\"flow_css_mod_0\" theme-for=\"extra-foo\"><template><style include=\"extra-bar\">${$css_0}</style></template></dom-module>`);"));
+                "addCssBlock(`<dom-module id=\"fallback_flow_css_mod_0\" theme-for=\"extra-foo\"><template><style include=\"extra-bar\">${$css_0}</style></template></dom-module>`);"));
 
         // Does not contains JS module imports
         Assert.assertThat(fallBackContent, CoreMatchers.not(CoreMatchers
