@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystemAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -220,10 +221,22 @@ public class StaticFileServer implements StaticFileHandler {
                 return FileSystems.getFileSystem(resourceURI);
             }
             // Opened filesystem is for the file to get the correct provider
-            FileSystem fileSystem = FileSystems.newFileSystem(resourceURI,
-                    Collections.emptyMap());
+            FileSystem fileSystem = getNewOrExistingFileSystem(resourceURI);
             openFileSystems.put(fileURI, 1);
             return fileSystem;
+        }
+    }
+
+    private FileSystem getNewOrExistingFileSystem(URI resourceURI)
+            throws IOException {
+        try {
+            return FileSystems.newFileSystem(resourceURI,
+                    Collections.emptyMap());
+        } catch (FileSystemAlreadyExistsException fsaee) {
+            getLogger().trace(
+                    "Tried to get new filesystem, but it already existed for target uri.",
+                    fsaee);
+            return FileSystems.getFileSystem(resourceURI);
         }
     }
 
