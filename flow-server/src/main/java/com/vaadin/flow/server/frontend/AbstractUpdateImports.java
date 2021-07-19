@@ -78,7 +78,7 @@ abstract class AbstractUpdateImports implements Runnable {
             + "<dom-module id=\"%s\"><template><style%s>${$css_%d}</style></template></dom-module>"
             + CSS_POST;
     private static final String CSS_THEME_FOR_TPL = CSS_PRE
-            + "<dom-module id=\"flow_css_mod_%d\" theme-for=\"%s\"><template><style%s>${$css_%d}</style></template></dom-module>"
+            + "<dom-module id=\"%s_%d\" theme-for=\"%s\"><template><style%s>${$css_%d}</style></template></dom-module>"
             + CSS_POST;
 
     private static final String IMPORT_TEMPLATE = "import '%s';";
@@ -290,6 +290,10 @@ abstract class AbstractUpdateImports implements Runnable {
         lines.addAll(Arrays.asList(content.split("\\R")));
     }
 
+    protected String getThemeIdPrefix() {
+        return "flow_css_mod";
+    }
+
     protected abstract String getImportsNotFoundMessage();
 
     private void collectModules(List<String> lines) {
@@ -473,8 +477,8 @@ abstract class AbstractUpdateImports implements Runnable {
                 : "";
 
         if (cssData.getThemefor() != null) {
-            addLines(lines, String.format(CSS_THEME_FOR_TPL, i, cssImport, i,
-                    cssData.getThemefor(), include, i));
+            addLines(lines, String.format(CSS_THEME_FOR_TPL, i, cssImport,
+                    getThemeIdPrefix(), i, cssData.getThemefor(), include, i));
         } else if (cssData.getId() != null) {
             addLines(lines, String.format(CSS_MODULE_TPL, i, cssImport,
                     cssData.getId(), include, i));
