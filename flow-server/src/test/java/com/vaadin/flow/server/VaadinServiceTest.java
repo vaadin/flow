@@ -436,7 +436,7 @@ public class VaadinServiceTest {
     }
 
     @Test
-    public void removeFromHttpSession_setExplciitSessionCloseAttribute()
+    public void removeFromHttpSession_setExplicitSessionCloseAttribute()
             throws ServiceException {
         WrappedSession httpSession = Mockito.mock(WrappedSession.class);
         VaadinSession session = Mockito.mock(VaadinSession.class);
