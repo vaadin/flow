@@ -205,11 +205,11 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             // it as soon as we acquire the lock.
             service.fireSessionDestroy(this);
         }
-        // Vaadin session attribut is removed from HTTP session in two cases:
+        // Vaadin session attribute is removed from HTTP session in two cases:
         // either Vaadin session is closed explicitly by VaadinService or HTTP
         // session is invalidated (and all attributes are removed from it). In
         // the latter case the session field should be set to {@code null}
-        // Immediately to avoid using HTTP session object which is invalid (its
+        // immediately to avoid using HTTP session object which is invalid (all
         // methods throw exceptions).
         try {
             lock();
