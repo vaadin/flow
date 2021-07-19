@@ -443,6 +443,36 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
+    public void openFileServerExistsForZip_openingNewDoesNotFail()
+            throws IOException, URISyntaxException {
+        Assert.assertTrue("Can not run concurrently with other test",
+                StaticFileServer.openFileSystems.isEmpty());
+
+        final TemporaryFolder folder = TemporaryFolder.builder().build();
+        folder.create();
+
+        Path tempArchive = generateZipArchive(folder);
+
+        final FileSystem fileSystem = FileSystems
+                .newFileSystem(new URL("jar:file:///"
+                        + tempArchive.toString().replaceAll("\\\\", "/") + "!/")
+                                .toURI(),
+                        Collections.emptyMap());
+
+        final URL folderResourceURL = new URL(
+                "jar:file:///" + tempArchive.toString().replaceAll("\\\\", "/")
+                        + "!/frontend");
+
+        try {
+            fileServer.getFileSystem(folderResourceURL.toURI());
+        } finally {
+            fileServer.closeFileSystem(folderResourceURL.toURI());
+            fileSystem.close();
+        }
+
+    }
+
+    @Test
     public void openingJarFileSystemForDifferentFilesInSameJar_existingFileSystemIsUsed()
             throws IOException, URISyntaxException {
         Assert.assertTrue("Can not run concurrently with other test",
