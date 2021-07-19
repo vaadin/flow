@@ -48,6 +48,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -284,6 +285,15 @@ public class VaadinSessionTest {
     @Test
     @Category(SlowTests.class)
     public void threadLocalsWhenDeserializing() throws Exception {
+        ApplicationConfiguration configuration = Mockito
+                .mock(ApplicationConfiguration.class);
+
+        Mockito.when(configuration.isDevModeSessionSerializationEnabled())
+                .thenReturn(true);
+
+        mockServlet.getServletContext().setAttribute(
+                ApplicationConfiguration.class.getName(), configuration);
+
         VaadinSession.setCurrent(session);
         session.lock();
         SerializationPushConnection pc = new SerializationPushConnection(ui);
