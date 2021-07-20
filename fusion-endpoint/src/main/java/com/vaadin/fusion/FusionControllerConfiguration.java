@@ -31,8 +31,7 @@ import com.vaadin.fusion.auth.CsrfChecker;
 import com.vaadin.fusion.auth.FusionAccessChecker;
 
 /**
- * A configuration class for customizing the {@link FusionController}
- * class.
+ * A configuration class for customizing the {@link FusionController} class.
  */
 @Configuration
 public class FusionControllerConfiguration {
@@ -130,8 +129,7 @@ public class FusionControllerConfiguration {
     public FusionAccessChecker accessChecker(
             AccessAnnotationChecker accessAnnotationChecker,
             CsrfChecker csrfChecker) {
-        return new FusionAccessChecker(accessAnnotationChecker,
-                csrfChecker);
+        return new FusionAccessChecker(accessAnnotationChecker, csrfChecker);
     }
 
     /**

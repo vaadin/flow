@@ -45,8 +45,8 @@ class OpenAPIParser {
      * @see <a href="https://github.com/OAI/OpenAPI-Specification">OpenAPI
      *      specification</a>
      */
-    OpenAPIParser(File openApiJsonFile, GenerationOutputDirectory outputDirectory,
-            Class<?> language) {
+    OpenAPIParser(File openApiJsonFile,
+            GenerationOutputDirectory outputDirectory, Class<?> language) {
         this(openApiJsonFile, outputDirectory, language, null);
     }
 
@@ -64,8 +64,9 @@ class OpenAPIParser {
      * @see <a href="https://github.com/OAI/OpenAPI-Specification">OpenAPI
      *      specification</a>
      */
-    OpenAPIParser(File openApiJsonFile, GenerationOutputDirectory outputDirectory,
-            Class<?> language, String defaultClientPath) {
+    OpenAPIParser(File openApiJsonFile,
+            GenerationOutputDirectory outputDirectory, Class<?> language,
+            String defaultClientPath) {
         configurator = new CodegenConfigurator();
         configurator.setLang(language.getName());
         configurator.setInputSpecURL(openApiJsonFile.toString());

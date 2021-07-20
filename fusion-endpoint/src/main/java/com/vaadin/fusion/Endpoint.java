@@ -23,9 +23,9 @@ import java.lang.annotation.Target;
 import org.springframework.stereotype.Component;
 
 /**
- * Annotation to mark the endpoints to be processed by
- * {@link FusionController} class. Each class annotated automatically
- * becomes a Spring {@link Component} bean.
+ * Annotation to mark the endpoints to be processed by {@link FusionController}
+ * class. Each class annotated automatically becomes a Spring {@link Component}
+ * bean.
  *
  * After the class is annotated and processed, it becomes available as a Vaadin
  * endpoint. This means that the class name and all its public methods can be

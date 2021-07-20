@@ -106,7 +106,8 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
          * apiTemplateFiles map. as with models, add multiple entries with
          * different extensions for multiple files per class
          */
-        apiTemplateFiles.put("TypeScriptApiTemplate.mustache", MainGenerator.TS);
+        apiTemplateFiles.put("TypeScriptApiTemplate.mustache",
+                MainGenerator.TS);
         modelTemplateFiles.put("EntityTemplate.mustache", MainGenerator.TS);
         modelTemplateFiles.put("EntityModelTemplate.mustache",
                 MainGenerator.MODEL_TS);
@@ -627,7 +628,8 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
         if (matcher.find()) {
             return matcher.group(1);
         }
-        return MainGenerator.MODEL + "Type<" + getModelFullType(variableName) + ">";
+        return MainGenerator.MODEL + "Type<" + getModelFullType(variableName)
+                + ">";
     }
 
     private Helper<String> getMultipleLinesHelper() {

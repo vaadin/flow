@@ -179,7 +179,8 @@ public class OpenAPISpecBasedTest {
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage("description is missing");
 
-        new MainGenerator(getResourcePath("no-description-response-openapi.json"),
+        new MainGenerator(
+                getResourcePath("no-description-response-openapi.json"),
                 outputDirectory.getRoot()).start();
     }
 

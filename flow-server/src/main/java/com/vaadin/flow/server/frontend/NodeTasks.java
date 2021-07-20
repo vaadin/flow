@@ -390,8 +390,7 @@ public class NodeTasks implements FallibleCommand {
          *            folder for Ts files in the frontend.
          * @return the builder, for chaining
          */
-        public Builder withFusionClientAPIFolder(
-                File fusionClientTsApiFolder) {
+        public Builder withFusionClientAPIFolder(File fusionClientTsApiFolder) {
             this.fusionClientAPIFolder = fusionClientTsApiFolder;
             return this;
         }
@@ -429,8 +428,7 @@ public class NodeTasks implements FallibleCommand {
          *            java source folder
          * @return the builder, for chaining
          */
-        public Builder withFusionJavaSourceFolder(
-                File fusionJavaSourceFolder) {
+        public Builder withFusionJavaSourceFolder(File fusionJavaSourceFolder) {
             this.fusionJavaSourceFolder = fusionJavaSourceFolder;
             return this;
         }
@@ -681,8 +679,7 @@ public class NodeTasks implements FallibleCommand {
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),
-                    builder.frontendDirectory,
-                    builder.fusionClientAPIFolder));
+                    builder.frontendDirectory, builder.fusionClientAPIFolder));
         }
     }
 

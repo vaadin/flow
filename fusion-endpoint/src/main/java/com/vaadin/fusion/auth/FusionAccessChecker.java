@@ -86,8 +86,7 @@ public class FusionAccessChecker {
      * @param accessAnnotationChecker
      *            the access checker to use
      */
-    public FusionAccessChecker(
-            AccessAnnotationChecker accessAnnotationChecker,
+    public FusionAccessChecker(AccessAnnotationChecker accessAnnotationChecker,
             CsrfChecker csrfChecker) {
         this.accessAnnotationChecker = accessAnnotationChecker;
         this.csrfChecker = csrfChecker;

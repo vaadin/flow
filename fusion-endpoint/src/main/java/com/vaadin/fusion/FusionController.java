@@ -91,8 +91,7 @@ import com.vaadin.fusion.exception.EndpointValidationException.ValidationErrorDa
  * parameter types should also correspond for the request to be successful.
  */
 @RestController
-@Import({ FusionControllerConfiguration.class,
-        FusionEndpointProperties.class })
+@Import({ FusionControllerConfiguration.class, FusionEndpointProperties.class })
 @ConditionalOnBean(annotation = Endpoint.class)
 public class FusionController {
     static final String ENDPOINT_METHODS = "/{endpoint}/{method}";
@@ -492,8 +491,7 @@ public class FusionController {
     private static class VaadinConnectAccessCheckerWrapper {
         private final FusionAccessChecker accessChecker;
 
-        private VaadinConnectAccessCheckerWrapper(
-                FusionAccessChecker checker) {
+        private VaadinConnectAccessCheckerWrapper(FusionAccessChecker checker) {
             accessChecker = checker;
         }
     }
