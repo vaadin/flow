@@ -32,7 +32,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.server.frontend.TaskGenerateOpenApi;
-import com.vaadin.fusion.generator.OpenApiSpecGenerator;
+import com.vaadin.fusion.generator.OpenAPISpecGenerator;
 
 /**
  * This test suite is only for triggering the OpenAPI generator. For the actual
@@ -72,25 +72,25 @@ public class TaskGenerateOpenApiTest {
         Info info = generatedOpenAPI.getInfo();
         Assert.assertEquals(
                 "Generated OpenAPI should have default application title",
-                OpenApiSpecGenerator.DEFAULT_APPLICATION_TITLE,
+                OpenAPISpecGenerator.DEFAULT_APPLICATION_TITLE,
                 info.getTitle());
         Assert.assertEquals(
                 "Generated OpenAPI should have default "
                         + "application API version",
-                OpenApiSpecGenerator.DEFAULT_APPLICATION_API_VERSION,
+                OpenAPISpecGenerator.DEFAULT_APPLICATION_API_VERSION,
                 info.getVersion());
 
         List<Server> servers = generatedOpenAPI.getServers();
         Assert.assertEquals("Generated OpenAPI should a default server", 1,
                 servers.size());
         Assert.assertEquals("Generated OpenAPI should have default url server",
-                OpenApiSpecGenerator.DEFAULT_SERVER
-                        + OpenApiSpecGenerator.DEFAULT_PREFIX,
+                OpenAPISpecGenerator.DEFAULT_SERVER
+                        + OpenAPISpecGenerator.DEFAULT_PREFIX,
                 servers.get(0).getUrl());
 
         Assert.assertEquals(
                 "Generated OpenAPI should have default server description",
-                OpenApiSpecGenerator.DEFAULT_SERVER_DESCRIPTION,
+                OpenAPISpecGenerator.DEFAULT_SERVER_DESCRIPTION,
                 servers.get(0).getDescription());
     }
 
@@ -105,15 +105,15 @@ public class TaskGenerateOpenApiTest {
         String applicationServerDescription = "Example API server";
         StringBuilder applicationPropertiesBuilder = new StringBuilder();
         applicationPropertiesBuilder
-                .append(OpenApiSpecGenerator.APPLICATION_TITLE).append("=")
+                .append(OpenAPISpecGenerator.APPLICATION_TITLE).append("=")
                 .append(applicationTitle).append("\n")
-                .append(OpenApiSpecGenerator.APPLICATION_API_VERSION)
+                .append(OpenAPISpecGenerator.APPLICATION_API_VERSION)
                 .append("=").append(applicationAPIVersion).append("\n")
-                .append(OpenApiSpecGenerator.SERVER).append("=")
+                .append(OpenAPISpecGenerator.SERVER).append("=")
                 .append(applicationServer).append("\n")
-                .append(OpenApiSpecGenerator.PREFIX).append("=")
+                .append(OpenAPISpecGenerator.PREFIX).append("=")
                 .append(applicationPrefix).append("\n")
-                .append(OpenApiSpecGenerator.SERVER_DESCRIPTION).append("=")
+                .append(OpenAPISpecGenerator.SERVER_DESCRIPTION).append("=")
                 .append(applicationServerDescription);
         FileUtils.writeStringToFile(applicationPropertiesFile,
                 applicationPropertiesBuilder.toString(),

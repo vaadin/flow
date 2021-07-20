@@ -37,14 +37,14 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
  * Wrapper for a generator directory that can do directory cleaning from stale
  * files and empty directories.
  */
-class GeneratorDirectory {
+class GenerationOutputDirectory {
     private final Logger logger = LoggerFactory
-            .getLogger(GeneratorDirectory.class.getName());
+            .getLogger(GenerationOutputDirectory.class.getName());
     private final File outputDirectory;
     private final GeneratorFileVisitor visitor = new GeneratorFileVisitor(
             logger);
 
-    GeneratorDirectory(File outputDirectory) {
+    GenerationOutputDirectory(File outputDirectory) {
         this.outputDirectory = outputDirectory;
     }
 
@@ -79,7 +79,7 @@ class GeneratorDirectory {
 
     static class GeneratorFileVisitor extends SimpleFileVisitor<Path> {
         private static final List<String> filesToKeep = Arrays.asList(
-                ConnectClientGenerator.CONNECT_CLIENT_NAME,
+                ClientAPIGenerator.CONNECT_CLIENT_NAME,
                 FrontendUtils.BOOTSTRAP_FILE_NAME,
                 FrontendUtils.THEME_IMPORTS_NAME,
                 FrontendUtils.THEME_IMPORTS_D_TS_NAME);

@@ -29,14 +29,14 @@ import io.swagger.v3.oas.models.OpenAPI;
  * occurs in the directory specified, overwriting the files and creating the
  * target directory, if necessary.
  */
-public class Generator {
+public class MainGenerator {
     public static final String MODEL = "Model";
     public static final String OPTIONAL_SUFFIX = " | undefined";
     public static final String TS = ".ts";
     public static final String MODEL_TS = MODEL + TS;
     private final BarrelGenerator barrelGenerator;
-    private final ConnectClientGenerator clientGenerator;
-    private final GeneratorDirectory outputDirectory;
+    private final ClientAPIGenerator clientGenerator;
+    private final GenerationOutputDirectory outputDirectory;
     private final OpenAPIParser parser;
 
     /**
@@ -47,7 +47,7 @@ public class Generator {
      * @param outputDirectory
      *            the directory to generate the files into
      */
-    public Generator(File openApiJsonFile, File outputDirectory) {
+    public MainGenerator(File openApiJsonFile, File outputDirectory) {
         this(openApiJsonFile, outputDirectory, null, null);
     }
 
@@ -62,7 +62,7 @@ public class Generator {
      *            the properties with the data required for the Client API file
      *            generation
      */
-    public Generator(File openApiJsonFile, File outputDirectory,
+    public MainGenerator(File openApiJsonFile, File outputDirectory,
             Properties properties) {
         this(openApiJsonFile, outputDirectory, properties, null);
     }
@@ -78,7 +78,7 @@ public class Generator {
      *            the path of the default Client API file which is imported in
      *            the generated files.
      */
-    public Generator(File openApiJsonFile, File outputDirectory,
+    public MainGenerator(File openApiJsonFile, File outputDirectory,
             String defaultClientPath) {
         this(openApiJsonFile, outputDirectory, null, defaultClientPath);
     }
@@ -97,18 +97,18 @@ public class Generator {
      *            the path of the default Client API file which is imported in
      *            the generated files.
      */
-    public Generator(File openApiJsonFile, File outputDirectory,
+    public MainGenerator(File openApiJsonFile, File outputDirectory,
             Properties properties, String defaultClientPath) {
         Objects.requireNonNull(openApiJsonFile);
         Objects.requireNonNull(outputDirectory);
 
-        this.outputDirectory = new GeneratorDirectory(outputDirectory);
+        this.outputDirectory = new GenerationOutputDirectory(outputDirectory);
         parser = openApiJsonFile.exists()
                 ? new OpenAPIParser(openApiJsonFile, this.outputDirectory,
                         TypescriptCodeGenerator.class, defaultClientPath)
                 : null;
         clientGenerator = properties != null
-                ? new ConnectClientGenerator(this.outputDirectory.toPath(),
+                ? new ClientAPIGenerator(this.outputDirectory.toPath(),
                         properties)
                 : null;
         barrelGenerator = new BarrelGenerator(this.outputDirectory.toPath());
@@ -146,6 +146,6 @@ public class Generator {
         outputDirectory.clean(files);
 
         return files.stream()
-                .anyMatch(file -> file.getName().endsWith(Generator.TS));
+                .anyMatch(file -> file.getName().endsWith(MainGenerator.TS));
     }
 }

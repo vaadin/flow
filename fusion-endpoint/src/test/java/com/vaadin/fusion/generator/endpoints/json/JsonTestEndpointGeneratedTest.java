@@ -23,9 +23,9 @@ import java.util.Properties;
 import com.fasterxml.jackson.core.Version;
 import org.junit.Test;
 
-import com.vaadin.fusion.generator.Generator;
-import com.vaadin.fusion.generator.OpenApiSpecGenerator;
-import com.vaadin.fusion.generator.ConnectClientGenerator;
+import com.vaadin.fusion.generator.MainGenerator;
+import com.vaadin.fusion.generator.OpenAPISpecGenerator;
+import com.vaadin.fusion.generator.ClientAPIGenerator;
 import com.vaadin.fusion.generator.endpoints.AbstractEndpointGenerationTest;
 import com.vaadin.fusion.utils.TestUtils;
 
@@ -45,11 +45,11 @@ public class JsonTestEndpointGeneratedTest
         String expectedImport = String.format("import client from '%s';",
                 customConnectClientPath);
 
-        new OpenApiSpecGenerator(new Properties()).generateOpenApiSpec(
+        new OpenAPISpecGenerator(new Properties()).generateOpenApiSpec(
                 TestUtils.getClassFilePath(getClass().getPackage()),
                 openApiJsonOutput);
 
-        new Generator(openApiJsonOutput.toFile(), outputDirectory.getRoot(),
+        new MainGenerator(openApiJsonOutput.toFile(), outputDirectory.getRoot(),
                 customConnectClientPath).start();
 
         getTsFiles(outputDirectory.getRoot()).stream().map(File::toPath)
@@ -68,7 +68,7 @@ public class JsonTestEndpointGeneratedTest
                         "expected-openapi-custom-application-properties.json")
                 .getPath());
 
-        new Generator(openApiFile, nonExistingOutputDirectory).start();
+        new MainGenerator(openApiFile, nonExistingOutputDirectory).start();
 
         assertTrue(nonExistingOutputDirectory.isDirectory());
         assertFalse(getTsFiles(nonExistingOutputDirectory).isEmpty());
@@ -86,7 +86,7 @@ public class JsonTestEndpointGeneratedTest
     @Test
     public void should_GenerateOpenApi_When_NoApplicationPropertiesInput() {
         String expectedImport = String.format("import client from '%s';",
-                ConnectClientGenerator.CONNECT_CLIENT_IMPORT_PATH);
+                ClientAPIGenerator.CONNECT_CLIENT_IMPORT_PATH);
         verifyGenerationFully(null,
                 getClass().getResource("expected-openapi.json"));
 

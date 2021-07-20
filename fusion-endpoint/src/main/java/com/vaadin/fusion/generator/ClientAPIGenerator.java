@@ -31,13 +31,13 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
-import static com.vaadin.fusion.generator.Generator.TS;
+import static com.vaadin.fusion.generator.MainGenerator.TS;
 
 /**
  * Generates the Vaadin connect-client file, based on the application
  * properties, if provided.
  */
-public class ConnectClientGenerator {
+public class ClientAPIGenerator {
     static final String DEFAULT_PREFIX = "/connect";
     static final String DEFAULT_URL_MAPPING = "/*";
     static final String PREFIX = "vaadin.endpoint.prefix";
@@ -50,7 +50,7 @@ public class ConnectClientGenerator {
     public static final String CUSTOM_CONNECT_CLIENT_NAME = CUSTOM_CLIENT_FILE_NAME
             + TS;
     private static final Logger logger = LoggerFactory
-            .getLogger(ConnectClientGenerator.class);
+            .getLogger(ClientAPIGenerator.class);
     private final String endpointPrefix;
     private final Path outputFilePath;
 
@@ -63,7 +63,7 @@ public class ConnectClientGenerator {
      * @param outputDirectory
      *            the directory to generate the default client into
      */
-    public ConnectClientGenerator(Path outputDirectory,
+    public ClientAPIGenerator(Path outputDirectory,
             Properties applicationProperties) {
         final String prefix = (String) applicationProperties
                 .getOrDefault(PREFIX, DEFAULT_PREFIX);
@@ -106,6 +106,11 @@ public class ConnectClientGenerator {
         }
     }
 
+    /**
+     * Gets the path of the client API file.
+     *
+     * @return the client API file path.
+     */
     public Path getOutputFilePath() {
         return outputFilePath;
     }

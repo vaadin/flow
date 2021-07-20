@@ -22,12 +22,12 @@ import java.util.Objects;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.TaskGenerateOpenApi;
 import com.vaadin.fusion.Endpoint;
-import com.vaadin.fusion.generator.OpenApiSpecGenerator;
+import com.vaadin.fusion.generator.OpenAPISpecGenerator;
 
 /**
  * Generate OpenAPI json file for Vaadin Endpoints.
  */
-public class TaskGenerateOpenApiImpl extends AbstractTaskConnectGenerator
+public class TaskGenerateOpenApiImpl extends AbstractTaskFusionGenerator
         implements TaskGenerateOpenApi {
 
     private final File javaSourceFolder;
@@ -60,7 +60,7 @@ public class TaskGenerateOpenApiImpl extends AbstractTaskConnectGenerator
 
     @Override
     public void execute() throws ExecutionFailedException {
-        OpenApiSpecGenerator openApiSpecGenerator = new OpenApiSpecGenerator(
+        OpenAPISpecGenerator openApiSpecGenerator = new OpenAPISpecGenerator(
                 readApplicationProperties());
         openApiSpecGenerator.generateOpenApiSpec(
                 Collections.singletonList(javaSourceFolder.toPath()),

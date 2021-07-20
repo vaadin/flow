@@ -19,22 +19,22 @@ import java.io.File;
 import java.util.Objects;
 
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.TaskGenerateConnect;
-import com.vaadin.fusion.generator.Generator;
+import com.vaadin.flow.server.frontend.TaskGenerateFusion;
+import com.vaadin.fusion.generator.MainGenerator;
 
-import static com.vaadin.fusion.generator.ConnectClientGenerator.CUSTOM_CONNECT_CLIENT_NAME;
+import static com.vaadin.fusion.generator.ClientAPIGenerator.CUSTOM_CONNECT_CLIENT_NAME;
 
 /**
  * Starts the generation of TS files for endpoints.
  */
-public class TaskGenerateConnectImpl extends AbstractTaskConnectGenerator
-        implements TaskGenerateConnect {
+public class TaskGenerateFusionImpl extends AbstractTaskFusionGenerator
+        implements TaskGenerateFusion {
 
     private final File frontendDirectory;
     private final File openApi;
     private final File outputFolder;
 
-    TaskGenerateConnectImpl(File applicationProperties, File openApi,
+    TaskGenerateFusionImpl(File applicationProperties, File openApi,
             File outputFolder, File frontendDirectory) {
         super(applicationProperties);
         Objects.requireNonNull(openApi,
@@ -54,7 +54,7 @@ public class TaskGenerateConnectImpl extends AbstractTaskConnectGenerator
                 ? ("../" + CUSTOM_CONNECT_CLIENT_NAME)
                 : null;
 
-        new Generator(openApi, outputFolder, readApplicationProperties(),
+        new MainGenerator(openApi, outputFolder, readApplicationProperties(),
                 customName).start();
     }
 }

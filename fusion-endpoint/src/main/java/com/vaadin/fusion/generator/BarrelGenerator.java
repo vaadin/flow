@@ -27,17 +27,21 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.vaadin.fusion.generator.Generator.TS;
+import static com.vaadin.fusion.generator.MainGenerator.TS;
 
 /**
  * Performs the generation of a barrel file for importing all endpoints at once
  * at the frontend side.
+ *
+ * Barrel file re-exports all endpoints methods combining them under an simple
+ * object with the endpoint name. It may be considered as a class with static
+ * methods.
  */
 class BarrelGenerator {
     public static final String BARREL_FILE_NAME = "endpoints";
     public static final String BARREL_NAME = BARREL_FILE_NAME + TS;
     private static final Logger log = LoggerFactory
-            .getLogger(ConnectClientGenerator.class);
+            .getLogger(ClientAPIGenerator.class);
 
     private final Path outputFilePath;
 

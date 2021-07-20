@@ -531,7 +531,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Get the npm folder used for this build.
-         * 
+         *
          * @return npmFolder
          */
         public File getNpmFolder() {
@@ -540,7 +540,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Get the generated folder for this build.
-         * 
+         *
          * @return generatedFolder
          */
         public File getGeneratedFolder() {
@@ -562,7 +562,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsDefinitions.class,
             TaskGenerateServiceWorker.class,
             TaskGenerateOpenApi.class,
-            TaskGenerateConnect.class,
+            TaskGenerateFusion.class,
             TaskGenerateBootstrap.class,
             TaskInstallWebpackPlugins.class,
             TaskUpdatePackages.class,
@@ -735,13 +735,13 @@ public class NodeTasks implements FallibleCommand {
             commands.add(taskGenerateOpenApi);
 
             if (builder.connectClientTsApiFolder != null) {
-                TaskGenerateConnect taskGenerateConnectTs = endpointGeneratorTaskFactory
+                TaskGenerateFusion taskGenerateFusionTs = endpointGeneratorTaskFactory
                         .createTaskGenerateConnect(
                                 builder.connectApplicationProperties,
                                 builder.connectGeneratedOpenApiFile,
                                 builder.connectClientTsApiFolder,
                                 builder.frontendDirectory);
-                commands.add(taskGenerateConnectTs);
+                commands.add(taskGenerateFusionTs);
             }
         }
     }
@@ -786,7 +786,7 @@ public class NodeTasks implements FallibleCommand {
 
     /**
      * Find index of command for which it is assignable to.
-     * 
+     *
      * @param command
      *            command to find execution index for
      * @return index of command or -1 if not available

@@ -28,22 +28,22 @@ import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.fusion.utils.TestUtils;
 
-public class ConnectClientGeneratorTest {
+public class ClientAPIGeneratorTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
     public void relativizeEndpointPrefixWithUrlMapping_Should_workWithBothDefaultValues() {
-        ConnectClientGenerator generator = new ConnectClientGenerator(
+        ClientAPIGenerator generator = new ClientAPIGenerator(
                 temporaryFolder.getRoot().toPath(), new Properties());
         String result = generator.relativizeEndpointPrefixWithUrlMapping(
-                ConnectClientGenerator.DEFAULT_PREFIX, "/*");
+                ClientAPIGenerator.DEFAULT_PREFIX, "/*");
         Assert.assertEquals("connect", result);
     }
 
     @Test
     public void relativizeEndpointPrefixWithUrlMapping_should_workWithCustomUrlMappingAndCustomEndpointPrefix() {
-        ConnectClientGenerator generator = new ConnectClientGenerator(
+        ClientAPIGenerator generator = new ClientAPIGenerator(
                 temporaryFolder.getRoot().toPath(), new Properties());
         String result = generator.relativizeEndpointPrefixWithUrlMapping(
                 "/my-connect", "/myapp/*");
@@ -52,16 +52,16 @@ public class ConnectClientGeneratorTest {
 
     @Test
     public void relativizeEndpointPrefixWithUrlMapping_should_workWithCustomUrlMappingAndDefaultEndpointPrefix() {
-        ConnectClientGenerator generator = new ConnectClientGenerator(
+        ClientAPIGenerator generator = new ClientAPIGenerator(
                 temporaryFolder.getRoot().toPath(), new Properties());
         String result = generator.relativizeEndpointPrefixWithUrlMapping(
-                ConnectClientGenerator.DEFAULT_PREFIX, "/myapp/*");
+                ClientAPIGenerator.DEFAULT_PREFIX, "/myapp/*");
         Assert.assertEquals("../connect", result);
     }
 
     @Test
     public void relativizeEndpointPrefixWithUrlMapping_should_workWithDefaultUrlMappingAndCustomEndpointPrefix() {
-        ConnectClientGenerator generator = new ConnectClientGenerator(
+        ClientAPIGenerator generator = new ClientAPIGenerator(
                 temporaryFolder.getRoot().toPath(), new Properties());
         String result = generator
                 .relativizeEndpointPrefixWithUrlMapping("/my-connect", "/*");
@@ -70,7 +70,7 @@ public class ConnectClientGeneratorTest {
 
     @Test
     public void relativizeEndpointPrefixWithUrlMapping_Should_WorkWithMultipleLevelUrlMappingAndCustomEndpointPrefix() {
-        ConnectClientGenerator generator = new ConnectClientGenerator(
+        ClientAPIGenerator generator = new ClientAPIGenerator(
                 temporaryFolder.getRoot().toPath(), new Properties());
         String result = generator.relativizeEndpointPrefixWithUrlMapping(
                 "/my-connect", "/myapp/yourapp/*");
@@ -79,7 +79,7 @@ public class ConnectClientGeneratorTest {
 
     @Test
     public void relativizeEndpointPrefixWithUrlMapping_Should_WorkWithMultipleLevelUrlMappingAndMultipleLevelEndpointPrefix() {
-        ConnectClientGenerator generator = new ConnectClientGenerator(
+        ClientAPIGenerator generator = new ClientAPIGenerator(
                 temporaryFolder.getRoot().toPath(), new Properties());
         String result = generator.relativizeEndpointPrefixWithUrlMapping(
                 "/my-connect/your-connect", "/myapp/yourapp/*");
@@ -89,7 +89,7 @@ public class ConnectClientGeneratorTest {
     @Test
     public void should_GenerateConnectClientDefault_When_ApplicationPropertiesInput()
             throws Exception {
-        ConnectClientGenerator generator = new ConnectClientGenerator(
+        ClientAPIGenerator generator = new ClientAPIGenerator(
                 temporaryFolder.getRoot().toPath(),
                 TestUtils.readProperties(getClass()
                         .getResource("application.properties.for.testing")
@@ -110,7 +110,7 @@ public class ConnectClientGeneratorTest {
     @Test
     public void should_GenerateConnectClientDefault_When_NoApplicationPropertiesInput()
             throws Exception {
-        ConnectClientGenerator generator = new ConnectClientGenerator(
+        ClientAPIGenerator generator = new ClientAPIGenerator(
                 temporaryFolder.getRoot().toPath(), new Properties());
 
         generator.generate();
