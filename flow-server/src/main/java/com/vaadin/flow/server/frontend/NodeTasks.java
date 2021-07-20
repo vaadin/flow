@@ -100,7 +100,7 @@ public class NodeTasks implements FallibleCommand {
 
         private File fusionJavaSourceFolder;
 
-        private File fusionGeneratedOpenApiFile;
+        private File fusionGeneratedOpenAPIFile;
 
         private File fusionApplicationProperties;
 
@@ -411,13 +411,13 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Set output location for the generated OpenAPI file.
          *
-         * @param generatedOpenApiFile
+         * @param generatedOpenAPIFile
          *            the generated output file.
          * @return the builder, for chaining
          */
-        public Builder withFusionGeneratedOpenApiJson(
-                File generatedOpenApiFile) {
-            this.fusionGeneratedOpenApiFile = generatedOpenApiFile;
+        public Builder withFusionGeneratedOpenAPIJson(
+                File generatedOpenAPIFile) {
+            this.fusionGeneratedOpenAPIFile = generatedOpenAPIFile;
             return this;
         }
 
@@ -636,7 +636,7 @@ public class NodeTasks implements FallibleCommand {
 
             if (builder.fusionJavaSourceFolder != null
                     && builder.fusionJavaSourceFolder.exists()
-                    && builder.fusionGeneratedOpenApiFile != null) {
+                    && builder.fusionGeneratedOpenAPIFile != null) {
                 addFusionServicesTasks(builder);
             }
 
@@ -728,14 +728,14 @@ public class NodeTasks implements FallibleCommand {
                             builder.fusionApplicationProperties,
                             builder.fusionJavaSourceFolder,
                             builder.classFinder.getClassLoader(),
-                            builder.fusionGeneratedOpenApiFile);
+                            builder.fusionGeneratedOpenAPIFile);
             commands.add(taskGenerateOpenAPI);
 
             if (builder.fusionClientAPIFolder != null) {
                 TaskGenerateFusion taskGenerateFusion = endpointGeneratorTaskFactory
                         .createTaskGenerateFusion(
                                 builder.fusionApplicationProperties,
-                                builder.fusionGeneratedOpenApiFile,
+                                builder.fusionGeneratedOpenAPIFile,
                                 builder.fusionClientAPIFolder,
                                 builder.frontendDirectory);
                 commands.add(taskGenerateFusion);

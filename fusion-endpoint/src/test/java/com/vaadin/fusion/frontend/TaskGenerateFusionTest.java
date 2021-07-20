@@ -21,7 +21,7 @@ public class TaskGenerateFusionTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private TaskGenerateFusion taskGenerateFusionTs;
+    private TaskGenerateFusion taskGenerateFusion;
     private File properties;
     private File outputDirectory;
     private File openApiJson;
@@ -46,9 +46,9 @@ public class TaskGenerateFusionTest {
         assertFalse(ts2.exists());
         assertFalse(client.exists());
 
-        taskGenerateFusionTs = new TaskGenerateFusionImpl(properties,
+        taskGenerateFusion = new TaskGenerateFusionImpl(properties,
                 openApiJson, outputDirectory, frontendDirectory);
-        taskGenerateFusionTs.execute();
+        taskGenerateFusion.execute();
 
         assertTrue(ts1.exists());
         assertTrue(ts2.exists());
@@ -76,9 +76,9 @@ public class TaskGenerateFusionTest {
         assertFalse(client.exists());
         assertTrue(customConnectClient.exists());
 
-        taskGenerateFusionTs = new TaskGenerateFusionImpl(properties,
+        taskGenerateFusion = new TaskGenerateFusionImpl(properties,
                 openApiJson, outputDirectory, frontendDirectory);
-        taskGenerateFusionTs.execute();
+        taskGenerateFusion.execute();
 
         assertTrue(ts1.exists());
         assertTrue(ts2.exists());

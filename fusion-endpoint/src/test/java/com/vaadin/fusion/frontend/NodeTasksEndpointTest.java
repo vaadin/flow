@@ -57,7 +57,7 @@ public class NodeTasksEndpointTest {
                 .enablePackagesUpdate(false).enableImportsUpdate(false)
                 .withEmbeddableWebComponents(false)
                 .withFusionJavaSourceFolder(src)
-                .withFusionGeneratedOpenApiJson(json)
+                .withFusionGeneratedOpenAPIJson(json)
                 .withFusionClientAPIFolder(new File(dir, "api"));
 
         builder.build().execute();
