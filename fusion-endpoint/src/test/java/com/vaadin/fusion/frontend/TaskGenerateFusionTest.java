@@ -46,8 +46,8 @@ public class TaskGenerateFusionTest {
         assertFalse(ts2.exists());
         assertFalse(client.exists());
 
-        taskGenerateFusion = new TaskGenerateFusionImpl(properties,
-                openApiJson, outputDirectory, frontendDirectory);
+        taskGenerateFusion = new TaskGenerateFusionImpl(properties, openApiJson,
+                outputDirectory, frontendDirectory);
         taskGenerateFusion.execute();
 
         assertTrue(ts1.exists());
@@ -76,8 +76,8 @@ public class TaskGenerateFusionTest {
         assertFalse(client.exists());
         assertTrue(customConnectClient.exists());
 
-        taskGenerateFusion = new TaskGenerateFusionImpl(properties,
-                openApiJson, outputDirectory, frontendDirectory);
+        taskGenerateFusion = new TaskGenerateFusionImpl(properties, openApiJson,
+                outputDirectory, frontendDirectory);
         taskGenerateFusion.execute();
 
         assertTrue(ts1.exists());
