@@ -20,15 +20,15 @@ import java.util.Collections;
 import java.util.Objects;
 
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.TaskGenerateOpenApi;
+import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
 import com.vaadin.fusion.Endpoint;
 import com.vaadin.fusion.generator.OpenAPISpecGenerator;
 
 /**
  * Generate OpenAPI json file for Vaadin Endpoints.
  */
-public class TaskGenerateOpenApiImpl extends AbstractTaskFusionGenerator
-        implements TaskGenerateOpenApi {
+public class TaskGenerateOpenAPIImpl extends AbstractTaskFusionGenerator
+        implements TaskGenerateOpenAPI {
 
     private final File javaSourceFolder;
     private final ClassLoader classLoader;
@@ -45,7 +45,7 @@ public class TaskGenerateOpenApiImpl extends AbstractTaskFusionGenerator
      * @param output
      *            the output path of the generated json file.
      */
-    TaskGenerateOpenApiImpl(File properties, File javaSourceFolder,
+    TaskGenerateOpenAPIImpl(File properties, File javaSourceFolder,
             ClassLoader classLoader, File output) {
         super(properties);
         Objects.requireNonNull(javaSourceFolder,

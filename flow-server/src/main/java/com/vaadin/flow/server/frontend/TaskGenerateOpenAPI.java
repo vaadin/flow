@@ -20,6 +20,6 @@ package com.vaadin.flow.server.frontend;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-public interface TaskGenerateOpenApi extends FallibleCommand {
+public interface TaskGenerateOpenAPI extends FallibleCommand {
 
 }

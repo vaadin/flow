@@ -179,7 +179,7 @@ public class NodeTasksTest {
                 .withEmbeddableWebComponents(false).useV14Bootstrap(false)
                 .withFlowResourcesFolder(
                         new File(userDir, TARGET + "flow-frontend"))
-                .withConnectClientTsApiFolder(new File(userDir,
+                .withFusionClientAPIFolder(new File(userDir,
                         DEFAULT_PROJECT_FRONTEND_GENERATED_DIR));
         builder.build().execute();
         String webpackGeneratedContent = Files

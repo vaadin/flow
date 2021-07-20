@@ -20,7 +20,7 @@ import java.util.Objects;
 
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.TaskGenerateFusion;
-import com.vaadin.flow.server.frontend.TaskGenerateOpenApi;
+import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
 
 /**
  * An implementation of the EndpointGeneratorTaskFactory, which creates endpoint
@@ -30,7 +30,7 @@ public class EndpointGeneratorTaskFactoryImpl
         implements EndpointGeneratorTaskFactory {
 
     @Override
-    public TaskGenerateFusion createTaskGenerateConnect(
+    public TaskGenerateFusion createTaskGenerateFusion(
             File applicationProperties, File openApi, File outputFolder,
             File frontendDirectory) {
         Objects.requireNonNull(openApi,
@@ -42,14 +42,14 @@ public class EndpointGeneratorTaskFactoryImpl
     }
 
     @Override
-    public TaskGenerateOpenApi createTaskGenerateOpenApi(File properties,
+    public TaskGenerateOpenAPI createTaskGenerateOpenAPI(File properties,
             File javaSourceFolder, ClassLoader classLoader, File output) {
         Objects.requireNonNull(javaSourceFolder,
                 "Source paths should not be null.");
         Objects.requireNonNull(output,
                 "OpenAPI output file should not be null.");
         Objects.requireNonNull(classLoader, "ClassLoader should not be null.");
-        return new TaskGenerateOpenApiImpl(properties, javaSourceFolder,
+        return new TaskGenerateOpenAPIImpl(properties, javaSourceFolder,
                 classLoader, output);
     }
 
