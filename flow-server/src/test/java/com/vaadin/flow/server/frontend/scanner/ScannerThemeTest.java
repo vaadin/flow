@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.FirstView;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.NoThemeExporter;
@@ -38,7 +39,7 @@ public class ScannerThemeTest {
     public ExpectedException exception = ExpectedException.none();
 
     @Test
-    public void should_takeThemeFromTheView() throws Exception {
+    public void should_takeThemeFromTheView() {
         FrontendDependencies deps = getFrontendDependencies(
                 RootViewWithTheme.class);
 
@@ -54,7 +55,7 @@ public class ScannerThemeTest {
     }
 
     @Test
-    public void should_not_takeTheme_when_NoTheme() throws Exception {
+    public void should_not_takeTheme_when_NoTheme() {
         FrontendDependencies deps = getFrontendDependencies(
                 RootViewWithoutTheme.class);
         assertNull(deps.getThemeDefinition());
@@ -65,7 +66,7 @@ public class ScannerThemeTest {
     }
 
     @Test
-    public void should_takeThemeFromLayout() throws Exception {
+    public void should_takeThemeFromLayout() {
         FrontendDependencies deps = getFrontendDependencies(
                 RootViewWithLayoutTheme.class);
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
@@ -80,7 +81,7 @@ public class ScannerThemeTest {
     }
 
     @Test
-    public void should_takeThemeWhenMultipleTheme() throws Exception {
+    public void should_takeThemeWhenMultipleTheme() {
         FrontendDependencies deps = getFrontendDependencies(
                 RootViewWithMultipleTheme.class);
         assertEquals(Theme2.class, deps.getThemeDefinition().getTheme());
@@ -92,7 +93,7 @@ public class ScannerThemeTest {
     }
 
     @Test
-    public void should_takeTheme_when_AnyRouteValue() throws Exception {
+    public void should_takeTheme_when_AnyRouteValue() {
         FrontendDependencies deps = getFrontendDependencies(SecondView.class);
 
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
@@ -103,14 +104,14 @@ public class ScannerThemeTest {
     }
 
     @Test
-    public void should_throw_when_MultipleThemes() throws Exception {
+    public void should_throw_when_MultipleThemes() {
         exception.expect(IllegalStateException.class);
         getFrontendDependencies(RootViewWithMultipleTheme.class,
                 FirstView.class);
     }
 
     @Test
-    public void should_throw_when_ThemeAndNoTheme() throws Exception {
+    public void should_throw_when_ThemeAndNoTheme() {
         exception.expect(IllegalStateException.class);
         getFrontendDependencies(FirstView.class, RootViewWithoutTheme.class);
     }
@@ -138,8 +139,7 @@ public class ScannerThemeTest {
     }
 
     @Test
-    public void should_takeThemeFromExporter_when_exporterFound()
-            throws Exception {
+    public void should_takeThemeFromExporter_when_exporterFound() {
         FrontendDependencies deps = getFrontendDependencies(
                 ThemeExporter.class);
 
@@ -177,16 +177,19 @@ public class ScannerThemeTest {
     }
 
     @Test
-    public void should_takeThemeFromLayout_ifLayoutAlreadyVisited()
-            throws Exception {
+    public void should_takeThemeFromLayout_ifLayoutAlreadyVisited() {
         // Make sure that all entry-points sharing layouts are correctly
         // theming-configured
         FrontendDependencies deps = getFrontendDependencies(
                 RootViewWithLayoutTheme.class, RootView2WithLayoutTheme.class);
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
-        deps.getEndPoints().forEach(endPoint -> {
+        for (EndPointData endPoint : deps.getEndPoints()) {
+            if (endPoint.getName().equals(UI.class.getName())) {
+                continue;
+            }
             assertEquals(Theme1.class.getName(),
                     endPoint.getTheme().getThemeClass());
-        });
+        }
+        ;
     }
 }

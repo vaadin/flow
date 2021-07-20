@@ -4,6 +4,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.CssClass1;
@@ -21,9 +22,13 @@ public class ScannerCssTest {
     public void should_visitCssImports() throws Exception {
         FrontendDependencies deps = getFrontendDependencies(CssClass1.class,
                 CssClass2.class);
-        assertEquals(2, deps.getEndPoints().size());
-        deps.getEndPoints().forEach(endPoint -> {
-            assertEquals(4, endPoint.getCss().size());
+        assertEquals(3, deps.getEndPoints().size());
+        for (EndPointData endPoint : deps.getEndPoints()) {
+            if (endPoint.name.equals(UI.class.getName())) {
+                continue;
+            }
+            assertEquals("Wrong amount of css in " + endPoint.getName(), 4,
+                    endPoint.getCss().size());
 
             assertThat(
                     endPoint.getCss().stream().map(CssData::toString)
@@ -32,15 +37,20 @@ public class ScannerCssTest {
                             "value: ./foo.css include:bar",
                             "value: ./foo.css id:bar",
                             "value: ./foo.css themefor:bar"));
-        });
+        }
+        ;
     }
 
     @Test
     public void should_gatherCssImportsInOrderPerClass() throws Exception {
         FrontendDependencies deps = getFrontendDependencies(CssClass3.class);
-        assertEquals(1, deps.getEndPoints().size());
-        deps.getEndPoints().forEach(endPoint -> {
-            assertEquals(4, endPoint.getCss().size());
+        assertEquals(2, deps.getEndPoints().size());
+        for (EndPointData endPoint : deps.getEndPoints()) {
+            if (endPoint.name.equals(UI.class.getName())) {
+                continue;
+            }
+            assertEquals("Wrong amount of css in " + endPoint.getName(), 4,
+                    endPoint.getCss().size());
 
             // verifies #6523 as sufficiently complex names can get mixed up
             assertThat(
@@ -48,7 +58,8 @@ public class ScannerCssTest {
                             .collect(Collectors.toList()),
                     contains("value: ./foo.css", "value: ./bar.css",
                             "value: ./foofoo.css", "value: ./foobar.css"));
-        });
+        }
+        ;
     }
 
     @Test
