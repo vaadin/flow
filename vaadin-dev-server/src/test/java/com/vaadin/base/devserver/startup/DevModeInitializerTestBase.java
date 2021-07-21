@@ -32,8 +32,8 @@ import com.vaadin.base.devserver.DevModeHandlerImpl;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.TaskGenerateConnect;
-import com.vaadin.flow.server.frontend.TaskGenerateOpenApi;
+import com.vaadin.flow.server.frontend.TaskGenerateFusion;
+import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.Json;
@@ -69,8 +69,8 @@ public class DevModeInitializerTestBase {
     String baseDir;
     Lookup lookup;
     EndpointGeneratorTaskFactory endpointGeneratorTaskFactory;
-    TaskGenerateConnect taskGenerateConnect;
-    TaskGenerateOpenApi taskGenerateOpenApi;
+    TaskGenerateFusion taskGenerateFusion;
+    TaskGenerateOpenAPI taskGenerateOpenAPI;
 
     ApplicationConfiguration appConfig;
 
@@ -114,14 +114,14 @@ public class DevModeInitializerTestBase {
                 .thenReturn(lookup);
         endpointGeneratorTaskFactory = Mockito
                 .mock(EndpointGeneratorTaskFactory.class);
-        taskGenerateConnect = Mockito.mock(TaskGenerateConnect.class);
-        taskGenerateOpenApi = Mockito.mock(TaskGenerateOpenApi.class);
+        taskGenerateFusion = Mockito.mock(TaskGenerateFusion.class);
+        taskGenerateOpenAPI = Mockito.mock(TaskGenerateOpenAPI.class);
         Mockito.doReturn(endpointGeneratorTaskFactory).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
-        Mockito.doReturn(taskGenerateConnect).when(endpointGeneratorTaskFactory)
-                .createTaskGenerateConnect(any(), any(), any(), any());
-        Mockito.doReturn(taskGenerateOpenApi).when(endpointGeneratorTaskFactory)
-                .createTaskGenerateOpenApi(any(), any(), any(), any());
+        Mockito.doReturn(taskGenerateFusion).when(endpointGeneratorTaskFactory)
+                .createTaskGenerateFusion(any(), any(), any(), any());
+        Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
+                .createTaskGenerateOpenAPI(any(), any(), any(), any());
 
         ResourceProvider resourceProvider = Mockito
                 .mock(ResourceProvider.class);

@@ -98,13 +98,13 @@ public class NodeTasks implements FallibleCommand {
 
         private boolean enablePnpm;
 
-        private File connectJavaSourceFolder;
+        private File fusionJavaSourceFolder;
 
-        private File connectGeneratedOpenApiFile;
+        private File fusionGeneratedOpenAPIFile;
 
-        private File connectApplicationProperties;
+        private File fusionApplicationProperties;
 
-        private File connectClientTsApiFolder;
+        private File fusionClientAPIFolder;
 
         private boolean requireHomeNodeExec;
 
@@ -386,13 +386,12 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Set the folder where Ts files should be generated.
          *
-         * @param connectClientTsApiFolder
+         * @param fusionClientTsApiFolder
          *            folder for Ts files in the frontend.
          * @return the builder, for chaining
          */
-        public Builder withConnectClientTsApiFolder(
-                File connectClientTsApiFolder) {
-            this.connectClientTsApiFolder = connectClientTsApiFolder;
+        public Builder withFusionClientAPIFolder(File fusionClientTsApiFolder) {
+            this.fusionClientAPIFolder = fusionClientTsApiFolder;
             return this;
         }
 
@@ -403,35 +402,34 @@ public class NodeTasks implements FallibleCommand {
          *            application properties file.
          * @return this builder, for chaining
          */
-        public Builder withConnectApplicationProperties(
+        public Builder withFusionApplicationProperties(
                 File applicationProperties) {
-            this.connectApplicationProperties = applicationProperties;
+            this.fusionApplicationProperties = applicationProperties;
             return this;
         }
 
         /**
          * Set output location for the generated OpenAPI file.
          *
-         * @param generatedOpenApiFile
+         * @param generatedOpenAPIFile
          *            the generated output file.
          * @return the builder, for chaining
          */
-        public Builder withConnectGeneratedOpenApiJson(
-                File generatedOpenApiFile) {
-            this.connectGeneratedOpenApiFile = generatedOpenApiFile;
+        public Builder withFusionGeneratedOpenAPIJson(
+                File generatedOpenAPIFile) {
+            this.fusionGeneratedOpenAPIFile = generatedOpenAPIFile;
             return this;
         }
 
         /**
          * Set source paths that OpenAPI generator searches for endpoints.
          *
-         * @param connectJavaSourceFolder
+         * @param fusionJavaSourceFolder
          *            java source folder
          * @return the builder, for chaining
          */
-        public Builder withConnectJavaSourceFolder(
-                File connectJavaSourceFolder) {
-            this.connectJavaSourceFolder = connectJavaSourceFolder;
+        public Builder withFusionJavaSourceFolder(File fusionJavaSourceFolder) {
+            this.fusionJavaSourceFolder = fusionJavaSourceFolder;
             return this;
         }
 
@@ -531,7 +529,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Get the npm folder used for this build.
-         * 
+         *
          * @return npmFolder
          */
         public File getNpmFolder() {
@@ -540,7 +538,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Get the generated folder for this build.
-         * 
+         *
          * @return generatedFolder
          */
         public File getGeneratedFolder() {
@@ -561,8 +559,8 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsConfig.class,
             TaskGenerateTsDefinitions.class,
             TaskGenerateServiceWorker.class,
-            TaskGenerateOpenApi.class,
-            TaskGenerateConnect.class,
+            TaskGenerateOpenAPI.class,
+            TaskGenerateFusion.class,
             TaskGenerateBootstrap.class,
             TaskInstallWebpackPlugins.class,
             TaskUpdatePackages.class,
@@ -636,10 +634,10 @@ public class NodeTasks implements FallibleCommand {
         if (!builder.useDeprecatedV14Bootstrapping) {
             addBootstrapTasks(builder);
 
-            if (builder.connectJavaSourceFolder != null
-                    && builder.connectJavaSourceFolder.exists()
-                    && builder.connectGeneratedOpenApiFile != null) {
-                addConnectServicesTasks(builder);
+            if (builder.fusionJavaSourceFolder != null
+                    && builder.fusionJavaSourceFolder.exists()
+                    && builder.fusionGeneratedOpenAPIFile != null) {
+                addFusionServicesTasks(builder);
             }
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,
@@ -667,7 +665,7 @@ public class NodeTasks implements FallibleCommand {
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useDeprecatedV14Bootstrapping,
                     builder.flowResourcesFolder, pwaConfiguration,
-                    builder.connectClientTsApiFolder, builder.buildDirectory));
+                    builder.fusionClientAPIFolder, builder.buildDirectory));
         }
 
         if (builder.enableImportsUpdate) {
@@ -681,8 +679,7 @@ public class NodeTasks implements FallibleCommand {
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),
-                    builder.frontendDirectory,
-                    builder.connectClientTsApiFolder));
+                    builder.frontendDirectory, builder.fusionClientAPIFolder));
         }
     }
 
@@ -720,28 +717,28 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
-    private void addConnectServicesTasks(Builder builder) {
+    private void addFusionServicesTasks(Builder builder) {
         Lookup lookup = builder.lookup;
         EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
                 .lookup(EndpointGeneratorTaskFactory.class);
 
         if (endpointGeneratorTaskFactory != null) {
-            TaskGenerateOpenApi taskGenerateOpenApi = endpointGeneratorTaskFactory
-                    .createTaskGenerateOpenApi(
-                            builder.connectApplicationProperties,
-                            builder.connectJavaSourceFolder,
+            TaskGenerateOpenAPI taskGenerateOpenAPI = endpointGeneratorTaskFactory
+                    .createTaskGenerateOpenAPI(
+                            builder.fusionApplicationProperties,
+                            builder.fusionJavaSourceFolder,
                             builder.classFinder.getClassLoader(),
-                            builder.connectGeneratedOpenApiFile);
-            commands.add(taskGenerateOpenApi);
+                            builder.fusionGeneratedOpenAPIFile);
+            commands.add(taskGenerateOpenAPI);
 
-            if (builder.connectClientTsApiFolder != null) {
-                TaskGenerateConnect taskGenerateConnectTs = endpointGeneratorTaskFactory
-                        .createTaskGenerateConnect(
-                                builder.connectApplicationProperties,
-                                builder.connectGeneratedOpenApiFile,
-                                builder.connectClientTsApiFolder,
+            if (builder.fusionClientAPIFolder != null) {
+                TaskGenerateFusion taskGenerateFusion = endpointGeneratorTaskFactory
+                        .createTaskGenerateFusion(
+                                builder.fusionApplicationProperties,
+                                builder.fusionGeneratedOpenAPIFile,
+                                builder.fusionClientAPIFolder,
                                 builder.frontendDirectory);
-                commands.add(taskGenerateConnectTs);
+                commands.add(taskGenerateFusion);
             }
         }
     }
@@ -786,7 +783,7 @@ public class NodeTasks implements FallibleCommand {
 
     /**
      * Find index of command for which it is assignable to.
-     * 
+     *
      * @param command
      *            command to find execution index for
      * @return index of command or -1 if not available

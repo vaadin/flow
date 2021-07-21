@@ -20,6 +20,6 @@ package com.vaadin.flow.server.frontend;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-public interface TaskGenerateConnect extends FallibleCommand {
+public interface TaskGenerateFusion extends FallibleCommand {
 
 }
