@@ -309,6 +309,30 @@ public class FrontendDependenciesTest {
         Assert.assertTrue(modules.contains("reference.js"));
     }
 
+    @Test // #9861
+    public void visitedExporter_previousEndpointsNotOverridden()
+            throws InstantiationException, IllegalAccessException {
+
+        FakeLumo.class.newInstance();
+        // Reference found through first endpoint
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(Collections.singleton(ReferenceExporter.class));
+        // Re-visit through exporter.
+        Mockito.when(classFinder.getSubTypesOf(WebComponentExporter.class))
+                .thenReturn(Stream.of(ReferenceExporter.class)
+                        .collect(Collectors.toSet()));
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, true);
+
+        List<String> modules = dependencies.getModules();
+
+        Assert.assertEquals(3, dependencies.getEndPoints().size());
+        Assert.assertEquals("Should contain UI and Referenced modules", 2,
+                modules.size());
+        Assert.assertTrue(modules.contains("reference.js"));
+    }
+
     public static class MyComponent extends Component {
     }
 
@@ -353,6 +377,20 @@ public class FrontendDependenciesTest {
     @JsModule("reference.js")
     @Tag("div")
     public static class Referenced extends Component {
+    }
+
+    @Route("reference")
+    public static class ReferenceExporter
+            extends WebComponentExporter<MyComponent> {
+        public ReferenceExporter() {
+            super("tag-tag");
+        }
+
+        @Override
+        protected void configureInstance(WebComponent<MyComponent> webComponent,
+                MyComponent component) {
+            Referenced ref = new Referenced();
+        }
     }
 
     @Route("reference")

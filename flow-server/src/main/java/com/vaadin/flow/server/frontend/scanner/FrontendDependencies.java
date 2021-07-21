@@ -535,25 +535,37 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         for (Class<?> exporter : exporterClasses) {
             String exporterClassName = exporter.getName();
-            EndPointData exporterData = new EndPointData(exporter);
-            exportedPoints.put(exporterClassName,
-                    visitClass(exporterClassName, exporterData, false));
+            if (!endPoints.containsKey(exporterClassName)) {
+                EndPointData exporterData = new EndPointData(exporter);
+                exportedPoints.put(exporterClassName,
+                        visitClass(exporterClassName, exporterData, false));
+            }
 
             if (!Modifier.isAbstract(exporter.getModifiers())) {
-                Class<? extends Component> componentClass = (Class<? extends Component>) ReflectTools
-                        .getGenericInterfaceType(exporter, exporterClass);
-                if (componentClass != null
-                        && !componentClass.isAnnotationPresent(routeClass)) {
-                    String componentClassName = componentClass.getName();
-                    EndPointData configurationData = new EndPointData(
-                            componentClass);
-                    exportedPoints.put(componentClassName, visitClass(
-                            componentClassName, configurationData, false));
-                }
+                visitComponenClass(routeClass, exporterClass, exportedPoints,
+                        exporter);
             }
         }
 
         endPoints.putAll(exportedPoints);
+    }
+
+    private void visitComponenClass(Class<? extends Annotation> routeClass,
+            Class<?> exporterClass,
+            HashMap<String, EndPointData> exportedPoints, Class<?> exporter)
+            throws IOException {
+        Class<? extends Component> componentClass = (Class<? extends Component>) ReflectTools
+                .getGenericInterfaceType(exporter, exporterClass);
+        if (componentClass != null
+                && !componentClass.isAnnotationPresent(routeClass)) {
+            String componentClassName = componentClass.getName();
+            if (endPoints.containsKey(componentClassName)) {
+                return;
+            }
+            EndPointData configurationData = new EndPointData(componentClass);
+            exportedPoints.put(componentClassName,
+                    visitClass(componentClassName, configurationData, false));
+        }
     }
 
     /**
