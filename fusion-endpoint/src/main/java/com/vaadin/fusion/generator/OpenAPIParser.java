@@ -26,7 +26,7 @@ import io.swagger.v3.parser.core.models.AuthorizationValue;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 
-import static com.vaadin.fusion.generator.Generator.TS;
+import static com.vaadin.fusion.generator.MainGenerator.TS;
 
 /**
  * Parses the OpenAPI file to an object to make it consumable for other tools.
@@ -45,8 +45,8 @@ class OpenAPIParser {
      * @see <a href="https://github.com/OAI/OpenAPI-Specification">OpenAPI
      *      specification</a>
      */
-    OpenAPIParser(File openApiJsonFile, GeneratorDirectory outputDirectory,
-            Class<?> language) {
+    OpenAPIParser(File openApiJsonFile,
+            GenerationOutputDirectory outputDirectory, Class<?> language) {
         this(openApiJsonFile, outputDirectory, language, null);
     }
 
@@ -64,8 +64,9 @@ class OpenAPIParser {
      * @see <a href="https://github.com/OAI/OpenAPI-Specification">OpenAPI
      *      specification</a>
      */
-    OpenAPIParser(File openApiJsonFile, GeneratorDirectory outputDirectory,
-            Class<?> language, String defaultClientPath) {
+    OpenAPIParser(File openApiJsonFile,
+            GenerationOutputDirectory outputDirectory, Class<?> language,
+            String defaultClientPath) {
         configurator = new CodegenConfigurator();
         configurator.setLang(language.getName());
         configurator.setInputSpecURL(openApiJsonFile.toString());
@@ -76,7 +77,7 @@ class OpenAPIParser {
 
     private static String getDefaultClientPath(String path) {
         path = path != null ? path
-                : ConnectClientGenerator.CONNECT_CLIENT_IMPORT_PATH;
+                : ClientAPIGenerator.CONNECT_CLIENT_IMPORT_PATH;
         return path.endsWith(TS)
                 ? path.substring(0, path.length() - TS.length())
                 : path;

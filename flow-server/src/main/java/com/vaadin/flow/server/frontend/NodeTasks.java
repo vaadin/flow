@@ -63,8 +63,8 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsConfig.class,
             TaskGenerateTsDefinitions.class,
             TaskGenerateServiceWorker.class,
-            TaskGenerateOpenApi.class,
-            TaskGenerateConnect.class,
+            TaskGenerateOpenAPI.class,
+            TaskGenerateFusion.class,
             TaskGenerateBootstrap.class,
             TaskInstallWebpackPlugins.class,
             TaskUpdatePackages.class,
@@ -76,6 +76,8 @@ public class NodeTasks implements FallibleCommand {
             TaskUpdateImports.class,
             TaskUpdateThemeImport.class
         ));
+    // @formatter:on
+
     private final List<FallibleCommand> commands = new ArrayList<>();
 
     private NodeTasks(Builder builder) {
@@ -139,10 +141,10 @@ public class NodeTasks implements FallibleCommand {
         if (!builder.useDeprecatedV14Bootstrapping) {
             addBootstrapTasks(builder);
 
-            if (builder.connectJavaSourceFolder != null
-                    && builder.connectJavaSourceFolder.exists()
-                    && builder.connectGeneratedOpenApiFile != null) {
-                addConnectServicesTasks(builder);
+            if (builder.fusionJavaSourceFolder != null
+                    && builder.fusionJavaSourceFolder.exists()
+                    && builder.fusionGeneratedOpenAPIFile != null) {
+                addFusionServicesTasks(builder);
             }
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,
@@ -170,7 +172,7 @@ public class NodeTasks implements FallibleCommand {
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useDeprecatedV14Bootstrapping,
                     builder.flowResourcesFolder, pwaConfiguration,
-                    builder.connectClientTsApiFolder, builder.buildDirectory));
+                    builder.fusionClientAPIFolder, builder.buildDirectory));
         }
 
         if (builder.enableImportsUpdate) {
@@ -184,11 +186,9 @@ public class NodeTasks implements FallibleCommand {
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),
-                    builder.frontendDirectory,
-                    builder.connectClientTsApiFolder));
+                    builder.frontendDirectory, builder.fusionClientAPIFolder));
         }
     }
-    // @formatter:on
 
     @Override
     public void execute() throws ExecutionFailedException {
@@ -212,19 +212,19 @@ public class NodeTasks implements FallibleCommand {
         commands.add(taskGenerateIndexTs);
     }
 
-    private void addConnectServicesTasks(Builder builder) {
+    private void addFusionServicesTasks(Builder builder) {
         Lookup lookup = builder.lookup;
         EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
                 .lookup(EndpointGeneratorTaskFactory.class);
 
         if (endpointGeneratorTaskFactory != null) {
-            TaskGenerateOpenApi taskGenerateOpenApi = endpointGeneratorTaskFactory
-                    .createTaskGenerateOpenApi(
-                            builder.connectApplicationProperties,
-                            builder.connectJavaSourceFolder,
+            TaskGenerateOpenAPI taskGenerateOpenAPI = endpointGeneratorTaskFactory
+                    .createTaskGenerateOpenAPI(
+                            builder.fusionApplicationProperties,
+                            builder.fusionJavaSourceFolder,
                             builder.classFinder.getClassLoader(),
-                            builder.connectGeneratedOpenApiFile);
-            commands.add(taskGenerateOpenApi);
+                            builder.fusionGeneratedOpenAPIFile);
+            commands.add(taskGenerateOpenAPI);
 
             if (builder.createMissingPackageJson
                     || builder.enablePackagesUpdate) {
@@ -236,14 +236,14 @@ public class NodeTasks implements FallibleCommand {
                 commands.add(taskUseFusionPackage);
             }
 
-            if (builder.connectClientTsApiFolder != null) {
-                TaskGenerateConnect taskGenerateConnectTs = endpointGeneratorTaskFactory
-                        .createTaskGenerateConnect(
-                                builder.connectApplicationProperties,
-                                builder.connectGeneratedOpenApiFile,
-                                builder.connectClientTsApiFolder,
+            if (builder.fusionClientAPIFolder != null) {
+                TaskGenerateFusion taskGenerateFusion = endpointGeneratorTaskFactory
+                        .createTaskGenerateFusion(
+                                builder.fusionApplicationProperties,
+                                builder.fusionGeneratedOpenAPIFile,
+                                builder.fusionClientAPIFolder,
                                 builder.frontendDirectory);
-                commands.add(taskGenerateConnectTs);
+                commands.add(taskGenerateFusion);
             }
         }
     }
@@ -332,15 +332,15 @@ public class NodeTasks implements FallibleCommand {
          */
         private final File npmFolder;
         private boolean cleanNpmFiles = false;
-        private File connectApplicationProperties;
-        private File connectClientTsApiFolder;
-        private File connectGeneratedOpenApiFile;
-        private File connectJavaSourceFolder;
         private boolean createMissingPackageJson = false;
         private boolean enableImportsUpdate = false;
         private boolean enablePackagesUpdate = false;
         private boolean enablePnpm;
         private File flowResourcesFolder = null;
+        private File fusionApplicationProperties;
+        private File fusionClientAPIFolder;
+        private File fusionGeneratedOpenAPIFile;
+        private File fusionJavaSourceFolder;
         private boolean generateEmbeddableWebComponents = true;
         private Set<File> jarFiles = null;
         private File localResourcesFolder = null;
@@ -602,58 +602,6 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
-         * Set application properties file for Spring project.
-         *
-         * @param applicationProperties
-         *            application properties file.
-         * @return this builder, for chaining
-         */
-        public Builder withConnectApplicationProperties(
-                File applicationProperties) {
-            this.connectApplicationProperties = applicationProperties;
-            return this;
-        }
-
-        /**
-         * Set the folder where Ts files should be generated.
-         *
-         * @param connectClientTsApiFolder
-         *            folder for Ts files in the frontend.
-         * @return the builder, for chaining
-         */
-        public Builder withConnectClientTsApiFolder(
-                File connectClientTsApiFolder) {
-            this.connectClientTsApiFolder = connectClientTsApiFolder;
-            return this;
-        }
-
-        /**
-         * Set output location for the generated OpenAPI file.
-         *
-         * @param generatedOpenApiFile
-         *            the generated output file.
-         * @return the builder, for chaining
-         */
-        public Builder withConnectGeneratedOpenApiJson(
-                File generatedOpenApiFile) {
-            this.connectGeneratedOpenApiFile = generatedOpenApiFile;
-            return this;
-        }
-
-        /**
-         * Set source paths that OpenAPI generator searches for endpoints.
-         *
-         * @param connectJavaSourceFolder
-         *            java source folder
-         * @return the builder, for chaining
-         */
-        public Builder withConnectJavaSourceFolder(
-                File connectJavaSourceFolder) {
-            this.connectJavaSourceFolder = connectJavaSourceFolder;
-            return this;
-        }
-
-        /**
          * Sets whether to collect and package
          * {@link com.vaadin.flow.component.WebComponentExporter} dependencies.
          *
@@ -679,6 +627,56 @@ public class NodeTasks implements FallibleCommand {
             this.flowResourcesFolder = flowResourcesFolder.isAbsolute()
                     ? flowResourcesFolder
                     : new File(npmFolder, flowResourcesFolder.getPath());
+            return this;
+        }
+
+        /**
+         * Set application properties file for Spring project.
+         *
+         * @param applicationProperties
+         *            application properties file.
+         * @return this builder, for chaining
+         */
+        public Builder withFusionApplicationProperties(
+                File applicationProperties) {
+            this.fusionApplicationProperties = applicationProperties;
+            return this;
+        }
+
+        /**
+         * Set the folder where Ts files should be generated.
+         *
+         * @param fusionClientTsApiFolder
+         *            folder for Ts files in the frontend.
+         * @return the builder, for chaining
+         */
+        public Builder withFusionClientAPIFolder(File fusionClientTsApiFolder) {
+            this.fusionClientAPIFolder = fusionClientTsApiFolder;
+            return this;
+        }
+
+        /**
+         * Set output location for the generated OpenAPI file.
+         *
+         * @param generatedOpenAPIFile
+         *            the generated output file.
+         * @return the builder, for chaining
+         */
+        public Builder withFusionGeneratedOpenAPIJson(
+                File generatedOpenAPIFile) {
+            this.fusionGeneratedOpenAPIFile = generatedOpenAPIFile;
+            return this;
+        }
+
+        /**
+         * Set source paths that OpenAPI generator searches for endpoints.
+         *
+         * @param fusionJavaSourceFolder
+         *            java source folder
+         * @return the builder, for chaining
+         */
+        public Builder withFusionJavaSourceFolder(File fusionJavaSourceFolder) {
+            this.fusionJavaSourceFolder = fusionJavaSourceFolder;
             return this;
         }
 

@@ -61,9 +61,9 @@ public class NodeTasksEndpointTest {
         builder = new Builder(mockLookup, dir, TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(false)
                 .withEmbeddableWebComponents(false)
-                .withConnectJavaSourceFolder(src)
-                .withConnectGeneratedOpenApiJson(json)
-                .withConnectClientTsApiFolder(new File(dir, "api"));
+                .withFusionJavaSourceFolder(src)
+                .withFusionGeneratedOpenAPIJson(json)
+                .withFusionClientAPIFolder(new File(dir, "api"));
     }
 
     @Test

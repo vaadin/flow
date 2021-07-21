@@ -106,10 +106,11 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
          * apiTemplateFiles map. as with models, add multiple entries with
          * different extensions for multiple files per class
          */
-        apiTemplateFiles.put("TypeScriptApiTemplate.mustache", Generator.TS);
-        modelTemplateFiles.put("EntityTemplate.mustache", Generator.TS);
+        apiTemplateFiles.put("TypeScriptApiTemplate.mustache",
+                MainGenerator.TS);
+        modelTemplateFiles.put("EntityTemplate.mustache", MainGenerator.TS);
         modelTemplateFiles.put("EntityModelTemplate.mustache",
-                Generator.MODEL_TS);
+                MainGenerator.MODEL_TS);
 
         /*
          * Template Location. This is the location which templates will be read
@@ -260,6 +261,7 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
      *
      * @return A string value for the help message
      */
+    @Override
     public String getHelp() {
         return "Generates a Vaadin endpoint wrappers.";
     }
@@ -270,6 +272,7 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
      *
      * @return the friendly name for the generator
      */
+    @Override
     public String getName() {
         return GENERATOR_NAME;
     }
@@ -299,7 +302,7 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
     public String getTypeDeclaration(Schema schema) {
         String optionalSuffix = "";
         if (GeneratorUtils.isTrue(schema.getNullable())) {
-            optionalSuffix = Generator.OPTIONAL_SUFFIX;
+            optionalSuffix = MainGenerator.OPTIONAL_SUFFIX;
         }
         if (schema instanceof ArraySchema) {
             ArraySchema arraySchema = (ArraySchema) schema;
@@ -524,7 +527,7 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
         } else if (PRIMITIVE_TYPE_NAME_PATTERN.matcher(name).find()) {
             name = GeneratorUtils.capitalize(name);
         }
-        return name + Generator.MODEL;
+        return name + MainGenerator.MODEL;
     }
 
     private Helper<String> getClassNameFromImportsHelper() {
@@ -534,7 +537,7 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
 
     private List<String> getConstrainsArguments(CodegenProperty property) {
         List<String> annotations = (List) property.getVendorExtensions()
-                .get(OpenApiObjectGenerator.CONSTRAINT_ANNOTATIONS);
+                .get(OpenAPIObjectGenerator.CONSTRAINT_ANNOTATIONS);
         if (annotations != null) {
             return annotations.stream()
                     .map(annotation -> String.format("new " + "%s", annotation))
@@ -550,7 +553,7 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
         }
         Map<String, String> paramDescription = (Map<String, String>) requestSchema
                 .getExtensions()
-                .get(OpenApiObjectGenerator.EXTENSION_VAADIN_CONNECT_PARAMETERS_DESCRIPTION);
+                .get(OpenAPIObjectGenerator.EXTENSION_VAADIN_CONNECT_PARAMETERS_DESCRIPTION);
         return paramDescription.getOrDefault(paramName, "");
     }
 
@@ -573,18 +576,18 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
             String arrayItemType = matcher.group(1);
 
             String variableName = arrayItemType
-                    .endsWith(Generator.OPTIONAL_SUFFIX)
+                    .endsWith(MainGenerator.OPTIONAL_SUFFIX)
                             ? arrayItemType.substring(0,
                                     arrayItemType.lastIndexOf(
-                                            Generator.OPTIONAL_SUFFIX))
+                                            MainGenerator.OPTIONAL_SUFFIX))
                             : arrayItemType;
-            return "Array" + Generator.MODEL + "<"
+            return "Array" + MainGenerator.MODEL + "<"
                     + getModelVariableType(variableName) + ", "
                     + getModelFullType(variableName) + ">";
         }
         matcher = MAPPED_TYPE_NAME_PATTERN.matcher(name);
         if (matcher.find()) {
-            return "Object" + Generator.MODEL + "<Readonly<Record<string, "
+            return "Object" + MainGenerator.MODEL + "<Readonly<Record<string, "
                     + getModelVariableType(matcher.group(1)) + ">>>";
         }
         return fixNameForModel(name);
@@ -606,7 +609,7 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
         if (matcher.find()) {
             String arrayTypeName = matcher.group(1);
             boolean arrayTypeOptional = arrayTypeName
-                    .endsWith(Generator.OPTIONAL_SUFFIX);
+                    .endsWith(MainGenerator.OPTIONAL_SUFFIX);
             arrayTypeName = removeOptionalSuffix(arrayTypeName);
             arguments.add(getModelVariableArguments(arrayTypeName,
                     arrayTypeOptional, Collections.emptyList()));
@@ -625,13 +628,14 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
         if (matcher.find()) {
             return matcher.group(1);
         }
-        return Generator.MODEL + "Type<" + getModelFullType(variableName) + ">";
+        return MainGenerator.MODEL + "Type<" + getModelFullType(variableName)
+                + ">";
     }
 
     private Helper<String> getMultipleLinesHelper() {
         return (context, options) -> {
             Options.Buffer buffer = options.buffer();
-            String[] lines = context.split("\n");
+            String[] lines = context.split("\n", -1);
             Context parent = options.context;
             Template fn = options.fn;
             for (String line : lines) {
@@ -806,9 +810,9 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
     }
 
     private String removeOptionalSuffix(String name) {
-        if (name.endsWith(Generator.OPTIONAL_SUFFIX)) {
+        if (name.endsWith(MainGenerator.OPTIONAL_SUFFIX)) {
             return name.substring(0,
-                    name.length() - Generator.OPTIONAL_SUFFIX.length());
+                    name.length() - MainGenerator.OPTIONAL_SUFFIX.length());
         }
         return name;
     }
@@ -827,9 +831,9 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
 
     private void setVaadinFilePath(Map<String, Object> objs, Tag tag) {
         if (tag.getExtensions() != null && tag.getExtensions().get(
-                OpenApiObjectGenerator.EXTENSION_VAADIN_FILE_PATH) != null) {
+                OpenAPIObjectGenerator.EXTENSION_VAADIN_FILE_PATH) != null) {
             objs.put(VAADIN_FILE_PATH, tag.getExtensions()
-                    .get(OpenApiObjectGenerator.EXTENSION_VAADIN_FILE_PATH));
+                    .get(OpenAPIObjectGenerator.EXTENSION_VAADIN_FILE_PATH));
         }
     }
 
@@ -913,7 +917,7 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
         @Override
         public File writeToFile(String filename, String contents)
                 throws IOException {
-            if (filename.endsWith(Generator.TS)) {
+            if (filename.endsWith(MainGenerator.TS)) {
                 return super.writeToFile(filename, contents);
             }
             return null;

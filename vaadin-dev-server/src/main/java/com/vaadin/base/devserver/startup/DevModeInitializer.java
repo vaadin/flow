@@ -337,11 +337,11 @@ public class DevModeInitializer
                                     DEFAULT_CONNECT_OPENAPI_JSON_FILE)
                                     .toString());
 
-            builder.withConnectJavaSourceFolder(
+            builder.withFusionJavaSourceFolder(
                     new File(connectJavaSourceFolder))
-                    .withConnectApplicationProperties(
+                    .withFusionApplicationProperties(
                             new File(connectApplicationProperties))
-                    .withConnectGeneratedOpenApiJson(
+                    .withFusionGeneratedOpenAPIJson(
                             new File(connectOpenApiJsonFile));
         }
 
@@ -366,7 +366,7 @@ public class DevModeInitializer
         boolean useHomeNodeExec = config.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
 
-        String connectTsFolder = config.getStringProperty(
+        String fusionClientAPIFolder = config.getStringProperty(
                 PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
                 Paths.get(baseDir, DEFAULT_PROJECT_FRONTEND_GENERATED_DIR)
                         .toString());
@@ -375,7 +375,7 @@ public class DevModeInitializer
         NodeTasks tasks = builder.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
                 .withFlowResourcesFolder(flowResourcesFolder)
-                .withConnectClientTsApiFolder(new File(connectTsFolder))
+                .withFusionClientAPIFolder(new File(fusionClientAPIFolder))
                 .copyResources(frontendLocations)
                 .copyLocalResources(new File(baseDir,
                         Constants.LOCAL_FRONTEND_RESOURCES_PATH))

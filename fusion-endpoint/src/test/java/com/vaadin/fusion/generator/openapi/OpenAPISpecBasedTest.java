@@ -31,15 +31,15 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
-import com.vaadin.fusion.generator.ConnectClientGenerator;
-import com.vaadin.fusion.generator.Generator;
+import com.vaadin.fusion.generator.ClientAPIGenerator;
+import com.vaadin.fusion.generator.MainGenerator;
 import com.vaadin.fusion.utils.TestUtils;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class OpenApiSpecBasedTests {
+public class OpenAPISpecBasedTest {
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
     @Rule
@@ -52,7 +52,7 @@ public class OpenApiSpecBasedTests {
     @Test
     public void should_GenerateDefaultClass_When_OperationHasNoTag()
             throws Exception {
-        new Generator(getResourcePath("no-tag-operation.json"),
+        new MainGenerator(getResourcePath("no-tag-operation.json"),
                 outputDirectory.getRoot()).start();
         String actualTs = readFileInTempDir("Default.ts");
         String expectedFirstClass = TestUtils.readResource(
@@ -63,7 +63,7 @@ public class OpenApiSpecBasedTests {
     @Test
     public void should_GenerateNoTsDoc_When_JsonHasNoTsDocOperation()
             throws Exception {
-        new Generator(getResourcePath("no-tsdoc-operation.json"),
+        new MainGenerator(getResourcePath("no-tsdoc-operation.json"),
                 outputDirectory.getRoot()).start();
 
         String actual = readFileInTempDir("GeneratorTestClass.ts");
@@ -76,7 +76,7 @@ public class OpenApiSpecBasedTests {
     @Test
     public void should_GeneratePartlyTsDoc_When_JsonHasParametersAndReturnType()
             throws Exception {
-        new Generator(getResourcePath("parameters-and-return-tsdoc.json"),
+        new MainGenerator(getResourcePath("parameters-and-return-tsdoc.json"),
                 outputDirectory.getRoot()).start();
 
         String actual = readFileInTempDir("GeneratorTestClass.ts");
@@ -90,7 +90,7 @@ public class OpenApiSpecBasedTests {
     @Test
     public void should_GenerateTwoClasses_When_OperationContainsTwoTags()
             throws Exception {
-        new Generator(getResourcePath("multiple-tags-operation.json"),
+        new MainGenerator(getResourcePath("multiple-tags-operation.json"),
                 outputDirectory.getRoot()).start();
         Path firstOutputFilePath = outputDirectory.getRoot().toPath()
                 .resolve("MyFirstTsClass.ts");
@@ -121,19 +121,19 @@ public class OpenApiSpecBasedTests {
 
         assertTrue(output.exists());
 
-        new Generator(new File(fileName), output).start();
+        new MainGenerator(new File(fileName), output).start();
 
         assertFalse(output.exists());
     }
 
     @Test
     public void should_RemoveStaleGeneratedFiles_When_OpenAPIInputChanges() {
-        ConnectClientGenerator connectClientGenerator = new ConnectClientGenerator(
+        ClientAPIGenerator clientAPIGenerator = new ClientAPIGenerator(
                 outputDirectory.getRoot().toPath(), new Properties());
         // First generating round
-        connectClientGenerator.generate();
+        clientAPIGenerator.generate();
 
-        new Generator(
+        new MainGenerator(
                 getResourcePath(
                         "esmodule-generator-TwoEndpointsThreeMethods.json"),
                 outputDirectory.getRoot()).start();
@@ -142,7 +142,7 @@ public class OpenApiSpecBasedTests {
                 "Expect to have 2 generated TS files and a connect-client.default.ts",
                 3, outputDirectory.getRoot().list().length);
         // Second generating round
-        new Generator(new File(getClass()
+        new MainGenerator(new File(getClass()
                 .getResource("esmodule-generator-OneEndpointOneMethod.json")
                 .getPath()), outputDirectory.getRoot()).start();
         assertEquals(
@@ -155,7 +155,7 @@ public class OpenApiSpecBasedTests {
     @Test
     public void should_RenderMultipleLinesHTMLCorrectly_When_JavaDocHasMultipleLines()
             throws Exception {
-        new Generator(getResourcePath("multiplelines-description.json"),
+        new MainGenerator(getResourcePath("multiplelines-description.json"),
                 outputDirectory.getRoot()).start();
         String actualTs = readFileInTempDir("GeneratorTestClass.ts");
         String expectedTs = TestUtils.readResource(getClass()
@@ -170,7 +170,7 @@ public class OpenApiSpecBasedTests {
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage(fileName);
 
-        new Generator(getResourcePath(fileName), outputDirectory.getRoot())
+        new MainGenerator(getResourcePath(fileName), outputDirectory.getRoot())
                 .start();
     }
 
@@ -179,7 +179,8 @@ public class OpenApiSpecBasedTests {
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage("description is missing");
 
-        new Generator(getResourcePath("no-description-response-openapi.json"),
+        new MainGenerator(
+                getResourcePath("no-description-response-openapi.json"),
                 outputDirectory.getRoot()).start();
     }
 
@@ -188,7 +189,7 @@ public class OpenApiSpecBasedTests {
         expectedException.expect(RuntimeException.class);
         expectedException.expectMessage("Could not process operation");
 
-        new Generator(getResourcePath("get-operation-openapi.json"),
+        new MainGenerator(getResourcePath("get-operation-openapi.json"),
                 outputDirectory.getRoot()).start();
     }
 
@@ -199,7 +200,7 @@ public class OpenApiSpecBasedTests {
         expectedException.expect(RuntimeException.class);
         expectedException.expectMessage("Could not process operation");
 
-        new Generator(getResourcePath("wrong-input-path-openapi.json"),
+        new MainGenerator(getResourcePath("wrong-input-path-openapi.json"),
                 outputDirectory.getRoot()).start();
     }
 
