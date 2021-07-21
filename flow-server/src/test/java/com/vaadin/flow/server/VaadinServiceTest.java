@@ -164,24 +164,6 @@ public class VaadinServiceTest {
     }
 
     @Test
-    public void fireSessionDestroy_sessionStateIsSetToClosed()
-            throws ServletException, ServiceException {
-        VaadinService service = createService();
-
-        AtomicReference<VaadinSessionState> stateRef = new AtomicReference<>();
-        MockVaadinSession vaadinSession = new MockVaadinSession(service) {
-            @Override
-            protected void setState(VaadinSessionState state) {
-                stateRef.set(state);
-            }
-        };
-
-        service.fireSessionDestroy(vaadinSession);
-
-        Assert.assertEquals(VaadinSessionState.CLOSED, stateRef.get());
-    }
-
-    @Test
     public void captionIsSetToACriticalNotification() {
         String notification = createCriticalNotification("foobar", "message",
                 "details", "url");
@@ -433,6 +415,46 @@ public class VaadinServiceTest {
         Assert.assertTrue(set.contains(PwaHandler.class));
         Assert.assertTrue(set.contains(WebComponentProvider.class));
         Assert.assertTrue(set.contains(WebComponentBootstrapHandler.class));
+    }
+
+    @Test
+    public void fireSessionDestroy_sessionStateIsSetToClosed()
+            throws ServletException, ServiceException {
+        VaadinService service = createService();
+
+        AtomicReference<VaadinSessionState> stateRef = new AtomicReference<>();
+        MockVaadinSession vaadinSession = new MockVaadinSession(service) {
+            @Override
+            protected void setState(VaadinSessionState state) {
+                stateRef.set(state);
+            }
+        };
+
+        service.fireSessionDestroy(vaadinSession);
+
+        Assert.assertEquals(VaadinSessionState.CLOSED, stateRef.get());
+    }
+
+    @Test
+    public void removeFromHttpSession_setExplicitSessionCloseAttribute()
+            throws ServiceException {
+        WrappedSession httpSession = Mockito.mock(WrappedSession.class);
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        VaadinService service = new MockVaadinServletService() {
+
+            @Override
+            protected VaadinSession readFromHttpSession(
+                    WrappedSession wrappedSession) {
+                return session;
+            }
+        };
+
+        service.init();
+
+        service.removeFromHttpSession(httpSession);
+
+        Mockito.verify(session)
+                .setAttribute(VaadinSession.CLOSE_SESSION_EXPLICITLY, true);
     }
 
     private InstantiatorFactory createInstantiatorFactory(Lookup lookup) {
