@@ -35,8 +35,7 @@ import static org.junit.Assert.assertTrue;
 
 public class ScannerDependenciesTest {
 
-    static FrontendDependencies getFrontendDependencies(Class<?>... classes)
-            throws Exception {
+    static FrontendDependencies getFrontendDependencies(Class<?>... classes) {
         FrontendDependencies frontendDependencies = new FrontendDependencies(
                 new DefaultClassFinder(new HashSet<>(
                         new ArrayList<>(Arrays.asList(classes)))));
@@ -44,8 +43,7 @@ public class ScannerDependenciesTest {
     }
 
     @Test
-    public void visitRouteEntryPoint_ExpectToAlsoVisitImplementedInterface()
-            throws Exception {
+    public void visitRouteEntryPoint_ExpectToAlsoVisitImplementedInterface() {
         FrontendDependencies deps = getFrontendDependencies(
                 RouteInterfaceComponent.class);
 
@@ -98,7 +96,7 @@ public class ScannerDependenciesTest {
     }
 
     @Test
-    public void should_visitNpmPakageAnnotations() throws Exception {
+    public void should_visitNpmPakageAnnotations() {
         FrontendDependencies deps = getFrontendDependencies(Component1.class,
                 Component2.class);
         assertEquals(4, deps.getPackages().size());
@@ -115,7 +113,7 @@ public class ScannerDependenciesTest {
     }
 
     @Test
-    public void should_visitSuperNpmPakageAnnotations() throws Exception {
+    public void should_visitSuperNpmPakageAnnotations() {
         FrontendDependencies deps = getFrontendDependencies(
                 ScannerTestComponents.ComponentExtending.class);
         assertEquals(1, deps.getPackages().size());
@@ -127,14 +125,13 @@ public class ScannerDependenciesTest {
     }
 
     @Test
-    public void when_MultipleVersions_should_returnFirstVisitedOne()
-            throws Exception {
+    public void when_MultipleVersions_should_returnFirstVisitedOne() {
         FrontendDependencies deps = getFrontendDependencies(Component0.class);
         assertEquals("=2.1.0", deps.getPackages().get("@vaadin/component-0"));
     }
 
     @Test
-    public void should_summarize_when_MultipleViews() throws Exception {
+    public void should_summarize_when_MultipleViews() {
         FrontendDependencies deps = getFrontendDependencies(SecondView.class,
                 FirstView.class);
 
@@ -146,13 +143,13 @@ public class ScannerDependenciesTest {
     }
 
     @Test
-    public void should_visit_Constructor() throws Exception {
+    public void should_visit_Constructor() {
         FrontendDependencies deps = getFrontendDependencies(SecondView.class);
         assertTrue(deps.getModules().contains("./component-3.js"));
     }
 
     @Test
-    public void should_resolveComponentFactories() throws Exception {
+    public void should_resolveComponentFactories() {
         FrontendDependencies deps = getFrontendDependencies(ThirdView.class);
 
         assertTrue(3 <= deps.getModules().size());
@@ -164,26 +161,26 @@ public class ScannerDependenciesTest {
     }
 
     @Test
-    public void should_notVisitNonAnnotatredClasses() throws Exception {
+    public void should_notVisitNonAnnotatredClasses() {
         FrontendDependencies deps = getFrontendDependencies(
                 UnAnnotatedClass.class);
-        assertEquals(0, deps.getEndPoints().size());
-        assertEquals(0, deps.getClasses().size());
+        assertEquals("Only UI should be found", 1, deps.getEndPoints().size());
     }
 
     @Test
-    public void should_cacheVisitedClasses() throws Exception {
+    public void should_cacheVisitedClasses() {
         FrontendDependencies deps = getFrontendDependencies(
                 RoutedClassWithoutAnnotations.class);
-        assertEquals(1, deps.getEndPoints().size());
-        assertEquals(2, deps.getClasses().size());
+        assertEquals(2, deps.getEndPoints().size());
+        assertTrue("Should cache visited classes",
+                deps.getClasses().size() > 2);
         assertTrue(deps.getClasses().contains(Route.class.getName()));
         assertTrue(deps.getClasses()
                 .contains(RoutedClassWithoutAnnotations.class.getName()));
     }
 
     @Test
-    public void should_cacheSuperVisitedClasses() throws Exception {
+    public void should_cacheSuperVisitedClasses() {
         List<Class<?>> visited = Arrays.asList(Route.class, NoTheme.class,
                 JsModule.class, RoutedClassWithAnnotations.class,
                 RoutedClassWithoutAnnotations.class, RoutedClass.class,
@@ -191,8 +188,9 @@ public class ScannerDependenciesTest {
 
         // Visit a route that extends an extra routed class
         FrontendDependencies deps = getFrontendDependencies(RoutedClass.class);
-        assertEquals(1, deps.getEndPoints().size());
-        assertEquals(8, deps.getClasses().size());
+        assertEquals("Should find RoutedClass and UI", 2,
+                deps.getEndPoints().size());
+        int visitedClassesAmount = deps.getClasses().size();
         for (Class<?> clz : visited) {
             assertTrue("should cache " + clz.getName(),
                     deps.getClasses().contains(clz.getName()));
@@ -203,8 +201,9 @@ public class ScannerDependenciesTest {
         // be the same, but number of entry points increases
         deps = getFrontendDependencies(RoutedClassWithoutAnnotations.class,
                 RoutedClass.class);
-        assertEquals(2, deps.getEndPoints().size());
-        assertEquals(8, deps.getClasses().size());
+        assertEquals("Should contain UI, RoutedClass and its parent", 3,
+                deps.getEndPoints().size());
+        assertEquals(visitedClassesAmount, deps.getClasses().size());
         for (Class<?> clz : visited) {
             assertTrue("should cache " + clz.getName(),
                     deps.getClasses().contains(clz.getName()));
@@ -212,7 +211,7 @@ public class ScannerDependenciesTest {
     }
 
     @Test // #5509
-    public void should_visitDynamicRoute() throws Exception {
+    public void should_visitDynamicRoute() {
         FrontendDependencies deps = getFrontendDependencies(
                 RouteWithNestedDynamicRouteClass.class);
         assertTrue(3 <= deps.getModules().size());
@@ -222,7 +221,7 @@ public class ScannerDependenciesTest {
     }
 
     @Test // #5658
-    public void should_visitFactoryBeans() throws Exception {
+    public void should_visitFactoryBeans() {
         FrontendDependencies deps = getFrontendDependencies(
                 RouteWithViewBean.class);
         assertTrue(1 <= deps.getModules().size());
@@ -230,7 +229,7 @@ public class ScannerDependenciesTest {
     }
 
     @Test
-    public void should_visitServices() throws Exception {
+    public void should_visitServices() {
         FrontendDependencies deps = getFrontendDependencies(
                 RouteWithService.class);
         assertTrue(2 <= deps.getModules().size());

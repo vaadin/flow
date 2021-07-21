@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -284,12 +285,21 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 getFinder().loadClass(HasErrorParameter.class.getName()))) {
             collectEndpoints(errorParameters);
         }
+
+        // UI should always be collected as it contains 'ConnectionIndicator.js'
+        // which else goes into fallback making it always load.
+        collectEndpoints(UI.class);
     }
 
     private void collectEndpoints(Class<?> entry) throws IOException {
         String className = entry.getName();
-        EndPointData data = new EndPointData(entry);
-        endPoints.put(className, visitClass(className, data, false));
+        if (!endPoints.containsKey(className)) {
+            EndPointData data = new EndPointData(entry);
+            endPoints.put(className, visitClass(className, data, false));
+        } else {
+            LoggerFactory.getLogger(FrontendDependencies.class).trace(
+                    "Entry for class {} has already been visited.", className);
+        }
     }
 
     /*
@@ -525,25 +535,37 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         for (Class<?> exporter : exporterClasses) {
             String exporterClassName = exporter.getName();
-            EndPointData exporterData = new EndPointData(exporter);
-            exportedPoints.put(exporterClassName,
-                    visitClass(exporterClassName, exporterData, false));
+            if (!endPoints.containsKey(exporterClassName)) {
+                EndPointData exporterData = new EndPointData(exporter);
+                exportedPoints.put(exporterClassName,
+                        visitClass(exporterClassName, exporterData, false));
+            }
 
             if (!Modifier.isAbstract(exporter.getModifiers())) {
-                Class<? extends Component> componentClass = (Class<? extends Component>) ReflectTools
-                        .getGenericInterfaceType(exporter, exporterClass);
-                if (componentClass != null
-                        && !componentClass.isAnnotationPresent(routeClass)) {
-                    String componentClassName = componentClass.getName();
-                    EndPointData configurationData = new EndPointData(
-                            componentClass);
-                    exportedPoints.put(componentClassName, visitClass(
-                            componentClassName, configurationData, false));
-                }
+                visitComponenClass(routeClass, exporterClass, exportedPoints,
+                        exporter);
             }
         }
 
         endPoints.putAll(exportedPoints);
+    }
+
+    private void visitComponenClass(Class<? extends Annotation> routeClass,
+            Class<?> exporterClass,
+            HashMap<String, EndPointData> exportedPoints, Class<?> exporter)
+            throws IOException {
+        Class<? extends Component> componentClass = (Class<? extends Component>) ReflectTools
+                .getGenericInterfaceType(exporter, exporterClass);
+        if (componentClass != null
+                && !componentClass.isAnnotationPresent(routeClass)) {
+            String componentClassName = componentClass.getName();
+            if (endPoints.containsKey(componentClassName)) {
+                return;
+            }
+            EndPointData configurationData = new EndPointData(componentClass);
+            exportedPoints.put(componentClassName,
+                    visitClass(componentClassName, configurationData, false));
+        }
     }
 
     /**

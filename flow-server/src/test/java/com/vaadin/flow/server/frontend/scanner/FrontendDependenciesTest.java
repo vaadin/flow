@@ -30,11 +30,18 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.ErrorComponent;
@@ -83,6 +90,9 @@ public class FrontendDependenciesTest {
         Mockito.doAnswer(invocation -> FrontendDependenciesTest.class
                 .getClassLoader().getResource(invocation.getArgument(0)))
                 .when(classFinder).getResource(Mockito.anyString());
+
+        Mockito.when(classFinder.loadClass(UI.class.getName()))
+                .thenReturn((Class) UI.class);
     }
 
     @Test
@@ -111,7 +121,8 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
 
-        Assert.assertEquals(1, dependencies.getEndPoints().size());
+        Assert.assertEquals("UI and AppShell should be found", 2,
+                dependencies.getEndPoints().size());
 
         AbstractTheme theme = dependencies.getTheme();
         Assert.assertNotNull("Theme not found in endpoint", theme);
@@ -271,6 +282,57 @@ public class FrontendDependenciesTest {
         Assert.assertNotNull(dependencies.getThemeDefinition());
     }
 
+    @Test // #9861
+    public void collectEndpoints_uiIsAlwaysCollected() {
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false);
+
+        Assert.assertEquals("UI should be visited found", 1,
+                dependencies.getEndPoints().size());
+    }
+
+    @Test // #9861
+    public void classInMultipleEndpoints_collectEndpointsNotOverrideInitial() {
+        // Reference found through first endpoint
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(Collections.singleton(TestRoute.class));
+        // Reference found through second endpoint, should not clear
+        Mockito.when(classFinder.getSubTypesOf(HasErrorParameter.class))
+                .thenReturn(Collections.singleton(TestRoute.class));
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false);
+        List<String> modules = dependencies.getModules();
+
+        Assert.assertEquals("Should contain UI and Referenced modules", 2,
+                modules.size());
+        Assert.assertTrue(modules.contains("reference.js"));
+    }
+
+    @Test // #9861
+    public void visitedExporter_previousEndpointsNotOverridden()
+            throws InstantiationException, IllegalAccessException {
+
+        FakeLumo.class.newInstance();
+        // Reference found through first endpoint
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(Collections.singleton(ReferenceExporter.class));
+        // Re-visit through exporter.
+        Mockito.when(classFinder.getSubTypesOf(WebComponentExporter.class))
+                .thenReturn(Stream.of(ReferenceExporter.class)
+                        .collect(Collectors.toSet()));
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, true);
+
+        List<String> modules = dependencies.getModules();
+
+        Assert.assertEquals(3, dependencies.getEndPoints().size());
+        Assert.assertEquals("Should contain UI and Referenced modules", 2,
+                modules.size());
+        Assert.assertTrue(modules.contains("reference.js"));
+    }
+
     public static class MyComponent extends Component {
     }
 
@@ -311,4 +373,41 @@ public class FrontendDependenciesTest {
     @Theme(value = "my-theme", themeClass = FakeLumo.class)
     public static class FaultyThemeAnnotation implements AppShellConfigurator {
     }
+
+    @JsModule("reference.js")
+    @Tag("div")
+    public static class Referenced extends Component {
+    }
+
+    @Route("reference")
+    public static class ReferenceExporter
+            extends WebComponentExporter<MyComponent> {
+        public ReferenceExporter() {
+            super("tag-tag");
+        }
+
+        @Override
+        protected void configureInstance(WebComponent<MyComponent> webComponent,
+                MyComponent component) {
+            Referenced ref = new Referenced();
+        }
+    }
+
+    @Route("reference")
+    @Tag("div")
+    public static class TestRoute extends Component
+            implements HasErrorParameter<NotFoundException> {
+        Referenced ref;
+
+        public TestRoute() {
+            ref = new Referenced();
+        }
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<NotFoundException> parameter) {
+            return 0;
+        }
+    }
+
 }
