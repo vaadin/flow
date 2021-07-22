@@ -808,6 +808,13 @@ export class VaadinDevmodeGizmo extends LitElement {
 
   showNotification(type: MessageType, message: string, details?: string, link?: string, persistentId?: string) {
     if (persistentId === undefined || !VaadinDevmodeGizmo.notificationDismissed(persistentId!)) {
+      // Do not open persistent message if another is already visible with the same persistentId
+      const matchingVisibleNotifications = this.notifications
+        .filter((notification) => notification.persistentId === persistentId)
+        .filter((notification) => !notification.deleted);
+      if (matchingVisibleNotifications.length > 0) {
+        return;
+      }
       const id = this.nextMessageId;
       this.nextMessageId += 1;
       this.notifications.push({
