@@ -1,7 +1,7 @@
 import { css, customElement, html, LitElement, property } from 'lit-element';
 
 import * as appEndpoint from './generated/AppEndpoint';
-import {AppEndpoint} from "./generated/AppEndpoint";
+import {AppEndpoint} from "./generated/endpoints";
 
 @customElement('main-view')
 export class MainView extends LitElement {

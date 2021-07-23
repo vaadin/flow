@@ -2,7 +2,7 @@ import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import * as appEndpoint from '../generated/AppEndpoint';
 import * as packagePrivateEndpoint from '../generated/PackagePrivateEndpoint';
-import {AppEndpoint} from "../generated/AppEndpoint";
+import {AppEndpoint} from "../generated/endpoints";
 
 class TestComponent extends PolymerElement {
   static get template() {
