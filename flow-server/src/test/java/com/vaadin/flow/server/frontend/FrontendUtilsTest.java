@@ -21,6 +21,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -34,6 +36,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+import org.slf4j.impl.SimpleLogger;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
@@ -107,22 +110,46 @@ public class FrontendUtilsTest {
 
     @Test
     public void validateLargerThan_logsForSlightlyOldVersion()
-            throws UnsupportedEncodingException {
-        PrintStream orgErr = System.err;
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        System.setErr(new PrintStream(out));
+            throws Exception {
+        File tmpRoot = tmpDir.getRoot();
+
+        // Use a file for logs so as tests can assert the warnings shown to the
+        // user.
+        File loggerFile = new File(tmpRoot, "test.log");
+        loggerFile.createNewFile();
+        // Setting a system property we make SimpleLogger to output to a file
+        System.setProperty(SimpleLogger.LOG_FILE_KEY,
+                loggerFile.getAbsolutePath());
+        // re-init logger to get new configuration
+        initLogger();
         try {
             FrontendUtils.validateToolVersion("test",
                     new FrontendVersion(9, 0, 0), new FrontendVersion(10, 0),
                     new FrontendVersion(8, 0));
-            String logged = out.toString("utf-8")
+            assertTrue(loggerFile.exists());
+
+            String output = FileUtils
+                    .readFileToString(loggerFile, StandardCharsets.UTF_8)
                     // fix for windows
                     .replace("\r", "");
-            Assert.assertTrue(logged.contains(
-                    "Your installed 'test' version (9.0.0) is not supported but should still work. Supported versions are 10.0+\n"));
+            Assert.assertTrue(
+                    "Error didn't contain expected output. Error output:\n\n"
+                            + output,
+                    output.contains(
+                            "Your installed 'test' version (9.0.0) is not supported but should still work. Supported versions are 10.0+\n"));
         } finally {
-            System.setErr(orgErr);
+            // re-init logger to reset to default
+            System.clearProperty(SimpleLogger.LOG_FILE_KEY);
+            initLogger();
         }
+    }
+
+    private void initLogger() throws NoSuchMethodException,
+            InvocationTargetException, IllegalAccessException {
+        // init method is protected
+        Method method = SimpleLogger.class.getDeclaredMethod("init");
+        method.setAccessible(true);
+        method.invoke(null);
     }
 
     @Test
