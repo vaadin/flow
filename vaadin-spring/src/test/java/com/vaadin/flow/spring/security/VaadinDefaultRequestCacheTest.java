@@ -9,8 +9,8 @@ import javax.servlet.http.HttpServletResponse;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.fusion.Endpoint;
 import com.vaadin.fusion.EndpointRegistry;
-import com.vaadin.fusion.VaadinConnectControllerConfiguration;
-import com.vaadin.fusion.VaadinEndpointProperties;
+import com.vaadin.fusion.FusionControllerConfiguration;
+import com.vaadin.fusion.FusionEndpointProperties;
 import com.vaadin.flow.spring.SpringBootAutoConfiguration;
 import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 
@@ -24,8 +24,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { VaadinEndpointProperties.class })
-@ContextConfiguration(classes = { VaadinConnectControllerConfiguration.class,
+@SpringBootTest(classes = { FusionEndpointProperties.class })
+@ContextConfiguration(classes = { FusionControllerConfiguration.class,
         SpringBootAutoConfiguration.class,
         SpringSecurityAutoConfiguration.class })
 public class VaadinDefaultRequestCacheTest {
