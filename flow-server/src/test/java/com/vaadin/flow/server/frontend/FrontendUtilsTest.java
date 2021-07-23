@@ -15,11 +15,9 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -45,6 +43,7 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonException;
+
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
@@ -61,7 +60,8 @@ public class FrontendUtilsTest {
 
     static {
         try {
-            CACHE_KEY = Class.forName("com.vaadin.flow.server.frontend.FrontendUtils$Stats");
+            CACHE_KEY = Class.forName(
+                    "com.vaadin.flow.server.frontend.FrontendUtils$Stats");
         } catch (ClassNotFoundException e) {
             Assert.fail("Could not access cache key for stats.json!");
         }
@@ -101,23 +101,10 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void validateLargerThan_logsForSlightlyOldVersion()
+    public void validateLargerThan_passesForSlightlyOldVersion()
             throws UnsupportedEncodingException {
-        PrintStream orgErr = System.err;
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        System.setErr(new PrintStream(out));
-        try {
-            FrontendUtils.validateToolVersion("test",
-                    new FrontendVersion(9, 0, 0), new FrontendVersion(10, 0),
-                    new FrontendVersion(8, 0));
-            String logged = out.toString("utf-8")
-                    // fix for windows
-                    .replace("\r", "");
-            Assert.assertTrue(logged.contains(
-                    "Your installed 'test' version (9.0.0) is not supported but should still work. Supported versions are 10.0+\n"));
-        } finally {
-            System.setErr(orgErr);
-        }
+        FrontendUtils.validateToolVersion("test", new FrontendVersion(9, 0, 0),
+                new FrontendVersion(10, 0), new FrontendVersion(8, 0));
     }
 
     @Test
