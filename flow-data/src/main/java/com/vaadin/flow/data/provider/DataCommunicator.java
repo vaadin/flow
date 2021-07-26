@@ -1013,14 +1013,16 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void handleAttach() {
-        dataProviderUpdateRegistration = getDataProvider()
-                .addDataProviderListener(event -> {
-                    if (event instanceof DataRefreshEvent) {
-                        handleDataRefreshEvent((DataRefreshEvent<T>) event);
-                    } else {
-                        reset();
-                    }
-                });
+        if (dataProviderUpdateRegistration == null) {
+            dataProviderUpdateRegistration = getDataProvider()
+                    .addDataProviderListener(event -> {
+                        if (event instanceof DataRefreshEvent) {
+                            handleDataRefreshEvent((DataRefreshEvent<T>) event);
+                        } else {
+                            reset();
+                        }
+                    });
+        }
 
         // Ensure the initialize check is done
         requestFlush();
