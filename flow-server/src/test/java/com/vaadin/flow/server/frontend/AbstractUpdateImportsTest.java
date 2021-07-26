@@ -20,11 +20,9 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -36,20 +34,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.mockito.internal.util.collections.Sets;
 import org.slf4j.Logger;
-import org.slf4j.impl.SimpleLogger;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -85,12 +78,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     private File generatedPath;
     private File frontendDirectory;
     private File nodeModulesPath;
-    private File loggerFile;
     private UpdateImports updater;
 
-    private boolean useMockLog;
-
-    private Logger logger = Mockito.mock(Logger.class);
+    private MockLogger logger;
 
     private static final String ERROR_MSG = "foo-bar-baz";
 
@@ -156,13 +146,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         @Override
         protected Logger getLogger() {
-            if (useMockLog) {
-                return logger;
-            } else {
-                NodeUpdater updater = Mockito.mock(NodeUpdater.class);
-                Mockito.doCallRealMethod().when(updater).log();
-                return updater.log();
-            }
+            return logger;
         }
 
         @Override
@@ -175,15 +159,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     public void setup() throws Exception {
         tmpRoot = temporaryFolder.getRoot();
 
-        // Use a file for logs so as tests can assert the warnings shown to the
-        // user.
-        loggerFile = new File(tmpRoot, "test.log");
-        loggerFile.createNewFile();
-        // Setting a system property we make SimpleLogger to output to a file
-        System.setProperty(SimpleLogger.LOG_FILE_KEY,
-                loggerFile.getAbsolutePath());
-        // re-init logger to get new configuration
-        initLogger();
+        logger = new MockLogger();
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
@@ -200,22 +176,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 FLOW_NPM_PACKAGE_NAME + "ExampleConnector.js").exists());
     }
 
-    @After
-    public void tearDown() throws Exception {
-        // re-init logger to reset to default
-        System.clearProperty(SimpleLogger.LOG_FILE_KEY);
-        initLogger();
-    }
-
     protected abstract FrontendDependenciesScanner getScanner(
             ClassFinder finder);
-
-    private void initLogger() throws Exception, SecurityException {
-        // init method is protected
-        Method method = SimpleLogger.class.getDeclaredMethod("init");
-        method.setAccessible(true);
-        method.invoke(null);
-    }
 
     @Test
     public void importsFilesAreNotFound_throws() {
@@ -226,8 +188,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Test
     public void getModuleLines_npmPackagesDontExist_logExplanation() {
-        useMockLog = true;
-        Mockito.when(logger.isInfoEnabled()).thenReturn(true);
         boolean atLeastOneRemoved = false;
         for (String imprt : getExpectedImports()) {
             if (imprt.startsWith("@vaadin") && imprt.endsWith(".js")) {
@@ -239,10 +199,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         assertTrue(atLeastOneRemoved);
         updater.run();
 
-        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(logger).info(captor.capture());
-
-        Assert.assertThat(captor.getValue(),
+        Assert.assertThat(logger.getLogs(),
                 CoreMatchers.allOf(
                         CoreMatchers.containsString(
                                 "@vaadin/vaadin-lumo-styles/spacing.js"),
@@ -251,9 +208,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Test
     public void getModuleLines_oneFrontendDependencyDoesntExist_throwExceptionAndlogExplanation() {
-        useMockLog = true;
-        Mockito.when(logger.isInfoEnabled()).thenReturn(true);
-
         String fooFileName = "./foo.js";
         assertFileRemoved(fooFileName, frontendDirectory);
 
@@ -276,9 +230,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         updater = new UpdateImports(classFinder, getScanner(classFinder),
                 tmpRoot, null);
 
-        useMockLog = true;
-        Mockito.when(logger.isInfoEnabled()).thenReturn(true);
-
         Files.move(frontendDirectory.toPath(),
                 new File(tmpRoot, "_frontend").toPath());
 
@@ -295,9 +246,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Test
     public void getModuleLines_multipleFrontendDependencyDoesntExist_throwExceptionAndlogExplanation() {
-        useMockLog = true;
-        Mockito.when(logger.isInfoEnabled()).thenReturn(true);
-
         String localTemplateFileName = "./local-template.js";
         String fooFileName = "./foo.js";
 
@@ -390,12 +338,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                     updater.resultingLines.contains(line));
         }
 
-        assertTrue(loggerFile.exists());
-
-        String output = FileUtils
-                .readFileToString(loggerFile, StandardCharsets.UTF_8)
-                // fix for windows
-                .replace("\r", "");
+        String output = logger.getLogs();
 
         Assert.assertThat(output, CoreMatchers.containsString(
                 "Use the './' prefix for files in JAR files: 'ExampleConnector.js'"));
