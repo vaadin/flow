@@ -36,8 +36,6 @@ public class InvalidateHttpSessionIT extends ChromeBrowserTest {
         String invalidatedSessionId = findElement(
                 By.id("invalidated-session-id")).getText();
 
-        Assert.assertEquals(sessionId, invalidatedSessionId);
-
         sessionId = findElement(By.id("current-session-id")).getText();
         Assert.assertNotEquals(sessionId, invalidatedSessionId);
     }
