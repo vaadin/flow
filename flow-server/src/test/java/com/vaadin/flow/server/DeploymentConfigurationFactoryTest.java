@@ -331,6 +331,24 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
+    public void createInitParameters_valuesFromTokenAreIgnored_valuesAreTakenFromservletConfig()
+            throws Exception {
+        DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
+
+        VaadinConfig config = mockTokenFileViaContextParam(
+                "{ '" + SERVLET_PARAMETER_PRODUCTION_MODE + "': true}");
+        Mockito.when(config.getConfigParameterNames()).thenReturn(
+                Collections.enumeration(Arrays.asList(SERVLET_PARAMETER_PRODUCTION_MODE, FrontendUtils.PARAM_TOKEN_FILE)));
+        Mockito.when(config.getConfigParameter(SERVLET_PARAMETER_PRODUCTION_MODE)).thenReturn("false");
+
+        Properties parameters = factory.createInitParameters(Object.class,
+                config);
+
+        Assert.assertEquals("false", parameters.get(SERVLET_PARAMETER_PRODUCTION_MODE));
+        Assert.assertFalse(parameters.contains("bar"));
+    }
+
+    @Test
     public void createInitParameters_tokenFileIsSetViaContext_externalStatsUrlIsReadFromTokenFile_predefinedProperties()
             throws Exception {
         DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
