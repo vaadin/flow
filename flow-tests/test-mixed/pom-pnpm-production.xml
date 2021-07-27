@@ -55,7 +55,6 @@
                         <goals>
                             <goal>prepare-frontend</goal>
                             <goal>build-frontend</goal>
-                            <goal>lock-dev-deps</goal>
                         </goals>
                     </execution>
                 </executions>
