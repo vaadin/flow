@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -30,14 +29,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.internal.BuildUtil;
+import org.apache.commons.io.FileUtils;
+
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.shared.util.SharedUtil;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -59,8 +57,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @since 2.0
  */
 public class TaskRunNpmInstall implements FallibleCommand {
-
-    private static final String DEV_DEPENDENCIES_PATH = "dev.dependencies.path";
 
     private static final String MODULES_YAML = ".modules.yaml";
 
@@ -227,60 +223,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
         return versionsJson;
     }
 
-    /**
-     * Returns a path inside classpath to the file with dev dependencies locked.
-     * <p>
-     * The file may absent in the classapth.
-     *
-     * @return the path to the dev dependencies file in the classpath, not
-     *         {@code null}
-     */
-    protected String getDevDependenciesFilePath() {
-        return BuildUtil.getBuildProperty(DEV_DEPENDENCIES_PATH);
-    }
-
     private JsonObject getLockedVersions() throws IOException {
         assert enablePnpm;
-        JsonObject versionsJson = packageUpdater
-                .getPlatformPinnedDependencies();
-
-        String genDevDependenciesPath = getDevDependenciesFilePath();
-        if (genDevDependenciesPath == null) {
-            // #9345 - locking dev dependencies doesn't work for now
-            packageUpdater.log().debug(
-                    "Couldn't find dev dependencies file path from properties file. "
-                            + "Dev dependencies won't be locked");
-            return versionsJson;
-        }
-        JsonObject devDeps = readGeneratedDevDependencies(
-                genDevDependenciesPath);
-        if (devDeps == null) {
-            return versionsJson;
-        }
-        devDeps = new VersionsJsonFilter(packageUpdater.getPackageJson(),
-                NodeUpdater.DEV_DEPENDENCIES).getFilteredVersions(devDeps);
-        if (versionsJson == null) {
-            return devDeps;
-        }
-        for (String key : versionsJson.keys()) {
-            devDeps.put(key, versionsJson.getString(key));
-        }
-        return devDeps;
-    }
-
-    private JsonObject readGeneratedDevDependencies(String path)
-            throws IOException {
-        URL resource = classFinder.getResource(path);
-        if (resource == null) {
-            // #9345 - locking dev dependencies doesn't work for now
-            packageUpdater.log().debug("Couldn't find  dev dependencies file. "
-                    + "Dev dependencies won't be locked");
-            return null;
-        }
-        try (InputStream content = resource.openStream()) {
-            return Json
-                    .parse(IOUtils.toString(content, StandardCharsets.UTF_8));
-        }
+        return packageUpdater.getPlatformPinnedDependencies();
     }
 
     private boolean shouldRunNpmInstall() {
