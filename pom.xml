@@ -699,16 +699,9 @@
                 <module>flow-html-components</module>
                 <module>flow-test-util</module>
                 <module>flow-tests</module>
-                <module>flow-dev-deps</module>
                 <module>flow-server-production-mode</module>
                 <module>build-tools</module>
                 <module>flow-jandex</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>gen-dev-deps</id>
-            <modules>
-                <module>flow-dev-deps</module>
             </modules>
         </profile>
     </profiles>
