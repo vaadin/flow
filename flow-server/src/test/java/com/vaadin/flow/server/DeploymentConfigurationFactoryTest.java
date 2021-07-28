@@ -335,11 +335,12 @@ public class DeploymentConfigurationFactoryTest {
             throws Exception {
         DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
 
-        VaadinConfig config = mockTokenFileViaContextParam(
-                "{ '" + SERVLET_PARAMETER_PRODUCTION_MODE + "': true, "
-                + "'" + InitParameters.SERVLET_PARAMETER_ENABLE_PNPM + "': true,"
-                + "'" + Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN + "': 'baz',"
-                + "'" + InitParameters.BUILD_FOLDER + "': 'foo' } ");
+        VaadinConfig config = mockTokenFileViaContextParam("{ '"
+                + SERVLET_PARAMETER_PRODUCTION_MODE + "': true, " + "'"
+                + InitParameters.SERVLET_PARAMETER_ENABLE_PNPM + "': true,"
+                + "'" + Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN
+                + "': 'baz'," + "'" + InitParameters.BUILD_FOLDER
+                + "': 'foo' } ");
         Mockito.when(config.getConfigParameterNames())
                 .thenReturn(Collections.enumeration(
                         Arrays.asList(SERVLET_PARAMETER_PRODUCTION_MODE,
@@ -349,11 +350,10 @@ public class DeploymentConfigurationFactoryTest {
         Mockito.when(
                 config.getConfigParameter(SERVLET_PARAMETER_PRODUCTION_MODE))
                 .thenReturn("false");
-        Mockito.when(
-                config.getConfigParameter(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM))
+        Mockito.when(config.getConfigParameter(
+                InitParameters.SERVLET_PARAMETER_ENABLE_PNPM))
                 .thenReturn("false");
-        Mockito.when(
-                config.getConfigParameter(InitParameters.BUILD_FOLDER))
+        Mockito.when(config.getConfigParameter(InitParameters.BUILD_FOLDER))
                 .thenReturn("bar");
 
         Properties parameters = factory.createInitParameters(Object.class,
@@ -363,8 +363,7 @@ public class DeploymentConfigurationFactoryTest {
                 parameters.get(SERVLET_PARAMETER_PRODUCTION_MODE));
         Assert.assertEquals("false",
                 parameters.get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
-        Assert.assertEquals("bar",
-                parameters.get(InitParameters.BUILD_FOLDER));
+        Assert.assertEquals("bar", parameters.get(InitParameters.BUILD_FOLDER));
         Assert.assertFalse(parameters.containsValue("foo"));
         Assert.assertEquals("baz",
                 parameters.get(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN));
