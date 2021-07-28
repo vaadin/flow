@@ -124,9 +124,9 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
             Map<String, String> properties = getConfigParametersUsingTokenData(
                     buildInfo);
             // only insert properties that haven't been defined
-            for (Map.Entry<String, String> e : properties.entrySet()) {
-                if (!initParameters.containsKey(e.getKey())) {
-                    initParameters.put(e.getKey(), e.getValue());
+            for (Map.Entry<String, String> entry : properties.entrySet()) {
+                if (!initParameters.containsKey(entry.getKey())) {
+                    initParameters.put(entry.getKey(), entry.getValue());
                 }
             }
             fallbackChunk = FrontendUtils.readFallbackChunk(buildInfo);
