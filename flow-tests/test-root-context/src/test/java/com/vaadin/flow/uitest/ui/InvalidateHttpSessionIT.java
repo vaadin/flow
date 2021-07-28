@@ -27,8 +27,6 @@ public class InvalidateHttpSessionIT extends ChromeBrowserTest {
     public void invalidateHttpSession_vaadinSessionIsClosed() {
         open();
 
-        String sessionId = findElement(By.id("current-session-id")).getText();
-
         findElement(By.id("invalidate-session")).click();
 
         waitForElementPresent(By.id("invalidated-session-id"));
@@ -36,7 +34,7 @@ public class InvalidateHttpSessionIT extends ChromeBrowserTest {
         String invalidatedSessionId = findElement(
                 By.id("invalidated-session-id")).getText();
 
-        sessionId = findElement(By.id("current-session-id")).getText();
+        String sessionId = findElement(By.id("current-session-id")).getText();
         Assert.assertNotEquals(sessionId, invalidatedSessionId);
     }
 
