@@ -381,4 +381,121 @@ public class VaadinSessionTest {
         Assert.assertEquals(expectedlocale, uis.next().getLocale());
         Assert.assertEquals(expectedlocale, uis.next().getLocale());
     }
+
+    @Test
+    public void csrfToken_different_sessions_shouldBeUnique() {
+        String token1 = new VaadinSession(mockService).getCsrfToken();
+        String token2 = new VaadinSession(mockService).getCsrfToken();
+
+        Assert.assertNotEquals("Each session should have a unique CSRF token",
+                token1, token2);
+    }
+
+    @Test
+    public void csrfToken_same_session_shouldBeSame() {
+        VaadinSession vaadinSession = new VaadinSession(mockService);
+        String token1 = vaadinSession.getCsrfToken();
+        String token2 = vaadinSession.getCsrfToken();
+
+        Assert.assertEquals(
+                "getCsrfToken() should always return the same value for the same session",
+                token1, token2);
+    }
+
+    @Test
+    public void valueUnbound_explicitVaadinSessionClose_wrappedSessionIsNotCleanedUp() {
+        ReentrantLock lock = Mockito.mock(ReentrantLock.class);
+        Mockito.when(lock.isHeldByCurrentThread()).thenReturn(true);
+        mockService = new MockVaadinServletService() {
+            @Override
+            protected Lock getSessionLock(WrappedSession wrappedSession) {
+                return lock;
+            }
+
+        };
+
+        VaadinSession vaadinSession = new VaadinSession(mockService) {
+            @Override
+            public boolean hasLock() {
+                return true;
+            }
+        };
+
+        vaadinSession.setAttribute(VaadinSession.CLOSE_SESSION_EXPLICITLY,
+                true);
+
+        WrappedSession httpSession = Mockito.mock(WrappedSession.class);
+        vaadinSession.refreshTransients(httpSession, mockService);
+
+        VaadinSession.setCurrent(vaadinSession);
+        mockService.setCurrentInstances(Mockito.mock(VaadinRequest.class),
+                Mockito.mock(VaadinResponse.class));
+
+        try {
+            vaadinSession
+                    .valueUnbound(Mockito.mock(HttpSessionBindingEvent.class));
+
+            Assert.assertNotNull(vaadinSession.getSession());
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    @Test
+    public void valueUnbound_implicitVaadinSessionClose_wrappedSessionIsCleanedUp() {
+        ReentrantLock lock = Mockito.mock(ReentrantLock.class);
+        Mockito.when(lock.isHeldByCurrentThread()).thenReturn(true);
+        mockService = new MockVaadinServletService() {
+            @Override
+            protected Lock getSessionLock(WrappedSession wrappedSession) {
+                return lock;
+            }
+
+        };
+
+        VaadinSession vaadinSession = new VaadinSession(mockService) {
+            @Override
+            public boolean hasLock() {
+                return true;
+            }
+        };
+
+        WrappedSession httpSession = Mockito.mock(WrappedSession.class);
+        vaadinSession.refreshTransients(httpSession, mockService);
+
+        VaadinSession.setCurrent(vaadinSession);
+        mockService.setCurrentInstances(Mockito.mock(VaadinRequest.class),
+                Mockito.mock(VaadinResponse.class));
+
+        try {
+            vaadinSession
+                    .valueUnbound(Mockito.mock(HttpSessionBindingEvent.class));
+
+            Assert.assertNull(vaadinSession.getSession());
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    @Test
+    public void setState_closedState_sessionFieldIsCleanedUp() {
+        ReentrantLock lock = Mockito.mock(ReentrantLock.class);
+        Mockito.when(lock.isHeldByCurrentThread()).thenReturn(true);
+        mockService = new MockVaadinServletService() {
+            @Override
+            protected Lock getSessionLock(WrappedSession wrappedSession) {
+                return lock;
+            }
+        };
+
+        VaadinSession vaadinSession = new VaadinSession(mockService);
+        WrappedSession httpSession = Mockito.mock(WrappedSession.class);
+        vaadinSession.refreshTransients(httpSession, mockService);
+
+        vaadinSession.setState(VaadinSessionState.CLOSING);
+        vaadinSession.setState(VaadinSessionState.CLOSED);
+
+        Assert.assertNull(vaadinSession.getSession());
+    }
+
 }
