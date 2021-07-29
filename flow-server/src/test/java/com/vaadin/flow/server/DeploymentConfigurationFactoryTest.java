@@ -335,7 +335,7 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void createInitParameters_valuesFromTokenAreIgnored_valuesAreTakenFromservletConfig()
+    public void createInitParameters_valuesAreTakenFromservletConfigAndTokenFile_valuesFromTokenFileOverridenByServletConfig()
             throws Exception {
         DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
 
