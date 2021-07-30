@@ -357,7 +357,7 @@ public class DeploymentConfigurationFactoryTest {
         Field[] initParamFields = InitParameters.class.getDeclaredFields();
         for (int i = 0; i < initParamFields.length; i++) {
             String paramName = (String) initParamFields[i]
-                    .get(new InitParameters());
+                    .get(null);
             mockTokenJsonString += "'" + paramName + "': ";
             if (!stringParams.contains(paramName)) {
                 mockTokenJsonString += "true";
@@ -373,7 +373,7 @@ public class DeploymentConfigurationFactoryTest {
         List<String> allParamsList = new ArrayList<String>();
         for (int i = 0; i < initParamFields.length; i++) {
             String paramName = (String) initParamFields[i]
-                    .get(new InitParameters());
+                    .get(null);
             mockTokenJsonString += "'" + paramName + "': ";
             if (!stringParams.contains(paramName)) {
                 Mockito.when(config.getConfigParameter(paramName))
@@ -396,7 +396,7 @@ public class DeploymentConfigurationFactoryTest {
 
         for (int i = 0; i < initParamFields.length; i++) {
             String paramName = (String) initParamFields[i]
-                    .get(new InitParameters());
+                    .get(null);
             mockTokenJsonString += "'" + paramName + "': ";
             if (!stringParams.contains(paramName)) {
                 // the one we set from flow-build-info.json
