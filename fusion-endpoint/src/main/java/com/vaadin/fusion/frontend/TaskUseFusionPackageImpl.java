@@ -29,6 +29,9 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
+/**
+ * Populate the package.json file with Fusion dependencies.
+ */
 public class TaskUseFusionPackageImpl extends NodeUpdater
         implements TaskUseFusionPackage {
 

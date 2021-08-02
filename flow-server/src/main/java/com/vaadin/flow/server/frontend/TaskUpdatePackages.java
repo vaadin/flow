@@ -159,6 +159,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         return result;
     }
 
+    @SuppressWarnings("squid:S134")
     private boolean updatePackageJsonDependencies(JsonObject packageJson,
             Map<String, String> applicationDependencies) throws IOException {
         int added = 0;
