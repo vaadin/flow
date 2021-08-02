@@ -123,8 +123,12 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
             JsonObject buildInfo = JsonUtil.parse(json);
             Map<String, String> properties = getConfigParametersUsingTokenData(
                     buildInfo);
-            initParameters.putAll(properties);
-
+            // only insert properties that haven't been defined
+            for (Map.Entry<String, String> entry : properties.entrySet()) {
+                if (!initParameters.containsKey(entry.getKey())) {
+                    initParameters.put(entry.getKey(), entry.getValue());
+                }
+            }
             fallbackChunk = FrontendUtils.readFallbackChunk(buildInfo);
         }
         if (fallbackChunk == null) {
