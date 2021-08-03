@@ -62,4 +62,19 @@ public interface EndpointGeneratorTaskFactory {
     TaskGenerateOpenAPI createTaskGenerateOpenAPI(File properties,
             File javaSourceFolder, ClassLoader classLoader, File output);
 
+    /**
+     * Create a task for populating the package.json with Fusion dependencies.
+     *
+     * @param npmFolder
+     *            folder with the `package.json` file
+     * @param generatedPath
+     *            folder where flow generated files will be placed.
+     * @param flowResourcesPath
+     *            folder where flow dependencies will be copied to.
+     * @param buildDir
+     *            the used build directory
+     * @return an endpoint task that adds Fusion packages to a package.json file
+     */
+    TaskUseFusionPackage createTaskUseFusionPackage(File npmFolder,
+            File generatedPath, File flowResourcesPath, String buildDir);
 }

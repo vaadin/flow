@@ -124,7 +124,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     @Override
-    String writePackageFile(JsonObject json) throws IOException {
+    protected String writePackageFile(JsonObject json) throws IOException {
         sortObject(json, DEPENDENCIES);
         sortObject(json, DEV_DEPENDENCIES);
         sortObject(json, VAADIN_DEP_KEY);
@@ -159,6 +159,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         return result;
     }
 
+    @SuppressWarnings("squid:S134")
     private boolean updatePackageJsonDependencies(JsonObject packageJson,
             Map<String, String> applicationDependencies) throws IOException {
         int added = 0;
