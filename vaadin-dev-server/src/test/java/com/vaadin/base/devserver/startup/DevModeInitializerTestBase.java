@@ -125,7 +125,8 @@ public class DevModeInitializerTestBase {
                 .createTaskGenerateFusion(any(), any(), any(), any());
         Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
                 .createTaskGenerateOpenAPI(any(), any(), any(), any());
-        Mockito.doReturn(taskUseFusionPackage).when(endpointGeneratorTaskFactory)
+        Mockito.doReturn(taskUseFusionPackage)
+                .when(endpointGeneratorTaskFactory)
                 .createTaskUseFusionPackage(any(), any(), any(), any());
 
         ResourceProvider resourceProvider = Mockito
