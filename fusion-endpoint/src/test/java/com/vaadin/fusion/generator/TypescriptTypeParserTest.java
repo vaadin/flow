@@ -27,8 +27,9 @@ public class TypescriptTypeParserTest {
             return current;
         });
 
-        assertEquals(wrapper.toString(),
-                "Readonly<Record<ReadonlyArray<string>, Readonly<Record<string, ReadonlyArray<string>>>>>");
+        assertEquals(
+                "Readonly<Record<ReadonlyArray<string>, Readonly<Record<string, ReadonlyArray<string>>>>>",
+                wrapper.toString());
     }
 
     @Test
@@ -46,8 +47,16 @@ public class TypescriptTypeParserTest {
             return current;
         });
 
-        assertEquals(node.toString(),
-                "Record<ReadonlyArray<string>, Record<string, ReadonlyArray<string>>>");
+        assertEquals(
+                "Record<ReadonlyArray<string>, Record<string, ReadonlyArray<string>>>",
+                node.toString());
+    }
+
+    @Test
+    public void should_AllowsTypeNullability() {
+        String type = "Map<Array<string, number | undefined>, string | undefined> | undefined";
+        TypescriptTypeParser.Node node = TypescriptTypeParser.parse(type);
+        assertEquals(type, node.toString());
     }
 
     @Test
@@ -55,7 +64,7 @@ public class TypescriptTypeParserTest {
         String type = "Map<ReadonlyArray<string>, Map<string, ReadonlyArray<string>>>";
         TypescriptTypeParser.Node node = TypescriptTypeParser.parse(type);
 
-        assertEquals(node.toString(), type);
+        assertEquals(type, node.toString());
     }
 
     @Test
@@ -63,6 +72,6 @@ public class TypescriptTypeParserTest {
         String type = "string";
         TypescriptTypeParser.Node node = TypescriptTypeParser.parse(type);
 
-        assertEquals(node.toString(), type);
+        assertEquals(type, node.toString());
     }
 }

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Stack;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 class TypescriptTypeParser {
@@ -41,22 +40,39 @@ class TypescriptTypeParser {
     static class Node {
         private String name;
         private List<Node> nested = new ArrayList<>();
+        private boolean undefined = false;
 
-        Node(String name) {
+        public Node(String name) {
             this.name = name;
         }
 
+        @SuppressWarnings("squid:S134")
         private static Node process(List<Token> tokens) {
             Stack<Node> unclosedNodes = new Stack<>();
             Node currentNode = null;
+            boolean waitingForSuffix = false;
 
             for (final Token token : tokens) {
                 if (token instanceof NameToken) {
-                    currentNode = new Node(((NameToken) token).getName());
+                    if (currentNode != null && waitingForSuffix) {
+                        if (((NameToken) token).getName().equals("undefined")) {
+                            currentNode.setUndefined(true);
+                            waitingForSuffix = false;
+                        } else {
+                            throw new SyntaxError(String.format(
+                                    "Type union '{} | {}' is not expected",
+                                    currentNode.getName(),
+                                    ((NameToken) token).getName()));
+                        }
+                    } else {
+                        currentNode = new Node(((NameToken) token).getName());
 
-                    if (!unclosedNodes.empty()) {
-                        unclosedNodes.peek().addNested(currentNode);
+                        if (!unclosedNodes.empty()) {
+                            unclosedNodes.peek().addNested(currentNode);
+                        }
                     }
+                } else if (token instanceof PipeToken) {
+                    waitingForSuffix = true;
                 } else if (((BraceToken) token).isClosing()) {
                     Node closedNode = unclosedNodes.pop();
 
@@ -99,6 +115,14 @@ class TypescriptTypeParser {
             return nested.size() > 0;
         }
 
+        public boolean isUndefined() {
+            return undefined;
+        }
+
+        public void setUndefined(final boolean undefined) {
+            this.undefined = undefined;
+        }
+
         @Override
         public String toString() {
             StringBuilder builder = new StringBuilder();
@@ -109,6 +133,10 @@ class TypescriptTypeParser {
                 builder.append(nested.stream().map(Node::toString)
                         .collect(Collectors.joining(", ")));
                 builder.append('>');
+            }
+
+            if (undefined) {
+                builder.append(" | undefined");
             }
 
             return builder.toString();
@@ -132,6 +160,9 @@ class TypescriptTypeParser {
         }
     }
 
+    static class PipeToken extends Token {
+    }
+
     static class SyntaxError extends Error {
         public SyntaxError() {
             super();
@@ -150,6 +181,7 @@ class TypescriptTypeParser {
         private static final char CLOSE_BRACE = '>';
         private static final char COMMA = ',';
         private static final char OPEN_BRACE = '<';
+        private static final char PIPE = '|';
         private static final char SPACE = ' ';
 
         static List<Token> process(CharSequence sequence) {
@@ -161,6 +193,10 @@ class TypescriptTypeParser {
 
                 switch (ch) {
                 case SPACE:
+                    break;
+                case PIPE:
+                    tokens.add(new PipeToken());
+                    token = null;
                     break;
                 case OPEN_BRACE:
                     tokens.add(new BraceToken(false));
