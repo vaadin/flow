@@ -626,13 +626,11 @@ public class FrontendUtils {
                 Stats statistics = context.getAttribute(Stats.class);
                 if (statistics == null || modified.isAfter(statistics
                         .getLastModified().orElse(LocalDateTime.MIN))) {
-                    statistics = new Stats(
-                            streamToString(connection.getInputStream()),
-                            lastModified);
+                    byte[] buffer = IOUtils.toByteArray(connection.getInputStream());
+                    statistics = new Stats(buffer,lastModified);
                     context.setAttribute(statistics);
                 }
-                return new ByteArrayInputStream(
-                        statistics.statsJson.getBytes(StandardCharsets.UTF_8));
+                return new ByteArrayInputStream(statistics.statsJson);
             }
             return connection.getInputStream();
         } catch (IOException e) {
@@ -660,8 +658,7 @@ public class FrontendUtils {
         Stats statistics = service.getContext().getAttribute(Stats.class);
 
         if (statistics != null) {
-            return IOUtils.toInputStream(statistics.statsJson,
-                    StandardCharsets.UTF_8);
+            return new ByteArrayInputStream(statistics.statsJson);
         }
 
         String stats = service.getDeploymentConfiguration()
@@ -676,11 +673,10 @@ public class FrontendUtils {
         try {
             stream = statsUrl == null ? null : statsUrl.openStream();
             if (stream != null) {
-                statistics = new Stats(
-                        IOUtils.toString(stream, StandardCharsets.UTF_8), null);
+                byte[] buffer = IOUtils.toByteArray(stream);
+                statistics = new Stats(buffer, null);
                 service.getContext().setAttribute(statistics);
-                stream = IOUtils.toInputStream(statistics.statsJson,
-                        StandardCharsets.UTF_8);
+                stream = new ByteArrayInputStream(buffer);
             }
         } catch (IOException exception) {
             getLogger().warn("Couldn't read content of stats file {}", stats,
@@ -1069,7 +1065,7 @@ public class FrontendUtils {
      */
     private static class Stats implements Serializable {
         private final String lastModified;
-        protected final String statsJson;
+        protected final byte[] statsJson;
 
         /**
          * Create a new container for stats.json caching.
@@ -1080,7 +1076,7 @@ public class FrontendUtils {
          *            last modification timestamp for stats.json in RFC-1123
          *            date-time format, such as 'Tue, 3 Jun 2008 11:05:30 GMT'
          */
-        public Stats(String statsJson, String lastModified) {
+        public Stats(byte[] statsJson, String lastModified) {
             this.statsJson = statsJson;
             this.lastModified = lastModified;
         }
