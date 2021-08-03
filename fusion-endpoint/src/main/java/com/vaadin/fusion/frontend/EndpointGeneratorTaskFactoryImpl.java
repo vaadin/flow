@@ -19,8 +19,9 @@ import java.io.File;
 import java.util.Objects;
 
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import com.vaadin.flow.server.frontend.TaskGenerateConnect;
-import com.vaadin.flow.server.frontend.TaskGenerateOpenApi;
+import com.vaadin.flow.server.frontend.TaskGenerateFusion;
+import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
+import com.vaadin.flow.server.frontend.TaskUseFusionPackage;
 
 /**
  * An implementation of the EndpointGeneratorTaskFactory, which creates endpoint
@@ -30,27 +31,36 @@ public class EndpointGeneratorTaskFactoryImpl
         implements EndpointGeneratorTaskFactory {
 
     @Override
-    public TaskGenerateConnect createTaskGenerateConnect(
+    public TaskGenerateFusion createTaskGenerateFusion(
             File applicationProperties, File openApi, File outputFolder,
             File frontendDirectory) {
         Objects.requireNonNull(openApi,
                 "Vaadin OpenAPI file should not be null.");
         Objects.requireNonNull(outputFolder,
                 "Vaadin output folder should not be null.");
-        return new TaskGenerateConnectImpl(applicationProperties, openApi,
+        return new TaskGenerateFusionImpl(applicationProperties, openApi,
                 outputFolder, frontendDirectory);
     }
 
     @Override
-    public TaskGenerateOpenApi createTaskGenerateOpenApi(File properties,
+    public TaskGenerateOpenAPI createTaskGenerateOpenAPI(File properties,
             File javaSourceFolder, ClassLoader classLoader, File output) {
         Objects.requireNonNull(javaSourceFolder,
                 "Source paths should not be null.");
         Objects.requireNonNull(output,
                 "OpenAPI output file should not be null.");
         Objects.requireNonNull(classLoader, "ClassLoader should not be null.");
-        return new TaskGenerateOpenApiImpl(properties, javaSourceFolder,
+        return new TaskGenerateOpenAPIImpl(properties, javaSourceFolder,
                 classLoader, output);
+    }
+
+    @Override
+    public TaskUseFusionPackage createTaskUseFusionPackage(File npmFolder,
+            File generatedPath, File flowResourcesPath, String buildDir) {
+        Objects.requireNonNull(npmFolder,
+                "Vaadin npm folder should not be null.");
+        return new TaskUseFusionPackageImpl(npmFolder, generatedPath,
+                flowResourcesPath, buildDir);
     }
 
 }
