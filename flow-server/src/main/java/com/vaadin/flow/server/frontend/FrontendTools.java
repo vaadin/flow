@@ -86,10 +86,27 @@ public class FrontendTools {
             + FrontendUtils.DISABLE_CHECK //
             + MSG_SUFFIX;
 
+    private static final String USER_HOME_CONTAINS_WHITESPACES = MSG_PREFIX
+            + "%nYour Windows user home directory path contains whitespaces, and the currently installed npm"
+            + "%nversion (%s) doesn't accept this."
+            + "%nPlease exclude whitespaces from your user home path or upgrade npm version to 7 (or newer) by:"
+            + "%n 1) Running 'npm-windows-upgrade' tool with Windows PowerShell:"
+            + "%n        Set-ExecutionPolicy Unrestricted -Scope CurrentUser -Force"
+            + "%n        npm install -g npm-windows-upgrade"
+            + "%n        npm-windows-upgrade"
+            + "%n 2) Manually installing a newer version of npx: npm install -g npx"
+            + "%n 3) Manually installing a newer version of pnpm: npm install -g pnpm"
+            + "%n 4) Deleting the following files from your Vaadin project's folder (if present):"
+            + "%n        node_modules, package-lock.json, webpack.generated.js, pnpm-lock.yaml, pnpmfile.js"
+            + MSG_SUFFIX;
+
     private static final List<FrontendVersion> NPM_BLACKLISTED_VERSIONS = Arrays
             .asList(new FrontendVersion("6.11.0"),
                     new FrontendVersion("6.11.1"),
                     new FrontendVersion("6.11.2"));
+
+    private static final FrontendVersion WHITESPACE_ACCEPTING_NPM_VERSION = new FrontendVersion(
+            7, 0);
 
     private static final int SUPPORTED_NODE_MAJOR_VERSION = 10;
     private static final int SUPPORTED_NODE_MINOR_VERSION = 0;
@@ -390,14 +407,10 @@ public class FrontendTools {
         }
 
         try {
-            List<String> npmVersionCommand = new ArrayList<>(
-                    getNpmExecutable(false));
-            npmVersionCommand.add("--version"); // NOSONAR
-            FrontendVersion npmVersion = FrontendUtils.getVersion("npm",
-                    npmVersionCommand);
-            FrontendUtils.validateToolVersion("npm", npmVersion,
+            FrontendVersion foundNpmVersion = getNpmVersion();
+            FrontendUtils.validateToolVersion("npm", foundNpmVersion,
                     SUPPORTED_NPM_VERSION, SHOULD_WORK_NPM_VERSION);
-            checkForFaultyNpmVersion(npmVersion);
+            checkForFaultyNpmVersion(foundNpmVersion);
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if npm is new enough", e);
         }
@@ -463,6 +476,41 @@ public class FrontendTools {
                     "by updating your global npm installation with `npm install -g npm@latest`");
             throw new IllegalStateException(badNpmVersion);
         }
+    }
+
+    /**
+     * Checks whether it's fine to have a whitespaces in user home path, and, if
+     * not, fails-fast with a message to developer how to fix it.
+     *
+     * @throws IllegalStateException
+     *             if <code>pnpm install</code> is blocked by whitespaces in
+     *             user home
+     */
+    void checkNpmAcceptsWhitespacesInUserHome() {
+        if (FrontendUtils.isWindows() && userHomeContainsWhitespaces()) {
+            try {
+                FrontendVersion foundNpmVersion = getNpmVersion();
+                // npm < 7.0.0 doesn't accept whitespaces in user home
+                boolean accepted = FrontendUtils.isVersionAtLeast(
+                        foundNpmVersion, WHITESPACE_ACCEPTING_NPM_VERSION);
+                if (!accepted) {
+                    throw new IllegalStateException(
+                            String.format(USER_HOME_CONTAINS_WHITESPACES,
+                                    foundNpmVersion.getFullVersion()));
+                }
+            } catch (UnknownVersionException e) {
+                getLogger().warn(
+                        "Error checking if npm supports whitespaces in Windows user home path",
+                        e);
+            }
+        }
+    }
+
+    private FrontendVersion getNpmVersion() throws UnknownVersionException {
+        List<String> npmVersionCommand = new ArrayList<>(
+                getNpmExecutable(false));
+        npmVersionCommand.add("--version"); // NOSONAR
+        return FrontendUtils.getVersion("npm", npmVersionCommand);
     }
 
     private File getExecutable(String dir, String location) {
@@ -723,5 +771,11 @@ public class FrontendTools {
         } else {
             return getNodeExecutable();
         }
+    }
+
+    private boolean userHomeContainsWhitespaces() {
+        String userDirectoryPath = FileUtils.getUserDirectoryPath();
+        return userDirectoryPath != null
+                && userDirectoryPath.matches(".*[\\s+].*");
     }
 }

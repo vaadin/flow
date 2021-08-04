@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -31,15 +32,19 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.testutil.FrontendStubs;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 
 public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     private static final String PINNED_VERSION = "3.2.17";
+
+    private static final String USER_HOME = "user.home";
 
     @Override
     @Before
@@ -601,6 +606,52 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
         Assert.assertEquals(customOverlayVersion,
                 overlayPackage.getString("version"));
+    }
+
+    @Test
+    public void runNpmInstall_getPnpmExecutable_whitespacesInUserHomeChecked()
+            throws IOException, ExecutionFailedException {
+        Assume.assumeTrue(
+                "This test is only for Windows, as the whitespaces in user "
+                        + "home issue reproduced only on Windows",
+                FrontendUtils.isWindows());
+
+        String originalUserHome = System.getProperty(USER_HOME);
+        try {
+            // given
+            // Whitespace in user name
+            System.setProperty(USER_HOME, "C:\\Users\\Windows User");
+            // this test uses node executable with npm-cli.js
+            // thus, the node stub version parameter here (6.0.0) is actually
+            // the returned version of stubbed npm
+            createStubNode(FrontendStubs.ToolStubInfo.ofVersion("6.0.0"),
+                    FrontendStubs.ToolStubInfo.ofAnyVersion(),
+                    getNodeUpdater().npmFolder.getAbsolutePath());
+
+            exception.expect(ExecutionFailedException.class);
+            exception.expectMessage(
+                    "======================================================================================================\n"
+                            + "Your Windows user home directory path contains whitespaces, and the currently installed npm\n"
+                            + "version (6.0.0) doesn't accept this.\n"
+                            + "Please exclude whitespaces from your user home path or upgrade npm version to 7 (or newer) by:\n"
+                            + " 1) Running 'npm-windows-upgrade' tool with Windows PowerShell:\n"
+                            + "        Set-ExecutionPolicy Unrestricted -Scope CurrentUser -Force\n"
+                            + "        npm install -g npm-windows-upgrade\n"
+                            + "        npm-windows-upgrade\n"
+                            + " 2) Manually installing a newer version of npx: npm install -g npx\n"
+                            + " 3) Manually installing a newer version of pnpm: npm install -g pnpm\n"
+                            + " 4) Deleting the following files from your Vaadin project's folder (if present):\n"
+                            + "        node_modules, package-lock.json, webpack.generated.js, pnpm-lock.yaml, pnpmfile.js\n"
+                            + "======================================================================================================");
+            // when
+            TaskRunNpmInstall task = createTask();
+            getNodeUpdater().modified = true;
+            task.execute();
+
+            // then exception is thrown
+        } finally {
+            System.setProperty(USER_HOME, originalUserHome);
+        }
     }
 
     @Override

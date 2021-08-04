@@ -314,8 +314,12 @@ public class TaskRunNpmInstall implements FallibleCommand {
             if (requireHomeNodeExec) {
                 tools.forceAlternativeNodeExecutable();
             }
-            executable = enablePnpm ? tools.getPnpmExecutable()
-                    : tools.getNpmExecutable();
+            if (enablePnpm) {
+                tools.checkNpmAcceptsWhitespacesInUserHome();
+                executable = tools.getPnpmExecutable();
+            } else {
+                executable = tools.getNpmExecutable();
+            }
         } catch (IllegalStateException exception) {
             throw new ExecutionFailedException(exception.getMessage(),
                     exception);

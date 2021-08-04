@@ -41,10 +41,12 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
+import com.vaadin.flow.testutil.FrontendStubs;
 
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static org.hamcrest.Matchers.containsString;
@@ -62,6 +64,8 @@ public class FrontendToolsTest {
             .of("node", "node_modules", "npm", "bin", "npm-cli.js")
             .collect(Collectors.joining(File.separator));
 
+    private static final String USER_HOME = "user.home";
+
     private String baseDir;
 
     private String vaadinHomeDir;
@@ -71,6 +75,9 @@ public class FrontendToolsTest {
 
     @Rule
     public final TemporaryFolder tmpDirWithNpmrc = new TemporaryFolder();
+
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
 
     private FrontendTools tools;
 
@@ -495,6 +502,127 @@ public class FrontendToolsTest {
         List<String> pnpmCommand = tools.getSuitablePnpm();
         Assert.assertEquals("expected pnpm version 4.5.0 accepted", "pnpm",
                 pnpmCommand.get(pnpmCommand.size() - 1));
+    }
+
+    @Test
+    public void checkNpmAcceptsWhitespacesInUserHome_userHomeWithWhitespaces_throwsOnWindows()
+            throws IOException {
+        Assume.assumeTrue(
+                "This test is only for Windows, as the whitespaces in user "
+                        + "home issue reproduced only on Windows",
+                FrontendUtils.isWindows());
+
+        String originalUserHome = System.getProperty(USER_HOME);
+        try {
+            // given
+            // Whitespace in user name
+            System.setProperty(USER_HOME, "C:\\Users\\Windows User");
+            // this test uses node executable with npm-cli.js
+            // thus, the node stub version parameter here (6.0.0) is actually
+            // the returned version of stubbed npm
+            createStubNode(FrontendStubs.ToolStubInfo.ofVersion("6.0.0"),
+                    FrontendStubs.ToolStubInfo.ofAnyVersion(), baseDir);
+
+            exception.expect(IllegalStateException.class);
+            exception.expectMessage(
+                    "======================================================================================================\n"
+                            + "Your Windows user home directory path contains whitespaces, and the currently installed npm\n"
+                            + "version (6.0.0) doesn't accept this.\n"
+                            + "Please exclude whitespaces from your user home path or upgrade npm version to 7 (or newer) by:\n"
+                            + " 1) Running 'npm-windows-upgrade' tool with Windows PowerShell:\n"
+                            + "        Set-ExecutionPolicy Unrestricted -Scope CurrentUser -Force\n"
+                            + "        npm install -g npm-windows-upgrade\n"
+                            + "        npm-windows-upgrade\n"
+                            + " 2) Manually installing a newer version of npx: npm install -g npx\n"
+                            + " 3) Manually installing a newer version of pnpm: npm install -g pnpm\n"
+                            + " 4) Deleting the following files from your Vaadin project's folder (if present):\n"
+                            + "        node_modules, package-lock.json, webpack.generated.js, pnpm-lock.yaml, pnpmfile.js\n"
+                            + "======================================================================================================");
+            // when
+            tools.checkNpmAcceptsWhitespacesInUserHome();
+
+            // then exception is thrown
+        } finally {
+            System.setProperty(USER_HOME, originalUserHome);
+        }
+    }
+
+    @Test
+    public void checkNpmAcceptsWhitespacesInUserHome_userHomeWithWhitespaces_passesOnNonWindows()
+            throws IOException {
+        Assume.assumeFalse(
+                "This test is only for non-Windows OS, as the whitespaces in "
+                        + "user home issue is not reproduced on non-Windows OS",
+                FrontendUtils.isWindows());
+
+        String originalUserHome = System.getProperty(USER_HOME);
+        try {
+            // given
+            // Whitespace in user name
+            System.setProperty(USER_HOME, "/Users/Mac User/");
+            // this test uses node executable with npm-cli.js
+            // thus, the node stub version parameter here (6.0.0) is actually
+            // the returned version of stubbed npm
+            createStubNode(FrontendStubs.ToolStubInfo.ofVersion("6.0.0"),
+                    FrontendStubs.ToolStubInfo.ofAnyVersion(), baseDir);
+
+            // when
+            tools.checkNpmAcceptsWhitespacesInUserHome();
+
+            // then no exception is thrown
+        } finally {
+            System.setProperty(USER_HOME, originalUserHome);
+        }
+    }
+
+    @Test
+    public void checkNpmAcceptsWhitespacesInUserHome_userHomeNoWhitespaces_passesOnWindows()
+            throws IOException {
+        Assume.assumeTrue(
+                "This test is only for Windows, as the whitespaces in user "
+                        + "home issue reproduced only on Windows",
+                FrontendUtils.isWindows());
+
+        // given
+
+        // this test uses node executable with npm-cli.js
+        // thus, the node stub version parameter here (6.0.0) is actually
+        // the returned version of stubbed npm
+        createStubNode(FrontendStubs.ToolStubInfo.ofVersion("6.0.0"),
+                FrontendStubs.ToolStubInfo.ofAnyVersion(), baseDir);
+
+        // when
+        tools.checkNpmAcceptsWhitespacesInUserHome();
+
+        // then no exception is thrown
+    }
+
+    @Test
+    public void checkNpmAcceptsWhitespacesInUserHome_npm7_passesOnWindows()
+            throws IOException {
+        Assume.assumeTrue(
+                "This test is only for Windows, as the whitespaces in user "
+                        + "home issue reproduced only on Windows",
+                FrontendUtils.isWindows());
+
+        String originalUserHome = System.getProperty(USER_HOME);
+        try {
+            // given
+            // Whitespace in user name
+            System.setProperty(USER_HOME, "C:\\Users\\Windows User");
+            // this test uses node executable with npm-cli.js
+            // thus, the node stub version parameter here (7.0.0) is actually
+            // the returned version of stubbed npm
+            createStubNode(FrontendStubs.ToolStubInfo.ofVersion("7.0.0"),
+                    FrontendStubs.ToolStubInfo.ofAnyVersion(), baseDir);
+
+            // when
+            tools.checkNpmAcceptsWhitespacesInUserHome();
+
+            // then no exception is thrown
+        } finally {
+            System.setProperty(USER_HOME, originalUserHome);
+        }
     }
 
     private void assertNpmCommand(Supplier<String> path) throws IOException {
