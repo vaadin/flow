@@ -626,7 +626,8 @@ public class FrontendUtils {
                 Stats statistics = context.getAttribute(Stats.class);
                 if (statistics == null || modified.isAfter(statistics
                         .getLastModified().orElse(LocalDateTime.MIN))) {
-                    byte[] buffer = IOUtils.toByteArray(connection.getInputStream());
+                    byte[] buffer = IOUtils
+                            .toByteArray(connection.getInputStream());
                     statistics = new Stats(buffer,lastModified);
                     context.setAttribute(statistics);
                 }
