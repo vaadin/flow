@@ -88,15 +88,14 @@ public class FrontendStubs {
                 // ), node);
             } else {
                 // @formatter:off
-                FileUtils.write(node, String.format("#!/bin/sh\n"
-                        + "for arg in \"$@\"\n"
-                        + "do\n"
-                        + "  if [[ \"$arg\" == -v || \"$arg\" == --version ]]\n"
-                        + "  then\n"
-                        + "    echo %s\n"
-                        + "    break\n"
-                        + "  fi\n"
-                        + "done\n"
+                FileUtils.write(node, String.format("#!/bin/sh%n"
+                        + "for arg in \"$@\"%n"
+                        + "do%n"
+                        + "  if [ \"$arg\" = \"--version\" ] || [ \"$arg\" = \"-v\" ]; then%n"
+                        + "    echo %s%n"
+                        + "    break%n"
+                        + "  fi%n"
+                        + "done%n"
                         + "sleep 1",
                         stubNode.getVersion()), "UTF-8");
                 // @formatter:on
@@ -203,25 +202,50 @@ public class FrontendStubs {
         createStubWebpackServer(readyString, milliSecondsToRun, baseDir, false);
     }
 
+    /**
+     * Holds an information about build tool to be stubbed.
+     */
     public static final class ToolStubInfo {
         private final boolean stubbed;
         private final String version;
 
         private ToolStubInfo(boolean stubbed, String version) {
             this.stubbed = stubbed;
-            assert !stubbed || version != null && !version
-                    .isEmpty() : "Version may not be empty for stubbed tool";
+            assert !stubbed || (version != null && !version
+                    .isEmpty()) : "Version may not be empty for stubbed tool";
             this.version = version;
         }
 
+        /**
+         * Creates a tool stub info object denoting no stubbing.
+         *
+         * @return a tool stub info object denoting no stubbing.
+         */
         public static ToolStubInfo none() {
             return new ToolStubInfo(false, null);
         }
 
+        /**
+         * Creates a tool stub info object denoting generating a build tool's
+         * executable file outputting a given version number when executed with
+         * '-v' or '--version'.
+         *
+         * @param version
+         *            tool version for output.
+         * @return a tool stub info object denoting a given version to be
+         *         output.
+         */
         public static ToolStubInfo ofVersion(String version) {
             return new ToolStubInfo(true, version);
         }
 
+        /**
+         * Creates a tool stub info object denoting generating a build tool's
+         * executable with a non-sense version number, i.e. for those cases when
+         * result of calling '-v' or '--version' doesn't matter.
+         *
+         * @return a tool stub info object with non-used version output.
+         */
         public static ToolStubInfo ofAnyVersion() {
             return new ToolStubInfo(true, "0.0.0");
         }
