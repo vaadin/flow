@@ -87,7 +87,7 @@ public class FrontendStubs {
                 // getClassFinder().getClass().getClassLoader().getResource("test_node.exe").getFile()
                 // ), node);
             } else {
-                // @formatter::off
+                // @formatter:off
                 FileUtils.write(node, String.format("#!/bin/sh\n"
                         + "for arg in \"$@\"\n"
                         + "do\n"
@@ -99,7 +99,7 @@ public class FrontendStubs {
                         + "done\n"
                         + "sleep 1",
                         stubNode.getVersion()), "UTF-8");
-                // @formatter::on
+                // @formatter:on
             }
         }
     }
