@@ -628,7 +628,7 @@ public class FrontendUtils {
                         .getLastModified().orElse(LocalDateTime.MIN))) {
                     byte[] buffer = IOUtils
                             .toByteArray(connection.getInputStream());
-                    statistics = new Stats(buffer,lastModified);
+                    statistics = new Stats(buffer, lastModified);
                     context.setAttribute(statistics);
                 }
                 return new ByteArrayInputStream(statistics.statsJson);
