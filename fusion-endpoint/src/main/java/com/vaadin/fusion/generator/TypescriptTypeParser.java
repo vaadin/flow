@@ -3,6 +3,7 @@ package com.vaadin.fusion.generator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Stack;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -37,7 +38,7 @@ class TypescriptTypeParser {
         }
     }
 
-    static class Node {
+    static class Node implements Cloneable {
         private String name;
         private List<Node> nested = new ArrayList<>();
         private boolean undefined = false;
@@ -74,11 +75,7 @@ class TypescriptTypeParser {
                 } else if (token instanceof PipeToken) {
                     waitingForSuffix = true;
                 } else if (((BraceToken) token).isClosing()) {
-                    Node closedNode = unclosedNodes.pop();
-
-                    if (unclosedNodes.empty()) {
-                        currentNode = closedNode;
-                    }
+                    currentNode = unclosedNodes.pop();
                 } else {
                     if (currentNode == null) {
                         throw new SyntaxError(
@@ -93,6 +90,16 @@ class TypescriptTypeParser {
 
         public void addNested(final Node node) {
             nested.add(node);
+        }
+
+        @Override
+        public Node clone() {
+            Node clone = new Node(name);
+            clone.setNested(nested.stream().map(Node::clone)
+                    .collect(Collectors.toList()));
+            clone.setUndefined(undefined);
+
+            return clone;
         }
 
         public String getName() {
@@ -142,21 +149,8 @@ class TypescriptTypeParser {
             return builder.toString();
         }
 
-        public void visit(BiFunction<Node, Node, Node> visitor) {
-            visitImpl(this, visitor);
-        }
-
-        private Node visitImpl(Node node,
-                BiFunction<Node, Node, Node> visitor) {
-            if (node.hasNested()) {
-                node.setNested(
-                        node.nested.stream().map(n -> visitor.apply(n, node))
-                                .filter(Objects::nonNull)
-                                .map(n -> visitImpl(n, visitor))
-                                .collect(Collectors.toList()));
-            }
-
-            return node;
+        public Traverse traverse() {
+            return new Traverse(this);
         }
     }
 
@@ -221,6 +215,46 @@ class TypescriptTypeParser {
             }
 
             return tokens;
+        }
+    }
+
+    static class Traverse {
+        private final Node node;
+        private final List<BiFunction<Node, Optional<Node>, Node>> visitors = new ArrayList<>();
+
+        public Traverse(Node node) {
+            this.node = node;
+        }
+
+        public Node finish() {
+            return visitImpl(applyVisitors(node, null));
+        }
+
+        public Traverse visit(BiFunction<Node, Optional<Node>, Node> visitor) {
+            visitors.add(visitor);
+
+            return this;
+        }
+
+        private Node applyVisitors(Node node, Node parent) {
+            Node tmp = node;
+
+            for (BiFunction<Node, Optional<Node>, Node> visitor : visitors) {
+                tmp = visitor.apply(tmp, Optional.ofNullable(parent));
+            }
+
+            return tmp;
+        }
+
+        private Node visitImpl(Node node) {
+            if (node.hasNested()) {
+                node.setNested(
+                        node.nested.stream().map(n -> applyVisitors(n, node))
+                                .filter(Objects::nonNull).map(this::visitImpl)
+                                .collect(Collectors.toList()));
+            }
+
+            return node;
         }
     }
 }

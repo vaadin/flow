@@ -8,44 +8,38 @@ public class TypescriptTypeParserTest {
     @Test
     public void should_AllowNodeReplacing() {
         TypescriptTypeParser.Node node = TypescriptTypeParser.parse(
-                "Record<ReadonlyArray<string>, Record<string, ReadonlyArray<string>>>");
+                "Record<ReadonlyArray<string>, Record<string, ReadonlyArray<string>>>")
+                .traverse().visit((current, parent) -> {
+                    if ("Record".equals(current.getName())
+                            && parent.map(p -> !"Readonly".equals(p.getName()))
+                                    .orElse(true)) {
+                        TypescriptTypeParser.Node w = new TypescriptTypeParser.Node(
+                                "Readonly");
+                        w.addNested(current);
 
-        TypescriptTypeParser.Node wrapper = new TypescriptTypeParser.Node(
-                "Readonly");
-        wrapper.addNested(node);
+                        return w;
+                    }
 
-        node.visit((current, parent) -> {
-            if ("Record".equals(current.getName())
-                    && !"Readonly".equals(parent.getName())) {
-                TypescriptTypeParser.Node w = new TypescriptTypeParser.Node(
-                        "Readonly");
-                w.addNested(current);
-
-                return w;
-            }
-
-            return current;
-        });
+                    return current;
+                }).finish();
 
         assertEquals(
                 "Readonly<Record<ReadonlyArray<string>, Readonly<Record<string, ReadonlyArray<string>>>>>",
-                wrapper.toString());
+                node.toString());
     }
 
     @Test
     public void should_AllowTypeRenaming() {
         TypescriptTypeParser.Node node = TypescriptTypeParser.parse(
-                "Map<ReadonlyArray<string>, Map<string, ReadonlyArray<string>>>");
-        node.setName("Record");
+                "Map<ReadonlyArray<string>, Map<string, ReadonlyArray<string>>>")
+                .traverse().visit((current, _parent) -> {
+                    if ("Map".equals(current.getName())) {
+                        current.setName("Record");
+                        return current;
+                    }
 
-        node.visit((current, _parent) -> {
-            if ("Map".equals(current.getName())) {
-                current.setName("Record");
-                return current;
-            }
-
-            return current;
-        });
+                    return current;
+                }).finish();
 
         assertEquals(
                 "Record<ReadonlyArray<string>, Record<string, ReadonlyArray<string>>>",
@@ -54,7 +48,7 @@ public class TypescriptTypeParserTest {
 
     @Test
     public void should_AllowsTypeNullability() {
-        String type = "Map<Array<string, number | undefined>, string | undefined> | undefined";
+        String type = "Readonly<Record<string, Readonly<Record<string, ReadonlyArray<MyEntity | undefined> | undefined>> | undefined>>";
         TypescriptTypeParser.Node node = TypescriptTypeParser.parse(type);
         assertEquals(type, node.toString());
     }
