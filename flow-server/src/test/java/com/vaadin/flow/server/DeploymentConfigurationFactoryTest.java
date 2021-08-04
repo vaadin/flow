@@ -5,6 +5,7 @@ import javax.servlet.ServletContext;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -13,9 +14,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.ArrayList;
 
 import org.apache.commons.io.FileUtils;
 import org.easymock.Capture;
@@ -328,6 +332,112 @@ public class DeploymentConfigurationFactoryTest {
 
         Assert.assertEquals("baz", parameters.get("foo"));
         Assert.assertFalse(parameters.contains("bar"));
+    }
+
+    @Test
+    public void createInitParameters_valuesAreTakenFromservletConfigAndTokenFile_valuesFromTokenFileOverridenByServletConfig()
+            throws Exception {
+        DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
+
+        Set<String> stringParams = new HashSet<>(Arrays.asList(
+                InitParameters.UI_PARAMETER,
+                InitParameters.SERVLET_PARAMETER_REQUEST_TIMING,
+                InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
+                InitParameters.SERVLET_PARAMETER_PUSH_URL,
+                InitParameters.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
+                InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
+                InitParameters.SERVLET_PARAMETER_STATISTICS_JSON,
+                InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN,
+                InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN,
+                InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
+                InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
+                InitParameters.COMPILED_WEB_COMPONENTS_PATH,
+                InitParameters.BUILD_FOLDER));
+        Field[] initParamFields = InitParameters.class.getDeclaredFields();
+        String mockTokenJsonString = generateJsonStringFromFields(
+                initParamFields, stringParams);
+        VaadinConfig config = mockTokenFileViaContextParam(mockTokenJsonString);
+        List<String> allParamsList = mockParamsFromFields(initParamFields,
+                config, stringParams);
+        allParamsList.add(FrontendUtils.PARAM_TOKEN_FILE);
+        // let's not set production mode to see if token setting still works
+        allParamsList.removeIf(paramString -> paramString
+                .equals(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE));
+        Mockito.when(config.getConfigParameterNames())
+                .thenReturn(Collections.enumeration(allParamsList));
+
+        Properties parameters = factory.createInitParameters(Object.class,
+                config);
+
+        for (int i = 0; i < initParamFields.length; i++) {
+            String paramName = (String) initParamFields[i].get(null);
+            mockTokenJsonString += "'" + paramName + "': ";
+            if (!stringParams.contains(paramName)) {
+                // the one we set from flow-build-info.json
+                if (paramName.equals(
+                        InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE)) {
+                    Assert.assertEquals(
+                            InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE
+                                    + " (boolean parameter) does not have expected value set from token file",
+                            "true", parameters.get(paramName));
+                } else {
+                    Assert.assertEquals(paramName
+                            + " (boolean parameter) does not have expected value set from servlet config",
+                            "false", parameters.get(paramName));
+                }
+            } else {
+                Assert.assertEquals(paramName
+                        + "(string parameter) does not have expected value set from servlet config",
+                        "foo", parameters.get(paramName));
+            }
+        }
+    }
+
+    private List<String> mockParamsFromFields(Field[] fields,
+            VaadinConfig config, Set<String> stringParams) {
+        List<String> allParamsList = new ArrayList<String>();
+        for (int i = 0; i < fields.length; i++) {
+            try {
+                String paramName = (String) fields[i].get(null);
+                if (!stringParams.contains(paramName)) {
+                    Mockito.when(config.getConfigParameter(paramName))
+                            .thenReturn("false");
+                } else {
+                    Mockito.when(config.getConfigParameter(paramName))
+                            .thenReturn("foo");
+                }
+                allParamsList.add(paramName);
+            } catch (IllegalAccessException illegalAccess) {
+                Assert.fail("Illegal access to InitParameters class: "
+                        + illegalAccess.getMessage());
+            }
+        }
+        return allParamsList;
+    }
+
+    private String generateJsonStringFromFields(Field[] fields,
+            Set<String> stringParams) {
+        String mockTokenJsonString = "{";
+        for (int i = 0; i < fields.length; i++) {
+            try {
+                String paramName = (String) fields[i].get(null);
+                mockTokenJsonString += "'" + paramName + "': ";
+                if (!stringParams.contains(paramName)) {
+                    mockTokenJsonString += "true";
+                } else {
+                    mockTokenJsonString += " 'bar'";
+                }
+
+            } catch (IllegalAccessException illegalAccess) {
+                Assert.fail("Illegal access to InitParameters class: "
+                        + illegalAccess.getMessage());
+            }
+            if (i < fields.length - 1) {
+                mockTokenJsonString += ",";
+            }
+        }
+        mockTokenJsonString += " }";
+        return mockTokenJsonString;
     }
 
     @Test

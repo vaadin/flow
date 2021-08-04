@@ -36,7 +36,6 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
@@ -546,8 +545,6 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
-    private final List<FallibleCommand> commands = new ArrayList<>();
-
     // @formatter:off
     // This list keeps the tasks in order so that they are executed
     // without depending on when they are added.
@@ -564,6 +561,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateBootstrap.class,
             TaskInstallWebpackPlugins.class,
             TaskUpdatePackages.class,
+            TaskUseFusionPackage.class,
             TaskRunNpmInstall.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
@@ -572,6 +570,8 @@ public class NodeTasks implements FallibleCommand {
             TaskUpdateThemeImport.class
         ));
     // @formatter:on
+
+    private final List<FallibleCommand> commands = new ArrayList<>();
 
     private NodeTasks(Builder builder) {
 
@@ -730,6 +730,16 @@ public class NodeTasks implements FallibleCommand {
                             builder.classFinder.getClassLoader(),
                             builder.fusionGeneratedOpenAPIFile);
             commands.add(taskGenerateOpenAPI);
+
+            if (builder.createMissingPackageJson
+                    || builder.enablePackagesUpdate) {
+                TaskUseFusionPackage taskUseFusionPackage = endpointGeneratorTaskFactory
+                        .createTaskUseFusionPackage(builder.npmFolder,
+                                builder.generatedFolder,
+                                builder.flowResourcesFolder,
+                                builder.buildDirectory);
+                commands.add(taskUseFusionPackage);
+            }
 
             if (builder.fusionClientAPIFolder != null) {
                 TaskGenerateFusion taskGenerateFusion = endpointGeneratorTaskFactory
