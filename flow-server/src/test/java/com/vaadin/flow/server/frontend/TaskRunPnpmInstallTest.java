@@ -27,7 +27,6 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -618,8 +617,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         // given
         File npmCacheFolder = temporaryFolder.newFolder("Foo Bar");
-        LoggerFactory.getLogger(TaskRunPnpmInstallTest.class).info(
-                "Npm cache folder = " + npmCacheFolder.getAbsolutePath());
         FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
         FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
                 .builder(FrontendStubs.Tool.NPM).withVersion("6.0.0")
