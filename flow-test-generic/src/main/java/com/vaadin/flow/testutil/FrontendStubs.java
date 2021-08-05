@@ -67,7 +67,7 @@ public class FrontendStubs {
         if (stubNpm.isStubbed()) {
             File binDir = new File(baseDir, NPM_BIN_PATH);
             FileUtils.forceMkdir(binDir);
-            String stub = stubNpm.getScript();
+            String stub = stubNpm.getScript().replace("\\", "\\\\");
             FileUtils.writeStringToFile(new File(binDir, "npm-cli.js"), stub,
                     StandardCharsets.UTF_8);
             FileUtils.writeStringToFile(new File(binDir, "npx-cli.js"), stub,
