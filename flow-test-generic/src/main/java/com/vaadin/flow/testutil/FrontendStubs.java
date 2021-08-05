@@ -277,37 +277,33 @@ public class FrontendStubs {
             final StringBuilder scriptBuilder = new StringBuilder();
 
             switch (buildTool) {
-                case NPM:
-                    // default version used in tests
-                    version = version == null ? "6.14.10" : version;
+            case NPM:
+                // default version used in tests
+                version = version == null ? "6.14.10" : version;
+                scriptBuilder.append(
+                        "process.argv.includes('--version') && console.log(")
+                        .append(version).append(");\n");
+                if (cacheDir != null) {
+                    scriptBuilder.append(
+                            "process.argv.includes('cache') && console.log(")
+                            .append(cacheDir).append(");\n");
+                }
+                script = scriptBuilder.toString();
+                break;
+            case NODE:
+                // default version used in tests
+                version = version == null ? "8.0.0" : version;
+                scriptBuilder.append(
+                        "  if [ \"$arg\" = \"--version\" ] || [ \"$arg\" = \"-v\" ]; then\n")
+                        .append("    echo ").append(version).append("\n")
+                        .append("    break\n").append("  fi\n");
+                if (cacheDir != null) {
                     scriptBuilder
-                            .append("process.argv.includes('--version') && console.log(")
-                            .append(version)
-                            .append(");\n");
-                    if (cacheDir != null) {
-                        scriptBuilder
-                                .append("process.argv.includes('cache') && console.log(")
-                                .append(cacheDir)
-                                .append(");\n");
-                    }
-                    script = scriptBuilder.toString();
-                    break;
-                case NODE:
-                    // default version used in tests
-                    version = version == null ? "8.0.0" : version;
-                    scriptBuilder
-                            .append("  if [ \"$arg\" = \"--version\" ] || [ \"$arg\" = \"-v\" ]; then\n")
-                            .append("    echo ").append(version).append("\n")
-                            .append("    break\n")
-                            .append("  fi\n");
-                    if (cacheDir != null) {
-                        scriptBuilder
-                                .append("  if [ \"$arg\" = \"cache\" ]; then\n")
-                                .append("    echo ").append(cacheDir).append("\n")
-                                .append("    break\n")
-                                .append("  fi\n");
-                    }
-                    // @formatter:off
+                            .append("  if [ \"$arg\" = \"cache\" ]; then\n")
+                            .append("    echo ").append(cacheDir).append("\n")
+                            .append("    break\n").append("  fi\n");
+                }
+                // @formatter:off
                     script = String.format(
                             "#!/bin/sh%n"
                             + "for arg in \"$@\"%n"
@@ -316,9 +312,9 @@ public class FrontendStubs {
                             + "done%n"
                             + "sleep 1", scriptBuilder.toString());
                     // @formatter:on
-                    break;
-                default:
-                    throw new IllegalStateException("Unknown build tool");
+                break;
+            default:
+                throw new IllegalStateException("Unknown build tool");
             }
             return new ToolStubInfo(true, script);
         }

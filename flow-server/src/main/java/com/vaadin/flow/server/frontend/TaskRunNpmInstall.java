@@ -65,8 +65,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
     // a new hash to the code repository.
     private static final String INSTALL_HASH = ".vaadin/vaadin.json";
 
-    private static final String USER_HOME_CONTAINS_WHITESPACES =
-            "\n\n======================================================================================================"
+    private static final String USER_HOME_CONTAINS_WHITESPACES = "\n\n======================================================================================================"
             + "\nThe path to npm cache contains whitespaces, and the currently installed npm version doesn't accept this."
             + "\nMost likely your Windows user home path contains whitespaces."
             + "\nTo workaround it, please change the npm cache path by using the following command:"
@@ -335,7 +334,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
             if (enablePnpm) {
                 File npmCacheDir = tools.getNpmCacheDir();
                 if (!tools.npmAcceptsWhitespaces(npmCacheDir)) {
-                    throw new IllegalStateException(USER_HOME_CONTAINS_WHITESPACES);
+                    throw new IllegalStateException(
+                            USER_HOME_CONTAINS_WHITESPACES);
                 }
                 executable = tools.getPnpmExecutable();
             } else {

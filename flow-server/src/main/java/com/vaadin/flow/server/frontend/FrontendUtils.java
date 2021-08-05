@@ -977,7 +977,8 @@ public class FrontendUtils {
          * Constructs an exception telling with which code the process was
          * exited.
          *
-         * @param processExitCode process exit code
+         * @param processExitCode
+         *            process exit code
          */
         public CommandExecutionException(int processExitCode) {
             super("Process execution failed with exit code " + processExitCode);
@@ -989,7 +990,8 @@ public class FrontendUtils {
         try {
             String output = executeCommand(versionCommand);
             return new FrontendVersion(parseVersionString(output));
-        } catch (InterruptedException | IOException | CommandExecutionException e) {
+        } catch (InterruptedException | IOException
+                | CommandExecutionException e) {
             throw new UnknownVersionException(tool,
                     "Using command " + String.join(" ", versionCommand), e);
         }
@@ -998,18 +1000,22 @@ public class FrontendUtils {
     /**
      * Executes a given command as a native process.
      *
-     * @param command the command to be executed and it's arguments.
+     * @param command
+     *            the command to be executed and it's arguments.
      *
      * @return process output string.
-     * @throws IOException if I/O error occurs during the execution.
-     * @throws InterruptedException when the current thread is being
-     * interrupted while waiting for a process to complete.
-     * @throws CommandExecutionException if the process completes with non-zero code.
+     * @throws IOException
+     *             if I/O error occurs during the execution.
+     * @throws InterruptedException
+     *             when the current thread is being interrupted while waiting
+     *             for a process to complete.
+     * @throws CommandExecutionException
+     *             if the process completes with non-zero code.
      */
     public static String executeCommand(List<String> command)
-            throws IOException, InterruptedException, CommandExecutionException {
-        Process process = FrontendUtils.createProcessBuilder(command)
-                .start();
+            throws IOException, InterruptedException,
+            CommandExecutionException {
+        Process process = FrontendUtils.createProcessBuilder(command).start();
         int exitCode = process.waitFor();
         if (exitCode != 0) {
             throw new CommandExecutionException(exitCode);

@@ -611,38 +611,37 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     @Test
     public void runPnpmInstall_checkNpmAcceptsWhitespaces_throwsOnWindows()
             throws ExecutionFailedException, IOException {
-        Assume.assumeTrue(
-                "This test is only for Windows, since the issue with " +
-                "whitespaces in npm processed directories reproduces only on " +
-                "Windows",
-                FrontendUtils.isWindows());
+        Assume.assumeTrue("This test is only for Windows, since the issue with "
+                + "whitespaces in npm processed directories reproduces only on "
+                + "Windows", FrontendUtils.isWindows());
 
         // given
-        FrontendStubs.ToolStubInfo nodeStub =
-                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NODE)
-                        .withVersion("6.0.0").withCacheDir("/foo/bar/").build();
-        FrontendStubs.ToolStubInfo npmStub =
-                FrontendStubs.ToolStubInfo.builder().none();
-        createStubNode(nodeStub, npmStub, getNodeUpdater().npmFolder.getAbsolutePath());
+        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
+                .builder().forTool(FrontendStubs.BuildTool.NODE)
+                .withVersion("6.0.0").withCacheDir("/foo/bar/").build();
+        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
+                .builder().none();
+        createStubNode(nodeStub, npmStub,
+                getNodeUpdater().npmFolder.getAbsolutePath());
 
         exception.expect(ExecutionFailedException.class);
         exception.expectMessage(
-                "======================================================================================================\n" +
-                "The path to npm cache contains whitespaces, and the currently installed npm version doesn't accept this.\n" +
-                "Most likely your Windows user home path contains whitespaces.\n" +
-                "To workaround it, please change the npm cache path by using the following command:\n" +
-                "    npm config set cache [path-to-npm-cache] --global\n" +
-                "(you may also want to exclude the whitespaces with 'dir /x' to use the same dir),\n" +
-                "or upgrade npm version to 7 (or newer) by:\n" +
-                " 1) Running 'npm-windows-upgrade' tool with Windows PowerShell:\n" +
-                "        Set-ExecutionPolicy Unrestricted -Scope CurrentUser -Force\n" +
-                "        npm install -g npm-windows-upgrade\n" +
-                "        npm-windows-upgrade\n" +
-                " 2) Manually installing a newer version of npx: npm install -g npx\n" +
-                " 3) Manually installing a newer version of pnpm: npm install -g pnpm\n" +
-                " 4) Deleting the following files from your Vaadin project's folder (if present):\n" +
-                "        node_modules, package-lock.json, webpack.generated.js, pnpm-lock.yaml, pnpmfile.js\n" +
-                "======================================================================================================");
+                "======================================================================================================\n"
+                        + "The path to npm cache contains whitespaces, and the currently installed npm version doesn't accept this.\n"
+                        + "Most likely your Windows user home path contains whitespaces.\n"
+                        + "To workaround it, please change the npm cache path by using the following command:\n"
+                        + "    npm config set cache [path-to-npm-cache] --global\n"
+                        + "(you may also want to exclude the whitespaces with 'dir /x' to use the same dir),\n"
+                        + "or upgrade npm version to 7 (or newer) by:\n"
+                        + " 1) Running 'npm-windows-upgrade' tool with Windows PowerShell:\n"
+                        + "        Set-ExecutionPolicy Unrestricted -Scope CurrentUser -Force\n"
+                        + "        npm install -g npm-windows-upgrade\n"
+                        + "        npm-windows-upgrade\n"
+                        + " 2) Manually installing a newer version of npx: npm install -g npx\n"
+                        + " 3) Manually installing a newer version of pnpm: npm install -g pnpm\n"
+                        + " 4) Deleting the following files from your Vaadin project's folder (if present):\n"
+                        + "        node_modules, package-lock.json, webpack.generated.js, pnpm-lock.yaml, pnpmfile.js\n"
+                        + "======================================================================================================");
         TaskRunNpmInstall task = createTask();
         getNodeUpdater().modified = true;
 

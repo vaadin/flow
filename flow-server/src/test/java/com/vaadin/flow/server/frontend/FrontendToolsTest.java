@@ -501,11 +501,9 @@ public class FrontendToolsTest {
     @Test
     public void npmAcceptsWhitespaces_npmCacheDirWithWhitespaces_falseForWindows()
             throws IOException {
-        Assume.assumeTrue(
-                "This test is only for Windows, since the issue with " +
-                "whitespaces in npm processed directories reproduces only on " +
-                "Windows",
-                FrontendUtils.isWindows());
+        Assume.assumeTrue("This test is only for Windows, since the issue with "
+                + "whitespaces in npm processed directories reproduces only on "
+                + "Windows", FrontendUtils.isWindows());
         // given
         // dir with whitespaces
         File npmCacheDir = tmpDir.newFolder("Foo Bar");
@@ -513,11 +511,11 @@ public class FrontendToolsTest {
         // this test uses node executable with npm-cli.js
         // thus, the node stub version parameter here (6.0.0) is actually
         // the returned version of stubbed npm
-        FrontendStubs.ToolStubInfo nodeStub =
-                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NODE)
-                        .withVersion("6.0.0").build();
-        FrontendStubs.ToolStubInfo npmStub =
-                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NPM).build();
+        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
+                .builder().forTool(FrontendStubs.BuildTool.NODE)
+                .withVersion("6.0.0").build();
+        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
+                .builder().forTool(FrontendStubs.BuildTool.NPM).build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
@@ -531,9 +529,9 @@ public class FrontendToolsTest {
     public void npmAcceptsWhitespaces_npmCacheDirWithWhitespaces_trueForNonWindows()
             throws IOException {
         Assume.assumeFalse(
-                "This test is for the rest of OS rather than Windows, since " +
-                "the issue with whitespaces in directories processed by npm, " +
-                "is not reproduced on them",
+                "This test is for the rest of OS rather than Windows, since "
+                        + "the issue with whitespaces in directories processed by npm, "
+                        + "is not reproduced on them",
                 FrontendUtils.isWindows());
 
         // given
@@ -543,11 +541,11 @@ public class FrontendToolsTest {
         // this test uses node executable with npm-cli.js
         // thus, the node stub version parameter here (6.0.0) is actually
         // the returned version of stubbed npm
-        FrontendStubs.ToolStubInfo nodeStub =
-                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NODE)
-                        .withVersion("6.0.0").build();
-        FrontendStubs.ToolStubInfo npmStub =
-                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NPM).build();
+        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
+                .builder().forTool(FrontendStubs.BuildTool.NODE)
+                .withVersion("6.0.0").build();
+        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
+                .builder().forTool(FrontendStubs.BuildTool.NPM).build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
@@ -560,11 +558,9 @@ public class FrontendToolsTest {
     @Test
     public void npmAcceptsWhitespaces_npmCacheNoWhitespaces_trueForWindows()
             throws IOException {
-        Assume.assumeTrue(
-                "This test is only for Windows, since the issue with " +
-                "whitespaces in npm processed directories reproduces only on " +
-                "Windows",
-                FrontendUtils.isWindows());
+        Assume.assumeTrue("This test is only for Windows, since the issue with "
+                + "whitespaces in npm processed directories reproduces only on "
+                + "Windows", FrontendUtils.isWindows());
 
         // given
         // dir with no whitespaces
@@ -573,11 +569,11 @@ public class FrontendToolsTest {
         // this test uses node executable with npm-cli.js
         // thus, the node stub version parameter here (6.0.0) is actually
         // the returned version of stubbed npm
-        FrontendStubs.ToolStubInfo nodeStub =
-                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NODE)
-                        .withVersion("6.0.0").build();
-        FrontendStubs.ToolStubInfo npmStub =
-                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NPM).build();
+        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
+                .builder().forTool(FrontendStubs.BuildTool.NODE)
+                .withVersion("6.0.0").build();
+        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
+                .builder().forTool(FrontendStubs.BuildTool.NPM).build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
@@ -588,13 +584,10 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void npmAcceptsWhitespaces_npm7_trueForWindows()
-            throws IOException {
-        Assume.assumeTrue(
-                "This test is only for Windows, since the issue with " +
-                "whitespaces in npm processed directories reproduces only on " +
-                "Windows",
-                FrontendUtils.isWindows());
+    public void npmAcceptsWhitespaces_npm7_trueForWindows() throws IOException {
+        Assume.assumeTrue("This test is only for Windows, since the issue with "
+                + "whitespaces in npm processed directories reproduces only on "
+                + "Windows", FrontendUtils.isWindows());
 
         // given
         // dir with whitespaces
@@ -603,11 +596,11 @@ public class FrontendToolsTest {
         // this test uses node executable with npm-cli.js
         // thus, the node stub version parameter here (6.0.0) is actually
         // the returned version of stubbed npm
-        FrontendStubs.ToolStubInfo nodeStub =
-                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NODE)
-                        .withVersion("7.0.0").build();
-        FrontendStubs.ToolStubInfo npmStub =
-                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NPM).build();
+        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
+                .builder().forTool(FrontendStubs.BuildTool.NODE)
+                .withVersion("7.0.0").build();
+        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
+                .builder().forTool(FrontendStubs.BuildTool.NPM).build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
@@ -619,11 +612,11 @@ public class FrontendToolsTest {
 
     @Test
     public void getNpmCacheDir_returnsCorrectPath() throws IOException {
-        FrontendStubs.ToolStubInfo nodeStub =
-                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NODE)
-                        .withCacheDir("/foo/bar/").build();
-        FrontendStubs.ToolStubInfo npmStub =
-                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NPM).build();
+        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
+                .builder().forTool(FrontendStubs.BuildTool.NODE)
+                .withCacheDir("/foo/bar/").build();
+        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
+                .builder().forTool(FrontendStubs.BuildTool.NPM).build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         File npmCacheDir = tools.getNpmCacheDir();
