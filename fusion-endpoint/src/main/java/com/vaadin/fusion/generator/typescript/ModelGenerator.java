@@ -20,13 +20,6 @@ import com.vaadin.fusion.generator.OpenAPIObjectGenerator;
 import static com.vaadin.fusion.generator.typescript.CodeGeneratorUtils.getSimpleNameFromImports;
 
 public class ModelGenerator {
-    private static final Pattern ARRAY_TYPE_NAME_PATTERN = Pattern
-            .compile("ReadonlyArray<(.*)>");
-    private static final Pattern MAPPED_TYPE_NAME_PATTERN = Pattern
-            .compile("Readonly<Record<string, (.*)>>");
-    private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern
-            .compile("^(string|number|boolean)");
-
     static Helper<CodegenProperty> getModelArgumentsHelper() {
         return (prop, options) -> getModelArguments(prop, options.param(0));
     }
@@ -34,19 +27,6 @@ public class ModelGenerator {
     static Helper<CodegenProperty> getModelFullTypeHelper() {
         return (prop, options) -> getModelFullType(
                 getSimpleNameFromImports(prop.datatype, options.param(0)));
-    }
-
-    private static String fixNameForModel(String name) {
-        name = removeOptionalSuffix(name);
-        if (ARRAY_TYPE_NAME_PATTERN.matcher(name).find()) {
-            name = "Array";
-        } else if ("any".equals(name)
-                || MAPPED_TYPE_NAME_PATTERN.matcher(name).find()) {
-            name = "Object";
-        } else if (PRIMITIVE_TYPE_NAME_PATTERN.matcher(name).find()) {
-            name = GeneratorUtils.capitalize(name);
-        }
-        return name + MainGenerator.MODEL;
     }
 
     private static List<String> getConstrainsArguments(
@@ -86,23 +66,6 @@ public class ModelGenerator {
         root.traverse().visit(visitor).finish();
 
         return visitor.getResult();
-    }
-
-    private static String getModelVariableType(String variableName) {
-        Matcher matcher = PRIMITIVE_TYPE_NAME_PATTERN.matcher(variableName);
-        if (matcher.find()) {
-            return matcher.group(1);
-        }
-        return MainGenerator.MODEL + "Type<" + getModelFullType(variableName)
-                + ">";
-    }
-
-    private static String removeOptionalSuffix(String name) {
-        if (name.endsWith(MainGenerator.OPTIONAL_SUFFIX)) {
-            return name.substring(0,
-                    name.length() - MainGenerator.OPTIONAL_SUFFIX.length());
-        }
-        return name;
     }
 
     private static class ModelArgumentsVisitor extends Visitor {
@@ -262,7 +225,7 @@ public class ModelGenerator {
         }
 
         protected boolean isArray(TypeParser.Node node) {
-            return node.getName().contains("Array");
+            return node.getName().equals("ReadonlyArray");
         }
 
         protected boolean isObject(TypeParser.Node node) {
