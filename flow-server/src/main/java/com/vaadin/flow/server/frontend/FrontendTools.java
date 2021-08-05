@@ -520,8 +520,9 @@ public class FrontendTools {
             npmCacheCommand.add("get");
             npmCacheCommand.add("cache");
             npmCacheCommand.add("--global");
-            String output = FrontendUtils.executeCommand(npmCacheCommand)
-                    .trim();
+            String output = FrontendUtils.executeCommand(npmCacheCommand);
+            output = output.replaceAll(System.getProperty("line.separator"),
+                    "");
             if (output.isEmpty()) {
                 throw new IllegalStateException(
                         String.format("Command '%s' returned an empty path",

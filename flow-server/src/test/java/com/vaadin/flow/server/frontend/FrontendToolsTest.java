@@ -508,13 +508,10 @@ public class FrontendToolsTest {
         // dir with whitespaces
         File npmCacheDir = tmpDir.newFolder("Foo Bar");
 
-        // this test uses node executable with npm-cli.js
-        // thus, the node stub version parameter here (6.0.0) is actually
-        // the returned version of stubbed npm
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NODE).withVersion("6.0.0").build();
+        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
+        // Old npm version
         FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NPM).build();
+                .builder(FrontendStubs.Tool.NPM).withVersion("6.0.0").build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
@@ -537,13 +534,10 @@ public class FrontendToolsTest {
         // dir with whitespaces
         File npmCacheDir = tmpDir.newFolder("Foo Bar");
 
-        // this test uses node executable with npm-cli.js
-        // thus, the node stub version parameter here (6.0.0) is actually
-        // the returned version of stubbed npm
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NODE).withVersion("6.0.0").build();
+        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
+        // Old npm version
         FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NPM).build();
+                .builder(FrontendStubs.Tool.NPM).withVersion("6.0.0").build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
@@ -564,13 +558,10 @@ public class FrontendToolsTest {
         // dir with no whitespaces
         File npmCacheDir = tmpDir.newFolder("FooBar");
 
-        // this test uses node executable with npm-cli.js
-        // thus, the node stub version parameter here (6.0.0) is actually
-        // the returned version of stubbed npm
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NODE).withVersion("6.0.0").build();
+        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
+        // Old npm version
         FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NPM).build();
+                .builder(FrontendStubs.Tool.NPM).withVersion("6.0.0").build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
@@ -590,13 +581,10 @@ public class FrontendToolsTest {
         // dir with whitespaces
         File npmCacheDir = tmpDir.newFolder("Foo  Bar");
 
-        // this test uses node executable with npm-cli.js
-        // thus, the node stub version parameter here (6.0.0) is actually
-        // the returned version of stubbed npm
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NODE).withVersion("7.0.0").build();
+        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
+        // Acceptable npm version
         FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NPM).build();
+                .builder(FrontendStubs.Tool.NPM).withVersion("7.0.0").build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
@@ -608,11 +596,10 @@ public class FrontendToolsTest {
 
     @Test
     public void getNpmCacheDir_returnsCorrectPath() throws IOException {
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NODE).withCacheDir("/foo/bar/")
-                .build();
+        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
         FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NPM).build();
+                .builder(FrontendStubs.Tool.NPM).withCacheDir("/foo/bar")
+                .build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         File npmCacheDir = tools.getNpmCacheDir();

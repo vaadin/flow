@@ -616,10 +616,11 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 + "Windows", FrontendUtils.isWindows());
 
         // given
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NODE).withVersion("6.0.0")
-                .withCacheDir("/foo/bar/").build();
-        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo.none();
+        File npmCacheFolder = temporaryFolder.newFolder("Foo Bar");
+        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
+        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
+                .builder(FrontendStubs.Tool.NPM).withVersion("6.0.0")
+                .withCacheDir(npmCacheFolder.getAbsolutePath()).build();
         createStubNode(nodeStub, npmStub,
                 getNodeUpdater().npmFolder.getAbsolutePath());
 
