@@ -628,7 +628,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 getNodeUpdater().npmFolder.getAbsolutePath());
 
         exception.expect(ExecutionFailedException.class);
-        exception.expectMessage(String.format(
+        exception.expectMessage(
                 "%n%n======================================================================================================%n"
                         + "The path to npm cache contains whitespaces, and the currently installed npm version doesn't accept this.%n"
                         + "Most likely your Windows user home path contains whitespaces.%n"
@@ -644,7 +644,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                         + " 3) Manually installing a newer version of pnpm: npm install -g pnpm%n"
                         + " 4) Deleting the following files from your Vaadin project's folder (if present):%n"
                         + "        node_modules, package-lock.json, webpack.generated.js, pnpm-lock.yaml, pnpmfile.js%n"
-                        + "======================================================================================================%n"));
+                        + "======================================================================================================%n");
         TaskRunNpmInstall task = createTask();
         getNodeUpdater().modified = true;
 
