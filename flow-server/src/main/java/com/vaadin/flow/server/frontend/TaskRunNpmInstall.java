@@ -335,7 +335,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 File npmCacheDir = tools.getNpmCacheDir();
                 if (!tools.npmAcceptsWhitespaces(npmCacheDir)) {
                     throw new IllegalStateException(
-                            USER_HOME_CONTAINS_WHITESPACES);
+                            String.format(USER_HOME_CONTAINS_WHITESPACES));
                 }
                 executable = tools.getPnpmExecutable();
             } else {

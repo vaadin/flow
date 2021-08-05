@@ -625,23 +625,9 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 getNodeUpdater().npmFolder.getAbsolutePath());
 
         exception.expect(ExecutionFailedException.class);
-        exception.expectMessage(
-                "%n%n======================================================================================================%n"
-                        + "The path to npm cache contains whitespaces, and the currently installed npm version doesn't accept this.%n"
-                        + "Most likely your Windows user home path contains whitespaces.%n"
-                        + "To workaround it, please change the npm cache path by using the following command:%n"
-                        + "    npm config set cache [path-to-npm-cache] --global%n"
-                        + "(you may also want to exclude the whitespaces with 'dir /x' to use the same dir),%n"
-                        + "or upgrade npm version to 7 (or newer) by:%n"
-                        + " 1) Running 'npm-windows-upgrade' tool with Windows PowerShell:%n"
-                        + "        Set-ExecutionPolicy Unrestricted -Scope CurrentUser -Force%n"
-                        + "        npm install -g npm-windows-upgrade%n"
-                        + "        npm-windows-upgrade%n"
-                        + " 2) Manually installing a newer version of npx: npm install -g npx%n"
-                        + " 3) Manually installing a newer version of pnpm: npm install -g pnpm%n"
-                        + " 4) Deleting the following files from your Vaadin project's folder (if present):%n"
-                        + "        node_modules, package-lock.json, webpack.generated.js, pnpm-lock.yaml, pnpmfile.js%n"
-                        + "======================================================================================================%n");
+        exception.expectMessage(CoreMatchers.containsString(
+                "The path to npm cache contains whitespaces, and the currently installed npm version doesn't accept this."));
+
         TaskRunNpmInstall task = createTask();
         getNodeUpdater().modified = true;
 
