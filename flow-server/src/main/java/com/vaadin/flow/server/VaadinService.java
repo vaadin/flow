@@ -829,7 +829,7 @@ public abstract class VaadinService implements Serializable {
      * @param lock
      *            Lock instance to unlock
      */
-    protected void unlockSession(WrappedSession wrappedSession) {
+    protected void unlockSession(WrappedSession wrappedSession, Lock lock) {
         assert ((ReentrantLock) lock)
                 .isHeldByCurrentThread() : "Trying to unlock the session but it has not been locked by this thread";
         lock.unlock();
