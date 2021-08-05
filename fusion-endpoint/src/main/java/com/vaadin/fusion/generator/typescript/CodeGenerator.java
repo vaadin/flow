@@ -83,8 +83,7 @@ public class CodeGenerator extends AbstractTypeScriptClientCodegen {
             .compile("^/([^/{}\n\t]+)/([^/{}\n\t]+)$");
     private static final String VAADIN_CONNECT_CLASS_DESCRIPTION = "vaadinConnectClassDescription";
     private static final String VAADIN_FILE_PATH = "vaadinFilePath";
-    private final Logger logger = LoggerFactory
-            .getLogger(CodeGenerator.class);
+    private final Logger logger = LoggerFactory.getLogger(CodeGenerator.class);
     private List<Tag> tags;
 
     /**

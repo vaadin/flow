@@ -86,8 +86,8 @@ public class TypeParserTest {
 
         public TypeParser.Node exit(TypeParser.Node node,
                 TypeParser.Node parent) {
-            if (parent == null || parent.getNested().indexOf(node) == parent
-                    .getNested().size() - 1) {
+            if (parent == null || parent.getNested()
+                    .indexOf(node) == parent.getNested().size() - 1) {
                 builder.append("]");
             } else {
                 builder.append(", ");
