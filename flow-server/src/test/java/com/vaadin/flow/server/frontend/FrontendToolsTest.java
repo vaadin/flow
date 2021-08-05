@@ -35,6 +35,7 @@ import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -603,8 +604,14 @@ public class FrontendToolsTest {
         createStubNode(nodeStub, npmStub, baseDir);
 
         File npmCacheDir = tools.getNpmCacheDir();
+
         Assert.assertNotNull(npmCacheDir);
-        Assert.assertEquals("/foo/bar", npmCacheDir.getAbsolutePath());
+        String npmCachePath = npmCacheDir.getPath();
+
+        Assert.assertEquals("foo/bar",
+                npmCachePath
+                        .substring(FilenameUtils.getPrefixLength(npmCachePath))
+                        .replace("\\", "/"));
     }
 
     private void assertNpmCommand(Supplier<String> path) throws IOException {

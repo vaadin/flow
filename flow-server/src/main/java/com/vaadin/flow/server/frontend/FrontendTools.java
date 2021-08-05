@@ -521,8 +521,7 @@ public class FrontendTools {
             npmCacheCommand.add("cache");
             npmCacheCommand.add("--global");
             String output = FrontendUtils.executeCommand(npmCacheCommand);
-            output = output.replaceAll(System.getProperty("line.separator"),
-                    "");
+            output = parseCommandOutput(output);
             if (output.isEmpty()) {
                 throw new IllegalStateException(
                         String.format("Command '%s' returned an empty path",
@@ -799,5 +798,12 @@ public class FrontendTools {
         } else {
             return getNodeExecutable();
         }
+    }
+
+    private String parseCommandOutput(String output) {
+        if (output == null || output.isEmpty()) {
+            return output;
+        }
+        return String.join("", output.split(System.lineSeparator()));
     }
 }
