@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for stubbing Node.JS and Webpack scripts.
@@ -348,6 +349,8 @@ public class FrontendStubs {
                         .append(cacheDir).append("');\n");
             }
             script = scriptBuilder.toString();
+
+            LoggerFactory.getLogger(FrontendStubs.class).info("Script = " + script);
             return script;
         }
     }

@@ -520,6 +520,7 @@ public class FrontendTools {
             npmCacheCommand.add("get");
             npmCacheCommand.add("cache");
             npmCacheCommand.add("--global");
+            getLogger().info("Commands = " + npmCacheCommand);
             String output = FrontendUtils.executeCommand(npmCacheCommand);
             getLogger().info("Command execution output: " + output);
             output = parseCommandOutput(output);
