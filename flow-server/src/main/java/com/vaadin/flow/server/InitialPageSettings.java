@@ -22,6 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jsoup.nodes.Element;
+import org.jsoup.parser.Tag;
+
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.ReconnectDialogConfiguration;
 import com.vaadin.flow.component.UI;
@@ -29,16 +32,18 @@ import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import org.jsoup.nodes.Element;
-import org.jsoup.parser.Tag;
 
 /**
  * Initial page settings class for modifying the bootstrap page.
  *
  * @since 1.0
+ * @deprecated Use {@link BootstrapPageResponse} instance passed via
+ *             {@link BootstrapListener} instead
  */
+@Deprecated
 public class InitialPageSettings implements Serializable {
 
     /**
@@ -72,16 +77,16 @@ public class InitialPageSettings implements Serializable {
      * Create new initial page settings object.
      *
      * @param request
-     *         initial request
+     *            initial request
      * @param ui
-     *         target ui
+     *            target ui
      * @param afterNavigationEvent
-     *         after navigation event
+     *            after navigation event
      * @param browser
-     *         browser information
+     *            browser information
      */
     public InitialPageSettings(VaadinRequest request, UI ui,
-                               AfterNavigationEvent afterNavigationEvent, WebBrowser browser) {
+            AfterNavigationEvent afterNavigationEvent, WebBrowser browser) {
         this.request = request;
         this.ui = ui;
         this.afterNavigationEvent = afterNavigationEvent;
@@ -128,7 +133,7 @@ public class InitialPageSettings implements Serializable {
      * Set the viewport value.
      *
      * @param viewport
-     *         viewport value to set
+     *            viewport value to set
      */
     public void setViewport(String viewport) {
         this.viewport = viewport;
@@ -150,9 +155,9 @@ public class InitialPageSettings implements Serializable {
      * Inline contents from classpath file to append to head of initial page.
      *
      * @param file
-     *         dependency file to read and write to head
+     *            dependency file to read and write to head
      * @param type
-     *         dependency type
+     *            dependency type
      */
     public void addInlineFromFile(String file, WrapMode type) {
         addInlineFromFile(Position.APPEND, file, type);
@@ -162,14 +167,14 @@ public class InitialPageSettings implements Serializable {
      * Inline contents from classpath file to head of initial page.
      *
      * @param position
-     *         prepend or append
+     *            prepend or append
      * @param file
-     *         dependency file to read and write to head
+     *            dependency file to read and write to head
      * @param type
-     *         dependency type
+     *            dependency type
      */
     public void addInlineFromFile(Position position, String file,
-                                  WrapMode type) {
+            WrapMode type) {
         JsonObject prepend = createInlineObject(type);
         prepend.put(Dependency.KEY_CONTENTS,
                 BootstrapUtils.getDependencyContents(request, file));
@@ -180,9 +185,9 @@ public class InitialPageSettings implements Serializable {
      * Add content to append to head of initial page.
      *
      * @param contents
-     *         inline content to be added to the page
+     *            inline content to be added to the page
      * @param type
-     *         type of content which can be JavaScript or Stylesheet (CSS)
+     *            type of content which can be JavaScript or Stylesheet (CSS)
      */
     public void addInlineWithContents(String contents, WrapMode type) {
         addInlineWithContents(Position.APPEND, contents, type);
@@ -192,14 +197,14 @@ public class InitialPageSettings implements Serializable {
      * Add content to head of initial page.
      *
      * @param position
-     *         prepend or append
+     *            prepend or append
      * @param contents
-     *         inline content to be added to the page
+     *            inline content to be added to the page
      * @param type
-     *         type of content which can be JavaScript or Stylesheet (CSS)
+     *            type of content which can be JavaScript or Stylesheet (CSS)
      */
     public void addInlineWithContents(Position position, String contents,
-                                      WrapMode type) {
+            WrapMode type) {
         JsonObject prepend = createInlineObject(type);
         prepend.put(Dependency.KEY_CONTENTS, contents);
         getInline(position).add(prepend);
@@ -209,7 +214,7 @@ public class InitialPageSettings implements Serializable {
      * Get the list of inline objects to append to head.
      *
      * @param position
-     *         prepend or append
+     *            prepend or append
      * @return current list of inline objects
      */
     protected List<JsonObject> getInline(Position position) {
@@ -220,7 +225,7 @@ public class InitialPageSettings implements Serializable {
      * Get the list of links to append to head.
      *
      * @param position
-     *         prepend or append
+     *            prepend or append
      * @return current list of links
      */
     protected List<Element> getElement(Position position) {
@@ -231,7 +236,7 @@ public class InitialPageSettings implements Serializable {
      * Add a link to be appended to initial page head.
      *
      * @param href
-     *         link href
+     *            link href
      */
     public void addLink(String href) {
         addLink(Position.APPEND, href);
@@ -241,9 +246,9 @@ public class InitialPageSettings implements Serializable {
      * Add a link to initial page head.
      *
      * @param position
-     *         prepend or append
+     *            prepend or append
      * @param href
-     *         link href
+     *            link href
      */
     public void addLink(Position position, String href) {
         addLink(position, href, new HashMap<>());
@@ -253,9 +258,9 @@ public class InitialPageSettings implements Serializable {
      * Append a link to initial page head.
      *
      * @param href
-     *         location of the linked document
+     *            location of the linked document
      * @param attributes
-     *         map of attributes for link element
+     *            map of attributes for link element
      */
     public void addLink(String href, Map<String, String> attributes) {
         addLink(Position.APPEND, href, attributes);
@@ -265,14 +270,14 @@ public class InitialPageSettings implements Serializable {
      * Add a link to initial page head.
      *
      * @param position
-     *         prepend or append
+     *            prepend or append
      * @param href
-     *         location of the linked document
+     *            location of the linked document
      * @param attributes
-     *         map of attributes for link element
+     *            map of attributes for link element
      */
     public void addLink(Position position, String href,
-                        Map<String, String> attributes) {
+            Map<String, String> attributes) {
         Element link = new Element(Tag.valueOf("link"), "").attr("href", href);
         attributes.forEach((key, value) -> link.attr(key, value));
         getElement(position).add(link);
@@ -282,9 +287,9 @@ public class InitialPageSettings implements Serializable {
      * Append a link to initial page head.
      *
      * @param rel
-     *         link relationship
+     *            link relationship
      * @param href
-     *         location of the linked document
+     *            location of the linked document
      */
     public void addLink(String rel, String href) {
         addLink(Position.APPEND, rel, href);
@@ -294,11 +299,11 @@ public class InitialPageSettings implements Serializable {
      * Add a link to initial page head.
      *
      * @param position
-     *         prepend or append
+     *            prepend or append
      * @param rel
-     *         link relationship
+     *            link relationship
      * @param href
-     *         location of the linked document
+     *            location of the linked document
      */
     public void addLink(Position position, String rel, String href) {
         Element link = new Element(Tag.valueOf("link"), "").attr("href", href);
@@ -310,11 +315,11 @@ public class InitialPageSettings implements Serializable {
      * Append a fav icon link to initial page head.
      *
      * @param rel
-     *         link relationship
+     *            link relationship
      * @param href
-     *         location of the fav icon
+     *            location of the fav icon
      * @param sizes
-     *         size of the linked fav icon
+     *            size of the linked fav icon
      */
     public void addFavIcon(String rel, String href, String sizes) {
         addFavIcon(Position.APPEND, rel, href, sizes);
@@ -324,16 +329,16 @@ public class InitialPageSettings implements Serializable {
      * Append a fav icon link to initial page head.
      *
      * @param position
-     *         prepend or append
+     *            prepend or append
      * @param rel
-     *         link relationship
+     *            link relationship
      * @param href
-     *         location of the fav icon
+     *            location of the fav icon
      * @param sizes
-     *         size of the linked fav icon
+     *            size of the linked fav icon
      */
     public void addFavIcon(Position position, String rel, String href,
-                           String sizes) {
+            String sizes) {
         Element link = new Element(Tag.valueOf("link"), "").attr("href", href);
         link.attr("rel", rel);
         link.attr("sizes", sizes);
@@ -344,9 +349,9 @@ public class InitialPageSettings implements Serializable {
      * Add a meta tag to be appended to initial page head.
      *
      * @param name
-     *         meta tag name
+     *            meta tag name
      * @param content
-     *         meta tag content
+     *            meta tag content
      */
     public void addMetaTag(String name, String content) {
         addMetaTag(Position.APPEND, name, content);
@@ -356,11 +361,11 @@ public class InitialPageSettings implements Serializable {
      * Add a meta tag to initial page head.
      *
      * @param position
-     *         prepend or append
+     *            prepend or append
      * @param name
-     *         meta tag name
+     *            meta tag name
      * @param content
-     *         meta tag content
+     *            meta tag content
      */
     public void addMetaTag(Position position, String name, String content) {
         Element meta = new Element(Tag.valueOf("meta"), "").attr("name", name)
