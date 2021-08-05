@@ -44,6 +44,10 @@ export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEnti
     return this[_getPropertyModel]('children', ArrayModel, [true, MyEntityModel, [true]]);
   }
 
+  get complexMap(): ObjectModel<Readonly<Record<string, ModelValue<ObjectModel<Readonly<Record<string, ModelValue<ArrayModel<ModelValue<MyEntityModel>, MyEntityModel>>>>>>>>> {
+    return this [_getPropertyModel]('complexMap', ObjectModel, [true]);
+  }
+
   get decimalMax(): NumberModel {
     return this[_getPropertyModel]('decimalMax', NumberModel, [false, new DecimalMax({value:"0.01", inclusive:false})]);
   }
@@ -88,6 +92,10 @@ export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEnti
     return this[_getPropertyModel]('localTime', StringModel, [true]);
   }
 
+  get mapWithList(): ObjectModel<Readonly<Record<string, ModelValue<ArrayModel<string, StringModel>>>>> {
+    return this [_getPropertyModel]('mapWithList', ObjectModel, [true]);
+  }
+
   get max(): NumberModel {
     return this[_getPropertyModel]('max', NumberModel, [true, new Max(2)]);
   }
@@ -106,6 +114,10 @@ export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEnti
 
   get negativeOrZero(): NumberModel {
     return this[_getPropertyModel]('negativeOrZero', NumberModel, [false, new NegativeOrZero()]);
+  }
+
+  get nestedArrays(): ArrayModel<ModelValue<ArrayModel<ModelValue<ObjectModel<Readonly<Record<string, ModelValue<ArrayModel<string, StringModel>>>>>>, ObjectModel<Readonly<Record<string, ModelValue<ArrayModel<string, StringModel>>>>>>>, ArrayModel<ModelValue<ObjectModel<Readonly<Record<string, ModelValue<ArrayModel<string, StringModel>>>>>>, ObjectModel<Readonly<Record<string, ModelValue<ArrayModel<string, StringModel>>>>>>> {
+    return this [_getPropertyModel]('nestedArrays', ArrayModel, [true, ArrayModel, [true, ObjectModel, [true]]]);
   }
 
   get nonNullableList(): ArrayModel<string, StringModel> {

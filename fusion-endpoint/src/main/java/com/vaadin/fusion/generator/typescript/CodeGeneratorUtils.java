@@ -1,11 +1,13 @@
-package com.vaadin.fusion.generator;
+package com.vaadin.fusion.generator.typescript;
 
 import java.util.List;
 import java.util.Map;
 
-import static com.vaadin.fusion.generator.TypescriptCodeGenerator.IMPORT;
+import com.vaadin.fusion.generator.GeneratorUtils;
 
-class TypescriptCodeGeneratorUtils {
+import static com.vaadin.fusion.generator.typescript.CodeGenerator.IMPORT;
+
+class CodeGeneratorUtils {
     private static final String JAVA_NAME_PATTERN = "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*";
 
     // Method for extracting fully qualified name in a complex type. E.g.
@@ -13,16 +15,8 @@ class TypescriptCodeGeneratorUtils {
     // `Map<String, Map<String, com.example.mypackage.Bean>>`
     static String getSimpleNameFromComplexType(String dataType,
             List<Map<String, String>> imports) {
-        TypescriptTypeParser.Node root = TypescriptTypeParser.parse(dataType)
-                .traverse().visit((node, _p) -> {
-                    String name = node.getName();
-
-                    if (name.contains(".")) {
-                        node.setName(getSimpleNameFromImports(name, imports));
-                    }
-
-                    return node;
-                }).finish();
+        TypeParser.Node root = TypeParser.parse(dataType).traverse()
+                .visit(new SimpleNameVisitor(imports)).finish();
 
         return root.toString();
     }
@@ -48,5 +42,25 @@ class TypescriptCodeGeneratorUtils {
             return GeneratorUtils.substringAfterLast(qualifiedName, ".");
         }
         return qualifiedName;
+    }
+
+    static class SimpleNameVisitor extends TypeParser.Visitor {
+        private final List<Map<String, String>> imports;
+
+        SimpleNameVisitor(List<Map<String, String>> imports) {
+            this.imports = imports;
+        }
+
+        @Override
+        public TypeParser.Node enter(TypeParser.Node node,
+                TypeParser.Node parent) {
+            String name = node.getName();
+
+            if (name.contains(".")) {
+                node.setName(getSimpleNameFromImports(name, imports));
+            }
+
+            return node;
+        }
     }
 }

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.fusion.generator;
+package com.vaadin.fusion.generator.typescript;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,18 +57,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.fusion.EndpointNameChecker;
+import com.vaadin.fusion.generator.GeneratorUtils;
+import com.vaadin.fusion.generator.MainGenerator;
+import com.vaadin.fusion.generator.OpenAPIObjectGenerator;
 
-import static com.vaadin.fusion.generator.TypescriptCodeGeneratorUtils.getSimpleNameFromImports;
-import static com.vaadin.fusion.generator.TypescriptCodeGeneratorUtils.getSimpleNameFromQualifiedName;
-import static com.vaadin.fusion.generator.TypescriptModelGenerator.getModelArgumentsHelper;
-import static com.vaadin.fusion.generator.TypescriptModelGenerator.getModelFullTypeHelper;
+import static com.vaadin.fusion.generator.typescript.CodeGeneratorUtils.getSimpleNameFromImports;
+import static com.vaadin.fusion.generator.typescript.CodeGeneratorUtils.getSimpleNameFromQualifiedName;
+import static com.vaadin.fusion.generator.typescript.ModelGenerator.getModelArgumentsHelper;
+import static com.vaadin.fusion.generator.typescript.ModelGenerator.getModelFullTypeHelper;
 
 /**
  * Vaadin fusion JavaScript generator implementation for swagger-codegen. Some
  * parts of the implementation are copied from
  * {@link io.swagger.codegen.languages.JavascriptClientCodegen}
  */
-public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
+public class CodeGenerator extends AbstractTypeScriptClientCodegen {
     static final String IMPORT = "import";
     private static final String EXTENSION_VAADIN_CONNECT_METHOD_NAME = "x-vaadin-connect-method-name";
     private static final String EXTENSION_VAADIN_CONNECT_PARAMETERS = "x-vaadin-connect-parameters";
@@ -81,13 +84,13 @@ public class TypescriptCodeGenerator extends AbstractTypeScriptClientCodegen {
     private static final String VAADIN_CONNECT_CLASS_DESCRIPTION = "vaadinConnectClassDescription";
     private static final String VAADIN_FILE_PATH = "vaadinFilePath";
     private final Logger logger = LoggerFactory
-            .getLogger(TypescriptCodeGenerator.class);
+            .getLogger(CodeGenerator.class);
     private List<Tag> tags;
 
     /**
      * Create vaadin ts codegen instance.
      */
-    public TypescriptCodeGenerator() {
+    public CodeGenerator() {
         super();
 
         // set the output folder here
