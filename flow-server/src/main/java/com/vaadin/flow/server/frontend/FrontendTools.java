@@ -521,7 +521,9 @@ public class FrontendTools {
             npmCacheCommand.add("cache");
             npmCacheCommand.add("--global");
             String output = FrontendUtils.executeCommand(npmCacheCommand);
+            getLogger().info("Command execution output: " + output);
             output = parseCommandOutput(output);
+            getLogger().info("Command execution output after parsing: " + output);
             if (output.isEmpty()) {
                 throw new IllegalStateException(
                         String.format("Command '%s' returned an empty path",
