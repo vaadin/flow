@@ -30,9 +30,6 @@ public class FrontendStubs {
     public static final String WEBPACK_SERVER = "node_modules/webpack-dev-server/bin/webpack-dev-server.js";
     public static final String WEBPACK_TEST_OUT_FILE = "webpack-out.test";
 
-    private static final String DEFAULT_NODE_STUB_VERSION = "8.0.0";
-    private static final String DEFAULT_NPM_STUB_VERSION = "6.14.10";
-
     /**
      * Only static methods.
      */
@@ -66,8 +63,7 @@ public class FrontendStubs {
         if (stubNpm.isStubbed()) {
             File binDir = new File(baseDir, "node/node_modules/npm/bin");
             FileUtils.forceMkdir(binDir);
-            String stub = String.format("process.argv.includes('--version') && "
-                    + "console.log(%s);", stubNpm.getVersion());
+            String stub = stubNpm.getScript();
             FileUtils.writeStringToFile(new File(binDir, "npm-cli.js"), stub,
                     StandardCharsets.UTF_8);
             FileUtils.writeStringToFile(new File(binDir, "npx-cli.js"), stub,
@@ -76,6 +72,8 @@ public class FrontendStubs {
         boolean isWindows = System.getProperty("os.name").startsWith("Windows");
 
         if (stubNode.isStubbed()) {
+            File nodeDir = new File(baseDir, "node");
+            FileUtils.forceMkdir(nodeDir);
             File node = new File(baseDir,
                     isWindows ? "node/node.exe" : "node/node");
             node.createNewFile();
@@ -87,18 +85,7 @@ public class FrontendStubs {
                 // getClassFinder().getClass().getClassLoader().getResource("test_node.exe").getFile()
                 // ), node);
             } else {
-                // @formatter:off
-                FileUtils.write(node, String.format("#!/bin/sh%n"
-                        + "for arg in \"$@\"%n"
-                        + "do%n"
-                        + "  if [ \"$arg\" = \"--version\" ] || [ \"$arg\" = \"-v\" ]; then%n"
-                        + "    echo %s%n"
-                        + "    break%n"
-                        + "  fi%n"
-                        + "done%n"
-                        + "sleep 1",
-                        stubNode.getVersion()), "UTF-8");
-                // @formatter:on
+                FileUtils.write(node, stubNode.getScript(), "UTF-8");
             }
         }
     }
@@ -120,11 +107,11 @@ public class FrontendStubs {
     public static void createStubNode(boolean stubNode, boolean stubNpm,
             String baseDir) throws IOException {
         ToolStubInfo nodeStubInfo = stubNode
-                ? ToolStubInfo.ofVersion(DEFAULT_NODE_STUB_VERSION)
-                : ToolStubInfo.none();
+                ? ToolStubInfo.builder().forTool(BuildTool.NODE).build()
+                : ToolStubInfo.builder().none();
         ToolStubInfo npmStubInfo = stubNpm
-                ? ToolStubInfo.ofVersion(DEFAULT_NPM_STUB_VERSION)
-                : ToolStubInfo.none();
+                ? ToolStubInfo.builder().forTool(BuildTool.NPM).build()
+                : ToolStubInfo.builder().none();
         createStubNode(nodeStubInfo, npmStubInfo, baseDir);
     }
 
@@ -207,55 +194,140 @@ public class FrontendStubs {
      */
     public static final class ToolStubInfo {
         private final boolean stubbed;
-        private final String version;
+        private final String script;
 
-        private ToolStubInfo(boolean stubbed, String version) {
+        private ToolStubInfo(boolean stubbed, String script) {
             this.stubbed = stubbed;
-            assert !stubbed || (version != null && !version
-                    .isEmpty()) : "Version may not be empty for stubbed tool";
-            this.version = version;
+            assert !stubbed || (script != null && !script
+                    .isEmpty()) : "Script may not be empty for stubbed tool";
+            this.script = script;
         }
 
         /**
-         * Creates a tool stub info object denoting no stubbing.
+         * Creates a new builder for constructing a new instance of tool stub
+         * info.
          *
-         * @return a tool stub info object denoting no stubbing.
+         * @return a new tool stub info builder.
          */
-        public static ToolStubInfo none() {
-            return new ToolStubInfo(false, null);
-        }
-
-        /**
-         * Creates a tool stub info object denoting generating a build tool's
-         * executable file outputting a given version number when executed with
-         * '-v' or '--version'.
-         *
-         * @param version
-         *            tool version for output.
-         * @return a tool stub info object denoting a given version to be
-         *         output.
-         */
-        public static ToolStubInfo ofVersion(String version) {
-            return new ToolStubInfo(true, version);
-        }
-
-        /**
-         * Creates a tool stub info object denoting generating a build tool's
-         * executable with a non-sense version number, i.e. for those cases when
-         * result of calling '-v' or '--version' doesn't matter.
-         *
-         * @return a tool stub info object with non-used version output.
-         */
-        public static ToolStubInfo ofAnyVersion() {
-            return new ToolStubInfo(true, "0.0.0");
+        public static ToolStubBuilder builder() {
+            return new ToolStubBuilder();
         }
 
         public boolean isStubbed() {
             return stubbed;
         }
 
-        public String getVersion() {
-            return version;
+        public String getScript() {
+            return script;
         }
+    }
+
+    /**
+     * Builds a new instance of {@link ToolStubInfo}.
+     */
+    public static class ToolStubBuilder {
+
+        private boolean stubbed;
+        private String version;
+        private String cacheDir;
+        private BuildTool buildTool;
+
+        /**
+         * Returns a dummy tool stub info, which denotes no stub is used.
+         *
+         * @return a tool stub info for non-used stub.
+         */
+        public ToolStubInfo none() {
+            return new ToolStubInfo(false, "");
+        }
+
+        public ToolStubBuilder withVersion(String version) {
+            stubbed = true;
+            this.version = version;
+            return this;
+        }
+
+        public ToolStubBuilder withCacheDir(String cacheDir) {
+            stubbed = true;
+            this.cacheDir = cacheDir;
+            return this;
+        }
+
+        public ToolStubBuilder forTool(BuildTool buildTool) {
+            stubbed = true;
+            this.buildTool = buildTool;
+            return this;
+        }
+
+        /**
+         * Builds a new instance of tool stub info.
+         *
+         * @return a new tool stub info instance.
+         */
+        public ToolStubInfo build() {
+            if (!stubbed) {
+                return new ToolStubInfo(false, "");
+            }
+
+            if (buildTool == null) {
+                throw new IllegalStateException("Please set the build tool");
+            }
+
+            String script = null;
+            final StringBuilder scriptBuilder = new StringBuilder();
+
+            switch (buildTool) {
+                case NPM:
+                    // default version used in tests
+                    version = version == null ? "6.14.10" : version;
+                    scriptBuilder
+                            .append("process.argv.includes('--version') && console.log(")
+                            .append(version)
+                            .append(");\n");
+                    if (cacheDir != null) {
+                        scriptBuilder
+                                .append("process.argv.includes('cache') && console.log(")
+                                .append(cacheDir)
+                                .append(");\n");
+                    }
+                    script = scriptBuilder.toString();
+                    break;
+                case NODE:
+                    // default version used in tests
+                    version = version == null ? "8.0.0" : version;
+                    scriptBuilder
+                            .append("  if [ \"$arg\" = \"--version\" ] || [ \"$arg\" = \"-v\" ]; then\n")
+                            .append("    echo ").append(version).append("\n")
+                            .append("    break\n")
+                            .append("  fi\n");
+                    if (cacheDir != null) {
+                        scriptBuilder
+                                .append("  if [ \"$arg\" = \"cache\" ]; then\n")
+                                .append("    echo ").append(cacheDir).append("\n")
+                                .append("    break\n")
+                                .append("  fi\n");
+                    }
+                    // @formatter:off
+                    script = String.format(
+                            "#!/bin/sh%n"
+                            + "for arg in \"$@\"%n"
+                            + "do%n"
+                            + "%s"
+                            + "done%n"
+                            + "sleep 1", scriptBuilder.toString());
+                    // @formatter:on
+                    break;
+                default:
+                    throw new IllegalStateException("Unknown build tool");
+            }
+            return new ToolStubInfo(true, script);
+        }
+    }
+
+    /**
+     * Types of build tools.
+     */
+    public enum BuildTool {
+        NODE, NPM
     }
 }

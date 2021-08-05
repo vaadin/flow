@@ -41,7 +41,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.server.frontend.installer.Platform;
@@ -64,8 +63,6 @@ public class FrontendToolsTest {
             .of("node", "node_modules", "npm", "bin", "npm-cli.js")
             .collect(Collectors.joining(File.separator));
 
-    private static final String USER_HOME = "user.home";
-
     private String baseDir;
 
     private String vaadinHomeDir;
@@ -75,9 +72,6 @@ public class FrontendToolsTest {
 
     @Rule
     public final TemporaryFolder tmpDirWithNpmrc = new TemporaryFolder();
-
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
 
     private FrontendTools tools;
 
@@ -505,124 +499,136 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void checkNpmAcceptsWhitespacesInUserHome_userHomeWithWhitespaces_throwsOnWindows()
+    public void npmAcceptsWhitespaces_npmCacheDirWithWhitespaces_falseForWindows()
             throws IOException {
         Assume.assumeTrue(
-                "This test is only for Windows, as the whitespaces in user "
-                        + "home issue reproduced only on Windows",
+                "This test is only for Windows, since the issue with " +
+                "whitespaces in npm processed directories reproduces only on " +
+                "Windows",
                 FrontendUtils.isWindows());
-
-        String originalUserHome = System.getProperty(USER_HOME);
-        try {
-            // given
-            // Whitespace in user name
-            System.setProperty(USER_HOME, "C:\\Users\\Windows User");
-            // this test uses node executable with npm-cli.js
-            // thus, the node stub version parameter here (6.0.0) is actually
-            // the returned version of stubbed npm
-            createStubNode(FrontendStubs.ToolStubInfo.ofVersion("6.0.0"),
-                    FrontendStubs.ToolStubInfo.ofAnyVersion(), baseDir);
-
-            exception.expect(IllegalStateException.class);
-            exception.expectMessage(
-                    "======================================================================================================\n"
-                            + "Your Windows user home directory path contains whitespaces, and the currently installed npm\n"
-                            + "version (6.0.0) doesn't accept this.\n"
-                            + "Please exclude whitespaces from your user home path or upgrade npm version to 7 (or newer) by:\n"
-                            + " 1) Running 'npm-windows-upgrade' tool with Windows PowerShell:\n"
-                            + "        Set-ExecutionPolicy Unrestricted -Scope CurrentUser -Force\n"
-                            + "        npm install -g npm-windows-upgrade\n"
-                            + "        npm-windows-upgrade\n"
-                            + " 2) Manually installing a newer version of npx: npm install -g npx\n"
-                            + " 3) Manually installing a newer version of pnpm: npm install -g pnpm\n"
-                            + " 4) Deleting the following files from your Vaadin project's folder (if present):\n"
-                            + "        node_modules, package-lock.json, webpack.generated.js, pnpm-lock.yaml, pnpmfile.js\n"
-                            + "======================================================================================================");
-            // when
-            tools.checkNpmAcceptsWhitespacesInUserHome();
-
-            // then exception is thrown
-        } finally {
-            System.setProperty(USER_HOME, originalUserHome);
-        }
-    }
-
-    @Test
-    public void checkNpmAcceptsWhitespacesInUserHome_userHomeWithWhitespaces_passesOnNonWindows()
-            throws IOException {
-        Assume.assumeFalse(
-                "This test is only for non-Windows OS, as the whitespaces in "
-                        + "user home issue is not reproduced on non-Windows OS",
-                FrontendUtils.isWindows());
-
-        String originalUserHome = System.getProperty(USER_HOME);
-        try {
-            // given
-            // Whitespace in user name
-            System.setProperty(USER_HOME, "/Users/Mac User/");
-            // this test uses node executable with npm-cli.js
-            // thus, the node stub version parameter here (6.0.0) is actually
-            // the returned version of stubbed npm
-            createStubNode(FrontendStubs.ToolStubInfo.ofVersion("6.0.0"),
-                    FrontendStubs.ToolStubInfo.ofAnyVersion(), baseDir);
-
-            // when
-            tools.checkNpmAcceptsWhitespacesInUserHome();
-
-            // then no exception is thrown
-        } finally {
-            System.setProperty(USER_HOME, originalUserHome);
-        }
-    }
-
-    @Test
-    public void checkNpmAcceptsWhitespacesInUserHome_userHomeNoWhitespaces_passesOnWindows()
-            throws IOException {
-        Assume.assumeTrue(
-                "This test is only for Windows, as the whitespaces in user "
-                        + "home issue reproduced only on Windows",
-                FrontendUtils.isWindows());
-
         // given
+        // dir with whitespaces
+        File npmCacheDir = tmpDir.newFolder("Foo Bar");
 
         // this test uses node executable with npm-cli.js
         // thus, the node stub version parameter here (6.0.0) is actually
         // the returned version of stubbed npm
-        createStubNode(FrontendStubs.ToolStubInfo.ofVersion("6.0.0"),
-                FrontendStubs.ToolStubInfo.ofAnyVersion(), baseDir);
+        FrontendStubs.ToolStubInfo nodeStub =
+                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NODE)
+                        .withVersion("6.0.0").build();
+        FrontendStubs.ToolStubInfo npmStub =
+                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NPM).build();
+        createStubNode(nodeStub, npmStub, baseDir);
 
         // when
-        tools.checkNpmAcceptsWhitespacesInUserHome();
+        boolean accepted = tools.npmAcceptsWhitespaces(npmCacheDir);
 
-        // then no exception is thrown
+        // then
+        Assert.assertFalse(accepted);
     }
 
     @Test
-    public void checkNpmAcceptsWhitespacesInUserHome_npm7_passesOnWindows()
+    public void npmAcceptsWhitespaces_npmCacheDirWithWhitespaces_trueForNonWindows()
             throws IOException {
-        Assume.assumeTrue(
-                "This test is only for Windows, as the whitespaces in user "
-                        + "home issue reproduced only on Windows",
+        Assume.assumeFalse(
+                "This test is for the rest of OS rather than Windows, since " +
+                "the issue with whitespaces in directories processed by npm, " +
+                "is not reproduced on them",
                 FrontendUtils.isWindows());
 
-        String originalUserHome = System.getProperty(USER_HOME);
-        try {
-            // given
-            // Whitespace in user name
-            System.setProperty(USER_HOME, "C:\\Users\\Windows User");
-            // this test uses node executable with npm-cli.js
-            // thus, the node stub version parameter here (7.0.0) is actually
-            // the returned version of stubbed npm
-            createStubNode(FrontendStubs.ToolStubInfo.ofVersion("7.0.0"),
-                    FrontendStubs.ToolStubInfo.ofAnyVersion(), baseDir);
+        // given
+        // dir with whitespaces
+        File npmCacheDir = tmpDir.newFolder("Foo Bar");
 
-            // when
-            tools.checkNpmAcceptsWhitespacesInUserHome();
+        // this test uses node executable with npm-cli.js
+        // thus, the node stub version parameter here (6.0.0) is actually
+        // the returned version of stubbed npm
+        FrontendStubs.ToolStubInfo nodeStub =
+                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NODE)
+                        .withVersion("6.0.0").build();
+        FrontendStubs.ToolStubInfo npmStub =
+                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NPM).build();
+        createStubNode(nodeStub, npmStub, baseDir);
 
-            // then no exception is thrown
-        } finally {
-            System.setProperty(USER_HOME, originalUserHome);
-        }
+        // when
+        boolean accepted = tools.npmAcceptsWhitespaces(npmCacheDir);
+
+        // then
+        Assert.assertTrue(accepted);
+    }
+
+    @Test
+    public void npmAcceptsWhitespaces_npmCacheNoWhitespaces_trueForWindows()
+            throws IOException {
+        Assume.assumeTrue(
+                "This test is only for Windows, since the issue with " +
+                "whitespaces in npm processed directories reproduces only on " +
+                "Windows",
+                FrontendUtils.isWindows());
+
+        // given
+        // dir with no whitespaces
+        File npmCacheDir = tmpDir.newFolder("FooBar");
+
+        // this test uses node executable with npm-cli.js
+        // thus, the node stub version parameter here (6.0.0) is actually
+        // the returned version of stubbed npm
+        FrontendStubs.ToolStubInfo nodeStub =
+                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NODE)
+                        .withVersion("6.0.0").build();
+        FrontendStubs.ToolStubInfo npmStub =
+                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NPM).build();
+        createStubNode(nodeStub, npmStub, baseDir);
+
+        // when
+        boolean accepted = tools.npmAcceptsWhitespaces(npmCacheDir);
+
+        // then
+        Assert.assertTrue(accepted);
+    }
+
+    @Test
+    public void npmAcceptsWhitespaces_npm7_trueForWindows()
+            throws IOException {
+        Assume.assumeTrue(
+                "This test is only for Windows, since the issue with " +
+                "whitespaces in npm processed directories reproduces only on " +
+                "Windows",
+                FrontendUtils.isWindows());
+
+        // given
+        // dir with whitespaces
+        File npmCacheDir = tmpDir.newFolder("Foo  Bar");
+
+        // this test uses node executable with npm-cli.js
+        // thus, the node stub version parameter here (6.0.0) is actually
+        // the returned version of stubbed npm
+        FrontendStubs.ToolStubInfo nodeStub =
+                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NODE)
+                        .withVersion("7.0.0").build();
+        FrontendStubs.ToolStubInfo npmStub =
+                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NPM).build();
+        createStubNode(nodeStub, npmStub, baseDir);
+
+        // when
+        boolean accepted = tools.npmAcceptsWhitespaces(npmCacheDir);
+
+        // then
+        Assert.assertTrue(accepted);
+    }
+
+    @Test
+    public void getNpmCacheDir_returnsCorrectPath() throws IOException {
+        FrontendStubs.ToolStubInfo nodeStub =
+                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NODE)
+                        .withCacheDir("/foo/bar/").build();
+        FrontendStubs.ToolStubInfo npmStub =
+                FrontendStubs.ToolStubInfo.builder().forTool(FrontendStubs.BuildTool.NPM).build();
+        createStubNode(nodeStub, npmStub, baseDir);
+
+        File npmCacheDir = tools.getNpmCacheDir();
+        Assert.assertNotNull(npmCacheDir);
+        Assert.assertEquals("/foo/bar", npmCacheDir.getAbsolutePath());
     }
 
     private void assertNpmCommand(Supplier<String> path) throws IOException {

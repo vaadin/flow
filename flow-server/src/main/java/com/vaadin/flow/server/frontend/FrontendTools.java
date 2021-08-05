@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.server.frontend.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.server.frontend.installer.InstallationException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -84,20 +85,6 @@ public class FrontendTools {
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
             + INSTALL_NODE_LOCALLY + "%n" //
             + FrontendUtils.DISABLE_CHECK //
-            + MSG_SUFFIX;
-
-    private static final String USER_HOME_CONTAINS_WHITESPACES = MSG_PREFIX
-            + "%nYour Windows user home directory path contains whitespaces, and the currently installed npm"
-            + "%nversion (%s) doesn't accept this."
-            + "%nPlease exclude whitespaces from your user home path or upgrade npm version to 7 (or newer) by:"
-            + "%n 1) Running 'npm-windows-upgrade' tool with Windows PowerShell:"
-            + "%n        Set-ExecutionPolicy Unrestricted -Scope CurrentUser -Force"
-            + "%n        npm install -g npm-windows-upgrade"
-            + "%n        npm-windows-upgrade"
-            + "%n 2) Manually installing a newer version of npx: npm install -g npx"
-            + "%n 3) Manually installing a newer version of pnpm: npm install -g pnpm"
-            + "%n 4) Deleting the following files from your Vaadin project's folder (if present):"
-            + "%n        node_modules, package-lock.json, webpack.generated.js, pnpm-lock.yaml, pnpmfile.js"
             + MSG_SUFFIX;
 
     private static final List<FrontendVersion> NPM_BLACKLISTED_VERSIONS = Arrays
@@ -486,23 +473,56 @@ public class FrontendTools {
      *             if <code>pnpm install</code> is blocked by whitespaces in
      *             user home
      */
-    void checkNpmAcceptsWhitespacesInUserHome() {
-        if (FrontendUtils.isWindows() && userHomeContainsWhitespaces()) {
+    boolean npmAcceptsWhitespaces(File dirToBeChecked) throws IllegalStateException {
+        Objects.requireNonNull(dirToBeChecked);
+        boolean hidden = dirToBeChecked.isHidden() || dirToBeChecked.getPath().contains(File.separator + ".");
+        if (!hidden && (!dirToBeChecked.exists() || !dirToBeChecked.isDirectory())) {
+            getLogger().warn(
+                    "Failed to check whitespaces in '{}', because it doesn't exist or not a directory", dirToBeChecked);
+            return true;
+        }
+
+        if (FrontendUtils.isWindows() && dirToBeChecked.getAbsolutePath().matches(".*[\\s+].*")) {
             try {
                 FrontendVersion foundNpmVersion = getNpmVersion();
                 // npm < 7.0.0 doesn't accept whitespaces in user home
-                boolean accepted = FrontendUtils.isVersionAtLeast(
+                return FrontendUtils.isVersionAtLeast(
                         foundNpmVersion, WHITESPACE_ACCEPTING_NPM_VERSION);
-                if (!accepted) {
-                    throw new IllegalStateException(
-                            String.format(USER_HOME_CONTAINS_WHITESPACES,
-                                    foundNpmVersion.getFullVersion()));
-                }
             } catch (UnknownVersionException e) {
                 getLogger().warn(
-                        "Error checking if npm supports whitespaces in Windows user home path",
+                        "Error checking if npm supports whitespaces in path '{}'", dirToBeChecked,
                         e);
             }
+        }
+        return true;
+    }
+
+    /**
+     * Gives a file object representing path to the cache directory of
+     * currently installed npm.
+     *
+     * @return the file object representing path to npm cache directory.
+     *
+     * @throws IllegalStateException if the failure occurs during requesting
+     * the cache dir, or the returned path is empty.
+     */
+    File getNpmCacheDir() throws IllegalStateException {
+        try {
+            List<String> npmCacheCommand = new ArrayList<>(
+                    getNpmExecutable(false));
+            npmCacheCommand.add("config");
+            npmCacheCommand.add("get");
+            npmCacheCommand.add("cache");
+            npmCacheCommand.add("--global");
+            String output = FrontendUtils.executeCommand(npmCacheCommand).trim();
+            if (output.isEmpty()) {
+                throw new IllegalStateException(String.format(
+                        "Command '%s' returned an empty path",
+                        String.join(" ", npmCacheCommand)));
+            }
+            return new File(output);
+        } catch (InterruptedException | IOException | CommandExecutionException e) {
+            throw new IllegalStateException("Failed to get npm cache dir", e);
         }
     }
 
@@ -771,11 +791,5 @@ public class FrontendTools {
         } else {
             return getNodeExecutable();
         }
-    }
-
-    private boolean userHomeContainsWhitespaces() {
-        String userDirectoryPath = FileUtils.getUserDirectoryPath();
-        return userDirectoryPath != null
-                && userDirectoryPath.matches(".*[\\s+].*");
     }
 }

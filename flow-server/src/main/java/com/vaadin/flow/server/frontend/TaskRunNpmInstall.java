@@ -65,6 +65,24 @@ public class TaskRunNpmInstall implements FallibleCommand {
     // a new hash to the code repository.
     private static final String INSTALL_HASH = ".vaadin/vaadin.json";
 
+    private static final String USER_HOME_CONTAINS_WHITESPACES =
+            "\n\n======================================================================================================"
+            + "\nThe path to npm cache contains whitespaces, and the currently installed npm version doesn't accept this."
+            + "\nMost likely your Windows user home path contains whitespaces."
+            + "\nTo workaround it, please change the npm cache path by using the following command:"
+            + "\n    npm config set cache [path-to-npm-cache] --global"
+            + "\n(you may also want to exclude the whitespaces with 'dir /x' to use the same dir),"
+            + "\nor upgrade the npm version to 7 (or newer) by:"
+            + "\n 1) Running 'npm-windows-upgrade' tool with Windows PowerShell:"
+            + "\n        Set-ExecutionPolicy Unrestricted -Scope CurrentUser -Force"
+            + "\n        npm install -g npm-windows-upgrade"
+            + "\n        npm-windows-upgrade"
+            + "\n 2) Manually installing a newer version of npx: npm install -g npx"
+            + "\n 3) Manually installing a newer version of pnpm: npm install -g pnpm"
+            + "\n 4) Deleting the following files from your Vaadin project's folder (if present):"
+            + "\n        node_modules, package-lock.json, webpack.generated.js, pnpm-lock.yaml, pnpmfile.js"
+            + "\n======================================================================================================\n";
+
     private final NodeUpdater packageUpdater;
 
     private final List<String> ignoredNodeFolders = Arrays.asList(".bin",
@@ -315,7 +333,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 tools.forceAlternativeNodeExecutable();
             }
             if (enablePnpm) {
-                tools.checkNpmAcceptsWhitespacesInUserHome();
+                File npmCacheDir = tools.getNpmCacheDir();
+                if (!tools.npmAcceptsWhitespaces(npmCacheDir)) {
+                    throw new IllegalStateException(USER_HOME_CONTAINS_WHITESPACES);
+                }
                 executable = tools.getPnpmExecutable();
             } else {
                 executable = tools.getNpmExecutable();
