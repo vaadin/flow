@@ -512,10 +512,9 @@ public class FrontendToolsTest {
         // thus, the node stub version parameter here (6.0.0) is actually
         // the returned version of stubbed npm
         FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
-                .builder().forTool(FrontendStubs.BuildTool.NODE)
-                .withVersion("6.0.0").build();
+                .builder(FrontendStubs.Tool.NODE).withVersion("6.0.0").build();
         FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder().forTool(FrontendStubs.BuildTool.NPM).build();
+                .builder(FrontendStubs.Tool.NPM).build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
@@ -542,10 +541,9 @@ public class FrontendToolsTest {
         // thus, the node stub version parameter here (6.0.0) is actually
         // the returned version of stubbed npm
         FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
-                .builder().forTool(FrontendStubs.BuildTool.NODE)
-                .withVersion("6.0.0").build();
+                .builder(FrontendStubs.Tool.NODE).withVersion("6.0.0").build();
         FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder().forTool(FrontendStubs.BuildTool.NPM).build();
+                .builder(FrontendStubs.Tool.NPM).build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
@@ -570,10 +568,9 @@ public class FrontendToolsTest {
         // thus, the node stub version parameter here (6.0.0) is actually
         // the returned version of stubbed npm
         FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
-                .builder().forTool(FrontendStubs.BuildTool.NODE)
-                .withVersion("6.0.0").build();
+                .builder(FrontendStubs.Tool.NODE).withVersion("6.0.0").build();
         FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder().forTool(FrontendStubs.BuildTool.NPM).build();
+                .builder(FrontendStubs.Tool.NPM).build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
@@ -597,10 +594,9 @@ public class FrontendToolsTest {
         // thus, the node stub version parameter here (6.0.0) is actually
         // the returned version of stubbed npm
         FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
-                .builder().forTool(FrontendStubs.BuildTool.NODE)
-                .withVersion("7.0.0").build();
+                .builder(FrontendStubs.Tool.NODE).withVersion("7.0.0").build();
         FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder().forTool(FrontendStubs.BuildTool.NPM).build();
+                .builder(FrontendStubs.Tool.NPM).build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
@@ -613,10 +609,10 @@ public class FrontendToolsTest {
     @Test
     public void getNpmCacheDir_returnsCorrectPath() throws IOException {
         FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
-                .builder().forTool(FrontendStubs.BuildTool.NODE)
-                .withCacheDir("/foo/bar/").build();
+                .builder(FrontendStubs.Tool.NODE).withCacheDir("/foo/bar/")
+                .build();
         FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder().forTool(FrontendStubs.BuildTool.NPM).build();
+                .builder(FrontendStubs.Tool.NPM).build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         File npmCacheDir = tools.getNpmCacheDir();

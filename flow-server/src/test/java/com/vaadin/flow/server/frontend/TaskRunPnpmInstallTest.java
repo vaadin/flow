@@ -617,10 +617,9 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         // given
         FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
-                .builder().forTool(FrontendStubs.BuildTool.NODE)
-                .withVersion("6.0.0").withCacheDir("/foo/bar/").build();
-        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder().none();
+                .builder(FrontendStubs.Tool.NODE).withVersion("6.0.0")
+                .withCacheDir("/foo/bar/").build();
+        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo.none();
         createStubNode(nodeStub, npmStub,
                 getNodeUpdater().npmFolder.getAbsolutePath());
 

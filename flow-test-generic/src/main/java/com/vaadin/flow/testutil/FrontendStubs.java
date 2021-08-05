@@ -30,6 +30,9 @@ public class FrontendStubs {
     public static final String WEBPACK_SERVER = "node_modules/webpack-dev-server/bin/webpack-dev-server.js";
     public static final String WEBPACK_TEST_OUT_FILE = "webpack-out.test";
 
+    private static final String NPM_BIN_PATH = "node/node_modules/npm/bin";
+    private static final String NPM_CACHE_PATH_STUB = "cache";
+
     /**
      * Only static methods.
      */
@@ -61,7 +64,7 @@ public class FrontendStubs {
         Objects.requireNonNull(stubNpm);
 
         if (stubNpm.isStubbed()) {
-            File binDir = new File(baseDir, "node/node_modules/npm/bin");
+            File binDir = new File(baseDir, NPM_BIN_PATH);
             FileUtils.forceMkdir(binDir);
             String stub = stubNpm.getScript();
             FileUtils.writeStringToFile(new File(binDir, "npm-cli.js"), stub,
@@ -92,7 +95,8 @@ public class FrontendStubs {
 
     /**
      * Creates stub versions of `node` and `npm` in the ./node folder as
-     * frontend-maven-plugin does.
+     * frontend-maven-plugin does. This method creates a default stubs for
+     * tool's versions.
      *
      * @param stubNode
      *            whether `node/node` (`node/node.exe`) stub should be created
@@ -106,12 +110,16 @@ public class FrontendStubs {
      */
     public static void createStubNode(boolean stubNode, boolean stubNpm,
             String baseDir) throws IOException {
-        ToolStubInfo nodeStubInfo = stubNode
-                ? ToolStubInfo.builder().forTool(BuildTool.NODE).build()
-                : ToolStubInfo.builder().none();
-        ToolStubInfo npmStubInfo = stubNpm
-                ? ToolStubInfo.builder().forTool(BuildTool.NPM).build()
-                : ToolStubInfo.builder().none();
+        final File defaultNpmCacheDirStub = new File(
+                new File(baseDir, NPM_BIN_PATH), NPM_CACHE_PATH_STUB);
+        FileUtils.forceMkdir(defaultNpmCacheDirStub);
+
+        ToolStubInfo nodeStubInfo = stubNode ? ToolStubInfo.builder(Tool.NODE)
+                .withCacheDir(defaultNpmCacheDirStub.getAbsolutePath()).build()
+                : ToolStubInfo.none();
+        ToolStubInfo npmStubInfo = stubNpm ? ToolStubInfo.builder(Tool.NPM)
+                .withCacheDir(defaultNpmCacheDirStub.getAbsolutePath()).build()
+                : ToolStubInfo.none();
         createStubNode(nodeStubInfo, npmStubInfo, baseDir);
     }
 
@@ -207,10 +215,23 @@ public class FrontendStubs {
          * Creates a new builder for constructing a new instance of tool stub
          * info.
          *
+         * @param tool
+         *            the build tool to create a stub for.
+         *
          * @return a new tool stub info builder.
          */
-        public static ToolStubBuilder builder() {
-            return new ToolStubBuilder();
+        public static ToolStubBuilder builder(Tool tool) {
+            Objects.requireNonNull(tool, "Build tool may not be empty");
+            return new ToolStubBuilder(tool);
+        }
+
+        /**
+         * Returns a dummy tool stub info, which denotes no stub is used.
+         *
+         * @return a tool stub info for non-used stub.
+         */
+        public static ToolStubInfo none() {
+            return new ToolStubInfo(false, "");
         }
 
         public boolean isStubbed() {
@@ -227,35 +248,43 @@ public class FrontendStubs {
      */
     public static class ToolStubBuilder {
 
-        private boolean stubbed;
+        private static final String DEFAULT_NPM_VERSION = "6.14.10";
+        private static final String DEFAULT_NODE_VERSION = "8.0.0";
+
         private String version;
         private String cacheDir;
-        private BuildTool buildTool;
+        private final Tool tool;
 
-        /**
-         * Returns a dummy tool stub info, which denotes no stub is used.
-         *
-         * @return a tool stub info for non-used stub.
-         */
-        public ToolStubInfo none() {
-            return new ToolStubInfo(false, "");
+        private ToolStubBuilder(Tool tool) {
+            this.tool = tool;
         }
 
+        /**
+         * Adds a stub for tool version. The version will be returned if a tool
+         * executable is called with '-v' or '--version' argument. If no value
+         * is set, the default one is used.
+         *
+         * @param version
+         *            a tool version to stub.
+         * @return a tool stub info builder.
+         */
         public ToolStubBuilder withVersion(String version) {
-            stubbed = true;
             this.version = version;
             return this;
         }
 
+        /**
+         * Adds a stub for npm cache directory. The path to cache will be
+         * returned if a tool executable is called with 'cache' argument. If no
+         * value is set, the default one is used.
+         *
+         * @param cacheDir
+         *            a npm cache dir to stub.
+         *
+         * @return a tool stub info builder.
+         */
         public ToolStubBuilder withCacheDir(String cacheDir) {
-            stubbed = true;
             this.cacheDir = cacheDir;
-            return this;
-        }
-
-        public ToolStubBuilder forTool(BuildTool buildTool) {
-            stubbed = true;
-            this.buildTool = buildTool;
             return this;
         }
 
@@ -265,65 +294,68 @@ public class FrontendStubs {
          * @return a new tool stub info instance.
          */
         public ToolStubInfo build() {
-            if (!stubbed) {
-                return new ToolStubInfo(false, "");
-            }
-
-            if (buildTool == null) {
-                throw new IllegalStateException("Please set the build tool");
-            }
-
-            String script = null;
+            String script;
             final StringBuilder scriptBuilder = new StringBuilder();
 
-            switch (buildTool) {
+            switch (tool) {
             case NPM:
-                // default version used in tests
-                version = version == null ? "6.14.10" : version;
-                scriptBuilder.append(
-                        "process.argv.includes('--version') && console.log(")
-                        .append(version).append(");\n");
-                if (cacheDir != null) {
-                    scriptBuilder.append(
-                            "process.argv.includes('cache') && console.log(")
-                            .append(cacheDir).append(");\n");
-                }
-                script = scriptBuilder.toString();
+                script = generateNpmScript(scriptBuilder);
                 break;
             case NODE:
-                // default version used in tests
-                version = version == null ? "8.0.0" : version;
-                scriptBuilder.append(
-                        "  if [ \"$arg\" = \"--version\" ] || [ \"$arg\" = \"-v\" ]; then\n")
-                        .append("    echo ").append(version).append("\n")
-                        .append("    break\n").append("  fi\n");
-                if (cacheDir != null) {
-                    scriptBuilder
-                            .append("  if [ \"$arg\" = \"cache\" ]; then\n")
-                            .append("    echo ").append(cacheDir).append("\n")
-                            .append("    break\n").append("  fi\n");
-                }
-                // @formatter:off
-                    script = String.format(
-                            "#!/bin/sh%n"
-                            + "for arg in \"$@\"%n"
-                            + "do%n"
-                            + "%s"
-                            + "done%n"
-                            + "sleep 1", scriptBuilder.toString());
-                    // @formatter:on
+                script = generateNodeScript(scriptBuilder);
                 break;
             default:
                 throw new IllegalStateException("Unknown build tool");
             }
             return new ToolStubInfo(true, script);
         }
+
+        private String generateNodeScript(StringBuilder scriptBuilder) {
+            String script;
+            // default version used in tests
+            version = version == null ? DEFAULT_NODE_VERSION : version;
+            scriptBuilder.append(
+                    "  if [ \"$arg\" = \"--version\" ] || [ \"$arg\" = \"-v\" ]; then\n")
+                    .append("    echo ").append(version).append("\n")
+                    .append("    break\n").append("  fi\n");
+            if (cacheDir != null) {
+                scriptBuilder.append("  if [ \"$arg\" = \"cache\" ]; then\n")
+                        .append("    echo ").append(cacheDir).append("\n")
+                        .append("    break\n").append("  fi\n");
+            }
+            // @formatter:off
+            script = String.format(
+                    "#!/bin/sh%n"
+                    + "for arg in \"$@\"%n"
+                    + "do%n"
+                    + "%s"
+                    + "done%n"
+                    + "sleep 1", scriptBuilder.toString());
+            // @formatter:on
+            return script;
+        }
+
+        private String generateNpmScript(StringBuilder scriptBuilder) {
+            String script;
+            // default version used in tests
+            version = version == null ? DEFAULT_NPM_VERSION : version;
+            scriptBuilder.append(
+                    "process.argv.includes('--version') && console.log('")
+                    .append(version).append("');\n");
+            if (cacheDir != null) {
+                scriptBuilder.append(
+                        "process.argv.includes('cache') && console.log('")
+                        .append(cacheDir).append("');\n");
+            }
+            script = scriptBuilder.toString();
+            return script;
+        }
     }
 
     /**
      * Types of build tools.
      */
-    public enum BuildTool {
+    public enum Tool {
         NODE, NPM
     }
 }

@@ -970,18 +970,29 @@ public class FrontendUtils {
     }
 
     /**
-     * Thrown when the process execution fails with non-zero code.
+     * Thrown when the process execution fails.
      */
     public static class CommandExecutionException extends Exception {
         /**
-         * Constructs an exception telling with which code the process was
-         * exited.
+         * Constructs an exception telling what code the process was exited
+         * with.
          *
          * @param processExitCode
          *            process exit code
          */
         public CommandExecutionException(int processExitCode) {
             super("Process execution failed with exit code " + processExitCode);
+        }
+
+        /**
+         * Constructs an exception telling what was the original exception the
+         * process failed with.
+         *
+         * @param cause
+         *            the cause exception of process failure.
+         */
+        public CommandExecutionException(Throwable cause) {
+            super("Process execution failed", cause);
         }
     }
 
@@ -990,8 +1001,7 @@ public class FrontendUtils {
         try {
             String output = executeCommand(versionCommand);
             return new FrontendVersion(parseVersionString(output));
-        } catch (InterruptedException | IOException
-                | CommandExecutionException e) {
+        } catch (IOException | CommandExecutionException e) {
             throw new UnknownVersionException(tool,
                     "Using command " + String.join(" ", versionCommand), e);
         }
@@ -1004,23 +1014,22 @@ public class FrontendUtils {
      *            the command to be executed and it's arguments.
      *
      * @return process output string.
-     * @throws IOException
-     *             if I/O error occurs during the execution.
-     * @throws InterruptedException
-     *             when the current thread is being interrupted while waiting
-     *             for a process to complete.
      * @throws CommandExecutionException
-     *             if the process completes with non-zero code.
+     *             if the process completes exceptionally.
      */
     public static String executeCommand(List<String> command)
-            throws IOException, InterruptedException,
-            CommandExecutionException {
-        Process process = FrontendUtils.createProcessBuilder(command).start();
-        int exitCode = process.waitFor();
-        if (exitCode != 0) {
-            throw new CommandExecutionException(exitCode);
+            throws CommandExecutionException {
+        try {
+            Process process = FrontendUtils.createProcessBuilder(command)
+                    .start();
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                throw new CommandExecutionException(exitCode);
+            }
+            return streamToString(process.getInputStream());
+        } catch (Exception e) {
+            throw new CommandExecutionException(e);
         }
-        return streamToString(process.getInputStream());
     }
 
     /**

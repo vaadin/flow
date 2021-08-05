@@ -528,8 +528,7 @@ public class FrontendTools {
                                 String.join(" ", npmCacheCommand)));
             }
             return new File(output);
-        } catch (InterruptedException | IOException
-                | CommandExecutionException e) {
+        } catch (CommandExecutionException e) {
             throw new IllegalStateException("Failed to get npm cache dir", e);
         }
     }
