@@ -520,8 +520,7 @@ public class FrontendUtils {
         Stats statistics = service.getContext().getAttribute(Stats.class);
 
         if (statistics != null) {
-            return IOUtils.toInputStream(statistics.statsJson,
-                    StandardCharsets.UTF_8);
+            return new ByteArrayInputStream(statistics.statsJson);
         }
 
         String stats = service.getDeploymentConfiguration()
