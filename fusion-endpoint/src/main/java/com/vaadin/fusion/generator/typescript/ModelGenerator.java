@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -113,7 +114,7 @@ class ModelGenerator {
 
         @Override
         TypeParser.Node exit(TypeParser.Node node, TypeParser.Node parent) {
-            if (parent == null && constrainArguments.size() > 0) {
+            if (parent == null && !constrainArguments.isEmpty()) {
                 builder.append(", ");
                 builder.append(String.join(", ", constrainArguments));
             }
@@ -235,16 +236,16 @@ class ModelGenerator {
         }
 
         protected boolean isArray(TypeParser.Node node) {
-            return node.getName().equals("ReadonlyArray");
+            return Objects.equals(node.getName(), "ReadonlyArray");
         }
 
         protected boolean isObject(TypeParser.Node node) {
-            return node.getName().equals("Readonly")
-                    && node.getNested().get(0).getName().equals("Record");
+            return Objects.equals(node.getName(), "Readonly") && Objects
+                    .equals(node.getNested().get(0).getName(), "Record");
         }
 
         protected boolean isObjectModel(TypeParser.Node node) {
-            return OBJECT_MODEL_NAME.equals(node.getName());
+            return Objects.equals(node.getName(), OBJECT_MODEL_NAME);
         }
 
         protected boolean isPrimitive(TypeParser.Node node) {

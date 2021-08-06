@@ -56,7 +56,8 @@ class TypeParser {
             for (final Token token : tokens) {
                 if (token instanceof NameToken) {
                     if (currentNode != null && waitingForSuffix) {
-                        if (((NameToken) token).getName().equals("undefined")) {
+                        if (Objects.equals(((NameToken) token).getName(),
+                                "undefined")) {
                             currentNode.setUndefined(true);
                             waitingForSuffix = false;
                         } else {

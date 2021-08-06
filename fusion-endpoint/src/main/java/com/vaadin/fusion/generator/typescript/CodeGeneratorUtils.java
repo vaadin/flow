@@ -17,6 +17,7 @@ package com.vaadin.fusion.generator.typescript;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.vaadin.fusion.generator.GeneratorUtils;
 
@@ -38,7 +39,7 @@ class CodeGeneratorUtils {
     static String getSimpleNameFromImports(String dataType,
             List<Map<String, String>> imports) {
         for (Map<String, String> anImport : imports) {
-            if (GeneratorUtils.equals(dataType, anImport.get(IMPORT))) {
+            if (Objects.equals(dataType, anImport.get(IMPORT))) {
                 return GeneratorUtils.firstNonBlank(anImport.get("importAs"),
                         anImport.get("className"));
             }

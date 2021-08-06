@@ -418,7 +418,7 @@ public class CodeGenerator extends AbstractTypeScriptClientCodegen {
 
     @Override
     protected void addImport(CodegenModel m, String type) {
-        if (!GeneratorUtils.equals(m.getName(), type)) {
+        if (!Objects.equals(m.getName(), type)) {
             super.addImport(m, type);
         }
     }

@@ -18,6 +18,7 @@ package com.vaadin.fusion.generator;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.IntStream;
@@ -59,7 +60,7 @@ public final class GeneratorUtils {
      * @return result of comparison. Can be -1, 0, 1.
      */
     public static int compare(String s1, String s2) {
-        return equals(s1, s2) ? 0
+        return Objects.equals(s1, s2) ? 0
                 : s1 == null ? -1 : s2 == null ? 1 : s1.compareTo(s2);
     }
 
@@ -76,21 +77,6 @@ public final class GeneratorUtils {
     @SuppressWarnings("squid:S2259")
     public static boolean contains(String s, String p) {
         return isNotBlank(s) && isNotBlank(p) && s.contains(p);
-    }
-
-    /**
-     * Checks the string equality with an additional null check.
-     *
-     * @see String#equals
-     *
-     * @param s1
-     *            first string.
-     * @param s2
-     *            second string.
-     * @return result of equality check.
-     */
-    public static boolean equals(String s1, String s2) {
-        return s1 == s2 || s1 != null && s1.equals(s2);
     }
 
     /**
