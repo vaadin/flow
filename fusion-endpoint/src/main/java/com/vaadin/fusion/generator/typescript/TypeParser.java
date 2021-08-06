@@ -38,6 +38,38 @@ class TypeParser {
         return root;
     }
 
+    /**
+     * A set of methods to interact with nodes during the walk across the AST.
+     */
+    interface Visitor {
+        /**
+         * A method invoked when node is entered. When it returns Node, it is
+         * consumed, and then walk continues on the updates AST. To avoid
+         * changing the AST, just return the `node` as is.
+         *
+         * @param node
+         *            A current node to work with.
+         * @param parent
+         *            A node that has current node as a child.
+         * @return an updated node.
+         */
+        default Node enter(Node node, Node parent) {
+            return node;
+        }
+
+        /**
+         * A method invoked when the walk over node's children is over. This
+         * method isn't expected to return anything.
+         *
+         * @param node
+         *            A current node to work with.
+         * @param parent
+         *            A node that has current node as a child.
+         */
+        default void exit(Node node, Node parent) {
+        }
+    }
+
     static class Node {
         private String name;
         private List<Node> nested = new ArrayList<>();
@@ -69,7 +101,7 @@ class TypeParser {
                     } else {
                         currentNode = new Node(((NameToken) token).getName());
 
-                        if (unclosedNodes.size() > 0) {
+                        if (!unclosedNodes.isEmpty()) {
                             unclosedNodes.peek().addNested(currentNode);
                         }
                     }
@@ -99,7 +131,7 @@ class TypeParser {
             StringBuilder builder = new StringBuilder();
             builder.append(name);
 
-            if (nested.size() > 0) {
+            if (!nested.isEmpty()) {
                 builder.append('<');
                 builder.append(nested.stream().map(Node::toString)
                         .collect(Collectors.joining(", ")));
@@ -143,7 +175,7 @@ class TypeParser {
         }
 
         boolean hasNested() {
-            return nested.size() > 0;
+            return !nested.isEmpty();
         }
 
         boolean isUndefined() {
@@ -197,11 +229,7 @@ class TypeParser {
             visit(tmp);
 
             for (Visitor visitor : visitors) {
-                tmp = visitor.exit(tmp, parent);
-
-                if (tmp == null) {
-                    return null;
-                }
+                visitor.exit(tmp, parent);
             }
 
             return tmp;
@@ -213,16 +241,6 @@ class TypeParser {
                         .map(n -> applyVisitors(n, node))
                         .filter(Objects::nonNull).collect(Collectors.toList()));
             }
-        }
-    }
-
-    abstract static class Visitor {
-        Node enter(Node node, Node parent) {
-            return node;
-        }
-
-        Node exit(Node node, Node parent) {
-            return node;
         }
     }
 

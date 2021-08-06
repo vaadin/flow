@@ -93,8 +93,9 @@ class ModelGenerator {
             this.constrainArguments = constrainArguments;
         }
 
+        /** @inheritDoc */
         @Override
-        TypeParser.Node enter(TypeParser.Node node, TypeParser.Node parent) {
+        public TypeParser.Node enter(TypeParser.Node node, TypeParser.Node parent) {
             if (parent == null || isArray(parent)) {
                 if (parent != null) {
                     builder.append(", ");
@@ -112,8 +113,9 @@ class ModelGenerator {
             return null;
         }
 
+        /** @inheritDoc */
         @Override
-        TypeParser.Node exit(TypeParser.Node node, TypeParser.Node parent) {
+        public void exit(TypeParser.Node node, TypeParser.Node parent) {
             if (parent == null && !constrainArguments.isEmpty()) {
                 builder.append(", ");
                 builder.append(String.join(", ", constrainArguments));
@@ -122,8 +124,6 @@ class ModelGenerator {
             if (parent == null || isArray(parent)) {
                 builder.append("]");
             }
-
-            return node;
         }
 
         String getResult() {
@@ -146,8 +146,11 @@ class ModelGenerator {
     private static class ModelTypeModelVisitor extends ModelVisitor {
         private final Set<TypeParser.Node> visitedNodes = new HashSet<>();
 
+        /**
+         * @inheritDoc
+         */
         @Override
-        TypeParser.Node enter(TypeParser.Node node, TypeParser.Node parent) {
+        public TypeParser.Node enter(TypeParser.Node node, TypeParser.Node parent) {
             node.setUndefined(false);
 
             if (isArray(node)) {
@@ -217,7 +220,7 @@ class ModelGenerator {
         }
     }
 
-    private abstract static class ModelVisitor extends TypeParser.Visitor {
+    private abstract static class ModelVisitor implements TypeParser.Visitor {
         protected static final String ARRAY_MODEL_NAME = "Array"
                 + MainGenerator.MODEL;
         protected static final String OBJECT_MODEL_NAME = "Object"

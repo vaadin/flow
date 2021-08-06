@@ -40,7 +40,7 @@ public class TypeParserTest {
     public void should_CorrectlyEnterAndExitNode() {
         NodeEnterExitTestVisitor visitor = new NodeEnterExitTestVisitor();
 
-        TypeParser.Node node = TypeParser.parse(
+        TypeParser.parse(
                 "Record<ReadonlyArray<string>, Record<string, ReadonlyArray<string>>>")
                 .traverse().visit(visitor).finish();
 
@@ -65,7 +65,7 @@ public class TypeParserTest {
         assertEquals(type, node.toString());
     }
 
-    static class NodeEnterExitTestVisitor extends TypeParser.Visitor {
+    static class NodeEnterExitTestVisitor implements TypeParser.Visitor {
         private final StringBuilder builder = new StringBuilder();
 
         @Override
@@ -84,16 +84,14 @@ public class TypeParserTest {
             return node;
         }
 
-        public TypeParser.Node exit(TypeParser.Node node,
-                TypeParser.Node parent) {
+        @Override
+        public void exit(TypeParser.Node node, TypeParser.Node parent) {
             if (parent == null || parent.getNested()
                     .indexOf(node) == parent.getNested().size() - 1) {
                 builder.append("]");
             } else {
                 builder.append(", ");
             }
-
-            return node;
         }
 
         public String getResult() {
@@ -101,7 +99,7 @@ public class TypeParserTest {
         }
     }
 
-    static class NodeRenamingTestVisitor extends TypeParser.Visitor {
+    static class NodeRenamingTestVisitor implements TypeParser.Visitor {
         @Override
         public TypeParser.Node enter(TypeParser.Node node,
                 TypeParser.Node parent) {
@@ -114,7 +112,7 @@ public class TypeParserTest {
         }
     }
 
-    static class NodeReplacingTestVisitor extends TypeParser.Visitor {
+    static class NodeReplacingTestVisitor implements TypeParser.Visitor {
         @Override
         public TypeParser.Node enter(TypeParser.Node node,
                 TypeParser.Node parent) {

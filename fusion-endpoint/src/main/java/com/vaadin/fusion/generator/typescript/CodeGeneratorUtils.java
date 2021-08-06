@@ -59,13 +59,14 @@ class CodeGeneratorUtils {
         return qualifiedName;
     }
 
-    static class SimpleNameVisitor extends TypeParser.Visitor {
+    static class SimpleNameVisitor implements TypeParser.Visitor {
         private final List<Map<String, String>> imports;
 
         SimpleNameVisitor(List<Map<String, String>> imports) {
             this.imports = imports;
         }
 
+        /** @inheritDoc */
         @Override
         public TypeParser.Node enter(TypeParser.Node node,
                 TypeParser.Node parent) {
