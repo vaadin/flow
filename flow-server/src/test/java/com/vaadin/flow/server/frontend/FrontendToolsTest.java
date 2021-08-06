@@ -500,7 +500,7 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void npmAcceptsWhitespaces_npmCacheDirWithWhitespaces_falseForWindows()
+    public void folderIsAcceptableByNpm_npmCacheDirWithWhitespaces_falseForWindows()
             throws IOException {
         Assume.assumeTrue("This test is only for Windows, since the issue with "
                 + "whitespaces in npm processed directories reproduces only on "
@@ -516,14 +516,14 @@ public class FrontendToolsTest {
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
-        boolean accepted = tools.npmAcceptsWhitespaces(npmCacheDir);
+        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
 
         // then
         Assert.assertFalse(accepted);
     }
 
     @Test
-    public void npmAcceptsWhitespaces_npmCacheDirWithWhitespaces_trueForNonWindows()
+    public void folderIsAcceptableByNpm_npmCacheDirWithWhitespaces_trueForNonWindows()
             throws IOException {
         Assume.assumeFalse(
                 "This test is for the rest of OS rather than Windows, since "
@@ -542,14 +542,14 @@ public class FrontendToolsTest {
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
-        boolean accepted = tools.npmAcceptsWhitespaces(npmCacheDir);
+        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
 
         // then
         Assert.assertTrue(accepted);
     }
 
     @Test
-    public void npmAcceptsWhitespaces_npmCacheNoWhitespaces_trueForWindows()
+    public void folderIsAcceptableByNpm_npmCacheNoWhitespaces_trueForWindows()
             throws IOException {
         Assume.assumeTrue("This test is only for Windows, since the issue with "
                 + "whitespaces in npm processed directories reproduces only on "
@@ -566,14 +566,15 @@ public class FrontendToolsTest {
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
-        boolean accepted = tools.npmAcceptsWhitespaces(npmCacheDir);
+        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
 
         // then
         Assert.assertTrue(accepted);
     }
 
     @Test
-    public void npmAcceptsWhitespaces_npm7_trueForWindows() throws IOException {
+    public void folderIsAcceptableByNpm_npm7_trueForWindows()
+            throws IOException {
         Assume.assumeTrue("This test is only for Windows, since the issue with "
                 + "whitespaces in npm processed directories reproduces only on "
                 + "Windows", FrontendUtils.isWindows());
@@ -589,14 +590,15 @@ public class FrontendToolsTest {
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
-        boolean accepted = tools.npmAcceptsWhitespaces(npmCacheDir);
+        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
 
         // then
         Assert.assertTrue(accepted);
     }
 
     @Test
-    public void getNpmCacheDir_returnsCorrectPath() throws IOException {
+    public void getNpmCacheDir_returnsCorrectPath() throws IOException,
+            InterruptedException, FrontendUtils.CommandExecutionException {
         FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
         FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
                 .builder(FrontendStubs.Tool.NPM).withCacheDir("/foo/bar")

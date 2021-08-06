@@ -65,7 +65,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
     // a new hash to the code repository.
     private static final String INSTALL_HASH = ".vaadin/vaadin.json";
 
-    private static final String USER_HOME_CONTAINS_WHITESPACES = "%n%n======================================================================================================"
+    private static final String NPM_VALIDATION_FAIL_MESSAGE = "%n%n======================================================================================================"
             + "%nThe path to npm cache contains whitespaces, and the currently installed npm version doesn't accept this."
             + "%nMost likely your Windows user home path contains whitespaces."
             + "%nTo workaround it, please change the npm cache path by using the following command:"
@@ -332,11 +332,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 tools.forceAlternativeNodeExecutable();
             }
             if (enablePnpm) {
-                File npmCacheDir = tools.getNpmCacheDir();
-                if (!tools.npmAcceptsWhitespaces(npmCacheDir)) {
-                    throw new IllegalStateException(
-                            String.format(USER_HOME_CONTAINS_WHITESPACES));
-                }
+                validateInstalledNpm(tools);
                 executable = tools.getPnpmExecutable();
             } else {
                 executable = tools.getNpmExecutable();
@@ -524,6 +520,24 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     (dir, name) -> name.startsWith("pnpm-")).length == 0) {
                 FileUtils.forceDelete(packageUpdater.nodeModulesFolder);
             }
+        }
+    }
+
+    private void validateInstalledNpm(FrontendTools tools)
+            throws IllegalStateException {
+        File npmCacheDir = null;
+        try {
+            npmCacheDir = tools.getNpmCacheDir();
+        } catch (InterruptedException | IOException
+                | FrontendUtils.CommandExecutionException
+                | IllegalStateException e) {
+            packageUpdater.log().warn("Failed to get npm cache directory", e);
+        }
+
+        if (npmCacheDir != null
+                && !tools.folderIsAcceptableByNpm(npmCacheDir)) {
+            throw new IllegalStateException(
+                    String.format(NPM_VALIDATION_FAIL_MESSAGE));
         }
     }
 }

@@ -998,7 +998,8 @@ public class FrontendUtils {
         try {
             String output = executeCommand(versionCommand);
             return new FrontendVersion(parseVersionString(output));
-        } catch (IOException | CommandExecutionException e) {
+        } catch (IOException | CommandExecutionException
+                | InterruptedException e) {
             throw new UnknownVersionException(tool,
                     "Using command " + String.join(" ", versionCommand), e);
         }
@@ -1014,19 +1015,29 @@ public class FrontendUtils {
      * @throws CommandExecutionException
      *             if the process completes exceptionally.
      */
+    /**
+     * Executes a given command as a native process.
+     *
+     * @param command
+     *            the command to be executed and it's arguments.
+     * @return process output string.
+     * @throws CommandExecutionException
+     *             if the process completes exceptionally with non-zero code.
+     * @throws IOException
+     *             if an I/O occurs during command execution.
+     * @throws InterruptedException
+     *             when the current thread is being interrupted while waiting
+     *             for command to complete.
+     */
     public static String executeCommand(List<String> command)
-            throws CommandExecutionException {
-        try {
-            Process process = FrontendUtils.createProcessBuilder(command)
-                    .start();
-            int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                throw new CommandExecutionException(exitCode);
-            }
-            return streamToString(process.getInputStream());
-        } catch (Exception e) {
-            throw new CommandExecutionException(e);
+            throws CommandExecutionException, IOException,
+            InterruptedException {
+        Process process = FrontendUtils.createProcessBuilder(command).start();
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            throw new CommandExecutionException(exitCode);
         }
+        return streamToString(process.getInputStream());
     }
 
     /**

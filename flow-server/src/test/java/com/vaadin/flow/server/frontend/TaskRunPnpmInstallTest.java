@@ -44,8 +44,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     private static final String PINNED_VERSION = "3.2.17";
 
-    private static final String USER_HOME = "user.home";
-
     @Override
     @Before
     public void setUp() throws IOException {
@@ -609,7 +607,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runPnpmInstall_checkNpmAcceptsWhitespaces_throwsOnWindows()
+    public void runPnpmInstall_checkFolderIsAcceptableByNpm_throwsOnWindows()
             throws ExecutionFailedException, IOException {
         Assume.assumeTrue("This test is only for Windows, since the issue with "
                 + "whitespaces in npm processed directories reproduces only on "

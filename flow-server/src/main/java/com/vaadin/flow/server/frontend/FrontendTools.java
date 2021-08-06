@@ -466,37 +466,38 @@ public class FrontendTools {
     }
 
     /**
-     * Checks whether it's fine to have a whitespaces in user home path, and, if
-     * not, fails-fast with a message to developer how to fix it.
-     *
-     * @throws IllegalStateException
-     *             if <code>pnpm install</code> is blocked by whitespaces in
-     *             user home
+     * Checks whether the currently installed npm version accepts/properly
+     * processes the path to a given folder.
+     * <p>
+     * For example, the older versions of npm don't accept whitespaces in
+     * folders path.
+     * 
+     * @param folder
+     *            the folder to check.
+     * @return <code>true</code>, if the current version of npm accepts the
+     *         given folder path, <code>false</code> if it causes issues.
      */
-    boolean npmAcceptsWhitespaces(File dirToBeChecked)
-            throws IllegalStateException {
-        Objects.requireNonNull(dirToBeChecked);
-        boolean hidden = dirToBeChecked.isHidden()
-                || dirToBeChecked.getPath().contains(File.separator + ".");
-        if (!hidden && (!dirToBeChecked.exists()
-                || !dirToBeChecked.isDirectory())) {
+    boolean folderIsAcceptableByNpm(File folder) {
+        Objects.requireNonNull(folder);
+        boolean hidden = folder.isHidden()
+                || folder.getPath().contains(File.separator + ".");
+        if (!hidden && (!folder.exists() || !folder.isDirectory())) {
             getLogger().warn(
-                    "Failed to check whitespaces in '{}', because it doesn't exist or not a directory",
-                    dirToBeChecked);
+                    "Failed to check whether npm accepts the folder '{}', because the folder doesn't exist or not a directory",
+                    folder);
             return true;
         }
 
         if (FrontendUtils.isWindows()
-                && dirToBeChecked.getAbsolutePath().matches(".*[\\s+].*")) {
+                && folder.getAbsolutePath().matches(".*[\\s+].*")) {
             try {
                 FrontendVersion foundNpmVersion = getNpmVersion();
-                // npm < 7.0.0 doesn't accept whitespaces in user home
+                // npm < 7.0.0 doesn't accept whitespaces in path
                 return FrontendUtils.isVersionAtLeast(foundNpmVersion,
                         WHITESPACE_ACCEPTING_NPM_VERSION);
             } catch (UnknownVersionException e) {
-                getLogger().warn(
-                        "Error checking if npm supports whitespaces in path '{}'",
-                        dirToBeChecked, e);
+                getLogger().warn("Error checking if npm accepts path '{}'",
+                        folder, e);
             }
         }
         return true;
@@ -512,25 +513,37 @@ public class FrontendTools {
      *             if the failure occurs during requesting the cache dir, or the
      *             returned path is empty.
      */
-    File getNpmCacheDir() throws IllegalStateException {
-        try {
-            List<String> npmCacheCommand = new ArrayList<>(
-                    getNpmExecutable(false));
-            npmCacheCommand.add("config");
-            npmCacheCommand.add("get");
-            npmCacheCommand.add("cache");
-            npmCacheCommand.add("--global");
-            String output = FrontendUtils.executeCommand(npmCacheCommand);
-            output = parseCommandOutput(output);
-            if (output.isEmpty()) {
-                throw new IllegalStateException(
-                        String.format("Command '%s' returned an empty path",
-                                String.join(" ", npmCacheCommand)));
-            }
-            return new File(output);
-        } catch (CommandExecutionException e) {
-            throw new IllegalStateException("Failed to get npm cache dir", e);
+    /**
+     * Gives a file object representing path to the cache directory of currently
+     * installed npm.
+     *
+     * @return the file object representing path to npm cache directory.
+     * @throws IOException
+     *             if an I/O occurs while getting npm cache directory.
+     * @throws InterruptedException
+     *             if the current thread is being interrupted while getting the
+     *             npm cache directory.
+     * @throws CommandExecutionException
+     *             if getting the npm cache directory completes exceptionally
+     *             with non-zero code.
+     * @throws IllegalStateException
+     *             if npm cache command return an empty path.
+     */
+    File getNpmCacheDir() throws IOException, InterruptedException,
+            CommandExecutionException, IllegalStateException {
+        List<String> npmCacheCommand = new ArrayList<>(getNpmExecutable(false));
+        npmCacheCommand.add("config");
+        npmCacheCommand.add("get");
+        npmCacheCommand.add("cache");
+        npmCacheCommand.add("--global");
+        String output = FrontendUtils.executeCommand(npmCacheCommand);
+        output = removeLineBreaks(output);
+        if (output.isEmpty()) {
+            throw new IllegalStateException(
+                    String.format("Command '%s' returned an empty path",
+                            String.join(" ", npmCacheCommand)));
         }
+        return new File(output);
     }
 
     private FrontendVersion getNpmVersion() throws UnknownVersionException {
@@ -800,10 +813,10 @@ public class FrontendTools {
         }
     }
 
-    private String parseCommandOutput(String output) {
-        if (output == null || output.isEmpty()) {
-            return output;
+    private String removeLineBreaks(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
         }
-        return String.join("", output.split(System.lineSeparator()));
+        return String.join("", str.split(System.lineSeparator()));
     }
 }
