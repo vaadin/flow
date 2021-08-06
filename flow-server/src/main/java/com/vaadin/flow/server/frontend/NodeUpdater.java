@@ -397,6 +397,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("workbox-webpack-plugin", WORKBOX_VERSION);
         defaults.put("workbox-core", WORKBOX_VERSION);
         defaults.put("workbox-precaching", WORKBOX_VERSION);
+        defaults.put("workbox-build", WORKBOX_VERSION);
         defaults.put("glob", "7.1.6");
         defaults.put("webpack-manifest-plugin", "3.0.0");
         defaults.put("@types/validator", "13.1.0");
