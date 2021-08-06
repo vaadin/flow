@@ -47,7 +47,7 @@ class TypeParser {
             this.name = name;
         }
 
-        @SuppressWarnings({"squid:S134", "squid:S3776"})
+        @SuppressWarnings({ "squid:S134", "squid:S3776" })
         private static Node process(List<Token> tokens) {
             Deque<Node> unclosedNodes = new ArrayDeque<>();
             Node currentNode = null;
