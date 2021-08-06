@@ -95,7 +95,8 @@ class ModelGenerator {
 
         /** @inheritDoc */
         @Override
-        public TypeParser.Node enter(TypeParser.Node node, TypeParser.Node parent) {
+        public TypeParser.Node enter(TypeParser.Node node,
+                TypeParser.Node parent) {
             if (parent == null || isArray(parent)) {
                 if (parent != null) {
                     builder.append(", ");
@@ -150,7 +151,8 @@ class ModelGenerator {
          * @inheritDoc
          */
         @Override
-        public TypeParser.Node enter(TypeParser.Node node, TypeParser.Node parent) {
+        public TypeParser.Node enter(TypeParser.Node node,
+                TypeParser.Node parent) {
             node.setUndefined(false);
 
             if (isArray(node)) {
