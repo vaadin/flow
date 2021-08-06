@@ -64,30 +64,18 @@ public class ModelGenerator {
     }
 
     private static String getModelFullType(String name) {
-        return TypeParser.parse(name)
-                .map(root -> root.traverse().visit(new ModelTypeVisitor())
-                        .finish().toString())
-                .orElseThrow(() -> new ParsingException(
-                        String.format("'%s' is not a type", name)));
+        return TypeParser.parse(name).traverse().visit(new ModelTypeVisitor())
+                .finish().toString();
     }
 
     private static String getModelVariableArguments(String name,
             boolean optional, List<String> constrainArguments) {
-        return TypeParser.parse(name).map(root -> {
-            ModelArgumentsVisitor visitor = new ModelArgumentsVisitor(optional,
-                    constrainArguments);
+        ModelArgumentsVisitor visitor = new ModelArgumentsVisitor(optional,
+                constrainArguments);
 
-            root.traverse().visit(visitor).finish();
+        TypeParser.parse(name).traverse().visit(visitor).finish();
 
-            return visitor.getResult();
-        }).orElseThrow(() -> new ParsingException(
-                String.format("'%s' is not a type", name)));
-    }
-
-    static class ParsingException extends RuntimeException {
-        ParsingException(String message) {
-            super(message);
-        }
+        return visitor.getResult();
     }
 
     private static class ModelArgumentsVisitor extends Visitor {

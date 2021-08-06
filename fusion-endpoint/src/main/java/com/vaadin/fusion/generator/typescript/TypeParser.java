@@ -20,14 +20,19 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 class TypeParser {
-    static Optional<Node> parse(String type) {
+    static Node parse(String type) {
         Objects.requireNonNull(type);
         List<Token> tokens = Token.process(type);
-        return Node.process(tokens);
+        Node root = Node.process(tokens);
+
+        if (root == null) {
+            throw new ParsingError(String.format("'%s' is not a type", type));
+        }
+
+        return root;
     }
 
     static class Node {
@@ -40,7 +45,7 @@ class TypeParser {
         }
 
         @SuppressWarnings("squid:S134")
-        private static Optional<Node> process(List<Token> tokens) {
+        private static Node process(List<Token> tokens) {
             Deque<Node> unclosedNodes = new ArrayDeque<>();
             Node currentNode = null;
             boolean waitingForSuffix = false;
@@ -52,7 +57,7 @@ class TypeParser {
                             currentNode.setUndefined(true);
                             waitingForSuffix = false;
                         } else {
-                            throw new SyntaxError(String.format(
+                            throw new ParsingError(String.format(
                                     "Type union '%s | %s' is not expected",
                                     currentNode.getName(),
                                     ((NameToken) token).getName()));
@@ -70,14 +75,14 @@ class TypeParser {
                     currentNode = unclosedNodes.pop();
                 } else {
                     if (currentNode == null) {
-                        throw new SyntaxError(
+                        throw new ParsingError(
                                 "Type open brace (<) cannot go before the type name");
                     }
                     unclosedNodes.push(currentNode);
                 }
             }
 
-            return Optional.ofNullable(currentNode);
+            return currentNode;
         }
 
         public void addNested(final Node node) {
@@ -145,8 +150,8 @@ class TypeParser {
         }
     }
 
-    static class SyntaxError extends Error {
-        public SyntaxError(String message) {
+    static class ParsingError extends Error {
+        ParsingError(String message) {
             super(message);
         }
     }

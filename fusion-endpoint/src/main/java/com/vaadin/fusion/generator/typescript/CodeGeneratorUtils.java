@@ -28,11 +28,8 @@ class CodeGeneratorUtils {
     // `Map<String, Map<String, com.example.mypackage.Bean>>`
     static String getSimpleNameFromComplexType(String dataType,
             List<Map<String, String>> imports) {
-        return TypeParser.parse(dataType)
-                .map(root -> root.traverse()
-                        .visit(new SimpleNameVisitor(imports)).finish()
-                        .toString())
-                .orElse("");
+        return TypeParser.parse(dataType).traverse()
+                .visit(new SimpleNameVisitor(imports)).finish().toString();
     }
 
     static String getSimpleNameFromImports(String dataType,
