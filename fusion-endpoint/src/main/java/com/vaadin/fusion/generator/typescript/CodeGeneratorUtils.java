@@ -66,7 +66,9 @@ class CodeGeneratorUtils {
             this.imports = imports;
         }
 
-        /** @inheritDoc */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public TypeParser.Node enter(TypeParser.Node node,
                 TypeParser.Node parent) {

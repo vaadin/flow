@@ -93,7 +93,9 @@ class ModelGenerator {
             this.constrainArguments = constrainArguments;
         }
 
-        /** @inheritDoc */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public TypeParser.Node enter(TypeParser.Node node,
                 TypeParser.Node parent) {
@@ -114,7 +116,9 @@ class ModelGenerator {
             return null;
         }
 
-        /** @inheritDoc */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void exit(TypeParser.Node node, TypeParser.Node parent) {
             if (parent == null && !constrainArguments.isEmpty()) {
@@ -148,7 +152,7 @@ class ModelGenerator {
         private final Set<TypeParser.Node> visitedNodes = new HashSet<>();
 
         /**
-         * @inheritDoc
+         * {@inheritDoc}
          */
         @Override
         public TypeParser.Node enter(TypeParser.Node node,
