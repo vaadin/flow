@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2021 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.fusion.generator.typescript;
 
 import java.util.Arrays;
@@ -6,8 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.github.jknack.handlebars.Helper;
@@ -51,21 +64,30 @@ public class ModelGenerator {
     }
 
     private static String getModelFullType(String name) {
-        TypeParser.Node root = TypeParser.parse(name).traverse()
-                .visit(new ModelTypeVisitor()).finish();
-
-        return root.toString();
+        return TypeParser.parse(name)
+                .map(root -> root.traverse().visit(new ModelTypeVisitor())
+                        .finish().toString())
+                .orElseThrow(() -> new ParsingException(
+                        String.format("'%s' is not a type", name)));
     }
 
     private static String getModelVariableArguments(String name,
             boolean optional, List<String> constrainArguments) {
-        ModelArgumentsVisitor visitor = new ModelArgumentsVisitor(optional,
-                constrainArguments);
-        TypeParser.Node root = TypeParser.parse(name);
+        return TypeParser.parse(name).map(root -> {
+            ModelArgumentsVisitor visitor = new ModelArgumentsVisitor(optional,
+                    constrainArguments);
 
-        root.traverse().visit(visitor).finish();
+            root.traverse().visit(visitor).finish();
 
-        return visitor.getResult();
+            return visitor.getResult();
+        }).orElseThrow(() -> new ParsingException(
+                String.format("'%s' is not a type", name)));
+    }
+
+    static class ParsingException extends RuntimeException {
+        ParsingException(String message) {
+            super(message);
+        }
     }
 
     private static class ModelArgumentsVisitor extends Visitor {
@@ -152,7 +174,7 @@ public class ModelGenerator {
                     newNode.addNested(getModelValueType(arrayItem));
                 }
 
-                newNode.addNested(arrayItem.clone());
+                newNode.addNested(arrayItem.copy());
 
                 visitedNodes.add(newNode);
 

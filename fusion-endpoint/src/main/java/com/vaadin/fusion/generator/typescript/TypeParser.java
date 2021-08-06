@@ -1,18 +1,36 @@
+/*
+ * Copyright 2000-2021 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.fusion.generator.typescript;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
-import java.util.Stack;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 class TypeParser {
-    static Node parse(String type) throws SyntaxError {
+    static Optional<Node> parse(String type) {
+        Objects.requireNonNull(type);
         List<Token> tokens = Token.process(type);
         return Node.process(tokens);
     }
 
-    static class Node implements Cloneable {
+    static class Node {
         private String name;
         private List<Node> nested = new ArrayList<>();
         private boolean undefined = false;
@@ -22,8 +40,8 @@ class TypeParser {
         }
 
         @SuppressWarnings("squid:S134")
-        private static Node process(List<Token> tokens) {
-            Stack<Node> unclosedNodes = new Stack<>();
+        private static Optional<Node> process(List<Token> tokens) {
+            Deque<Node> unclosedNodes = new ArrayDeque<>();
             Node currentNode = null;
             boolean waitingForSuffix = false;
 
@@ -35,14 +53,14 @@ class TypeParser {
                             waitingForSuffix = false;
                         } else {
                             throw new SyntaxError(String.format(
-                                    "Type union '{} | {}' is not expected",
+                                    "Type union '%s | %s' is not expected",
                                     currentNode.getName(),
                                     ((NameToken) token).getName()));
                         }
                     } else {
                         currentNode = new Node(((NameToken) token).getName());
 
-                        if (!unclosedNodes.empty()) {
+                        if (unclosedNodes.size() > 0) {
                             unclosedNodes.peek().addNested(currentNode);
                         }
                     }
@@ -59,21 +77,20 @@ class TypeParser {
                 }
             }
 
-            return currentNode;
+            return Optional.ofNullable(currentNode);
         }
 
         public void addNested(final Node node) {
             nested.add(node);
         }
 
-        @Override
-        public Node clone() {
-            Node clone = new Node(name);
-            clone.setNested(nested.stream().map(Node::clone)
+        public Node copy() {
+            Node copy = new Node(name);
+            copy.setNested(nested.stream().map(Node::copy)
                     .collect(Collectors.toList()));
-            clone.setUndefined(undefined);
+            copy.setUndefined(undefined);
 
-            return clone;
+            return copy;
         }
 
         public String getName() {
@@ -129,16 +146,8 @@ class TypeParser {
     }
 
     static class SyntaxError extends Error {
-        public SyntaxError() {
-            super();
-        }
-
         public SyntaxError(String message) {
             super(message);
-        }
-
-        public SyntaxError(String message, Throwable cause) {
-            super(message, cause);
         }
     }
 
