@@ -32,7 +32,10 @@ import com.vaadin.fusion.generator.OpenAPIObjectGenerator;
 
 import static com.vaadin.fusion.generator.typescript.CodeGeneratorUtils.getSimpleNameFromImports;
 
-public class ModelGenerator {
+class ModelGenerator {
+    private ModelGenerator() {
+    }
+
     static Helper<CodegenProperty> getModelArgumentsHelper() {
         return (prop, options) -> getModelArguments(prop, options.param(0));
     }

@@ -23,6 +23,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 class TypeParser {
+    private TypeParser() {
+    }
+
     static Node parse(String type) {
         Objects.requireNonNull(type);
         List<Token> tokens = Token.process(type);
@@ -44,7 +47,7 @@ class TypeParser {
             this.name = name;
         }
 
-        @SuppressWarnings("squid:S134")
+        @SuppressWarnings({"squid:S134", "squid:S3776"})
         private static Node process(List<Token> tokens) {
             Deque<Node> unclosedNodes = new ArrayDeque<>();
             Node currentNode = null;

@@ -23,6 +23,9 @@ import com.vaadin.fusion.generator.GeneratorUtils;
 import static com.vaadin.fusion.generator.typescript.CodeGenerator.IMPORT;
 
 class CodeGeneratorUtils {
+    private CodeGeneratorUtils() {
+    }
+
     // Method for extracting fully qualified name in a complex type. E.g.
     // 'com.example.mypackage.Bean' will be extracted in the type
     // `Map<String, Map<String, com.example.mypackage.Bean>>`
