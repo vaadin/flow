@@ -1009,19 +1009,9 @@ public class FrontendUtils {
      *
      * @param command
      *            the command to be executed and it's arguments.
-     *
      * @return process output string.
      * @throws CommandExecutionException
      *             if the process completes exceptionally.
-     */
-    /**
-     * Executes a given command as a native process.
-     *
-     * @param command
-     *            the command to be executed and it's arguments.
-     * @return process output string.
-     * @throws CommandExecutionException
-     *             if the process completes exceptionally with non-zero code.
      */
     public static String executeCommand(List<String> command)
             throws CommandExecutionException {

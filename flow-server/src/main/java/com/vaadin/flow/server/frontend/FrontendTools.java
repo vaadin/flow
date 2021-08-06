@@ -508,19 +508,8 @@ public class FrontendTools {
      * installed npm.
      *
      * @return the file object representing path to npm cache directory.
-     *
-     * @throws IllegalStateException
-     *             if the failure occurs during requesting the cache dir, or the
-     *             returned path is empty.
-     */
-    /**
-     * Gives a file object representing path to the cache directory of currently
-     * installed npm.
-     *
-     * @return the file object representing path to npm cache directory.
      * @throws CommandExecutionException
-     *             if getting the npm cache directory completes exceptionally
-     *             with non-zero code.
+     *             if getting the npm cache directory completes exceptionally.
      * @throws IllegalStateException
      *             if npm cache command return an empty path.
      */
