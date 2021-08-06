@@ -40,7 +40,7 @@ class TypeParser {
         private List<Node> nested = new ArrayList<>();
         private boolean undefined = false;
 
-        public Node(String name) {
+        Node(String name) {
             this.name = name;
         }
 
@@ -85,47 +85,11 @@ class TypeParser {
             return currentNode;
         }
 
-        public void addNested(final Node node) {
-            nested.add(node);
-        }
-
-        public Node copy() {
-            Node copy = new Node(name);
-            copy.setNested(nested.stream().map(Node::copy)
-                    .collect(Collectors.toList()));
-            copy.setUndefined(undefined);
-
-            return copy;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(final String name) {
-            this.name = name;
-        }
-
-        public List<Node> getNested() {
-            return nested;
-        }
-
-        public void setNested(List<Node> nested) {
-            this.nested = nested;
-        }
-
-        public boolean hasNested() {
-            return nested.size() > 0;
-        }
-
-        public boolean isUndefined() {
-            return undefined;
-        }
-
-        public void setUndefined(final boolean undefined) {
-            this.undefined = undefined;
-        }
-
+        /**
+         * Returns a TypeScript representation of the type.
+         *
+         * @return a string representation
+         */
         @Override
         public String toString() {
             StringBuilder builder = new StringBuilder();
@@ -145,7 +109,48 @@ class TypeParser {
             return builder.toString();
         }
 
-        public Traverse traverse() {
+        void addNested(final Node node) {
+            nested.add(node);
+        }
+
+        Node copy() {
+            Node copy = new Node(name);
+            copy.setNested(nested.stream().map(Node::copy)
+                    .collect(Collectors.toList()));
+            copy.setUndefined(undefined);
+
+            return copy;
+        }
+
+        String getName() {
+            return name;
+        }
+
+        void setName(final String name) {
+            this.name = name;
+        }
+
+        List<Node> getNested() {
+            return nested;
+        }
+
+        void setNested(List<Node> nested) {
+            this.nested = nested;
+        }
+
+        boolean hasNested() {
+            return nested.size() > 0;
+        }
+
+        boolean isUndefined() {
+            return undefined;
+        }
+
+        void setUndefined(final boolean undefined) {
+            this.undefined = undefined;
+        }
+
+        Traverse traverse() {
             return new Traverse(this);
         }
     }
@@ -160,15 +165,15 @@ class TypeParser {
         private final Node root;
         private final List<Visitor> visitors = new ArrayList<>();
 
-        public Traverse(Node root) {
+        Traverse(Node root) {
             this.root = root;
         }
 
-        public Node finish() {
+        Node finish() {
             return applyVisitors(root, null);
         }
 
-        public Traverse visit(Visitor visitor) {
+        Traverse visit(Visitor visitor) {
             visitors.add(visitor);
 
             return this;
@@ -208,11 +213,11 @@ class TypeParser {
     }
 
     abstract static class Visitor {
-        public Node enter(Node node, Node parent) {
+        Node enter(Node node, Node parent) {
             return node;
         }
 
-        public Node exit(Node node, Node parent) {
+        Node exit(Node node, Node parent) {
             return node;
         }
     }

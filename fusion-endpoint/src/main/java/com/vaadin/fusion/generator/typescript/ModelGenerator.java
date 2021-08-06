@@ -64,34 +64,33 @@ public class ModelGenerator {
     }
 
     private static String getModelFullType(String name) {
-        return TypeParser.parse(name).traverse().visit(new ModelTypeVisitor())
-                .finish().toString();
+        return TypeParser.parse(name).traverse()
+                .visit(new ModelTypeModelVisitor()).finish().toString();
     }
 
     private static String getModelVariableArguments(String name,
             boolean optional, List<String> constrainArguments) {
-        ModelArgumentsVisitor visitor = new ModelArgumentsVisitor(optional,
-                constrainArguments);
+        ModelArgumentsModelVisitor visitor = new ModelArgumentsModelVisitor(
+                optional, constrainArguments);
 
         TypeParser.parse(name).traverse().visit(visitor).finish();
 
         return visitor.getResult();
     }
 
-    private static class ModelArgumentsVisitor extends Visitor {
+    private static class ModelArgumentsModelVisitor extends ModelVisitor {
         private final StringBuilder builder = new StringBuilder();
         private final List<String> constrainArguments;
         private final boolean isRootOptional;
 
-        ModelArgumentsVisitor(boolean isRootOptional,
+        ModelArgumentsModelVisitor(boolean isRootOptional,
                 List<String> constrainArguments) {
             this.isRootOptional = isRootOptional;
             this.constrainArguments = constrainArguments;
         }
 
         @Override
-        public TypeParser.Node enter(TypeParser.Node node,
-                TypeParser.Node parent) {
+        TypeParser.Node enter(TypeParser.Node node, TypeParser.Node parent) {
             if (parent == null || isArray(parent)) {
                 if (parent != null) {
                     builder.append(", ");
@@ -110,8 +109,7 @@ public class ModelGenerator {
         }
 
         @Override
-        public TypeParser.Node exit(TypeParser.Node node,
-                TypeParser.Node parent) {
+        TypeParser.Node exit(TypeParser.Node node, TypeParser.Node parent) {
             if (parent == null && constrainArguments.size() > 0) {
                 builder.append(", ");
                 builder.append(String.join(", ", constrainArguments));
@@ -141,12 +139,11 @@ public class ModelGenerator {
         }
     }
 
-    private static class ModelTypeVisitor extends Visitor {
+    private static class ModelTypeModelVisitor extends ModelVisitor {
         private final Set<TypeParser.Node> visitedNodes = new HashSet<>();
 
         @Override
-        public TypeParser.Node enter(TypeParser.Node node,
-                TypeParser.Node parent) {
+        TypeParser.Node enter(TypeParser.Node node, TypeParser.Node parent) {
             node.setUndefined(false);
 
             if (isArray(node)) {
@@ -216,7 +213,7 @@ public class ModelGenerator {
         }
     }
 
-    private abstract static class Visitor extends TypeParser.Visitor {
+    private abstract static class ModelVisitor extends TypeParser.Visitor {
         protected static final String ARRAY_MODEL_NAME = "Array"
                 + MainGenerator.MODEL;
         protected static final String OBJECT_MODEL_NAME = "Object"
