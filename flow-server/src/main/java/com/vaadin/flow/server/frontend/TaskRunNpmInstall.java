@@ -528,8 +528,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
         File npmCacheDir = null;
         try {
             npmCacheDir = tools.getNpmCacheDir();
-        } catch (InterruptedException | IOException
-                | FrontendUtils.CommandExecutionException
+        } catch (FrontendUtils.CommandExecutionException
                 | IllegalStateException e) {
             packageUpdater.log().warn("Failed to get npm cache directory", e);
         }

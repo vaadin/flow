@@ -518,19 +518,14 @@ public class FrontendTools {
      * installed npm.
      *
      * @return the file object representing path to npm cache directory.
-     * @throws IOException
-     *             if an I/O occurs while getting npm cache directory.
-     * @throws InterruptedException
-     *             if the current thread is being interrupted while getting the
-     *             npm cache directory.
      * @throws CommandExecutionException
      *             if getting the npm cache directory completes exceptionally
      *             with non-zero code.
      * @throws IllegalStateException
      *             if npm cache command return an empty path.
      */
-    File getNpmCacheDir() throws IOException, InterruptedException,
-            CommandExecutionException, IllegalStateException {
+    File getNpmCacheDir()
+            throws CommandExecutionException, IllegalStateException {
         List<String> npmCacheCommand = new ArrayList<>(getNpmExecutable(false));
         npmCacheCommand.add("config");
         npmCacheCommand.add("get");

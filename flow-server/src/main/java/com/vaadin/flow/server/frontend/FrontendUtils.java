@@ -967,12 +967,12 @@ public class FrontendUtils {
     }
 
     /**
-     * Thrown when the process execution fails.
+     * Thrown when the command execution fails.
      */
     public static class CommandExecutionException extends Exception {
         /**
-         * Constructs an exception telling what code the process was exited
-         * with.
+         * Constructs an exception telling what code the command execution
+         * process was exited with.
          *
          * @param processExitCode
          *            process exit code
@@ -983,7 +983,7 @@ public class FrontendUtils {
 
         /**
          * Constructs an exception telling what was the original exception the
-         * process failed with.
+         * command execution process failed with.
          *
          * @param cause
          *            the cause exception of process failure.
@@ -998,8 +998,7 @@ public class FrontendUtils {
         try {
             String output = executeCommand(versionCommand);
             return new FrontendVersion(parseVersionString(output));
-        } catch (IOException | CommandExecutionException
-                | InterruptedException e) {
+        } catch (IOException | CommandExecutionException e) {
             throw new UnknownVersionException(tool,
                     "Using command " + String.join(" ", versionCommand), e);
         }
@@ -1023,21 +1022,20 @@ public class FrontendUtils {
      * @return process output string.
      * @throws CommandExecutionException
      *             if the process completes exceptionally with non-zero code.
-     * @throws IOException
-     *             if an I/O occurs during command execution.
-     * @throws InterruptedException
-     *             when the current thread is being interrupted while waiting
-     *             for command to complete.
      */
     public static String executeCommand(List<String> command)
-            throws CommandExecutionException, IOException,
-            InterruptedException {
-        Process process = FrontendUtils.createProcessBuilder(command).start();
-        int exitCode = process.waitFor();
-        if (exitCode != 0) {
-            throw new CommandExecutionException(exitCode);
+            throws CommandExecutionException {
+        try {
+            Process process = FrontendUtils.createProcessBuilder(command)
+                    .start();
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                throw new CommandExecutionException(exitCode);
+            }
+            return streamToString(process.getInputStream());
+        } catch (IOException | InterruptedException e) {
+            throw new CommandExecutionException(e);
         }
-        return streamToString(process.getInputStream());
     }
 
     /**
