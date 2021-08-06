@@ -260,6 +260,9 @@ class TypeParser {
         private static final char PIPE = '|';
         private static final char SPACE = ' ';
 
+        private Token() {
+        }
+
         static List<Token> process(CharSequence sequence) {
             List<Token> tokens = new ArrayList<>();
             NameToken token = null;
