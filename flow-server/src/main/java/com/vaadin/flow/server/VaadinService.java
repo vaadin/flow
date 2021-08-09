@@ -1205,8 +1205,13 @@ public abstract class VaadinService implements Serializable {
             if (value instanceof VaadinSession) {
                 // set flag to avoid cleanup
                 VaadinSession serviceSession = (VaadinSession) value;
-                serviceSession.setAttribute(PRESERVE_UNBOUND_SESSION_ATTRIBUTE,
-                        Boolean.TRUE);
+                serviceSession.lock();
+                try {
+                    serviceSession.setAttribute(
+                            PRESERVE_UNBOUND_SESSION_ATTRIBUTE, Boolean.TRUE);
+                } finally {
+                    serviceSession.unlock();
+                }
             }
             attrs.put(name, value);
         }
@@ -1233,8 +1238,13 @@ public abstract class VaadinService implements Serializable {
                         serviceSession.getLockInstance());
 
                 service.storeSession(serviceSession, newSession);
-                serviceSession.setAttribute(PRESERVE_UNBOUND_SESSION_ATTRIBUTE,
-                        null);
+                serviceSession.lock();
+                try {
+                    serviceSession.setAttribute(
+                            PRESERVE_UNBOUND_SESSION_ATTRIBUTE, null);
+                } finally {
+                    serviceSession.unlock();
+                }
             }
         }
 
