@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.server.frontend.installer.InstallationException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -91,6 +92,9 @@ public class FrontendTools {
             .asList(new FrontendVersion("6.11.0"),
                     new FrontendVersion("6.11.1"),
                     new FrontendVersion("6.11.2"));
+
+    private static final FrontendVersion WHITESPACE_ACCEPTING_NPM_VERSION = new FrontendVersion(
+            7, 0);
 
     private static final int SUPPORTED_NODE_MAJOR_VERSION = Constants.SUPPORTED_NODE_MAJOR_VERSION;
     private static final int SUPPORTED_NODE_MINOR_VERSION = Constants.SUPPORTED_NODE_MINOR_VERSION;
@@ -391,14 +395,10 @@ public class FrontendTools {
         }
 
         try {
-            List<String> npmVersionCommand = new ArrayList<>(
-                    getNpmExecutable(false));
-            npmVersionCommand.add("--version"); // NOSONAR
-            FrontendVersion npmVersion = FrontendUtils.getVersion("npm",
-                    npmVersionCommand);
-            FrontendUtils.validateToolVersion("npm", npmVersion,
+            FrontendVersion foundNpmVersion = getNpmVersion();
+            FrontendUtils.validateToolVersion("npm", foundNpmVersion,
                     SUPPORTED_NPM_VERSION, SHOULD_WORK_NPM_VERSION);
-            checkForFaultyNpmVersion(npmVersion);
+            checkForFaultyNpmVersion(foundNpmVersion);
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if npm is new enough", e);
         }
@@ -485,6 +485,78 @@ public class FrontendTools {
                     "by updating your global npm installation with `npm install -g npm@latest`");
             throw new IllegalStateException(badNpmVersion);
         }
+    }
+
+    /**
+     * Checks whether the currently installed npm version accepts/properly
+     * processes the path to a given folder.
+     * <p>
+     * For example, the older versions of npm don't accept whitespaces in
+     * folders path.
+     *
+     * @param folder
+     *            the folder to check.
+     * @return <code>true</code>, if the current version of npm accepts the
+     *         given folder path, <code>false</code> if it causes issues.
+     */
+    boolean folderIsAcceptableByNpm(File folder) {
+        Objects.requireNonNull(folder);
+        boolean hidden = folder.isHidden()
+                || folder.getPath().contains(File.separator + ".");
+        if (!hidden && (!folder.exists() || !folder.isDirectory())) {
+            getLogger().warn(
+                    "Failed to check whether npm accepts the folder '{}', because the folder doesn't exist or not a directory",
+                    folder);
+            return true;
+        }
+
+        if (FrontendUtils.isWindows()
+                && folder.getAbsolutePath().matches(".*[\\s+].*")) {
+            try {
+                FrontendVersion foundNpmVersion = getNpmVersion();
+                // npm < 7.0.0 doesn't accept whitespaces in path
+                return FrontendUtils.isVersionAtLeast(foundNpmVersion,
+                        WHITESPACE_ACCEPTING_NPM_VERSION);
+            } catch (UnknownVersionException e) {
+                getLogger().warn("Error checking if npm accepts path '{}'",
+                        folder, e);
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Gives a file object representing path to the cache directory of currently
+     * installed npm.
+     *
+     * @return the file object representing path to npm cache directory.
+     * @throws CommandExecutionException
+     *             if getting the npm cache directory completes exceptionally.
+     * @throws IllegalStateException
+     *             if npm cache command return an empty path.
+     */
+    File getNpmCacheDir()
+            throws CommandExecutionException, IllegalStateException {
+        List<String> npmCacheCommand = new ArrayList<>(getNpmExecutable(false));
+        npmCacheCommand.add("config");
+        npmCacheCommand.add("get");
+        npmCacheCommand.add("cache");
+        npmCacheCommand.add("--global");
+        String output = FrontendUtils.executeCommand(npmCacheCommand);
+        output = removeLineBreaks(output);
+        if (output.isEmpty()) {
+            throw new IllegalStateException(
+                    String.format("Command '%s' returned an empty path",
+                            String.join(" ", npmCacheCommand)));
+        }
+        return new File(output);
+    }
+
+    private FrontendVersion getNpmVersion() throws UnknownVersionException {
+        List<String> npmVersionCommand = new ArrayList<>(
+                getNpmExecutable(false));
+        npmVersionCommand.add("--version"); // NOSONAR
+        return FrontendUtils.getVersion("npm", npmVersionCommand);
     }
 
     private File getExecutable(String dir, String location) {
@@ -747,5 +819,12 @@ public class FrontendTools {
         } else {
             return getNodeExecutable();
         }
+    }
+
+    private String removeLineBreaks(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        return String.join("", str.split(System.lineSeparator()));
     }
 }
