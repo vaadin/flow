@@ -966,21 +966,65 @@ public class FrontendUtils {
         }
     }
 
+    /**
+     * Thrown when the command execution fails.
+     */
+    public static class CommandExecutionException extends Exception {
+        /**
+         * Constructs an exception telling what code the command execution
+         * process was exited with.
+         *
+         * @param processExitCode
+         *            process exit code
+         */
+        public CommandExecutionException(int processExitCode) {
+            super("Process execution failed with exit code " + processExitCode);
+        }
+
+        /**
+         * Constructs an exception telling what was the original exception the
+         * command execution process failed with.
+         *
+         * @param cause
+         *            the cause exception of process failure.
+         */
+        public CommandExecutionException(Throwable cause) {
+            super("Process execution failed", cause);
+        }
+    }
+
     protected static FrontendVersion getVersion(String tool,
             List<String> versionCommand) throws UnknownVersionException {
         try {
-            Process process = FrontendUtils.createProcessBuilder(versionCommand)
+            String output = executeCommand(versionCommand);
+            return new FrontendVersion(parseVersionString(output));
+        } catch (IOException | CommandExecutionException e) {
+            throw new UnknownVersionException(tool,
+                    "Using command " + String.join(" ", versionCommand), e);
+        }
+    }
+
+    /**
+     * Executes a given command as a native process.
+     *
+     * @param command
+     *            the command to be executed and it's arguments.
+     * @return process output string.
+     * @throws CommandExecutionException
+     *             if the process completes exceptionally.
+     */
+    public static String executeCommand(List<String> command)
+            throws CommandExecutionException {
+        try {
+            Process process = FrontendUtils.createProcessBuilder(command)
                     .start();
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                throw new UnknownVersionException(tool,
-                        "Using command " + String.join(" ", versionCommand));
+                throw new CommandExecutionException(exitCode);
             }
-            String output = streamToString(process.getInputStream());
-            return new FrontendVersion(parseVersionString(output));
-        } catch (InterruptedException | IOException e) {
-            throw new UnknownVersionException(tool,
-                    "Using command " + String.join(" ", versionCommand), e);
+            return streamToString(process.getInputStream());
+        } catch (IOException | InterruptedException e) {
+            throw new CommandExecutionException(e);
         }
     }
 
