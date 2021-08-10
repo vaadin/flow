@@ -117,6 +117,15 @@
             <artifactId>jsoup</artifactId>
             <version>${jsoup.version}</version>
         </dependency>
+
+        <!-- Jsoup depends on JSR305 and this dependency should be added into generated Karaf Feature -->
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>3.0.2</version>
+            <optional>true</optional>
+        </dependency>
+
         <!-- ph-css for parsing style attribute in Element API -->
         <dependency>
             <groupId>com.helger</groupId>
@@ -159,7 +168,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.19</version>
+            <version>1.21</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -210,7 +219,6 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>**/version.properties</include>
-                    <include>**/build.properties</include>
                 </includes>
             </resource>
             <resource>

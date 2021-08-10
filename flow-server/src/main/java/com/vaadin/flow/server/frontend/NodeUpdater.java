@@ -70,12 +70,12 @@ public abstract class NodeUpdater implements FallibleCommand {
      * Relative paths of generated should be prefixed with this value, so they
      * can be correctly separated from {projectDir}/frontend files.
      */
-    static final String GENERATED_PREFIX = "GENERATED/";
+    public static final String GENERATED_PREFIX = "GENERATED/";
 
-    static final String DEPENDENCIES = "dependencies";
-    static final String VAADIN_DEP_KEY = "vaadin";
-    static final String HASH_KEY = "hash";
-    static final String DEV_DEPENDENCIES = "devDependencies";
+    public static final String DEPENDENCIES = "dependencies";
+    public static final String VAADIN_DEP_KEY = "vaadin";
+    public static final String HASH_KEY = "hash";
+    public static final String DEV_DEPENDENCIES = "devDependencies";
 
     private static final String DEP_LICENSE_KEY = "license";
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
@@ -166,7 +166,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     /**
      * Gets the platform pinned versions that are not overridden by the user in
      * package.json.
-     * 
+     *
      * @return json object with the dependencies or {@code null}
      * @throws IOException
      *             when versions file could not be read
@@ -246,7 +246,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                         + "/" + resource) != null;
     }
 
-    JsonObject getPackageJson() throws IOException {
+    protected JsonObject getPackageJson() throws IOException {
         JsonObject packageJson = getJsonFileContent(getPackageJsonFile());
         if (packageJson == null) {
             packageJson = Json.createObject();
@@ -383,7 +383,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");
 
         defaults.put("webpack", "4.46.0");
-        defaults.put("webpack-cli", "3.3.11");
+        defaults.put("webpack-cli", "3.3.12");
         defaults.put("webpack-dev-server", "3.11.0");
         defaults.put("compression-webpack-plugin", "4.0.1");
         defaults.put("extra-watch-webpack-plugin", "1.0.3");
@@ -393,7 +393,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("lit-css-loader", "0.1.0");
         defaults.put("file-loader", "6.2.0");
         defaults.put("loader-utils", "2.0.0");
-        final String WORKBOX_VERSION = "6.1.0";
+        final String WORKBOX_VERSION = "6.2.0";
         defaults.put("workbox-webpack-plugin", WORKBOX_VERSION);
         defaults.put("workbox-core", WORKBOX_VERSION);
         defaults.put("workbox-precaching", WORKBOX_VERSION);
@@ -439,7 +439,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         return added > 0;
     }
 
-    int addDependency(JsonObject json, String key, String pkg, String version) {
+    protected int addDependency(JsonObject json, String key, String pkg,
+            String version) {
         Objects.requireNonNull(json, "Json object need to be given");
         Objects.requireNonNull(key, "Json sub object needs to be give.");
         Objects.requireNonNull(pkg, "dependency package needs to be defined");
@@ -504,7 +505,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         return new FrontendVersion(json.getString(key));
     }
 
-    String writePackageFile(JsonObject packageJson) throws IOException {
+    protected String writePackageFile(JsonObject packageJson)
+            throws IOException {
         return writePackageFile(packageJson, new File(npmFolder, PACKAGE_JSON));
     }
 

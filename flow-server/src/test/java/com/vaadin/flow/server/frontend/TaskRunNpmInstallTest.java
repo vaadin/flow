@@ -41,6 +41,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
@@ -100,10 +101,12 @@ public class TaskRunNpmInstallTest {
 
     @Test
     public void runNpmInstall_emptyDir_npmInstallIsExecuted()
-            throws ExecutionFailedException {
+            throws ExecutionFailedException, IOException {
         File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
         getNodeUpdater().modified = false;
+
+        ensurePackageJson();
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
@@ -111,12 +114,13 @@ public class TaskRunNpmInstallTest {
 
     @Test
     public void runNpmInstall_nodeModulesContainsStaging_npmInstallIsExecuted()
-            throws ExecutionFailedException {
+            throws ExecutionFailedException, IOException {
         File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
         File staging = new File(nodeModules, ".staging");
         staging.mkdir();
         getNodeUpdater().modified = false;
+        ensurePackageJson();
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
@@ -127,6 +131,8 @@ public class TaskRunNpmInstallTest {
             throws ExecutionFailedException, IOException {
         File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
+
+        ensurePackageJson();
 
         getNodeUpdater().modified = true;
         File yaml = new File(nodeModules, ".modules.yaml");
@@ -145,6 +151,7 @@ public class TaskRunNpmInstallTest {
         getNodeUpdater().modified = true;
         File fakeFile = new File(nodeModules, ".fake.file");
         fakeFile.createNewFile();
+        ensurePackageJson();
         task.execute();
 
         Assert.assertTrue(fakeFile.exists());
@@ -157,6 +164,7 @@ public class TaskRunNpmInstallTest {
         nodeModules.mkdir();
         new File(nodeModules, "foo").createNewFile();
         getNodeUpdater().modified = false;
+        ensurePackageJson();
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
@@ -170,6 +178,8 @@ public class TaskRunNpmInstallTest {
         new File(nodeModules, "foo").createNewFile();
         writeLocalHash("faulty");
         getNodeUpdater().modified = false;
+
+        ensurePackageJson();
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
@@ -206,6 +216,7 @@ public class TaskRunNpmInstallTest {
 
         writeLocalHash("");
         getNodeUpdater().modified = false;
+        ensurePackageJson();
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
@@ -223,11 +234,12 @@ public class TaskRunNpmInstallTest {
 
     @Test
     public void runNpmInstall_dirContainsOnlyFlowNpmPackage_npmInstallIsExecuted()
-            throws ExecutionFailedException {
+            throws ExecutionFailedException, IOException {
         File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
         new File(nodeModules, "@vaadin/flow-frontend/").mkdirs();
         getNodeUpdater().modified = false;
+        ensurePackageJson();
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
@@ -235,8 +247,9 @@ public class TaskRunNpmInstallTest {
 
     @Test
     public void runNpmInstall_modified_npmInstallIsExecuted()
-            throws ExecutionFailedException {
+            throws ExecutionFailedException, IOException {
         getNodeUpdater().modified = true;
+        ensurePackageJson();
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
@@ -361,6 +374,14 @@ public class TaskRunNpmInstallTest {
 
     protected String getToolName() {
         return "npm";
+    }
+
+    private void ensurePackageJson() throws IOException {
+        File file = new File(npmFolder, PACKAGE_JSON);
+        if (!file.exists()) {
+            JsonObject packageJson = getNodeUpdater().getPackageJson();
+            getNodeUpdater().writePackageFile(packageJson);
+        }
     }
 
 }

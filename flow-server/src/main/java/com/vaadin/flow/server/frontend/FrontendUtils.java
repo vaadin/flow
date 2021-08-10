@@ -626,13 +626,12 @@ public class FrontendUtils {
                 Stats statistics = context.getAttribute(Stats.class);
                 if (statistics == null || modified.isAfter(statistics
                         .getLastModified().orElse(LocalDateTime.MIN))) {
-                    statistics = new Stats(
-                            streamToString(connection.getInputStream()),
-                            lastModified);
+                    byte[] buffer = IOUtils
+                            .toByteArray(connection.getInputStream());
+                    statistics = new Stats(buffer, lastModified);
                     context.setAttribute(statistics);
                 }
-                return new ByteArrayInputStream(
-                        statistics.statsJson.getBytes(StandardCharsets.UTF_8));
+                return new ByteArrayInputStream(statistics.statsJson);
             }
             return connection.getInputStream();
         } catch (IOException e) {
@@ -660,8 +659,7 @@ public class FrontendUtils {
         Stats statistics = service.getContext().getAttribute(Stats.class);
 
         if (statistics != null) {
-            return IOUtils.toInputStream(statistics.statsJson,
-                    StandardCharsets.UTF_8);
+            return new ByteArrayInputStream(statistics.statsJson);
         }
 
         String stats = service.getDeploymentConfiguration()
@@ -676,11 +674,10 @@ public class FrontendUtils {
         try {
             stream = statsUrl == null ? null : statsUrl.openStream();
             if (stream != null) {
-                statistics = new Stats(
-                        IOUtils.toString(stream, StandardCharsets.UTF_8), null);
+                byte[] buffer = IOUtils.toByteArray(stream);
+                statistics = new Stats(buffer, null);
                 service.getContext().setAttribute(statistics);
-                stream = IOUtils.toInputStream(statistics.statsJson,
-                        StandardCharsets.UTF_8);
+                stream = new ByteArrayInputStream(buffer);
             }
         } catch (IOException exception) {
             getLogger().warn("Couldn't read content of stats file {}", stats,
@@ -969,21 +966,65 @@ public class FrontendUtils {
         }
     }
 
+    /**
+     * Thrown when the command execution fails.
+     */
+    public static class CommandExecutionException extends Exception {
+        /**
+         * Constructs an exception telling what code the command execution
+         * process was exited with.
+         *
+         * @param processExitCode
+         *            process exit code
+         */
+        public CommandExecutionException(int processExitCode) {
+            super("Process execution failed with exit code " + processExitCode);
+        }
+
+        /**
+         * Constructs an exception telling what was the original exception the
+         * command execution process failed with.
+         *
+         * @param cause
+         *            the cause exception of process failure.
+         */
+        public CommandExecutionException(Throwable cause) {
+            super("Process execution failed", cause);
+        }
+    }
+
     protected static FrontendVersion getVersion(String tool,
             List<String> versionCommand) throws UnknownVersionException {
         try {
-            Process process = FrontendUtils.createProcessBuilder(versionCommand)
+            String output = executeCommand(versionCommand);
+            return new FrontendVersion(parseVersionString(output));
+        } catch (IOException | CommandExecutionException e) {
+            throw new UnknownVersionException(tool,
+                    "Using command " + String.join(" ", versionCommand), e);
+        }
+    }
+
+    /**
+     * Executes a given command as a native process.
+     *
+     * @param command
+     *            the command to be executed and it's arguments.
+     * @return process output string.
+     * @throws CommandExecutionException
+     *             if the process completes exceptionally.
+     */
+    public static String executeCommand(List<String> command)
+            throws CommandExecutionException {
+        try {
+            Process process = FrontendUtils.createProcessBuilder(command)
                     .start();
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                throw new UnknownVersionException(tool,
-                        "Using command " + String.join(" ", versionCommand));
+                throw new CommandExecutionException(exitCode);
             }
-            String output = streamToString(process.getInputStream());
-            return new FrontendVersion(parseVersionString(output));
-        } catch (InterruptedException | IOException e) {
-            throw new UnknownVersionException(tool,
-                    "Using command " + String.join(" ", versionCommand), e);
+            return streamToString(process.getInputStream());
+        } catch (IOException | InterruptedException e) {
+            throw new CommandExecutionException(e);
         }
     }
 
@@ -1069,7 +1110,7 @@ public class FrontendUtils {
      */
     private static class Stats implements Serializable {
         private final String lastModified;
-        protected final String statsJson;
+        protected final byte[] statsJson;
 
         /**
          * Create a new container for stats.json caching.
@@ -1080,7 +1121,7 @@ public class FrontendUtils {
          *            last modification timestamp for stats.json in RFC-1123
          *            date-time format, such as 'Tue, 3 Jun 2008 11:05:30 GMT'
          */
-        public Stats(String statsJson, String lastModified) {
+        public Stats(byte[] statsJson, String lastModified) {
             this.statsJson = statsJson;
             this.lastModified = lastModified;
         }
