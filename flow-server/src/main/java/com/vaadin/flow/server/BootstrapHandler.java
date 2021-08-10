@@ -17,7 +17,6 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -70,6 +69,7 @@ import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
+import com.vaadin.flow.router.InvalidLocationException;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
@@ -524,6 +524,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
+        if (writeErrorCodeIfRequestLocationIsInvalid(request, response)) {
+            return true;
+        }
+
         // Find UI class
         Class<? extends UI> uiClass = getUIClass(request);
 
@@ -538,6 +542,32 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         writeBootstrapPage(response, document.outerHtml());
 
         return true;
+    }
+
+    /**
+     * Checks whether the request is for a valid location, and if not, writes
+     * the error code for the response.
+     * 
+     * @param request
+     *            the request to check
+     * @param response
+     *            the response to write
+     * @return {@code true} if location was invalid and error code was written,
+     *         {@code false} if not (location was valid)
+     * @throws IOException in case writing to response fails
+     */
+    protected boolean writeErrorCodeIfRequestLocationIsInvalid(
+            VaadinRequest request, VaadinResponse response) throws IOException {
+        try {
+            // #9443 Use error code 400 for bad location and don't create UI
+            new Location(request.getPathInfo(),
+                    QueryParameters.full(request.getParameterMap()));
+        } catch (InvalidLocationException invalidLocationException) {
+            response.sendError(400, "Invalid location: "
+                    + invalidLocationException.getMessage());
+            return true;
+        }
+        return false;
     }
 
     private void writeBootstrapPage(VaadinResponse response, String html)
