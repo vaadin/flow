@@ -1,18 +1,19 @@
 /* tslint:disable: no-unused-expression */
-import object from "intern/lib/interfaces/object";
-
-const {describe, it, beforeEach, afterEach, after} = intern.getPlugin('interface.bdd');
-const {expect} = intern.getPlugin('chai');
-const {fetchMock} = intern.getPlugin('fetchMock');
-const {sinon} = intern.getPlugin('sinon');
-
 import {
   ConnectClient,
   EndpointError,
   EndpointResponseError,
   EndpointValidationError,
 } from "../../main/frontend/Connect";
-import {ConnectionState, ConnectionStateStore} from "../../main/frontend/ConnectionState";
+import {
+  ConnectionState,
+  ConnectionStateStore
+} from "../../main/frontend/ConnectionState";
+
+const {describe, it, beforeEach, afterEach, after} = intern.getPlugin('interface.bdd');
+const {expect} = intern.getPlugin('chai');
+const {fetchMock} = intern.getPlugin('fetchMock');
+const {sinon} = intern.getPlugin('sinon');
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
@@ -247,24 +248,20 @@ describe('ConnectClient', () => {
       });
     });
 
-    it('should set header for preventing CSRF using Flow csrfToken', async() => {
-      // @ts-ignore
-      const OriginalVaadin = window.Vaadin;
-      // @ts-ignore
-      window.Vaadin = {
-        TypeScript: {csrfToken: 'foo'},
-        connectionState: (window as any).Vaadin.connectionState
-      };
+    it('should set header for preventing CSRF using Flow csrfToken cookie', async () => {
+      const originalCookie = document.cookie;
+      try {
+        document.cookie = 'csrfToken=foo';
 
-      await client.call('FooEndpoint', 'fooMethod');
+        await client.call('FooEndpoint', 'fooMethod');
 
-      const headers = fetchMock.lastOptions().headers;
-      expect(headers).to.deep.include({
-        'x-csrf-token': 'foo'
-      });
-
-      // @ts-ignore
-      window.Vaadin = OriginalVaadin;
+        const headers = fetchMock.lastOptions().headers;
+        expect(headers).to.deep.include({
+          'x-csrf-token': 'foo'
+        });
+      } finally {
+        document.cookie = originalCookie;
+      }
     });
 
     it('should resolve to response JSON data', async() => {

@@ -52,7 +52,6 @@ import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
-import static com.vaadin.flow.shared.ApplicationConstants.CSRF_TOKEN;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -104,7 +103,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                     indexDocument);
         }
 
-        addInitialFlow(initialJson, indexDocument, session, request);
+        addInitialFlow(initialJson, indexDocument, request);
 
         configureErrorDialogStyles(indexDocument);
 
@@ -180,15 +179,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void addInitialFlow(JsonObject initialJson, Document indexDocument,
-            VaadinSession session, VaadinRequest request) {
+            VaadinRequest request) {
         // Do not add the CSRF token if the request comes from the service
         // worker, to not have the token cached locally (#9537)
         String referer = request.getHeader("referer");
         if (referer == null || !referer.endsWith("/sw.js")) {
-            String csrfToken = session.getCsrfToken();
-            if (csrfToken != null) {
-                initialJson.put(CSRF_TOKEN, csrfToken);
-            }
             Object springCsrfToken = request
                     .getAttribute(SPRING_CSRF_TOKEN_ATTRIBUTE_IN_SESSION);
             if (springCsrfToken != null) {

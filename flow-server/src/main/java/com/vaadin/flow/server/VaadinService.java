@@ -2138,8 +2138,6 @@ public abstract class VaadinService implements Serializable {
             WrappedSession wrappedSession) {
         assert VaadinSession.hasLock(this, wrappedSession);
         writeToHttpSession(wrappedSession, session);
-        wrappedSession.setAttribute(getCsrfTokenAttributeName(),
-                session.getCsrfToken());
         session.refreshTransients(wrappedSession, this);
     }
 
@@ -2212,7 +2210,6 @@ public abstract class VaadinService implements Serializable {
     public void removeSession(WrappedSession wrappedSession) {
         assert VaadinSession.hasLock(this, wrappedSession);
         removeFromHttpSession(wrappedSession);
-        wrappedSession.removeAttribute(getCsrfTokenAttributeName());
     }
 
     /**
