@@ -85,8 +85,6 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
         MockHttpServletRequest loginRequest = RequestUtilTest
                 .createRequest("/login");
         loginRequest.addHeader("source", "typescript");
-        loginRequest.getSession().setAttribute(
-                VaadinService.getCsrfTokenAttributeName(), "csrf-value");
         loginRequest.setAttribute(CsrfToken.class.getName(), springCsrfToken);
 
         MockHttpServletResponse loginResponse = new MockHttpServletResponse();
@@ -96,8 +94,6 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
 
         Assert.assertEquals("success", loginResponse.getHeader("Result"));
         Assert.assertEquals(200, loginResponse.getStatus());
-        Assert.assertEquals("csrf-value",
-                loginResponse.getHeader("Vaadin-CSRF"));
 
         Assert.assertEquals("spring-csrf-header-name",
                 loginResponse.getHeader("Spring-CSRF-header"));

@@ -107,14 +107,6 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
             }
 
             response.setHeader(RESULT_HEADER, "success");
-            HttpSession session = request.getSession(false);
-            if (session != null) {
-                String csrfToken = (String) session.getAttribute(
-                        VaadinService.getCsrfTokenAttributeName());
-                if (csrfToken != null) {
-                    response.setHeader(VAADIN_CSRF_HEADER, csrfToken);
-                }
-            }
             Object springCsrfTokenObject = request
                     .getAttribute(CsrfToken.class.getName());
             if (springCsrfTokenObject instanceof CsrfToken) {
@@ -172,7 +164,7 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
     /**
      * Gets the target URL potentially stored by the server side view access
      * control.
-     * 
+     *
      * @return a URL if the login dialog was triggered by the user trying to
      *         perform (server side) navigation to a protected server side view,
      *         {@code null} otherwise
