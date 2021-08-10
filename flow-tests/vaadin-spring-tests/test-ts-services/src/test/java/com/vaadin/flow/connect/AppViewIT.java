@@ -250,15 +250,8 @@ public class AppViewIT extends ChromeBrowserTest {
 
     @Test
     public void should_requestAnonymously_after_logout() throws Exception {
-        String originalCsrfToken = executeScript(
-                "return self.Vaadin.TypeScript.csrfToken").toString();
         logout();
         load();
-
-        String csrfToken = executeScript(
-                "return self.Vaadin.TypeScript.csrfToken").toString();
-        Assert.assertNotEquals("CSRF token should change for the new session",
-                originalCsrfToken, csrfToken);
 
         WebElement button = testComponent.$(TestBenchElement.class)
                 .id("helloAnonymous");
