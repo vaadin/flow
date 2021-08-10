@@ -77,6 +77,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
+        if (writeErrorCodeIfRequestLocationIsInvalid(request, response)) {
+            return true;
+        }
+
         DeploymentConfiguration config = session.getConfiguration();
         IndexHtmlResponse indexHtmlResponse;
 
