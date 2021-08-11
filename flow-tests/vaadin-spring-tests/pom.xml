@@ -165,6 +165,7 @@
         <module>test-spring-security-flow</module>
         <module>test-spring-security-flow-contextpath</module>
         <module>test-spring-security-fusion</module>
+        <module>test-spring-security-fusion-jwt</module>
         <module>test-spring-security-fusion-contextpath</module>
 
         <!-- nexus-staging-maven-plugin requires the last module to be not skipped for deployment -->
