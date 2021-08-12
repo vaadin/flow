@@ -71,6 +71,7 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.router.InvalidLocationException;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.LocationUtil;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
@@ -554,14 +555,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *            the response to write
      * @return {@code true} if location was invalid and error code was written,
      *         {@code false} if not (location was valid)
-     * @throws IOException in case writing to response fails
+     * @throws IOException
+     *             in case writing to response fails
      */
     protected boolean writeErrorCodeIfRequestLocationIsInvalid(
             VaadinRequest request, VaadinResponse response) throws IOException {
         try {
             // #9443 Use error code 400 for bad location and don't create UI
-            new Location(request.getPathInfo(),
-                    QueryParameters.full(request.getParameterMap()));
+            LocationUtil.verifyRelativePath(request.getPathInfo());
         } catch (InvalidLocationException invalidLocationException) {
             response.sendError(400, "Invalid location: "
                     + invalidLocationException.getMessage());

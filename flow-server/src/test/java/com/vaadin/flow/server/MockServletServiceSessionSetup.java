@@ -55,7 +55,7 @@ public class MockServletServiceSessionSetup {
         private VaadinContext context;
 
         public TestVaadinServletService(TestVaadinServlet testVaadinServlet,
-                                        DeploymentConfiguration deploymentConfiguration) {
+                DeploymentConfiguration deploymentConfiguration) {
             super(testVaadinServlet, deploymentConfiguration);
         }
 
@@ -219,7 +219,7 @@ public class MockServletServiceSessionSetup {
         private String type;
 
         private TestVaadinServletResponse(HttpServletResponse response,
-                                          VaadinServletService vaadinService) {
+                VaadinServletService vaadinService) {
             super(response, vaadinService);
         }
 
@@ -303,7 +303,7 @@ public class MockServletServiceSessionSetup {
 
         deploymentConfiguration.setXsrfProtectionEnabled(false);
         Mockito.doAnswer(
-                        invocation -> servletContext.getClass().getClassLoader())
+                invocation -> servletContext.getClass().getClassLoader())
                 .when(servletContext).getClassLoader();
         Mockito.when(servletConfig.getServletContext())
                 .thenReturn(servletContext);
@@ -317,13 +317,13 @@ public class MockServletServiceSessionSetup {
                 .thenReturn(staticFileHandlerFactory);
 
         Mockito.when(resourceProvider.getClientResourceAsStream(
-                        "META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
-                                + "/compile.properties"))
+                "META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
+                        + "/compile.properties"))
                 .thenAnswer(invocation -> new ByteArrayInputStream(
                         "jsFile=foo".getBytes(StandardCharsets.UTF_8)));
 
         Mockito.when(
-                        resourceProvider.getApplicationResource(Mockito.anyString()))
+                resourceProvider.getApplicationResource(Mockito.anyString()))
                 .thenAnswer(invocation -> {
                     return MockServletServiceSessionSetup.class
                             .getResource("/" + invocation.getArgument(0));
@@ -411,7 +411,7 @@ public class MockServletServiceSessionSetup {
 
     public void setAppShellRegistry(AppShellRegistry appShellRegistry) {
         Mockito.when(servletContext
-                        .getAttribute(AppShellRegistryWrapper.class.getName()))
+                .getAttribute(AppShellRegistryWrapper.class.getName()))
                 .thenReturn(new AppShellRegistryWrapper(appShellRegistry));
     }
 
@@ -425,7 +425,7 @@ public class MockServletServiceSessionSetup {
     }
 
     public VaadinRequest createRequest(MockServletServiceSessionSetup mocks,
-                                       String path, String queryString) {
+            String path, String queryString) {
         QueryParameters queryParams = QueryParameters.fromString(queryString);
         Map<String, List<String>> params = queryParams.getParameters();
         HttpServletRequest httpServletRequest = Mockito
