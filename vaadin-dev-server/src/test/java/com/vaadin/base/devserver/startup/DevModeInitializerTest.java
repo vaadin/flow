@@ -337,7 +337,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             devModeInitializer.onStartup(classes, servletContext);
             waitForDevModeServer();
 
-            Mockito.verify(taskGenerateConnect, times(1)).execute();
+            Mockito.verify(taskGenerateFusion, times(1)).execute();
         } finally {
             if (originalJavaSourceFolder != null) {
                 System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
@@ -369,7 +369,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             devModeInitializer.onStartup(classes, servletContext);
             waitForDevModeServer();
 
-            Mockito.verify(taskGenerateConnect, never()).execute();
+            Mockito.verify(taskGenerateFusion, never()).execute();
         } finally {
             if (originalJavaSourceFolder != null) {
                 System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
@@ -400,7 +400,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             devModeInitializer.onStartup(classes, servletContext);
             waitForDevModeServer();
 
-            Mockito.verify(taskGenerateConnect, times(1)).execute();
+            Mockito.verify(taskGenerateFusion, times(1)).execute();
         } finally {
             if (originalJavaSourceFolder != null) {
                 System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,

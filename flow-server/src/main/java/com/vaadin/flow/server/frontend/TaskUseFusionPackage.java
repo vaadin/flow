@@ -16,10 +16,10 @@
 package com.vaadin.flow.server.frontend;
 
 /**
- * Generate OpenAPI json file for Vaadin Endpoints.
+ * Updates the generated "package.json" with the Fusion packages.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-public interface TaskGenerateOpenApi extends FallibleCommand {
+public interface TaskUseFusionPackage extends FallibleCommand {
 
 }
