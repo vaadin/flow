@@ -19,6 +19,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -41,6 +42,8 @@ import elemental.json.JsonValue;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 
 @NotThreadSafe
 public class TaskUpdatePackagesNpmTest {
@@ -63,6 +66,66 @@ public class TaskUpdatePackagesNpmTest {
         generatedPath = new File(npmFolder, "generated");
         generatedPath.mkdir();
         finder = Mockito.mock(ClassFinder.class);
+    }
+
+    @Test
+    public void oldDefaultDependenciesInPackageJson_devAndNormalAreCleaned()
+            throws IOException {
+
+        TaskUpdatePackages task = createTask(Collections.emptyMap());
+        JsonObject packageJson = task.getPackageJson();
+        // Add default dependency
+        packageJson.getObject(DEPENDENCIES).put("my-default", "2.1");
+        packageJson.getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES)
+                .put("my-default", "2.1");
+
+        // Add default dev dependency
+        packageJson.getObject(DEV_DEPENDENCIES).put("my-dev-default", "43.1.0");
+        packageJson.getObject(VAADIN_DEP_KEY).getObject(DEV_DEPENDENCIES)
+                .put("my-dev-default", "43.1.0");
+
+        // write packageJson
+        task.writePackageFile(packageJson);
+
+        // read packageJson
+        packageJson = task.getPackageJson();
+
+        // Validate that added defaults are present in file
+        Assert.assertTrue("Default dependency was not written to package.json",
+                packageJson.getObject(DEPENDENCIES).hasKey("my-default"));
+        Assert.assertTrue(
+                "Default devDependency was not written to package.json",
+                packageJson.getObject(DEV_DEPENDENCIES)
+                        .hasKey("my-dev-default"));
+
+        Assert.assertTrue("Default dependency was not added to vaadin object",
+                packageJson.getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES)
+                        .hasKey("my-default"));
+        Assert.assertTrue(
+                "Default devDependency was not added to vaadin object",
+                packageJson.getObject(VAADIN_DEP_KEY)
+                        .getObject(DEV_DEPENDENCIES).hasKey("my-dev-default"));
+
+        task.execute();
+
+        // read packageJson
+        packageJson = task.getPackageJson();
+
+        // validate that extra defaults are cleaned out
+        Assert.assertFalse("Found obsolete dependency from package.json",
+                packageJson.getObject(DEPENDENCIES).hasKey("my-default"));
+        Assert.assertFalse("Found obsolete devDependency from package.json",
+                packageJson.getObject(DEV_DEPENDENCIES)
+                        .hasKey("my-dev-default"));
+
+        // Validate that Vaadin object was also cleaned
+        Assert.assertFalse("Found obsolete dependency from vaadin object",
+                packageJson.getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES)
+                        .hasKey("my-default"));
+        Assert.assertFalse("Found obsolete devDependency from vaadin object",
+                packageJson.getObject(VAADIN_DEP_KEY)
+                        .getObject(DEV_DEPENDENCIES).hasKey("my-dev-default"));
+
     }
 
     @Test
