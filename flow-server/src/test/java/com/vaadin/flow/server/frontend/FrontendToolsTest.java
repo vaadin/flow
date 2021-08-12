@@ -35,6 +35,7 @@ import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -47,6 +48,8 @@ import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
+import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.Tool;
+import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.ToolStubInfo;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
@@ -491,6 +494,123 @@ public class FrontendToolsTest {
         List<String> pnpmCommand = tools.getSuitablePnpm();
         Assert.assertEquals("expected pnpm version 4.5.0 accepted", "pnpm",
                 pnpmCommand.get(pnpmCommand.size() - 1));
+    }
+
+    @Test
+    public void folderIsAcceptableByNpm_npmCacheDirWithWhitespaces_falseForWindows()
+            throws IOException {
+        Assume.assumeTrue("This test is only for Windows, since the issue with "
+                + "whitespaces in npm processed directories reproduces only on "
+                + "Windows", FrontendUtils.isWindows());
+        // given
+        // dir with whitespaces
+        File npmCacheDir = tmpDir.newFolder("Foo Bar");
+
+        ToolStubInfo nodeStub = ToolStubInfo.none();
+        // Old npm version
+        ToolStubInfo npmStub = ToolStubInfo
+                .builder(Tool.NPM).withVersion("6.0.0").build();
+        createStubNode(nodeStub, npmStub, baseDir);
+
+        // when
+        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
+
+        // then
+        Assert.assertFalse(accepted);
+    }
+
+    @Test
+    public void folderIsAcceptableByNpm_npmCacheDirWithWhitespaces_trueForNonWindows()
+            throws IOException {
+        Assume.assumeFalse(
+                "This test is for the rest of OS rather than Windows, since "
+                        + "the issue with whitespaces in directories processed by npm, "
+                        + "is not reproduced on them",
+                FrontendUtils.isWindows());
+
+        // given
+        // dir with whitespaces
+        File npmCacheDir = tmpDir.newFolder("Foo Bar");
+
+        ToolStubInfo nodeStub = ToolStubInfo.none();
+        // Old npm version
+        ToolStubInfo npmStub = ToolStubInfo
+                .builder(Tool.NPM).withVersion("6.0.0").build();
+        createStubNode(nodeStub, npmStub, baseDir);
+
+        // when
+        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
+
+        // then
+        Assert.assertTrue(accepted);
+    }
+
+    @Test
+    public void folderIsAcceptableByNpm_npmCacheNoWhitespaces_trueForWindows()
+            throws IOException {
+        Assume.assumeTrue("This test is only for Windows, since the issue with "
+                + "whitespaces in npm processed directories reproduces only on "
+                + "Windows", FrontendUtils.isWindows());
+
+        // given
+        // dir with no whitespaces
+        File npmCacheDir = tmpDir.newFolder("FooBar");
+
+        ToolStubInfo nodeStub = ToolStubInfo.none();
+        // Old npm version
+        ToolStubInfo npmStub = ToolStubInfo
+                .builder(Tool.NPM).withVersion("6.0.0").build();
+        createStubNode(nodeStub, npmStub, baseDir);
+
+        // when
+        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
+
+        // then
+        Assert.assertTrue(accepted);
+    }
+
+    @Test
+    public void folderIsAcceptableByNpm_npm7_trueForWindows()
+            throws IOException {
+        Assume.assumeTrue("This test is only for Windows, since the issue with "
+                + "whitespaces in npm processed directories reproduces only on "
+                + "Windows", FrontendUtils.isWindows());
+
+        // given
+        // dir with whitespaces
+        File npmCacheDir = tmpDir.newFolder("Foo  Bar");
+
+        ToolStubInfo nodeStub = ToolStubInfo.none();
+        // Acceptable npm version
+        ToolStubInfo npmStub = ToolStubInfo
+                .builder(Tool.NPM).withVersion("7.0.0").build();
+        createStubNode(nodeStub, npmStub, baseDir);
+
+        // when
+        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
+
+        // then
+        Assert.assertTrue(accepted);
+    }
+
+    @Test
+    public void getNpmCacheDir_returnsCorrectPath() throws IOException,
+            InterruptedException, FrontendUtils.CommandExecutionException {
+        ToolStubInfo nodeStub = ToolStubInfo.none();
+        ToolStubInfo npmStub = ToolStubInfo
+                .builder(Tool.NPM).withCacheDir("/foo/bar")
+                .build();
+        createStubNode(nodeStub, npmStub, baseDir);
+
+        File npmCacheDir = tools.getNpmCacheDir();
+
+        Assert.assertNotNull(npmCacheDir);
+        String npmCachePath = npmCacheDir.getPath();
+
+        Assert.assertEquals("foo/bar",
+                npmCachePath
+                        .substring(FilenameUtils.getPrefixLength(npmCachePath))
+                        .replace("\\", "/"));
     }
 
     private void assertNpmCommand(Supplier<String> path) throws IOException {
