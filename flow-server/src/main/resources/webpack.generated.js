@@ -308,7 +308,8 @@ module.exports = {
     // have its own loader based on browser quirks.
     new CopyWebpackPlugin([{
       from: `${baseDir}/node_modules/@webcomponents/webcomponentsjs`,
-      to: `${build}/webcomponentsjs/`
+      to: `${build}/webcomponentsjs/`,
+      ignore: ['*.md', '*.json']
     }]),
   ]
 };
