@@ -53,6 +53,7 @@ public class TaskUseFusionPackageImpl extends NodeUpdater
                 buildDir);
     }
 
+    @Override
     public void execute() throws ExecutionFailedException {
         try {
             JsonObject packageJson = getPackageJson();
