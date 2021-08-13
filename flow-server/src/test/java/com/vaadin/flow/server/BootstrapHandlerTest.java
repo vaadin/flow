@@ -1594,6 +1594,53 @@ public class BootstrapHandlerTest {
                 response.getErrorMessage());
     }
 
+    @Test
+    public void synchronizedHandleRequest_requestPathInfoStartsWithSlash_stripped()
+            throws IOException {
+        final BootstrapHandler bootstrapHandler = new BootstrapHandler();
+
+        final VaadinServletRequest request = Mockito
+                .mock(VaadinServletRequest.class);
+        Mockito.doAnswer(invocation -> "/foo").when(request).getPathInfo();
+        Mockito.doAnswer(invocation -> service).when(request).getService();
+        Mockito.doAnswer(invocation -> "/").when(request).getServletPath();
+
+        final MockServletServiceSessionSetup.TestVaadinServletResponse response = mocks
+                .createResponse();
+
+        final boolean value = bootstrapHandler.synchronizedHandleRequest(
+                mocks.getSession(), request, response);
+        Assert.assertTrue("No further request handlers should be called",
+                value);
+        // status code 200 is set later and tested elsewhere
+        Assert.assertEquals("Invalid status code reported", 0,
+                response.getErrorCode());
+    }
+
+    @Test
+    public void synchronizedHandleRequest_requestPathInfoNull_works()
+            throws IOException {
+        final BootstrapHandler bootstrapHandler = new BootstrapHandler();
+
+        final VaadinServletRequest request = Mockito
+                .mock(VaadinServletRequest.class);
+        Mockito.doAnswer(invocation -> null).when(request).getPathInfo();
+        Mockito.doAnswer(invocation -> service).when(request).getService();
+        Mockito.doAnswer(invocation -> "/").when(request).getServletPath();
+
+        final MockServletServiceSessionSetup.TestVaadinServletResponse response = mocks
+                .createResponse();
+
+        final boolean value = bootstrapHandler.synchronizedHandleRequest(
+                mocks.getSession(), request, response);
+        Assert.assertTrue("No further request handlers should be called",
+                value);
+
+        // status code 200 is set later and tested elsewhere
+        Assert.assertEquals("Invalid status code reported", 0,
+                response.getErrorCode());
+    }
+
     public static Location requestToLocation(VaadinRequest request) {
         return new Location(request.getPathInfo(),
                 QueryParameters.full(request.getParameterMap()));

@@ -53,19 +53,9 @@ public class Location implements Serializable {
      *             If the given string cannot be used for the {@link Location}
      */
     public Location(String location) throws InvalidLocationException {
-        this(LocationUtil.parsePathToSegments(ensureRelativeNonNull(location)),
-                LocationUtil
-                        .parseQueryParameters(ensureRelativeNonNull(location)));
-    }
-
-    private static String ensureRelativeNonNull(String location) {
-        if (location == null) {
-            return "";
-        }
-        if (location.startsWith("/")) {
-            location = location.substring(1);
-        }
-        return location.trim();
+        this(LocationUtil.parsePathToSegments(
+                LocationUtil.ensureRelativeNonNull(location)),
+                LocationUtil.parseQueryParameters(location));
     }
 
     /**
@@ -92,8 +82,8 @@ public class Location implements Serializable {
      */
     public Location(String location, QueryParameters queryParameters)
             throws InvalidLocationException {
-        this(LocationUtil.parsePathToSegments(ensureRelativeNonNull(location)),
-                queryParameters);
+        this(LocationUtil.parsePathToSegments(
+                LocationUtil.ensureRelativeNonNull(location)), queryParameters);
     }
 
     /**

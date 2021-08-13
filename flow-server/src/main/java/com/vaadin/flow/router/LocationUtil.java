@@ -108,28 +108,49 @@ public class LocationUtil {
     }
 
     /**
-     * Parses query parameters from the given path.
+     * Handles given location when it is either {@code null} or starts with "/".
      * 
-     * @param path
-     *            the path to parse the query parameters from
+     * @param location
+     *            the location to handle
+     * @return the cleaned up location, not {@code null}
+     */
+    public static String ensureRelativeNonNull(String location) {
+        if (location == null) {
+            return "";
+        }
+        if (location.startsWith("/")) {
+            location = location.substring(1);
+        }
+        return location.trim();
+    }
+
+    /**
+     * Parses query parameters from the given location.
+     * 
+     * @param location
+     *            the location to parse the query parameters from
      * @return the query parameters
      */
-    public static QueryParameters parseQueryParameters(String path) {
-        int beginIndex = path.indexOf(Location.QUERY_SEPARATOR);
+    public static QueryParameters parseQueryParameters(String location) {
+        if (location == null) {
+            return QueryParameters.empty();
+        }
+
+        int beginIndex = location.indexOf(Location.QUERY_SEPARATOR);
         if (beginIndex < 0) {
             return QueryParameters.empty();
         }
         String query;
 
         try {
-            query = new java.net.URI(path).getQuery();
+            query = new java.net.URI(location).getQuery();
         } catch (URISyntaxException ignore) { // NOSONAR
             query = null;
         }
 
         if (query == null) {
             // decoding of parameters is done in QueryParameters
-            query = path.substring(beginIndex + 1);
+            query = location.substring(beginIndex + 1);
         }
 
         return QueryParameters.fromString(query);

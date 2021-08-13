@@ -562,7 +562,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             VaadinRequest request, VaadinResponse response) throws IOException {
         try {
             // #9443 Use error code 400 for bad location and don't create UI
-            LocationUtil.verifyRelativePath(request.getPathInfo());
+            LocationUtil.verifyRelativePath(
+                    LocationUtil.ensureRelativeNonNull(request.getPathInfo()));
         } catch (InvalidLocationException invalidLocationException) {
             response.sendError(400, "Invalid location: "
                     + invalidLocationException.getMessage());
