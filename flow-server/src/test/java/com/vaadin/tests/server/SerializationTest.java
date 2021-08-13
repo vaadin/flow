@@ -7,18 +7,40 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import junit.framework.TestCase;
+import org.mockito.Mockito;
+
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
-import org.mockito.Mockito;
-
-import junit.framework.TestCase;
-
 public class SerializationTest extends TestCase {
 
-    public void testVaadinSession() throws Exception {
+    public void testSerializeVaadinSession_accessQueueIsRecreated()
+            throws Exception {
+        VaadinSession session = mockSession(true);
+
+        session = serializeAndDeserialize(session);
+
+        assertNotNull(
+                "Pending access queue was not recreated after deserialization",
+                session.getPendingAccessQueue());
+    }
+
+    public void testSerializeVaadinSession_notProductionMode_disableDevModeSerialization_deserializedSessionHasLockInstance()
+            throws Exception {
+        VaadinSession session = mockSession(false);
+
+        session = serializeAndDeserialize(session);
+
+        assertNotNull(session.getLockInstance());
+        // self check : session is not really deserialized so the transient
+        // queue should be null
+        assertNull(session.getPendingAccessQueue());
+    }
+
+    private VaadinSession mockSession(boolean productionMode) {
         VaadinService service = Mockito.mock(VaadinService.class);
         VaadinContext context = Mockito.mock(VaadinContext.class);
         ApplicationConfiguration applicationConfiguration = Mockito
@@ -27,14 +49,12 @@ public class SerializationTest extends TestCase {
         Mockito.when(context.getAttribute(Mockito.any(), Mockito.any()))
                 .thenReturn(applicationConfiguration);
         Mockito.when(applicationConfiguration.isProductionMode())
-                .thenReturn(true);
+                .thenReturn(productionMode);
+        Mockito.when(
+                applicationConfiguration.isDevModeSessionSerializationEnabled())
+                .thenReturn(false);
         VaadinSession session = new VaadinSession(service);
-
-        session = serializeAndDeserialize(session);
-
-        assertNotNull(
-                "Pending access queue was not recreated after deserialization",
-                session.getPendingAccessQueue());
+        return session;
     }
 
     private static <S extends Serializable> S serializeAndDeserialize(S s)
