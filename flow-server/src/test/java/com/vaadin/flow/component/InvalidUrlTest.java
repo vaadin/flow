@@ -41,14 +41,14 @@ import org.mockito.Mockito;
 public class InvalidUrlTest {
 
     @Test
-    public void invalidUrlAtInitialization_uiInitialiazesAsExpected()
+    public void invalidUrlAtInitialization_uiInitialiazesWith404ReturnCode()
             throws InvalidRouteConfigurationException, ServiceException {
         UI ui = new UI();
 
         ArgumentCaptor<Integer> statusCodeCaptor = ArgumentCaptor
                 .forClass(Integer.class);
 
-        initUI(ui, "?aaa", statusCodeCaptor);
+        initUI(ui, "%3faaa", statusCodeCaptor);
 
         assertEquals("Return message should have been 404 not found.",
                 Integer.valueOf(404), statusCodeCaptor.getValue());
