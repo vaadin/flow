@@ -78,6 +78,7 @@ import org.junit.Assert;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.fusion.Endpoint;
 import com.vaadin.fusion.EndpointExposed;
+import com.vaadin.fusion.ObjectTypeMapper;
 import com.vaadin.fusion.auth.CsrfChecker;
 import com.vaadin.fusion.auth.FusionAccessChecker;
 import com.vaadin.fusion.generator.OpenAPIObjectGenerator;
@@ -322,6 +323,7 @@ public abstract class AbstractEndpointGenerationTest
         Type genericReturnType = expectedEndpointMethod.getGenericReturnType();
         Class<?> returnType = applyTypeArguments(genericReturnType,
                 typeArguments);
+        returnType = new ObjectTypeMapper().getTransferType(returnType);
         if (returnType != void.class) {
             assertSchema(extractSchema(apiResponse.getContent()), returnType,
                     extractTypeArguments(genericReturnType, typeArguments));

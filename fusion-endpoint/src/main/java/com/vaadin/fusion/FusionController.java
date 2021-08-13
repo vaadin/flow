@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -51,6 +52,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -111,6 +113,8 @@ public class FusionController {
     private final ApplicationContext applicationContext;
 
     EndpointRegistry endpointRegistry;
+
+    private ObjectTypeMapper objectTypeMapper = new ObjectTypeMapper();
 
     /**
      * A constructor used to initialize the controller.
@@ -322,6 +326,8 @@ public class FusionController {
             return handleMethodExecutionError(endpointName, methodName, e);
         }
 
+        returnValue = objectTypeMapper.toTransferType(returnValue);
+
         String implicitNullError = this.explicitNullableTypeChecker
                 .checkValueForAnnotatedElement(returnValue, methodToInvoke);
         if (implicitNullError != null) {
@@ -397,20 +403,35 @@ public class FusionController {
         Set<ConstraintViolation<Object>> constraintViolations = new LinkedHashSet<>();
 
         for (int i = 0; i < javaParameters.length; i++) {
-            Type expectedType = javaParameters[i];
+            Type parameterType = javaParameters[i];
+            Type incomingType = parameterType;
             try {
+                Class<?> mappedType = null;
+                if (parameterType instanceof Class) {
+                    mappedType = objectTypeMapper
+                            .getTransferType((Class) incomingType);
+                    if (mappedType != incomingType) {
+                        incomingType = mappedType;
+                    } else {
+                        mappedType = null;
+                    }
+
+                }
                 Object parameter = vaadinEndpointMapper
                         .readerFor(vaadinEndpointMapper.getTypeFactory()
-                                .constructType(expectedType))
+                                .constructType(incomingType))
                         .readValue(requestParameters.get(parameterNames[i]));
-
+                if (mappedType != null) {
+                    parameter = objectTypeMapper.toEndpointType(parameter,
+                            (Class) parameterType);
+                }
                 endpointParameters[i] = parameter;
 
                 if (parameter != null) {
                     constraintViolations.addAll(validator.validate(parameter));
                 }
             } catch (IOException e) {
-                String typeName = expectedType.getTypeName();
+                String typeName = parameterType.getTypeName();
                 getLogger().error(
                         "Unable to deserialize an endpoint '{}' method '{}' "
                                 + "parameter '{}' with type '{}'",
