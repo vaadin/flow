@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,15 @@
  */
 package com.vaadin.flow.spring.data;
 
+import com.vaadin.flow.data.provider.CallbackDataProvider.FetchCallback;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.SortDirection;
 import java.io.Serializable;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
  * Contains helper methods to work with Spring Data based back-ends and Vaadin
@@ -46,6 +49,34 @@ public interface VaadinSpringDataHelpers extends Serializable {
                         ? Order.asc(so.getSorted())
                         : Order.desc(so.getSorted()))
                 .collect(Collectors.toList()));
+    }
+    
+    /**
+     * Creates a Spring Data {@link PageRequest} based on the Vaadin
+     * {@link Query} object. Takes sort into account, based on properties.
+     *
+     * @param vaadinQuery the query object from Vaadin component
+     * @return a {@link PageRequest} that can be passed for Spring Data based
+     * back-end
+     */
+    static PageRequest toSpringPageRequest(Query<?, ?> vaadinQuery) {
+        Sort sort = VaadinSpringDataHelpers.toSpringDataSort(vaadinQuery);
+        return PageRequest.of(vaadinQuery.getPage(), vaadinQuery.getPageSize(), sort);
+    }
+
+    /**
+     * Binds all items from a given paging Spring Data repository to
+     * {@code Grid}. Usage example:
+     * <p>
+     * {@code grid.setItems(fromPagingRepository(repo));}
+     * <p>
+     *
+     * @param <T> the type of items to bind
+     * @param repo the repository where the results should be fetched from
+     * @return the FetchCallback that makes the lazy binding to {@code Grid}.
+     */
+    static <T> FetchCallback<T, Void> fromPagingRepository(PagingAndSortingRepository<T, ?> repo) {
+        return query -> repo.findAll(toSpringPageRequest(query)).stream();
     }
 
 }
