@@ -474,7 +474,7 @@ public class ShortcutRegistrationTest {
     }
 
     @Test
-    public void constructedRegistration_lifecycleOnwerAncestorsAreVisible_shorcutEventIsNotFired() {
+    public void constructedRegistration_lifecycleOnwerAncestorsAreVisible_shorcutEventIsFired() {
         AtomicReference<ShortcutEvent> event = new AtomicReference<>();
 
         new ShortcutRegistration(lifecycleOwner, () -> listenOn, event::set,
