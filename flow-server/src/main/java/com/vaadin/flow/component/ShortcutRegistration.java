@@ -536,13 +536,10 @@ public class ShortcutRegistration implements Registration, Serializable {
         if (shortcutListenerRegistrations[listenOnIndex] == null) {
             if (component.getUI().isPresent()) {
                 shortcutListenerRegistrations[listenOnIndex] = new CompoundRegistration();
-                Registration keyDownRegistration = ComponentUtil
-                        .addListener(component, KeyDownEvent.class, e -> {
-                            if (lifecycleOwner.isVisible() && lifecycleOwner
-                                    .getElement().isEnabled()) {
-                                invokeShortcutEventListener(component);
-                            }
-                        }, domRegistration -> {
+                Registration keyDownRegistration = ComponentUtil.addListener(
+                        component, KeyDownEvent.class,
+                        event -> fireShortcutEvent(component),
+                        domRegistration -> {
                             shortcutListenerRegistrations[listenOnIndex]
                                     .addRegistration(domRegistration);
                             configureHandlerListenerRegistration(listenOnIndex);
@@ -554,6 +551,24 @@ public class ShortcutRegistration implements Registration, Serializable {
         } else {
             configureHandlerListenerRegistration(listenOnIndex);
         }
+    }
+
+    private void fireShortcutEvent(Component component) {
+        if (ancestorsOrSelfAreVisible(lifecycleOwner)
+                && lifecycleOwner.getElement().isEnabled()) {
+            invokeShortcutEventListener(component);
+        }
+    }
+
+    private boolean ancestorsOrSelfAreVisible(Component component) {
+        if (!component.isVisible()) {
+            return false;
+        }
+        Optional<Component> parent = component.getParent();
+        if (parent.isPresent()) {
+            return ancestorsOrSelfAreVisible(parent.get());
+        }
+        return true;
     }
 
     private void configureHandlerListenerRegistration(int listenOnIndex) {
