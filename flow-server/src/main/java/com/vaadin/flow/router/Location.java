@@ -16,38 +16,34 @@
 package com.vaadin.flow.router;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Represents a relative URL made up of path segments and query parameters, but
  * lacking e.g. the hostname that can also be present in URLs.
+ * <p>
+ * For related utility methods, see {@link LocationUtil}.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
 public class Location implements Serializable {
-    private static final String PATH_SEPARATOR = "/";
-    private static final String QUERY_SEPARATOR = "?";
-    private static final String PARAMETERS_SEPARATOR = "&";
+    static final String QUERY_SEPARATOR = "?";
 
     private final List<String> segments;
     private final QueryParameters queryParameters;
 
     /**
-     * Creates a new {@link Location} object for given location string. This
-     * string can contain relative path and query parameters, if needed.
+     * Creates a new {@link Location} object for given location string.
+     * <p>
+     * This string can contain relative path and query parameters, if needed.
+     * <p>
+     * A possible "/" prefix of the location is ignored and a <code>null</code>
+     * location is interpreted as <code>""</code>
      *
      * @param location
      *            the relative location, not <code>null</code>
@@ -55,18 +51,26 @@ public class Location implements Serializable {
      *             If the given string cannot be used for the {@link Location}
      */
     public Location(String location) throws InvalidLocationException {
-        this(parsePath(location.trim()), parseParams(location.trim()));
+        this(LocationUtil.parsePathToSegments(
+                LocationUtil.ensureRelativeNonNull(location)),
+                LocationUtil.parseQueryParameters(location));
     }
 
     /**
      * Creates a new {@link Location} object for given location string and query
-     * parameters. Location string can not contain query parameters or exception
-     * will be thrown. To pass query parameters, either specify them in
-     * {@link QueryParameters} in this constructor, or use
-     * {@link Location#Location(String)}
+     * parameters.
+     * <p>
+     * The location string can not contain query parameters. To pass query
+     * parameters, either specify them in {@link QueryParameters} in this
+     * constructor, or use {@link Location#Location(String)}
+     * <p>
+     * A possible "/" prefix of the location is ignored and a <code>null</code>
+     * location is interpreted as <code>""</code>
      *
+     * 
      * @param location
-     *            the relative location, not {@code null}
+     *            the relative location or <code>null</code> which is
+     *            interpreted as <code>""</code>
      * @param queryParameters
      *            query parameters information, not {@code null}
      * @throws IllegalArgumentException
@@ -76,9 +80,12 @@ public class Location implements Serializable {
      */
     public Location(String location, QueryParameters queryParameters)
             throws InvalidLocationException {
-        this(parsePath(location.trim()), queryParameters);
-
-        if (location.contains(QUERY_SEPARATOR)) {
+        this(LocationUtil.parsePathToSegments(
+                LocationUtil.ensureRelativeNonNull(location)), queryParameters);
+        // in case url contains %3Ffoobar, request.getPathInfo() returns ?foobar
+        // in instead of having it as a query parameter via
+        // request.getParameterMap()
+        if (location != null && location.contains(QUERY_SEPARATOR)) {
             throw new InvalidLocationException(
                     "Location string can not contain query parameters in this constructor");
         }
@@ -220,130 +227,4 @@ public class Location implements Serializable {
         }
     }
 
-    private static QueryParameters parseParams(String path) {
-        int beginIndex = path.indexOf(QUERY_SEPARATOR);
-        if (beginIndex < 0) {
-            return QueryParameters.empty();
-        }
-
-        Map<String, List<String>> parsedParams = Arrays
-                .stream(path.substring(beginIndex + 1)
-                        .split(PARAMETERS_SEPARATOR))
-                .map(Location::makeQueryParamList)
-                .collect(Collectors.toMap(list -> list.get(0),
-                        Location::getParameterValues, Location::mergeLists));
-        return new QueryParameters(parsedParams);
-    }
-
-    private static List<String> makeQueryParamList(String paramAndValue) {
-        int index = paramAndValue.indexOf('=');
-        if (index == -1) {
-            return Collections.singletonList(paramAndValue);
-        }
-        String param = paramAndValue.substring(0, index);
-        String value = paramAndValue.substring(index + 1);
-        return Arrays.asList(param, value);
-    }
-
-    private static List<String> getParameterValues(List<String> paramAndValue) {
-        if (paramAndValue.size() == 1) {
-            return Collections.emptyList();
-        } else {
-            return Collections.singletonList(paramAndValue.get(1));
-        }
-    }
-
-    private static List<String> mergeLists(List<String> list1,
-            List<String> list2) {
-        List<String> result = new ArrayList<>(list1);
-        if (result.isEmpty()) {
-            result.add(null);
-        }
-        if (list2.isEmpty()) {
-            result.add(null);
-        } else {
-            result.addAll(list2);
-        }
-
-        return result;
-    }
-
-    private static List<String> parsePath(String path) {
-        final String basePath;
-        int endIndex = path.indexOf(QUERY_SEPARATOR);
-        if (endIndex >= 0) {
-            basePath = path.substring(0, endIndex);
-        } else {
-            basePath = path;
-        }
-
-        verifyRelativePath(basePath);
-
-        List<String> splitList = Arrays.asList(basePath.split(PATH_SEPARATOR));
-        if (basePath.endsWith(PATH_SEPARATOR)) {
-            // Explicitly add "" to the end even though it's ignored by
-            // String.split
-            List<String> result = new ArrayList<>(splitList.size() + 1);
-            result.addAll(splitList);
-            result.add("");
-            return result;
-        } else {
-            return splitList;
-        }
-    }
-
-    /**
-     * Throws {@link IllegalArgumentException} if the provided path is not
-     * relative. A relative path should be parseable as a URI without a scheme
-     * or host, it should not contain any <code>..</code> segments and it
-     * shouldn't start with <code>/</code>.
-     *
-     * @param path
-     *            the (decoded) path to check, not null
-     */
-    private static void verifyRelativePath(String path)
-            throws InvalidLocationException {
-        assert path != null;
-
-        try {
-            // Ignore forbidden chars supported in route definitions
-            String strippedPath = path.replaceAll("[{}*]", "");
-
-            URI uri = new URI(URLEncoder.encode(strippedPath, UTF_8.name()));
-            if (uri.isAbsolute()) {
-                // "A URI is absolute if, and only if, it has a scheme
-                // component"
-                throw new InvalidLocationException("Relative path '" + path
-                        + "' cannot contain an URI scheme");
-            } else if (uri.getPath().startsWith("/")) {
-                throw new InvalidLocationException(
-                        "Relative path '" + path + "' cannot start with /");
-            } else if (hasIncorrectParentSegments(uri.getRawPath())) {
-                throw new InvalidLocationException("Relative path '" + path
-                        + "' cannot contain .. segments");
-            }
-        } catch (URISyntaxException | UnsupportedEncodingException e) {
-            throw new InvalidLocationException("Cannot parse path: " + path, e);
-        }
-
-        // All is OK if we get here
-    }
-
-    private static boolean hasIncorrectParentSegments(String path) {
-        // the actual part that we do not support is '../' so this
-        // shouldn't catch 'el..ement' nor '..element'
-        if (path.startsWith("..%2F")) {
-            return true;
-        }
-        if (path.contains("%2F..%2F")) {
-            return true;
-        }
-        if (path.endsWith("%2F..")) {
-            return true;
-        }
-        if (path.equals("..")) {
-            return true;
-        }
-        return false;
-    }
 }
