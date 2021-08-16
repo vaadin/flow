@@ -246,6 +246,30 @@ public class AnchorTest extends ComponentTest {
         Assert.assertEquals("baz", anchor.getHref());
     }
 
+    @Test
+    public void setEnabled_anchorWithoutHref_doesNotThrow() {
+        Anchor anchor = new Anchor();
+        anchor.setEnabled(false);
+
+        anchor.setEnabled(true);
+        Assert.assertTrue(anchor.isEnabled());
+
+        anchor.setHref("foo");
+        anchor.setEnabled(false);
+        anchor.removeHref();
+        anchor.setEnabled(true);
+    }
+
+    @Test
+    public void disabledAnchor_removeHref_hrefIsEmpty() {
+        Anchor anchor = new Anchor();
+        anchor.setHref("foo");
+        anchor.setEnabled(false);
+        anchor.removeHref();
+        anchor.setEnabled(true);
+        Assert.assertEquals("", anchor.getHref());
+    }
+
     // Other test methods in super class
 
     @Override

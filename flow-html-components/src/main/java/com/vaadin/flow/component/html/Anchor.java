@@ -47,6 +47,7 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
 
     private String disabledHref;
     private AbstractStreamResource resource;
+    private boolean isDisabledHrefRemoved;
 
     /**
      * Creates a new empty anchor component.
@@ -148,7 +149,10 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
      *
      */
     public void removeHref() {
-        getElement().removeAttribute("href");
+        if (!isEnabled()) {
+            isDisabledHrefRemoved = true;
+        }
+        doRemoveHref();
     }
 
     /**
@@ -264,15 +268,20 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
             disabledHref = null;
         } else {
             disabledHref = getHref();
-            removeHref();
+            doRemoveHref();
         }
     }
 
     private void restoreHref() {
-        if (!getElement().hasAttribute("href")) {
+        assert isEnabled();
+        if (!getElement().hasAttribute("href") && !isDisabledHrefRemoved) {
             // only set attribute value back if attribute has not been set
             // somehow when component was disabled
-            setHref(disabledHref);
+            if (disabledHref == null) {
+                doRemoveHref();
+            } else {
+                setHref(disabledHref);
+            }
         }
     }
 
@@ -282,6 +291,10 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
             // somehow when component was disabled
             setHref(resource);
         }
+    }
+
+    private void doRemoveHref() {
+        getElement().removeAttribute("href");
     }
 
 }
