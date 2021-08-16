@@ -554,19 +554,19 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     private void fireShortcutEvent(Component component) {
-        if (ancestorsAreVisible(lifecycleOwner)
+        if (ancestorsOrSelfAreVisible(lifecycleOwner)
                 && lifecycleOwner.getElement().isEnabled()) {
             invokeShortcutEventListener(component);
         }
     }
 
-    private boolean ancestorsAreVisible(Component component) {
+    private boolean ancestorsOrSelfAreVisible(Component component) {
         if (!component.isVisible()) {
             return false;
         }
         Optional<Component> parent = component.getParent();
         if (parent.isPresent()) {
-            return ancestorsAreVisible(parent.get());
+            return ancestorsOrSelfAreVisible(parent.get());
         }
         return true;
     }
