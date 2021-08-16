@@ -34,7 +34,8 @@ public class SerializationTest extends TestCase {
 
         session = serializeAndDeserialize(session);
 
-        assertNotNull(session.getLockInstance());
+        assertNotNull("Lock should be available after empty deserialization",
+                session.getLockInstance());
         // self check : session is not really deserialized so the transient
         // queue should be null
         assertNull(session.getPendingAccessQueue());
