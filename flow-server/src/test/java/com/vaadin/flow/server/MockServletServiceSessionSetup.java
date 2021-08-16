@@ -212,6 +212,7 @@ public class MockServletServiceSessionSetup {
     public static class TestVaadinServletResponse
             extends VaadinServletResponse {
         private int errorCode;
+        private String errorMessage;
 
         private CapturingServletOutputStream output = new CapturingServletOutputStream();
 
@@ -226,6 +227,7 @@ public class MockServletServiceSessionSetup {
         public void sendError(int errorCode, String message)
                 throws java.io.IOException {
             this.errorCode = errorCode;
+            errorMessage = message;
         }
 
         @Override
@@ -235,6 +237,10 @@ public class MockServletServiceSessionSetup {
 
         public int getErrorCode() {
             return errorCode;
+        }
+
+        public String getErrorMessage() {
+            return errorMessage;
         }
 
         @Override
