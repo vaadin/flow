@@ -203,8 +203,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         // the latter case the session field should be set to {@code null}
         // immediately to avoid using HTTP session object which is invalid (all
         // methods throw exceptions).
+        lock();
         try {
-            lock();
             if (getAttribute(CLOSE_SESSION_EXPLICITLY) == null) {
                 session = null;
             }
@@ -556,7 +556,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            and the session is not locked
      */
     public void checkHasLock(String message) {
-        assert deserializedAsEmpty == false : "The session was discarded during serialization and should not be used";
         if (configuration == null || configuration.isProductionMode()) {
             assert hasLock() : message;
         } else if (!hasLock()) {
@@ -1041,6 +1040,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         boolean wasSerialized = stream.readBoolean();
         this.deserializedAsEmpty = !wasSerialized;
         if (!wasSerialized) {
+            // even an empty unbound session still should support its API which
+            // requires a lock, so set a fake lock to be able to avoid
+            // unexpected issues on calling VaadinSession methods
+            lock = new ReentrantLock();
             return;
         }
         Map<Class<?>, CurrentInstance> old = CurrentInstance.setCurrent(this);
