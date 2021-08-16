@@ -1,7 +1,6 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -45,8 +44,10 @@ import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -1907,7 +1908,7 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void serviceWorkerRequest_canNotHanldeRequest() {
+    public void serviceWorkerRequest_canNotHandleRequest() {
         BootstrapHandler bootstrapHandler = new BootstrapHandler();
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
 
@@ -1918,7 +1919,7 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void notServiceWorkerRequest_canHanldeRequest() {
+    public void notServiceWorkerRequest_canHandleRequest() {
         BootstrapHandler bootstrapHandler = new BootstrapHandler();
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
 
@@ -1926,6 +1927,82 @@ public class BootstrapHandlerTest {
                 .thenReturn(null);
 
         Assert.assertTrue(bootstrapHandler.canHandleRequest(request));
+    }
+
+    @Test
+    public void synchronizedHandleRequest_badLocation_noUiCreated()
+            throws IOException {
+        final BootstrapHandler bootstrapHandler = new BootstrapHandler();
+
+        final VaadinServletRequest request = Mockito
+                .mock(VaadinServletRequest.class);
+        Mockito.doAnswer(invocation -> "..**").when(request).getPathInfo();
+
+        final MockServletServiceSessionSetup.TestVaadinServletResponse response = mocks
+                .createResponse();
+
+        final boolean value = bootstrapHandler.synchronizedHandleRequest(
+                mocks.getSession(), request, response);
+        Assert.assertTrue("No further request handlers should be called",
+                value);
+
+        Assert.assertEquals("Invalid status code reported", 400,
+                response.getErrorCode());
+        Assert.assertEquals("Invalid message reported",
+                "Invalid location: Relative path cannot contain .. segments",
+                response.getErrorMessage());
+    }
+
+    @Test
+    public void synchronizedHandleRequest_requestPathInfoStartsWithSlash_stripped()
+            throws IOException {
+        final BootstrapHandler bootstrapHandler = new BootstrapHandler();
+
+        final VaadinServletRequest request = Mockito
+                .mock(VaadinServletRequest.class);
+        Mockito.doAnswer(invocation -> "/foo").when(request).getPathInfo();
+        Mockito.doAnswer(invocation -> service).when(request).getService();
+        Mockito.doAnswer(invocation -> "/").when(request).getServletPath();
+
+        final MockServletServiceSessionSetup.TestVaadinServletResponse response = mocks
+                .createResponse();
+
+        final boolean value = bootstrapHandler.synchronizedHandleRequest(
+                mocks.getSession(), request, response);
+        Assert.assertTrue("No further request handlers should be called",
+                value);
+        // status code 200 is set later and tested elsewhere
+        Assert.assertEquals("Invalid status code reported", 0,
+                response.getErrorCode());
+    }
+
+    @Test
+    public void synchronizedHandleRequest_requestPathInfoNull_works()
+            throws IOException {
+        final BootstrapHandler bootstrapHandler = new BootstrapHandler();
+
+        final VaadinServletRequest request = Mockito
+                .mock(VaadinServletRequest.class);
+        Mockito.doAnswer(invocation -> null).when(request).getPathInfo();
+        Mockito.doAnswer(invocation -> service).when(request).getService();
+        Mockito.doAnswer(invocation -> "/").when(request).getServletPath();
+
+        final MockServletServiceSessionSetup.TestVaadinServletResponse response = mocks
+                .createResponse();
+
+        final boolean value = bootstrapHandler.synchronizedHandleRequest(
+                mocks.getSession(), request, response);
+        Assert.assertTrue("No further request handlers should be called",
+                value);
+
+        // status code 200 is set later and tested elsewhere
+        Assert.assertEquals("Invalid status code reported", 0,
+                response.getErrorCode());
+    }
+
+    public static Location requestToLocation(VaadinRequest request) {
+        return new Location(request.getPathInfo(),
+                QueryParameters.full(request.getParameterMap()));
     }
 
 }
