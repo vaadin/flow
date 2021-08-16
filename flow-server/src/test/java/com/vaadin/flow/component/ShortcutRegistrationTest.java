@@ -19,6 +19,7 @@ package com.vaadin.flow.component;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,6 +31,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
@@ -41,8 +43,8 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -418,6 +420,106 @@ public class ShortcutRegistrationTest {
                 "JS execution string should NOT have event.preventDefault() in it"
                         + expression,
                 expression.contains("event.preventDefault();"));
+    }
+
+    @Test
+    public void constructedRegistration_lifecycleIsVisibleAndEnabled_shorcutEventIsFired() {
+        AtomicReference<ShortcutEvent> event = new AtomicReference<>();
+
+        new ShortcutRegistration(lifecycleOwner, () -> listenOn, event::set,
+                Key.KEY_A);
+
+        mockLifecycle(true);
+
+        clientResponse();
+
+        listenOn[0].getEventBus()
+                .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
+
+        Assert.assertNotNull(event.get());
+    }
+
+    @Test
+    public void constructedRegistration_lifecycleOnwerIsDisabled_shorcutEventIsNotFired() {
+        AtomicReference<ShortcutEvent> event = new AtomicReference<>();
+
+        new ShortcutRegistration(lifecycleOwner, () -> listenOn, event::set,
+                Key.KEY_A);
+
+        Element element = mockLifecycle(true);
+        element.setEnabled(false);
+
+        clientResponse();
+
+        listenOn[0].getEventBus()
+                .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
+
+        Assert.assertNull(event.get());
+    }
+
+    @Test
+    public void constructedRegistration_lifecycleOnwerIsInvisible_shorcutEventIsNotFired() {
+        AtomicReference<ShortcutEvent> event = new AtomicReference<>();
+
+        new ShortcutRegistration(lifecycleOwner, () -> listenOn, event::set,
+                Key.KEY_A);
+
+        mockLifecycle(false);
+
+        clientResponse();
+
+        listenOn[0].getEventBus()
+                .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
+
+        Assert.assertNull(event.get());
+    }
+
+    @Test
+    public void constructedRegistration_lifecycleOnwerAncestorsAreVisible_shorcutEventIsFired() {
+        AtomicReference<ShortcutEvent> event = new AtomicReference<>();
+
+        new ShortcutRegistration(lifecycleOwner, () -> listenOn, event::set,
+                Key.KEY_A);
+
+        mockLifecycle(true);
+        Mockito.when(lifecycleOwner.getParent())
+                .thenReturn(Optional.of(new FakeComponent()));
+
+        clientResponse();
+
+        listenOn[0].getEventBus()
+                .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
+
+        Assert.assertNotNull(event.get());
+    }
+
+    @Test
+    public void constructedRegistration_lifecycleOnwerHasInvisibleParent_shorcutEventIsNotFired() {
+        AtomicReference<ShortcutEvent> event = new AtomicReference<>();
+
+        new ShortcutRegistration(lifecycleOwner, () -> listenOn, event::set,
+                Key.KEY_A);
+
+        mockLifecycle(true);
+
+        FakeComponent component = new FakeComponent();
+        component.setVisible(false);
+        Mockito.when(lifecycleOwner.getParent())
+                .thenReturn(Optional.of(component));
+
+        clientResponse();
+
+        listenOn[0].getEventBus()
+                .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
+
+        Assert.assertNull(event.get());
+    }
+
+    private Element mockLifecycle(boolean visible) {
+        Mockito.when(lifecycleOwner.isVisible()).thenReturn(visible);
+        Element element = ElementFactory.createAnchor();
+        Mockito.when(lifecycleOwner.getElement()).thenReturn(element);
+        return element;
     }
 
     class ElementLocatorTestFixture {
