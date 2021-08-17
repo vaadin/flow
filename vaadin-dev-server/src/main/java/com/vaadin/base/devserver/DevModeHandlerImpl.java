@@ -61,6 +61,7 @@ import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
+import static com.vaadin.base.devserver.VaadinUsageStatistics.TELEMETRY_PARAMETER;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
@@ -281,7 +282,9 @@ public final class DevModeHandlerImpl
         String pathInfo = request.getPathInfo();
         if (pathInfo != null
                 && (pathInfo.startsWith("/" + VAADIN_MAPPING)
-                        || APP_THEME_PATTERN.matcher(pathInfo).find())
+                        || APP_THEME_PATTERN.matcher(pathInfo).find()
+                        || (request.getParameter(TELEMETRY_PARAMETER) != null
+                            && request.getMethod().equals("POST")))
                 && !pathInfo.startsWith(
                         "/" + StreamRequestHandler.DYN_RES_PREFIX)) {
             return true;
@@ -315,6 +318,12 @@ public final class DevModeHandlerImpl
         if (isDevServerFailedToStart.get() || !devServerStartFuture.isDone()) {
             return false;
         }
+
+        // Handle Vaadin usage statistics collector
+        if (request.getParameter(TELEMETRY_PARAMETER) != null && VaadinUsageStatistics.get() != null) {
+            return VaadinUsageStatistics.get().handleClientTelemetryData(request,response);
+        }
+
         // Since we have 'publicPath=/VAADIN/' in webpack config,
         // a valid request for webpack-dev-server should start with '/VAADIN/'
         String requestFilename = request.getPathInfo();

@@ -615,6 +615,32 @@ export class VaadinDevmodeGizmo extends LitElement {
     super();
   }
 
+  elementTelemetry() {
+    let data = {};
+    try {
+      // localstorage data is collected by vaadin-usage-statistics.js
+      const localStorageStatsString = localStorage.getItem('vaadin.statistics.basket');
+      data = JSON.parse(localStorageStatsString || '{}');
+    } catch (e) {
+      // Ignore
+    }
+
+    const req = new XMLHttpRequest();
+    req.withCredentials = true;
+    req.addEventListener('load', function () {
+      // Stats sent, nothing more to do
+    });
+    req.addEventListener('error', function () {
+      // Ignore errors
+    });
+    req.addEventListener('abort', function () {
+      // Ignore aborts
+    });
+    req.open('POST', this.url + '?vaadin_telemetry_data');
+    req.setRequestHeader('Content-Type', 'application/json');
+    req.send('Vaadin client-side element telemetry: ' + JSON.stringify(data));
+  }
+
   openWebSocketConnection() {
     this.frontendStatus = ConnectionStatus.UNAVAILABLE;
     this.javaStatus = ConnectionStatus.UNAVAILABLE;
@@ -749,6 +775,7 @@ export class VaadinDevmodeGizmo extends LitElement {
     if ((window as any).Vaadin) {
       (window as any).Vaadin.devModeGizmo = this;
     }
+    this.elementTelemetry();
   }
 
   disconnectedCallback() {
