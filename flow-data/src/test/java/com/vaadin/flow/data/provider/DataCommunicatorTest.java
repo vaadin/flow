@@ -1495,6 +1495,7 @@ public class DataCommunicatorTest {
                 super.reset();
             }
         };
+        
         dataCommunicator.setRequestedRange(0, 100);
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider();
         dataCommunicator.setDataProvider(dataProvider, null);
