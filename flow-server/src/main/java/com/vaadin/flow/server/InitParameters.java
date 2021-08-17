@@ -124,6 +124,13 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_ENABLE_PNPM = "pnpm.enable";
 
     /**
+     * Configuration parameter name for enabling usage statistics.
+     *
+     * @since
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_STATISTICS = "devmode.usageStatistics.enabled";
+
+    /**
      * Configuration parameter name for enabling live reload.
      *
      * @since

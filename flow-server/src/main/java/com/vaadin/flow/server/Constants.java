@@ -315,6 +315,12 @@ public final class Constants implements Serializable {
     public static final String ENABLE_PNPM_DEFAULT_STRING = "true";
 
     /**
+     * Constant for whether usage statistics is default or not. Mojos need the
+     * value as string and constant, so need to use string instead of boolean.
+     */
+    public static final String ENABLE_DEVMODE_STATS_DEFAULT_STRING = "true";
+
+    /**
      * @deprecated Use {@link InitParameters#REQUIRE_HOME_NODE_EXECUTABLE}
      *             instead.
      */
