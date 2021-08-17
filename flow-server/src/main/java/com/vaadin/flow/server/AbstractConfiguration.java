@@ -111,6 +111,16 @@ public interface AbstractConfiguration extends Serializable {
     }
 
     /**
+     * Returns whether usage statistics collection is enabled or not.
+     *
+     * @return {@code true} if enabled, {@code false} if not collected.
+     */
+    default boolean isUsageStatisticsEnabled() {
+        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_DEVMODE_STATISTICS,
+                Boolean.valueOf(Constants.ENABLE_DEVMODE_STATS_DEFAULT_STRING));
+    }
+
+    /**
      * Returns whether cross-site request forgery protection is enabled.
      *
      * @return true if XSRF protection is enabled, false otherwise.
