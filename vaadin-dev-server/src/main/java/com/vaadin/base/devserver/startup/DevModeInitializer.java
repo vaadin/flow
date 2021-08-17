@@ -50,6 +50,7 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -277,6 +278,9 @@ public class DevModeInitializer
         if (baseDir == null) {
             baseDir = getBaseDirectoryFallback();
         }
+
+        // Initialize the usage statistics if enabled
+        DevModeUsageStatistics.init(config, baseDir);
 
         String generatedDir = System.getProperty(PARAM_GENERATED_DIR,
                 Paths.get(config.getBuildFolder(), DEFAULT_GENERATED_DIR)
