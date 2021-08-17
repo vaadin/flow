@@ -26,7 +26,7 @@ public class InvalidLocationIT extends ChromeBrowserTest {
     // #9443
     @Test
     public void invalidCharactersOnPath_UiNotServed() {
-        open("..**");
+        open();
 
         Assert.assertTrue("Faulty URL didn't return 400 error page.",
                 getDriver().getPageSource().contains("400"));
