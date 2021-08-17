@@ -1015,6 +1015,42 @@ public class FrontendUtils {
     }
 
     /**
+     * Tries to parse the given package's frontend version or if it doesn't
+     * exist, returns {@code null}. In case the value cannot be parsed, logs an
+     * error and returns {@code null}.
+     *
+     * @param sourceJson
+     *            json object that has the package
+     * @param pkg
+     *            the package name
+     * @param versionOrigin
+     *            origin of the version (like a file), used in error message
+     * @return the frontend version the package or {@code null}
+     */
+    public static FrontendVersion getPackageVersionFromJson(
+            JsonObject sourceJson, String pkg, String versionOrigin) {
+        if (!sourceJson.hasKey(pkg)) {
+            return null;
+        }
+        try {
+            final String versionString = sourceJson.getString(pkg);
+            return new FrontendVersion(pkg, versionString);
+        } catch (ClassCastException classCastException) {
+            LoggerFactory.getLogger(FrontendVersion.class).warn(
+                    "Ignoring error while parsing frontend dependency version for package '{}' in '{}'",
+                    pkg, versionOrigin);
+        } catch (NumberFormatException nfe) {
+            // intentionally not failing the build at this point
+            LoggerFactory.getLogger(FrontendVersion.class).warn(
+                    "Ignoring error while parsing frontend dependency version in {}: {}",
+                    versionOrigin, nfe.getMessage());
+        }
+        return null;
+    }
+
+    /**
+
+    /**
      * Intentionally send to console instead to log, useful when executing
      * external processes.
      *

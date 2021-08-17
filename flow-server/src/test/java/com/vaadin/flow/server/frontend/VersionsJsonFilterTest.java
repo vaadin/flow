@@ -56,7 +56,7 @@ public class VersionsJsonFilterTest {
     }
 
     @Test
-    public void missingVaadinDependencies_allDependenciesSholdBeUserHandled()
+    public void missingVaadinDependencies_allDependenciesShouldBeUserHandled()
             throws IOException {
         assertMissingVaadinDependencies_allDependenciesSholdBeUserHandled(
                 NodeUpdater.DEPENDENCIES);

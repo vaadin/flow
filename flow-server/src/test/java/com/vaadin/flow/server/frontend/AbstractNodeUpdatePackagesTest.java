@@ -92,7 +92,6 @@ public abstract class AbstractNodeUpdatePackagesTest
         mainNodeModules = new File(baseDir, FrontendUtils.NODE_MODULES);
         appNodeModules = new File(generatedDir, FrontendUtils.NODE_MODULES);
         packageLock = new File(baseDir, "package-lock.json");
-
     }
 
     protected abstract FrontendDependenciesScanner getScanner(
@@ -303,9 +302,6 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageCreator.execute();
 
         json = packageUpdater.getPackageJson();
-        Assert.assertEquals("Vaadin dependency should be updated to latest DevDependency",
-                version, json.getObject(VAADIN_DEP_KEY).getObject(DEV_DEPENDENCIES)
-                        .getString(key));
         Assert.assertEquals(
                 "DevDependency should stay the same as it was", version,
                 json.getObject(DEV_DEPENDENCIES).getString(key));
@@ -360,7 +356,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+        packageUpdater = new TaskUpdatePackages(classFinder, frontendDependencies,
                 baseDir, generatedDir, false, false);
 
         // Generate package json in a proper format first
@@ -411,7 +407,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+        packageUpdater = new TaskUpdatePackages(classFinder, frontendDependencies,
                 baseDir, generatedDir, false, false);
 
         packageCreator.execute();
@@ -441,7 +437,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+        packageUpdater = new TaskUpdatePackages(classFinder, frontendDependencies,
                 baseDir, generatedDir, false, false);
 
         packageCreator.execute();
@@ -486,7 +482,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+        packageUpdater = new TaskUpdatePackages(classFinder, frontendDependencies,
                 baseDir, generatedDir, false, false);
 
         packageCreator.execute();
@@ -517,7 +513,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+        packageUpdater = new TaskUpdatePackages(classFinder, frontendDependencies,
                 baseDir, generatedDir, false, false);
 
         packageCreator.execute();
@@ -540,7 +536,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Map<String, String> packages = new HashMap<>();
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+        packageUpdater = new TaskUpdatePackages(classFinder, frontendDependencies,
                 baseDir, generatedDir, false, false);
 
         packageCreator.execute();
@@ -566,7 +562,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Map<String, String> packages = new HashMap<>();
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+        packageUpdater = new TaskUpdatePackages(classFinder, frontendDependencies,
                 baseDir, generatedDir, false, false);
 
         packageCreator.execute();
@@ -594,7 +590,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+        packageUpdater = new TaskUpdatePackages(classFinder, frontendDependencies,
                 baseDir, generatedDir, false, false);
 
         packageCreator.execute();
@@ -657,7 +653,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+        packageUpdater = new TaskUpdatePackages(classFinder, frontendDependencies,
                 baseDir, generatedDir, false, false);
 
         packageCreator.execute();
@@ -703,7 +699,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+        packageUpdater = new TaskUpdatePackages(classFinder, frontendDependencies,
                 baseDir, generatedDir, false, false);
 
         packageCreator.execute();
@@ -716,12 +712,23 @@ public abstract class AbstractNodeUpdatePackagesTest
         Assert.assertTrue("vaadin-checkbox is missing from the dependencies",
                 dependencies.hasKey("@vaadin/vaadin-checkbox"));
 
+        dependencies = getPackageJson(packageJson).getObject(VAADIN_DEP_KEY)
+                .getObject(DEPENDENCIES);
+        Assert.assertTrue("vaadin-checkbox is missing from vaadin.dependencies",
+                dependencies.hasKey("@vaadin/vaadin-checkbox"));
+
         // generate it one more time, this should remove the checkbox
         packageUpdater.execute();
 
         dependencies = getPackageJson(packageJson).getObject(DEPENDENCIES);
         Assert.assertFalse(
                 "vaadin-checkbox is still available in the dependencies",
+                dependencies.hasKey("@vaadin/vaadin-checkbox"));
+
+        dependencies = getPackageJson(packageJson).getObject(VAADIN_DEP_KEY)
+                .getObject(DEPENDENCIES);
+        Assert.assertFalse(
+                "vaadin-checkbox is still available in vaadin.dependencies",
                 dependencies.hasKey("@vaadin/vaadin-checkbox"));
 
     }
@@ -829,7 +836,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+        packageUpdater = new TaskUpdatePackages(classFinder, frontendDependencies,
                 baseDir, generatedDir, false, isPnpm);
 
         // Generate package json in a proper format first

@@ -125,9 +125,26 @@ public class FrontendVersion
      *            version string as "major.minor.revision[.build]"
      */
     public FrontendVersion(String version) {
+        this(null, version);
+    }
+
+    /**
+     * Parse version numbers from version string with the format
+     * "major.minor.revision[.build]". The build part is optional.
+     * <p>
+     * Versions are normalized and any caret or tildes will not be considered.
+     *
+     * @param name
+     *            the name of the artifact which version is to be parsed, used
+     *            in error message to help discover the issue
+     * @param version
+     *            version string as "major.minor.revision[.build]"
+     */
+    public FrontendVersion(String name, String version) {
         Objects.requireNonNull(version);
         if (version.isEmpty()) {
-            throw new NumberFormatException(getInvalidVersionMessage(version));
+            throw new NumberFormatException(
+                    getInvalidVersionMessage(name, version));
         }
         if (!Character.isDigit(version.charAt(0))) {
             this.version = version.substring(1).trim();
@@ -139,14 +156,15 @@ public class FrontendVersion
         try {
             majorVersion = Integer.parseInt(digits[0]);
         } catch (NumberFormatException nfe) {
-            throw new NumberFormatException(getInvalidVersionMessage(version));
+            throw new NumberFormatException(
+                    getInvalidVersionMessage(name, version));
         }
         if (digits.length >= 2) {
             try {
                 minorVersion = Integer.parseInt(digits[1]);
             } catch (NumberFormatException nfe) {
                 throw new NumberFormatException(
-                        getInvalidVersionMessage(version));
+                        getInvalidVersionMessage(name, version));
             }
         } else {
             minorVersion = 0;
@@ -326,8 +344,12 @@ public class FrontendVersion
         return buildIdentifier.compareToIgnoreCase(other.buildIdentifier);
     }
 
-    private String getInvalidVersionMessage(String version) {
-        return String.format("'%s' is not a valid version!", version);
+    private String getInvalidVersionMessage(String name, String version) {
+        if (name != null) {
+            return String.format("'%s' is not a valid version for '%s'!",
+                    version, name);
+        } else {
+            return String.format("'%s' is not a valid version!", version);
+        }
     }
-
 }

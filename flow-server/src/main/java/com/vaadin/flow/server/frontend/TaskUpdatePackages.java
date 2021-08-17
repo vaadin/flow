@@ -36,11 +36,10 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
-
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+import org.apache.commons.io.FileUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -111,9 +110,12 @@ public class TaskUpdatePackages extends NodeUpdater {
     @Override
     public void execute() {
         try {
-            Map<String, String> deps = frontDeps.getPackages();
+            Map<String, String> scannedApplicationDependencies = frontDeps
+                    .getPackages();
             JsonObject packageJson = getPackageJson();
-            modified = updatePackageJsonDependencies(packageJson, deps);
+            modified = updatePackageJsonDependencies(packageJson,
+                    scannedApplicationDependencies);
+
             if (modified) {
                 writePackageFile(packageJson);
 
@@ -172,13 +174,35 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private boolean updatePackageJsonDependencies(JsonObject packageJson,
-            Map<String, String> deps) throws IOException {
+            Map<String, String> applicationDependencies) throws IOException {
         int added = 0;
 
         // Add application dependencies
-        for (Entry<String, String> dep : deps.entrySet()) {
+        for (Entry<String, String> dep : applicationDependencies.entrySet()) {
             added += addDependency(packageJson, DEPENDENCIES, dep.getKey(),
                     dep.getValue());
+        }
+
+        /*
+         * #10572 lock all platform internal versions for npm
+         */
+        List<String> pinnedPlatformDependencies = new ArrayList<>();
+        if (!enablePnpm) {
+            final JsonObject platformPinnedDependencies = getPlatformPinnedDependencies();
+            if (platformPinnedDependencies != null) {
+                for (String key : platformPinnedDependencies.keys()) {
+                    // need to double check that not overriding a scanned
+                    // dependency since add-ons should be able to downgrade
+                    // version through exclusion
+                    if (!applicationDependencies.containsKey(key)
+                            && pinPlatformDependency(packageJson,
+                                    platformPinnedDependencies, key)) {
+                        added++;
+                    }
+                    // make sure platform pinned dependency is not cleared
+                    pinnedPlatformDependencies.add(key);
+                }
+            }
         }
 
         if (added > 0) {
@@ -188,17 +212,20 @@ public class TaskUpdatePackages extends NodeUpdater {
         // Remove obsolete dependencies
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
         List<String> dependencyCollection = Stream
-                .concat(deps.entrySet().stream(),
+                .concat(applicationDependencies.entrySet().stream(),
                         getDefaultDependencies().entrySet().stream())
                 .map(Entry::getKey).collect(Collectors.toList());
+        dependencyCollection.addAll(pinnedPlatformDependencies);
 
-        boolean doCleanUp = forceCleanUp;
+        boolean doCleanUp = forceCleanUp; // forced only in tests
         int removed = removeLegacyProperties(packageJson);
         removed += cleanDependencies(dependencyCollection, packageJson,
                 DEPENDENCIES);
         if (dependencies != null) {
+            // FIXME do not do cleanup of node_modules every time platform is
+            // updated ?
             doCleanUp = doCleanUp
-                    || !enablePnpm && !ensureReleaseVersion(dependencies);
+                    || !enablePnpm && isPlatformVersionUpdated(dependencies);
         }
 
         // Remove obsolete devDependencies
@@ -249,25 +276,49 @@ public class TaskUpdatePackages extends NodeUpdater {
         return removed;
     }
 
+    private boolean pinPlatformDependency(JsonObject packageJson,
+            JsonObject platformPinnedVersions, String pkg) {
+        final FrontendVersion platformPinnedVersion = FrontendUtils
+                .getPackageVersionFromJson(platformPinnedVersions, pkg,
+                        "vaadin_dependencies.json");
+        if (platformPinnedVersion == null) {
+            return false;
+        }
+
+        final JsonObject vaadinDeps = packageJson.getObject(VAADIN_DEP_KEY)
+                .getObject(DEPENDENCIES);
+        final JsonObject packageJsonDeps = packageJson.getObject(DEPENDENCIES);
+        assert vaadinDeps != null; // exists at this point
+        assert packageJsonDeps != null;
+        packageJsonDeps.put(pkg, platformPinnedVersion.getFullVersion());
+        vaadinDeps.put(pkg, platformPinnedVersion.getFullVersion());
+        return true;
+    }
+
     /**
-     * Compares vaadin-shrinkwrap dependency version from the
-     * {@code dependencies} object with the current vaadin-shrinkwrap version
-     * (retrieved from various sources like package.json, package-lock.json).
-     * Removes package-lock.json file and node_modules,
-     * target/frontend/node_modules folders in case the versions are different.
+     * Compares vaadin-shrinkwrap dependency version (which is the same as
+     * platform version) from the {@code dependencies} object with the current
+     * vaadin-shrinkwrap version (retrieved from file system: package.json,
+     * package-lock.json). In case there was no existing shrinkwrap version,
+     * then version is considered updated.
      *
      * @param dependencies
      *            dependencies object with the vaadin-shrinkwrap version
+     * @return {@code true} if the version has changed, {@code false} if not
      * @throws IOException
+     *             when file reading fails
      */
-    private boolean ensureReleaseVersion(JsonObject dependencies)
+    private boolean isPlatformVersionUpdated(JsonObject dependencies)
             throws IOException {
         String shrinkWrapVersion = null;
         if (dependencies.hasKey(SHRINK_WRAP)) {
             shrinkWrapVersion = dependencies.getString(SHRINK_WRAP);
         }
 
-        return Objects.equals(shrinkWrapVersion, getCurrentShrinkWrapVersion());
+        final String existingShrinkWrapVersion = getExistingShrinkWrapVersion();
+        // if no existing shrinkwrap version is present, version is not
+        // "updated"
+        return !Objects.equals(shrinkWrapVersion, existingShrinkWrapVersion);
     }
 
     /**
@@ -336,7 +387,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         Files.walkFileTree(file.toPath(), new RemoveFileVisitor());
     }
 
-    private String getCurrentShrinkWrapVersion() throws IOException {
+    private String getExistingShrinkWrapVersion() throws IOException {
         String shrinkWrapVersion = getShrinkWrapVersion(getPackageJson());
         if (shrinkWrapVersion != null) {
             return shrinkWrapVersion;

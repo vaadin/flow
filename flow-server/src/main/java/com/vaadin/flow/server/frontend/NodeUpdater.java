@@ -17,7 +17,10 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +31,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,6 +130,38 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     private File getPackageJsonFile() {
         return new File(npmFolder, PACKAGE_JSON);
+    }
+
+    /**
+     * Gets the platform pinned versions that are not overridden by the user in
+     * package.json.
+     * 
+     * @return json object with the dependencies or {@code null}
+     * @throws IOException
+     *             when versions file could not be read
+     */
+    JsonObject getPlatformPinnedDependencies() throws IOException {
+        URL resource = finder.getResource(Constants.VAADIN_VERSIONS_JSON);
+        if (resource == null) {
+            log().info("Couldn't find {} file to pin dependency versions."
+                    + " Transitive dependencies won't be pinned for pnpm.",
+                    Constants.VAADIN_VERSIONS_JSON);
+        }
+
+        JsonObject versionsJson = null;
+        try (InputStream content = resource == null ? null
+                : resource.openStream()) {
+
+            if (content != null) {
+                VersionsJsonConverter convert = new VersionsJsonConverter(
+                        Json.parse(IOUtils.toString(content,
+                                StandardCharsets.UTF_8)));
+                versionsJson = convert.getConvertedJson();
+                versionsJson = new VersionsJsonFilter(getPackageJson(),
+                        DEPENDENCIES).getFilteredVersions(versionsJson);
+            }
+        }
+        return versionsJson;
     }
 
     static Set<String> getGeneratedModules(File directory,
