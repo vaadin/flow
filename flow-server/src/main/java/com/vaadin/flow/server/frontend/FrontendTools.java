@@ -90,7 +90,11 @@ public class FrontendTools {
     private static final List<FrontendVersion> NPM_BLACKLISTED_VERSIONS = Arrays
             .asList(new FrontendVersion("6.11.0"),
                     new FrontendVersion("6.11.1"),
-                    new FrontendVersion("6.11.2"));
+                    new FrontendVersion("6.11.2"),
+                    new FrontendVersion("7.20.3"),
+                    new FrontendVersion("7.20.4"),
+                    new FrontendVersion("7.20.5"),
+                    new FrontendVersion("7.20.6"));
 
     private static final int SUPPORTED_NODE_MAJOR_VERSION = Constants.SUPPORTED_NODE_MAJOR_VERSION;
     private static final int SUPPORTED_NODE_MINOR_VERSION = Constants.SUPPORTED_NODE_MINOR_VERSION;
@@ -126,6 +130,9 @@ public class FrontendTools {
 
     private static final FrontendVersion SUPPORTED_PNPM_VERSION = new FrontendVersion(
             SUPPORTED_PNPM_MAJOR_VERSION, SUPPORTED_PNPM_MINOR_VERSION);
+
+    // The current highest functional NPM version 'latest' if it works.
+    private static final String HIGHEST_FUNCTIONAL_NPM = "7.20.2";
 
     private enum NpmCliTool {
         NPM("npm", "npm-cli.js"), NPX("npx", "npx-cli.js");
@@ -482,7 +489,10 @@ public class FrontendTools {
         if (NPM_BLACKLISTED_VERSIONS.contains(npmVersion)) {
             String badNpmVersion = buildBadVersionString("npm",
                     npmVersion.getFullVersion(),
-                    "by updating your global npm installation with `npm install -g npm@latest`");
+                    "by updating your global npm installation with `npm install -g npm@"
+                            + HIGHEST_FUNCTIONAL_NPM + "`",
+                    "by setting the plugin configuration `<requireHomeNodeExec>true</requireHomeNodeExec>`",
+                    "by giving the system property `require.home.node=true`");
             throw new IllegalStateException(badNpmVersion);
         }
     }
@@ -733,7 +743,7 @@ public class FrontendTools {
             extraInstructions.append("%n  - or ").append(instruction);
         }
         return String.format(BAD_VERSION, tool, version,
-                extraInstructions.toString(),
+                String.format(extraInstructions.toString()),
                 FrontendUtils.PARAM_IGNORE_VERSION_CHECKS);
     }
 
