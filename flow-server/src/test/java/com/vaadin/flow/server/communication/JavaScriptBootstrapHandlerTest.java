@@ -97,7 +97,8 @@ public class JavaScriptBootstrapHandlerTest {
 
     @Test
     public void should_produceValidJsonResponse() throws Exception {
-        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo&location");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location");
         jsInitHandler.handleRequest(session, request, response);
 
         Assert.assertEquals(200, response.getErrorCode());
@@ -129,7 +130,8 @@ public class JavaScriptBootstrapHandlerTest {
 
     @Test
     public void should_initialize_UI() throws Exception {
-        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo&location=");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
 
         Assert.assertNotNull(UI.getCurrent());
@@ -143,7 +145,8 @@ public class JavaScriptBootstrapHandlerTest {
 
     @Test
     public void should_attachViewTo_UiContainer() throws Exception {
-        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo&location=");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
 
         JavaScriptBootstrapUI ui = (JavaScriptBootstrapUI) UI.getCurrent();
@@ -192,7 +195,8 @@ public class JavaScriptBootstrapHandlerTest {
             throws Exception {
         mocks.getDeploymentConfiguration().setPushMode(PushMode.AUTOMATIC);
 
-        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo&location=");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
 
         Assert.assertEquals(200, response.getErrorCode());
@@ -209,7 +213,8 @@ public class JavaScriptBootstrapHandlerTest {
         AppShellRegistry registry = Mockito.mock(AppShellRegistry.class);
         mocks.setAppShellRegistry(registry);
 
-        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo&location=");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
 
         Mockito.verify(registry)
@@ -225,7 +230,8 @@ public class JavaScriptBootstrapHandlerTest {
         registry.setShell(PushAppShell.class);
         mocks.setAppShellRegistry(registry);
 
-        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo&location");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location");
         jsInitHandler.handleRequest(session, request, response);
 
         Assert.assertEquals(200, response.getErrorCode());
@@ -242,7 +248,8 @@ public class JavaScriptBootstrapHandlerTest {
             throws IOException {
         final JavaScriptBootstrapHandler bootstrapHandler = new JavaScriptBootstrapHandler();
 
-        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&location=..**");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&location=..**");
 
         final MockServletServiceSessionSetup.TestVaadinServletResponse response = mocks
                 .createResponse();
@@ -260,10 +267,12 @@ public class JavaScriptBootstrapHandlerTest {
     }
 
     @Test
-    public void synchronizedHandleRequest_noLocationParameter_noUiCreated() throws IOException {
+    public void synchronizedHandleRequest_noLocationParameter_noUiCreated()
+            throws IOException {
         final JavaScriptBootstrapHandler bootstrapHandler = new JavaScriptBootstrapHandler();
 
-        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=ini&foobar");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=ini&foobar");
 
         final MockServletServiceSessionSetup.TestVaadinServletResponse response = mocks
                 .createResponse();
