@@ -71,8 +71,6 @@ public class TaskUpdatePackagesNpmTest {
 
     private ClassFinder finder;
 
-    private Logger logger = Mockito
-            .spy(LoggerFactory.getLogger(NodeUpdater.class));
     private File generatedPath;
     private File versionJsonFile;
 
