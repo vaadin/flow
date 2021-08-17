@@ -179,8 +179,8 @@ public class VaadinUsageStatisticsTests extends TestCase {
         String mavenProjectFolder2 = TestUtils.getTestFolder("stats-data/maven-project-folder2").toPath().toString();
         String source1 = VaadinUsageStatistics.getProjectSource(mavenProjectFolder1);
         String source2 = VaadinUsageStatistics.getProjectSource(mavenProjectFolder2);
-        Assert.assertEquals("https://start.vaadin.com/1",source1);
-        Assert.assertEquals("https://start.vaadin.com/2",source2);
+        Assert.assertEquals("https://start.vaadin.com/test/1",source1);
+        Assert.assertEquals("https://start.vaadin.com/test/2",source2);
     }
 
     @Test
@@ -200,8 +200,8 @@ public class VaadinUsageStatisticsTests extends TestCase {
         String gradleProjectFolder2 = TestUtils.getTestFolder("stats-data/gradle-project-folder2").toPath().toString();
         String source1 = VaadinUsageStatistics.getProjectSource(gradleProjectFolder1);
         String source2 = VaadinUsageStatistics.getProjectSource(gradleProjectFolder2);
-        Assert.assertEquals("https://start.vaadin.com/1",source1);
-        Assert.assertEquals("https://start.vaadin.com/2",source2);
+        Assert.assertEquals("https://start.vaadin.com/test/3",source1);
+        Assert.assertEquals("https://start.vaadin.com/test/4",source2);
     }
 
     @Test
