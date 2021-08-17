@@ -165,6 +165,13 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
+    public boolean isUsageStatisticsEnabled() {
+        return !isProductionMode() && getBooleanProperty(
+                InitParameters.SERVLET_PARAMETER_DEVMODE_STATISTICS, true)
+                && enableDevServer();
+    }
+
+    @Override
     public boolean isRequestTiming() {
         return getBooleanProperty(SERVLET_PARAMETER_REQUEST_TIMING,
                 !isProductionMode());
