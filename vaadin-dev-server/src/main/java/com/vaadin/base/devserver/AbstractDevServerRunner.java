@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.base.devserver.DevServerOutputTracker.Result;
+import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
@@ -62,6 +63,12 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.vaadin.base.devserver.ViteHandler.VITE;
+import static com.vaadin.base.devserver.stats.StatisticsConstants.CLIENT_USAGE_DATA;
+import static com.vaadin.base.devserver.stats.StatisticsConstants.EVENT_LIVE_RELOAD;
+import static com.vaadin.base.devserver.stats.StatisticsConstants.EVENT_VITE_START;
+import static com.vaadin.base.devserver.stats.StatisticsConstants.EVENT_WEBPACK_START;
 
 /**
  * Deals with most details of starting a frontend development server or
@@ -218,6 +225,11 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info("Started {}. Time: {}ms", getServerName(), ms);
+            if (ViteHandler.VITE.equals(getServerName())) {
+                DevModeUsageStatistics.collectEvent(EVENT_VITE_START, ms);
+            } else {
+                DevModeUsageStatistics.collectEvent(EVENT_WEBPACK_START, ms);
+            }
         } finally {
             if (devServerProcess.get() == null) {
                 removeRunningDevServerPort();
@@ -441,6 +453,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     protected void triggerLiveReload() {
         if (liveReload != null) {
             liveReload.reload();
+            DevModeUsageStatistics.collectEvent(EVENT_LIVE_RELOAD);
         }
     }
 
@@ -680,6 +693,11 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         // Do not serve requests if dev server starting or failed to start.
         if (isDevServerFailedToStart.get() || !devServerStartFuture.isDone()) {
             return false;
+        }
+        // Handle Vaadin usage statistics collector
+        if (DevModeUsageStatistics.isClientUsageRequest(request)) {
+            DevModeUsageStatistics.handleClientUsageData(request, response);
+            return true;
         }
         // Since we have 'publicPath=/VAADIN/' in the dev server config,
         // a valid request for the dev server should start with '/VAADIN/'

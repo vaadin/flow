@@ -45,6 +45,7 @@ public final class ViteHandler extends AbstractDevServerRunner {
      * The local installation path of the server node script.
      */
     public static final String VITE_SERVER = "node_modules/vite/bin/vite.js";
+    public static final String VITE = "Vite";
 
     /**
      * Creates and starts the dev mode handler if none has been started yet.
@@ -90,7 +91,7 @@ public final class ViteHandler extends AbstractDevServerRunner {
 
     @Override
     protected String getServerName() {
-        return "Vite";
+        return VITE;
     }
 
     @Override
