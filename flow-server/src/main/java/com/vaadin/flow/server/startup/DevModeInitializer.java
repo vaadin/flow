@@ -82,6 +82,7 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
+import com.vaadin.flow.server.stats.DevModeUsageStatistics;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 
@@ -261,6 +262,9 @@ public class DevModeInitializer
         if (baseDir == null) {
             baseDir = getBaseDirectoryFallback();
         }
+
+        // Initialize the usage statistics if enabled
+        DevModeUsageStatistics.init(config, baseDir);
 
         String generatedDir = System.getProperty(PARAM_GENERATED_DIR,
                 DEFAULT_GENERATED_DIR);

@@ -43,6 +43,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
+import com.vaadin.flow.server.stats.DevModeUsageStatistics;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -55,6 +56,8 @@ import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
+import static com.vaadin.flow.server.stats.StatisticsConstants.EVENT_LIVE_RELOAD;
+import static com.vaadin.flow.server.stats.StatisticsConstants.EVENT_WEBPACK_START;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
@@ -292,10 +295,12 @@ public final class DevModeHandler implements RequestHandler {
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
         String pathInfo = request.getPathInfo();
-        return pathInfo != null && (pathInfo.startsWith("/" + VAADIN_MAPPING)
-            || APP_THEME_PATTERN.matcher(pathInfo).find()) && !pathInfo
-            .startsWith("/" + StreamRequestHandler.DYN_RES_PREFIX);
-    }
+        return pathInfo != null
+                && (pathInfo.startsWith("/" + VAADIN_MAPPING)
+                    || APP_THEME_PATTERN.matcher(pathInfo).find()
+                    || DevModeUsageStatistics.isClientUsageRequest(request))
+                && !pathInfo.startsWith("/" + StreamRequestHandler.DYN_RES_PREFIX);
+        }
 
     /**
      * Serve a file by proxying to webpack.
@@ -321,6 +326,13 @@ public final class DevModeHandler implements RequestHandler {
         if (isDevServerFailedToStart.get() || !devServerStartFuture.isDone()) {
             return false;
         }
+
+        // Handle Vaadin usage statistics collector
+        if (DevModeUsageStatistics.isClientUsageRequest(request)) {
+            DevModeUsageStatistics.handleClientUsageData(request, response);
+            return true;
+        }
+
         // Since we have 'publicPath=/VAADIN/' in webpack config,
         // a valid request for webpack-dev-server should start with '/VAADIN/'
         String requestFilename = request.getPathInfo();
@@ -690,6 +702,7 @@ public final class DevModeHandler implements RequestHandler {
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info(LOG_END, ms);
             saveRunningDevServerPort();
+            DevModeUsageStatistics.collectEvent(EVENT_WEBPACK_START, ms);
             return true;
         } catch (IOException e) {
             getLogger().error("Failed to start the webpack process", e);

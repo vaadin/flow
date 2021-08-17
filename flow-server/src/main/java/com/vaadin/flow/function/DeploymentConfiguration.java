@@ -457,4 +457,18 @@ public interface DeploymentConfiguration extends Serializable {
         return getBooleanProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
                 false);
     }
+
+    /**
+     * Returns whether development time usage statistics collection is enabled or
+     * not.
+     *
+     * Always return false if <code>isProductionMode</code> is {@code true}.
+     *
+     * @see #isProductionMode()
+     * @return {@code true} if enabled, {@code false} if not collected.
+     */
+    default boolean isUsageStatisticsEnabled() {
+        return !isProductionMode() && getBooleanProperty(InitParameters.SERVLET_PARAMETER_DEVMODE_STATISTICS,
+                Boolean.valueOf(Constants.ENABLE_DEVMODE_STATS_DEFAULT_STRING));
+    }
 }
