@@ -125,7 +125,7 @@ public class InitParameters implements Serializable {
     /**
      * Configuration parameter name for enabling usage statistics.
      *
-     * @since 8.0
+     * @since
      */
     public static final String SERVLET_PARAMETER_DEVMODE_STATISTICS = "devmode.usageStatistics.enabled";
 
