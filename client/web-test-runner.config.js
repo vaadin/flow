@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires,import/no-extraneous-dependencies */
 const { esbuildPlugin } = require('@web/dev-server-esbuild');
-const { puppeteerLauncher } = require('@web/test-runner-puppeteer');
+const { chromeLauncher } = require('@web/test-runner-chrome');
 
 const tsExtPattern = /\.ts$/;
 
@@ -22,7 +22,7 @@ module.exports = {
     },
   ],
   browsers: [
-    puppeteerLauncher({
+    chromeLauncher({
       launchOptions: {
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
       },
