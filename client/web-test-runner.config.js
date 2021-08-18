@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-var-requires,import/no-extraneous-dependencies */
 const { esbuildPlugin } = require('@web/dev-server-esbuild');
+const { chromeLauncher } = require('@web/test-runner-chrome');
 
 const tsExtPattern = /\.ts$/;
+const isCI = process.env.CI === 'true';
 
 module.exports = {
   rootDir: '.',
@@ -20,4 +22,13 @@ module.exports = {
       },
     },
   ],
+  browsers: isCI
+    ? [
+        chromeLauncher({
+          launchOptions: {
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          },
+        }),
+      ]
+    : undefined,
 };
