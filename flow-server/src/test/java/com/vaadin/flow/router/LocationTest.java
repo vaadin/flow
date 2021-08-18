@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -46,9 +46,23 @@ public class LocationTest {
         assertEquals(Arrays.asList("foo", "bar", ""), location.getSegments());
     }
 
-    @Test(expected = InvalidLocationException.class)
+    @Test
     public void parseLocationStartingWithSlash() {
-        new Location("/foo/bar");
+        Location location = new Location("/foo/bar/");
+        assertEquals(Arrays.asList("foo", "bar", ""), location.getSegments());
+    }
+
+    @Test
+    public void parseNullLocation() {
+        Location location = new Location((String) null);
+        assertEquals(Arrays.asList(""), location.getSegments());
+    }
+
+    @Test
+    public void parseNullLocationWithParameters() {
+        Location location = new Location((String) null,
+                QueryParameters.fromString("foo"));
+        assertEquals(Arrays.asList(""), location.getSegments());
     }
 
     @Test
@@ -245,8 +259,7 @@ public class LocationTest {
     @Test
     public void locationShouldBeRelative() {
         expectedEx.expect(InvalidLocationException.class);
-        expectedEx.expectMessage(
-                "Relative path '../element' cannot contain .. segments");
+        expectedEx.expectMessage("Relative path cannot contain .. segments");
 
         new Location("../element");
     }
@@ -254,8 +267,7 @@ public class LocationTest {
     @Test
     public void locationShouldNotEndWithDotDotSegment() {
         expectedEx.expect(InvalidLocationException.class);
-        expectedEx.expectMessage(
-                "Relative path 'element/..' cannot contain .. segments");
+        expectedEx.expectMessage("Relative path cannot contain .. segments");
 
         new Location("element/..");
     }
@@ -263,8 +275,7 @@ public class LocationTest {
     @Test
     public void dotDotLocationShouldNotWork() {
         expectedEx.expect(InvalidLocationException.class);
-        expectedEx
-                .expectMessage("Relative path '..' cannot contain .. segments");
+        expectedEx.expectMessage("Relative path cannot contain .. segments");
 
         new Location("..");
     }
@@ -272,5 +283,20 @@ public class LocationTest {
     @Test
     public void pathShouldNotBeEmpty() {
         assertEquals(".", new Location("").getPathWithQueryParameters());
+    }
+
+    @Test
+    public void locationWithUrlEncodedCharacters() {
+        Location location = new Location("foo?bar=a%20b%20%C3%B1%20%26%20%3F");
+        Assert.assertEquals("bar=a b ñ & ?",
+                location.getQueryParameters().getQueryString());
+    }
+
+    @Test
+    public void colonInLocationPath_locationIsParsed() {
+        Location location = new Location("abc:foo/bar?baz");
+        Assert.assertEquals("abc:foo/bar", location.getPath());
+        Assert.assertEquals("baz",
+                location.getQueryParameters().getQueryString());
     }
 }
