@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 /**
- * Singleton for collecting anonymous development time usage metrics.
+ * Singleton for collecting development time usage metrics
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -210,8 +210,6 @@ public class VaadinUsageStatistics {
     /**
      *  Get the remote reporting URL.
      *
-     *  Uses default method visibility to allow testing.
-     *
      * @return By default return {@link #USAGE_REPORT_URL}.
      */
     void setUsageReportingUrl(String reportingUrl) {
@@ -338,9 +336,10 @@ public class VaadinUsageStatistics {
         return -1;
     }
 
-    /** Is the Interval elapsed.
-     *  Uses <code>System.currentTimeMillis</code> as time source.
-     * Uses default method visibility to allow testing, but not intended to use outside.
+    /**
+     * Check the Interval has elapsed.
+     *
+     * Uses <code>System.currentTimeMillis</code> as time source.
      *
      * @see #getLastSendTime()
      * @see #getInterval()
@@ -353,9 +352,8 @@ public class VaadinUsageStatistics {
         return lastSend+interval*1000 < now;
     }
 
-    /** Reads the statistics update interval.
-     *
-     *  Uses default method visibility to allow testing, but not intended to use outside.
+    /**
+     * Reads the statistics update interval.
      *
      * @see #FIELD_SEND_INTERVAL
      * @return Time interval in seconds. {@link #TIME_SEC_24H} in minumun and {@link #TIME_SEC_30D} as maximum.
@@ -646,8 +644,6 @@ public class VaadinUsageStatistics {
      *
      * Get usage statistics json file location.
      *
-     * Uses default method visibility to allow testing, but not intended to use outside.
-     *
      * @return the location of statistics storage file.
      */
      void setUsageStatisticsStore(File usageStatistics) {
@@ -655,8 +651,6 @@ public class VaadinUsageStatistics {
      }
     /**
      * Get Vaadin Pro key if available in the system, or generated id.
-     *
-     * Uses default method visibility to allow testing.
      *
      * @return Vaadin Pro Key or null
      */
@@ -668,8 +662,6 @@ public class VaadinUsageStatistics {
 
     /**
      * Get generated user id.
-     *
-     * Uses default method visibility to allow testing.
      *
      * @return Generated user id, or null if unable to load or generate one.
      */
@@ -699,8 +691,6 @@ public class VaadinUsageStatistics {
 
     /**
      *  Get location for user key file.
-     *
-     *  Uses default method visibility to allow testing.
      *
      * @return File containing the generated user id.
      */
@@ -841,8 +831,6 @@ public class VaadinUsageStatistics {
     }
 
     /** Get Vaadin home directory.
-     *
-     *  Uses default method visibility to allow testing, but not intended to use outside.
      *
      * @return File instance for Vaadin home folder. Does not check if the folder exists.
      */
