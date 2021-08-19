@@ -439,6 +439,7 @@ public abstract class Component
      * UI and its components.
      *
      * @return true if the component is attached to an active UI.
+     * @since 2.7
      */
     public boolean isAttached() {
         return getElement().getNode().isAttached();
