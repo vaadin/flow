@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.server.communication;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -37,6 +40,7 @@ import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletResponse;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -93,7 +97,8 @@ public class JavaScriptBootstrapHandlerTest {
 
     @Test
     public void should_produceValidJsonResponse() throws Exception {
-        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location");
         jsInitHandler.handleRequest(session, request, response);
 
         Assert.assertEquals(200, response.getErrorCode());
@@ -125,7 +130,8 @@ public class JavaScriptBootstrapHandlerTest {
 
     @Test
     public void should_initialize_UI() throws Exception {
-        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
 
         Assert.assertNotNull(UI.getCurrent());
@@ -139,7 +145,8 @@ public class JavaScriptBootstrapHandlerTest {
 
     @Test
     public void should_attachViewTo_UiContainer() throws Exception {
-        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
 
         JavaScriptBootstrapUI ui = (JavaScriptBootstrapUI) UI.getCurrent();
@@ -188,7 +195,8 @@ public class JavaScriptBootstrapHandlerTest {
             throws Exception {
         mocks.getDeploymentConfiguration().setPushMode(PushMode.AUTOMATIC);
 
-        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
 
         Assert.assertEquals(200, response.getErrorCode());
@@ -205,7 +213,8 @@ public class JavaScriptBootstrapHandlerTest {
         AppShellRegistry registry = Mockito.mock(AppShellRegistry.class);
         mocks.setAppShellRegistry(registry);
 
-        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
 
         Mockito.verify(registry)
@@ -221,7 +230,8 @@ public class JavaScriptBootstrapHandlerTest {
         registry.setShell(PushAppShell.class);
         mocks.setAppShellRegistry(registry);
 
-        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location");
         jsInitHandler.handleRequest(session, request, response);
 
         Assert.assertEquals(200, response.getErrorCode());
@@ -231,6 +241,52 @@ public class JavaScriptBootstrapHandlerTest {
         // Using regex, because version depends on the build
         Assert.assertTrue(json.getString("pushScript").matches(
                 "^\\./VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
+    }
+
+    @Test
+    public void synchronizedHandleRequest_badLocation_noUiCreated()
+            throws IOException {
+        final JavaScriptBootstrapHandler bootstrapHandler = new JavaScriptBootstrapHandler();
+
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&location=..**");
+
+        final MockServletServiceSessionSetup.TestVaadinServletResponse response = mocks
+                .createResponse();
+
+        final boolean value = bootstrapHandler.synchronizedHandleRequest(
+                mocks.getSession(), request, response);
+        Assert.assertTrue("No further request handlers should be called",
+                value);
+
+        Assert.assertEquals("Invalid status code reported", 400,
+                response.getErrorCode());
+        Assert.assertEquals("Invalid message reported",
+                "Invalid location: Relative path cannot contain .. segments",
+                response.getErrorMessage());
+    }
+
+    @Test
+    public void synchronizedHandleRequest_noLocationParameter_noUiCreated()
+            throws IOException {
+        final JavaScriptBootstrapHandler bootstrapHandler = new JavaScriptBootstrapHandler();
+
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=ini&foobar");
+
+        final MockServletServiceSessionSetup.TestVaadinServletResponse response = mocks
+                .createResponse();
+
+        final boolean value = bootstrapHandler.synchronizedHandleRequest(
+                mocks.getSession(), request, response);
+        Assert.assertTrue("No further request handlers should be called",
+                value);
+
+        Assert.assertEquals("Invalid status code reported", 400,
+                response.getErrorCode());
+        Assert.assertEquals("Invalid message reported",
+                "Invalid location: Location parameter missing from bootstrap request to server.",
+                response.getErrorMessage());
     }
 
     private boolean hasNodeTag(TestNodeVisitor visitor, String htmContent,

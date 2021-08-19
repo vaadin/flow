@@ -288,7 +288,8 @@ public class PwaTestIT extends ChromeDeviceTest {
     }
 
     private boolean isProductionMode() throws IOException {
-        JsonObject stats = readJsonFromUrl(getRootURL() + "?v-r=init");
+        JsonObject stats = readJsonFromUrl(
+                getRootURL() + "?v-r=init&location=");
         return stats.getObject("appConfig").getBoolean("productionMode");
     }
 
