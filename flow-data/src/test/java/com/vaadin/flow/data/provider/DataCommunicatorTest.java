@@ -16,9 +16,9 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -1477,6 +1477,47 @@ public class DataCommunicatorTest {
                 dataCommunicator.getItemCount());
         Assert.assertEquals("Expected the item with value 42", filter.get(),
                 dataCommunicator.getItem(0));
+    }
+
+    @Test
+    public void handleAttach_componentAttached_oldDataProviderListenerRemoved() {
+        // given
+        AtomicInteger listenerInvocationCounter = new AtomicInteger(0);
+
+        TestComponent componentWithDataProvider = new TestComponent(
+                new Element("div"));
+        dataCommunicator = new DataCommunicator<Item>(dataGenerator,
+                arrayUpdater, data -> {
+                }, componentWithDataProvider.getElement().getNode()) {
+            @Override
+            public void reset() {
+                listenerInvocationCounter.incrementAndGet();
+                super.reset();
+            }
+        };
+        dataCommunicator.setRequestedRange(0, 100);
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider();
+        dataCommunicator.setDataProvider(dataProvider, null);
+        // Add the component to a parent to trigger handle the attach event
+        ui.add(componentWithDataProvider);
+        fakeClientCommunication();
+
+        Assert.assertEquals(
+                "Expected two DataCommunicator::reset() invocations: upon "
+                        + "setting the data provider and component attaching",
+                2, listenerInvocationCounter.get());
+
+        // when
+        // the data is being refreshed -> data provider's listeners are being
+        // invoked
+        dataProvider.refreshAll();
+        fakeClientCommunication();
+
+        // then
+        Assert.assertEquals(
+                "Expected only one reset() invocation, because the old "
+                        + "listener was removed and then only one listener is stored",
+                3, listenerInvocationCounter.get());
     }
 
     @Tag("test-component")
