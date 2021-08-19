@@ -829,7 +829,6 @@ public class VaadinUsageStatistics {
     static String createHash(String string) {
         if (string != null) {
             try {
-                MessageDigest.getInstance("MD5");
                 MessageDigest md = MessageDigest.getInstance("MD5");
                 md.update(string.getBytes());
                 byte[] digest = md.digest();
