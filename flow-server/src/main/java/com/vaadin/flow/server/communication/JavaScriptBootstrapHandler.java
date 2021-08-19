@@ -25,10 +25,12 @@ import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
-import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.router.InvalidLocationException;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.LocationUtil;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.HandlerHelper;
@@ -166,6 +168,22 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
+        try {
+            // #9443 Use error code 400 for bad location and don't create UI
+            // Normally caught by IndexHtmlRequestHandler, but checking here too
+            // for handcrafted requests
+            String pathAndParams = request.getParameter(
+                    ApplicationConstants.REQUEST_LOCATION_PARAMETER);
+            if (pathAndParams == null) {
+                throw new InvalidLocationException(
+                        "Location parameter missing from bootstrap request to server.");
+            }
+            LocationUtil.parsePathToSegments(pathAndParams);
+        } catch (InvalidLocationException invalidLocationException) {
+            response.sendError(400, "Invalid location: "
+                    + invalidLocationException.getMessage());
+            return true;
+        }
 
         HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
                 response::setDateHeader);

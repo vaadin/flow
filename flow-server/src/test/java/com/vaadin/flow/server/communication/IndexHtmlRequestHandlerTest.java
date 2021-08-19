@@ -797,4 +797,28 @@ public class IndexHtmlRequestHandlerTest {
         Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(request));
     }
 
+    @Test
+    public void synchronizedHandleRequest_badLocation_noUiCreated()
+            throws IOException {
+        final IndexHtmlRequestHandler bootstrapHandler = new IndexHtmlRequestHandler();
+
+        final VaadinServletRequest request = Mockito
+                .mock(VaadinServletRequest.class);
+        Mockito.doAnswer(invocation -> "..**").when(request).getPathInfo();
+
+        final MockServletServiceSessionSetup.TestVaadinServletResponse response = mocks
+                .createResponse();
+
+        final boolean value = bootstrapHandler.synchronizedHandleRequest(
+                mocks.getSession(), request, response);
+        Assert.assertTrue("No further request handlers should be called",
+                value);
+
+        Assert.assertEquals("Invalid status code reported", 400,
+                response.getErrorCode());
+        Assert.assertEquals("Invalid message reported",
+                "Invalid location: Relative path cannot contain .. segments",
+                response.getErrorMessage());
+    }
+
 }
