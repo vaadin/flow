@@ -12,6 +12,7 @@ const { DefinePlugin } = require('webpack');
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const { ESBuildMinifyPlugin } = require('esbuild-loader');
 
 // Flow plugins
 const StatsPlugin = require('@vaadin/stats-plugin');
@@ -257,11 +258,11 @@ module.exports = {
     rules: [
       enableTypeScript && {
         test: /\.ts$/,
-        loader: 'ts-loader',
+        loader: 'esbuild-loader',
         options: {
-          transpileOnly: true,
-          experimentalWatchApi: true
-        }
+          loader: 'ts',
+          target: 'es2019',
+        },
       },
       {
         test: /\.css$/i,
@@ -318,6 +319,13 @@ module.exports = {
         }],
       },
     ].filter(Boolean)
+  },
+  optimization: {
+    minimizer: [
+      !devMode && new ESBuildMinifyPlugin({
+        target: 'es2019'
+      }),
+    ].filter(Boolean),
   },
   performance: {
     maxEntrypointSize: 2097152, // 2MB
