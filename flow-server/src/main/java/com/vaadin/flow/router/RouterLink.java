@@ -131,7 +131,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *             if navigation target requires parameters
      */
     public RouterLink(Router router, String text,
-            Class<? extends Component> navigationTarget) {
+            Class<? extends Component> navigationTarget) throws IllegalArgumentException {
         this(router, text, navigationTarget, RouteParameters.empty());
     }
 
