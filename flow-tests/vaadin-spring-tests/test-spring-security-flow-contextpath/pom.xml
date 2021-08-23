@@ -47,6 +47,17 @@
 
         <dependency>
             <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-upload-testbench</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-login-testbench</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
             <artifactId>test-spring-security-flow</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -14,11 +14,6 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <skipTests>true</skipTests>
-        <vaadin.testbench-core.version>6.2.0</vaadin.testbench-core.version>
-        <vaadin.upload.version>2.0.0</vaadin.upload.version>
-        <vaadin.button.version>2.0.0</vaadin.button.version>
-        <vaadin.text-field.version>2.0.2</vaadin.text-field.version>
-        <vaadin.notification.version>2.0.0</vaadin.notification.version>
     </properties>
 
     <dependencies>
@@ -48,35 +43,29 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-upload-flow</artifactId>
-            <version>${vaadin.upload.version}</version>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-button-flow</artifactId>
-            <version>${vaadin.button.version}</version>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-notification-flow</artifactId>
-            <version>${vaadin.notification.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-button-testbench</artifactId>
-            <version>${vaadin.button.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-text-field-testbench</artifactId>
-            <version>${vaadin.text-field.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-notification-testbench</artifactId>
-            <version>${vaadin.notification.version}</version>
         </dependency>
 
         <dependency>
