@@ -265,7 +265,13 @@ window.Vaadin['${globalCssFlag}'] = window.Vaadin['${globalCssFlag}'] || [];
   if (injectGlobal) {
     ${globalCssCode.join('')}
     window.Vaadin['${globalCssFlag}'].push(target);
-  }
+    
+    const eventTarget = (target instanceof ShadowRoot) ? target.host : target;
+    eventTarget.addEventListener('DOMNodeRemoved', event => {
+      const index = window.Vaadin['${globalCssFlag}'].indexOf(target);
+      window.Vaadin['${globalCssFlag}'].splice(index, 1);
+    });
+   }
   if (!document['${componentCssFlag}']) {
     ${componentCssCode.join('')}
     document['${componentCssFlag}'] = true;

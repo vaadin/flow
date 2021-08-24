@@ -221,4 +221,22 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         Assert.assertTrue("Missing link for external url", linkUrls
                 .contains("https://fonts.googleapis.com/css?family=Itim"));
     }
+
+    @Test
+    public void removingEmbeddedComponent_arrayIsCleaned() {
+        open();
+        checkLogsForErrors();
+        Assert.assertEquals(
+                "Both embedded components should have registered globalCss", 2l,
+                getCommandExecutor().executeScript(
+                        "return window.Vaadin['_vaadintheme_embedded-theme_globalCss'].length"));
+        getCommandExecutor()
+                .executeScript("document.getElementById('second').remove()");
+
+        Assert.assertEquals(
+                "After removal of second should have removed its globalCss", 1l,
+                getCommandExecutor().executeScript(
+                        "return window.Vaadin['_vaadintheme_embedded-theme_globalCss'].length"));
+
+    }
 }
