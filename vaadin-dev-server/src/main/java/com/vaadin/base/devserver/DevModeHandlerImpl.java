@@ -509,6 +509,7 @@ public final class DevModeHandlerImpl
             // if failure, ensures the webpack error is shown in the browser
             if (liveReload != null) {
                 liveReload.reload();
+                DevModeUsageStatistics.event("liveReload");
             }
         }
     }
@@ -722,6 +723,7 @@ public final class DevModeHandlerImpl
 
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info(LOG_END, ms);
+            DevModeUsageStatistics.event("webpackStart", ms);
             return true;
         } catch (IOException e) {
             getLogger().error("Failed to start the webpack process", e);
