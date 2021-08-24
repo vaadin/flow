@@ -39,6 +39,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
+import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -61,7 +62,7 @@ import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
-import static com.vaadin.base.devserver.VaadinUsageStatistics.TELEMETRY_PARAMETER;
+import static com.vaadin.base.devserver.stats.StatisticsConstants.CLIENT_USAGE_DATA;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
@@ -283,7 +284,7 @@ public final class DevModeHandlerImpl
         if (pathInfo != null
                 && (pathInfo.startsWith("/" + VAADIN_MAPPING)
                         || APP_THEME_PATTERN.matcher(pathInfo).find()
-                        || (request.getParameter(TELEMETRY_PARAMETER) != null
+                        || (request.getParameter(CLIENT_USAGE_DATA) != null
                             && request.getMethod().equals("POST")))
                 && !pathInfo.startsWith(
                         "/" + StreamRequestHandler.DYN_RES_PREFIX)) {
@@ -320,8 +321,8 @@ public final class DevModeHandlerImpl
         }
 
         // Handle Vaadin usage statistics collector
-        if (request.getParameter(TELEMETRY_PARAMETER) != null && VaadinUsageStatistics.get() != null) {
-            return VaadinUsageStatistics.get().handleClientTelemetryData(request,response);
+        if (request.getParameter(CLIENT_USAGE_DATA) != null) {
+            return DevModeUsageStatistics.handleClientUsageData(request,response);
         }
 
         // Since we have 'publicPath=/VAADIN/' in webpack config,

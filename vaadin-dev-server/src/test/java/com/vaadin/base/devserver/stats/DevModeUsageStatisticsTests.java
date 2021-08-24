@@ -1,8 +1,22 @@
-package com.vaadin.base.devserver;
+/*
+ * Copyright 2000-2021 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+package com.vaadin.base.devserver.stats;
 
 import com.sun.net.httpserver.HttpServer;
-import com.vaadin.flow.internal.Range;
-import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.testutil.TestUtils;
 import junit.framework.TestCase;
@@ -10,7 +24,6 @@ import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.*;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.io.File;
@@ -22,9 +35,10 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
 @NotThreadSafe
-public class VaadinUsageStatisticsTests extends TestCase {
+public class DevModeUsageStatisticsTests extends TestCase {
 
-    public static final String USAGE_REPORT_URL_LOCAL = "http://localhost:8089/";
+    private static final int HTTP_PORT = 8089;
+    public static final String USAGE_REPORT_URL_LOCAL = "http://localhost:"+HTTP_PORT+"/";
     public static final String DEFAULT_SERVER_MESSAGE = "{\"reportInterval\":86400,\"serverMessage\":\"\"}";
     public static final String SERVER_MESSAGE_MESSAGE  = "{\"reportInterval\":86400,\"serverMessage\":\"Hello\"}";
     public static final String SERVER_MESSAGE_3H  = "{\"reportInterval\":10800,\"serverMessage\":\"\"}";
@@ -46,23 +60,28 @@ public class VaadinUsageStatisticsTests extends TestCase {
     }
 
     @Test
-    public void testClientTelemetry() throws Exception {
+    public void testClientData() throws Exception {
 
+        // Create mock app configuration
         ApplicationConfiguration configuration = mockAppConfig(true);
+
+        // Change the file storage and reporting parameters for testing
+        StatisticsStorage.get().setUsageReportingUrl(USAGE_REPORT_URL_LOCAL);
+        StatisticsStorage.get().setUsageStatisticsStore(createTempStorage("stats-data/usage-statistics-1.json"));
+
+        // Init using test project
         String mavenProjectFolder = TestUtils.getTestFolder("stats-data/maven-project-folder1").toPath().toString();
-        VaadinUsageStatistics statistics = VaadinUsageStatistics.init(configuration, mavenProjectFolder);
-        statistics.setUsageReportingUrl("http://localhost:8089/");
-        statistics.setUsageStatisticsStore(createTempStorage("stats-data/usage-statistics-1.json"));
+        DevModeUsageStatistics.init(configuration, mavenProjectFolder);
 
 
         // Send and see that data ws collected
         try (TestHttpServer server = new TestHttpServer(200, DEFAULT_SERVER_MESSAGE)) {
-            long lastSend = statistics.getLastSendTime();
-            statistics.sendCurrentStatistics();
-            long newSend = statistics.getLastSendTime();
+            long lastSend = StatisticsStorage.get().getLastSendTime();
+            StatisticsStorage.get().sendCurrentStatistics();
+            long newSend = StatisticsStorage.get().getLastSendTime();
             Assert.assertTrue("Send time should be updated",newSend > lastSend);
-            Assert.assertTrue("Status should be 200", statistics.getLastSendStatus().contains("200"));
-            Assert.assertEquals("Default interval should be 24H in seconds", SEC_24H, statistics.getInterval());
+            Assert.assertTrue("Status should be 200", StatisticsStorage.get().getLastSendStatus().contains("200"));
+            Assert.assertEquals("Default interval should be 24H in seconds", SEC_24H, StatisticsStorage.get().getInterval());
         }
 
 
@@ -71,103 +90,127 @@ public class VaadinUsageStatisticsTests extends TestCase {
     @Test
     public void testMultipleProjects() throws Exception {
 
+        // Create mock app configuration
         ApplicationConfiguration configuration = mockAppConfig(true);
-        String mavenProjectFolder1 = TestUtils.getTestFolder("stats-data/maven-project-folder1").toPath().toString();
-        VaadinUsageStatistics statistics = VaadinUsageStatistics.init(configuration, mavenProjectFolder1);
-        statistics.setUsageReportingUrl("http://localhost:8089/");
-        statistics.setUsageStatisticsStore(createTempStorage("stats-data/usage-statistics-1.json"));
+
+        // Change the file storage and reporting parameters for testing
+        StatisticsStorage.get().setUsageReportingUrl(USAGE_REPORT_URL_LOCAL);
+        StatisticsStorage.get().setUsageStatisticsStore(createTempStorage("stats-data/usage-statistics-1.json"));
+
+        // Init using test project
+        String mavenProjectFolder = TestUtils.getTestFolder("stats-data/maven-project-folder1").toPath().toString();
+        DevModeUsageStatistics.init(configuration, mavenProjectFolder);
+        // Data contains 5 previous starts for this project
+        Assert.assertEquals("Expected to have no restarts", 6, StatisticsStorage.get().getFieldValue("devModeStarts"));
 
         // Switch project to track
         String mavenProjectFolder2 = TestUtils.getTestFolder("stats-data/maven-project-folder2").toPath().toString();
-        statistics = VaadinUsageStatistics.init(configuration, mavenProjectFolder2);
-        Assert.assertEquals("Expected to have no restarts", 0, statistics.getFieldValue("devModeStarts"));
+        DevModeUsageStatistics.init(configuration, mavenProjectFolder2);
+        Assert.assertEquals("Expected to have no restarts", 0, StatisticsStorage.get().getFieldValue("devModeStarts"));
 
         // Switch project to track
         String gradleProjectFolder1 = TestUtils.getTestFolder("stats-data/gradle-project-folder1").toPath().toString();
-        statistics = VaadinUsageStatistics.init(configuration, gradleProjectFolder1);
-        Assert.assertEquals("Expected to have no restarts", 0, statistics.getFieldValue("devModeStarts"));
+        DevModeUsageStatistics.init(configuration, gradleProjectFolder1);
+        Assert.assertEquals("Expected to have no restarts", 0, StatisticsStorage.get().getFieldValue("devModeStarts"));
 
         // Switch project to track
         String gradleProjectFolder2 = TestUtils.getTestFolder("stats-data/gradle-project-folder2").toPath().toString();
-        statistics = VaadinUsageStatistics.init(configuration, gradleProjectFolder2);
-        statistics = VaadinUsageStatistics.init(configuration, gradleProjectFolder2); // Double init to check restarts
-        Assert.assertEquals("Expected to have 1 restarts", 1, statistics.getFieldValue("devModeStarts"));
+        DevModeUsageStatistics.init(configuration, gradleProjectFolder2);
+        DevModeUsageStatistics.init(configuration, gradleProjectFolder2); // Double init to check restart count
+        Assert.assertEquals("Expected to have 1 restarts", 1, StatisticsStorage.get().getFieldValue("devModeStarts"));
 
-        Assert.assertEquals("Expected to have 4 projects", 4, statistics.getNumberOfProjects());
+        // Check that all project are stored correctly
+        Assert.assertEquals("Expected to have 4 projects", 4, StatisticsStorage.get().getNumberOfProjects());
 
     }
 
     @Test
     public void testSend() throws Exception {
-        // Init for sending
+
+        // Create mock app configuration
         ApplicationConfiguration configuration = mockAppConfig(true);
+
+        // Change the file storage and reporting parameters for testing
+        StatisticsStorage.get().setUsageReportingUrl(USAGE_REPORT_URL_LOCAL);
+        StatisticsStorage.get().setUsageStatisticsStore(createTempStorage("stats-data/usage-statistics-1.json"));
+
+        // Init using test project
         String mavenProjectFolder = TestUtils.getTestFolder("stats-data/maven-project-folder1").toPath().toString();
-        VaadinUsageStatistics statistics = VaadinUsageStatistics.init(configuration, mavenProjectFolder);
-        statistics.setUsageStatisticsStore(createTempStorage("stats-data/usage-statistics-1.json"));
-        statistics.setUsageReportingUrl("http://localhost:8089/");
+        DevModeUsageStatistics.init(configuration, mavenProjectFolder);
 
         // Test with default server response
         try (TestHttpServer server = new TestHttpServer(200, DEFAULT_SERVER_MESSAGE)) {
-            long lastSend = statistics.getLastSendTime();
-            statistics.sendCurrentStatistics();
-            long newSend = statistics.getLastSendTime();
+            long lastSend = StatisticsStorage.get().getLastSendTime();
+            DevModeUsageStatistics.sendCurrentStatistics();
+            long newSend = StatisticsStorage.get().getLastSendTime();
             Assert.assertTrue("Send time should be updated",newSend > lastSend);
-            Assert.assertTrue("Status should be 200", statistics.getLastSendStatus().contains("200"));
-            Assert.assertEquals("Default interval should be 24H in seconds", SEC_24H, statistics.getInterval());
+            Assert.assertTrue("Status should be 200", StatisticsStorage.get().getLastSendStatus().contains("200"));
+            Assert.assertEquals("Default interval should be 24H in seconds", SEC_24H, StatisticsStorage.get().getInterval());
         }
 
         // Test with server response with too custom interval
         try (TestHttpServer server = new TestHttpServer(200, SERVER_MESSAGE_48H)) {
-            long lastSend = statistics.getLastSendTime();
-            statistics.sendCurrentStatistics();
-            long newSend = statistics.getLastSendTime();
+            long lastSend = StatisticsStorage.get().getLastSendTime();
+            StatisticsStorage.get().sendCurrentStatistics();
+            long newSend = StatisticsStorage.get().getLastSendTime();
             Assert.assertTrue("Send time should be updated",newSend > lastSend);
-            Assert.assertTrue("Status should be 200", statistics.getLastSendStatus().contains("200"));
-            Assert.assertEquals("Custom interval should be 48H in seconds",SEC_48H, statistics.getInterval());
+            Assert.assertTrue("Status should be 200", StatisticsStorage.get().getLastSendStatus().contains("200"));
+            Assert.assertEquals("Custom interval should be 48H in seconds",SEC_48H, StatisticsStorage.get().getInterval());
         }
 
         // Test with server response with too short interval
         try (TestHttpServer server = new TestHttpServer(200, SERVER_MESSAGE_3H)) {
-            long lastSend = statistics.getLastSendTime();
-            statistics.sendCurrentStatistics();
-            long newSend = statistics.getLastSendTime();
+            long lastSend = StatisticsStorage.get().getLastSendTime();
+            StatisticsStorage.get().sendCurrentStatistics();
+            long newSend = StatisticsStorage.get().getLastSendTime();
             Assert.assertTrue("Send time should be updated",newSend > lastSend);
-            Assert.assertTrue("Status should be 200", statistics.getLastSendStatus().contains("200"));
-            Assert.assertEquals("Minimum interval should be 12H in seconds",SEC_12H, statistics.getInterval());
+            Assert.assertTrue("Status should be 200", StatisticsStorage.get().getLastSendStatus().contains("200"));
+            Assert.assertEquals("Minimum interval should be 12H in seconds",SEC_12H, StatisticsStorage.get().getInterval());
         }
 
         // Test with server response with too long interval
         try (TestHttpServer server = new TestHttpServer(200, SERVER_MESSAGE_40D)) {
-            long lastSend = statistics.getLastSendTime();
-            statistics.sendCurrentStatistics();
-            long newSend = statistics.getLastSendTime();
+            long lastSend = StatisticsStorage.get().getLastSendTime();
+            StatisticsStorage.get().sendCurrentStatistics();
+            long newSend = StatisticsStorage.get().getLastSendTime();
             Assert.assertTrue("Send time should be not be updated",newSend > lastSend);
-            Assert.assertTrue("Status should be 200", statistics.getLastSendStatus().contains("200"));
-            Assert.assertEquals("Maximum interval should be 30D in seconds",SEC_30D, statistics.getInterval());
+            Assert.assertTrue("Status should be 200", StatisticsStorage.get().getLastSendStatus().contains("200"));
+            Assert.assertEquals("Maximum interval should be 30D in seconds",SEC_30D, StatisticsStorage.get().getInterval());
         }
 
 
         // Test with server fail response
         try (TestHttpServer server = new TestHttpServer(500, SERVER_MESSAGE_40D)) {
-            long lastSend = statistics.getLastSendTime();
-            statistics.sendCurrentStatistics();
-            long newSend = statistics.getLastSendTime();
+            long lastSend = StatisticsStorage.get().getLastSendTime();
+            StatisticsStorage.get().sendCurrentStatistics();
+            long newSend = StatisticsStorage.get().getLastSendTime();
             Assert.assertTrue("Send time should be updated",newSend > lastSend);
-            Assert.assertTrue("Status should be 500", statistics.getLastSendStatus().contains("500"));
-            Assert.assertEquals("In case of errors we should use default interval",SEC_24H, statistics.getInterval());
+            Assert.assertTrue("Status should be 500", StatisticsStorage.get().getLastSendStatus().contains("500"));
+            Assert.assertEquals("In case of errors we should use default interval",SEC_24H, StatisticsStorage.get().getInterval());
+        }
+
+        // Test with server returned message
+        try (TestHttpServer server = new TestHttpServer(200, SERVER_MESSAGE_MESSAGE)) {
+            long lastSend = StatisticsStorage.get().getLastSendTime();
+            StatisticsStorage.get().sendCurrentStatistics();
+            long newSend = StatisticsStorage.get().getLastSendTime();
+            Assert.assertTrue("Send time should be updated",newSend > lastSend);
+            Assert.assertTrue("Status should be 200", StatisticsStorage.get().getLastSendStatus().contains("200"));
+            Assert.assertEquals("Default interval should be 24H in seconds", SEC_24H, StatisticsStorage.get().getInterval());
+            Assert.assertEquals("Message should be returned", "Hello", StatisticsStorage.get().getLastServerMessage());
         }
 
         // Test with invalid material
-        statistics.setUsageStatisticsStore(new File(TestUtils.getTestResource("stats-data/usage-statistics-2.json").getFile()));
-
+        StatisticsStorage.get().setUsageStatisticsStore(new File(TestUtils.getTestResource("stats-data/usage-statistics-2.json").getFile()));
+        //TODO:
     }
 
     @Test
     public void testMavenProjectProjectId() {
         String mavenProjectFolder1 = TestUtils.getTestFolder("stats-data/maven-project-folder1").toPath().toString();
         String mavenProjectFolder2 = TestUtils.getTestFolder("stats-data/maven-project-folder2").toPath().toString();
-        String id1 = VaadinUsageStatistics.generateProjectId(mavenProjectFolder1);
-        String id2 = VaadinUsageStatistics.generateProjectId(mavenProjectFolder2);
+        String id1 = ProjectHelpers.generateProjectId(mavenProjectFolder1);
+        String id2 = ProjectHelpers.generateProjectId(mavenProjectFolder2);
         Assert.assertNotNull(id1);
         Assert.assertNotNull(id2);
         Assert.assertNotEquals(id1,id2); // Should differ
@@ -177,8 +220,8 @@ public class VaadinUsageStatisticsTests extends TestCase {
     public void testMavenProjectSource() {
         String mavenProjectFolder1 = TestUtils.getTestFolder("stats-data/maven-project-folder1").toPath().toString();
         String mavenProjectFolder2 = TestUtils.getTestFolder("stats-data/maven-project-folder2").toPath().toString();
-        String source1 = VaadinUsageStatistics.getProjectSource(mavenProjectFolder1);
-        String source2 = VaadinUsageStatistics.getProjectSource(mavenProjectFolder2);
+        String source1 = ProjectHelpers.getProjectSource(mavenProjectFolder1);
+        String source2 = ProjectHelpers.getProjectSource(mavenProjectFolder2);
         Assert.assertEquals("https://start.vaadin.com/test/1",source1);
         Assert.assertEquals("https://start.vaadin.com/test/2",source2);
     }
@@ -187,8 +230,8 @@ public class VaadinUsageStatisticsTests extends TestCase {
     public void testGradleProjectProjectId() {
         String gradleProjectFolder1 = TestUtils.getTestFolder("stats-data/gradle-project-folder1").toPath().toString();
         String gradleProjectFolder2 = TestUtils.getTestFolder("stats-data/gradle-project-folder2").toPath().toString();
-        String id1 = VaadinUsageStatistics.generateProjectId(gradleProjectFolder1);
-        String id2 = VaadinUsageStatistics.generateProjectId(gradleProjectFolder2);
+        String id1 = ProjectHelpers.generateProjectId(gradleProjectFolder1);
+        String id2 = ProjectHelpers.generateProjectId(gradleProjectFolder2);
         Assert.assertNotNull(id1);
         Assert.assertNotNull(id2);
         Assert.assertNotEquals(id1,id2); // Should differ
@@ -198,8 +241,8 @@ public class VaadinUsageStatisticsTests extends TestCase {
     public void testGradleProjectSource() {
         String gradleProjectFolder1 = TestUtils.getTestFolder("stats-data/gradle-project-folder1").toPath().toString();
         String gradleProjectFolder2 = TestUtils.getTestFolder("stats-data/gradle-project-folder2").toPath().toString();
-        String source1 = VaadinUsageStatistics.getProjectSource(gradleProjectFolder1);
-        String source2 = VaadinUsageStatistics.getProjectSource(gradleProjectFolder2);
+        String source1 = ProjectHelpers.getProjectSource(gradleProjectFolder1);
+        String source2 = ProjectHelpers.getProjectSource(gradleProjectFolder2);
         Assert.assertEquals("https://start.vaadin.com/test/3",source1);
         Assert.assertEquals("https://start.vaadin.com/test/4",source2);
     }
@@ -208,8 +251,8 @@ public class VaadinUsageStatisticsTests extends TestCase {
     public void testMissingProject() {
         String mavenProjectFolder1 = TestUtils.getTestFolder("java").toPath().toString();
         String mavenProjectFolder2 = TestUtils.getTestFolder("stats-data/empty").toPath().toString();
-        String id1 = VaadinUsageStatistics.generateProjectId(mavenProjectFolder1);
-        String id2 = VaadinUsageStatistics.generateProjectId(mavenProjectFolder2);
+        String id1 = ProjectHelpers.generateProjectId(mavenProjectFolder1);
+        String id2 = ProjectHelpers.generateProjectId(mavenProjectFolder2);
         Assert.assertNotNull(id1);
         Assert.assertNotNull(id2);
         Assert.assertEquals(id1,id2); // Should be the default id in both cases
@@ -220,11 +263,11 @@ public class VaadinUsageStatisticsTests extends TestCase {
         ApplicationConfiguration configuration = mockAppConfig(true);
         String mavenProjectFolder = TestUtils.getTestFolder("stats-data/maven-project-folder1").toPath().toString();
         System.setProperty("user.home", TestUtils.getTestFolder("stats-data").toPath().toString()); //Change the home location
-        VaadinUsageStatistics stats = VaadinUsageStatistics.init(configuration, mavenProjectFolder);
+        DevModeUsageStatistics.init(configuration, mavenProjectFolder);
 
         // Read from file
         String keyString = "user-ab641d2c-test-test-file-223cf1fa628e";
-        String key = stats.getUserKey();
+        String key = ProjectHelpers.getUserKey();
         assertEquals(keyString,key);
 
         // Try with non existent
@@ -235,13 +278,12 @@ public class VaadinUsageStatisticsTests extends TestCase {
         File vaadinHome = new File(tempDir, ".vaadin");
         vaadinHome.mkdir();
         System.setProperty("user.home", tempDir.getAbsolutePath()); //Change the home location
-        String newKey = stats.getUserKey();
+        String newKey = ProjectHelpers.getUserKey();
         assertNotNull(newKey);
         assertNotSame(keyString,newKey);
         File userKeyFile = new File(vaadinHome, "userKey");
         Assert.assertTrue("userKey should be created automatically",
                 userKeyFile.exists());
-
     }
 
     @Test
@@ -249,21 +291,19 @@ public class VaadinUsageStatisticsTests extends TestCase {
         ApplicationConfiguration configuration = mockAppConfig(true);
         String mavenProjectFolder = TestUtils.getTestFolder("stats-data/maven-project-folder1").toPath().toString();
         System.setProperty("user.home", TestUtils.getTestFolder("stats-data").toPath().toString()); //Change the home location
-        VaadinUsageStatistics stats = VaadinUsageStatistics.init(configuration, mavenProjectFolder);
+        DevModeUsageStatistics.init(configuration, mavenProjectFolder);
 
         // File is used by default
         String keyStringFile = "test@vaadin.com/pro-536e1234-test-test-file-f7a1ef311234";
-        String keyFile = stats.getProKey();
+        String keyFile = ProjectHelpers.getProKey();
         assertEquals(keyStringFile, "test@vaadin.com/"+keyFile);
 
         // Check system property works
         String keyStringProp = "test@vaadin.com/pro-536e1234-test-test-prop-f7a1ef311234";
         System.setProperty("vaadin.proKey", keyStringProp);
-        String keyProp = stats.getProKey();
+        String keyProp = ProjectHelpers.getProKey();
         assertEquals(keyStringProp, "test@vaadin.com/"+keyProp);
-
     }
-
 
     @Test
     public void testLoadStatisticsDisabled() throws Exception {
@@ -275,30 +315,29 @@ public class VaadinUsageStatisticsTests extends TestCase {
 
         // Initialize the statistics from Maven project
         String mavenProjectFolder = TestUtils.getTestFolder("stats-data/maven-project-folder1").toPath().toString();
-        VaadinUsageStatistics statistics = VaadinUsageStatistics.init(configuration, mavenProjectFolder);
+        DevModeUsageStatistics.init(configuration, mavenProjectFolder);
 
         // Make sure statistics are enabled
-        Assert.assertTrue(statistics.isStatisticsEnabled());
+        Assert.assertTrue(DevModeUsageStatistics.isStatisticsEnabled());
 
         // Disable statistics in config
         Mockito.when(configuration.isUsageStatisticsEnabled()).thenReturn(false);
 
         // Reinit
-        statistics = VaadinUsageStatistics.init(configuration, mavenProjectFolder);
+        DevModeUsageStatistics.init(configuration, mavenProjectFolder);
 
         // Make sure statistics are disabled
-        Assert.assertFalse(statistics.isStatisticsEnabled());
+        Assert.assertFalse(DevModeUsageStatistics.isStatisticsEnabled());
 
         // Enable statistics in config and enable production mode
         Mockito.when(configuration.isUsageStatisticsEnabled()).thenReturn(true);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
 
         // Reinit
-        statistics = VaadinUsageStatistics.init(configuration, mavenProjectFolder);
+        DevModeUsageStatistics.init(configuration, mavenProjectFolder);
 
         // Make sure statistics are disabled in production mode
-        Assert.assertFalse(statistics.isStatisticsEnabled());
-
+        Assert.assertFalse(DevModeUsageStatistics.isStatisticsEnabled());
     }
 
     private ApplicationConfiguration mockAppConfig(boolean enabled) {
@@ -310,17 +349,6 @@ public class VaadinUsageStatisticsTests extends TestCase {
         Mockito.when(appConfig.isUsageStatisticsEnabled()).thenReturn(enabled);
 
         return appConfig;
-    }
-
-    private void setMock(VaadinUsageStatistics mock) {
-        try {
-            Field f = VaadinUsageStatistics.class.getDeclaredField("instance");
-            f.setAccessible(true);
-            AtomicReference<VaadinUsageStatistics> ref = (AtomicReference) f.get(f);
-            ref.set(mock);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     /** Create a temporary file from given test resource.
@@ -342,12 +370,11 @@ public class VaadinUsageStatisticsTests extends TestCase {
      */
     public static class TestHttpServer implements AutoCloseable {
 
-        public static final int PORT = 8089;
         private HttpServer httpServer;
         private String lastRequestContent;
 
         public TestHttpServer(int code, String response) throws Exception {
-            this.httpServer = createStubGatherServlet(PORT, code,
+            this.httpServer = createStubGatherServlet(HTTP_PORT, code,
                     response);
         }
 
