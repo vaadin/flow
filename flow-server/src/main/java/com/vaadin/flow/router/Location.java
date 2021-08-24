@@ -37,11 +37,13 @@ public class Location implements Serializable {
 
     private final List<String> segments;
     private final QueryParameters queryParameters;
+    private String fragment;
 
     /**
      * Creates a new {@link Location} object for given location string.
      * <p>
-     * This string can contain relative path and query parameters, if needed.
+     * This string can contain relative path and query parameters, if needed. A
+     * possible fragment {@code #fragment} is also retained.
      * <p>
      * A possible "/" prefix of the location is ignored and a <code>null</code>
      * location is interpreted as <code>""</code>
@@ -56,6 +58,10 @@ public class Location implements Serializable {
         this(LocationUtil.parsePathToSegments(
                 LocationUtil.ensureRelativeNonNull(location)),
                 LocationUtil.parseQueryParameters(location));
+        int fragmentIndex = location == null ? -1 : location.indexOf('#');
+        if (fragmentIndex > -1) {
+            fragment = location.substring(fragmentIndex);
+        }
     }
 
     /**
@@ -176,7 +182,8 @@ public class Location implements Serializable {
     }
 
     /**
-     * Gets the path string with {@link QueryParameters}.
+     * Gets the path string with {@link QueryParameters} and including the
+     * possible fragment if one existed.
      *
      * @return path string with parameters
      */
@@ -185,13 +192,17 @@ public class Location implements Serializable {
         assert !basePath.contains(
                 QUERY_SEPARATOR) : "Base path can not contain query separator="
                         + QUERY_SEPARATOR;
+        assert !basePath.contains("#") : "Base path can not contain fragment #";
 
+        final StringBuilder pathBuilder = new StringBuilder(basePath);
         String params = queryParameters.getQueryString();
-        if (params.isEmpty()) {
-            return basePath;
-        } else {
-            return basePath + QUERY_SEPARATOR + params;
+        if (!params.isEmpty()) {
+            pathBuilder.append(QUERY_SEPARATOR).append(params);
         }
+        if (fragment != null) {
+            pathBuilder.append(fragment);
+        }
+        return pathBuilder.toString();
     }
 
     /**
