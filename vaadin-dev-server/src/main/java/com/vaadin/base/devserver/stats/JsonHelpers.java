@@ -74,7 +74,7 @@ class JsonHelpers {
                         JsonNode f = node.get(fieldName);
                         node.put(fieldName,f.asInt()+1);
                 } else {
-                        node.put(fieldName,0);
+                        node.put(fieldName,1);
                 }
         }
 
