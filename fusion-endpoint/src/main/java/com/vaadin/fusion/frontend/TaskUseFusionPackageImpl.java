@@ -17,7 +17,6 @@ package com.vaadin.fusion.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,9 +24,7 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.NodeUpdater;
 import com.vaadin.flow.server.frontend.TaskUseFusionPackage;
 
-import elemental.json.Json;
 import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * Populate the package.json file with Fusion dependencies.
