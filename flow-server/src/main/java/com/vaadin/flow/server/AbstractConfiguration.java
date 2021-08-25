@@ -116,7 +116,8 @@ public interface AbstractConfiguration extends Serializable {
      * @return {@code true} if enabled, {@code false} if not collected.
      */
     default boolean isUsageStatisticsEnabled() {
-        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_DEVMODE_STATISTICS,
+        return getBooleanProperty(
+                InitParameters.SERVLET_PARAMETER_DEVMODE_STATISTICS,
                 Boolean.valueOf(Constants.ENABLE_DEVMODE_STATS_DEFAULT_STRING));
     }
 

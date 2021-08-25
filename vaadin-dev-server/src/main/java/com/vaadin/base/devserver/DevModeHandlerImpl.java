@@ -285,7 +285,7 @@ public final class DevModeHandlerImpl
                 && (pathInfo.startsWith("/" + VAADIN_MAPPING)
                         || APP_THEME_PATTERN.matcher(pathInfo).find()
                         || (request.getParameter(CLIENT_USAGE_DATA) != null
-                            && request.getMethod().equals("POST")))
+                                && request.getMethod().equals("POST")))
                 && !pathInfo.startsWith(
                         "/" + StreamRequestHandler.DYN_RES_PREFIX)) {
             return true;
