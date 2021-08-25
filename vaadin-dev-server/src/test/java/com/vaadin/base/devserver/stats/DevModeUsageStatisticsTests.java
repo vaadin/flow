@@ -16,8 +16,15 @@
 
 package com.vaadin.base.devserver.stats;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.util.Collections;
@@ -80,20 +87,24 @@ import com.vaadin.flow.testutil.TestUtils;
         String mavenProjectFolder = TestUtils.getTestFolder(
             "stats-data/maven-project-folder1").toPath().toString();
         DevModeUsageStatistics.init(configuration, mavenProjectFolder);
+        HttpServletRequest req = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(req.getParameter(StatisticsConstants.CLIENT_USAGE_DATA)).thenReturn("");
+        Mockito.when(req.getMethod()).thenReturn("POST");
+        Mockito.when(req.getContentType()).thenReturn("application/json");
+        Mockito.when(req.getReader()).thenReturn(new BufferedReader(
+            new InputStreamReader(
+            TestUtils.getTestResource("stats-data/client-data-1.txt")
+                .openStream())));
 
-        // Send and see that data ws collected
-        try (TestHttpServer server = new TestHttpServer(200,
-            DEFAULT_SERVER_MESSAGE)) {
-            long lastSend = StatisticsStorage.get().getLastSendTime();
-            StatisticsStorage.get().sendCurrentStatistics();
-            long newSend = StatisticsStorage.get().getLastSendTime();
-            Assert.assertTrue("Send time should be updated",
-                newSend > lastSend);
-            Assert.assertTrue("Status should be 200",
-                StatisticsStorage.get().getLastSendStatus().contains("200"));
-            Assert.assertEquals("Default interval should be 24H in seconds",
-                SEC_24H, StatisticsStorage.get().getInterval());
-        }
+        HttpServletResponse res = Mockito.mock(HttpServletResponse.class);
+        StringWriter strWriter = new StringWriter();
+        Mockito.when(res.getWriter()).thenReturn(new PrintWriter(strWriter));
+
+        DevModeUsageStatistics.handleClientUsageData(req,res);
+
+        Mockito.verify(res).setStatus(200);
+        Assert.assertEquals("Should get response","Thank you",strWriter.toString());
+
     }
 
     @Test public void testAggregates() throws Exception {
