@@ -46,14 +46,13 @@ public class DevModeUsageStatistics {
      *
      * @param config        Application configuration parameters.
      * @param projectFolder Folder of the working project.
-     * @return VaadinUsageStatistics instance in case everything is ok, null otherwise
      */
     public static void init(ApplicationConfiguration config,
         String projectFolder) {
 
         final StatisticsStorage stats = StatisticsStorage.get();
 
-        synchronized (stats) { // Lock data for init
+        synchronized (DevModeUsageStatistics.class) { // Lock data for init
             stats.setStatisticsEnabled(
                 config != null && !config.isProductionMode()
                     && config.isUsageStatisticsEnabled());
@@ -71,7 +70,7 @@ public class DevModeUsageStatistics {
             stats.setProjectId(ProjectHelpers.generateProjectId(projectFolder));
 
             // Update the machine / user / source level data
-            stats.setGlobalValue(StatisticsConstants.FIELD_OPEARATING_SYSTEM,
+            stats.setGlobalValue(StatisticsConstants.FIELD_OPERATING_SYSTEM,
                 ProjectHelpers.getOperatingSystem());
             stats.setGlobalValue(StatisticsConstants.FIELD_JVM,
                 ProjectHelpers.getJVMVersion());
@@ -89,13 +88,12 @@ public class DevModeUsageStatistics {
 
             //Store the data immediately
             stats.write();
+        }
 
-            // Send usage statistics asynchronously, if enough time has passed
-            if (stats.isIntervalElapsed()) {
-                CompletableFuture.runAsync(() -> {
-                    stats.sendCurrentStatistics();
-                });
-            }
+        // Send usage statistics asynchronously, if enough time has passed
+        if (stats.isIntervalElapsed()) {
+            CompletableFuture
+                .runAsync(DevModeUsageStatistics::sendCurrentStatistics);
         }
     }
 
@@ -113,26 +111,22 @@ public class DevModeUsageStatistics {
         }
 
         if (request.getParameter(StatisticsConstants.CLIENT_USAGE_DATA) != null
-            && request.getMethod().equals("POST")) {
+            && request.getMethod().equals("POST")
+            && "application/json".equals(request.getContentType())){
             getLogger().debug(
                 "Received client usage statistics POST from browser");
             try {
-                if (request.getContentType() == null
-                    || !request.getContentType().equals("application/json")) {
-                    // Content type should be correct
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                    return true;
-                }
                 if (request.getContentLength()
                     > StatisticsConstants.MAX_TELEMETRY_LENGTH) {
                     // Do not store meaningless amount of client usage data
-                    getLogger().debug("Received too much data. Not storing "
-                        + request.getContentLength());
+                    getLogger()
+                        .debug("Received too much data. Not storing {} bytes",
+                        request.getContentLength());
                     ObjectNode clientData = JsonHelpers.getJsonMapper()
                         .createObjectNode();
                     clientData.set("elements", clientData);
                     StatisticsStorage stats = StatisticsStorage.get();
-                    synchronized (stats) { // Lock data for update
+                    synchronized (DevModeUsageStatistics.class) { // Lock data for update
                         stats.read();
                         stats.updateProjectTelemetryData(clientData);
                         stats.write();
@@ -153,7 +147,7 @@ public class DevModeUsageStatistics {
                     JsonNode clientData = JsonHelpers.getJsonMapper()
                         .readTree(json);
                     StatisticsStorage stats = StatisticsStorage.get();
-                    synchronized (stats) { // Lock data for update
+                    synchronized (DevModeUsageStatistics.class) { // Lock data for update
                         stats.read();
                         stats.updateProjectTelemetryData(clientData);
                         stats.write();
@@ -164,6 +158,7 @@ public class DevModeUsageStatistics {
                 getLogger().debug("Failed to handle client update request", e);
             } finally {
                 try {
+                    response.setStatus(HttpServletResponse.SC_OK);
                     response.getWriter().write("Thank you");
                 } catch (IOException e) {
                     getLogger().debug("Failed to write client response", e);
@@ -200,7 +195,7 @@ public class DevModeUsageStatistics {
             if (!isStatisticsEnabled())
                 return;
             StatisticsStorage stats = StatisticsStorage.get();
-            synchronized (stats) { // Lock the storage for update
+            synchronized (DevModeUsageStatistics.class) { // Lock the storage for update
                 stats.read();
                 stats.increment(name);
                 stats.write();
@@ -212,7 +207,7 @@ public class DevModeUsageStatistics {
     }
 
     /**
-     * Update a value in usage statistics. Also automatically
+     * Update a value in usage statistics. Also, automatically
      * aggregates min, max and average of the value.
      * <p>
      * Good for logging statistics about chancing values over time.
@@ -227,7 +222,7 @@ public class DevModeUsageStatistics {
                 return;
 
             StatisticsStorage stats = StatisticsStorage.get();
-            synchronized (stats) { // Lock the storage for update
+            synchronized (DevModeUsageStatistics.class) { // Lock the storage for update
                 stats.read();
                 stats.aggregate(name, value);
                 stats.write();
@@ -253,7 +248,7 @@ public class DevModeUsageStatistics {
                 return;
 
             final StatisticsStorage stats = StatisticsStorage.get();
-            synchronized (stats) { // Lock data for send
+            synchronized (DevModeUsageStatistics.class) { // Lock data for send
                 stats.read();
                 String message = stats.sendCurrentStatistics();
                 stats.write();
@@ -287,7 +282,7 @@ public class DevModeUsageStatistics {
                 return;
 
             StatisticsStorage stats = StatisticsStorage.get();
-            synchronized (stats) { // Lock the storage for update
+            synchronized (DevModeUsageStatistics.class) { // Lock the storage for update
                 stats.read();
                 stats.setValue(name, value);
                 stats.write();
@@ -310,7 +305,7 @@ public class DevModeUsageStatistics {
                 return;
 
             StatisticsStorage stats = StatisticsStorage.get();
-            synchronized (stats) { // Lock the storage for update
+            synchronized (DevModeUsageStatistics.class) { // Lock the storage for update
                 stats.read();
                 stats.setGlobalValue(name, value);
                 stats.write();

@@ -41,8 +41,7 @@ public class StatisticsConstants {
      */
     static final String FIELD_PROJECT_ID = "id";
     static final String FIELD_PROJECT_DEVMODE_STARTS = "devModeStarts";
-    static final String FIELD_PROJECT_DEVMODE_RELOADS = "devModeReloads";
-    static final String FIELD_OPEARATING_SYSTEM = "os";
+    static final String FIELD_OPERATING_SYSTEM = "os";
     static final String FIELD_JVM = "jvm";
     static final String FIELD_FLOW_VERSION = "flowVersion";
     static final String FIELD_SOURCE_ID = "sourceId";
@@ -76,4 +75,10 @@ public class StatisticsConstants {
     static final String PRO_KEY_FILE_NAME = "proKey";
     static final String USER_KEY_FILE_NAME = "userKey";
 
+    /*
+     * Avoid instantiation.
+     */
+    private StatisticsConstants() {
+        throw new IllegalStateException("Instantiation of an utility class");
+    }
 }

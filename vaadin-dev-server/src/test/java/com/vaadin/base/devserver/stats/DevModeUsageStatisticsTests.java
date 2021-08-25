@@ -27,9 +27,7 @@ import junit.framework.TestCase;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -43,7 +41,6 @@ import com.vaadin.flow.testutil.TestUtils;
     public static final String SERVER_MESSAGE_3H = "{\"reportInterval\":10800,\"serverMessage\":\"\"}";
     public static final String SERVER_MESSAGE_48H = "{\"reportInterval\":172800,\"serverMessage\":\"\"}";
     public static final String SERVER_MESSAGE_40D = "{\"reportInterval\":3456000,\"serverMessage\":\"\"}";
-    public static final String INVALID_SERVER_MESSAGE = "{\"reportInterval\":3days,\"serverMessage\":\"\"}";
     private static final int HTTP_PORT = 8089;
     public static final String USAGE_REPORT_URL_LOCAL =
         "http://localhost:" + HTTP_PORT + "/";
@@ -51,13 +48,13 @@ import com.vaadin.flow.testutil.TestUtils;
     private static final long SEC_24H = 60 * 60 * 24;
     private static final long SEC_48H = 60 * 60 * 48;
     private static final long SEC_30D = 60 * 60 * 24 * 30;
+    private static final String DEFAULT_PROJECT_ID = "12b7fc85f50e8c82cb6f4b03e12f2335";
 
     /**
      * Create a temporary file from given test resource.
      *
-     * @param testResourceName
+     * @param testResourceName Name of the test resource
      * @return Temporary file
-     * @throws IOException
      */
     private static File createTempStorage(String testResourceName)
         throws IOException {
@@ -67,12 +64,6 @@ import com.vaadin.flow.testutil.TestUtils;
         result.deleteOnExit();
         FileUtils.copyFile(original, result);
         return result;
-    }
-
-    @Before public void setup() throws Exception {
-    }
-
-    @After public void teardown() throws Exception {
     }
 
     @Test public void testClientData() throws Exception {
@@ -374,9 +365,8 @@ import com.vaadin.flow.testutil.TestUtils;
             .toPath().toString();
         String id1 = ProjectHelpers.generateProjectId(mavenProjectFolder1);
         String id2 = ProjectHelpers.generateProjectId(mavenProjectFolder2);
-        Assert.assertNotNull(id1);
-        Assert.assertNotNull(id2);
-        Assert.assertEquals(id1, id2); // Should be the default id in both cases
+        Assert.assertEquals(DEFAULT_PROJECT_ID, id1);
+        Assert.assertEquals(DEFAULT_PROJECT_ID, id2); // Should be the default id in both cases
     }
 
     @Test public void testReadUserKey() throws IOException {

@@ -46,8 +46,16 @@ import org.xml.sax.SAXException;
  */
 class ProjectHelpers {
 
+
+    /*
+     * Avoid instantiation.
+     */
+    private ProjectHelpers() {
+        throw new IllegalStateException("Instantiation of an utility class");
+    }
+
     /**
-     * Generates a unique pseudonymisated hash string for the project in folder.
+     * Generates a unique pseudonymised hash string for the project in folder.
      * Uses either pom.xml or settings.gradle.
      *
      * @param projectFolder Project root folder. Should contain either
@@ -63,6 +71,12 @@ class ProjectHelpers {
         if (pomFile.exists()) {
             try {
                 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                dbf.setFeature(
+                    "http://xml.org/sax/features/external-general-entities",
+                    false);
+                dbf.setFeature(
+                    "http://xml.org/sax/features/external-parameter-entities",
+                    false);
                 DocumentBuilder db = dbf.newDocumentBuilder();
                 Document pom = db.parse(pomFile);
                 String groupId = getFirstElementTextByName(
@@ -72,7 +86,8 @@ class ProjectHelpers {
                 return "pom" + createHash(groupId + artifactId);
             } catch (SAXException | IOException | ParserConfigurationException e) {
                 getLogger().debug(
-                    "Failed to parse project id from " + pomFile.getPath(), e);
+                    "Failed to parse maven project id from "
+                        + pomFile.getPath(), e);
             }
         }
 
@@ -85,13 +100,14 @@ class ProjectHelpers {
                     .orElse(StatisticsConstants.DEFAULT_PROJECT_ID);
                 if (projectName.contains("=")) {
                     projectName = projectName.substring(
-                            projectName.indexOf("=") + 1).replaceAll("\'", "")
+                            projectName.indexOf("=") + 1).replace("'", "")
                         .trim();
                 }
                 return "gradle" + createHash(projectName);
             } catch (IOException e) {
                 getLogger().debug(
-                    "Failed to parse project id from " + gradleFile.toFile()
+                    "Failed to parse gradle project id from "
+                        + gradleFile.toFile()
                         .getPath(), e);
             }
         }
@@ -110,9 +126,9 @@ class ProjectHelpers {
                 MessageDigest md = MessageDigest.getInstance("MD5");
                 md.update(string.getBytes());
                 byte[] digest = md.digest();
-                return new String(Hex.encodeHex(digest));
+                return String.valueOf(Hex.encodeHex(digest));
             } catch (NoSuchAlgorithmException e) {
-                getLogger().debug("Missing hash algorithm", e);
+                getLogger().debug("Missing hash algorithm");
             }
         }
         return StatisticsConstants.MISSING_DATA;
@@ -122,8 +138,8 @@ class ProjectHelpers {
      * DOM helper to find the text content of the first direct child node
      * by given name.
      *
-     * @param parent
-     * @param nodeName
+     * @param parent Parent element to search.
+     * @param nodeName Name of the node to search for.
      * @return Text content of the first mach or null if not found.
      */
     static String getFirstElementTextByName(Element parent, String nodeName) {
@@ -151,10 +167,16 @@ class ProjectHelpers {
         Path projectPath = Paths.get(projectFolder);
         File pomFile = projectPath.resolve("pom.xml").toFile();
 
-        // Maven project
-        if (pomFile.exists()) {
-            try {
+        // Try Maven project
+        try {
+            if (pomFile.exists()) {
                 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                dbf.setFeature(
+                    "http://xml.org/sax/features/external-general-entities",
+                    false);
+                dbf.setFeature(
+                    "http://xml.org/sax/features/external-parameter-entities",
+                    false);
                 DocumentBuilder db = dbf.newDocumentBuilder();
                 Document pom = db.parse(pomFile);
                 NodeList nodeList = pom.getDocumentElement().getChildNodes();
@@ -170,30 +192,27 @@ class ProjectHelpers {
                         }
                     }
                 }
-            } catch (SAXException | IOException | ParserConfigurationException e) {
-                getLogger().debug(
-                    "Failed to parse project id from " + pomFile.getPath(), e);
             }
-        }
 
-        // Gradle project
-        Path gradleFile = projectPath.resolve("settings.gradle");
-        if (gradleFile.toFile().exists()) {
-            try (Stream<String> stream = Files.lines(gradleFile)) {
-                String projectName = stream.filter(line -> line.contains(
-                        StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)).findFirst()
-                    .orElse(null);
-                if (projectName != null) {
-                    return projectName.substring(projectName.indexOf(
-                            StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)
-                            + StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT.length())
-                        .trim();
+            // Try Gradle project
+            Path gradleFile = projectPath.resolve("settings.gradle");
+            if (gradleFile.toFile().exists()) {
+                try (Stream<String> stream = Files.lines(gradleFile)) {
+                    String projectName = stream.filter(line -> line.contains(
+                            StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)).findFirst()
+                        .orElse(null);
+                    if (projectName != null) {
+                        return projectName.substring(projectName.indexOf(
+                                StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)
+                                + StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT.length())
+                            .trim();
+                    }
                 }
-            } catch (IOException e) {
-                getLogger().debug(
-                    "Failed to parse project id from " + gradleFile.toFile()
-                        .getPath(), e);
             }
+        } catch (Exception e) {
+            getLogger().debug(
+                "Failed to parse project id from "
+                    + projectPath.toAbsolutePath(), e);
         }
         return StatisticsConstants.MISSING_DATA;
     }
@@ -217,7 +236,7 @@ class ProjectHelpers {
      */
     static File resolveStatisticsStore() {
 
-        File vaadinHome = null;
+        File vaadinHome;
         try {
             vaadinHome = ProjectHelpers.resolveVaadinHomeDirectory();
         } catch (Exception e) {
@@ -267,12 +286,14 @@ class ProjectHelpers {
      */
     static String getJVMVersion() {
         String os = System.getProperty("java.vm.name");
-        os = (os == null ? StatisticsConstants.MISSING_DATA : os);
         String ver = System.getProperty("java.specification.version");
+
+        if (os == null && ver == null) {
+            return StatisticsConstants.MISSING_DATA;
+        }
+        os = (os == null ? StatisticsConstants.MISSING_DATA : os);
         ver = (ver == null ? StatisticsConstants.MISSING_DATA : ver);
-        return os == null && ver == null ?
-            StatisticsConstants.MISSING_DATA :
-            os + " / " + ver;
+        return os + " / " + ver;
     }
 
     /**
@@ -283,7 +304,7 @@ class ProjectHelpers {
     static String getProKey() {
         // Use the local proKey if present
         ProKey proKey = ProKey.get();
-        return proKey.getProKey();
+        return proKey != null ? proKey.getKey() : null;
     }
 
     /**
@@ -293,11 +314,11 @@ class ProjectHelpers {
      */
     static String getUserKey() {
         File userKeyFile = resolveUserKeyLocation();
-        if (userKeyFile != null && userKeyFile.exists()) {
+        if (userKeyFile.exists()) {
             try {
                 ProKey localKey = ProKey.fromFile(userKeyFile);
-                if (localKey != null && localKey.getProKey() != null) {
-                    return localKey.getProKey();
+                if (localKey != null && localKey.getKey() != null) {
+                    return localKey.getKey();
                 }
             } catch (IOException e) {
                 getLogger().debug("Failed to load userKey", e);
@@ -309,7 +330,7 @@ class ProjectHelpers {
             ProKey localKey = new ProKey(StatisticsConstants.GENERATED_USERNAME,
                 "user-" + UUID.randomUUID());
             localKey.toFile(userKeyFile);
-            return localKey.getProKey();
+            return localKey.getKey();
         } catch (IOException e) {
             getLogger().debug("Failed to write generated userKey", e);
         }

@@ -59,7 +59,7 @@ public class StatisticsStorage {
      *
      * @return Instance of StatisticsStorage.
      */
-    public static StatisticsStorage get() {
+    static StatisticsStorage get() {
         if (instance.get() == null) {
             StatisticsStorage newStats = new StatisticsStorage();
             instance.compareAndSet(null, newStats);
@@ -78,10 +78,7 @@ public class StatisticsStorage {
         if (intervalSec < StatisticsConstants.TIME_SEC_12H) {
             return StatisticsConstants.TIME_SEC_12H;
         }
-        if (intervalSec > StatisticsConstants.TIME_SEC_30D) {
-            return StatisticsConstants.TIME_SEC_30D;
-        }
-        return intervalSec;
+        return Math.min(intervalSec, StatisticsConstants.TIME_SEC_30D);
     }
 
     /**
@@ -141,19 +138,10 @@ public class StatisticsStorage {
     }
 
     /**
-     * Get the pseudonymized project id.
-     *
-     * @return
-     */
-    String getProjectId() {
-        return projectId;
-    }
-
-    /**
      * Set the project id. All subsequent calls to stores data is stored
      * using this project id.
      *
-     * @param projectId
+     * @param projectId The unique project id.
      */
     void setProjectId(String projectId) {
         this.projectId = projectId;
@@ -199,9 +187,11 @@ public class StatisticsStorage {
     }
 
     /**
-     * Get the remote reporting URL.
+     * Set the remote reporting URL.
      *
-     * @return By default return {@link StatisticsConstants#USAGE_REPORT_URL}.
+     * If not set, <code>StatisticsConstants.USAGE_REPORT_URL</code> is used.
+     *
+     * @param reportingUrl Set the reporting URL.
      */
     void setUsageReportingUrl(String reportingUrl) {
         this.reportingUrl = reportingUrl;
@@ -241,7 +231,7 @@ public class StatisticsStorage {
 
         // Update the last sent time
         // If the last send was successful we clear the project data
-        if (response != null && response.isObject() && response.has(
+        if (response.isObject() && response.has(
             StatisticsConstants.FIELD_LAST_STATUS)) {
             json.put(StatisticsConstants.FIELD_LAST_SENT,
                 System.currentTimeMillis());
@@ -285,8 +275,10 @@ public class StatisticsStorage {
     }
 
     /**
-     * @param name
-     * @param value
+     *  Store a single string value in project statistics.
+     *
+     * @param name Uniques name of the field in project data.
+     * @param value Value to set.
      */
     void setValue(String name, String value) {
         projectJson.put(name, value);
@@ -329,14 +321,14 @@ public class StatisticsStorage {
             .isDouble()) {
             min = projectJson.get(name + "_min").asDouble(newValue);
         }
-        projectJson.put(name + "_min", newValue < min ? newValue : min);
+        projectJson.put(name + "_min", Math.min(newValue, min));
 
         double max = newValue;
         if (projectJson.has(name + "_max") && projectJson.get(name + "_max")
             .isDouble()) {
             max = projectJson.get(name + "_max").asDouble(newValue);
         }
-        projectJson.put(name + "_max", newValue > max ? newValue : max);
+        projectJson.put(name + "_max", Math.max(newValue, max));
 
         // Update average
         double avg = newValue;
@@ -458,12 +450,11 @@ public class StatisticsStorage {
     /**
      * Read the data from local project statistics file.
      *
-     * @return Json data in the file or empty Json node.
      * @see #getUsageStatisticsStore()
      */
     void read() {
         File file = getUsageStatisticsStore();
-        getLogger().debug("Reading statistics from " + file.getAbsolutePath());
+        getLogger().debug("Reading statistics from {}", file.getAbsolutePath());
         try {
             if (file.exists()) {
                 // Read full data and make sure we track the right project
@@ -516,15 +507,17 @@ public class StatisticsStorage {
     File getUsageStatisticsStore() {
         if (this.usageStatisticsFile == null) {
             this.usageStatisticsFile = ProjectHelpers.resolveStatisticsStore();
-            ;
         }
         return this.usageStatisticsFile;
     }
 
     /**
-     * Set usage statistics json file location.
+     * Set custom usage statistics json file location.
      *
-     * @return the location of statistics storage file.
+     * If not set <code>ProjectHelpers.resolveStatisticsStore()</code> is used.
+     *
+     * @see ProjectHelpers#resolveStatisticsStore
+     *
      */
     void setUsageStatisticsStore(File usageStatistics) {
         this.usageStatisticsFile = usageStatistics;
@@ -535,7 +528,7 @@ public class StatisticsStorage {
      *
      * @return Number of projects or zero.
      */
-    public int getNumberOfProjects() {
+    int getNumberOfProjects() {
         if (json != null && json.has(StatisticsConstants.FIELD_PROJECTS)) {
             return json.get(StatisticsConstants.FIELD_PROJECTS).size();
         }
