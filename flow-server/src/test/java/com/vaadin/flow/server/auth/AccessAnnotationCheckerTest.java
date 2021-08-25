@@ -14,7 +14,10 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.vaadin.flow.component.internal.JavaScriptBootstrapUI.ClientViewPlaceholder;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.router.InternalServerError;
+import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.AnonymousAllowedClass;
@@ -126,6 +129,18 @@ public class AccessAnnotationCheckerTest {
         Method securityMethod = Test.class.getMethod("test");
         assertEquals(securityMethod,
                 accessAnnotationChecker.getSecurityTarget(securityMethod));
+    }
+
+    @Test
+    public void specialViewsMustBeAccessible() {
+        CurrentInstance.set(VaadinRequest.class,
+                new VaadinServletRequest(createRequest(null), null));
+        Assert.assertTrue(
+                accessAnnotationChecker.hasAccess(ClientViewPlaceholder.class));
+        Assert.assertTrue(
+                accessAnnotationChecker.hasAccess(InternalServerError.class));
+        Assert.assertTrue(
+                accessAnnotationChecker.hasAccess(RouteNotFoundError.class));
     }
 
     @Test
