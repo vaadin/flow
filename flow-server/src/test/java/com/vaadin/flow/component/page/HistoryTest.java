@@ -38,7 +38,6 @@ public class HistoryTest {
 
     private class TestPage extends Page {
 
-        private int count = 0;
 
         private String expression;
 
@@ -53,7 +52,6 @@ public class HistoryTest {
                 Serializable... parameters) {
             this.expression = expression;
             this.parameters = parameters;
-            count++;
             return null;
         }
     }
