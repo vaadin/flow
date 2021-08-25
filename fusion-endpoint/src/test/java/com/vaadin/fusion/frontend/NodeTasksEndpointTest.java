@@ -10,6 +10,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.fusion.Endpoint;
@@ -99,5 +100,21 @@ public class NodeTasksEndpointTest {
 
         assertTrue(dependencies.hasKey("@adobe/lit-mobx"));
         assertTrue(dependencies.hasKey("mobx"));
+    }
+
+    @Test
+    public void should_NotSortPackageJson() throws Exception {
+        builder.createMissingPackageJson(true);
+
+        builder.build().execute();
+
+        File packageJson = new File(dir, "package.json");
+
+        JsonObject content = Json
+                .parse(FileUtils.readFileToString(packageJson, UTF_8));
+
+        List<String> keys = Arrays.asList(content.keys());
+        assertTrue("The 'name' key in package.json should come before the 'licence' key", keys.indexOf("name") < keys.indexOf("license"));
+        assertTrue("The 'name' key in package.json should come before the 'dependencies' key",keys.indexOf("name") < keys.indexOf("dependencies"));
     }
 }

@@ -60,7 +60,7 @@ public class TaskUseFusionPackageImpl extends NodeUpdater
             getDependencies().forEach((key, value) -> addDependency(packageJson,
                     DEPENDENCIES, key, value));
 
-            writePackageFile(sort(packageJson));
+            writePackageFile(packageJson);
         } catch (IOException e) {
             throw new ExecutionFailedException("PackageJson update is failed",
                     e);
@@ -74,19 +74,5 @@ public class TaskUseFusionPackageImpl extends NodeUpdater
         dependencies.put("mobx", "^6.1.5");
 
         return dependencies;
-    }
-
-    private JsonObject sort(JsonObject object) {
-        String[] keys = object.keys();
-        Arrays.sort(keys);
-        JsonObject result = Json.createObject();
-        for (String key : keys) {
-            JsonValue value = object.get(key);
-            if (value instanceof JsonObject) {
-                value = sort((JsonObject) value);
-            }
-            result.put(key, value);
-        }
-        return result;
     }
 }
