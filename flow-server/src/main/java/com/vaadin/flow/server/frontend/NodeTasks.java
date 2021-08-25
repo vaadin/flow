@@ -543,6 +543,18 @@ public class NodeTasks implements FallibleCommand {
         public File getGeneratedFolder() {
             return generatedFolder;
         }
+
+        /**
+         * Tells if the project is Fusion-based.
+         *
+         * @return isFusionProject
+         */
+        public boolean isFusionProject() {
+            return fusionJavaSourceFolder != null
+                    && fusionJavaSourceFolder.exists()
+                    && fusionGeneratedOpenAPIFile != null
+                    && fusionGeneratedOpenAPIFile.exists();
+        }
     }
 
     // @formatter:off
@@ -560,8 +572,8 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateFusion.class,
             TaskGenerateBootstrap.class,
             TaskInstallWebpackPlugins.class,
-            TaskUpdatePackages.class,
             TaskUseFusionPackage.class,
+            TaskUpdatePackages.class,
             TaskRunNpmInstall.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
@@ -634,9 +646,7 @@ public class NodeTasks implements FallibleCommand {
         if (!builder.useDeprecatedV14Bootstrapping) {
             addBootstrapTasks(builder);
 
-            if (builder.fusionJavaSourceFolder != null
-                    && builder.fusionJavaSourceFolder.exists()
-                    && builder.fusionGeneratedOpenAPIFile != null) {
+            if (builder.isFusionProject()) {
                 addFusionServicesTasks(builder);
             }
 

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.AfterClass;
@@ -201,11 +202,23 @@ public class NodeTasksTest {
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).useV14Bootstrap(true)
                 .enableImportsUpdate(true).runNpmInstall(false)
-                .withEmbeddableWebComponents(false).useV14Bootstrap(false);
+                .withEmbeddableWebComponents(false);
         builder.build().execute();
 
         Assert.assertTrue(new File(userDir, "tsconfig.json").exists());
         Assert.assertTrue(new File(userDir, "types.d.ts").exists());
+    }
+
+    @Test
+    public void should_HaveTaskUseFusionPackageBeforeTaskUpdatePackages()
+            throws NoSuchFieldException, IllegalAccessException {
+        Field commandOrder = NodeTasks.class.getDeclaredField("commandOrder");
+        commandOrder.setAccessible(true);
+        List<Class<? extends FallibleCommand>> list = (List<Class<? extends FallibleCommand>>) commandOrder
+                .get(NodeTasks.class);
+
+        Assert.assertTrue("TaskUseFusionPackage should go before TaskUpdatePackages",
+                list.indexOf(TaskUseFusionPackage.class) < list.indexOf(TaskUpdatePackages.class));
     }
 
     private static void setPropertyIfPresent(String key, String value) {
