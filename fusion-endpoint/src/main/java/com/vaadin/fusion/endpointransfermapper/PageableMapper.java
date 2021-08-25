@@ -50,7 +50,7 @@ public class PageableMapper implements Mapper<Pageable, PageableDTO> {
 
     @Override
     public Pageable toEndpointType(PageableDTO dto) {
-        Sort sort = sortMapper.fromTransferType(dto.getSort());
+        Sort sort = sortMapper.toEndpointType(dto.getSort());
         Pageable pageable = PageRequest.of(dto.getPageNumber(),
                 dto.getPageSize(), sort);
         return pageable;

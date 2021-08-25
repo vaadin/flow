@@ -18,14 +18,27 @@ package com.vaadin.fusion.endpointransfermapper;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.vaadin.fusion.endpointransfermapper.EndpointTransferMapper.Mapper;
+
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 
 /**
  * A mapper between {@link Sort} and {@link SortDTO}.
  */
-public class SortMapper {
+public class SortMapper implements Mapper<Sort, SortDTO> {
 
+    @Override
+    public Class<? extends Sort> getEndpointType() {
+        return Sort.class;
+    }
+
+    @Override
+    public Class<? extends SortDTO> getTransferType() {
+        return SortDTO.class;
+    }
+
+    @Override
     public SortDTO toTransferType(Sort sort) {
 
         SortDTO sortDto = new SortDTO();
@@ -43,7 +56,8 @@ public class SortMapper {
         return sortDto;
     }
 
-    public Sort fromTransferType(SortDTO sort) {
+    @Override
+    public Sort toEndpointType(SortDTO sort) {
         if (sort == null) {
             return null;
         }
