@@ -46,7 +46,6 @@ import org.xml.sax.SAXException;
  */
 class ProjectHelpers {
 
-
     /*
      * Avoid instantiation.
      */
@@ -58,10 +57,12 @@ class ProjectHelpers {
      * Generates a unique pseudonymised hash string for the project in folder.
      * Uses either pom.xml or settings.gradle.
      *
-     * @param projectFolder Project root folder. Should contain either
-     *                      pom.xml or settings.gradle.
-     * @return Pseudonymised hash id of project or <code>DEFAULT_PROJECT_ID</code>
-     * if no valid project was found in the folder.
+     * @param projectFolder
+     *            Project root folder. Should contain either pom.xml or
+     *            settings.gradle.
+     * @return Pseudonymised hash id of project or
+     *         <code>DEFAULT_PROJECT_ID</code> if no valid project was found in
+     *         the folder.
      */
     static String generateProjectId(String projectFolder) {
         Path projectPath = Paths.get(projectFolder);
@@ -70,23 +71,24 @@ class ProjectHelpers {
         // Maven project
         if (pomFile.exists()) {
             try {
-                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                DocumentBuilderFactory dbf = DocumentBuilderFactory
+                        .newInstance();
                 dbf.setFeature(
-                    "http://xml.org/sax/features/external-general-entities",
-                    false);
+                        "http://xml.org/sax/features/external-general-entities",
+                        false);
                 dbf.setFeature(
-                    "http://xml.org/sax/features/external-parameter-entities",
-                    false);
+                        "http://xml.org/sax/features/external-parameter-entities",
+                        false);
                 DocumentBuilder db = dbf.newDocumentBuilder();
                 Document pom = db.parse(pomFile);
                 String groupId = getFirstElementTextByName(
-                    pom.getDocumentElement(), "groupId");
+                        pom.getDocumentElement(), "groupId");
                 String artifactId = getFirstElementTextByName(
-                    pom.getDocumentElement(), "artifactId");
+                        pom.getDocumentElement(), "artifactId");
                 return "pom" + createHash(groupId + artifactId);
-            } catch (SAXException | IOException | ParserConfigurationException e) {
-                getLogger().debug(
-                    "Failed to parse maven project id from "
+            } catch (SAXException | IOException
+                    | ParserConfigurationException e) {
+                getLogger().debug("Failed to parse maven project id from "
                         + pomFile.getPath(), e);
             }
         }
@@ -95,20 +97,19 @@ class ProjectHelpers {
         Path gradleFile = projectPath.resolve("settings.gradle");
         if (gradleFile.toFile().exists()) {
             try (Stream<String> stream = Files.lines(gradleFile)) {
-                String projectName = stream.filter(
-                        line -> line.contains("rootProject.name")).findFirst()
-                    .orElse(StatisticsConstants.DEFAULT_PROJECT_ID);
+                String projectName = stream
+                        .filter(line -> line.contains("rootProject.name"))
+                        .findFirst()
+                        .orElse(StatisticsConstants.DEFAULT_PROJECT_ID);
                 if (projectName.contains("=")) {
-                    projectName = projectName.substring(
-                            projectName.indexOf("=") + 1).replace("'", "")
-                        .trim();
+                    projectName = projectName
+                            .substring(projectName.indexOf("=") + 1)
+                            .replace("'", "").trim();
                 }
                 return "gradle" + createHash(projectName);
             } catch (IOException e) {
-                getLogger().debug(
-                    "Failed to parse gradle project id from "
-                        + gradleFile.toFile()
-                        .getPath(), e);
+                getLogger().debug("Failed to parse gradle project id from "
+                        + gradleFile.toFile().getPath(), e);
             }
         }
         return createHash(StatisticsConstants.DEFAULT_PROJECT_ID);
@@ -117,7 +118,8 @@ class ProjectHelpers {
     /**
      * Creates a MD5 hash out from a string for pseudonymisation purposes.
      *
-     * @param string String to hash
+     * @param string
+     *            String to hash
      * @return Hex encoded MD5 version of string or <code>MISSING_DATA</code>.
      */
     static String createHash(String string) {
@@ -135,11 +137,13 @@ class ProjectHelpers {
     }
 
     /**
-     * DOM helper to find the text content of the first direct child node
-     * by given name.
+     * DOM helper to find the text content of the first direct child node by
+     * given name.
      *
-     * @param parent Parent element to search.
-     * @param nodeName Name of the node to search for.
+     * @param parent
+     *            Parent element to search.
+     * @param nodeName
+     *            Name of the node to search for.
      * @return Text content of the first mach or null if not found.
      */
     static String getFirstElementTextByName(Element parent, String nodeName) {
@@ -155,13 +159,14 @@ class ProjectHelpers {
     /**
      * Get the source URL for the project.
      * <p>
-     * Looks for comment in either pom.xml or or settings.gradle that
-     * points back original source or repository of the project.
+     * Looks for comment in either pom.xml or or settings.gradle that points
+     * back original source or repository of the project.
      *
-     * @param projectFolder Project root folder. Should contain either
-     *                      pom.xml or settings.gradle.
-     * @return URL of the project source or  <code>MISSING_DATA</code>, if
-     * no valid URL was found.
+     * @param projectFolder
+     *            Project root folder. Should contain either pom.xml or
+     *            settings.gradle.
+     * @return URL of the project source or <code>MISSING_DATA</code>, if no
+     *         valid URL was found.
      */
     static String getProjectSource(String projectFolder) {
         Path projectPath = Paths.get(projectFolder);
@@ -170,13 +175,14 @@ class ProjectHelpers {
         // Try Maven project
         try {
             if (pomFile.exists()) {
-                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                DocumentBuilderFactory dbf = DocumentBuilderFactory
+                        .newInstance();
                 dbf.setFeature(
-                    "http://xml.org/sax/features/external-general-entities",
-                    false);
+                        "http://xml.org/sax/features/external-general-entities",
+                        false);
                 dbf.setFeature(
-                    "http://xml.org/sax/features/external-parameter-entities",
-                    false);
+                        "http://xml.org/sax/features/external-parameter-entities",
+                        false);
                 DocumentBuilder db = dbf.newDocumentBuilder();
                 Document pom = db.parse(pomFile);
                 NodeList nodeList = pom.getDocumentElement().getChildNodes();
@@ -184,11 +190,12 @@ class ProjectHelpers {
                     if (nodeList.item(i).getNodeType() == Node.COMMENT_NODE) {
                         String comment = nodeList.item(i).getTextContent();
                         if (comment.contains(
-                            StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)) {
+                                StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)) {
                             return comment.substring(comment.indexOf(
                                     StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)
-                                    + StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT.length())
-                                .trim();
+                                    + StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT
+                                            .length())
+                                    .trim();
                         }
                     }
                 }
@@ -199,19 +206,19 @@ class ProjectHelpers {
             if (gradleFile.toFile().exists()) {
                 try (Stream<String> stream = Files.lines(gradleFile)) {
                     String projectName = stream.filter(line -> line.contains(
-                            StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)).findFirst()
-                        .orElse(null);
+                            StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT))
+                            .findFirst().orElse(null);
                     if (projectName != null) {
                         return projectName.substring(projectName.indexOf(
                                 StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)
-                                + StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT.length())
-                            .trim();
+                                + StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT
+                                        .length())
+                                .trim();
                     }
                 }
             }
         } catch (Exception e) {
-            getLogger().debug(
-                "Failed to parse project id from "
+            getLogger().debug("Failed to parse project id from "
                     + projectPath.toAbsolutePath(), e);
         }
         return StatisticsConstants.MISSING_DATA;
@@ -220,12 +227,12 @@ class ProjectHelpers {
     /**
      * Get Vaadin home directory.
      *
-     * @return File instance for Vaadin home folder. Does not check if
-     * the folder exists.
+     * @return File instance for Vaadin home folder. Does not check if the
+     *         folder exists.
      */
     static File resolveVaadinHomeDirectory() {
-        String userHome = System.getProperty(
-            StatisticsConstants.PROPERTY_USER_HOME);
+        String userHome = System
+                .getProperty(StatisticsConstants.PROPERTY_USER_HOME);
         return new File(userHome, StatisticsConstants.VAADIN_FOLDER_NAME);
     }
 
@@ -248,8 +255,8 @@ class ProjectHelpers {
             try {
                 // Create a temp folder for data
                 vaadinHome = File.createTempFile(
-                    StatisticsConstants.VAADIN_FOLDER_NAME,
-                    UUID.randomUUID().toString());
+                        StatisticsConstants.VAADIN_FOLDER_NAME,
+                        UUID.randomUUID().toString());
                 FileUtils.forceMkdir(vaadinHome);
             } catch (IOException e) {
                 getLogger().debug("Failed to create temp directory ", e);
@@ -328,7 +335,7 @@ class ProjectHelpers {
         try {
             // Generate a new one if missing and store it
             ProKey localKey = new ProKey(StatisticsConstants.GENERATED_USERNAME,
-                "user-" + UUID.randomUUID());
+                    "user-" + UUID.randomUUID());
             localKey.toFile(userKeyFile);
             return localKey.getKey();
         } catch (IOException e) {

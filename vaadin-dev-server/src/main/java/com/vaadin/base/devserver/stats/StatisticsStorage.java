@@ -34,8 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Development more usage statistic storage and methods for loading,
- * saving and sending the data.
+ * Development more usage statistic storage and methods for loading, saving and
+ * sending the data.
  */
 public class StatisticsStorage {
 
@@ -68,10 +68,11 @@ public class StatisticsStorage {
     }
 
     /**
-     * Get interval that is between {@link StatisticsConstants#TIME_SEC_12H}
-     * and {@link StatisticsConstants#TIME_SEC_30D}
+     * Get interval that is between {@link StatisticsConstants#TIME_SEC_12H} and
+     * {@link StatisticsConstants#TIME_SEC_30D}
      *
-     * @param intervalSec Interval to normalize
+     * @param intervalSec
+     *            Interval to normalize
      * @return <code>interval</code> if inside valid range.
      */
     private static long normalizeInterval(long intervalSec) {
@@ -86,9 +87,12 @@ public class StatisticsStorage {
      * <p>
      * Updates <code>FIELD_LAST_STATUS</code>.
      *
-     * @param posrtUrl URL to post data to.
-     * @param data     Json data to send
-     * @return Response or <code>data</code> if the data was not successfully sent.
+     * @param posrtUrl
+     *            URL to post data to.
+     * @param data
+     *            Json data to send
+     * @return Response or <code>data</code> if the data was not successfully
+     *         sent.
      */
     private static ObjectNode postData(String posrtUrl, JsonNode data) {
         ObjectNode result;
@@ -96,19 +100,18 @@ public class StatisticsStorage {
             HttpPost post = new HttpPost(posrtUrl);
             post.addHeader("Content-Type", "application/json");
             post.setEntity(new StringEntity(
-                JsonHelpers.getJsonMapper().writeValueAsString(data)));
+                    JsonHelpers.getJsonMapper().writeValueAsString(data)));
 
             HttpClient client = HttpClientBuilder.create().build();
             HttpResponse response = client.execute(post);
-            String responseStatus =
-                response.getStatusLine().getStatusCode() + ": "
-                    + response.getStatusLine().getReasonPhrase();
+            String responseStatus = response.getStatusLine().getStatusCode()
+                    + ": " + response.getStatusLine().getReasonPhrase();
             JsonNode jsonResponse = null;
             if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                String responseString = EntityUtils.toString(
-                    response.getEntity());
+                String responseString = EntityUtils
+                        .toString(response.getEntity());
                 jsonResponse = JsonHelpers.getJsonMapper()
-                    .readTree(responseString);
+                        .readTree(responseString);
             }
 
             if (jsonResponse != null && jsonResponse.isObject()) {
@@ -128,7 +131,7 @@ public class StatisticsStorage {
         // Fallback
         result = JsonHelpers.getJsonMapper().createObjectNode();
         result.put(StatisticsConstants.FIELD_LAST_STATUS,
-            StatisticsConstants.INVALID_SERVER_RESPONSE);
+                StatisticsConstants.INVALID_SERVER_RESPONSE);
         return result;
     }
 
@@ -138,21 +141,22 @@ public class StatisticsStorage {
     }
 
     /**
-     * Set the project id. All subsequent calls to stores data is stored
-     * using this project id.
+     * Set the project id. All subsequent calls to stores data is stored using
+     * this project id.
      *
-     * @param projectId The unique project id.
+     * @param projectId
+     *            The unique project id.
      */
     void setProjectId(String projectId) {
         this.projectId = projectId;
         // Find the project we are working on
         if (!json.has(StatisticsConstants.FIELD_PROJECTS)) {
             json.set(StatisticsConstants.FIELD_PROJECTS,
-                JsonHelpers.getJsonMapper().createArrayNode());
+                    JsonHelpers.getJsonMapper().createArrayNode());
         }
         this.projectJson = JsonHelpers.findById(this.projectId,
-            this.json.get(StatisticsConstants.FIELD_PROJECTS),
-            StatisticsConstants.FIELD_PROJECT_ID, true);
+                this.json.get(StatisticsConstants.FIELD_PROJECTS),
+                StatisticsConstants.FIELD_PROJECT_ID, true);
     }
 
     /**
@@ -167,7 +171,8 @@ public class StatisticsStorage {
     /**
      * Enable or disable statistics collection and sending.
      *
-     * @param enabled true if statistics should be collected, false otherwise.
+     * @param enabled
+     *            true if statistics should be collected, false otherwise.
      * @see DevModeUsageStatistics#isStatisticsEnabled()
      */
     void setStatisticsEnabled(boolean enabled) {
@@ -175,15 +180,13 @@ public class StatisticsStorage {
     }
 
     /**
-     * Get the remote reporting URL.
-     * *
+     * Get the remote reporting URL. *
      *
      * @return Returns {@link StatisticsConstants#USAGE_REPORT_URL} by default.
      */
     String getUsageReportingUrl() {
-        return reportingUrl == null ?
-            StatisticsConstants.USAGE_REPORT_URL :
-            reportingUrl;
+        return reportingUrl == null ? StatisticsConstants.USAGE_REPORT_URL
+                : reportingUrl;
     }
 
     /**
@@ -191,7 +194,8 @@ public class StatisticsStorage {
      *
      * If not set, <code>StatisticsConstants.USAGE_REPORT_URL</code> is used.
      *
-     * @param reportingUrl Set the reporting URL.
+     * @param reportingUrl
+     *            Set the reporting URL.
      */
     void setUsageReportingUrl(String reportingUrl) {
         this.reportingUrl = reportingUrl;
@@ -200,13 +204,14 @@ public class StatisticsStorage {
     /**
      * Helper to update client data in current project.
      *
-     * @param clientData Json data received from client.
+     * @param clientData
+     *            Json data received from client.
      */
     void updateProjectTelemetryData(JsonNode clientData) {
         try {
             if (clientData != null && clientData.isObject()) {
                 clientData.fields().forEachRemaining(
-                    e -> projectJson.set(e.getKey(), e.getValue()));
+                        e -> projectJson.set(e.getKey(), e.getValue()));
             }
         } catch (Exception e) {
             getLogger().debug("Failed to update client telemetry data", e);
@@ -216,8 +221,8 @@ public class StatisticsStorage {
     /**
      * Send current statistics to given reporting URL.
      * <p>
-     * Reads the current data and posts it to given URL. Updates or replaces
-     * the local data according to the response.
+     * Reads the current data and posts it to given URL. Updates or replaces the
+     * local data according to the response.
      * <p>
      * Updates <code>FIELD_LAST_SENT</code> and <code>FIELD_LAST_STATUS</code>.
      *
@@ -231,43 +236,44 @@ public class StatisticsStorage {
 
         // Update the last sent time
         // If the last send was successful we clear the project data
-        if (response.isObject() && response.has(
-            StatisticsConstants.FIELD_LAST_STATUS)) {
+        if (response.isObject()
+                && response.has(StatisticsConstants.FIELD_LAST_STATUS)) {
             json.put(StatisticsConstants.FIELD_LAST_SENT,
-                System.currentTimeMillis());
-            json.put(StatisticsConstants.FIELD_LAST_STATUS,
-                response.get(StatisticsConstants.FIELD_LAST_STATUS).asText());
+                    System.currentTimeMillis());
+            json.put(StatisticsConstants.FIELD_LAST_STATUS, response
+                    .get(StatisticsConstants.FIELD_LAST_STATUS).asText());
 
-            // Use different interval, if requested in response or default to 24H
+            // Use different interval, if requested in response or default to
+            // 24H
             if (response.has(StatisticsConstants.FIELD_SEND_INTERVAL)
-                && response.get(StatisticsConstants.FIELD_SEND_INTERVAL)
-                .isNumber()) {
+                    && response.get(StatisticsConstants.FIELD_SEND_INTERVAL)
+                            .isNumber()) {
                 json.put(StatisticsConstants.FIELD_SEND_INTERVAL,
-                    normalizeInterval(
-                        response.get(StatisticsConstants.FIELD_SEND_INTERVAL)
-                            .asLong()));
+                        normalizeInterval(response
+                                .get(StatisticsConstants.FIELD_SEND_INTERVAL)
+                                .asLong()));
             } else {
                 json.put(StatisticsConstants.FIELD_SEND_INTERVAL,
-                    StatisticsConstants.TIME_SEC_24H);
+                        StatisticsConstants.TIME_SEC_24H);
             }
 
             // Update the server message
             if (response.has(StatisticsConstants.FIELD_SERVER_MESSAGE)
-                && response.get(StatisticsConstants.FIELD_SERVER_MESSAGE)
-                .isTextual()) {
+                    && response.get(StatisticsConstants.FIELD_SERVER_MESSAGE)
+                            .isTextual()) {
                 message = response.get(StatisticsConstants.FIELD_SERVER_MESSAGE)
-                    .asText();
+                        .asText();
                 json.put(StatisticsConstants.FIELD_SERVER_MESSAGE, message);
             }
 
             // If data was sent ok, clear the existing project data
             if (response.get(StatisticsConstants.FIELD_LAST_STATUS).asText()
-                .startsWith("200:")) {
+                    .startsWith("200:")) {
                 json.set(StatisticsConstants.FIELD_PROJECTS,
-                    JsonHelpers.getJsonMapper().createArrayNode());
+                        JsonHelpers.getJsonMapper().createArrayNode());
                 projectJson = JsonHelpers.findById(projectId,
-                    json.get(StatisticsConstants.FIELD_PROJECTS),
-                    StatisticsConstants.FIELD_PROJECT_ID, true);
+                        json.get(StatisticsConstants.FIELD_PROJECTS),
+                        StatisticsConstants.FIELD_PROJECT_ID, true);
             }
         }
 
@@ -275,10 +281,12 @@ public class StatisticsStorage {
     }
 
     /**
-     *  Store a single string value in project statistics.
+     * Store a single string value in project statistics.
      *
-     * @param name Uniques name of the field in project data.
-     * @param value Value to set.
+     * @param name
+     *            Uniques name of the field in project data.
+     * @param value
+     *            Value to set.
      */
     void setValue(String name, String value) {
         projectJson.put(name, value);
@@ -289,7 +297,8 @@ public class StatisticsStorage {
      * <p>
      * Stores the data to the disk automatically.
      *
-     * @param name N of the field to increment.
+     * @param name
+     *            N of the field to increment.
      * @see JsonHelpers#incrementJsonValue(ObjectNode, String)
      */
     void increment(String name) {
@@ -297,18 +306,20 @@ public class StatisticsStorage {
     }
 
     /**
-     * Update a field in current project data and calculate
-     * and update the aggregate fields.
+     * Update a field in current project data and calculate and update the
+     * aggregate fields.
      * <p>
      * Updates the following fields:
-     * <li></li><code>name</code>  Set newValue. </li>
+     * <li></li><code>name</code> Set newValue.</li>
      * <li><code>name_min</code> Minimum value</li>
-     * <li><code>name_max</code> </li>
-     * <li><code>name_count</code> Count of values collected</li>
-     * Stores the data to the disk automatically.
+     * <li><code>name_max</code></li>
+     * <li><code>name_count</code> Count of values collected</li> Stores the
+     * data to the disk automatically.
      *
-     * @param name     Name of the field to update.
-     * @param newValue The new value to store.
+     * @param name
+     *            Name of the field to update.
+     * @param newValue
+     *            The new value to store.
      */
     void aggregate(String name, double newValue) {
         // Update count
@@ -317,23 +328,23 @@ public class StatisticsStorage {
 
         // Update min & max
         double min = newValue;
-        if (projectJson.has(name + "_min") && projectJson.get(name + "_min")
-            .isDouble()) {
+        if (projectJson.has(name + "_min")
+                && projectJson.get(name + "_min").isDouble()) {
             min = projectJson.get(name + "_min").asDouble(newValue);
         }
         projectJson.put(name + "_min", Math.min(newValue, min));
 
         double max = newValue;
-        if (projectJson.has(name + "_max") && projectJson.get(name + "_max")
-            .isDouble()) {
+        if (projectJson.has(name + "_max")
+                && projectJson.get(name + "_max").isDouble()) {
             max = projectJson.get(name + "_max").asDouble(newValue);
         }
         projectJson.put(name + "_max", Math.max(newValue, max));
 
         // Update average
         double avg = newValue;
-        if (projectJson.has(name + "_avg") && projectJson.get(name + "_avg")
-            .isDouble()) {
+        if (projectJson.has(name + "_avg")
+                && projectJson.get(name + "_avg").isDouble()) {
             // Calcalate new incremental average
             avg = projectJson.get(name + "_avg").asDouble(newValue);
             avg += (newValue - avg) / count;
@@ -346,12 +357,13 @@ public class StatisticsStorage {
      * Get a value of number value in current project data.
      *
      * @see #increment(String) (String)
-     * @param name name of the field to get
+     * @param name
+     *            name of the field to get
      * @return Value if this is integer field, 0 if missing
      */
     int getFieldAsInt(String name) {
-        if (projectJson != null && projectJson.has(name) &&
-            projectJson.get(name).isInt()) {
+        if (projectJson != null && projectJson.has(name)
+                && projectJson.get(name).isInt()) {
             return projectJson.get(name).asInt(0);
         }
         return 0;
@@ -360,12 +372,13 @@ public class StatisticsStorage {
     /**
      * Get a value of number value in current project data.
      *
-     * @param name name of the field to get
+     * @param name
+     *            name of the field to get
      * @return Value if this is integer field, 0 if missing
      */
     double getFieldAsDouble(String name) {
-        if (projectJson != null && projectJson.has(name) &&
-            projectJson.get(name).isDouble()) {
+        if (projectJson != null && projectJson.has(name)
+                && projectJson.get(name).isDouble()) {
             return projectJson.get(name).asDouble(0);
         }
         return 0;
@@ -375,8 +388,10 @@ public class StatisticsStorage {
     /**
      * Set a global value in storage.
      *
-     * @param globalField name of the field to get
-     * @param value       The new value to set
+     * @param globalField
+     *            name of the field to get
+     * @param value
+     *            The new value to set
      * @see #increment(String) (String)
      */
     void setGlobalValue(String globalField, String value) {
@@ -402,14 +417,15 @@ public class StatisticsStorage {
     /**
      * Reads the statistics update interval.
      *
-     * @return Time interval in seconds. {@link StatisticsConstants#TIME_SEC_24H} in
-     * minumun and {@link StatisticsConstants#TIME_SEC_30D} as maximum.
+     * @return Time interval in seconds.
+     *         {@link StatisticsConstants#TIME_SEC_24H} in minumun and
+     *         {@link StatisticsConstants#TIME_SEC_30D} as maximum.
      * @see StatisticsConstants#FIELD_SEND_INTERVAL
      */
     long getInterval() {
         try {
             long interval = json.get(StatisticsConstants.FIELD_SEND_INTERVAL)
-                .asLong();
+                    .asLong();
             return normalizeInterval(interval);
         } catch (Exception e) {
             // Just return the default value
@@ -418,7 +434,8 @@ public class StatisticsStorage {
     }
 
     /**
-     * Gets the last time the data was collected according to the statistics file.
+     * Gets the last time the data was collected according to the statistics
+     * file.
      *
      * @return Unix timestamp or -1 if not present
      * @see StatisticsConstants#FIELD_LAST_SENT
@@ -433,7 +450,8 @@ public class StatisticsStorage {
     }
 
     /**
-     * Gets the last time the data was collected according to the statistics file.
+     * Gets the last time the data was collected according to the statistics
+     * file.
      *
      * @return Unix timestamp or -1 if not present
      * @see StatisticsConstants#FIELD_LAST_STATUS
@@ -461,8 +479,8 @@ public class StatisticsStorage {
                 json = (ObjectNode) JsonHelpers.getJsonMapper().readTree(file);
                 if (this.projectId != null) {
                     projectJson = JsonHelpers.findById(this.projectId,
-                        json.get(StatisticsConstants.FIELD_PROJECTS),
-                        StatisticsConstants.FIELD_PROJECT_ID, true);
+                            json.get(StatisticsConstants.FIELD_PROJECTS),
+                            StatisticsConstants.FIELD_PROJECT_ID, true);
                 }
                 return;
             }
@@ -476,11 +494,11 @@ public class StatisticsStorage {
         // track the right project
         json = JsonHelpers.getJsonMapper().createObjectNode();
         json.set(StatisticsConstants.FIELD_PROJECTS,
-            JsonHelpers.getJsonMapper().createArrayNode());
+                JsonHelpers.getJsonMapper().createArrayNode());
         if (this.projectId != null) {
             projectJson = JsonHelpers.findById(this.projectId,
-                json.get(StatisticsConstants.FIELD_PROJECTS),
-                StatisticsConstants.FIELD_PROJECT_ID, true);
+                    json.get(StatisticsConstants.FIELD_PROJECTS),
+                    StatisticsConstants.FIELD_PROJECT_ID, true);
         }
     }
 
@@ -491,8 +509,8 @@ public class StatisticsStorage {
      */
     void write() {
         try {
-            JsonHelpers.getJsonMapper()
-                .writeValue(getUsageStatisticsStore(), json);
+            JsonHelpers.getJsonMapper().writeValue(getUsageStatisticsStore(),
+                    json);
         } catch (IOException e) {
             getLogger().debug("Failed to write json", e);
         }
@@ -538,11 +556,12 @@ public class StatisticsStorage {
     /**
      * Get the last server message.
      *
-     * @return The message string returned from server in last successful requests.
+     * @return The message string returned from server in last successful
+     *         requests.
      */
     String getLastServerMessage() {
-        return json.has(StatisticsConstants.FIELD_SERVER_MESSAGE) ?
-            json.get(StatisticsConstants.FIELD_SERVER_MESSAGE).asText() :
-            null;
+        return json.has(StatisticsConstants.FIELD_SERVER_MESSAGE)
+                ? json.get(StatisticsConstants.FIELD_SERVER_MESSAGE).asText()
+                : null;
     }
 }

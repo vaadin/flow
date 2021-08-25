@@ -48,7 +48,7 @@ class ProKey {
         try {
             JsonNode json = JsonHelpers.getJsonMapper().readTree(jsonData);
             proKey = new ProKey(json.get(FIELD_NAME).asText(),
-                json.get(FIELD_KEY).asText());
+                    json.get(FIELD_KEY).asText());
             return proKey;
         } catch (JsonProcessingException | NullPointerException e) {
             getLogger().debug("Failed to parse proKey from json", e);
@@ -61,7 +61,7 @@ class ProKey {
         try {
             JsonNode json = JsonHelpers.getJsonMapper().readTree(jsonFile);
             proKey = new ProKey(json.get(FIELD_NAME).asText(),
-                json.get(FIELD_KEY).asText());
+                    json.get(FIELD_KEY).asText());
             return proKey;
         } catch (JsonProcessingException | NullPointerException e) {
             getLogger().debug("Failed to parse proKey from json file", e);
@@ -96,7 +96,7 @@ class ProKey {
         String[] parts = value.split("/");
         if (parts.length != 2) {
             getLogger().debug(
-                "Unable to read pro key from the vaadin.proKey system property. The property must be of type -Dvaadin.proKey=[vaadin.com login email]/[prokey]");
+                    "Unable to read pro key from the vaadin.proKey system property. The property must be of type -Dvaadin.proKey=[vaadin.com login email]/[prokey]");
             return null;
         }
 
@@ -111,7 +111,7 @@ class ProKey {
         String[] parts = value.split("/");
         if (parts.length != 2) {
             getLogger().debug(
-                "Unable to read pro key from the VAADIN_PRO_KEY environment variable. The value must be of type VAADIN_PRO_KEY=[vaadin.com login email]/[prokey]");
+                    "Unable to read pro key from the VAADIN_PRO_KEY environment variable. The value must be of type VAADIN_PRO_KEY=[vaadin.com login email]/[prokey]");
             return null;
         }
 
@@ -131,12 +131,11 @@ class ProKey {
     }
 
     public static void write(ProKey proKey, File proKeyLocation)
-        throws IOException {
+            throws IOException {
         File proKeyDirectory = proKeyLocation.getParentFile();
-        if (!proKeyDirectory.exists() &&
-            !proKeyDirectory.mkdirs()) {
-            throw new IOException("Failed to create directory "+
-                proKeyDirectory.getAbsolutePath());
+        if (!proKeyDirectory.exists() && !proKeyDirectory.mkdirs()) {
+            throw new IOException("Failed to create directory "
+                    + proKeyDirectory.getAbsolutePath());
         }
         proKey.toFile(proKeyLocation);
     }

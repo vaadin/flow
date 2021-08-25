@@ -279,7 +279,7 @@ public class DevModeInitializer
             baseDir = getBaseDirectoryFallback();
         }
 
-        //Initialize the usage statistics if enabled
+        // Initialize the usage statistics if enabled
         DevModeUsageStatistics.init(config, baseDir);
 
         String generatedDir = System.getProperty(PARAM_GENERATED_DIR,

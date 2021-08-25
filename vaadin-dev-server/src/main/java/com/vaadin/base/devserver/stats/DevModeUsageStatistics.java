@@ -44,18 +44,20 @@ public class DevModeUsageStatistics {
      * Initialize statistics module. This should be done on devmode startup.
      * First check if statistics collection is enabled.
      *
-     * @param config        Application configuration parameters.
-     * @param projectFolder Folder of the working project.
+     * @param config
+     *            Application configuration parameters.
+     * @param projectFolder
+     *            Folder of the working project.
      */
     public static void init(ApplicationConfiguration config,
-        String projectFolder) {
+            String projectFolder) {
 
         final StatisticsStorage stats = StatisticsStorage.get();
 
         synchronized (DevModeUsageStatistics.class) { // Lock data for init
             stats.setStatisticsEnabled(
-                config != null && !config.isProductionMode()
-                    && config.isUsageStatisticsEnabled());
+                    config != null && !config.isProductionMode()
+                            && config.isUsageStatisticsEnabled());
             if (stats.isStatisticsEnabled()) {
                 getLogger().debug("VaadinUsageStatistics enabled");
             } else {
@@ -71,39 +73,40 @@ public class DevModeUsageStatistics {
 
             // Update the machine / user / source level data
             stats.setGlobalValue(StatisticsConstants.FIELD_OPERATING_SYSTEM,
-                ProjectHelpers.getOperatingSystem());
+                    ProjectHelpers.getOperatingSystem());
             stats.setGlobalValue(StatisticsConstants.FIELD_JVM,
-                ProjectHelpers.getJVMVersion());
+                    ProjectHelpers.getJVMVersion());
             stats.setGlobalValue(StatisticsConstants.FIELD_PROKEY,
-                ProjectHelpers.getProKey());
+                    ProjectHelpers.getProKey());
             stats.setGlobalValue(StatisticsConstants.FIELD_USER_KEY,
-                ProjectHelpers.getUserKey());
+                    ProjectHelpers.getUserKey());
 
             // Update basic project statistics and save
             stats.setValue(StatisticsConstants.FIELD_FLOW_VERSION,
-                Version.getFullVersion());
+                    Version.getFullVersion());
             stats.setValue(StatisticsConstants.FIELD_SOURCE_ID,
-                ProjectHelpers.getProjectSource(projectFolder));
+                    ProjectHelpers.getProjectSource(projectFolder));
             stats.increment(StatisticsConstants.FIELD_PROJECT_DEVMODE_STARTS);
 
-            //Store the data immediately
+            // Store the data immediately
             stats.write();
         }
 
         // Send usage statistics asynchronously, if enough time has passed
         if (stats.isIntervalElapsed()) {
             CompletableFuture
-                .runAsync(DevModeUsageStatistics::sendCurrentStatistics);
+                    .runAsync(DevModeUsageStatistics::sendCurrentStatistics);
         }
     }
 
     /**
      * Handles a client-side request to receive component telemetry data.
      *
-     * @return <code>true</code> if request was handled, <code>false</code> otherwise.
+     * @return <code>true</code> if request was handled, <code>false</code>
+     *         otherwise.
      */
     public static boolean handleClientUsageData(HttpServletRequest request,
-        HttpServletResponse response) {
+            HttpServletResponse response) {
 
         // If not enabled we don't handle the request
         if (!isStatisticsEnabled()) {
@@ -111,22 +114,23 @@ public class DevModeUsageStatistics {
         }
 
         if (request.getParameter(StatisticsConstants.CLIENT_USAGE_DATA) != null
-            && request.getMethod().equals("POST")
-            && "application/json".equals(request.getContentType())){
+                && request.getMethod().equals("POST")
+                && "application/json".equals(request.getContentType())) {
             getLogger().debug(
-                "Received client usage statistics POST from browser");
+                    "Received client usage statistics POST from browser");
             try {
-                if (request.getContentLength()
-                    > StatisticsConstants.MAX_TELEMETRY_LENGTH) {
+                if (request
+                        .getContentLength() > StatisticsConstants.MAX_TELEMETRY_LENGTH) {
                     // Do not store meaningless amount of client usage data
-                    getLogger()
-                        .debug("Received too much data. Not storing {} bytes",
-                        request.getContentLength());
+                    getLogger().debug(
+                            "Received too much data. Not storing {} bytes",
+                            request.getContentLength());
                     ObjectNode clientData = JsonHelpers.getJsonMapper()
-                        .createObjectNode();
+                            .createObjectNode();
                     clientData.set("elements", clientData);
                     StatisticsStorage stats = StatisticsStorage.get();
-                    synchronized (DevModeUsageStatistics.class) { // Lock data for update
+                    synchronized (DevModeUsageStatistics.class) { // Lock data
+                                                                  // for update
                         stats.read();
                         stats.updateProjectTelemetryData(clientData);
                         stats.write();
@@ -145,9 +149,10 @@ public class DevModeUsageStatistics {
 
                     // Update the stored data
                     JsonNode clientData = JsonHelpers.getJsonMapper()
-                        .readTree(json);
+                            .readTree(json);
                     StatisticsStorage stats = StatisticsStorage.get();
-                    synchronized (DevModeUsageStatistics.class) { // Lock data for update
+                    synchronized (DevModeUsageStatistics.class) { // Lock data
+                                                                  // for update
                         stats.read();
                         stats.updateProjectTelemetryData(clientData);
                         stats.write();
@@ -182,12 +187,13 @@ public class DevModeUsageStatistics {
     }
 
     /**
-     * Checks if tracking is enabled and increments specified event count
-     * for the current project data.
+     * Checks if tracking is enabled and increments specified event count for
+     * the current project data.
      * <p>
      * Good for logging statistics of recurring events.
      *
-     * @param name Name of the event.
+     * @param name
+     *            Name of the event.
      */
     public static void event(String name) {
         try {
@@ -195,7 +201,8 @@ public class DevModeUsageStatistics {
             if (!isStatisticsEnabled())
                 return;
             StatisticsStorage stats = StatisticsStorage.get();
-            synchronized (DevModeUsageStatistics.class) { // Lock the storage for update
+            synchronized (DevModeUsageStatistics.class) { // Lock the storage
+                                                          // for update
                 stats.read();
                 stats.increment(name);
                 stats.write();
@@ -207,13 +214,15 @@ public class DevModeUsageStatistics {
     }
 
     /**
-     * Update a value in usage statistics. Also, automatically
-     * aggregates min, max and average of the value.
+     * Update a value in usage statistics. Also, automatically aggregates min,
+     * max and average of the value.
      * <p>
      * Good for logging statistics about chancing values over time.
      *
-     * @param name  Name of the field to update.
-     * @param value The new value to store.
+     * @param name
+     *            Name of the field to update.
+     * @param value
+     *            The new value to store.
      */
     public static void event(String name, double value) {
         try {
@@ -222,7 +231,8 @@ public class DevModeUsageStatistics {
                 return;
 
             StatisticsStorage stats = StatisticsStorage.get();
-            synchronized (DevModeUsageStatistics.class) { // Lock the storage for update
+            synchronized (DevModeUsageStatistics.class) { // Lock the storage
+                                                          // for update
                 stats.read();
                 stats.aggregate(name, value);
                 stats.write();
@@ -235,8 +245,8 @@ public class DevModeUsageStatistics {
     /**
      * Send current statistics to given reporting URL.
      * <p>
-     * Reads the current data and posts it to given URL. Updates or replaces
-     * the local data according to the response.
+     * Reads the current data and posts it to given URL. Updates or replaces the
+     * local data according to the response.
      * <p>
      * Updates <code>FIELD_LAST_SENT</code> and <code>FIELD_LAST_STATUS</code>
      * and <code>FIELD_SERVER_MESSAGE</code>
@@ -272,8 +282,10 @@ public class DevModeUsageStatistics {
     /**
      * Set value of string value in current project statistics data.
      *
-     * @param name  name of the field to set.
-     * @param value the new string value to set.
+     * @param name
+     *            name of the field to set.
+     * @param value
+     *            the new string value to set.
      */
     public void set(String name, String value) {
         try {
@@ -282,7 +294,8 @@ public class DevModeUsageStatistics {
                 return;
 
             StatisticsStorage stats = StatisticsStorage.get();
-            synchronized (DevModeUsageStatistics.class) { // Lock the storage for update
+            synchronized (DevModeUsageStatistics.class) { // Lock the storage
+                                                          // for update
                 stats.read();
                 stats.setValue(name, value);
                 stats.write();
@@ -295,8 +308,10 @@ public class DevModeUsageStatistics {
     /**
      * Set value of string field in current statistics data.
      *
-     * @param name  name of the field to set.
-     * @param value the new string value to set.
+     * @param name
+     *            name of the field to set.
+     * @param value
+     *            the new string value to set.
      */
     public void setGlobal(String name, String value) {
         try {
@@ -305,7 +320,8 @@ public class DevModeUsageStatistics {
                 return;
 
             StatisticsStorage stats = StatisticsStorage.get();
-            synchronized (DevModeUsageStatistics.class) { // Lock the storage for update
+            synchronized (DevModeUsageStatistics.class) { // Lock the storage
+                                                          // for update
                 stats.read();
                 stats.setGlobalValue(name, value);
                 stats.write();

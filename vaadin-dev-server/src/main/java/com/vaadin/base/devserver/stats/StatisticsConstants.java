@@ -63,7 +63,7 @@ public class StatisticsConstants {
     static final String INVALID_SERVER_RESPONSE = "Invalid server response.";
 
     /*
-     *  Default remote URL.
+     * Default remote URL.
      */
     static final String USAGE_REPORT_URL = "https://tools.vaadin.com/usage-stats/v2/submit";
 

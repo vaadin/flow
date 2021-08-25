@@ -322,7 +322,8 @@ public final class DevModeHandlerImpl
 
         // Handle Vaadin usage statistics collector
         if (request.getParameter(CLIENT_USAGE_DATA) != null) {
-            return DevModeUsageStatistics.handleClientUsageData(request,response);
+            return DevModeUsageStatistics.handleClientUsageData(request,
+                    response);
         }
 
         // Since we have 'publicPath=/VAADIN/' in webpack config,
