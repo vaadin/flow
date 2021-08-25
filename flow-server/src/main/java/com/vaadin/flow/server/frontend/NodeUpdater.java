@@ -84,7 +84,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_MAIN_KEY = "main";
     protected static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
     protected static final String DEP_NAME_FLOW_JARS = "@vaadin/flow-frontend";
-    protected static final String DEP_NAME_FORM_JARS = "@vaadin/form";
+    protected static final String DEP_NAME_COMMON_FRONTEND = "@vaadin/common-frontend";
     private static final String FORM_FOLDER = "form";
     private static final String DEP_MAIN_VALUE = "index";
     private static final String DEP_VERSION_KEY = "version";
@@ -307,7 +307,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                 new File(formResourcesFolder, PACKAGE_JSON));
         if (packageJson == null) {
             packageJson = Json.createObject();
-            packageJson.put(DEP_NAME_KEY, DEP_NAME_FORM_JARS);
+            packageJson.put(DEP_NAME_KEY, DEP_NAME_COMMON_FRONTEND);
             packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
             packageJson.put(DEP_MAIN_KEY, DEP_MAIN_VALUE);
             packageJson.put(DEP_VERSION_KEY, DEP_VERSION_DEFAULT);

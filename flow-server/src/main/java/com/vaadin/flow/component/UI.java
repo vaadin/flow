@@ -93,7 +93,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @since 1.0
  */
-@JsModule("@vaadin/flow-frontend/ConnectionIndicator.js")
+@JsModule("@vaadin/common-frontend/ConnectionIndicator.js")
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 

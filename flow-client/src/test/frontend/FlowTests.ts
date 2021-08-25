@@ -6,7 +6,7 @@ const { sinon } = intern.getPlugin("sinon") as { sinon: SinonStatic };
 
 // API to test
 import {Flow, NavigationParameters} from "../../main/frontend/Flow";
-import {ConnectionState, ConnectionStateStore} from "../../main/frontend/ConnectionState";
+import {ConnectionState, ConnectionStateStore} from "@vaadin/common-frontend";
 // Intern does not serve webpack chunks, adding deps here in order to
 // produce one chunk, because dynamic imports in Flow.ts  will not work.
 import "../../main/frontend/FlowBootstrap";

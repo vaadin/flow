@@ -193,7 +193,6 @@ public class NodeUpdaterTest {
     @Test
     public void assertFormResourcesPackageJson() throws IOException {
         JsonObject formPackageJson = nodeUpdater.getFormResourcesPackageJson();
-        Assert.assertEquals("@vaadin/form", formPackageJson.getString("name"));
         Assert.assertEquals("UNLICENSED", formPackageJson.getString("license"));
         Assert.assertEquals("index", formPackageJson.getString("main"));
         Assert.assertEquals("1.0.0", formPackageJson.getString("version"));

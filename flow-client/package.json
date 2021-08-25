@@ -11,9 +11,8 @@
   "scripts": {
     "lint": "eslint \"src/main/frontend\"",
     "client": "node scripts/client.js",
-    "version": "node scripts/version.js",
     "webpack": "webpack --config=webpack.tests.config.js",
-    "build": "npm run client && npm run version && tsc",
+    "build": "npm run client && tsc",
     "compile": "npm run build && npm run lint",
     "test": "npm run build && npm run webpack && intern",
     "debug": "npm run build && webpack --config=webpack.tests.config.js -w >&2 | intern serveOnly"
@@ -50,6 +49,7 @@
   },
   "dependencies": {
     "@types/validator": "13.1.0",
+    "@vaadin/common-frontend": "file:../../fusion/frontend/packages/common-frontend/vaadin-common-frontend-22.0.0-alpha1.tgz",
     "lit": "2.0.0-rc.1",
     "validator": "13.1.17"
   }

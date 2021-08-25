@@ -1,6 +1,0 @@
-{
-  "packages": ["packages/*"],
-  "npmClient": "npm",
-  "useWorkspaces": true,
-  "version": "22.0.0-alpha1"
-}
