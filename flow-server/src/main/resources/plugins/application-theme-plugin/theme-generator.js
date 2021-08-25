@@ -255,6 +255,21 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   themeFile += `
 window.Vaadin = window.Vaadin || {};
 window.Vaadin['${globalCssFlag}'] = window.Vaadin['${globalCssFlag}'] || [];
+var cleanupObserver = new MutationObserver(
+  (mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.removedNodes.forEach((node) => {
+        const index = window.Vaadin['${globalCssFlag}'].indexOf(node.shadowRoot);
+        if(index > -1) {
+          window.Vaadin['${globalCssFlag}'].splice(index, 1);
+        }
+      })
+    })
+  }
+);
+cleanupObserver.observe(document.body, {
+  childList: true
+});
 `;
 
 // Don't format as the generated file formatting will get wonky!
@@ -265,12 +280,6 @@ window.Vaadin['${globalCssFlag}'] = window.Vaadin['${globalCssFlag}'] || [];
   if (injectGlobal) {
     ${globalCssCode.join('')}
     window.Vaadin['${globalCssFlag}'].push(target);
-    
-    const eventTarget = (target instanceof ShadowRoot) ? target.host : target;
-    eventTarget.addEventListener('DOMNodeRemoved', event => {
-      const index = window.Vaadin['${globalCssFlag}'].indexOf(target);
-      window.Vaadin['${globalCssFlag}'].splice(index, 1);
-    });
    }
   if (!document['${componentCssFlag}']) {
     ${componentCssCode.join('')}
