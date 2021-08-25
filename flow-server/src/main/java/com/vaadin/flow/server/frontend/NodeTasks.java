@@ -543,18 +543,6 @@ public class NodeTasks implements FallibleCommand {
         public File getGeneratedFolder() {
             return generatedFolder;
         }
-
-        /**
-         * Tells if the project is Fusion-based.
-         *
-         * @return isFusionProject
-         */
-        public boolean isFusionProject() {
-            return fusionJavaSourceFolder != null
-                    && fusionJavaSourceFolder.exists()
-                    && fusionGeneratedOpenAPIFile != null
-                    && fusionGeneratedOpenAPIFile.exists();
-        }
     }
 
     // @formatter:off
@@ -646,7 +634,9 @@ public class NodeTasks implements FallibleCommand {
         if (!builder.useDeprecatedV14Bootstrapping) {
             addBootstrapTasks(builder);
 
-            if (builder.isFusionProject()) {
+            if (builder.fusionJavaSourceFolder != null
+                    && builder.fusionJavaSourceFolder.exists()
+                    && builder.fusionGeneratedOpenAPIFile != null) {
                 addFusionServicesTasks(builder);
             }
 
