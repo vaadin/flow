@@ -38,7 +38,6 @@ public class HistoryTest {
 
     private class TestPage extends Page {
 
-
         private String expression;
 
         private Serializable[] parameters;
