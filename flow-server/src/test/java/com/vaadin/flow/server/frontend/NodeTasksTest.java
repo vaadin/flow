@@ -217,8 +217,10 @@ public class NodeTasksTest {
         List<Class<? extends FallibleCommand>> list = (List<Class<? extends FallibleCommand>>) commandOrder
                 .get(NodeTasks.class);
 
-        Assert.assertTrue("TaskUseFusionPackage should go before TaskUpdatePackages",
-                list.indexOf(TaskUseFusionPackage.class) < list.indexOf(TaskUpdatePackages.class));
+        Assert.assertTrue(
+                "TaskUseFusionPackage should go before TaskUpdatePackages",
+                list.indexOf(TaskUseFusionPackage.class) < list
+                        .indexOf(TaskUpdatePackages.class));
     }
 
     private static void setPropertyIfPresent(String key, String value) {

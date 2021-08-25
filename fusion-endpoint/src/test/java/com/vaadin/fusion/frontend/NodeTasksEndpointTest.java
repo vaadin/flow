@@ -114,7 +114,11 @@ public class NodeTasksEndpointTest {
                 .parse(FileUtils.readFileToString(packageJson, UTF_8));
 
         List<String> keys = Arrays.asList(content.keys());
-        assertTrue("The 'name' key in package.json should come before the 'licence' key", keys.indexOf("name") < keys.indexOf("license"));
-        assertTrue("The 'name' key in package.json should come before the 'dependencies' key",keys.indexOf("name") < keys.indexOf("dependencies"));
+        assertTrue(
+                "The 'name' key in package.json should come before the 'licence' key",
+                keys.indexOf("name") < keys.indexOf("license"));
+        assertTrue(
+                "The 'name' key in package.json should come before the 'dependencies' key",
+                keys.indexOf("name") < keys.indexOf("dependencies"));
     }
 }
