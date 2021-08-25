@@ -169,10 +169,12 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     @Override
     public void valueUnbound(HttpSessionBindingEvent event) {
-        // If we are going to be unbound from the session, the session must be
-        // closing
-        // Notify the service
-        if (service == null) {
+        if (deserializedAsEmpty) {
+            // The session is being unbound from http session, but was
+            // deserialized previously without content, so return immediately
+            // without further handling of session unbound event.
+            return;
+        } else if (service == null) {
             getLogger().warn(
                     "A VaadinSession instance not associated to any service is getting unbound. "
                             + "Session destroy events will not be fired and UIs in the session will not get detached. "

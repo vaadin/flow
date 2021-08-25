@@ -266,6 +266,37 @@ public class VaadinSessionTest {
                 1, vaadinSession.getCloseCount());
     }
 
+    @Test
+    public void valueUnbound_sessionDeserializedAsEmpty_stopHandlingUnboundEventWithNoException()
+            throws IOException, ClassNotFoundException {
+        // given
+        ApplicationConfiguration configuration = Mockito
+                .mock(ApplicationConfiguration.class);
+
+        Mockito.when(configuration.isDevModeSessionSerializationEnabled())
+                .thenReturn(false);
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+
+        mockServlet.getServletContext().setAttribute(
+                ApplicationConfiguration.class.getName(), configuration);
+
+        HttpSessionBindingEvent bindingEvent = Mockito
+                .mock(HttpSessionBindingEvent.class);
+
+        VaadinSession session = new UnlockableVaadinSession(mockService);
+
+        // when
+        ByteArrayOutputStream bos = serializeSession(session);
+        VaadinSession deserializedSession = deserializeSession(bos);
+
+        deserializedSession.valueUnbound(bindingEvent);
+
+        // then
+        // No NPE exception.
+        // 'valueUnbound()' returns immediately and doesn't proceed handling the
+        // event.
+    }
+
     private static class SerializationPushConnection
             extends AtmospherePushConnection {
 
@@ -303,19 +334,13 @@ public class VaadinSessionTest {
         ui.getInternals().setPushConnection(pc);
         int uiId = ui.getUIId();
 
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream out = new ObjectOutputStream(bos);
-        out.writeObject(session);
-        out.close();
+        ByteArrayOutputStream bos = serializeSession(session);
 
         session.unlock();
 
         CurrentInstance.clearAll();
 
-        ObjectInputStream in = new ObjectInputStream(
-                new ByteArrayInputStream(bos.toByteArray()));
-
-        VaadinSession deserializedSession = (VaadinSession) in.readObject();
+        VaadinSession deserializedSession = deserializeSession(bos);
 
         Assert.assertNull("Current session shouldn't leak from deserialisation",
                 VaadinSession.getCurrent());
@@ -461,6 +486,52 @@ public class VaadinSessionTest {
         vaadinSession.setState(VaadinSessionState.CLOSED);
 
         Assert.assertNull(vaadinSession.getSession());
+    }
+
+    private VaadinSession deserializeSession(ByteArrayOutputStream bos)
+            throws IOException, ClassNotFoundException {
+        ObjectInputStream in = new ObjectInputStream(
+                new ByteArrayInputStream(bos.toByteArray()));
+        return (VaadinSession) in.readObject();
+    }
+
+    private ByteArrayOutputStream serializeSession(VaadinSession session)
+            throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream out = new ObjectOutputStream(bos);
+        out.writeObject(session);
+        out.close();
+        return bos;
+    }
+
+    private static final class UnlockableVaadinSession extends VaadinSession {
+
+        private static final String ERROR_MESSAGE = "Unexpected call to '%s' "
+                + "method, when the session was deserialized as empty and "
+                + "unbound from http session";
+
+        public UnlockableVaadinSession(VaadinService service) {
+            super(service);
+        }
+
+        @Override
+        public void lock() {
+            fail("lock()");
+        }
+
+        @Override
+        public void unlock() {
+            fail("unlock()");
+        }
+
+        @Override
+        public void checkHasLock() {
+            fail("checkHasLock()");
+        }
+
+        private void fail(String method) {
+            Assert.fail(String.format(ERROR_MESSAGE, method));
+        }
     }
 
 }
