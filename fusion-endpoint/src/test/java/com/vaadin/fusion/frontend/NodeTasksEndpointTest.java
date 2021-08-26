@@ -7,7 +7,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -82,22 +81,4 @@ public class NodeTasksEndpointTest {
                         new File(dir, name).exists()));
     }
 
-    @Test
-    public void should_AddDependenciesToPackageJson() throws Exception {
-        builder.createMissingPackageJson(true);
-
-        builder.build().execute();
-
-        File packageJson = new File(dir, "package.json");
-
-        JsonObject content = Json
-                .parse(FileUtils.readFileToString(packageJson, UTF_8));
-
-        assertTrue(content.hasKey("dependencies"));
-
-        JsonObject dependencies = content.getObject("dependencies");
-
-        assertTrue(dependencies.hasKey("@adobe/lit-mobx"));
-        assertTrue(dependencies.hasKey("mobx"));
-    }
 }
