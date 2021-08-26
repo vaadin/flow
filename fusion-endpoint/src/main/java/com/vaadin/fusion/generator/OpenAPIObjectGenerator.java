@@ -685,56 +685,54 @@ public class OpenAPIObjectGenerator {
     }
 
     ResolvedType toMappedType(ResolvedType type) {
-        try {
-            if (type.isReferenceType()) {
-                String className = getFullyQualifiedName(
-                        new GeneratorType(type));
-                String mappedClassName = endpointTransferMapper
-                        .getTransferType(className);
-                if (mappedClassName != null) {
-                    ResolvedReferenceTypeDeclaration solved = typeSolver
-                            .solveType(mappedClassName);
-                    ReferenceTypeImpl resolvedType = new ReferenceTypeImpl(
-                            solved, new ArrayList<>(), typeSolver);
-                    return resolvedType;
-                }
-            }
-        } catch (Exception e) {
-            // Somehow "T" in sources is not correctly handled here
+        if (!type.isReferenceType()) {
+            return null;
         }
-        return null;
+        String className = getFullyQualifiedName(new GeneratorType(type));
+        String mappedClassName = endpointTransferMapper
+                .getTransferType(className);
+        if (mappedClassName == null) {
+            return null;
+        }
+
+        ResolvedReferenceTypeDeclaration solved = typeSolver
+                .solveType(mappedClassName);
+        ReferenceTypeImpl resolvedType = new ReferenceTypeImpl(solved,
+                new ArrayList<>(), typeSolver);
+        return resolvedType;
     }
 
     ResolvedType toMappedType(Type type) {
+        ResolvedType resolvedType;
         try {
-            if (type.isReferenceType()) {
-                String className = getFullyQualifiedName(
-                        new GeneratorType(type));
-                String mappedClassName = endpointTransferMapper
-                        .getTransferType(className);
-                if (mappedClassName != null) {
-                    List<ResolvedType> typeArguments = new ArrayList<>();
-                    if (type.isClassOrInterfaceType()) {
-                        Optional<NodeList<Type>> maybeTypeArgs = type
-                                .asClassOrInterfaceType().getTypeArguments();
-                        if (maybeTypeArgs.isPresent()) {
-                            NodeList<Type> typeArgs = maybeTypeArgs.get();
-                            for (Type typeArg : typeArgs) {
-                                typeArguments.add(typeArg.resolve());
-                            }
-                        }
-                    }
-                    ResolvedReferenceTypeDeclaration solved = typeSolver
-                            .solveType(mappedClassName);
-                    ReferenceTypeImpl resolvedType = new ReferenceTypeImpl(
-                            solved, typeArguments, typeSolver);
-                    return resolvedType;
+            resolvedType = type.resolve();
+        } catch (UnsupportedOperationException e) {
+            // This is called for T
+            return null;
+        }
+        if (!resolvedType.isReferenceType()) {
+            return null;
+        }
+        String className = getFullyQualifiedName(new GeneratorType(type));
+        String mappedClassName = endpointTransferMapper
+                .getTransferType(className);
+        if (mappedClassName == null) {
+            return null;
+        }
+        List<ResolvedType> typeArguments = new ArrayList<>();
+        if (type.isClassOrInterfaceType()) {
+            Optional<NodeList<Type>> maybeTypeArgs = type
+                    .asClassOrInterfaceType().getTypeArguments();
+            if (maybeTypeArgs.isPresent()) {
+                NodeList<Type> typeArgs = maybeTypeArgs.get();
+                for (Type typeArg : typeArgs) {
+                    typeArguments.add(typeArg.resolve());
                 }
             }
-        } catch (Exception e) {
-            // Somehow "T" in sources is not correctly handled here
         }
-        return null;
+        ResolvedReferenceTypeDeclaration solved = typeSolver
+                .solveType(mappedClassName);
+        return new ReferenceTypeImpl(solved, typeArguments, typeSolver);
     }
 
     private RequestBody createRequestBody(MethodDeclaration methodDeclaration,
