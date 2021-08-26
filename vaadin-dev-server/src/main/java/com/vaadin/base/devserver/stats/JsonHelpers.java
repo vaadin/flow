@@ -23,17 +23,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 class JsonHelpers {
 
-    private static final ObjectMapper jsonMapper = new ObjectMapper();
 
-    static ObjectMapper getJsonMapper() {
-        return jsonMapper;
-    }
+    private static final ObjectMapper jsonMapper = new ObjectMapper();
 
     /*
      * Avoid instantiation.
      */
     private JsonHelpers() {
-        throw new IllegalStateException("Instantiation of an utility class");
+        // Utility class only
     }
 
     /**
@@ -92,4 +89,13 @@ class JsonHelpers {
             node.put(fieldName, 1);
         }
     }
+
+    /** Get instance of a ObjectMapper for mapping object to Json.
+     *
+     * @return Shared ObjectMapper instance.
+     */
+    static ObjectMapper getJsonMapper() {
+        return jsonMapper;
+    }
+
 }

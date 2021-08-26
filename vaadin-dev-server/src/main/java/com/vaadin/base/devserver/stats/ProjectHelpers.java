@@ -50,7 +50,7 @@ class ProjectHelpers {
      * Avoid instantiation.
      */
     private ProjectHelpers() {
-        throw new IllegalStateException("Instantiation of an utility class");
+        // Utility class only
     }
 
     /**

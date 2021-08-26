@@ -85,6 +85,6 @@ public class StatisticsConstants {
      * Avoid instantiation.
      */
     private StatisticsConstants() {
-        throw new IllegalStateException("Instantiation of an utility class");
+        // Utility class only
     }
 }
