@@ -124,7 +124,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     @Override
-    protected String writePackageFile(JsonObject json) throws IOException {
+    String writePackageFile(JsonObject json) throws IOException {
         sortObject(json, DEPENDENCIES);
         sortObject(json, DEV_DEPENDENCIES);
         sortObject(json, VAADIN_DEP_KEY);
