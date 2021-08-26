@@ -17,6 +17,7 @@ package com.vaadin.fusion.endpointransfermapper;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,7 +103,11 @@ public class EndpointTransferMapper {
     private Map<Class<?>, Class<?>> endpointToTransfer = new HashMap<>();
 
     private Map<Class<?>, Mapper<?, ?>> mappers = new HashMap<>();
-    {
+
+    /**
+     * Creates a new instance.
+     */
+    public EndpointTransferMapper() {
         registerMapper(new PageableMapper());
         registerMapper(new UUIDMapper());
         registerMapper(new PageMapper());
@@ -136,9 +141,9 @@ public class EndpointTransferMapper {
      * @return the transfer type or null if no mapping exists
      */
     public Class<?> getTransferType(Class<?> endpointType) {
-        for (Class<?> key : endpointToTransfer.keySet()) {
-            if (key.isAssignableFrom(endpointType)) {
-                return endpointToTransfer.get(key);
+        for (Entry<Class<?>, Class<?>> entry : endpointToTransfer.entrySet()) {
+            if (entry.getKey().isAssignableFrom(endpointType)) {
+                return entry.getValue();
             }
         }
         return null;
@@ -158,9 +163,9 @@ public class EndpointTransferMapper {
      * @return the transfer type or null if no mapping exists
      */
     public String getTransferType(String endpointType) {
-        for (Class<?> key : endpointToTransfer.keySet()) {
-            if (key.getName().equals(endpointType)) {
-                return endpointToTransfer.get(key).getName();
+        for (Entry<Class<?>, Class<?>> entry : endpointToTransfer.entrySet()) {
+            if (entry.getKey().getName().equals(endpointType)) {
+                return entry.getValue().getName();
             }
         }
         return null;
@@ -174,7 +179,8 @@ public class EndpointTransferMapper {
      * 
      * @param endpointType
      *            the endpoint type
-     * @param <T> the endpoint type
+     * @param <T>
+     *            the endpoint type
      * @return the transfer type or null if no mapper exists
      */
     public <T> Mapper<T, ?> getMapper(Class<T> endpointType) {
@@ -221,7 +227,8 @@ public class EndpointTransferMapper {
      * @param endpointType
      *            the value type declared in the endpoint, as parameter or
      *            return type
-     * @param <T> the endpoint type
+     * @param <T>
+     *            the endpoint type
      * @return the value converted to its endpoint type
      */
     public <T> T toEndpointType(Object transferValue, Class<T> endpointType) {
