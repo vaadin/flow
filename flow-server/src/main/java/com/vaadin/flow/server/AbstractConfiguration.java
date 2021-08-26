@@ -111,8 +111,8 @@ public interface AbstractConfiguration extends Serializable {
     }
 
     /**
-     * Returns whether development time usage statistics collection is
-     * enabled or not.
+     * Returns whether development time usage statistics collection is enabled
+     * or not.
      *
      * Always return false if <code>isProductionMode</code> is {@code true}.
      *
