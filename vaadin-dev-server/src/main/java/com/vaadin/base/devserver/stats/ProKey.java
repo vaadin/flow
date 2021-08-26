@@ -51,7 +51,7 @@ class ProKey {
         return key;
     }
 
-    public String toJson() {
+    String toJson() {
         ObjectNode json = JsonHelpers.getJsonMapper().createObjectNode();
         json.put(FIELD_NAME, username);
         json.put(FIELD_KEY, key);
@@ -63,7 +63,7 @@ class ProKey {
         return null;
     }
 
-    public void toFile(File fileLocation) throws IOException {
+    void toFile(File fileLocation) throws IOException {
         JsonHelpers.getJsonMapper().writeValue(fileLocation, this);
     }
 
