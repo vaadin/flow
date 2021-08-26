@@ -34,7 +34,6 @@ import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.TaskGenerateFusion;
 import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
-import com.vaadin.flow.server.frontend.TaskUseFusionPackage;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.Json;
@@ -72,7 +71,6 @@ public class DevModeInitializerTestBase {
     EndpointGeneratorTaskFactory endpointGeneratorTaskFactory;
     TaskGenerateFusion taskGenerateFusion;
     TaskGenerateOpenAPI taskGenerateOpenAPI;
-    TaskUseFusionPackage taskUseFusionPackage;
 
     ApplicationConfiguration appConfig;
 
@@ -118,16 +116,12 @@ public class DevModeInitializerTestBase {
                 .mock(EndpointGeneratorTaskFactory.class);
         taskGenerateFusion = Mockito.mock(TaskGenerateFusion.class);
         taskGenerateOpenAPI = Mockito.mock(TaskGenerateOpenAPI.class);
-        taskUseFusionPackage = Mockito.mock(TaskUseFusionPackage.class);
         Mockito.doReturn(endpointGeneratorTaskFactory).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
         Mockito.doReturn(taskGenerateFusion).when(endpointGeneratorTaskFactory)
                 .createTaskGenerateFusion(any(), any(), any(), any());
         Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
                 .createTaskGenerateOpenAPI(any(), any(), any(), any());
-        Mockito.doReturn(taskUseFusionPackage)
-                .when(endpointGeneratorTaskFactory)
-                .createTaskUseFusionPackage(any(), any(), any(), any());
 
         ResourceProvider resourceProvider = Mockito
                 .mock(ResourceProvider.class);
