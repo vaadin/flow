@@ -620,22 +620,18 @@ export class VaadinDevmodeGizmo extends LitElement {
     try {
       // localstorage data is collected by vaadin-usage-statistics.js
       const localStorageStatsString = localStorage.getItem('vaadin.statistics.basket');
-      data = JSON.parse(localStorageStatsString || '{}');
+      if (!localStorageStatsString) {
+        // Do not send empty data
+        return;
+      }
+      data = JSON.parse(localStorageStatsString);
     } catch (e) {
-      // Ignore
+      // In case of parse errors don't send anything
+      return;
     }
 
     const req = new XMLHttpRequest();
     req.withCredentials = true;
-    req.addEventListener('load', function () {
-      // Stats sent, nothing more to do
-    });
-    req.addEventListener('error', function () {
-      // Ignore errors
-    });
-    req.addEventListener('abort', function () {
-      // Ignore aborts
-    });
     req.open('POST', this.url + '?vaadin_telemetry_data');
     req.setRequestHeader('Content-Type', 'application/json');
     req.send('Vaadin client-side element telemetry: ' + JSON.stringify(data));
