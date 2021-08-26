@@ -37,12 +37,14 @@ class JsonHelpers {
     }
 
     /**
-     * Helper to find a project node by id in the given array node.
+     * Helper to find an ObjectNode by id in the given array node.
      *
-     * @param pid
-     *            Project ID
+     * @param id
+     *            Node ID to find or create
      * @param arrayNode
      *            Json array node containing list of arrayNode
+     * @param idField
+     *            Name of the ID field in ObjectNode to match with ID.
      * @param createNew
      *            true if a new {@link ObjectNode} should be created if not
      *            found.
@@ -51,7 +53,7 @@ class JsonHelpers {
      *         <code>arrayNode</code> is not null.
      * @see StatisticsConstants#FIELD_PROJECT_ID
      */
-    static ObjectNode findById(String pid, JsonNode arrayNode, String idField,
+    static ObjectNode getOrCreate(String id, JsonNode arrayNode, String idField,
             boolean createNew) {
         if (arrayNode == null || !arrayNode.isArray()) {
             return null;
@@ -59,7 +61,7 @@ class JsonHelpers {
 
         for (final JsonNode p : arrayNode) {
             if (p != null && p.has(idField)
-                    && pid.equals(p.get(idField).asText())) {
+                    && id.equals(p.get(idField).asText())) {
                 return (ObjectNode) p;
             }
         }
@@ -67,7 +69,7 @@ class JsonHelpers {
         if (createNew) {
             ArrayNode newNode = (ArrayNode) arrayNode;
             ObjectNode p = newNode.addObject();
-            p.put(StatisticsConstants.FIELD_PROJECT_ID, pid);
+            p.put(StatisticsConstants.FIELD_PROJECT_ID, id);
             return p;
         }
 

@@ -154,7 +154,7 @@ public class StatisticsStorage {
             json.set(StatisticsConstants.FIELD_PROJECTS,
                     JsonHelpers.getJsonMapper().createArrayNode());
         }
-        this.projectJson = JsonHelpers.findById(this.projectId,
+        this.projectJson = JsonHelpers.getOrCreate(this.projectId,
                 this.json.get(StatisticsConstants.FIELD_PROJECTS),
                 StatisticsConstants.FIELD_PROJECT_ID, true);
     }
@@ -271,7 +271,7 @@ public class StatisticsStorage {
                     .startsWith("200:")) {
                 json.set(StatisticsConstants.FIELD_PROJECTS,
                         JsonHelpers.getJsonMapper().createArrayNode());
-                projectJson = JsonHelpers.findById(projectId,
+                projectJson = JsonHelpers.getOrCreate(projectId,
                         json.get(StatisticsConstants.FIELD_PROJECTS),
                         StatisticsConstants.FIELD_PROJECT_ID, true);
             }
@@ -478,7 +478,7 @@ public class StatisticsStorage {
                 // Read full data and make sure we track the right project
                 json = (ObjectNode) JsonHelpers.getJsonMapper().readTree(file);
                 if (this.projectId != null) {
-                    projectJson = JsonHelpers.findById(this.projectId,
+                    projectJson = JsonHelpers.getOrCreate(this.projectId,
                             json.get(StatisticsConstants.FIELD_PROJECTS),
                             StatisticsConstants.FIELD_PROJECT_ID, true);
                 }
@@ -496,7 +496,7 @@ public class StatisticsStorage {
         json.set(StatisticsConstants.FIELD_PROJECTS,
                 JsonHelpers.getJsonMapper().createArrayNode());
         if (this.projectId != null) {
-            projectJson = JsonHelpers.findById(this.projectId,
+            projectJson = JsonHelpers.getOrCreate(this.projectId,
                     json.get(StatisticsConstants.FIELD_PROJECTS),
                     StatisticsConstants.FIELD_PROJECT_ID, true);
         }
