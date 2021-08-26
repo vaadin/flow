@@ -439,8 +439,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         return added > 0;
     }
 
-    int addDependency(JsonObject json, String key, String pkg,
-            String version) {
+    int addDependency(JsonObject json, String key, String pkg, String version) {
         Objects.requireNonNull(json, "Json object need to be given");
         Objects.requireNonNull(key, "Json sub object needs to be give.");
         Objects.requireNonNull(pkg, "dependency package needs to be defined");
@@ -505,8 +504,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         return new FrontendVersion(json.getString(key));
     }
 
-    String writePackageFile(JsonObject packageJson)
-            throws IOException {
+    String writePackageFile(JsonObject packageJson) throws IOException {
         return writePackageFile(packageJson, new File(npmFolder, PACKAGE_JSON));
     }
 
