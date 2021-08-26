@@ -77,7 +77,7 @@ public class LocationUtil {
 
     /**
      * Parses the given path to parts split by the path separator, ignoring the
-     * query string if present. The path is verified with
+     * query string and fragment if either present. The path is verified with
      * {@link #verifyRelativePath(String)}.
      * 
      * @param path
@@ -89,6 +89,8 @@ public class LocationUtil {
         int endIndex = path.indexOf(Location.QUERY_SEPARATOR);
         if (endIndex >= 0) {
             basePath = path.substring(0, endIndex);
+        } else if (path.contains("#")) {
+            basePath = path.substring(0, path.indexOf('#'));
         } else {
             basePath = path;
         }
