@@ -22,6 +22,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -127,7 +128,7 @@ class ProjectHelpers {
         if (string != null) {
             try {
                 MessageDigest md = MessageDigest.getInstance("MD5");
-                md.update(string.getBytes("UTF-8"));
+                md.update(string.getBytes(StandardCharsets.UTF_8));
                 byte[] digest = md.digest();
                 return Hex.encodeHexString(digest);
             } catch (Exception e) {
