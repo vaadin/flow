@@ -21,6 +21,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -104,7 +105,7 @@ class ProjectHelpers {
                 if (projectName.contains("=")) {
                     projectName = projectName
                             .substring(projectName.indexOf("=") + 1)
-                            .replace("'", "").trim();
+                            .replace('\'', ' ').trim();
                 }
                 return "gradle" + createHash(projectName);
             } catch (IOException e) {
@@ -126,11 +127,11 @@ class ProjectHelpers {
         if (string != null) {
             try {
                 MessageDigest md = MessageDigest.getInstance("MD5");
-                md.update(string.getBytes());
+                md.update(string.getBytes("UTF-8"));
                 byte[] digest = md.digest();
-                return String.valueOf(Hex.encodeHex(digest));
-            } catch (NoSuchAlgorithmException e) {
-                getLogger().debug("Missing hash algorithm");
+                return Hex.encodeHexString(digest);
+            } catch (Exception e) {
+                getLogger().debug("Missing hash algorithm", e);
             }
         }
         return StatisticsConstants.MISSING_DATA;

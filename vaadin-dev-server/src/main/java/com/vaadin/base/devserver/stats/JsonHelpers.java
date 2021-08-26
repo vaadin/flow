@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 class JsonHelpers {
 
-
     private static final ObjectMapper jsonMapper = new ObjectMapper();
 
     /*
@@ -90,7 +89,8 @@ class JsonHelpers {
         }
     }
 
-    /** Get instance of a ObjectMapper for mapping object to Json.
+    /**
+     * Get instance of a ObjectMapper for mapping object to Json.
      *
      * @return Shared ObjectMapper instance.
      */

@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 public class StatisticsStorage {
 
     /**
-     * Singleton pattern
+     * Singleton pattern for statistics storage.
      */
     private static final AtomicReference<StatisticsStorage> instance = new AtomicReference<>();
     private String projectId;
@@ -429,6 +429,9 @@ public class StatisticsStorage {
             return normalizeInterval(interval);
         } catch (Exception e) {
             // Just return the default value
+            getLogger().debug(
+                    "Failed to read " + StatisticsConstants.FIELD_SEND_INTERVAL,
+                    e);
         }
         return StatisticsConstants.TIME_SEC_24H;
     }
@@ -445,6 +448,8 @@ public class StatisticsStorage {
             return json.get(StatisticsConstants.FIELD_LAST_SENT).asLong();
         } catch (Exception e) {
             // Use default value in case of any problems
+            getLogger().debug(
+                    "Failed to read " + StatisticsConstants.FIELD_LAST_SENT, e);
         }
         return -1; //
     }
@@ -461,6 +466,9 @@ public class StatisticsStorage {
             return json.get(StatisticsConstants.FIELD_LAST_STATUS).asText();
         } catch (Exception e) {
             // Use default value in case of any problems
+            getLogger().debug(
+                    "Failed to read " + StatisticsConstants.FIELD_LAST_STATUS,
+                    e);
         }
         return null; //
     }
