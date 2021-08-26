@@ -304,6 +304,7 @@
                     <!-- Provide a dummy JS config file to avoid errors -->
                     <configJsFile>eclipse/VaadinJavaConventions.xml
                     </configJsFile>
+                    <lineEnding>LF</lineEnding>
                 </configuration>
                 <dependencies>
                     <dependency>
