@@ -40,14 +40,14 @@ import org.slf4j.LoggerFactory;
  * For example, a method like
  * <p>
  * <code>
- * public Page&lt;Person> list(Pageable pageable) {
+ * public Page&lt;Person&gt; list(Pageable pageable) {
  * }
  * </code>
  * <p>
  * generates a TypeScript and converts data as if the method was defined as
  * <p>
  * <code>
- * public List&lt;Person> list(PageableDTO pageable) {
+ * public List&lt;Person&gt; list(PageableDTO pageable) {
  * }
  * </code>
  * 
@@ -174,6 +174,7 @@ public class EndpointTransferMapper {
      * 
      * @param endpointType
      *            the endpoint type
+     * @param <T> the endpoint type
      * @return the transfer type or null if no mapper exists
      */
     public <T> Mapper<T, ?> getMapper(Class<T> endpointType) {
@@ -190,6 +191,7 @@ public class EndpointTransferMapper {
      * 
      * @param endpointValue
      *            the value returned from the endpoint
+     * @return the value converted to its transfer type
      */
     public Object toTransferType(Object endpointValue) {
         if (endpointValue == null) {
@@ -219,6 +221,8 @@ public class EndpointTransferMapper {
      * @param endpointType
      *            the value type declared in the endpoint, as parameter or
      *            return type
+     * @param <T> the endpoint type
+     * @return the value converted to its endpoint type
      */
     public <T> T toEndpointType(Object transferValue, Class<T> endpointType) {
         if (transferValue == null) {
