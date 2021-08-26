@@ -153,7 +153,7 @@ public class History implements Serializable {
     }
 
     /**
-     * Invokes <code>history.pushState</code> in the browser with the given
+     * Invokes <code>window.history.pushState</code> in the browser with the given
      * parameters. This is a shorthand method for
      * {@link History#pushState(JsonValue, Location)}, creating {@link Location}
      * from the string provided.
@@ -171,7 +171,7 @@ public class History implements Serializable {
     }
 
     /**
-     * Invokes <code>history.pushState</code> in the browser with the given
+     * Invokes <code>window.history.pushState</code> in the browser with the given
      * parameters.
      *
      * @param state
@@ -184,12 +184,12 @@ public class History implements Serializable {
     public void pushState(JsonValue state, Location location) {
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
-        ui.getPage().executeJs("history.pushState($0, '', $1)", state,
+        ui.getPage().executeJs("window.history.pushState($0, '', $1)", state,
                 location.getPathWithQueryParameters());
     }
 
     /**
-     * Invokes <code>history.replaceState</code> in the browser with the given
+     * Invokes <code>window.history.replaceState</code> in the browser with the given
      * parameters. This is a shorthand method for
      * {@link History#replaceState(JsonValue, Location)}, creating
      * {@link Location} from the string provided.
@@ -207,7 +207,7 @@ public class History implements Serializable {
     }
 
     /**
-     * Invokes <code>history.replaceState</code> in the browser with the given
+     * Invokes <code>window.history.replaceState</code> in the browser with the given
      * parameters.
      *
      * @param state
@@ -220,8 +220,8 @@ public class History implements Serializable {
     public void replaceState(JsonValue state, Location location) {
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
-        ui.getPage().executeJs("history.replaceState($0, '', $1)",
-                state, location.getPathWithQueryParameters());
+        ui.getPage().executeJs("window.history.replaceState($0, '', $1)", state,
+                location.getPathWithQueryParameters());
     }
 
     /**
