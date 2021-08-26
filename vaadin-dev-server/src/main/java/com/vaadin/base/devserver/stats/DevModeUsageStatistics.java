@@ -195,7 +195,7 @@ public class DevModeUsageStatistics {
      * @param name
      *            Name of the event.
      */
-    public static void event(String name) {
+    public static void collectEvent(String name) {
         try {
             // Do nothing if not enabled
             if (!isStatisticsEnabled())
@@ -224,7 +224,7 @@ public class DevModeUsageStatistics {
      * @param value
      *            The new value to store.
      */
-    public static void event(String name, double value) {
+    public static void collectEvent(String name, double value) {
         try {
             // Do nothing if not enabled
             if (!isStatisticsEnabled())

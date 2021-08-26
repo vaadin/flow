@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.Reader;
 import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
@@ -131,7 +130,7 @@ public class DevModeUsageStatisticsTests extends TestCase {
         DevModeUsageStatistics.init(configuration, mavenProjectFolder);
 
         // Averate events
-        DevModeUsageStatistics.event("aggregate", 1);
+        DevModeUsageStatistics.collectEvent("aggregate", 1);
         StatisticsStorage statistics = StatisticsStorage.get();
         Assert.assertEquals("Min does not match", 1,
                 statistics.getFieldAsDouble("aggregate_min"), 0);
@@ -142,7 +141,7 @@ public class DevModeUsageStatisticsTests extends TestCase {
         Assert.assertEquals("Count does not match", 1,
                 statistics.getFieldAsInt("aggregate_count"));
 
-        DevModeUsageStatistics.event("aggregate", 2);
+        DevModeUsageStatistics.collectEvent("aggregate", 2);
         Assert.assertEquals("Min does not match", 1,
                 statistics.getFieldAsDouble("aggregate_min"), 0);
         Assert.assertEquals("Max does not match", 2,
@@ -152,7 +151,7 @@ public class DevModeUsageStatisticsTests extends TestCase {
         Assert.assertEquals("Count does not match", 2,
                 statistics.getFieldAsInt("aggregate_count"));
 
-        DevModeUsageStatistics.event("aggregate", 3);
+        DevModeUsageStatistics.collectEvent("aggregate", 3);
         Assert.assertEquals("Min does not match", 1,
                 statistics.getFieldAsDouble("aggregate_min"), 0);
         Assert.assertEquals("Max does not match", 3,
@@ -163,13 +162,13 @@ public class DevModeUsageStatisticsTests extends TestCase {
                 statistics.getFieldAsInt("aggregate_count"));
 
         // Test count events
-        DevModeUsageStatistics.event("count");
+        DevModeUsageStatistics.collectEvent("count");
         Assert.assertEquals("Increment does not match", 1,
                 statistics.getFieldAsInt("count"));
-        DevModeUsageStatistics.event("count");
+        DevModeUsageStatistics.collectEvent("count");
         Assert.assertEquals("Increment does not match", 2,
                 statistics.getFieldAsInt("count"));
-        DevModeUsageStatistics.event("count");
+        DevModeUsageStatistics.collectEvent("count");
         Assert.assertEquals("Increment does not match", 3,
                 statistics.getFieldAsInt("count"));
 
