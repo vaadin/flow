@@ -201,8 +201,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         // the latter case the session field should be set to {@code null}
         // immediately to avoid using HTTP session object which is invalid (all
         // methods throw exceptions).
+        lock();
         try {
-            lock();
             if (getAttribute(CLOSE_SESSION_EXPLICITLY) == null) {
                 session = null;
             }
