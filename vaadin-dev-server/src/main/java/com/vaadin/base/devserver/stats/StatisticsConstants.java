@@ -19,6 +19,12 @@ package com.vaadin.base.devserver.stats;
 public class StatisticsConstants {
 
     /*
+     * Event tracking identifiers.
+     */
+    public static final String EVENT_LIVE_RELOAD = "liveReload";
+    public static final String EVENT_WEBPACK_START = "webpackStart";
+
+    /*
      * Client-side statistics parameter.
      */
     public static final String CLIENT_USAGE_DATA = "vaadin_telemetry_data";

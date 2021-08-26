@@ -63,6 +63,8 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static com.vaadin.base.devserver.stats.StatisticsConstants.CLIENT_USAGE_DATA;
+import static com.vaadin.base.devserver.stats.StatisticsConstants.EVENT_LIVE_RELOAD;
+import static com.vaadin.base.devserver.stats.StatisticsConstants.EVENT_WEBPACK_START;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
@@ -510,7 +512,7 @@ public final class DevModeHandlerImpl
             // if failure, ensures the webpack error is shown in the browser
             if (liveReload != null) {
                 liveReload.reload();
-                DevModeUsageStatistics.event("liveReload");
+                DevModeUsageStatistics.event(EVENT_LIVE_RELOAD);
             }
         }
     }
@@ -724,7 +726,7 @@ public final class DevModeHandlerImpl
 
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info(LOG_END, ms);
-            DevModeUsageStatistics.event("webpackStart", ms);
+            DevModeUsageStatistics.event(EVENT_WEBPACK_START, ms);
             return true;
         } catch (IOException e) {
             getLogger().error("Failed to start the webpack process", e);
