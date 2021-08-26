@@ -87,17 +87,17 @@ public class StatisticsStorage {
      * <p>
      * Updates <code>FIELD_LAST_STATUS</code>.
      *
-     * @param posrtUrl
+     * @param postUrl
      *            URL to post data to.
      * @param data
      *            Json data to send
      * @return Response or <code>data</code> if the data was not successfully
      *         sent.
      */
-    private static ObjectNode postData(String posrtUrl, JsonNode data) {
+    private static ObjectNode postData(String postUrl, JsonNode data) {
         ObjectNode result;
         try {
-            HttpPost post = new HttpPost(posrtUrl);
+            HttpPost post = new HttpPost(postUrl);
             post.addHeader("Content-Type", "application/json");
             post.setEntity(new StringEntity(
                     JsonHelpers.getJsonMapper().writeValueAsString(data)));

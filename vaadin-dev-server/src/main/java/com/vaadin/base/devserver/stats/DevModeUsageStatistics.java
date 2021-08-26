@@ -139,8 +139,9 @@ public class DevModeUsageStatistics {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                     return true;
                 } else {
-                    // Backward compatible parsing: The request contains
-                    // an explanation and the json starts with the first "{"
+                    // Compatible with client-only usage statistics format:
+                    // The request contains an explanation and the json starts
+                    // with the first "{"
                     String data = IOUtils.toString(request.getReader());
                     if (!data.contains("{")) {
                         response.sendError(HttpServletResponse.SC_BAD_REQUEST);
