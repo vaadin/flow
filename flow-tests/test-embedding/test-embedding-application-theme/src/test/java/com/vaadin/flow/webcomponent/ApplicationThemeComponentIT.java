@@ -223,20 +223,12 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void removingEmbeddedComponent_arrayIsCleaned() {
+    public void sameDocumentCssIsAddedOnlyOnce() {
         open();
         checkLogsForErrors();
         Assert.assertEquals(
-                "Both embedded components should have registered globalCss", 2l,
-                getCommandExecutor().executeScript(
-                        "return window.Vaadin['_vaadintheme_embedded-theme_globalCss'].length"));
-        getCommandExecutor()
-                .executeScript("document.getElementById('second').remove()");
-
-        Assert.assertEquals(
-                "After removal of second should have removed its globalCss", 1l,
-                getCommandExecutor().executeScript(
-                        "return window.Vaadin['_vaadintheme_embedded-theme_globalCss'].length"));
-
+                "document css adds 2 stylesheet links and should be added twice",
+                2l, getCommandExecutor().executeScript(
+                        "return document.head.getElementsByTagName('link').length"));
     }
 }
