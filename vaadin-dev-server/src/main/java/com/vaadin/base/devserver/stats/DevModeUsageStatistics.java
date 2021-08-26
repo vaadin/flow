@@ -102,6 +102,10 @@ public class DevModeUsageStatistics {
     /**
      * Handles a client-side request to receive component telemetry data.
      *
+     * @param request
+     *            the servlet request
+     * @param response
+     *            the servlet response
      * @return <code>true</code> if request was handled, <code>false</code>
      *         otherwise.
      */
