@@ -59,26 +59,26 @@ public class EndpointTransferMapper {
      * A mapper for endpoint values that is capable of converting between the
      * given endpoint and transfer type.
      * 
-     * @param <ENDPOINT_TYPE>
+     * @param <ENDPOINTTYPE>
      *            The type used in endpoints
-     * @param <TRANSFER_TYPE>
+     * @param <TRANSFERTYPE>
      *            the type used in communication with the client
      */
-    public interface Mapper<ENDPOINT_TYPE, TRANSFER_TYPE> {
+    public interface Mapper<ENDPOINTTYPE, TRANSFERTYPE> {
         /**
          * Returns the type used in the endpoint.
          * 
          * 
          * @return the endpoint type
          */
-        public Class<? extends ENDPOINT_TYPE> getEndpointType();
+        public Class<? extends ENDPOINTTYPE> getEndpointType();
 
         /**
          * Returns the type used when transfering data to/from the client.
          * 
          * @return the transfer type
          */
-        public Class<? extends TRANSFER_TYPE> getTransferType();
+        public Class<? extends TRANSFERTYPE> getTransferType();
 
         /**
          * Converts the given endpoint value to the transfer type.
@@ -87,7 +87,7 @@ public class EndpointTransferMapper {
          *            the value used in the endpoint
          * @return the value used in communication with the client
          */
-        public TRANSFER_TYPE toTransferType(ENDPOINT_TYPE endpointType);
+        public TRANSFERTYPE toTransferType(ENDPOINTTYPE endpointType);
 
         /**
          * Converts the given transfer value to the endpoint type.
@@ -96,7 +96,7 @@ public class EndpointTransferMapper {
          *            the value used in communication with the client
          * @return the value used in the endpoint
          */
-        public ENDPOINT_TYPE toEndpointType(TRANSFER_TYPE transferType);
+        public ENDPOINTTYPE toEndpointType(TRANSFERTYPE transferType);
 
     }
 
@@ -183,10 +183,10 @@ public class EndpointTransferMapper {
      *            the endpoint type
      * @return the transfer type or null if no mapper exists
      */
-    public <T> Mapper<T, ?> getMapper(Class<T> endpointType) {
+    public <T> Mapper getMapper(Class<T> endpointType) {
         for (Class<?> key : endpointToTransfer.keySet()) {
             if (key.isAssignableFrom(endpointType)) {
-                return (Mapper<T, ?>) mappers.get(key);
+                return (Mapper) mappers.get(key);
             }
         }
         return null;

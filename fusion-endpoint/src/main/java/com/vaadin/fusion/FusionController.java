@@ -405,14 +405,9 @@ public class FusionController {
             Type parameterType = javaParameters[i];
             Type incomingType = parameterType;
             try {
-                Class<?> mappedType = null;
-                if (parameterType instanceof Class) {
-                    mappedType = endpointTransferMapper
-                            .getTransferType((Class) incomingType);
-                    if (mappedType != null) {
-                        incomingType = mappedType;
-                    }
-
+                Class<?> mappedType = getTransferType(parameterType);
+                if (mappedType != null) {
+                    incomingType = mappedType;
                 }
                 Object parameter = vaadinEndpointMapper
                         .readerFor(vaadinEndpointMapper.getTypeFactory()
@@ -443,6 +438,14 @@ public class FusionController {
         }
         throw getInvalidEndpointParametersException(methodName, endpointName,
                 errorParams, constraintViolations);
+    }
+
+    private Class<?> getTransferType(Type type) {
+        if (!(type instanceof Class)) {
+            return null;
+        }
+
+        return endpointTransferMapper.getTransferType((Class) type);
     }
 
     private EndpointValidationException getInvalidEndpointParametersException(
