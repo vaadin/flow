@@ -72,10 +72,10 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     public static final String GENERATED_PREFIX = "GENERATED/";
 
-    public static final String DEPENDENCIES = "dependencies";
-    public static final String VAADIN_DEP_KEY = "vaadin";
-    public static final String HASH_KEY = "hash";
-    public static final String DEV_DEPENDENCIES = "devDependencies";
+    static final String DEPENDENCIES = "dependencies";
+    static final String VAADIN_DEP_KEY = "vaadin";
+    static final String HASH_KEY = "hash";
+    static final String DEV_DEPENDENCIES = "devDependencies";
 
     private static final String DEP_LICENSE_KEY = "license";
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
@@ -246,7 +246,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                         + "/" + resource) != null;
     }
 
-    protected JsonObject getPackageJson() throws IOException {
+    JsonObject getPackageJson() throws IOException {
         JsonObject packageJson = getJsonFileContent(getPackageJsonFile());
         if (packageJson == null) {
             packageJson = Json.createObject();
@@ -439,7 +439,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         return added > 0;
     }
 
-    protected int addDependency(JsonObject json, String key, String pkg,
+    int addDependency(JsonObject json, String key, String pkg,
             String version) {
         Objects.requireNonNull(json, "Json object need to be given");
         Objects.requireNonNull(key, "Json sub object needs to be give.");
@@ -505,7 +505,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         return new FrontendVersion(json.getString(key));
     }
 
-    protected String writePackageFile(JsonObject packageJson)
+    String writePackageFile(JsonObject packageJson)
             throws IOException {
         return writePackageFile(packageJson, new File(npmFolder, PACKAGE_JSON));
     }
