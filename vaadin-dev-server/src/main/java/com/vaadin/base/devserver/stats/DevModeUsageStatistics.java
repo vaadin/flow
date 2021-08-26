@@ -108,9 +108,10 @@ public class DevModeUsageStatistics {
     public static boolean handleClientUsageData(HttpServletRequest request,
             HttpServletResponse response) {
 
-        // If not enabled we don't handle the request
+        // If not enabled we don't handle the request, but
+        // still consider the request handled.
         if (!isStatisticsEnabled()) {
-            return false;
+            return true;
         }
 
         if (request.getParameter(StatisticsConstants.CLIENT_USAGE_DATA) != null
