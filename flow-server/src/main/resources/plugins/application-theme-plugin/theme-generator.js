@@ -85,10 +85,10 @@ const injectGlobalCssMethod = `
 export const injectGlobalCss = (css, target, first) => {
   if(target === document) {
     const hash = getHash(css);
-    if (window.Vaadin.injected.indexOf(hash) !== -1) {
+    if (window.Vaadin.Flow.injectedGlobalCss.indexOf(hash) !== -1) {
       return;
     }
-    window.Vaadin.injected.push(hash);
+    window.Vaadin.Flow.injectedGlobalCss.push(hash);
   }
   const sheet = new CSSStyleSheet();
   sheet.replaceSync(createLinkReferences(css,target));
@@ -260,7 +260,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   themeFile += imports.join('');
   themeFile += `
 window.Vaadin = window.Vaadin || {};
-window.Vaadin.injected = [];
+window.Vaadin.Flow.injectedGlobalCss = [];
 
 /**
  * Calculate a 32 bit FNV-1a hash
@@ -285,6 +285,7 @@ function hashFnv32a(str) {
 
 /**
  * Calculate a 64 bit hash for the given input.
+ * Double hash is used to significantly lower the collision probability.
  *
  * @param {string} input value to get hash for
  * @returns {string} 64 bit (as 16 byte hex string)
