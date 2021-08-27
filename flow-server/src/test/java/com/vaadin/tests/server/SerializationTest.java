@@ -25,6 +25,10 @@ public class SerializationTest extends TestCase {
             throws Exception {
         VaadinService vaadinService = new MockVaadinService(true);
         VaadinSession session = new VaadinSession(vaadinService);
+        // This is done only for test purpose to init the session lock,
+        // should be called by Flow internally as soon as the session has
+        // been created.
+        session.refreshTransients(null, vaadinService);
 
         session = serializeAndDeserialize(session);
 
@@ -37,6 +41,10 @@ public class SerializationTest extends TestCase {
             throws Exception {
         VaadinService vaadinService = new MockVaadinService(false);
         VaadinSession session = new VaadinSession(vaadinService);
+        // This is done only for test purpose to init the session lock,
+        // should be called by Flow internally as soon as the session has
+        // been created.
+        session.refreshTransients(null, vaadinService);
 
         session = serializeAndDeserialize(session);
         // This is done only for test purpose to refresh the session lock,
