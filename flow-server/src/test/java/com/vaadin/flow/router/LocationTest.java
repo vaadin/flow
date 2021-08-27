@@ -305,4 +305,37 @@ public class LocationTest {
         Assert.assertEquals("baz",
                 location.getQueryParameters().getQueryString());
     }
+
+    @Test
+    public void locationWithFragment_fragmentRetainedForPathWithQueryParameters() {
+        String locationString = "foo#fragment";
+        Location location = new Location(locationString);
+        Assert.assertEquals(locationString,
+                location.getPathWithQueryParameters());
+
+        locationString = "foo/#fragment";
+        location = new Location(locationString);
+        Assert.assertEquals(locationString,
+                location.getPathWithQueryParameters());
+
+        locationString = "foo?bar#fragment";
+        location = new Location(locationString);
+        Assert.assertEquals(locationString,
+                location.getPathWithQueryParameters());
+
+        locationString = "foo/?bar=baz#fragment";
+        location = new Location(locationString);
+        Assert.assertEquals(locationString,
+                location.getPathWithQueryParameters());
+
+        locationString = "foo#";
+        location = new Location(locationString);
+        Assert.assertEquals(locationString,
+                location.getPathWithQueryParameters());
+
+        locationString = "foo/?bar=baz#";
+        location = new Location(locationString);
+        Assert.assertEquals(locationString,
+                location.getPathWithQueryParameters());
+    }
 }
