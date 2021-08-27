@@ -83,13 +83,7 @@ const createLinkReferences = (css, target) => {
 const injectGlobalCssMethod = `
 // target: Document | ShadowRoot
 export const injectGlobalCss = (css, target, first) => {
-  if(target === document) {
-    const hash = getHash(css);
-    if (window.Vaadin.Flow.injectedGlobalCss.indexOf(hash) !== -1) {
-      return;
-    }
-    window.Vaadin.Flow.injectedGlobalCss.push(hash);
-  }
+  
   const sheet = new CSSStyleSheet();
   sheet.replaceSync(createLinkReferences(css,target));
   if (first) {
@@ -260,48 +254,18 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   themeFile += imports.join('');
   themeFile += `
 window.Vaadin = window.Vaadin || {};
-window.Vaadin.Flow.injectedGlobalCss = [];
-
-/**
- * Calculate a 32 bit FNV-1a hash
- * Found here: https://gist.github.com/vaiorabbit/5657561
- * Ref.: http://isthe.com/chongo/tech/comp/fnv/
- *
- * @param {string} str the input value
- * @returns {string} 32 bit (as 8 byte hex string)
- */
-function hashFnv32a(str) {
-  /*jshint bitwise:false */
-  let i, l, hval = 0x811c9dc5;
-
-  for (i = 0, l = str.length; i < l; i++) {
-    hval ^= str.charCodeAt(i);
-    hval += (hval << 1) + (hval << 4) + (hval << 7) + (hval << 8) + (hval << 24);
-  }
-
-  // Convert to 8 digit hex string
-  return ("0000000" + (hval >>> 0).toString(16)).substr(-8);
-}
-
-/**
- * Calculate a 64 bit hash for the given input.
- * Double hash is used to significantly lower the collision probability.
- *
- * @param {string} input value to get hash for
- * @returns {string} 64 bit (as 16 byte hex string)
- */
-function getHash(input) {
-  let h1 = hashFnv32a(input); // returns 32 bit (as 8 byte hex string)
-  return h1 + hashFnv32a(h1 + input); 
-}
+window.Vaadin['${globalCssFlag}'] = window.Vaadin['${globalCssFlag}'] || [];
 `;
 
 // Don't format as the generated file formatting will get wonky!
 // If targets check that we only register the style parts once, checks exist for global css and component css
   const themeFileApply = `export const applyTheme = (target) => {
   ${parentTheme}
-  ${globalCssCode.join('')}
-  
+  const injectGlobal = (window.Vaadin['${globalCssFlag}'].length === 0) || (!window.Vaadin['${globalCssFlag}'].includes(target) && target !== document);
+  if (injectGlobal) {
+    ${globalCssCode.join('')}
+    window.Vaadin['${globalCssFlag}'].push(target);
+  }
   if (!document['${componentCssFlag}']) {
     ${componentCssCode.join('')}
     document['${componentCssFlag}'] = true;
