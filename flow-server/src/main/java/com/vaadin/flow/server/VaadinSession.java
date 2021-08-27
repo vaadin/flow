@@ -99,7 +99,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private LinkedList<RequestHandler> requestHandlers = new LinkedList<>();
 
     private int nextUIId = 0;
-    private Map<Integer, UI> uIs = new HashMap<>();
+    private transient Map<Integer, UI> uIs = new HashMap<>();
 
     protected WebBrowser browser = new WebBrowser();
 
@@ -1029,11 +1029,13 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @throws ClassNotFoundException
      *             if the class of the stream object could not be found
      */
+    @SuppressWarnings("unchecked")
     private void readObject(ObjectInputStream stream)
             throws IOException, ClassNotFoundException {
         Map<Class<?>, CurrentInstance> old = CurrentInstance.setCurrent(this);
         try {
             stream.defaultReadObject();
+            uIs = (Map<Integer, UI>) stream.readObject();
             pendingAccessQueue = new ConcurrentLinkedQueue<>();
         } finally {
             CurrentInstance.restoreInstances(old);
@@ -1042,27 +1044,20 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private void writeObject(java.io.ObjectOutputStream stream)
             throws IOException {
-        boolean serialize = true;
+        boolean serializeUIs = true;
 
         ApplicationConfiguration appConfiguration = ApplicationConfiguration
                 .get(getService().getContext());
         if (!appConfiguration.isProductionMode()
                 && !appConfiguration.isDevModeSessionSerializationEnabled()) {
-            serialize = false;
+            serializeUIs = false;
         }
 
-        Map<Integer, UI> currentUIs = this.uIs;
-        lock();
-        try {
-            if (!serialize) {
-                this.uIs = new HashMap<>();
-            }
-            stream.defaultWriteObject();
-        } finally {
-            if (!serialize) {
-                this.uIs = currentUIs;
-            }
-            unlock();
+        stream.defaultWriteObject();
+        if (serializeUIs) {
+            stream.writeObject(uIs);
+        } else {
+            stream.writeObject(new HashMap<>());
         }
     }
 
