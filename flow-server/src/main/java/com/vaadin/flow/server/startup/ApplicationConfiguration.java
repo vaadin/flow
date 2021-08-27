@@ -91,6 +91,13 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
     /**
      * Checks if development mode session serialization is enabled or not.
      * <p>
+     * Disabling session serialization means all its
+     * {@link com.vaadin.flow.component.UI} instances won't be serialized. This
+     * might be needed if one or more <code>UI</code>'s are not serializable
+     * and, thus, the whole http session might be discarded, making an
+     * authentication or other sensitive data stored in the session to get lost,
+     * which is not acceptable in most of the cases.
+     * <p>
      * By default session serialization is disabled in development mode.
      *
      * @return {@code true} if dev mode session serialization is enabled,
