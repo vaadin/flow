@@ -2175,10 +2175,6 @@ public abstract class VaadinService implements Serializable {
     protected VaadinSession readFromHttpSession(WrappedSession wrappedSession) {
         VaadinSession session = (VaadinSession) wrappedSession
                 .getAttribute(getSessionAttributeName());
-        if (session != null && session.isDeserializedAsEmpty()) {
-            wrappedSession.removeAttribute(getSessionAttributeName());
-            return null;
-        }
         return session;
     }
 
