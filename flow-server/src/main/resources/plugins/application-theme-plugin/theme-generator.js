@@ -260,6 +260,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   themeFile += imports.join('');
   themeFile += `
 window.Vaadin = window.Vaadin || {};
+window.Vaadin.Flow = window.Vaadin.Flow || {};
 window.Vaadin.Flow.injectedGlobalCss = [];
 
 /**
