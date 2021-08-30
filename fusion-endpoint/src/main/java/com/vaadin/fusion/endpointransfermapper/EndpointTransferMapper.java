@@ -71,14 +71,14 @@ public class EndpointTransferMapper {
          * 
          * @return the endpoint type
          */
-        public Class<? extends ENDPOINTTYPE> getEndpointType();
+        Class<? extends ENDPOINTTYPE> getEndpointType();
 
         /**
          * Returns the type used when transfering data to/from the client.
          * 
          * @return the transfer type
          */
-        public Class<? extends TRANSFERTYPE> getTransferType();
+        Class<? extends TRANSFERTYPE> getTransferType();
 
         /**
          * Converts the given endpoint value to the transfer type.
@@ -87,7 +87,7 @@ public class EndpointTransferMapper {
          *            the value used in the endpoint
          * @return the value used in communication with the client
          */
-        public TRANSFERTYPE toTransferType(ENDPOINTTYPE endpointType);
+        TRANSFERTYPE toTransferType(ENDPOINTTYPE endpointType);
 
         /**
          * Converts the given transfer value to the endpoint type.
@@ -96,7 +96,7 @@ public class EndpointTransferMapper {
          *            the value used in communication with the client
          * @return the value used in the endpoint
          */
-        public ENDPOINTTYPE toEndpointType(TRANSFERTYPE transferType);
+        ENDPOINTTYPE toEndpointType(TRANSFERTYPE transferType);
 
     }
 
@@ -186,7 +186,7 @@ public class EndpointTransferMapper {
     public <T> Mapper getMapper(Class<T> endpointType) {
         for (Class<?> key : endpointToTransfer.keySet()) {
             if (key.isAssignableFrom(endpointType)) {
-                return (Mapper) mappers.get(key);
+                return mappers.get(key);
             }
         }
         return null;

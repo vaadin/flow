@@ -687,9 +687,7 @@ public class OpenAPIObjectGenerator {
 
         ResolvedReferenceTypeDeclaration solved = typeSolver
                 .solveType(mappedClassName);
-        ReferenceTypeImpl resolvedType = new ReferenceTypeImpl(solved,
-                new ArrayList<>(), typeSolver);
-        return resolvedType;
+        return new ReferenceTypeImpl(solved, new ArrayList<>(), typeSolver);
     }
 
     ResolvedType toMappedType(Type type) {
