@@ -21,6 +21,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
@@ -321,6 +322,32 @@ public class VaadinServletTest {
 
         Mockito.verify(factory).createHandler(service);
         Assert.assertSame(handler, result);
+    }
+
+    @Test
+    public void destroy_servletConfigAvailableInServbiceDestroy()
+            throws ServletException {
+        VaadinServletService service = Mockito.mock(VaadinServletService.class);
+        VaadinServlet servlet = new VaadinServlet() {
+            @Override
+            public VaadinServletService getService() {
+                return service;
+            }
+        };
+
+        AtomicReference<ServletConfig> configDuringDestroy = new AtomicReference<>();
+        Mockito.doAnswer(invocation -> {
+            configDuringDestroy.set(servlet.getServletConfig());
+            return null;
+        }).when(service).destroy();
+
+        ServletConfig config = mockConfig();
+
+        servlet.init(config);
+
+        servlet.destroy();
+
+        Assert.assertSame(config, configDuringDestroy.get());
     }
 
     private ServletConfig mockConfig() {
