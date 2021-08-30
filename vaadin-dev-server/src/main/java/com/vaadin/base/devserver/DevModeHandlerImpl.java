@@ -286,8 +286,7 @@ public final class DevModeHandlerImpl
         if (pathInfo != null
                 && (pathInfo.startsWith("/" + VAADIN_MAPPING)
                         || APP_THEME_PATTERN.matcher(pathInfo).find()
-                        || (request.getParameter(CLIENT_USAGE_DATA) != null
-                                && request.getMethod().equals("POST")))
+                        || DevModeUsageStatistics.isClientUsageRequest(request))
                 && !pathInfo.startsWith(
                         "/" + StreamRequestHandler.DYN_RES_PREFIX)) {
             return true;
@@ -323,9 +322,9 @@ public final class DevModeHandlerImpl
         }
 
         // Handle Vaadin usage statistics collector
-        if (request.getParameter(CLIENT_USAGE_DATA) != null) {
-            return DevModeUsageStatistics.handleClientUsageData(request,
-                    response);
+        if (DevModeUsageStatistics.isClientUsageRequest(request)) {
+            DevModeUsageStatistics.handleClientUsageData(request, response);
+            return true;
         }
 
         // Since we have 'publicPath=/VAADIN/' in webpack config,
