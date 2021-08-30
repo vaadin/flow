@@ -371,6 +371,9 @@ public final class DevModeHandler implements RequestHandler {
         // Copies response headers
         connection.getHeaderFields().forEach((header, values) -> {
             if (header != null) {
+                if ("Transfer-Encoding".equals(header)) {
+                    return;
+                }
                 response.addHeader(header, values.get(0));
             }
         });
