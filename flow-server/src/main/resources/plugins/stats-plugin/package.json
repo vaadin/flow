@@ -12,6 +12,9 @@
   "bugs": {
     "url": "https://github.com/vaadin/flow/issues"
   },
+   "dependencies": {
+    "mkdirp": "0.5.5"
+  },
   "files": [
     "stats-plugin.js"
   ]
