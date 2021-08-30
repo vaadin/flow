@@ -257,10 +257,10 @@ module.exports = {
     rules: [
       enableTypeScript && {
         test: /\.ts$/,
-        loader: 'ts-loader',
+        loader: 'esbuild-loader',
         options: {
-          transpileOnly: true,
-          experimentalWatchApi: true
+          loader: 'ts',
+          target: 'es2019'
         }
       },
       {

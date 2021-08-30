@@ -42,6 +42,7 @@ import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.PathUtil;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 
 import elemental.json.JsonValue;
@@ -446,6 +447,7 @@ public class JavaScriptBootstrapUI extends UI {
      * views.
      */
     @Tag(Tag.DIV)
+    @AnonymousAllowed
     public static class ClientViewPlaceholder extends Component {
     }
 }
