@@ -33,9 +33,9 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ApplicationClassLoaderAccess;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.JsonConstants;
@@ -537,10 +537,10 @@ public class VaadinServlet extends HttpServlet {
     @Override
     public void destroy() {
         super.destroy();
-        isServletInitialized = false;
         if (getService() != null) {
             getService().destroy();
         }
+        isServletInitialized = false;
     }
 
     private VaadinServletContext initializeContext() {
