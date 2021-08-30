@@ -44,6 +44,7 @@ import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Expression;
@@ -664,19 +665,8 @@ public class OpenAPIObjectGenerator {
     private MediaType createReturnMediaType(MethodDeclaration methodDeclaration,
             ResolvedTypeParametersMap resolvedTypeParametersMap) {
         MediaType mediaItem = new MediaType();
-        Type type = methodDeclaration.getType();
-        ResolvedType resolvedType = methodDeclaration.resolve().getReturnType();
-        ResolvedType mappedType = toMappedType(type);
-        GeneratorType generatorType;
-        if (mappedType != null) {
-            resolvedType = mappedType;
-            generatorType = new GeneratorType(
-                    resolvedTypeParametersMap.replaceAll(resolvedType));
-        } else {
-            generatorType = new GeneratorType(type,
-                    resolvedTypeParametersMap.replaceAll(resolvedType));
-        }
-
+        GeneratorType generatorType = createSchemaType(methodDeclaration,
+                resolvedTypeParametersMap);
         Schema schema = parseResolvedTypeToSchema(generatorType,
                 methodDeclaration.getAnnotations());
         schema.setDescription("");
@@ -706,7 +696,7 @@ public class OpenAPIObjectGenerator {
         ResolvedType resolvedType;
         try {
             resolvedType = type.resolve();
-        } catch (UnsupportedOperationException e) {
+        } catch (UnsupportedOperationException e) { // NOSONAR
             // This is called for T
             return null;
         }
@@ -757,18 +747,9 @@ public class OpenAPIObjectGenerator {
         requestBodyObject.schema(requestSchema);
 
         methodDeclaration.getParameters().forEach(parameter -> {
-            Type type = parameter.getType();
-            ResolvedType resolvedType = parameter.resolve().getType();
-            ResolvedType mappedType = toMappedType(type);
-            GeneratorType generatorType;
-            if (mappedType != null) {
-                resolvedType = mappedType;
-                generatorType = new GeneratorType(
-                        resolvedTypeParametersMap.replaceAll(resolvedType));
-            } else {
-                generatorType = new GeneratorType(type,
-                        resolvedTypeParametersMap.replaceAll(resolvedType));
-            }
+            GeneratorType generatorType = createSchemaType(parameter,
+                    resolvedTypeParametersMap);
+
             Schema paramSchema = parseResolvedTypeToSchema(generatorType,
                     parameter.getAnnotations());
 
@@ -789,6 +770,34 @@ public class OpenAPIObjectGenerator {
                     new LinkedHashMap<>(paramsDescription));
         }
         return requestBody;
+    }
+
+    private GeneratorType createSchemaType(MethodDeclaration methodDeclaration,
+            ResolvedTypeParametersMap resolvedTypeParametersMap) {
+        Type type = methodDeclaration.getType();
+        ResolvedType resolvedType = methodDeclaration.resolve().getReturnType();
+        return createSchemaType(type, resolvedType, resolvedTypeParametersMap);
+    }
+
+    private GeneratorType createSchemaType(Parameter parameter,
+            ResolvedTypeParametersMap resolvedTypeParametersMap) {
+        Type type = parameter.getType();
+        ResolvedType resolvedType = parameter.resolve().getType();
+        return createSchemaType(type, resolvedType, resolvedTypeParametersMap);
+    }
+
+    private GeneratorType createSchemaType(Type type, ResolvedType resolvedType,
+            ResolvedTypeParametersMap resolvedTypeParametersMap) {
+        ResolvedType mappedType = toMappedType(type);
+
+        if (mappedType != null) {
+            resolvedType = mappedType;
+            return new GeneratorType(
+                    resolvedTypeParametersMap.replaceAll(resolvedType));
+        } else {
+            return new GeneratorType(type,
+                    resolvedTypeParametersMap.replaceAll(resolvedType));
+        }
     }
 
     @SuppressWarnings("squid:S1872")
