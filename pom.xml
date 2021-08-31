@@ -75,7 +75,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8
         </project.reporting.outputEncoding>
-        <jsinterop.version>1.0.1</jsinterop.version>
+        <jsinterop.version>1.0.2</jsinterop.version>
         <sonar.java.source>8</sonar.java.source>
         <sonar.analysis.mode>preview</sonar.analysis.mode>
         <sonar.issuesReport.console.enable>true
