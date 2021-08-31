@@ -130,7 +130,7 @@
         <dependency>
             <groupId>com.helger</groupId>
             <artifactId>ph-css</artifactId>
-            <version>6.1.1</version>
+            <version>6.3.4</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.helger</groupId>
