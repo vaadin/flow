@@ -471,7 +471,7 @@
                             <configuration>
                                 <rules>
                                     <restrictImports
-                                        implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
+                                        implementation="de.skuzzle.enforcer.restrictimports.rule.RestrictImports">
                                         <reason>Use SLF4j for logging</reason>
                                         <bannedImport>java.util.logging.**
                                         </bannedImport>
