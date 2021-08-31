@@ -103,6 +103,7 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson.version}</version>
         </dependency>
+        
         <!-- Needed for security annotations -->
         <dependency>
             <groupId>javax.annotation</groupId>
