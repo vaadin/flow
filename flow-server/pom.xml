@@ -131,24 +131,6 @@
             <groupId>com.helger</groupId>
             <artifactId>ph-css</artifactId>
             <version>6.3.4</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.helger</groupId>
-                    <artifactId>ph-commons</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>com.helger</groupId>
-            <artifactId>ph-commons</artifactId>
-            <version>9.1.2</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.code.findbugs</groupId>
-                    <artifactId>jsr305</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- Byte code generation -->
