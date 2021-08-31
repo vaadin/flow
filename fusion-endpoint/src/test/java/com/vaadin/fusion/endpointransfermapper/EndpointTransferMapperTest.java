@@ -6,8 +6,10 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.data.domain.AbstractPageRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.NullHandling;
@@ -21,10 +23,10 @@ public class EndpointTransferMapperTest {
     public void getTransferTypeClass_works() {
         Assert.assertEquals(PageableDTO.class,
                 endpointTransferMapper.getTransferType(Pageable.class));
-        // Assert.assertEquals(PageableDTO.class,
-        // endpointTransferMapper.getTransferType(AbstractPageRequest.class));
-        // Assert.assertEquals(PageableDTO.class,
-        // endpointTransferMapper.getTransferType(PageRequest.class));
+        Assert.assertEquals(PageableDTO.class, endpointTransferMapper
+                .getTransferType(AbstractPageRequest.class));
+        Assert.assertEquals(PageableDTO.class,
+                endpointTransferMapper.getTransferType(PageRequest.class));
         Assert.assertEquals(List.class,
                 endpointTransferMapper.getTransferType(Page.class));
         Assert.assertEquals(String.class,

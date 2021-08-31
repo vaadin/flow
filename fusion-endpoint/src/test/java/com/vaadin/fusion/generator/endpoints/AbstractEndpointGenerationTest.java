@@ -162,25 +162,28 @@ public abstract class AbstractEndpointGenerationTest
                     .ofNullable(actualOpenAPI.getComponents())
                     .map(Components::getSchemas).orElse(Collections.emptyMap());
 
-            componentSchemas.keySet().removeIf(clsName -> {
-                /* Skip classes that are added because of the mappers */
-                if (clsName.startsWith(
-                        PageableDTO.class.getPackage().getName() + ".")) {
-                    return true;
-                }
-                if (Direction.class.getCanonicalName().equals(clsName)
-                        || NullHandling.class.getCanonicalName()
-                                .equals(clsName)) {
-                    return true;
-                }
-                return false;
-            });
+            removeMapperClasses(componentSchemas);
             assertTrue(String.format(
                     "Got schemas that correspond to no class provided in test parameters, schemas: '%s'",
                     componentSchemas), componentSchemas.isEmpty());
         }
 
         verifySchemaReferences();
+    }
+
+    private void removeMapperClasses(Map<String, Schema> componentSchemas) {
+        componentSchemas.keySet().removeIf(clsName -> {
+            /* Skip classes that are added because of the mappers */
+            if (clsName.startsWith(
+                    PageableDTO.class.getPackage().getName() + ".")) {
+                return true;
+            }
+            if (Direction.class.getCanonicalName().equals(clsName)
+                    || NullHandling.class.getCanonicalName().equals(clsName)) {
+                return true;
+            }
+            return false;
+        });
     }
 
     private void assertPaths(Paths actualPaths,
