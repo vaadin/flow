@@ -115,9 +115,9 @@ class SchemaGenerator {
                 .asReferenceType();
 
         if (type.isEnum()) {
-                List<String> entries = resolvedReferenceType.getTypeDeclaration()
-                                .orElseThrow(IllegalArgumentException::new)
-                    .asEnum().getEnumConstants().stream()
+            List<String> entries = resolvedReferenceType.getTypeDeclaration()
+                    .orElseThrow(IllegalArgumentException::new).asEnum()
+                    .getEnumConstants().stream()
                     .map(ResolvedEnumConstantDeclaration::getName)
                     .collect(Collectors.toList());
             StringSchema schema = new StringSchema();
@@ -171,8 +171,10 @@ class SchemaGenerator {
                 .asReferenceType();
 
         Optional<ResolvedReferenceTypeDeclaration> typeDeclaration = resolvedReferenceType
-            .getTypeDeclaration();
-        if (!typeDeclaration.filter(td -> td.isClass() && !td.isAnonymousClass()).isPresent()) {
+                .getTypeDeclaration();
+        if (!typeDeclaration
+                .filter(td -> td.isClass() && !td.isAnonymousClass())
+                .isPresent()) {
             return Collections.emptyMap();
         }
         HashMap<String, Boolean> validFields = new HashMap<>();
