@@ -187,6 +187,7 @@ class SchemaResolver {
         ResolvedReferenceType resolvedReferenceType = type.asResolvedType()
                 .asReferenceType();
         List<String> entries = resolvedReferenceType.getTypeDeclaration()
+                .orElseThrow(IllegalArgumentException::new)
                 .asEnum().getEnumConstants().stream()
                 .map(ResolvedEnumConstantDeclaration::getName)
                 .collect(Collectors.toList());
