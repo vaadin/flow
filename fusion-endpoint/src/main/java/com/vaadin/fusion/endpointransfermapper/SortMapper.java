@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.vaadin.fusion.endpointransfermapper.EndpointTransferMapper.Mapper;
+import com.vaadin.fusion.mappedtypes.OrderDTO;
+import com.vaadin.fusion.mappedtypes.SortDTO;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;

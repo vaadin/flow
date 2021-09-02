@@ -16,6 +16,7 @@
 package com.vaadin.fusion.endpointransfermapper;
 
 import com.vaadin.fusion.endpointransfermapper.EndpointTransferMapper.Mapper;
+import com.vaadin.fusion.mappedtypes.PageableDTO;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

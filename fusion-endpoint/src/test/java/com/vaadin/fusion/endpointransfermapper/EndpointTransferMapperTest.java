@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.vaadin.fusion.mappedtypes.OrderDTO;
+import com.vaadin.fusion.mappedtypes.PageableDTO;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.data.domain.AbstractPageRequest;

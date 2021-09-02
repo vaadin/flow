@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.fusion.endpointransfermapper;
+package com.vaadin.fusion.mappedtypes;
 
 import java.util.ArrayList;
 import java.util.List;
