@@ -458,7 +458,7 @@
                             <groupId>de.skuzzle.enforcer</groupId>
                             <artifactId>restrict-imports-enforcer-rule
                             </artifactId>
-                            <version>0.8.0</version>
+                            <version>1.3.0</version>
                         </dependency>
                     </dependencies>
                     <executions>
@@ -471,7 +471,7 @@
                             <configuration>
                                 <rules>
                                     <restrictImports
-                                        implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
+                                        implementation="de.skuzzle.enforcer.restrictimports.rule.RestrictImports">
                                         <reason>Use SLF4j for logging</reason>
                                         <bannedImport>java.util.logging.**
                                         </bannedImport>
