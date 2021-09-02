@@ -21,10 +21,9 @@ import com.vaadin.fusion.Nonnull;
 
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.NullHandling;
-import org.springframework.data.domain.Sort.Order;
 
 /**
- * A DTO for {@link Order}.
+ * A DTO for {@link org.springframework.data.domain.Sort.Order}.
  */
 public class OrderDTO {
     @Nonnull

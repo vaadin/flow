@@ -22,17 +22,16 @@ import com.vaadin.fusion.endpointransfermapper.EndpointTransferMapper.Mapper;
 import com.vaadin.fusion.mappedtypes.OrderDTO;
 import com.vaadin.fusion.mappedtypes.SortDTO;
 
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
-
 /**
- * A mapper between {@link Sort} and {@link SortDTO}.
+ * A mapper between {@link org.springframework.data.domain.Sort} and
+ * {@link SortDTO}.
  */
-public class SortMapper implements Mapper<Sort, SortDTO> {
+public class SortMapper
+        implements Mapper<org.springframework.data.domain.Sort, SortDTO> {
 
     @Override
-    public Class<? extends Sort> getEndpointType() {
-        return Sort.class;
+    public Class<? extends org.springframework.data.domain.Sort> getEndpointType() {
+        return org.springframework.data.domain.Sort.class;
     }
 
     @Override
@@ -41,11 +40,11 @@ public class SortMapper implements Mapper<Sort, SortDTO> {
     }
 
     @Override
-    public SortDTO toTransferType(Sort sort) {
+    public SortDTO toTransferType(org.springframework.data.domain.Sort sort) {
 
         SortDTO sortDto = new SortDTO();
         List<OrderDTO> orders = new ArrayList<>();
-        for (Order order : sort) {
+        for (org.springframework.data.domain.Sort.Order order : sort) {
             OrderDTO orderDTO = new OrderDTO();
             orderDTO.setProperty(order.getProperty());
             orderDTO.setDirection(order.getDirection());
@@ -59,20 +58,21 @@ public class SortMapper implements Mapper<Sort, SortDTO> {
     }
 
     @Override
-    public Sort toEndpointType(SortDTO sort) {
+    public org.springframework.data.domain.Sort toEndpointType(SortDTO sort) {
         if (sort == null) {
             return null;
         }
-        List<Order> orders = new ArrayList<>();
+        List<org.springframework.data.domain.Sort.Order> orders = new ArrayList<>();
         for (OrderDTO orderDto : sort.getOrders()) {
-            Order order = new Order(orderDto.getDirection(),
-                    orderDto.getProperty(), orderDto.getNullHandling());
+            org.springframework.data.domain.Sort.Order order = new org.springframework.data.domain.Sort.Order(
+                    orderDto.getDirection(), orderDto.getProperty(),
+                    orderDto.getNullHandling());
             if (orderDto.isIgnoreCase()) {
                 order = order.ignoreCase();
             }
             orders.add(order);
         }
-        return Sort.by(orders);
+        return org.springframework.data.domain.Sort.by(orders);
     }
 
 }

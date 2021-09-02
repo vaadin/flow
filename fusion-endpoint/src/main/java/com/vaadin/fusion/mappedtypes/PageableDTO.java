@@ -17,10 +17,8 @@ package com.vaadin.fusion.mappedtypes;
 
 import com.vaadin.fusion.Nonnull;
 
-import org.springframework.data.domain.Pageable;
-
 /**
- * A DTO for {@link Pageable}.
+ * A DTO for {@link org.springframework.data.domain.Pageable}.
  */
 public class PageableDTO {
     private int pageNumber;

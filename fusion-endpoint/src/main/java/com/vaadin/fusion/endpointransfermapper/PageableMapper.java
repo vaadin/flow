@@ -19,19 +19,18 @@ import com.vaadin.fusion.endpointransfermapper.EndpointTransferMapper.Mapper;
 import com.vaadin.fusion.mappedtypes.PageableDTO;
 
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 /**
  * A mapper between {@link Pageable} and {@link PageableDTO}.
  */
-public class PageableMapper implements Mapper<Pageable, PageableDTO> {
+public class PageableMapper implements
+        Mapper<org.springframework.data.domain.Pageable, PageableDTO> {
 
     private SortMapper sortMapper = new SortMapper();
 
     @Override
-    public Class<? extends Pageable> getEndpointType() {
-        return Pageable.class;
+    public Class<? extends org.springframework.data.domain.Pageable> getEndpointType() {
+        return org.springframework.data.domain.Pageable.class;
     }
 
     @Override
@@ -40,7 +39,8 @@ public class PageableMapper implements Mapper<Pageable, PageableDTO> {
     }
 
     @Override
-    public PageableDTO toTransferType(Pageable pageable) {
+    public PageableDTO toTransferType(
+            org.springframework.data.domain.Pageable pageable) {
         PageableDTO dto = new PageableDTO();
         dto.setPageNumber(pageable.getPageNumber());
         dto.setPageSize(pageable.getPageSize());
@@ -50,8 +50,10 @@ public class PageableMapper implements Mapper<Pageable, PageableDTO> {
     }
 
     @Override
-    public Pageable toEndpointType(PageableDTO dto) {
-        Sort sort = sortMapper.toEndpointType(dto.getSort());
+    public org.springframework.data.domain.Pageable toEndpointType(
+            PageableDTO dto) {
+        org.springframework.data.domain.Sort sort = sortMapper
+                .toEndpointType(dto.getSort());
         return PageRequest.of(dto.getPageNumber(), dto.getPageSize(), sort);
     }
 }

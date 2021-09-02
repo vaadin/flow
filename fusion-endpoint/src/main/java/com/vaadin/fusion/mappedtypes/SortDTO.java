@@ -20,10 +20,8 @@ import java.util.List;
 
 import com.vaadin.fusion.Nonnull;
 
-import org.springframework.data.domain.Sort;
-
 /**
- * A DTO for {@link Sort}.
+ * A DTO for {@link org.springframework.data.domain.Sort}.
  */
 public class SortDTO {
     @Nonnull
