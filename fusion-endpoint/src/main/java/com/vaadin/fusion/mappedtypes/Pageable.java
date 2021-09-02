@@ -20,11 +20,11 @@ import com.vaadin.fusion.Nonnull;
 /**
  * A DTO for {@link org.springframework.data.domain.Pageable}.
  */
-public class PageableDTO {
+public class Pageable {
     private int pageNumber;
     private int pageSize;
     @Nonnull
-    private SortDTO sort = new SortDTO();
+    private Sort sort = new Sort();
 
     public int getPageNumber() {
         return pageNumber;
@@ -42,11 +42,11 @@ public class PageableDTO {
         this.pageSize = pageSize;
     }
 
-    public SortDTO getSort() {
+    public Sort getSort() {
         return sort;
     }
 
-    public void setSort(SortDTO sort) {
+    public void setSort(Sort sort) {
         this.sort = sort;
     }
 

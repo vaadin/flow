@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.vaadin.fusion.mappedtypes.OrderDTO;
-import com.vaadin.fusion.mappedtypes.PageableDTO;
+import com.vaadin.fusion.mappedtypes.Order;
+import com.vaadin.fusion.mappedtypes.Pageable;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,12 +22,12 @@ public class EndpointTransferMapperTest {
 
     @Test
     public void getTransferTypeClass_works() {
-        Assert.assertEquals(PageableDTO.class,
+        Assert.assertEquals(Pageable.class,
                 endpointTransferMapper.getTransferType(
                         org.springframework.data.domain.Pageable.class));
-        Assert.assertEquals(PageableDTO.class, endpointTransferMapper
+        Assert.assertEquals(Pageable.class, endpointTransferMapper
                 .getTransferType(AbstractPageRequest.class));
-        Assert.assertEquals(PageableDTO.class,
+        Assert.assertEquals(Pageable.class,
                 endpointTransferMapper.getTransferType(PageRequest.class));
         Assert.assertEquals(List.class,
                 endpointTransferMapper.getTransferType(Page.class));
@@ -39,7 +39,7 @@ public class EndpointTransferMapperTest {
 
     @Test
     public void getTransferTypeString_works() {
-        Assert.assertEquals(PageableDTO.class.getName(),
+        Assert.assertEquals(Pageable.class.getName(),
                 endpointTransferMapper.getTransferType(
                         org.springframework.data.domain.Pageable.class
                                 .getName()));
@@ -64,7 +64,7 @@ public class EndpointTransferMapperTest {
 
     @Test
     public void pageable_simple_toEndpointType() {
-        PageableDTO dto = new PageableDTO();
+        Pageable dto = new Pageable();
         dto.setPageNumber(1);
         dto.setPageSize(2);
 
@@ -79,14 +79,14 @@ public class EndpointTransferMapperTest {
 
     @Test
     public void pageable_sortorder_toEndpointType() {
-        PageableDTO dto = new PageableDTO();
+        Pageable dto = new Pageable();
         dto.setPageNumber(1);
         dto.setPageSize(2);
 
-        OrderDTO order1 = new OrderDTO();
+        Order order1 = new Order();
         order1.setDirection(Direction.ASC);
         order1.setProperty("p1");
-        OrderDTO order2 = new OrderDTO();
+        Order order2 = new Order();
         order2.setDirection(Direction.DESC);
         order2.setIgnoreCase(true);
         order2.setNullHandling(NullHandling.NULLS_LAST);
@@ -124,8 +124,7 @@ public class EndpointTransferMapperTest {
     public void pageable_toTransferType() {
         org.springframework.data.domain.Pageable p = org.springframework.data.domain.Pageable
                 .ofSize(10);
-        PageableDTO dto = (PageableDTO) endpointTransferMapper
-                .toTransferType(p);
+        Pageable dto = (Pageable) endpointTransferMapper.toTransferType(p);
         Assert.assertEquals(10, dto.getPageSize());
     }
 

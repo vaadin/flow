@@ -23,15 +23,15 @@ import com.vaadin.fusion.Nonnull;
 /**
  * A DTO for {@link org.springframework.data.domain.Sort}.
  */
-public class SortDTO {
+public class Sort {
     @Nonnull
-    private List<OrderDTO> orders = new ArrayList<>();
+    private List<Order> orders = new ArrayList<>();
 
-    public List<OrderDTO> getOrders() {
+    public List<Order> getOrders() {
         return orders;
     }
 
-    public void setOrders(List<OrderDTO> orders) {
+    public void setOrders(List<Order> orders) {
         this.orders = orders;
     }
 

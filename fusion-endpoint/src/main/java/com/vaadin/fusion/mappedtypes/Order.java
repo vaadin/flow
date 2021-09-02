@@ -25,7 +25,7 @@ import org.springframework.data.domain.Sort.NullHandling;
 /**
  * A DTO for {@link org.springframework.data.domain.Sort.Order}.
  */
-public class OrderDTO {
+public class Order {
     @Nonnull
     private Direction direction;
     @Nonnull
