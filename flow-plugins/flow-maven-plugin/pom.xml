@@ -12,7 +12,7 @@
     <name>Flow Maven plugin</name>
 
     <properties>
-        <maven.version>3.3.9</maven.version>
+        <maven.version>3.8.2</maven.version>
     </properties>
 
     <dependencies>
@@ -44,7 +44,7 @@
         <dependency>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-plugin-core</artifactId>
-            <version>1.6</version>
+            <version>1.12.0</version>
         </dependency>
 
         <dependency>
