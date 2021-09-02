@@ -531,10 +531,10 @@ public class VaadinServlet extends HttpServlet {
     @Override
     public void destroy() {
         super.destroy();
-        isServletInitialized = false;
         if (getService() != null) {
             getService().destroy();
         }
+        isServletInitialized = false;
     }
 
     private VaadinServletContext initializeContext() {
