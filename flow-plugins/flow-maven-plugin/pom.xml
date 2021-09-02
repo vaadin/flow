@@ -44,7 +44,7 @@
         <dependency>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-plugin-core</artifactId>
-            <version>1.6</version>
+            <version>1.12.0</version>
         </dependency>
 
         <dependency>
@@ -57,7 +57,7 @@
         <dependency>
             <groupId>nl.jqno.equalsverifier</groupId>
             <artifactId>equalsverifier</artifactId>
-            <version>3.0</version>
+            <version>3.7.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
