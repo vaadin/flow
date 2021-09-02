@@ -735,7 +735,7 @@ public class FrontendTools {
         // install pnpm version < 6.0.0, later requires ensuring
         // NodeJS >= 12.17
         final String pnpmSpecifier = ignoreVersionChecks ? "pnpm"
-                : "pnpm@" + DEFAULT_PNPM_VERSION;
+                : "pnpm@" + DEFAULT_PNPM_VERSION + "+";
         List<String> pnpmCommand = Stream.of(pnpmSpecifier)
                 // do NOT modify the order of the --yes and --quiet flags, as it
                 // changes the behavior of npx
