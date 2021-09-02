@@ -36,10 +36,8 @@ import com.vaadin.flow.server.VaadinSession;
 public class LocaleChangeView extends Div {
 
     public static final String SAME_UI_RESULT_ID = "same-ui-result-id";
-    public static final String CHANGE_LOCALE_BUTTON_ID =
-            "change-locale-button-id";
-    public static final String SHOW_RESULTS_BUTTON_ID =
-            "show-results-button-id";
+    public static final String CHANGE_LOCALE_BUTTON_ID = "change-locale-button-id";
+    public static final String SHOW_RESULTS_BUTTON_ID = "show-results-button-id";
 
     public LocaleChangeView() {
         Locale defaultLocale = UI.getCurrent().getLocale();
@@ -60,8 +58,8 @@ public class LocaleChangeView extends Div {
                 click -> localeObserverComponent.showLocaleUpdates());
         showLocaleUpdates.setId(SHOW_RESULTS_BUTTON_ID);
 
-        add(changeLocaleButton, showLocaleUpdates,
-                new HtmlComponent(Tag.BR), localeObserverComponent);
+        add(changeLocaleButton, showLocaleUpdates, new HtmlComponent(Tag.BR),
+                localeObserverComponent);
     }
 
     private void changeSessionLocale(Locale france) {
@@ -98,11 +96,11 @@ public class LocaleChangeView extends Div {
             for (int i = 0; i < localeUpdates.getUiCheckResults().size(); i++) {
                 Boolean checkResult = localeUpdates.getUiCheckResults().get(i);
                 Span sameUIResult = new Span();
-                sameUIResult.setId(String.format("%s-%d", SAME_UI_RESULT_ID,
-                        i));
+                sameUIResult
+                        .setId(String.format("%s-%d", SAME_UI_RESULT_ID, i));
                 sameUIResult.setText(Boolean.toString(checkResult));
-                Span caption = new Span(String.format(
-                        "Component %d uses current UI instance = ", i));
+                Span caption = new Span(String
+                        .format("Component %d uses current UI instance = ", i));
                 add(caption, sameUIResult, new HtmlComponent(Tag.BR));
             }
         }

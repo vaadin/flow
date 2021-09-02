@@ -995,6 +995,8 @@ public class UI extends Component
      *
      * @return a registration that can be used to cancel the execution of the
      *         task
+     * @throws IllegalArgumentException
+     *             if the given component doesn't belong to this UI
      */
     public ExecutionRegistration beforeClientResponse(Component component,
             SerializableConsumer<ExecutionContext> execution) {
@@ -1010,8 +1012,7 @@ public class UI extends Component
 
         if (component.getUI().isPresent() && component.getUI().get() != this) {
             throw new IllegalArgumentException(
-                    "The given component doesn't belong to the UI the task to be executed on"
-            );
+                    "The given component doesn't belong to the UI the task to be executed on");
         }
 
         return internals.getStateTree().beforeClientResponse(

@@ -397,7 +397,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
         getUIs().forEach(ui -> {
             Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance
-            .setCurrent(ui);
+                    .setCurrent(ui);
             try {
                 ui.setLocale(locale);
             } finally {
