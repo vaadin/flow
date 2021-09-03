@@ -102,7 +102,7 @@
         <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <testbench.version>7.0.1</testbench.version>
-        <jetty.version>9.4.27.v20200227</jetty.version>
+        <jetty.version>9.4.43.v20210629</jetty.version>
         <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
 
         <!-- Frontend -->
@@ -116,8 +116,7 @@
         <!-- Used in OSGi manifests -->
         <jsoup.version>1.14.2</jsoup.version>
         <!-- Note that this should be kept in sync with the class Constants -->
-        <atmosphere.runtime.version>2.4.30.slf4jvaadin1
-        </atmosphere.runtime.version>
+        <atmosphere.runtime.version>2.7.0.slf4jvaadin1</atmosphere.runtime.version>
 
         <!-- OSGi -->
         <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
