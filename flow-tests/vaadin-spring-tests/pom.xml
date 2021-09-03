@@ -181,6 +181,11 @@
                 <artifactId>vaadin-form-layout-flow</artifactId>
                 <version>${vaadin.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-confirm-dialog-flow</artifactId>
+                <version>${vaadin.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
