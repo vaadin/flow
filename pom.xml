@@ -102,7 +102,7 @@
         <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <testbench.version>7.0.1</testbench.version>
-        <jetty.version>9.4.27.v20200227</jetty.version>
+        <jetty.version>9.4.43.v20210629</jetty.version>
         <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
 
         <!-- Frontend -->
@@ -245,7 +245,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>3.10.0</version>
+                <version>3.12.4</version>
             </dependency>
             <dependency>
                 <groupId>org.hamcrest</groupId>
