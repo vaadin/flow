@@ -233,6 +233,6 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         Assert.assertEquals(
                 "Project contains 2 css injections to document and both should be hashed",
                 2l, getCommandExecutor().executeScript(
-                        "return window.Vaadin.Flow.injectedGlobalCss.length"));
+                        "return window.Vaadin.theme.injectedGlobalCss.length"));
     }
 }
