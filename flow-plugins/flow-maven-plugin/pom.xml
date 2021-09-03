@@ -13,6 +13,7 @@
 
     <properties>
         <maven.version>3.8.2</maven.version>
+        <jackson.version>2.11.2</jackson.version>
     </properties>
 
     <dependencies>
@@ -45,6 +46,28 @@
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-plugin-core</artifactId>
             <version>1.12.0</version>
+        </dependency>
+
+        <!-- Non-vulnerable overrides for frontend-plugin-core dependencies -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.21</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.13</version>
         </dependency>
 
         <dependency>
