@@ -42,32 +42,33 @@ public class SortMapper
     @Override
     public Sort toTransferType(org.springframework.data.domain.Sort sort) {
 
-        Sort sortDto = new Sort();
-        List<Order> orders = new ArrayList<>();
+        Sort transferSort = new Sort();
+        List<Order> transferOrders = new ArrayList<>();
         for (org.springframework.data.domain.Sort.Order order : sort) {
-            Order orderDTO = new Order();
-            orderDTO.setProperty(order.getProperty());
-            orderDTO.setDirection(order.getDirection());
-            orderDTO.setIgnoreCase(order.isIgnoreCase());
-            orderDTO.setNullHandling(order.getNullHandling());
-            orders.add(orderDTO);
+            Order transferOrder = new Order();
+            transferOrder.setProperty(order.getProperty());
+            transferOrder.setDirection(order.getDirection());
+            transferOrder.setIgnoreCase(order.isIgnoreCase());
+            transferOrder.setNullHandling(order.getNullHandling());
+            transferOrders.add(transferOrder);
         }
 
-        sortDto.setOrders(orders);
-        return sortDto;
+        transferSort.setOrders(transferOrders);
+        return transferSort;
     }
 
     @Override
-    public org.springframework.data.domain.Sort toEndpointType(Sort sort) {
-        if (sort == null) {
+    public org.springframework.data.domain.Sort toEndpointType(
+            Sort transferSort) {
+        if (transferSort == null) {
             return null;
         }
         List<org.springframework.data.domain.Sort.Order> orders = new ArrayList<>();
-        for (Order orderDto : sort.getOrders()) {
+        for (Order transferOrder : transferSort.getOrders()) {
             org.springframework.data.domain.Sort.Order order = new org.springframework.data.domain.Sort.Order(
-                    orderDto.getDirection(), orderDto.getProperty(),
-                    orderDto.getNullHandling());
-            if (orderDto.isIgnoreCase()) {
+                    transferOrder.getDirection(), transferOrder.getProperty(),
+                    transferOrder.getNullHandling());
+            if (transferOrder.isIgnoreCase()) {
                 order = order.ignoreCase();
             }
             orders.add(order);

@@ -41,19 +41,20 @@ public class PageableMapper
     @Override
     public Pageable toTransferType(
             org.springframework.data.domain.Pageable pageable) {
-        Pageable dto = new Pageable();
-        dto.setPageNumber(pageable.getPageNumber());
-        dto.setPageSize(pageable.getPageSize());
-        dto.setSort(sortMapper.toTransferType(pageable.getSort()));
+        Pageable transferPageable = new Pageable();
+        transferPageable.setPageNumber(pageable.getPageNumber());
+        transferPageable.setPageSize(pageable.getPageSize());
+        transferPageable.setSort(sortMapper.toTransferType(pageable.getSort()));
 
-        return dto;
+        return transferPageable;
     }
 
     @Override
     public org.springframework.data.domain.Pageable toEndpointType(
-            Pageable dto) {
+            Pageable transferPageable) {
         org.springframework.data.domain.Sort sort = sortMapper
-                .toEndpointType(dto.getSort());
-        return PageRequest.of(dto.getPageNumber(), dto.getPageSize(), sort);
+                .toEndpointType(transferPageable.getSort());
+        return PageRequest.of(transferPageable.getPageNumber(),
+                transferPageable.getPageSize(), sort);
     }
 }
