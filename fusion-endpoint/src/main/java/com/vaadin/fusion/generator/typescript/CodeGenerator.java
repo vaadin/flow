@@ -230,12 +230,10 @@ public class CodeGenerator extends AbstractTypeScriptClientCodegen {
 
     @Override
     @SuppressWarnings("unchecked")
-    public CodegenParameter fromRequestBody(RequestBody body,
-            String name, Schema schema, Map<String, Schema> schemas,
-            Set<String> imports) {
+    public CodegenParameter fromRequestBody(RequestBody body, String name, 
+            Schema schema, Map<String, Schema> schemas, Set<String> imports) {
         CodegenParameter codegenParameter = super.fromRequestBody(body, name,
-                schema, schemas,
-                imports);
+                schema, schemas, imports);
         Schema requestBodySchema = getRequestBodySchema(body);
         if (requestBodySchema != null) {
             imports.addAll(collectImportsFromSchema(requestBodySchema));
