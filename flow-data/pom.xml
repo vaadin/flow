@@ -13,7 +13,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <javax.validation.version>2.0.0.Final</javax.validation.version>
+        <javax.validation.version>2.0.1.Final</javax.validation.version>
     </properties>
     <dependencies>
 
