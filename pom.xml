@@ -229,7 +229,7 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.11.14</version>
+                <version>1.11.15</version>
             </dependency>
 
 
@@ -291,7 +291,7 @@
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-ssh-external</artifactId>
-                <version>2.9</version>
+                <version>3.4.3</version>
             </extension>
         </extensions>
 
