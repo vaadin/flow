@@ -89,7 +89,7 @@
         <hibernate.validator.version>6.2.0.Final</hibernate.validator.version>
         <slf4j.version>1.7.32</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
-        <jackson.version>2.11.2</jackson.version>
+        <jackson.version>2.12.5</jackson.version>
         <validation.api.version>2.0.1.Final</validation.api.version>
         <javax.annotation.api.version>1.3.2</javax.annotation.api.version>
 
@@ -411,7 +411,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <id>parse-version</id>
