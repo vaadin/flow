@@ -999,7 +999,8 @@ public class UI extends Component
      *             if the given component doesn't belong to this UI
      */
     public ExecutionRegistration beforeClientResponse(Component component,
-            SerializableConsumer<ExecutionContext> execution) {
+            SerializableConsumer<ExecutionContext> execution)
+            throws IllegalArgumentException {
 
         if (component == null) {
             throw new IllegalArgumentException(
