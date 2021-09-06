@@ -63,7 +63,7 @@ public class BeanValidatorTest extends ValidatorTestBase {
     public void testInvalidDecimalsFailsInFrench() {
         setLocale(Locale.FRENCH);
         BeanValidator v = validator("decimals");
-        assertFails("1234.567", "valeur numérique hors limite "
+        assertFails("1234.567", "valeur numérique hors limites "
                 + "(<3 chiffres>.<2 chiffres> attendu)", v);
     }
 
