@@ -47,7 +47,6 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
@@ -93,6 +92,10 @@ public class IndexHtmlRequestHandlerTest {
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
+    private String springTokenString;
+    private String springTokenHeaderName = "x-CSRF-TOKEN";
+    private String springTokenParamName = SPRING_CSRF_ATTRIBUTE_IN_SESSION;
+
     @Before
     public void setUp() throws Exception {
         mocks = new MockServletServiceSessionSetup();
@@ -106,6 +109,7 @@ public class IndexHtmlRequestHandlerTest {
         deploymentConfiguration.useDeprecatedV14Bootstrapping(false);
         indexHtmlRequestHandler = new IndexHtmlRequestHandler();
         context = Mockito.mock(VaadinContext.class);
+        springTokenString = UUID.randomUUID().toString();
     }
 
     @Test
@@ -408,40 +412,11 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void should_include_spring_csrf_token_in_meta_tags_when_return_not_null_spring_csrf_in_request()
             throws IOException {
-        VaadinRequest request = Mockito.spy(createVaadinRequest("/"));
-        String springTokenString = UUID.randomUUID().toString();
-        String springTokenHeaderName = "x-CSRF-TOKEN";
-        String springTokenParamName = SPRING_CSRF_ATTRIBUTE_IN_SESSION;
-        Map<String, String> csrfJsonMap = new HashMap<>();
-        csrfJsonMap.put("token", springTokenString);
-        csrfJsonMap.put("headerName", springTokenHeaderName);
-        csrfJsonMap.put("parameterName", springTokenParamName);
-        Mockito.when(request.getAttribute(SPRING_CSRF_ATTRIBUTE_IN_SESSION))
-                .thenReturn(csrfJsonMap);
+        VaadinRequest request = createVaadinRequestWithSpringCsrfToken();
         indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
                 response);
 
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
-        Document document = Jsoup.parse(indexHtml);
-
-        Elements csrfMetaEelement = document.head()
-                .getElementsByAttributeValue("name", SPRING_CSRF_ATTRIBUTE);
-        Assert.assertEquals(1, csrfMetaEelement.size());
-        Assert.assertEquals(springTokenString,
-                csrfMetaEelement.first().attr("content"));
-
-        Elements csrfHeaderMetaElement = document.head()
-                .getElementsByAttributeValue("name", "_csrf_header");
-        Assert.assertEquals(1, csrfHeaderMetaElement.size());
-        Assert.assertEquals(springTokenHeaderName,
-                csrfHeaderMetaElement.first().attr("content"));
-
-        Elements csrfParameterMetaElement = document.head()
-                .getElementsByAttributeValue("name", "_csrf_parameter");
-        Assert.assertEquals(1, csrfParameterMetaElement.size());
-        Assert.assertEquals(springTokenParamName,
-                csrfParameterMetaElement.first().attr("content"));
+        assertSpringCsrfTokenIsAvailableAsMetaTagsInDom();
     }
 
     @Test
@@ -479,7 +454,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_not_include_token_in_dom_when_referer_is_service_worker()
+    public void should_include_token_in_dom_when_referer_is_service_worker()
             throws IOException {
         Mockito.when(session.getCsrfToken()).thenReturn("foo");
         VaadinServletRequest vaadinRequest = createVaadinRequest("/");
@@ -490,34 +465,18 @@ public class IndexHtmlRequestHandlerTest {
                 vaadinRequest, response);
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
-        Assert.assertFalse(indexHtml.contains("csrfToken"));
+        Assert.assertTrue(indexHtml.contains("csrfToken"));
     }
 
     @Test
-    public void should_not_include_spring_token_in_dom_when_referer_is_service_worker()
+    public void should_include_spring_token_in_dom_when_referer_is_service_worker()
             throws IOException {
-        VaadinRequest request = Mockito.spy(createVaadinRequest("/"));
-        String springTokenString = UUID.randomUUID().toString();
-        String springTokenHeaderName = "x-CSRF-TOKEN";
-        Map<String, String> csrfJsonMap = new HashMap<>();
-        csrfJsonMap.put("token", springTokenString);
-        csrfJsonMap.put("headerName", springTokenHeaderName);
-        Object springCsrfToken = JsonUtils.mapToJson(csrfJsonMap);
-        Mockito.when(request.getAttribute(SPRING_CSRF_ATTRIBUTE_IN_SESSION))
-                .thenReturn(springCsrfToken);
-        VaadinServletRequest vaadinRequest = createVaadinRequest("/");
-        Mockito.when(((HttpServletRequest) vaadinRequest.getRequest())
-                .getHeader("referer"))
+        VaadinRequest request = createVaadinRequestWithSpringCsrfToken();
+        Mockito.when(request.getHeader("referer"))
                 .thenReturn("http://somewhere.test/sw.js");
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                vaadinRequest, response);
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
-        Document document = Jsoup.parse(indexHtml);
-        Assert.assertEquals(0, document.head()
-                .getElementsByAttribute(SPRING_CSRF_ATTRIBUTE).size());
-        Assert.assertEquals(0,
-                document.head().getElementsByAttribute("_csrf_header").size());
+        indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
+                response);
+        assertSpringCsrfTokenIsAvailableAsMetaTagsInDom();
     }
 
     @Test
@@ -800,6 +759,45 @@ public class IndexHtmlRequestHandlerTest {
         Mockito.when(request.getParameter("v-r")).thenReturn("init");
         Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
         Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(request));
+    }
+
+    private VaadinRequest createVaadinRequestWithSpringCsrfToken() {
+        VaadinRequest request = Mockito.spy(createVaadinRequest("/"));
+        Map<String, String> csrfJsonMap = new HashMap<>();
+        csrfJsonMap.put("token", springTokenString);
+        csrfJsonMap.put("headerName", springTokenHeaderName);
+        csrfJsonMap.put("parameterName", springTokenParamName);
+        Mockito.when(request.getAttribute(SPRING_CSRF_ATTRIBUTE_IN_SESSION))
+                .thenReturn(csrfJsonMap);
+        return request;
+    }
+
+    private void assertSpringCsrfTokenIsAvailableAsMetaTagsInDom() {
+        try {
+            String indexHtml = responseOutput
+                    .toString(StandardCharsets.UTF_8.name());
+            Document document = Jsoup.parse(indexHtml);
+
+            Elements csrfMetaEelement = document.head()
+                    .getElementsByAttributeValue("name", SPRING_CSRF_ATTRIBUTE);
+            Assert.assertEquals(1, csrfMetaEelement.size());
+            Assert.assertEquals(springTokenString,
+                    csrfMetaEelement.first().attr("content"));
+
+            Elements csrfHeaderMetaElement = document.head()
+                    .getElementsByAttributeValue("name", "_csrf_header");
+            Assert.assertEquals(1, csrfHeaderMetaElement.size());
+            Assert.assertEquals(springTokenHeaderName,
+                    csrfHeaderMetaElement.first().attr("content"));
+
+            Elements csrfParameterMetaElement = document.head()
+                    .getElementsByAttributeValue("name", "_csrf_parameter");
+            Assert.assertEquals(1, csrfParameterMetaElement.size());
+            Assert.assertEquals(springTokenParamName,
+                    csrfParameterMetaElement.first().attr("content"));
+        } catch (Exception e) {
+            Assert.fail("Unable to parse the index html page");
+        }
     }
 
 }
