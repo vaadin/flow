@@ -62,8 +62,8 @@ public class LocaleChangeView extends Div {
                 localeObserverComponent);
     }
 
-    private void changeSessionLocale(Locale france) {
-        UI.getCurrent().getSession().setLocale(france);
+    private void changeSessionLocale(Locale locale) {
+        UI.getCurrent().getSession().setLocale(locale);
     }
 
     @Tag("Div")
@@ -107,28 +107,22 @@ public class LocaleChangeView extends Div {
 
         private void registerLocaleUpdate(boolean sameUIcheckUp) {
             VaadinSession session = VaadinSession.getCurrent();
-            session.lock();
-            try {
-                LocaleUpdates localeUpdates = session
-                        .getAttribute(LocaleUpdates.class);
-                if (localeUpdates == null) {
-                    localeUpdates = new LocaleUpdates();
-                }
-                localeUpdates.addUICheckResult(sameUIcheckUp);
-                session.setAttribute(LocaleUpdates.class, localeUpdates);
-            } finally {
-                session.unlock();
+            // no lock needed, since flow listeners are called under lock
+            // already
+            LocaleUpdates localeUpdates = session
+                    .getAttribute(LocaleUpdates.class);
+            if (localeUpdates == null) {
+                localeUpdates = new LocaleUpdates();
             }
+            localeUpdates.addUICheckResult(sameUIcheckUp);
+            session.setAttribute(LocaleUpdates.class, localeUpdates);
         }
 
         private LocaleUpdates getLocaleUpdates() {
             VaadinSession session = VaadinSession.getCurrent();
-            session.lock();
-            try {
-                return session.getAttribute(LocaleUpdates.class);
-            } finally {
-                session.unlock();
-            }
+            // no lock needed, since flow listeners are called under lock
+            // already
+            return session.getAttribute(LocaleUpdates.class);
         }
     }
 
