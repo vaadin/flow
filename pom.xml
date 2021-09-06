@@ -647,7 +647,7 @@
                                 <dependency>
                                     <groupId>com.sun.xml.bind</groupId>
                                     <artifactId>jaxb-impl</artifactId>
-                                    <version>2.2.11</version>
+                                    <version>3.0.2</version>
                                 </dependency>
                                 <dependency>
                                     <groupId>com.sun.activation</groupId>
@@ -677,7 +677,7 @@
                                 <dependency>
                                     <groupId>com.sun.xml.bind</groupId>
                                     <artifactId>jaxb-impl</artifactId>
-                                    <version>2.2.11</version>
+                                    <version>3.0.2</version>
                                 </dependency>
                                 <dependency>
                                     <groupId>com.sun.activation</groupId>
