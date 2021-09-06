@@ -793,20 +793,27 @@ public class IndexHtmlRequestHandlerTest {
 
     private void assertSpringCsrfTokenIsAvailableAsMetaTagsInDom() {
         try {
-            String indexHtml = responseOutput.toString(StandardCharsets.UTF_8.name());
+            String indexHtml = responseOutput
+                    .toString(StandardCharsets.UTF_8.name());
             Document document = Jsoup.parse(indexHtml);
 
-            Elements csrfMetaEelement = document.head().getElementsByAttributeValue("name", SPRING_CSRF_ATTRIBUTE);
+            Elements csrfMetaEelement = document.head()
+                    .getElementsByAttributeValue("name", SPRING_CSRF_ATTRIBUTE);
             Assert.assertEquals(1, csrfMetaEelement.size());
-            Assert.assertEquals(springTokenString, csrfMetaEelement.first().attr("content"));
+            Assert.assertEquals(springTokenString,
+                    csrfMetaEelement.first().attr("content"));
 
-            Elements csrfHeaderMetaElement = document.head().getElementsByAttributeValue("name", "_csrf_header");
+            Elements csrfHeaderMetaElement = document.head()
+                    .getElementsByAttributeValue("name", "_csrf_header");
             Assert.assertEquals(1, csrfHeaderMetaElement.size());
-            Assert.assertEquals(springTokenHeaderName, csrfHeaderMetaElement.first().attr("content"));
+            Assert.assertEquals(springTokenHeaderName,
+                    csrfHeaderMetaElement.first().attr("content"));
 
-            Elements csrfParameterMetaElement = document.head().getElementsByAttributeValue("name", "_csrf_parameter");
+            Elements csrfParameterMetaElement = document.head()
+                    .getElementsByAttributeValue("name", "_csrf_parameter");
             Assert.assertEquals(1, csrfParameterMetaElement.size());
-            Assert.assertEquals(springTokenParamName, csrfParameterMetaElement.first().attr("content"));
+            Assert.assertEquals(springTokenParamName,
+                    csrfParameterMetaElement.first().attr("content"));
         } catch (Exception e) {
             Assert.fail("Unable to parse the index html page");
         }

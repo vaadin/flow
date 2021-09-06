@@ -195,8 +195,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             JsonObject springCsrfTokenJson = JsonUtils
                     .beanToJson(springCsrfToken);
             if (springCsrfTokenJson != null
-                    && springCsrfTokenJson
-                            .hasKey(SPRING_CSRF_TOKEN_PROPERTY)
+                    && springCsrfTokenJson.hasKey(SPRING_CSRF_TOKEN_PROPERTY)
                     && springCsrfTokenJson
                             .hasKey(SPRING_CSRF_HEADER_PROPERTY)) {
                 String springCsrfTokenString = springCsrfTokenJson
