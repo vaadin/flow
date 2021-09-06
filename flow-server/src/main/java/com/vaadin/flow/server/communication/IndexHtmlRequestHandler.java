@@ -185,40 +185,34 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private void addInitialFlow(JsonObject initialJson, Document indexDocument,
             VaadinSession session, VaadinRequest request) {
-        // Do not add the CSRF token if the request comes from the service
-        // worker, to not have the token cached locally (#9537)
-        String referer = request.getHeader("referer");
-        if (referer == null || !referer.endsWith("/sw.js")) {
-            String csrfToken = session.getCsrfToken();
-            if (csrfToken != null) {
-                initialJson.put(CSRF_TOKEN, csrfToken);
-            }
-            Object springCsrfToken = request
-                    .getAttribute(SPRING_CSRF_TOKEN_ATTRIBUTE_IN_SESSION);
-            if (springCsrfToken != null) {
-                JsonObject springCsrfTokenJson = JsonUtils
-                        .beanToJson(springCsrfToken);
-                if (springCsrfTokenJson != null
-                        && springCsrfTokenJson
-                                .hasKey(SPRING_CSRF_TOKEN_PROPERTY)
-                        && springCsrfTokenJson
-                                .hasKey(SPRING_CSRF_HEADER_PROPERTY)) {
-                    String springCsrfTokenString = springCsrfTokenJson
-                            .getString(SPRING_CSRF_TOKEN_PROPERTY);
-                    String springCsrfTokenHeaderName = springCsrfTokenJson
-                            .getString(SPRING_CSRF_HEADER_PROPERTY);
-                    String springCsrfTokenParameterName = springCsrfTokenJson
-                            .getString(SPRING_CSRF_PARAMETER_PROPERTY);
+        String csrfToken = session.getCsrfToken();
+        if (csrfToken != null) {
+            initialJson.put(CSRF_TOKEN, csrfToken);
+        }
+        Object springCsrfToken = request
+                .getAttribute(SPRING_CSRF_TOKEN_ATTRIBUTE_IN_SESSION);
+        if (springCsrfToken != null) {
+            JsonObject springCsrfTokenJson = JsonUtils
+                    .beanToJson(springCsrfToken);
+            if (springCsrfTokenJson != null
+                    && springCsrfTokenJson.hasKey(SPRING_CSRF_TOKEN_PROPERTY)
+                    && springCsrfTokenJson
+                            .hasKey(SPRING_CSRF_HEADER_PROPERTY)) {
+                String springCsrfTokenString = springCsrfTokenJson
+                        .getString(SPRING_CSRF_TOKEN_PROPERTY);
+                String springCsrfTokenHeaderName = springCsrfTokenJson
+                        .getString(SPRING_CSRF_HEADER_PROPERTY);
+                String springCsrfTokenParameterName = springCsrfTokenJson
+                        .getString(SPRING_CSRF_PARAMETER_PROPERTY);
 
-                    addMetaTagToHead(indexDocument.head(),
-                            SPRING_CSRF_TOKEN_ATTRIBUTE, springCsrfTokenString);
-                    addMetaTagToHead(indexDocument.head(),
-                            SPRING_CSRF_HEADER_NAME_ATTRIBUTE,
-                            springCsrfTokenHeaderName);
-                    addMetaTagToHead(indexDocument.head(),
-                            SPRING_CSRF_PARAMETER_NAME_ATTRIBUTE,
-                            springCsrfTokenParameterName);
-                }
+                addMetaTagToHead(indexDocument.head(),
+                        SPRING_CSRF_TOKEN_ATTRIBUTE, springCsrfTokenString);
+                addMetaTagToHead(indexDocument.head(),
+                        SPRING_CSRF_HEADER_NAME_ATTRIBUTE,
+                        springCsrfTokenHeaderName);
+                addMetaTagToHead(indexDocument.head(),
+                        SPRING_CSRF_PARAMETER_NAME_ATTRIBUTE,
+                        springCsrfTokenParameterName);
             }
         }
 
