@@ -186,6 +186,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private JsonObject applicationParameters;
         private BootstrapUriResolver uriResolver;
 
+        private boolean initTheme = true;
+
         /**
          * Creates a new context instance using the given parameters.
          *
@@ -237,6 +239,22 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          */
         public VaadinSession getSession() {
             return session;
+        }
+
+        /**
+         * Should custom theme be initialized.
+         * @return true if theme should be initialized
+         */
+        public boolean isInitTheme() {
+            return initTheme;
+        }
+
+        /**
+         * Set if custom theme should be initialized.
+         * @param initTheme enable or disable theme initialisation
+         */
+        public void setInitTheme(boolean initTheme) {
+            this.initTheme = initTheme;
         }
 
         /**
@@ -598,6 +616,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (config.isCompatibilityMode()) {
                 /* Append any theme elements to initial page. */
                 handleThemeContents(context, document);
+            }
+
+            // To not init theme for webcomponents we use a flag on the dom
+            if (context.isInitTheme() && context.getTheme().isPresent()
+                    && !"".equals(context.getTheme().get().getName())) {
+                head.prependElement("script").attr("type", "text/javascript")
+                        .appendChild(new DataNode(
+                                "window.Vaadin = window.Vaadin || {}; window.Vaadin.theme = window.Vaadin.theme || {};"
+                                        + "window.Vaadin.theme.flowBootstrap = true;"));
             }
 
             if (!config.isProductionMode()) {
