@@ -146,10 +146,11 @@ public class TaskUpdateImports extends NodeUpdater {
 
             if (hasApplicationTheme) {
                 // If we define a theme name we need to import
-                // theme/theme-generated.js
+                // theme/theme.js on flow bootstrap
                 lines.add(
-                        "import {applyTheme} from 'themes/theme-generated.js';");
-                lines.add("applyTheme(document);");
+                    "import {applyTheme} from 'themes/theme-generated.js';");
+                lines.add(
+                        "if(window.Vaadin.theme.flowBootstrap) applyTheme(document);");
             }
 
             if (theme != null) {
