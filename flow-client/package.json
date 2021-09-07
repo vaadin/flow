@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "@types/validator": "13.1.0",
-    "lit": "2.0.0-rc.1",
+    "lit": "2.0.0-rc.4",
     "validator": "13.1.17"
   }
 }

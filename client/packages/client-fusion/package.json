@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@vaadin/client-commons": "^21.0.0-alpha2",
-    "lit": "^2.0.0-rc.2",
+    "lit": "2.0.0-rc.4",
     "validator": "^13.6.0"
   },
   "devDependencies": {
