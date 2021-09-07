@@ -395,7 +395,15 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         checkHasLock();
         this.locale = locale;
 
-        getUIs().forEach(ui -> ui.setLocale(locale));
+        getUIs().forEach(ui -> {
+            Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance
+                    .setCurrent(ui);
+            try {
+                ui.setLocale(locale);
+            } finally {
+                CurrentInstance.restoreInstances(oldInstances);
+            }
+        });
     }
 
     /**
