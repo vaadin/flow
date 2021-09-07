@@ -234,18 +234,18 @@ module.exports = {
 
   devServer: {
     // webpack-dev-server serves ./ ,  webpack-generated,  and java webapp
-    contentBase: [outputFolder, 'src/main/webapp'],
-    after: function(app, server) {
-      app.get(`/stats.json`, function(req, res) {
+    static: [outputFolder, 'src/main/webapp'],
+    onAfterSetupMiddleware: function(devServer) {
+      devServer.app.get(`/stats.json`, function(req, res) {
         res.json(stats);
       });
-      app.get(`/stats.hash`, function(req, res) {
+      devServer.app.get(`/stats.hash`, function(req, res) {
         res.json(stats.hash.toString());
       });
-      app.get(`/assetsByChunkName`, function(req, res) {
+      devServer.app.get(`/assetsByChunkName`, function(req, res) {
         res.json(stats.assetsByChunkName);
       });
-      app.get(`/stop`, function(req, res) {
+      devServer.app.get(`/stop`, function(req, res) {
         // eslint-disable-next-line no-console
         console.log("Stopped 'webpack-dev-server'");
         process.exit(0);
