@@ -243,7 +243,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         /**
          * Should custom theme be initialized.
-         * @return true if theme should initialize
+         * @return true if theme should be initialized
          */
         public boolean isInitTheme() {
             return initTheme;
@@ -251,7 +251,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         /**
          * Set if custom theme should be initialized.
-         * @param initTheme initializeTheme
+         * @param initTheme enable or disable theme initialisation
          */
         public void setInitTheme(boolean initTheme) {
             this.initTheme = initTheme;
@@ -624,7 +624,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 head.prependElement("script").attr("type", "text/javascript")
                         .appendChild(new DataNode(
                                 "window.Vaadin = window.Vaadin || {}; window.Vaadin.theme = window.Vaadin.theme || {};"
-                                        + "window.Vaadin.theme.flowBootstrap = {}"));
+                                        + "window.Vaadin.theme.flowBootstrap = true;"));
             }
 
             if (!config.isProductionMode()) {
