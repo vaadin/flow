@@ -635,6 +635,31 @@ public class UITest {
                 callCounter.get());
     }
 
+    @Test
+    public void beforeClientResponse_componentNotAttachedToUi_noException() {
+        UI ui = createTestUI();
+        Component component = new AttachableComponent();
+        ui.beforeClientResponse(component, context -> {
+        });
+    }
+
+    @Test()
+    public void beforeClientResponse_componentBelongsToAnotherUI_throws() {
+        UI firstUI = createTestUI();
+        UI anotherUI = createTestUI();
+        Component component = new AttachableComponent();
+        anotherUI.add(component);
+
+        IllegalArgumentException exception = Assert.assertThrows(
+                IllegalArgumentException.class,
+                () -> firstUI.beforeClientResponse(component, context -> {
+                }));
+
+        Assert.assertEquals(
+                "The given component doesn't belong to the UI the task to be executed on",
+                exception.getMessage());
+    }
+
     @ListenerPriority(5)
     private static class BeforeEnterListenerFirst
             implements BeforeEnterListener {
