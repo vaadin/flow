@@ -308,7 +308,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("webpack", "4.42.0");
         defaults.put("webpack-cli", "3.3.11");
         defaults.put("webpack-dev-server", "3.11.0");
-        defaults.put("webpack-babel-multi-target-plugin", "2.3.3");
+        defaults.put("webpack-babel-multi-target-plugin", "2.5.0");
         // Defining loader until a resolution exists to issue
         // https://github.com/DanielSchaffer/webpack-babel-multi-target-plugin/issues/94
         defaults.put("babel-loader", "8.2.2");

@@ -182,6 +182,11 @@ public final class BundleLitParser {
                 && validKey(module, SOURCE, STRING)) {
             String name = module.getString(NAME);
 
+            // If the found module is
+            if (name.endsWith("es5")) {
+                return source;
+            }
+
             String alternativeFileName = fileName
                     // Replace frontend part since webpack entry-point is
                     // already in the frontend folder
