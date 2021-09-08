@@ -289,9 +289,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     private int updateFlowFrontendDependencies(JsonObject dependenciesObject) {
         return updateNpmLocalDependency(dependenciesObject, DEP_NAME_FLOW_JARS,
-                flowResourcesFolder)
-                + updateNpmLocalDependency(dependenciesObject,
-                        DEP_NAME_FORM_JARS, formResourcesFolder);
+                flowResourcesFolder);
     }
 
     private int updateNpmLocalDependency(JsonObject dependenciesObject,

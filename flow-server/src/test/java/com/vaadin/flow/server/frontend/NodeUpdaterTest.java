@@ -191,14 +191,6 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void assertFormResourcesPackageJson() throws IOException {
-        JsonObject formPackageJson = nodeUpdater.getFormResourcesPackageJson();
-        Assert.assertEquals("UNLICENSED", formPackageJson.getString("license"));
-        Assert.assertEquals("index", formPackageJson.getString("main"));
-        Assert.assertEquals("1.0.0", formPackageJson.getString("version"));
-    }
-
-    @Test
     public void assertWriteFormResourcesPackageFile() throws IOException {
         File formPackageJsonFile = new File(nodeUpdater.formResourcesFolder,
                 Constants.PACKAGE_JSON);

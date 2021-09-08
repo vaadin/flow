@@ -66,13 +66,11 @@ public class TaskGeneratePackageJsonTest {
     public void should_witeFlowAndFormResourcesPackageFiles()
             throws IOException {
         JsonObject resourcePackageJson = Mockito.mock(JsonObject.class);
-        JsonObject formReSourcePackageJson = Mockito.mock(JsonObject.class);
         Mockito.doReturn(resourcePackageJson).when(task)
                 .getResourcesPackageJson();
 
         task.execute();
 
         verify(task).writeResourcesPackageFile(resourcePackageJson);
-        verify(task).writeFormResourcesPackageFile(formReSourcePackageJson);
     }
 }
