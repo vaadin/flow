@@ -411,7 +411,12 @@ public class AppShellSettings {
     /**
      * Returns the configuration object for loading indicator.
      *
-     * @return the instance used for configuring the loading indicator
+     * @return An optional instance used for configuring the loading 
+     * indicator or an empty optional if UI is not avaialbe.
+     * 
+     * @Deprecated It only works when useDeprecatedV14Bootstrapping 
+     * is enabled. Use a {@link UIInitListener} instead when
+     * there are server-side views.
      */
     public Optional<LoadingIndicatorConfiguration> getLoadingIndicatorConfiguration() {
         return getUi().map(UI::getLoadingIndicatorConfiguration);
@@ -420,7 +425,12 @@ public class AppShellSettings {
     /**
      * Returns the configuration object for reconnect dialog.
      *
-     * @return The instance used for reconnect dialog configuration
+     * @return An optional instance used for reconnect dialog configuration or
+     * an empty optional if UI is not avaialbe.
+     * 
+     * @Deprecated It only works when useDeprecatedV14Bootstrapping 
+     * is enabled. Use a {@link UIInitListener} instead when
+     * there are server-side views.
      */
     public Optional<ReconnectDialogConfiguration> getReconnectDialogConfiguration() {
         return getUi().map(UI::getReconnectDialogConfiguration);
@@ -429,7 +439,12 @@ public class AppShellSettings {
     /**
      * Returns the object used for configuring the push channel.
      *
-     * @return the instance used for push channel configuration
+     * @return An optional instance used for push channel configuration or 
+     * an empty optional if UI is not avaialbe.
+     * 
+     * @Deprecated It only works when useDeprecatedV14Bootstrapping 
+     * is enabled. Use a {@link UIInitListener} instead when
+     * there are server-side views.
      */
     public Optional<PushConfiguration> getPushConfiguration() {
         return getUi().map(UI::getPushConfiguration);
