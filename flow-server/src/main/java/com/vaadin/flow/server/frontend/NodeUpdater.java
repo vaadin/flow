@@ -84,7 +84,6 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_MAIN_KEY = "main";
     protected static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
     protected static final String DEP_NAME_FLOW_JARS = "@vaadin/flow-frontend";
-    protected static final String DEP_NAME_COMMON_FRONTEND = "@vaadin/common-frontend";
     private static final String FORM_FOLDER = "form";
     private static final String DEP_MAIN_VALUE = "index";
     private static final String DEP_VERSION_KEY = "version";
