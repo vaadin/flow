@@ -33,7 +33,7 @@ class BuildStatusPlugin {
         const warnings = stats.compilation.warnings;
         if (errors.length > 0) {
           logger.info(`${humanReadable(errors.length, "error")} and ${humanReadable(warnings.length, "warning")} were reported.`);
-          logger.info(": Failed to compile.")
+          logger.info(": Failed to compile.");
         } else {
           if (warnings.length > 0) {
             logger.info(`${humanReadable(warnings.length, "warning")} were reported.`);
