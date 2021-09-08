@@ -439,7 +439,7 @@
                 <plugin>
                     <groupId>org.apache.karaf.tooling</groupId>
                     <artifactId>karaf-maven-plugin</artifactId>
-                    <version>4.3.2</version>
+                    <version>4.3.3</version>
                     <extensions>true</extensions>
                     <executions>
                         <execution>
