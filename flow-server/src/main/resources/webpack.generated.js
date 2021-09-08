@@ -233,8 +233,9 @@ module.exports = {
   },
 
   devServer: {
+    hot: false,
     // webpack-dev-server serves ./ ,  webpack-generated,  and java webapp
-    static: [outputFolder, 'src/main/webapp'],
+    static: [ outputFolder, path.resolve(__dirname, 'src', 'main', 'webapp') ],
     onAfterSetupMiddleware: function(devServer) {
       devServer.app.get(`/stats.json`, function(req, res) {
         res.json(stats);
