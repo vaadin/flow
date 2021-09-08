@@ -69,8 +69,6 @@ public class TaskGeneratePackageJsonTest {
         JsonObject formReSourcePackageJson = Mockito.mock(JsonObject.class);
         Mockito.doReturn(resourcePackageJson).when(task)
                 .getResourcesPackageJson();
-        Mockito.doReturn(formReSourcePackageJson).when(task)
-                .getFormResourcesPackageJson();
 
         task.execute();
 

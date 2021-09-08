@@ -302,20 +302,6 @@ public abstract class NodeUpdater implements FallibleCommand {
         return packageJson;
     }
 
-    JsonObject getFormResourcesPackageJson() throws IOException {
-        JsonObject packageJson = getJsonFileContent(
-                new File(formResourcesFolder, PACKAGE_JSON));
-        if (packageJson == null) {
-            packageJson = Json.createObject();
-            packageJson.put(DEP_NAME_KEY, DEP_NAME_COMMON_FRONTEND);
-            packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
-            packageJson.put(DEP_MAIN_KEY, DEP_MAIN_VALUE);
-            packageJson.put(DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
-            packageJson.put("sideEffects", false);
-        }
-        return packageJson;
-    }
-
     static JsonObject getJsonFileContent(File packageFile) throws IOException {
         JsonObject jsonContent = null;
         if (packageFile.exists()) {
@@ -401,6 +387,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("webpack-manifest-plugin", "3.0.0");
         defaults.put("@types/validator", "13.1.0");
         defaults.put("validator", "13.1.17");
+        defaults.put("@vaadin/form", "0.0.12");
 
         // Forcing chokidar version for now until new babel version is available
         // check out https://github.com/babel/babel/issues/11488

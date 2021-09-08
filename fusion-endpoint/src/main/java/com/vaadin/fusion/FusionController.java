@@ -61,6 +61,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -93,6 +94,7 @@ import com.vaadin.fusion.exception.EndpointValidationException.ValidationErrorDa
 @RestController
 @Import({ FusionControllerConfiguration.class, FusionEndpointProperties.class })
 @ConditionalOnBean(annotation = Endpoint.class)
+@NpmPackage(value = "@vaadin/fusion-frontend", version = "0.0.12")
 public class FusionController {
     static final String ENDPOINT_METHODS = "/{endpoint}/{method}";
 

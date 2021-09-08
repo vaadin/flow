@@ -70,10 +70,6 @@ public class TaskGeneratePackageJson extends NodeUpdater {
                 writeResourcesPackageFile(getResourcesPackageJson());
             }
 
-            if (!new File(npmFolder, NODE_MODULES + FORM_NPM_PACKAGE_NAME)
-                    .equals(formResourcesFolder)) {
-                writeFormResourcesPackageFile(getFormResourcesPackageJson());
-            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
