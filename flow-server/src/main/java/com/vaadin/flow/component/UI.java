@@ -94,7 +94,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @since 1.0
  */
-@NpmPackage(value="@vaadin/common-frontend", version = "0.0.12")
+@NpmPackage(value = "@vaadin/common-frontend", version = "0.0.12")
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 
