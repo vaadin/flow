@@ -561,7 +561,6 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateBootstrap.class,
             TaskInstallWebpackPlugins.class,
             TaskUpdatePackages.class,
-            TaskUseFusionPackage.class,
             TaskRunNpmInstall.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
@@ -730,16 +729,6 @@ public class NodeTasks implements FallibleCommand {
                             builder.classFinder.getClassLoader(),
                             builder.fusionGeneratedOpenAPIFile);
             commands.add(taskGenerateOpenAPI);
-
-            if (builder.createMissingPackageJson
-                    || builder.enablePackagesUpdate) {
-                TaskUseFusionPackage taskUseFusionPackage = endpointGeneratorTaskFactory
-                        .createTaskUseFusionPackage(builder.npmFolder,
-                                builder.generatedFolder,
-                                builder.flowResourcesFolder,
-                                builder.buildDirectory);
-                commands.add(taskUseFusionPackage);
-            }
 
             if (builder.fusionClientAPIFolder != null) {
                 TaskGenerateFusion taskGenerateFusion = endpointGeneratorTaskFactory

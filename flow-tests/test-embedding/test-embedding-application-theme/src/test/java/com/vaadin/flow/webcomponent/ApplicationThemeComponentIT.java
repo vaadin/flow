@@ -221,4 +221,18 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         Assert.assertTrue("Missing link for external url", linkUrls
                 .contains("https://fonts.googleapis.com/css?family=Itim"));
     }
+
+    @Test
+    public void multipleSameEmbedded_cssTargetingDocumentShouldOnlyAddElementsOneTime() {
+        open();
+        checkLogsForErrors();
+        Assert.assertEquals(
+                "document.css adds 2 font links and those should not duplicate",
+                2l, getCommandExecutor().executeScript(
+                        "return document.head.getElementsByTagName('link').length"));
+        Assert.assertEquals(
+                "Project contains 2 css injections to document and both should be hashed",
+                2l, getCommandExecutor().executeScript(
+                        "return window.Vaadin.theme.injectedGlobalCss.length"));
+    }
 }

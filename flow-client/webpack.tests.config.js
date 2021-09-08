@@ -25,9 +25,10 @@ module.exports = {
         test: /\.ts$/,
         use: [
           {
-            loader: "ts-loader",
+            loader: "esbuild-loader",
             options: {
-              transpileOnly: true
+              loader: "ts",
+              target: "es2019"
             }
           }
         ]

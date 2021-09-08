@@ -131,7 +131,9 @@ public class InitParameters implements Serializable {
 
     /**
      * Configuration parameter name for enabling session serialization in
-     * development.
+     * development. If enabled, all the session's associated
+     * {@link com.vaadin.flow.component.UI} instances will be serialized.
+     * Otherwise, it won't be serialized.
      *
      * @since
      */

@@ -13,13 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.fusion.generator.endpoints.mappedtype;
 
-/**
- * Updates the generated "package.json" with the Fusion packages.
- * <p>
- * For internal use only. May be renamed or removed in a future release.
- */
-public interface TaskUseFusionPackage extends FallibleCommand {
+import java.util.Arrays;
 
+import org.junit.Test;
+
+import com.vaadin.fusion.generator.endpoints.AbstractEndpointGenerationTest;
+
+public class MappedTypeEndpointTest extends AbstractEndpointGenerationTest {
+    public MappedTypeEndpointTest() {
+        super(Arrays.asList(MappedTypeEndpoint.class));
+    }
+
+    @Test
+    public void should_mapToCorrectTypes() {
+        verifyOpenApiObjectAndGeneratedTs();
+    }
 }

@@ -69,7 +69,6 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
-import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.BootstrapHandlerTest;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -633,6 +632,31 @@ public class UITest {
 
         Assert.assertEquals("There should be 4 invocations", 4,
                 callCounter.get());
+    }
+
+    @Test
+    public void beforeClientResponse_componentNotAttachedToUi_noException() {
+        UI ui = createTestUI();
+        Component component = new AttachableComponent();
+        ui.beforeClientResponse(component, context -> {
+        });
+    }
+
+    @Test()
+    public void beforeClientResponse_componentBelongsToAnotherUI_throws() {
+        UI firstUI = createTestUI();
+        UI anotherUI = createTestUI();
+        Component component = new AttachableComponent();
+        anotherUI.add(component);
+
+        IllegalArgumentException exception = Assert.assertThrows(
+                IllegalArgumentException.class,
+                () -> firstUI.beforeClientResponse(component, context -> {
+                }));
+
+        Assert.assertEquals(
+                "The given component doesn't belong to the UI the task to be executed on",
+                exception.getMessage());
     }
 
     @ListenerPriority(5)

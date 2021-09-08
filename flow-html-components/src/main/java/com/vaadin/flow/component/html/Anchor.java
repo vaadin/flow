@@ -45,9 +45,6 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
 
     private static final String ROUTER_IGNORE_ATTRIBUTE = "router-ignore";
 
-    private String disabledHref;
-    private AbstractStreamResource resource;
-
     /**
      * Creates a new empty anchor component.
      */
@@ -159,7 +156,6 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
      *            the resource value, not null
      */
     public void setHref(AbstractStreamResource href) {
-        resource = href;
         getElement().setAttribute("href", href);
         getElement().setAttribute(ROUTER_IGNORE_ATTRIBUTE, true);
     }
@@ -250,38 +246,6 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
             return AnchorTargetValue.forString(target.get());
         }
         return AnchorTarget.DEFAULT;
-    }
-
-    @Override
-    public void onEnabledStateChanged(boolean enabled) {
-        super.onEnabledStateChanged(enabled);
-        if (enabled) {
-            if (resource == null) {
-                restoreHref();
-            } else {
-                restoreResource();
-            }
-            disabledHref = null;
-        } else {
-            disabledHref = getHref();
-            removeHref();
-        }
-    }
-
-    private void restoreHref() {
-        if (!getElement().hasAttribute("href")) {
-            // only set attribute value back if attribute has not been set
-            // somehow when component was disabled
-            setHref(disabledHref);
-        }
-    }
-
-    private void restoreResource() {
-        if (!getElement().hasAttribute("href")) {
-            // only set attribute value back if attribute has not been set
-            // somehow when component was disabled
-            setHref(resource);
-        }
     }
 
 }

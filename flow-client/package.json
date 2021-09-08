@@ -29,6 +29,7 @@
     "@types/sinon": "9.0.0",
     "abort-controller": "2.0.0",
     "chai": "4.2.0",
+    "esbuild-loader": "2.15.1",
     "eslint": "7.21.0",
     "eslint-config-vaadin": "0.4.0",
     "eslint-plugin-lit": "1.4.1",
@@ -39,18 +40,16 @@
     "prettier": "2.2.1",
     "sinon": "7.5.0",
     "sinon-chai": "3.6.0",
-    "ts-loader": "6.0.4",
     "typescript": "4.0.3",
-    "webpack": "4.39.1",
-    "webpack-cli": "3.3.6",
+    "webpack": "4.46.0",
+    "webpack-cli": "3.3.12",
     "workbox-core": "5.1.4",
     "workbox-precaching": "5.1.4",
     "xhr-mock": "2.5.0"
   },
   "dependencies": {
     "@types/validator": "13.1.0",
-    "@vaadin/common-frontend": "file:../../fusion/frontend/packages/common-frontend/vaadin-common-frontend-22.0.0-alpha1.tgz",
-    "lit": "2.0.0-rc.1",
+    "lit": "2.0.0-rc.4",
     "validator": "13.1.17"
   }
 }

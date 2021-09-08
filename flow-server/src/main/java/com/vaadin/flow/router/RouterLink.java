@@ -127,9 +127,12 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            link text
      * @param navigationTarget
      *            navigation target
+     * @throws IllegalArgumentException
+     *             if navigation target requires parameters
      */
     public RouterLink(Router router, String text,
-            Class<? extends Component> navigationTarget) {
+            Class<? extends Component> navigationTarget)
+            throws IllegalArgumentException {
         this(router, text, navigationTarget, RouteParameters.empty());
     }
 
@@ -185,6 +188,8 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            router used for navigation
      * @param navigationTarget
      *            navigation target
+     * @throws IllegalArgumentException
+     *             if navigation target requires parameters
      */
     public void setRoute(Router router,
             Class<? extends Component> navigationTarget) {
@@ -241,6 +246,8 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *
      * @param navigationTarget
      *            navigation target
+     * @throws IllegalArgumentException
+     *             if navigation target requires parameters
      */
     public void setRoute(Class<? extends Component> navigationTarget) {
         setRoute(getRouter(), navigationTarget);
