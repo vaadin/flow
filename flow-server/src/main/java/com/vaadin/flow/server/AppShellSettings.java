@@ -411,12 +411,12 @@ public class AppShellSettings {
     /**
      * Returns the configuration object for loading indicator.
      *
-     * @return An optional instance used for configuring the loading 
-     * indicator or an empty optional if UI is not available.
+     * @return An optional instance used for configuring the loading indicator
+     *         or an empty optional if UI is not available.
      * 
-     * @Deprecated It only works when useDeprecatedV14Bootstrapping 
-     * is enabled. Use a {@link UIInitListener} instead when
-     * there are server-side views.
+     * @Deprecated It only works when useDeprecatedV14Bootstrapping is enabled.
+     *             Use a {@link UIInitListener} instead when there are
+     *             server-side views.
      */
     public Optional<LoadingIndicatorConfiguration> getLoadingIndicatorConfiguration() {
         return getUi().map(UI::getLoadingIndicatorConfiguration);
@@ -426,11 +426,11 @@ public class AppShellSettings {
      * Returns the configuration object for reconnect dialog.
      *
      * @return An optional instance used for reconnect dialog configuration or
-     * an empty optional if UI is not available.
+     *         an empty optional if UI is not available.
      * 
-     * @Deprecated It only works when useDeprecatedV14Bootstrapping 
-     * is enabled. Use a {@link UIInitListener} instead when
-     * there are server-side views.
+     * @Deprecated It only works when useDeprecatedV14Bootstrapping is enabled.
+     *             Use a {@link UIInitListener} instead when there are
+     *             server-side views.
      */
     public Optional<ReconnectDialogConfiguration> getReconnectDialogConfiguration() {
         return getUi().map(UI::getReconnectDialogConfiguration);
@@ -439,12 +439,12 @@ public class AppShellSettings {
     /**
      * Returns the object used for configuring the push channel.
      *
-     * @return An optional instance used for push channel configuration or 
-     * an empty optional if UI is not available.
+     * @return An optional instance used for push channel configuration or an
+     *         empty optional if UI is not available.
      * 
-     * @Deprecated It only works when useDeprecatedV14Bootstrapping 
-     * is enabled. Use a {@link UIInitListener} instead when
-     * there are server-side views.
+     * @Deprecated It only works when useDeprecatedV14Bootstrapping is enabled.
+     *             Use a {@link UIInitListener} instead when there are
+     *             server-side views.
      */
     public Optional<PushConfiguration> getPushConfiguration() {
         return getUi().map(UI::getPushConfiguration);
