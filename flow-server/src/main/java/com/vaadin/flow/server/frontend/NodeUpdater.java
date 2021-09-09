@@ -384,6 +384,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("workbox-precaching", WORKBOX_VERSION);
         defaults.put("glob", "7.1.6");
         defaults.put("webpack-manifest-plugin", "3.0.0");
+        defaults.put("@vaadin/common-frontend", "0.0.12");
 
         // Forcing chokidar version for now until new babel version is available
         // check out https://github.com/babel/babel/issues/11488
