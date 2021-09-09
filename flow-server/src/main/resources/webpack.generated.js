@@ -179,10 +179,15 @@ module.exports = {
 
   module: {
     rules: [
-      {
+      ...(transpile ? [
+        {
+        test: /\.tsx?$/,
+        use: [ BabelMultiTargetPlugin.loader(), 'ts-loader' ],
+      }
+      ] : [{
         test: /\.tsx?$/,
         use: ['ts-loader']
-      },
+      }]),
       ...(transpile ? [{ // Files that Babel has to transpile
         test: /\.js$/,
         use: [BabelMultiTargetPlugin.loader()]
