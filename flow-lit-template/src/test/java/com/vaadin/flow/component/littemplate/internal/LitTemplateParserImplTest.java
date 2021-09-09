@@ -265,6 +265,26 @@ public class LitTemplateParserImplTest {
                         "Tag name doesn't match the JS module name")));
     }
 
+    @Test
+    public void es5Andes6Sources_getsCorrectlyEs6Source() {
+
+        LitTemplateParser instance = LitTemplateParserImpl.getInstance();
+        LitTemplateParser.TemplateData templateContent = instance.getTemplateContent(
+                ImageCard.class, "image-card", service);
+
+        Assert.assertNotNull(
+                "ES5 was selected from which template content can not be parsed",
+                templateContent);
+        Assert.assertEquals("Parent element ID not the expected one.",
+                "image-card",
+                templateContent.getTemplateElement().parent().id());
+    }
+
+    @Tag("image-card")
+    @JsModule("./image-card.ts")
+    public class ImageCard extends LitTemplate {
+    }
+
     @Tag("my-element")
     @JsModule("./frontend/MyLitElement.js")
     public class MyLitElement extends LitTemplate {
