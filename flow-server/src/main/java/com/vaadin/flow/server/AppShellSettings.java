@@ -412,7 +412,7 @@ public class AppShellSettings {
      * Returns the configuration object for loading indicator.
      *
      * @return An optional instance used for configuring the loading 
-     * indicator or an empty optional if UI is not avaialbe.
+     * indicator or an empty optional if UI is not available.
      * 
      * @Deprecated It only works when useDeprecatedV14Bootstrapping 
      * is enabled. Use a {@link UIInitListener} instead when
@@ -426,7 +426,7 @@ public class AppShellSettings {
      * Returns the configuration object for reconnect dialog.
      *
      * @return An optional instance used for reconnect dialog configuration or
-     * an empty optional if UI is not avaialbe.
+     * an empty optional if UI is not available.
      * 
      * @Deprecated It only works when useDeprecatedV14Bootstrapping 
      * is enabled. Use a {@link UIInitListener} instead when
@@ -440,7 +440,7 @@ public class AppShellSettings {
      * Returns the object used for configuring the push channel.
      *
      * @return An optional instance used for push channel configuration or 
-     * an empty optional if UI is not avaialbe.
+     * an empty optional if UI is not available.
      * 
      * @Deprecated It only works when useDeprecatedV14Bootstrapping 
      * is enabled. Use a {@link UIInitListener} instead when
