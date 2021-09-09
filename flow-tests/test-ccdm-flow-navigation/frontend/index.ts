@@ -1,6 +1,6 @@
 import {Flow} from '@vaadin/flow-frontend/Flow';
 import {Router} from '@vaadin/router';
-import {connectionIndicator} from '@vaadin/flow-frontend';
+import {connectionIndicator} from '@vaadin/common-frontend';
 
 const {serverSideRoutes} = new Flow({
     imports: () => import('../target/frontend/generated-flow-imports'),
