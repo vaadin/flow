@@ -149,18 +149,10 @@ public class ProductionModeCopyStep {
 
     private String getPackageName(ArtifactData webJar,
             String nameSourceJarPath) {
-        String fileContents;
-        try {
-            fileContents = IOUtils.toString(
-                    jarContentsManager.getFileContents(
-                            webJar.getFileOrDirectory(), nameSourceJarPath),
-                    StandardCharsets.UTF_8.displayName());
-        } catch (IOException e) {
-            throw new UncheckedIOException(
-                    String.format("Unable to read file '%s' from webJar '%s'",
-                            nameSourceJarPath, webJar.getFileOrDirectory()),
-                    e);
-        }
+        String fileContents = IOUtils.toString(
+                jarContentsManager.getFileContents(
+                        webJar.getFileOrDirectory(), nameSourceJarPath),
+                StandardCharsets.UTF_8.displayName());
         JsonObject jsonObject = Json.parse(fileContents);
         if (jsonObject.hasKey("name")) {
             String name = jsonObject.getString("name");
