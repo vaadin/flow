@@ -686,20 +686,5 @@
 
             </build>
         </profile>
-        <profile>
-            <id>release</id>
-            <modules>
-                <module>flow</module>
-                <module>flow-server</module>
-                <module>flow-push</module>
-                <module>flow-data</module>
-                <module>flow-client</module>
-                <module>flow-html-components</module>
-                <module>flow-test-util</module>
-                <module>flow-tests</module>
-                <module>flow-server-production-mode</module>
-                <module>build-tools</module>
-            </modules>
-        </profile>
     </profiles>
 </project>
