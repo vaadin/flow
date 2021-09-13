@@ -23,27 +23,35 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
+import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 import com.vaadin.flow.testutil.FrontendStubs;
@@ -54,6 +62,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+@NotThreadSafe
 public class FrontendToolsTest {
 
     public static final String DEFAULT_NODE = FrontendUtils.isWindows()
@@ -64,6 +73,10 @@ public class FrontendToolsTest {
             .of("node", "node_modules", "npm", "bin", "npm-cli.js")
             .collect(Collectors.joining(File.separator));
 
+    private static final String OLD_PNPM_VERSION = "4.5.0";
+
+    private static final String SUPPORTED_PNPM_VERSION = "5.15.0";
+
     private String baseDir;
 
     private String vaadinHomeDir;
@@ -73,6 +86,11 @@ public class FrontendToolsTest {
 
     @Rule
     public final TemporaryFolder tmpDirWithNpmrc = new TemporaryFolder();
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
+
+    private final FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
     private FrontendTools tools;
 
@@ -167,9 +185,7 @@ public class FrontendToolsTest {
         prepareNodeDownloadableZipAt(baseDir,
                 FrontendTools.DEFAULT_NODE_VERSION);
 
-        String nodeExecutable = tools.installNode(
-                FrontendTools.DEFAULT_NODE_VERSION,
-                new File(baseDir).toPath().toUri());
+        String nodeExecutable = installNodeToTempFolder();
         Assert.assertNotNull(nodeExecutable);
 
         Assert.assertTrue("npm should have been copied to node_modules",
@@ -465,38 +481,83 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void getSuitablePnpm_incompatibleDefaultVersionInstalled_rejected()
+    public void getSuitablePnpm_useDefaultSupportedPnpmVersion_oldGlobalPnpmIgnored()
             throws Exception {
         createStubNode(false, true, baseDir);
-        createFakePnpm("4.5.0");
+        createFakePnpm(OLD_PNPM_VERSION);
         List<String> pnpmCommand = tools.getSuitablePnpm();
-        Assert.assertEquals("expected pnpm version 4.5.0 rejected",
+        Assert.assertTrue(
+                "expected the default pnpm command to include '--ignore-existing' flag",
+                pnpmCommand.contains("--ignore-existing"));
+        Assert.assertEquals(
+                "expected old global pnpm version to be ignored and the default supported one is used",
                 "pnpm@" + FrontendTools.DEFAULT_PNPM_VERSION,
                 pnpmCommand.get(pnpmCommand.size() - 1));
     }
 
     @Test
-    public void getSuitablePnpm_compatibleVersionInstalled_accepted()
-            throws Exception {
-        createStubNode(false, true, baseDir);
-        createFakePnpm("5.15.1");
-        List<String> pnpmCommand = tools.getSuitablePnpm();
-        Assert.assertEquals("expected pnpm version 5.15.1 accepted", "pnpm@5",
-                pnpmCommand.get(pnpmCommand.size() - 1));
+    public void getSuitablePnpm_tooOldGlobalVersionInstalled_throws() {
+        exceptionRule.expect(IllegalStateException.class);
+        exceptionRule.expectMessage(CoreMatchers.containsString(
+                "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least 5.0.0"));
+        tools = new FrontendTools(baseDir, () -> vaadinHomeDir,
+                FrontendTools.DEFAULT_NODE_VERSION, new File(baseDir).toURI(),
+                false, true);
+        try {
+            installGlobalPnpm(OLD_PNPM_VERSION);
+            tools.getSuitablePnpm();
+        } finally {
+            uninstallGlobalPnpm(OLD_PNPM_VERSION);
+        }
     }
 
     @Test
-    public void getSuitablePnpm_tooOldVersionInstalledAndSkipVersionCheck_accepted()
-            throws Exception {
+    public void getSuitablePnpm_tooOldGlobalVersionInstalledAndSkipVersionCheck_accepted() {
         tools = new FrontendTools(baseDir, () -> vaadinHomeDir,
                 FrontendTools.DEFAULT_NODE_VERSION, new File(baseDir).toURI(),
-                true, false);
-        Assume.assumeFalse(tools.getNodeExecutable().isEmpty());
-        createStubNode(false, true, baseDir);
-        createFakePnpm("4.5.0");
-        List<String> pnpmCommand = tools.getSuitablePnpm();
-        Assert.assertEquals("expected pnpm version 4.5.0 accepted", "pnpm",
-                pnpmCommand.get(pnpmCommand.size() - 1));
+                true, false, true);
+        try {
+            installGlobalPnpm(OLD_PNPM_VERSION);
+            List<String> pnpmCommand = tools.getSuitablePnpm();
+            Assert.assertTrue(
+                    "expected old global pnpm version accepted when skip version flag is set",
+                    pnpmCommand.get(pnpmCommand.size() - 1).contains("pnpm"));
+        } finally {
+            uninstallGlobalPnpm(OLD_PNPM_VERSION);
+        }
+    }
+
+    @Test
+    public void getSuitablePnpm_supportedGlobalVersionInstalled_accepted() {
+        tools = new FrontendTools(baseDir, () -> vaadinHomeDir,
+                FrontendTools.DEFAULT_NODE_VERSION, new File(baseDir).toURI(),
+                false, true);
+        try {
+            installGlobalPnpm(SUPPORTED_PNPM_VERSION);
+            List<String> pnpmCommand = tools.getSuitablePnpm();
+            Assert.assertTrue("expected supported global pnpm version accepted",
+                    pnpmCommand.get(pnpmCommand.size() - 1).contains("pnpm"));
+        } finally {
+            uninstallGlobalPnpm(SUPPORTED_PNPM_VERSION);
+        }
+    }
+
+    @Test
+    public void getSuitablePnpm_useGlobalPnpm_noPnpmInstalled_throws() {
+        Optional<File> pnpm = frontendToolsLocator.tryLocateTool("pnpm");
+        Assume.assumeFalse("Skip this test once globally installed pnpm is "
+                + "discovered", pnpm.isPresent());
+
+        exceptionRule.expect(IllegalStateException.class);
+        exceptionRule.expectMessage(CoreMatchers.containsString(
+                "Vaadin application is configured to use globally installed "
+                        + "pnpm ('pnpm.global=true'), but no pnpm tool has been found "
+                        + "on your system."));
+
+        tools = new FrontendTools(baseDir, () -> vaadinHomeDir,
+                FrontendTools.DEFAULT_NODE_VERSION, new File(baseDir).toURI(),
+                false, true);
+        tools.getSuitablePnpm();
     }
 
     @Test
@@ -667,6 +728,37 @@ public class FrontendToolsTest {
                             + "    console.log(pnpmVersion);\n" + "}\n");
         } finally {
             fileWriter.close();
+        }
+    }
+
+    private void installGlobalPnpm(String pnpmVersion) {
+        Optional<File> npmInstalled = frontendToolsLocator.tryLocateTool("npm");
+        if (!npmInstalled.isPresent()) {
+            installNodeToTempFolder();
+        }
+        doInstallPnpmGlobally(pnpmVersion, false);
+    }
+
+    private String installNodeToTempFolder() {
+        return tools.installNode(FrontendTools.DEFAULT_NODE_VERSION,
+                new File(baseDir).toPath().toUri());
+    }
+
+    private void uninstallGlobalPnpm(String pnpmVersion) {
+        doInstallPnpmGlobally(pnpmVersion, true);
+    }
+
+    private void doInstallPnpmGlobally(String pnpmVersion, boolean uninstall) {
+        final String pnpmPackageSpecifier = "pnpm"
+                + (uninstall ? "" : "@" + pnpmVersion);
+        final List<String> installPnpmCommand = Arrays.asList("npm",
+                uninstall ? "rm" : "install", "-g", pnpmPackageSpecifier);
+        try {
+            FrontendUtils.executeCommand(installPnpmCommand);
+        } catch (FrontendUtils.CommandExecutionException e) {
+            throw new RuntimeException(String.format(
+                    "Pnpm installation failed, pnpm version='%s', uninstall='%s'",
+                    pnpmVersion, uninstall), e);
         }
     }
 }

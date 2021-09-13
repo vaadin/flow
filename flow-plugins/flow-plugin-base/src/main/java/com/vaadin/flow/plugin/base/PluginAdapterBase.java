@@ -238,6 +238,14 @@ public interface PluginAdapterBase {
     boolean pnpmEnable();
 
     /**
+     * Instructs to use globally installed pnpm tool or the default supported
+     * pnpm version.
+     *
+     * @return boolean
+     */
+    boolean useGlobalPnpm();
+
+    /**
      * Whether or not we are running in productionMode.
      *
      * @return boolean

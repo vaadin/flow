@@ -38,6 +38,7 @@ import org.apache.maven.project.MavenProject;
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -131,6 +132,13 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      */
     @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = Constants.ENABLE_PNPM_DEFAULT_STRING)
     private boolean pnpmEnable;
+
+    /**
+     * Instructs to use globally installed pnpm tool or the default supported
+     * pnpm version.
+     */
+    @Parameter(property = InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, defaultValue = Constants.GLOBAL_PNPM_DEFAULT_STRING)
+    private boolean useGlobalPnpm;
 
     /**
      * Whether or not we are running in productionMode.
@@ -343,6 +351,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     public boolean pnpmEnable() {
 
         return pnpmEnable;
+    }
+
+    @Override
+    public boolean useGlobalPnpm() {
+
+        return useGlobalPnpm;
     }
 
     @Override

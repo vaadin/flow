@@ -106,6 +106,14 @@ public open class VaadinFlowPluginExtension(project: Project) {
     public var pnpmEnable: Boolean = Constants.ENABLE_PNPM_DEFAULT_STRING.toBoolean()
 
     /**
+     * Whether the globally installed pnpm tool is used. By default, the
+     * pinned supported version of pnpm is used, see [FrontendTools
+     * .DEFAULT_PNPM_VERSION].
+     */
+    public var useGlobalPnpm: Boolean = Constants.GLOBAL_PNPM_DEFAULT_STRING
+            .toBoolean()
+
+    /**
      * Whether vaadin home node executable usage is forced. If it's set to
      * `true` then vaadin home 'node' is checked and installed if it's
      * absent. Then it will be used instead of globally 'node' or locally
@@ -211,6 +219,11 @@ public open class VaadinFlowPluginExtension(project: Project) {
         if (pnpmEnableProperty != null) {
             pnpmEnable = pnpmEnableProperty
         }
+
+        val useGlobalPnpmProperty: Boolean? = project.getBooleanProperty(InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM)
+        if (useGlobalPnpmProperty != null) {
+            useGlobalPnpm = useGlobalPnpmProperty
+        }
     }
 
     override fun toString(): String = "VaadinFlowPluginExtension(" +
@@ -227,6 +240,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
             "frontendResourcesDirectory=$frontendResourcesDirectory, " +
             "optimizeBundle=$optimizeBundle, " +
             "pnpmEnable=$pnpmEnable, " +
+            "useGlobalPnpm=$useGlobalPnpm, " +
             "requireHomeNodeExec=$requireHomeNodeExec, " +
             "useDeprecatedV14Bootstrapping=$useDeprecatedV14Bootstrapping, " +
             "eagerServerLoad=$eagerServerLoad, " +

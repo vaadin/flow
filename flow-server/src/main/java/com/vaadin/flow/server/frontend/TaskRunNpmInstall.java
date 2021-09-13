@@ -93,6 +93,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     private final String nodeVersion;
     private final URI nodeDownloadRoot;
+    private final boolean useGlobalPnpm;
 
     /**
      * Create an instance of the command.
@@ -115,16 +116,21 @@ public class TaskRunNpmInstall implements FallibleCommand {
      *            corporate environments where the node.js download can be
      *            provided from an intranet mirror. Use
      *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
+     * @param useGlobalPnpm
+     *            use globally installed pnpm instead of the default one (see
+     *            {@link FrontendTools#DEFAULT_PNPM_VERSION})
+     *
      */
     TaskRunNpmInstall(ClassFinder classFinder, NodeUpdater packageUpdater,
             boolean enablePnpm, boolean requireHomeNodeExec, String nodeVersion,
-            URI nodeDownloadRoot) {
+            URI nodeDownloadRoot, boolean useGlobalPnpm) {
         this.classFinder = classFinder;
         this.packageUpdater = packageUpdater;
         this.enablePnpm = enablePnpm;
         this.requireHomeNodeExec = requireHomeNodeExec;
         this.nodeVersion = Objects.requireNonNull(nodeVersion);
         this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
+        this.useGlobalPnpm = useGlobalPnpm;
     }
 
     @Override
@@ -326,7 +332,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         FrontendTools tools = new FrontendTools(baseDir,
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
-                nodeVersion, nodeDownloadRoot, requireHomeNodeExec);
+                nodeVersion, nodeDownloadRoot, requireHomeNodeExec,
+                useGlobalPnpm);
         try {
             if (requireHomeNodeExec) {
                 tools.forceAlternativeNodeExecutable();

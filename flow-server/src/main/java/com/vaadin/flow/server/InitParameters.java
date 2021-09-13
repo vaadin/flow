@@ -123,6 +123,12 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_ENABLE_PNPM = "pnpm.enable";
 
     /**
+     * Configuration parameter name for using globally installed pnpm or default
+     * one.
+     */
+    public static final String SERVLET_PARAMETER_GLOBAL_PNPM = "pnpm.global";
+
+    /**
      * Configuration parameter name for enabling live reload.
      *
      * @since

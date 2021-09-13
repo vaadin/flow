@@ -111,6 +111,18 @@ public interface AbstractConfiguration extends Serializable {
     }
 
     /**
+     * Returns whether globally installed pnpm is used or the default one (see
+     * {@link com.vaadin.flow.server.frontend.FrontendTools#DEFAULT_PNPM_VERSION}).
+     *
+     * @return {@code true} if globally installed pnpm is used, {@code false} if
+     *         the default one is used.
+     */
+    default boolean isGlobalPnpm() {
+        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM,
+                Boolean.valueOf(Constants.GLOBAL_PNPM_DEFAULT_STRING));
+    }
+
+    /**
      * Returns whether cross-site request forgery protection is enabled.
      *
      * @return true if XSRF protection is enabled, false otherwise.

@@ -363,6 +363,8 @@ public class DevModeInitializer
 
         boolean enablePnpm = config.isPnpmEnabled();
 
+        boolean useGlobalPnpm = config.isGlobalPnpm();
+
         boolean useHomeNodeExec = config.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
 
@@ -382,6 +384,7 @@ public class DevModeInitializer
                 .enableImportsUpdate(true).runNpmInstall(true)
                 .populateTokenFileData(tokenFileData)
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
+                .useGlobalPnpm(useGlobalPnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec).build();
 
         Runnable runnable = () -> runNodeTasks(context, tokenFileData, tasks);
