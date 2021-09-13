@@ -48,6 +48,10 @@ import com.vaadin.flow.component.page.Viewport;
  */
 public class AppShellSettings {
 
+    private static final String MSG_UNSUPPORTED_NO_UI = "It only works when "
+            + "useDeprecatedV14Bootstrapping is enabled. "
+            + "Use a UIInitListener instead if there are server-side views.";
+
     /**
      * A class representing an InlineElement.
      */
@@ -427,9 +431,7 @@ public class AppShellSettings {
         if (getUi().isPresent()) {
             return getUi().map(UI::getLoadingIndicatorConfiguration);
         } else {
-            throw new UnsupportedOperationException(
-                    "It only works when useDeprecatedV14Bootstrapping is enabled. "
-                            + "Use a UIInitListener instead if there are server-side views.");
+            throw new UnsupportedOperationException(MSG_UNSUPPORTED_NO_UI);
         }
     }
 
@@ -452,9 +454,7 @@ public class AppShellSettings {
         if (getUi().isPresent()) {
             return getUi().map(UI::getReconnectDialogConfiguration);
         } else {
-            throw new UnsupportedOperationException(
-                    "It only works when useDeprecatedV14Bootstrapping is enabled. "
-                            + "Use a UIInitListener instead if there are server-side views.");
+            throw new UnsupportedOperationException(MSG_UNSUPPORTED_NO_UI);
         }
     }
 
@@ -477,9 +477,7 @@ public class AppShellSettings {
         if (getUi().isPresent()) {
             return getUi().map(UI::getPushConfiguration);
         } else {
-            throw new UnsupportedOperationException(
-                    "It only works when useDeprecatedV14Bootstrapping is enabled. "
-                            + "Use a UIInitListener instead if there are server-side views.");
+            throw new UnsupportedOperationException(MSG_UNSUPPORTED_NO_UI);
         }
     }
 
