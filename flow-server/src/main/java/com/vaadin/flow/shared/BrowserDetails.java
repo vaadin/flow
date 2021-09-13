@@ -56,8 +56,6 @@ public class BrowserDetails implements Serializable {
     private boolean isIPhone;
     private boolean isChromeOS;
 
-    private boolean isIPhone14_7OrHigher;
-
     private OperatingSystem os = OperatingSystem.UNKNOWN;
 
     private float browserEngineVersion = -1.0f;
