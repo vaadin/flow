@@ -414,13 +414,23 @@ public class AppShellSettings {
      * @return An optional instance used for configuring the loading indicator
      *         or an empty optional if UI is not available.
      * 
+     * @throws UnsupportedOperationException
+     *             If UI is not avaialble, for example, when using client-side
+     *             bootstrapping
+     * 
      * @deprecated It only works when useDeprecatedV14Bootstrapping is enabled.
-     *             Use a {@link UIInitListener} instead when there are
-     *             server-side views.
+     *             Use a {@link UIInitListener} instead if there are server-side
+     *             views.
      */
     @Deprecated
     public Optional<LoadingIndicatorConfiguration> getLoadingIndicatorConfiguration() {
-        return getUi().map(UI::getLoadingIndicatorConfiguration);
+        if (getUi().isPresent()) {
+            return getUi().map(UI::getLoadingIndicatorConfiguration);
+        } else {
+            throw new UnsupportedOperationException(
+                    "It only works when useDeprecatedV14Bootstrapping is enabled. "
+                            + "Use a UIInitListener instead if there are server-side views.");
+        }
     }
 
     /**
@@ -429,13 +439,23 @@ public class AppShellSettings {
      * @return An optional instance used for reconnect dialog configuration or
      *         an empty optional if UI is not available.
      * 
+     * @throws UnsupportedOperationException
+     *             If UI is not avaialble, for example, when using the
+     *             client-side bootstrapping
+     * 
      * @deprecated It only works when useDeprecatedV14Bootstrapping is enabled.
-     *             Use a {@link UIInitListener} instead when there are
-     *             server-side views.
+     *             Use a {@link UIInitListener} instead if there are server-side
+     *             views.
      */
     @Deprecated
     public Optional<ReconnectDialogConfiguration> getReconnectDialogConfiguration() {
-        return getUi().map(UI::getReconnectDialogConfiguration);
+        if (getUi().isPresent()) {
+            return getUi().map(UI::getReconnectDialogConfiguration);
+        } else {
+            throw new UnsupportedOperationException(
+                    "It only works when useDeprecatedV14Bootstrapping is enabled. "
+                            + "Use a UIInitListener instead if there are server-side views.");
+        }
     }
 
     /**
@@ -444,13 +464,23 @@ public class AppShellSettings {
      * @return An optional instance used for push channel configuration or an
      *         empty optional if UI is not available.
      * 
+     * @throws UnsupportedOperationException
+     *             If UI is not avaialble, for example, when using the
+     *             client-side bootstrapping
+     * 
      * @deprecated It only works when useDeprecatedV14Bootstrapping is enabled.
-     *             Use a {@link UIInitListener} instead when there are
-     *             server-side views.
+     *             Use a {@link UIInitListener} instead if there are server-side
+     *             views.
      */
     @Deprecated
     public Optional<PushConfiguration> getPushConfiguration() {
-        return getUi().map(UI::getPushConfiguration);
+        if (getUi().isPresent()) {
+            return getUi().map(UI::getPushConfiguration);
+        } else {
+            throw new UnsupportedOperationException(
+                    "It only works when useDeprecatedV14Bootstrapping is enabled. "
+                            + "Use a UIInitListener instead if there are server-side views.");
+        }
     }
 
     /**
