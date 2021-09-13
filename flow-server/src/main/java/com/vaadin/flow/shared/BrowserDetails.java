@@ -56,6 +56,8 @@ public class BrowserDetails implements Serializable {
     private boolean isIPhone;
     private boolean isChromeOS;
 
+    private boolean isIPhone14_7OrHigher;
+
     private OperatingSystem os = OperatingSystem.UNKNOWN;
 
     private float browserEngineVersion = -1.0f;
@@ -608,6 +610,13 @@ public class BrowserDetails implements Serializable {
         }
         // Safari 13+
         if (isSafari() && getBrowserMajorVersion() < 13) {
+            if (getOperatingSystemMajorVersion() > 14) {
+                return false;
+            }
+            if (getOperatingSystemMajorVersion() == 14
+                    && getOperatingSystemMinorVersion() >= 7) {
+                return false;
+            }
             return true;
         }
         // Firefox 43+ for now
