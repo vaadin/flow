@@ -32,27 +32,29 @@ import org.junit.Test;
 public class CsrfCookieWithTrailingSlashIT extends ChromeBrowserTest {
     @Test
     // https://github.com/vaadin/fusion/issues/105
-    public void should_registerCsrfCookieToContextRoot_whenRequestFromSubViewAndUrlHasTrailingSlash() throws IOException{
+    public void should_registerCsrfCookieToContextRoot_whenRequestFromSubViewAndUrlHasTrailingSlash()
+            throws IOException {
         CookieManager cookieManager = new CookieManager();
-        CookieHandler.setDefault(cookieManager); 
+        CookieHandler.setDefault(cookieManager);
 
         open();
-        
-        URL url = new URL(getTestURL()); 
-        URLConnection urlConnection = url.openConnection(); 
+
+        URL url = new URL(getTestURL());
+        URLConnection urlConnection = url.openConnection();
         urlConnection.getContent();
-        // Get CookieStore 
-        CookieStore cookieStore = cookieManager.getCookieStore(); 
+        // Get CookieStore
+        CookieStore cookieStore = cookieManager.getCookieStore();
 
         HttpCookie csrfCookie = cookieStore.getCookies().stream()
                 .filter(cookie -> "csrfToken".equals(cookie.getName()))
                 .findFirst().get();
-        Assert.assertEquals(getContextPath(), csrfCookie.getPath()); 
+        Assert.assertEquals(getContextPath(), csrfCookie.getPath());
     }
 
     @Override
     protected String getTestPath() {
-        return getContextPath() + ("/".equals(getContextPath())?"":"/") + "hello/";
+        return getContextPath() + ("/".equals(getContextPath()) ? "" : "/")
+                + "hello/";
     }
 
     protected String getContextPath() {

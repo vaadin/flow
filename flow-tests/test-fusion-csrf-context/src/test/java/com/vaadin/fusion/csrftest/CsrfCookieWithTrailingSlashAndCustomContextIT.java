@@ -16,7 +16,8 @@
 
 package com.vaadin.fusion.csrftest;
 
-public class CsrfCookieWithTrailingSlashAndCustomContextIT extends CsrfCookieWithTrailingSlashIT {
+public class CsrfCookieWithTrailingSlashAndCustomContextIT
+        extends CsrfCookieWithTrailingSlashIT {
     @Override
     protected String getContextPath() {
         return "/foo";
