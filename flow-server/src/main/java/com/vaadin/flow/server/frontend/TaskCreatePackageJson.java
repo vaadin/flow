@@ -48,7 +48,9 @@ public class TaskCreatePackageJson extends NodeUpdater {
             modified = false;
             JsonObject mainContent = getPackageJson();
             modified = updateDefaultDependencies(mainContent);
-            writePackageFile(mainContent);
+            if(modified) {
+                writePackageFile(mainContent);
+            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
