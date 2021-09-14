@@ -15,15 +15,13 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.data.provider.AbstractDataProvider;
-import com.vaadin.flow.data.provider.DataChangeEvent;
-import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -75,4 +73,21 @@ public class AbstractDataProviderTest {
         dataProvider.refreshAll();
         Assert.assertNull(event.get());
     }
+
+    @Test
+    public void eventUnregisterListener_insideListener() {
+        TestDataProvider provider = new TestDataProvider();
+        AtomicBoolean eventIsFired = new AtomicBoolean();
+        provider.addListener(DataChangeEvent.class, event -> {
+            eventIsFired.set(true);
+            event.unregisterListener();
+        });
+        provider.fireEvent(new DataChangeEvent<>(provider));
+        Assert.assertTrue(eventIsFired.get());
+
+        eventIsFired.set(false);
+        provider.fireEvent(new DataChangeEvent<>(provider));
+        Assert.assertFalse(eventIsFired.get());
+    }
+
 }

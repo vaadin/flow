@@ -18,6 +18,8 @@ package com.vaadin.flow.data.provider;
 import java.util.EventObject;
 import java.util.Objects;
 
+import com.vaadin.flow.server.Command;
+
 /**
  * An event fired when the data of a {@code DataProvider} changes.
  *
@@ -30,6 +32,8 @@ import java.util.Objects;
  *            the data type
  */
 public class DataChangeEvent<T> extends EventObject {
+
+    private Command unregisterListenerCommand = null;
 
     /**
      * An event fired when a single item of a {@code DataProvider} has been
@@ -111,5 +115,32 @@ public class DataChangeEvent<T> extends EventObject {
     @Override
     public DataProvider<T, ?> getSource() {
         return (DataProvider<T, ?>) super.getSource();
+    }
+
+    /**
+     * Sets the command which is executed to unregister the listener.
+     * <p>
+     * For internal use.
+     *
+     * @param unregisterListenerCommand
+     *            the unregister command
+     */
+    void setUnregisterListenerCommand(Command unregisterListenerCommand) {
+        this.unregisterListenerCommand = unregisterListenerCommand;
+    }
+
+    /**
+     * Unregisters the event listener currently being invoked.
+     * <p>
+     * This method can only be called from within an event listener. Calling it
+     * will remove the current event listener so no further events are passed to
+     * it.
+     */
+    public void unregisterListener() {
+        if (unregisterListenerCommand == null) {
+            throw new IllegalStateException(
+                    "unregisterListener can only be called inside the event listener");
+        }
+        unregisterListenerCommand.execute();
     }
 }

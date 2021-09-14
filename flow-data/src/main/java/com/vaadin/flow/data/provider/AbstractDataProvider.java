@@ -40,7 +40,16 @@ import com.vaadin.flow.shared.Registration;
  */
 public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
 
-    private HashMap<Class<?>, List<SerializableConsumer<?>>> listeners = new HashMap<>();
+    private HashMap<Class<?>, List<DataListenerWrapper>> listeners = new HashMap<>();
+
+    private static class DataListenerWrapper {
+        private final SerializableConsumer<?> listener;
+        private Registration registration;
+
+        public DataListenerWrapper(SerializableConsumer<?> listener) {
+            this.listener = listener;
+        }
+    }
 
     @Override
     public Registration addDataProviderListener(
@@ -90,10 +99,13 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
      */
     protected <E> Registration addListener(Class<E> eventType,
             SerializableConsumer<E> method) {
-        List<SerializableConsumer<?>> list = listeners
-                .computeIfAbsent(eventType, key -> new ArrayList<>());
+        List<DataListenerWrapper> list = listeners.computeIfAbsent(eventType,
+                key -> new ArrayList<>());
 
-        return Registration.addAndRemove(list, method);
+        DataListenerWrapper wrapper = new DataListenerWrapper(method);
+
+        wrapper.registration = Registration.addAndRemove(list, wrapper);
+        return wrapper.registration;
     }
 
     /**
@@ -102,14 +114,28 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
      * @param event
      *            the Event to be sent to all listeners.
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void fireEvent(EventObject event) {
         listeners.entrySet().stream().filter(
                 entry -> entry.getKey().isAssignableFrom(event.getClass()))
-                .forEach(entry -> {
-                    for (Consumer consumer : entry.getValue()) {
-                        consumer.accept(event);
-                    }
-                });
+                .forEach(entry -> new ArrayList<>(entry.getValue()).forEach(
+                        wrapper -> fireEventForListener(event, wrapper)));
+
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private void fireEventForListener(EventObject event,
+            DataListenerWrapper wrapper) {
+        if (event instanceof DataChangeEvent<?>) {
+            DataChangeEvent<?> dataEvent = (DataChangeEvent<?>) event;
+
+            dataEvent
+                    .setUnregisterListenerCommand(wrapper.registration::remove);
+            Consumer consumer = wrapper.listener;
+            try {
+                consumer.accept(event);
+            } finally {
+                dataEvent.setUnregisterListenerCommand(null);
+            }
+        }
     }
 }
