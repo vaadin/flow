@@ -27,6 +27,8 @@ public class ClientSideExceptionHandlingIT extends ChromeBrowserTest {
 
     private static final By ERROR_LOCATOR = By.className("v-system-error");
 
+    public static final String ERROR_PATTERN = ".*TypeError.* : Cannot read properties of null .*reading 'foo'.*";
+
     @Test
     public void developmentModeExceptions() {
         open();
@@ -35,8 +37,7 @@ public class ClientSideExceptionHandlingIT extends ChromeBrowserTest {
         String errorMessage = findElement(ERROR_LOCATOR).getText();
 
         Assert.assertTrue("Unexpected error message: " + errorMessage,
-                Pattern.matches(".*TypeError.* property 'foo' of.*null.*",
-                        errorMessage));
+                Pattern.matches(ERROR_PATTERN, errorMessage));
     }
 
     @Test
