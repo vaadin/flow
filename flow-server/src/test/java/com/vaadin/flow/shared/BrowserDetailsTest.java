@@ -609,7 +609,7 @@ public class BrowserDetailsTest extends TestCase {
     }
 
     public void testIphone14_7IsNotOld() {
-        assertNotTooOld(IPHONE_14_7);
+        assertNotTooOld(GOOGLE_APP_IPHONE_14_7);
     }
 
     /*
