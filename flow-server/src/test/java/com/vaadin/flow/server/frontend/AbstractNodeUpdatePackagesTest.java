@@ -292,7 +292,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         final String version = packageUpdater.getDefaultDevDependencies()
                 .get(key);
         json.getObject(VAADIN_DEP_KEY).getObject(DEV_DEPENDENCIES)
-                .put(key, "4.42.0");
+                .put(key, "3.42.0");
         json.getObject(DEV_DEPENDENCIES).put(key, version);
 
         Files.write(packageJson.toPath(),
