@@ -642,6 +642,17 @@ public class BrowserDetails implements Serializable {
         }
         // Safari 9+
         if (isSafari() && getBrowserMajorVersion() < 9) {
+            if (getOperatingSystemMajorVersion() > 14) {
+                return false;
+            }
+            if (getOperatingSystemMajorVersion() == 14
+                    && getOperatingSystemMinorVersion() >= 7) {
+                return false;
+            }
+            return true;
+        }
+        // Only ChromeEdge is supported
+        if (isEdge() && getBrowserMajorVersion() < 79) {
             return true;
         }
         // Firefox 43+ for now
