@@ -385,6 +385,10 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         if (added) {
             log().debug("Added \"{}\": \"{}\" line.", pkg, version);
+        } else {
+            // we made a change to the package json vaadin defaults
+            // even if we didn't add to the dependencies.
+            added = !vaadinVersion.isEqualTo(newVersion);
         }
         return added ? 1 : 0;
     }
