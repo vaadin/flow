@@ -82,12 +82,21 @@ public class AbstractDataProviderTest {
             eventIsFired.set(true);
             event.unregisterListener();
         });
+
+        AtomicBoolean anotherListener = new AtomicBoolean();
+        provider.addListener(DataChangeEvent.class, event -> {
+            anotherListener.set(true);
+        });
+
         provider.fireEvent(new DataChangeEvent<>(provider));
         Assert.assertTrue(eventIsFired.get());
+        Assert.assertTrue(anotherListener.get());
 
         eventIsFired.set(false);
+        anotherListener.set(false);
         provider.fireEvent(new DataChangeEvent<>(provider));
         Assert.assertFalse(eventIsFired.get());
+        Assert.assertTrue(anotherListener.get());
     }
 
 }
