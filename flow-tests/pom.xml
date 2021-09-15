@@ -297,18 +297,6 @@
 
     <profiles>
         <profile>
-            <id>gen-dev-deps</id>
-            <modules>
-                <module>test-mixed/pom-pnpm-production.xml</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>release</id>
-            <modules>
-                <module>test-mixed/pom-pnpm-production.xml</module>
-            </modules>
-        </profile>
-        <profile>
             <id>run-tests</id>
             <activation>
                 <property>
@@ -347,6 +335,8 @@
                 <module>test-ccdm/pom-production.xml</module>
                 <module>test-ccdm-flow-navigation</module>
                 <module>test-ccdm-flow-navigation/pom-production.xml</module>
+                <module>test-fusion-csrf</module>
+                <module>test-fusion-csrf-context</module>
 
                 <module>test-root-context</module>
 				
