@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.HashMap;
@@ -42,7 +43,7 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
 
     private HashMap<Class<?>, List<DataListenerWrapper>> listeners = new HashMap<>();
 
-    private static class DataListenerWrapper {
+    private static class DataListenerWrapper implements Serializable {
         private final SerializableConsumer<?> listener;
         private Registration registration;
 
