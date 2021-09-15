@@ -78,4 +78,12 @@ class CodeGeneratorUtils {
             return node;
         }
     }
+
+    static Object escapeFilePath(Object filePath) {
+        if (filePath != null && filePath instanceof String) {
+            String path = (String) filePath;
+            return path.replaceAll(" ", "%20");
+        }
+        return filePath;
+    }
 }
