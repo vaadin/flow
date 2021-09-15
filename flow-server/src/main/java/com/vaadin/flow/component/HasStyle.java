@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.Objects;
 import java.util.Set;
 
 import com.vaadin.flow.dom.ClassList;
@@ -140,7 +141,14 @@ public interface HasStyle extends HasElement {
      */
     default void addClassNames(String... classNames) {
         for (String rawClassName : classNames) {
-            String[] parts = rawClassName.split(" ");
+            Objects.requireNonNull(rawClassName,
+                    "CSS class names cannot include a null element");
+            rawClassName = rawClassName.trim();
+            if (rawClassName.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "CSS class names cannot include an empty class name");
+            }
+            String[] parts = rawClassName.split("\\s+");
             for (String part : parts) {
                 getClassNames().add(part);
             }
@@ -157,7 +165,14 @@ public interface HasStyle extends HasElement {
      */
     default void removeClassNames(String... classNames) {
         for (String rawClassName : classNames) {
-            String[] parts = rawClassName.split(" ");
+            Objects.requireNonNull(rawClassName,
+                    "CSS class names cannot include a null element");
+            rawClassName = rawClassName.trim();
+            if (rawClassName.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "CSS class names cannot include an empty class name");
+            }
+            String[] parts = rawClassName.split("\\s+");
             for (String part : parts) {
                 getClassNames().remove(part);
             }
