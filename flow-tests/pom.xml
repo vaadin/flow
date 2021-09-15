@@ -335,6 +335,8 @@
                 <module>test-ccdm/pom-production.xml</module>
                 <module>test-ccdm-flow-navigation</module>
                 <module>test-ccdm-flow-navigation/pom-production.xml</module>
+                <module>test-fusion-csrf</module>
+                <module>test-fusion-csrf-context</module>
 
                 <module>test-root-context</module>
 				
