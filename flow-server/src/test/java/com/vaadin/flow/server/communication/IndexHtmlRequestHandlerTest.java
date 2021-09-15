@@ -60,6 +60,9 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.AppShellWithPWA;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithConfigurator;
+import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithLoadingIndicatorConfig;
+import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithPushConfig;
+import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithReconnectionDialogConfig;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
@@ -676,6 +679,42 @@ public class IndexHtmlRequestHandlerTest {
                 createVaadinRequest("/"), response);
         assertEquals("Flow Test CCDM",
                 UI.getCurrent().getInternals().getAppShellTitle());
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void should_throwUnSupportedException_when_usingAppShellToConfigureLoadingIndicator()
+            throws Exception {
+        // Set class in context and do not call initializer
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(MyAppShellWithLoadingIndicatorConfig.class);
+        mocks.setAppShellRegistry(registry);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void should_throwUnSupportedException_when_usingAppShellToConfigureReconnectionDialog()
+            throws Exception {
+        // Set class in context and do not call initializer
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(MyAppShellWithReconnectionDialogConfig.class);
+        mocks.setAppShellRegistry(registry);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void should_throwUnSupportedException_when_usingAppShellToConfigurePushMode()
+            throws Exception {
+        // Set class in context and do not call initializer
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(MyAppShellWithPushConfig.class);
+        mocks.setAppShellRegistry(registry);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
     }
 
     @After

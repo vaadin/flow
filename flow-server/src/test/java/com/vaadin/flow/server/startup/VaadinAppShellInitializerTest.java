@@ -158,13 +158,6 @@ public class VaadinAppShellInitializerTest {
 
             settings.addFavIcon("icon", "icons/icon-192.png", "192x192");
             settings.addFavIcon("icon", "icons/icon-200.png", "2");
-
-            settings.getLoadingIndicatorConfiguration().ifPresent(
-                    indicator -> indicator.setApplyDefaultTheme(false));
-            settings.getLoadingIndicatorConfiguration()
-                    .ifPresent(indicator -> indicator.setSecondDelay(700000));
-            settings.getPushConfiguration()
-                    .ifPresent(push -> push.setPushMode(PushMode.AUTOMATIC));
         }
     }
 
@@ -188,6 +181,33 @@ public class VaadinAppShellInitializerTest {
     @Viewport("my-viewport")
     @BodySize(height = "my-height", width = "my-width")
     public static class AppShellWithPWA implements AppShellConfigurator {
+    }
+
+    public static class MyAppShellWithLoadingIndicatorConfig
+            implements AppShellConfigurator {
+        @Override
+        public void configurePage(AppShellSettings settings) {
+            settings.getLoadingIndicatorConfiguration().ifPresent(
+                    indicator -> indicator.setApplyDefaultTheme(false));
+        }
+    }
+
+    public static class MyAppShellWithReconnectionDialogConfig
+            implements AppShellConfigurator {
+        @Override
+        public void configurePage(AppShellSettings settings) {
+            settings.getReconnectDialogConfiguration()
+                    .ifPresent(dialog -> dialog.setDialogText("custom text"));
+        }
+    }
+
+    public static class MyAppShellWithPushConfig
+            implements AppShellConfigurator {
+        @Override
+        public void configurePage(AppShellSettings settings) {
+            settings.getPushConfiguration()
+                    .ifPresent(push -> push.setPushMode(PushMode.MANUAL));
+        }
     }
 
     @Rule

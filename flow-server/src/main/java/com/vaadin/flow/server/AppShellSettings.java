@@ -48,6 +48,10 @@ import com.vaadin.flow.component.page.Viewport;
  */
 public class AppShellSettings {
 
+    private static final String MSG_UNSUPPORTED_NO_UI = "It only works when "
+            + "useDeprecatedV14Bootstrapping is enabled. "
+            + "Use a UIInitListener instead if there are server-side views.";
+
     /**
      * A class representing an InlineElement.
      */
@@ -411,28 +415,70 @@ public class AppShellSettings {
     /**
      * Returns the configuration object for loading indicator.
      *
-     * @return the instance used for configuring the loading indicator
+     * @return An optional instance used for configuring the loading indicator
+     *         or an empty optional if UI is not available.
+     * 
+     * @throws UnsupportedOperationException
+     *             If UI is not avaialble, for example, when using client-side
+     *             bootstrapping
+     * 
+     * @deprecated It only works when useDeprecatedV14Bootstrapping is enabled.
+     *             Use a {@link UIInitListener} instead if there are server-side
+     *             views.
      */
+    @Deprecated
     public Optional<LoadingIndicatorConfiguration> getLoadingIndicatorConfiguration() {
-        return getUi().map(UI::getLoadingIndicatorConfiguration);
+        if (getUi().isPresent()) {
+            return getUi().map(UI::getLoadingIndicatorConfiguration);
+        } else {
+            throw new UnsupportedOperationException(MSG_UNSUPPORTED_NO_UI);
+        }
     }
 
     /**
      * Returns the configuration object for reconnect dialog.
      *
-     * @return The instance used for reconnect dialog configuration
+     * @return An optional instance used for reconnect dialog configuration or
+     *         an empty optional if UI is not available.
+     * 
+     * @throws UnsupportedOperationException
+     *             If UI is not avaialble, for example, when using the
+     *             client-side bootstrapping
+     * 
+     * @deprecated It only works when useDeprecatedV14Bootstrapping is enabled.
+     *             Use a {@link UIInitListener} instead if there are server-side
+     *             views.
      */
+    @Deprecated
     public Optional<ReconnectDialogConfiguration> getReconnectDialogConfiguration() {
-        return getUi().map(UI::getReconnectDialogConfiguration);
+        if (getUi().isPresent()) {
+            return getUi().map(UI::getReconnectDialogConfiguration);
+        } else {
+            throw new UnsupportedOperationException(MSG_UNSUPPORTED_NO_UI);
+        }
     }
 
     /**
      * Returns the object used for configuring the push channel.
      *
-     * @return the instance used for push channel configuration
+     * @return An optional instance used for push channel configuration or an
+     *         empty optional if UI is not available.
+     * 
+     * @throws UnsupportedOperationException
+     *             If UI is not avaialble, for example, when using the
+     *             client-side bootstrapping
+     * 
+     * @deprecated It only works when useDeprecatedV14Bootstrapping is enabled.
+     *             Use a {@link UIInitListener} instead if there are server-side
+     *             views.
      */
+    @Deprecated
     public Optional<PushConfiguration> getPushConfiguration() {
-        return getUi().map(UI::getPushConfiguration);
+        if (getUi().isPresent()) {
+            return getUi().map(UI::getPushConfiguration);
+        } else {
+            throw new UnsupportedOperationException(MSG_UNSUPPORTED_NO_UI);
+        }
     }
 
     /**

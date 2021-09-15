@@ -110,4 +110,25 @@ class SimpleResult<R> implements Result<R> {
         }
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!obj.getClass().equals(getClass())) {
+            return false;
+        }
+        SimpleResult<?> that = (SimpleResult<?>) obj;
+        return Objects.equals(that.value, value)
+                && Objects.equals(that.message, message);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, message);
+    }
+
 }
