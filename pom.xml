@@ -89,7 +89,7 @@
         <hibernate.validator.version>6.2.0.Final</hibernate.validator.version>
         <slf4j.version>1.7.32</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
-        <jackson.version>2.11.2</jackson.version>
+        <jackson.version>2.12.5</jackson.version>
         <validation.api.version>2.0.1.Final</validation.api.version>
         <javax.annotation.api.version>1.3.2</javax.annotation.api.version>
 
@@ -690,22 +690,6 @@
                 </pluginManagement>
 
             </build>
-        </profile>
-        <profile>
-            <id>release</id>
-            <modules>
-                <module>flow</module>
-                <module>flow-server</module>
-                <module>flow-push</module>
-                <module>flow-data</module>
-                <module>flow-client</module>
-                <module>flow-html-components</module>
-                <module>flow-test-util</module>
-                <module>flow-tests</module>
-                <module>flow-server-production-mode</module>
-                <module>build-tools</module>
-                <module>flow-jandex</module>
-            </modules>
         </profile>
     </profiles>
 </project>
