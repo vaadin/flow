@@ -51,8 +51,6 @@ public class TaskGeneratePackageJsonTest {
                 .updateDefaultDependencies(Mockito.any());
         Mockito.doReturn(null).when(task).writePackageFile(Mockito.any());
         Mockito.doReturn(null).when(task)
-                .writeFormResourcesPackageFile(Mockito.any());
-        Mockito.doReturn(null).when(task)
                 .writeResourcesPackageFile(Mockito.any());
     }
 

@@ -191,20 +191,24 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void assertWriteFormResourcesPackageFile() throws IOException {
-        File formPackageJsonFile = new File(nodeUpdater.formResourcesFolder,
-                Constants.PACKAGE_JSON);
-        Assert.assertFalse(formPackageJsonFile.exists());
+    public void shouldUpdateExistingLocalFormPackageToNpmPackage() throws IOException {
+        JsonObject packageJson = Json.createObject();
+        JsonObject dependencies = Json.createObject();
+        packageJson.put(NodeUpdater.DEPENDENCIES, dependencies);
+        JsonObject vaadinDependencies = Json.createObject();
+        vaadinDependencies.put(NodeUpdater.DEPENDENCIES, Json.createObject());
+        packageJson.put(NodeUpdater.VAADIN_DEP_KEY, vaadinDependencies);
 
-        JsonObject formPackageJson = Json.createObject();
-        formPackageJson.put("foo", "bar");
+        String formPackage = "@vaadin/form";
+        String legecyVersion = "./target/flow-frontend/form";
+        String newVersion = "22.0.0";
 
-        nodeUpdater.writeFormResourcesPackageFile(formPackageJson);
+        dependencies.put(formPackage, legecyVersion);
 
-        Assert.assertTrue(formPackageJsonFile.exists());
-        JsonObject packageJson = NodeUpdater
-                .getJsonFileContent(formPackageJsonFile);
-        Assert.assertEquals("bar", packageJson.getString("foo"));
+        nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES, formPackage, newVersion);
+
+        Assert.assertEquals(newVersion, packageJson
+                .getObject(NodeUpdater.DEPENDENCIES).getString(formPackage));
     }
 
     @Test
