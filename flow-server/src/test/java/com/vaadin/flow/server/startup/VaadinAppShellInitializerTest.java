@@ -183,6 +183,33 @@ public class VaadinAppShellInitializerTest {
     public static class AppShellWithPWA implements AppShellConfigurator {
     }
 
+    public static class MyAppShellWithLoadingIndicatorConfig
+            implements AppShellConfigurator {
+        @Override
+        public void configurePage(AppShellSettings settings) {
+             settings.getLoadingIndicatorConfiguration().ifPresent(
+                    indicator -> indicator.setApplyDefaultTheme(false));
+        }
+    }
+
+    public static class MyAppShellWithReconnectionDialogConfig
+            implements AppShellConfigurator {
+        @Override
+        public void configurePage(AppShellSettings settings) {
+             settings.getReconnectDialogConfiguration().ifPresent(
+                    dialog -> dialog.setDialogText("custom text"));
+        }
+    }
+
+    public static class MyAppShellWithPushConfig
+            implements AppShellConfigurator {
+        @Override
+        public void configurePage(AppShellSettings settings) {
+             settings.getPushConfiguration().ifPresent(
+                    push -> push.setPushMode(PushMode.MANUAL));
+        }
+    }
+
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
