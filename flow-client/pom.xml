@@ -85,6 +85,19 @@
             <version>3.12.0</version>
             <scope>test</scope>
         </dependency>
+        <!-- Force Java8 compatible package -->
+        <dependency>
+            <groupId>org.eclipse.platform</groupId>
+            <artifactId>org.eclipse.core.jobs</artifactId>
+            <version>3.11.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.platform</groupId>
+            <artifactId>org.eclipse.core.contenttype</artifactId>
+            <version>3.7.1000</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.osgi</groupId>
