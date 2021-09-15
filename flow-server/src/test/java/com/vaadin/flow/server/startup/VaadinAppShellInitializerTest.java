@@ -187,7 +187,7 @@ public class VaadinAppShellInitializerTest {
             implements AppShellConfigurator {
         @Override
         public void configurePage(AppShellSettings settings) {
-             settings.getLoadingIndicatorConfiguration().ifPresent(
+            settings.getLoadingIndicatorConfiguration().ifPresent(
                     indicator -> indicator.setApplyDefaultTheme(false));
         }
     }
@@ -196,8 +196,8 @@ public class VaadinAppShellInitializerTest {
             implements AppShellConfigurator {
         @Override
         public void configurePage(AppShellSettings settings) {
-             settings.getReconnectDialogConfiguration().ifPresent(
-                    dialog -> dialog.setDialogText("custom text"));
+            settings.getReconnectDialogConfiguration()
+                    .ifPresent(dialog -> dialog.setDialogText("custom text"));
         }
     }
 
@@ -205,8 +205,8 @@ public class VaadinAppShellInitializerTest {
             implements AppShellConfigurator {
         @Override
         public void configurePage(AppShellSettings settings) {
-             settings.getPushConfiguration().ifPresent(
-                    push -> push.setPushMode(PushMode.MANUAL));
+            settings.getPushConfiguration()
+                    .ifPresent(push -> push.setPushMode(PushMode.MANUAL));
         }
     }
 
