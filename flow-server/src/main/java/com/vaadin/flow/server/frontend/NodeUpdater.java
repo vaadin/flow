@@ -471,10 +471,10 @@ public abstract class NodeUpdater implements FallibleCommand {
     private int handleExistingVaadinDep(JsonObject json, String pkg,
             String version, JsonObject vaadinDeps) {
         boolean added = false;
+        FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
         if (json.hasKey(pkg)) {
             FrontendVersion packageVersion = toVersion(json, pkg);
             FrontendVersion newVersion = new FrontendVersion(version);
-            FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
             // Vaadin and package.json versions are the same, but dependency
             // updates (can be up or down)
             if (vaadinVersion.isEqualTo(packageVersion)
@@ -496,6 +496,10 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         if (added) {
             log().debug("Added \"{}\": \"{}\" line.", pkg, version);
+        } else {
+            // we made a change to the package json vaadin defaults
+            // even if we didn't add to the dependencies.
+            added = !vaadinVersion.isEqualTo(new FrontendVersion(version));
         }
         return added ? 1 : 0;
     }
