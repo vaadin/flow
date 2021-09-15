@@ -191,7 +191,8 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void shouldUpdateExistingLocalFormPackageToNpmPackage() throws IOException {
+    public void shouldUpdateExistingLocalFormPackageToNpmPackage()
+            throws IOException {
         JsonObject packageJson = Json.createObject();
         JsonObject dependencies = Json.createObject();
         packageJson.put(NodeUpdater.DEPENDENCIES, dependencies);
@@ -205,7 +206,8 @@ public class NodeUpdaterTest {
 
         dependencies.put(formPackage, legecyVersion);
 
-        nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES, formPackage, newVersion);
+        nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES,
+                formPackage, newVersion);
 
         Assert.assertEquals(newVersion, packageJson
                 .getObject(NodeUpdater.DEPENDENCIES).getString(formPackage));

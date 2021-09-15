@@ -66,6 +66,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public abstract class NodeUpdater implements FallibleCommand {
 
+    private static final String VAADIN_FORM_PKG_LEGACY_VERSION = "target/flow-frontend/form";
+
+    private static final String VAADIN_FORM_PKG = "@vaadin/form";
+
     /**
      * Relative paths of generated should be prefixed with this value, so they
      * can be correctly separated from {projectDir}/frontend files.
@@ -444,13 +448,15 @@ public abstract class NodeUpdater implements FallibleCommand {
         return 0;
     }
 
-    private boolean isNewerVersion(JsonObject json, String pkg, String version) {
+    private boolean isNewerVersion(JsonObject json, String pkg,
+            String version) {
         try {
             FrontendVersion newVersion = new FrontendVersion(version);
             FrontendVersion existingVersion = toVersion(json, pkg);
-            return newVersion.isNewerThan(existingVersion);    
+            return newVersion.isNewerThan(existingVersion);
         } catch (NumberFormatException e) {
-            if ("@vaadin/form".equals(pkg) && json.getString(pkg).contains("target/flow-frontend/form")) {
+            if (VAADIN_FORM_PKG.equals(pkg) && json.getString(pkg)
+                    .contains(VAADIN_FORM_PKG_LEGACY_VERSION)) {
                 return true;
             } else {
                 throw e;
