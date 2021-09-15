@@ -1,8 +1,7 @@
 package com.vaadin.flow.shared;
 
-import org.junit.Assert;
-
 import junit.framework.TestCase;
+import org.junit.Assert;
 
 public class BrowserDetailsTest extends TestCase {
 
@@ -67,6 +66,11 @@ public class BrowserDetailsTest extends TestCase {
 
     private static final String IPHONE_IOS_11_FACEBOOK_BROWSER = "Mozilla/5.0 (iPhone; CPU iPhone OS 11_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E302 [FBAN/MessengerForiOS;FBAV/165.0.0.45.95;FBBV/107115338;FBDV/iPhone10,6;FBMD/iPhone;FBSN/iOS;FBSV/11.3.1;FBSS/3;FBCR/DNA;FBID/phone;FBLC/en_GB;FBOP/5;FBRV/0]";
     private static final String IPHONE_IOS_11_FIREFOX = "Mozilla/5.0 (iPhone; CPU iPhone OS 11_1_2 like Mac OS X) AppleWebKit/604.3.5 (KHTML, like Gecko) FxiOS/11.1b10377 Mobile/15B202 Safari/604.3.5";
+
+    private static final String EDGE_18 = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; ServiceUI 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763";
+    private static final String EDGE_79 = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36 Edg/79.0.309.71";
+
+    private static final String GOOGLE_APP_IPHONE_14_7 = "Mozilla/5.0 (iPhone; CPU iPhone OS 14_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) GSA/117.0.321844219 Mobile/15E148 Safari/604.1";
 
     public void testSafari3() {
         BrowserDetails bd = new BrowserDetails(SAFARI3_WINDOWS);
@@ -594,6 +598,11 @@ public class BrowserDetailsTest extends TestCase {
         assertEngineVersion(bd, 604.3f);
         assertIOS(bd, 11, 1);
         assertEs6(bd);
+    }
+
+    public void testIphone14_7IsNotOld() {
+        BrowserDetails bd = new BrowserDetails(GOOGLE_APP_IPHONE_14_7);
+        Assert.assertFalse(bd.isTooOldToFunctionProperly());
     }
 
     /*
