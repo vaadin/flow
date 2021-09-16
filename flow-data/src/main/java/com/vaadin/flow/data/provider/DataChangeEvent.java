@@ -132,7 +132,7 @@ public class DataChangeEvent<T> extends EventObject {
     /**
      * Unregisters the event listener currently being invoked.
      * <p>
-     * This method can only be called from within an event listener otherwise if
+     * This method can only be called from within an event listener otherwise it
      * throws a {@link IllegalStateException}. Calling it will remove the
      * current event listener so no further events are passed to it.
      * 
