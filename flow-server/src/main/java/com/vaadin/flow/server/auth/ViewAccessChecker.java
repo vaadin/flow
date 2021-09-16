@@ -41,10 +41,25 @@ public class ViewAccessChecker implements BeforeEnterListener {
     private boolean enabled = false;
 
     /**
-     * Create an instance.
+     * Creates an instance.
+     * <p>
+     * Note that the access checker is enabled by default. If this isn't
+     * desired, one can use {@link #ViewAccessChecker(boolean)} with {@code
+     * enabled=false} and call {@link #enable()} later on whenever appropriate.
      */
     public ViewAccessChecker() {
+        this(true);
+    }
+
+    /**
+     * Creates an instance and enables access checker depending on the given
+     * flag.
+     * @param enabled {@code false} for disabling the access checker, {@code
+     * true} for enabling the access checker.
+     */
+    public ViewAccessChecker(boolean enabled) {
         this(new AccessAnnotationChecker());
+        this.enabled = enabled;
     }
 
     /**
