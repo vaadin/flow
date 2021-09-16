@@ -141,8 +141,10 @@ public interface HasStyle extends HasElement {
      */
     default void addClassNames(String... classNames) {
         for (String rawClassName : classNames) {
-            Objects.requireNonNull(rawClassName,
-                    "CSS class names cannot include a null element");
+            if (rawClassName == null) {
+                throw new IllegalArgumentException(
+                        "CSS class names cannot include a null element");
+            }
             rawClassName = rawClassName.trim();
             if (rawClassName.isEmpty()) {
                 throw new IllegalArgumentException(
@@ -165,8 +167,10 @@ public interface HasStyle extends HasElement {
      */
     default void removeClassNames(String... classNames) {
         for (String rawClassName : classNames) {
-            Objects.requireNonNull(rawClassName,
-                    "CSS class names cannot include a null element");
+            if (rawClassName == null) {
+                throw new IllegalArgumentException(
+                        "CSS class names cannot include a null element");
+            }
             rawClassName = rawClassName.trim();
             if (rawClassName.isEmpty()) {
                 throw new IllegalArgumentException(
