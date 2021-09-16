@@ -83,7 +83,7 @@
         <dependency>
             <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.core.jobs</artifactId>
-            <version>3.11.0</version>
+            <version>3.12.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
