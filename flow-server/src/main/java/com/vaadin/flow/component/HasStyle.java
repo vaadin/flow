@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import java.util.Objects;
 import java.util.Set;
 
 import com.vaadin.flow.dom.ClassList;
