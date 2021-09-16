@@ -256,4 +256,21 @@ public final class GeneratorUtils {
         return IntStream.range(0, Math.min(first.size(), second.size()))
                 .mapToObj(i -> zipper.apply(first.get(i), second.get(i)));
     }
+
+    /**
+     * Escape special charaters in a file path so that the link
+     * to the file is not broken, e.g., due to a white space in
+     * the path.
+     * 
+     * @param filePath
+     *        a file path
+     * @return the escaped file path.
+     */
+    static Object escapeFilePath(Object filePath) {
+        if (filePath != null && filePath instanceof String) {
+            String path = (String) filePath;
+            return path.replaceAll(" ", "%20");
+        }
+        return filePath;
+    }
 }

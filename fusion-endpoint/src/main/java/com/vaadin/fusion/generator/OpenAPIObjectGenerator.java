@@ -241,7 +241,7 @@ public class OpenAPIObjectGenerator {
             schemas.forEach(schema -> {
                 if (qualifiedNameToPath.get(schema.getName()) != null) {
                     schema.addExtension(EXTENSION_VAADIN_FILE_PATH,
-                            qualifiedNameToPath.get(schema.getName()));
+                            GeneratorUtils.escapeFilePath(qualifiedNameToPath.get(schema.getName())));
                 }
                 openApiModel.getComponents().addSchemas(schema.getName(),
                         schema);
@@ -280,8 +280,8 @@ public class OpenAPIObjectGenerator {
             tag.name(simpleClassName);
             tag.description(endpointJavadoc.getValue());
             tag.addExtension(EXTENSION_VAADIN_FILE_PATH,
-                    qualifiedNameToPath.get(endpointDeclaration
-                            .getFullyQualifiedName().orElse(simpleClassName)));
+                    GeneratorUtils.escapeFilePath(qualifiedNameToPath.get(endpointDeclaration
+                            .getFullyQualifiedName().orElse(simpleClassName))));
             openApiModel.addTagsItem(tag);
         }
     }

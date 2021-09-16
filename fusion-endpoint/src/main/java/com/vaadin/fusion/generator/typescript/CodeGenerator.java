@@ -684,9 +684,8 @@ public class CodeGenerator extends AbstractTypeScriptClientCodegen {
     private void setVaadinFilePath(Map<String, Object> objs, Tag tag) {
         if (tag.getExtensions() != null && tag.getExtensions().get(
                 OpenAPIObjectGenerator.EXTENSION_VAADIN_FILE_PATH) != null) {
-            objs.put(VAADIN_FILE_PATH, CodeGeneratorUtils.escapeFilePath(tag
-                    .getExtensions()
-                    .get(OpenAPIObjectGenerator.EXTENSION_VAADIN_FILE_PATH)));
+            objs.put(VAADIN_FILE_PATH, tag.getExtensions()
+                    .get(OpenAPIObjectGenerator.EXTENSION_VAADIN_FILE_PATH));
         }
     }
 
