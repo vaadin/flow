@@ -149,7 +149,7 @@ public interface HasStyle extends HasElement {
                 throw new IllegalArgumentException(
                         "CSS class names cannot include an empty class name");
             }
-            String[] parts = rawClassName.split("\\s+");
+            String[] parts = rawClassName.split(" +");
             for (String part : parts) {
                 getClassNames().add(part);
             }
@@ -175,7 +175,7 @@ public interface HasStyle extends HasElement {
                 throw new IllegalArgumentException(
                         "CSS class names cannot include an empty class name");
             }
-            String[] parts = rawClassName.split("\\s+");
+            String[] parts = rawClassName.split(" +");
             for (String part : parts) {
                 getClassNames().remove(part);
             }
