@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -1186,9 +1187,11 @@ public class Binder<BEAN> implements Serializable {
          * @return the result of the conversion
          */
         private Result<TARGET> doConversion() {
-            FIELDVALUE fieldValue = field.getValue();
-            return converterValidatorChain.convertToModel(fieldValue,
-                    createValueContext());
+            return execute(() -> {
+                FIELDVALUE fieldValue = field.getValue();
+                return converterValidatorChain.convertToModel(fieldValue,
+                        createValueContext());
+            });
         }
 
         private BindingValidationStatus<TARGET> toValidationStatus(
@@ -1242,25 +1245,31 @@ public class Binder<BEAN> implements Serializable {
             assert onValueChange != null;
             valueInit = true;
             try {
-                TARGET originalValue = getter.apply(bean);
-                convertAndSetFieldValue(originalValue);
+                execute(() -> {
+                    TARGET originalValue = getter.apply(bean);
+                    convertAndSetFieldValue(originalValue);
 
-                if (writeBackChangedValues && setter != null && !readOnly) {
-                    doConversion().ifOk(convertedValue -> {
-                        if (!Objects.equals(originalValue, convertedValue)) {
-                            setter.accept(bean, convertedValue);
-                        }
-                    });
-                }
+                    if (writeBackChangedValues && setter != null && !readOnly) {
+                        doConversion().ifOk(convertedValue -> {
+                            if (!Objects.equals(originalValue,
+                                    convertedValue)) {
+                                setter.accept(bean, convertedValue);
+                            }
+                        });
+                    }
+                    return null;
+                });
             } finally {
                 valueInit = false;
             }
         }
 
         private FIELDVALUE convertToFieldType(TARGET target) {
-            ValueContext valueContext = createValueContext();
-            return converterValidatorChain.convertToPresentation(target,
-                    valueContext);
+            return execute(() -> {
+                ValueContext valueContext = createValueContext();
+                return converterValidatorChain.convertToPresentation(target,
+                        valueContext);
+            });
         }
 
         /**
@@ -1292,19 +1301,21 @@ public class Binder<BEAN> implements Serializable {
         private BindingValidationStatus<TARGET> writeFieldValue(BEAN bean) {
             assert bean != null;
 
-            Result<TARGET> result = doConversion();
-            if (!isReadOnly()) {
-                result.ifOk(value -> {
-                    setter.accept(bean, value);
-                    if (convertBackToPresentation && value != null) {
-                        FIELDVALUE converted = convertToFieldType(value);
-                        if (!Objects.equals(field.getValue(), converted)) {
-                            getField().setValue(converted);
+            return execute(() -> {
+                Result<TARGET> result = doConversion();
+                if (!isReadOnly()) {
+                    result.ifOk(value -> {
+                        setter.accept(bean, value);
+                        if (convertBackToPresentation && value != null) {
+                            FIELDVALUE converted = convertToFieldType(value);
+                            if (!Objects.equals(field.getValue(), converted)) {
+                                getField().setValue(converted);
+                            }
                         }
-                    }
-                });
-            }
-            return toValidationStatus(result);
+                    });
+                }
+                return toValidationStatus(result);
+            });
         }
 
         /**
@@ -1328,27 +1339,32 @@ public class Binder<BEAN> implements Serializable {
         }
 
         private void convertAndSetFieldValue(TARGET modelValue) {
-            FIELDVALUE convertedValue = convertToFieldType(modelValue);
-            try {
-                field.setValue(convertedValue);
-            } catch (RuntimeException e) {
-                /*
-                 * Add an additional hint to the exception for the typical case
-                 * with a field that doesn't accept null values. The non-null
-                 * empty value is used as a heuristic to determine that the
-                 * field doesn't accept null rather than throwing for some other
-                 * reason.
-                 */
-                if (convertedValue == null && field.getEmptyValue() != null) {
-                    throw new IllegalStateException(String.format(
-                            "A field of type %s didn't accept a null value."
-                                    + " If null values are expected, then configure a null representation for the binding.",
-                            field.getClass().getName()), e);
-                } else {
-                    // Otherwise, let the original exception speak for itself
-                    throw e;
+            execute(() -> {
+                FIELDVALUE convertedValue = convertToFieldType(modelValue);
+                try {
+                    field.setValue(convertedValue);
+                } catch (RuntimeException e) {
+                    /*
+                     * Add an additional hint to the exception for the typical
+                     * case with a field that doesn't accept null values. The
+                     * non-null empty value is used as a heuristic to determine
+                     * that the field doesn't accept null rather than throwing
+                     * for some other reason.
+                     */
+                    if (convertedValue == null
+                            && field.getEmptyValue() != null) {
+                        throw new IllegalStateException(String.format(
+                                "A field of type %s didn't accept a null value."
+                                        + " If null values are expected, then configure a null representation for the binding.",
+                                field.getClass().getName()), e);
+                    } else {
+                        // Otherwise, let the original exception speak for
+                        // itself
+                        throw e;
+                    }
                 }
-            }
+                return null;
+            });
         }
 
         @Override
@@ -1413,6 +1429,26 @@ public class Binder<BEAN> implements Serializable {
         @Override
         public boolean isConvertBackToPresentation() {
             return convertBackToPresentation;
+        }
+
+        private <T> T execute(Supplier<T> supplier) {
+            try {
+                return supplier.get();
+            } catch (BindingException exception) {
+                throw exception;
+            } catch (Exception exception) {
+                BindingExceptionHandler handler = binder
+                        .getBindingExceptionHandler();
+                Optional<BindingException> bindingException = handler
+                        .handleException(field, exception);
+                if (bindingException.isPresent()) {
+                    BindingException toThrow = bindingException.get();
+                    toThrow.fillInStackTrace();
+                    throw toThrow;
+                } else {
+                    throw exception;
+                }
+            }
         }
     }
 
@@ -1519,6 +1555,8 @@ public class Binder<BEAN> implements Serializable {
     private BinderValidationStatusHandler<BEAN> statusHandler;
 
     private BinderValidationErrorHandler errorHandler = new DefaultBinderValidationErrorHandler();
+
+    private BindingExceptionHandler exceptionHandler = new DefaultBindingExceptionHandler();
 
     private Set<Binding<BEAN, ?>> changedBindings = new LinkedHashSet<>();
 
@@ -3200,5 +3238,13 @@ public class Binder<BEAN> implements Serializable {
      */
     public boolean isValidatorsDisabled() {
         return validatorsDisabled;
+    }
+
+    public void setBindingExceptionHandler(BindingExceptionHandler handler) {
+        exceptionHandler = handler;
+    }
+
+    public BindingExceptionHandler getBindingExceptionHandler() {
+        return exceptionHandler;
     }
 }
