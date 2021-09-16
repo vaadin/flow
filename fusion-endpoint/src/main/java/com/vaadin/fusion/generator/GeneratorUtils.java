@@ -258,12 +258,11 @@ public final class GeneratorUtils {
     }
 
     /**
-     * Escape special charaters in a file path so that the link
-     * to the file is not broken, e.g., due to a white space in
-     * the path.
+     * Escape special charaters in a file path so that the link to the file is
+     * not broken, e.g., due to a white space in the path.
      * 
      * @param filePath
-     *        a file path
+     *            a file path
      * @return the escaped file path.
      */
     static Object escapeFilePath(Object filePath) {
