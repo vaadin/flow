@@ -245,7 +245,8 @@ public class StreamResource extends AbstractStreamResource {
      * 
      * @param name
      *            name of header to get value for
-     * @return an optional with header value, or an empty optional if it has not been set
+     * @return an optional with header value, or an empty optional if it has not
+     *         been set
      */
     public Optional<String> getHeader(String name) {
         if (headers != null) {
