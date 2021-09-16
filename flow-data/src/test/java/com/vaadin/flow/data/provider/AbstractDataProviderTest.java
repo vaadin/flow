@@ -99,4 +99,36 @@ public class AbstractDataProviderTest {
         Assert.assertTrue(anotherListener.get());
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void eventUnregisterListener_outsideListener() {
+        TestDataProvider provider = new TestDataProvider();
+        AtomicReference<DataChangeEvent> savedEvent = new AtomicReference();
+        provider.addListener(DataChangeEvent.class, event -> {
+            savedEvent.set(event);
+        });
+
+        provider.fireEvent(new DataChangeEvent<>(provider));
+        savedEvent.get().unregisterListener();
+    }
+
+    @Test
+    public void eventUnregisterListener_insideListener_listenerThrows_listenerIsUnregistered() {
+        TestDataProvider provider = new TestDataProvider();
+        AtomicBoolean eventIsFired = new AtomicBoolean();
+        provider.addListener(DataChangeEvent.class, event -> {
+            eventIsFired.set(true);
+            event.unregisterListener();
+            throw new NullPointerException();
+        });
+
+        try {
+            provider.fireEvent(new DataChangeEvent<>(provider));
+            Assert.fail();
+        } catch (NullPointerException ignore) {
+            eventIsFired.set(false);
+            provider.fireEvent(new DataChangeEvent<>(provider));
+            Assert.assertFalse(eventIsFired.get());
+        }
+    }
+
 }
