@@ -67,6 +67,8 @@ public class StreamResourceHandler implements Serializable {
             response.setContentType(streamResource.getContentTypeResolver()
                     .apply(streamResource, context));
             response.setCacheTime(streamResource.getCacheTime());
+            streamResource.getHeaders()
+                    .forEach((name, value) -> response.setHeader(name, value));
             writer = streamResource.getWriter();
             if (writer == null) {
                 throw new IOException(
