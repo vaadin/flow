@@ -107,4 +107,17 @@ public class StreamResourceHandlerTest {
         Mockito.verify(response)
                 .setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
+
+    @Test
+    public void inputStreamResourceHasHeader_headerIsWritten()
+            throws IOException {
+        StreamResource res = new StreamResource("readme.md",
+                () -> new ByteArrayInputStream(new byte[0]));
+
+        res.setHeader("foo", "bar");
+
+        handler.handleRequest(session, request, response, res);
+
+        Mockito.verify(response).setHeader("foo", "bar");
+    }
 }
