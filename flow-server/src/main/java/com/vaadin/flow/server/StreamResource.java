@@ -241,11 +241,11 @@ public class StreamResource extends AbstractStreamResource {
     }
 
     /**
-     * Gets the header {@code name} for the resource.
+     * Gets the value for header {@code name} set for the resource.
      * 
      * @param name
-     *            a header name
-     * @return an optional header, or an empty optional if it has not been set
+     *            name of header to get value for
+     * @return an optional with header value, or an empty optional if it has not been set
      */
     public Optional<String> getHeader(String name) {
         if (headers != null) {
