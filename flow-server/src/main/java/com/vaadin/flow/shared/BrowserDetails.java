@@ -651,10 +651,6 @@ public class BrowserDetails implements Serializable {
             }
             return true;
         }
-        // Only ChromeEdge is supported
-        if (isEdge() && getBrowserMajorVersion() < 79) {
-            return true;
-        }
         // Firefox 43+ for now
         if (isFirefox() && getBrowserMajorVersion() < 43) {
             return true;
