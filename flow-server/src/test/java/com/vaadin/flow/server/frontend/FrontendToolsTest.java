@@ -87,9 +87,6 @@ public class FrontendToolsTest {
     @Rule
     public final TemporaryFolder tmpDirWithNpmrc = new TemporaryFolder();
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     private final FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
     private FrontendTools tools;
@@ -497,15 +494,18 @@ public class FrontendToolsTest {
 
     @Test
     public void getSuitablePnpm_tooOldGlobalVersionInstalled_throws() {
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage(CoreMatchers.containsString(
-                "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least 5.0.0"));
         tools = new FrontendTools(baseDir, () -> vaadinHomeDir,
                 FrontendTools.DEFAULT_NODE_VERSION, new File(baseDir).toURI(),
                 false, true);
         try {
             installGlobalPnpm(OLD_PNPM_VERSION);
-            tools.getSuitablePnpm();
+            IllegalStateException exception = Assert.assertThrows(
+                    IllegalStateException.class, () -> tools.getSuitablePnpm());
+            Assert.assertTrue(
+                    "Unexpected exception message content '"
+                            + exception.getMessage() + "'",
+                    exception.getMessage().contains(
+                            "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least 5.0.0"));
         } finally {
             uninstallGlobalPnpm(OLD_PNPM_VERSION);
         }
@@ -548,16 +548,19 @@ public class FrontendToolsTest {
         Assume.assumeFalse("Skip this test once globally installed pnpm is "
                 + "discovered", pnpm.isPresent());
 
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage(CoreMatchers.containsString(
-                "Vaadin application is configured to use globally installed "
-                        + "pnpm ('pnpm.global=true'), but no pnpm tool has been found "
-                        + "on your system."));
-
         tools = new FrontendTools(baseDir, () -> vaadinHomeDir,
                 FrontendTools.DEFAULT_NODE_VERSION, new File(baseDir).toURI(),
                 false, true);
-        tools.getSuitablePnpm();
+
+        IllegalStateException exception = Assert.assertThrows(
+                IllegalStateException.class, () -> tools.getSuitablePnpm());
+        Assert.assertTrue(
+                "Unexpected exception message content '"
+                        + exception.getMessage() + "'",
+                exception.getMessage().contains(
+                        "Vaadin application is configured to use globally installed "
+                                + "pnpm ('pnpm.global=true'), but no pnpm tool has been found "
+                                + "on your system."));
     }
 
     @Test
