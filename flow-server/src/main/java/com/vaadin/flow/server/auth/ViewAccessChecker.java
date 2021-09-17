@@ -54,7 +54,9 @@ public class ViewAccessChecker implements BeforeEnterListener {
     /**
      * Creates an instance and enables access checker depending on the given
      * flag.
-     * @param enabled {@code false} for disabling the access checker, {@code
+     * 
+     * @param enabled
+     *            {@code false} for disabling the access checker, {@code
      * true} for enabling the access checker.
      */
     public ViewAccessChecker(boolean enabled) {

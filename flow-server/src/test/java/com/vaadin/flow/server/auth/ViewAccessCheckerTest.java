@@ -256,10 +256,19 @@ public class ViewAccessCheckerTest {
     }
 
     @Test
-    public void disabledAccessCheckerAlwaysPasses() throws Exception {
-        resetCheckerToDisabled();
-        Assert.assertTrue(checkAccess(RolesAllowedAdminView.class, null)
-                .wasTargetViewRendered());
+    public void disabledAccessCheckerAlwaysPasses_rejectsWhenEnabled() {
+        viewAccessChecker = new ViewAccessChecker(false);
+        Assert.assertTrue(
+                "Expected admin view to be accessible for non "
+                        + "authenticated users when access checker is disabled",
+                checkAccess(RolesAllowedAdminView.class, null)
+                        .wasTargetViewRendered());
+        viewAccessChecker.enable();
+        Assert.assertFalse(
+                "Expected admin view to be not accessible for non "
+                        + "authenticated users when access checker is enabled",
+                checkAccess(RolesAllowedAdminView.class, null)
+                        .wasTargetViewRendered());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -526,27 +535,11 @@ public class ViewAccessCheckerTest {
         Assert.assertTrue(result.wasTargetViewRendered());
     }
 
-    @Test
-    public void accessCheckerDisabled_beforeEnterReturns() {
-        BeforeEnterEvent beforeEnterEvent = Mockito.mock(BeforeEnterEvent.class);
-        viewAccessChecker = new ViewAccessChecker(false);
-        viewAccessChecker.beforeEnter(beforeEnterEvent);
-        Mockito.verify(beforeEnterEvent,
-                Mockito.times(0)).getNavigationTarget();
-    }
-
     private void resetLoginView()
             throws NoSuchFieldException, IllegalAccessException {
         Field f = ViewAccessChecker.class.getDeclaredField("loginView");
         f.setAccessible(true);
         f.set(this.viewAccessChecker, null);
-    }
-
-    private void resetCheckerToDisabled()
-            throws NoSuchFieldException, IllegalAccessException {
-        Field f = ViewAccessChecker.class.getDeclaredField("enabled");
-        f.setAccessible(true);
-        f.set(this.viewAccessChecker, false);
     }
 
     private static class Result {
