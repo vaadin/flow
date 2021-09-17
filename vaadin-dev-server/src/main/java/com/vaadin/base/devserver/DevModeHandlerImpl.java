@@ -469,11 +469,15 @@ public final class DevModeHandlerImpl
         // remove color escape codes for console
         String cleanLine = line.replaceAll("(\u001b\\[[;\\d]*m|[\b\r]+)", "");
 
-        // save output so as it can be used to alert user in browser.
-        cumulativeOutput.append(cleanLine);
-
         boolean succeed = success.matcher(line).find();
         boolean failed = failure.matcher(line).find();
+
+        // save output so as it can be used to alert user in browser, unless
+        // it's `: Failed to compile.`
+        if (!failed) {
+            cumulativeOutput.append(cleanLine);
+        }
+
         // We found the success or failure pattern in stream
         if (succeed || failed) {
             if (succeed) {
@@ -742,11 +746,13 @@ public final class DevModeHandlerImpl
         command.add(webpackConfig.getAbsolutePath());
         command.add("--port");
         command.add(String.valueOf(port));
+        command.add("--watch-options-stdin"); // Tell wds to stop even if
+                                              // watchDog fail
         command.add("--env");
         command.add("watchDogPort=" + watchDog.get().getWatchDogPort());
         command.addAll(Arrays.asList(config
                 .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
-                        "-d --inline=false")
+                        "--devtool=eval-source-map")
                 .split(" +")));
         return command;
     }
