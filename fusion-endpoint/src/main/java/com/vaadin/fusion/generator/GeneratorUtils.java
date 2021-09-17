@@ -258,7 +258,7 @@ public final class GeneratorUtils {
     }
 
     /**
-     * Escape special charaters in a file path so that the link to the file is
+     * Escape special characters in a file path so that the link to the file is
      * not broken, e.g., due to a white space in the path.
      * 
      * @param filePath
