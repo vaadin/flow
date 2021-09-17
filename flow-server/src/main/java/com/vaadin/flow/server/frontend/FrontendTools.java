@@ -782,7 +782,7 @@ public class FrontendTools {
                     .isVersionAtLeast(pnpmVersion, SUPPORTED_PNPM_VERSION);
             boolean versionAccepted = ignoreVersionChecks || versionNewEnough;
             if (!versionAccepted) {
-                getLogger().info(
+                getLogger().warn(
                         "pnpm '{}' is version {} which is not supported (expected >={})",
                         commandLine, pnpmVersion.getFullVersion(),
                         SUPPORTED_PNPM_VERSION.getFullVersion());
