@@ -15,15 +15,13 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.data.provider.AbstractDataProvider;
-import com.vaadin.flow.data.provider.DataChangeEvent;
-import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -75,4 +73,62 @@ public class AbstractDataProviderTest {
         dataProvider.refreshAll();
         Assert.assertNull(event.get());
     }
+
+    @Test
+    public void eventUnregisterListener_insideListener() {
+        TestDataProvider provider = new TestDataProvider();
+        AtomicBoolean eventIsFired = new AtomicBoolean();
+        provider.addListener(DataChangeEvent.class, event -> {
+            eventIsFired.set(true);
+            event.unregisterListener();
+        });
+
+        AtomicBoolean anotherListener = new AtomicBoolean();
+        provider.addListener(DataChangeEvent.class, event -> {
+            anotherListener.set(true);
+        });
+
+        provider.fireEvent(new DataChangeEvent<>(provider));
+        Assert.assertTrue(eventIsFired.get());
+        Assert.assertTrue(anotherListener.get());
+
+        eventIsFired.set(false);
+        anotherListener.set(false);
+        provider.fireEvent(new DataChangeEvent<>(provider));
+        Assert.assertFalse(eventIsFired.get());
+        Assert.assertTrue(anotherListener.get());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void eventUnregisterListener_outsideListener() {
+        TestDataProvider provider = new TestDataProvider();
+        AtomicReference<DataChangeEvent> savedEvent = new AtomicReference();
+        provider.addListener(DataChangeEvent.class, event -> {
+            savedEvent.set(event);
+        });
+
+        provider.fireEvent(new DataChangeEvent<>(provider));
+        savedEvent.get().unregisterListener();
+    }
+
+    @Test
+    public void eventUnregisterListener_insideListener_listenerThrows_listenerIsUnregistered() {
+        TestDataProvider provider = new TestDataProvider();
+        AtomicBoolean eventIsFired = new AtomicBoolean();
+        provider.addListener(DataChangeEvent.class, event -> {
+            eventIsFired.set(true);
+            event.unregisterListener();
+            throw new NullPointerException();
+        });
+
+        try {
+            provider.fireEvent(new DataChangeEvent<>(provider));
+            Assert.fail();
+        } catch (NullPointerException ignore) {
+            eventIsFired.set(false);
+            provider.fireEvent(new DataChangeEvent<>(provider));
+            Assert.assertFalse(eventIsFired.get());
+        }
+    }
+
 }
