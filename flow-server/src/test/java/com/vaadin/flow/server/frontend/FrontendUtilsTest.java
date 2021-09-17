@@ -29,7 +29,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
@@ -69,9 +68,6 @@ public class FrontendUtilsTest {
             Assert.fail("Could not access cache key for stats.json!");
         }
     }
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Rule
     public final TemporaryFolder tmpDir = new TemporaryFolder();
@@ -305,6 +301,28 @@ public class FrontendUtilsTest {
         VaadinServlet servlet = service.getServlet();
 
         Mockito.verify(provider).getApplicationResource("foo");
+    }
+
+    @Test
+    public void getStatsContent_getStatsFromDevServerWithNoImplementation_throwsException() {
+        VaadinServletService service = mockServletService();
+
+        DeploymentConfiguration config = Mockito
+                .mock(DeploymentConfiguration.class);
+
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
+
+        Mockito.when(config.isProductionMode()).thenReturn(false);
+        Mockito.when(config.enableDevServer()).thenReturn(true);
+
+        WebpackConnectionException exception = Assert.assertThrows(
+                WebpackConnectionException.class,
+                () -> FrontendUtils.getStatsContent(service));
+
+        Assert.assertEquals(
+                "DevModeHandlerManager implementation missing. Include "
+                        + "the com.vaadin:vaadin-dev-server dependency.",
+                exception.getMessage());
     }
 
     @Test

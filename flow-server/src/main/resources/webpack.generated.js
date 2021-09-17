@@ -15,6 +15,7 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 // Flow plugins
 const StatsPlugin = require('@vaadin/stats-plugin');
+const BuildStatusPlugin = require('@vaadin/build-status-plugin');
 const ThemeLiveReloadPlugin = require('@vaadin/theme-live-reload-plugin');
 const { ApplicationThemePlugin, processThemeResources, extractThemeName, findParentThemes } = require('@vaadin/application-theme-plugin');
 
@@ -74,6 +75,7 @@ const enableTypeScript = fs.existsSync(tsconfigJsonFile);
 // Target flow-fronted auto generated to be the actual target folder
 const flowFrontendFolder = '[to-be-generated-by-flow]';
 
+const statsSetViaCLI = process.argv.find(v => v.indexOf('--stats') >= 0);
 const devMode = process.argv.find(v => v.indexOf('webpack-dev-server') >= 0);
 if (!devMode) {
   // make sure that build folder exists before outputting anything
@@ -232,20 +234,24 @@ module.exports = {
     }
   },
 
+  stats: devMode && !statsSetViaCLI ? 'errors-warnings' : 'normal', // Unclutter output in dev mode
+
   devServer: {
+    hot: false,     // disable HMR
+    client: false,  // disable wds client as we handle reloads and errors better
     // webpack-dev-server serves ./ ,  webpack-generated,  and java webapp
-    contentBase: [outputFolder, 'src/main/webapp'],
-    after: function(app, server) {
-      app.get(`/stats.json`, function(req, res) {
+    static: [ outputFolder, path.resolve(__dirname, 'src', 'main', 'webapp') ],
+    onAfterSetupMiddleware: function(devServer) {
+      devServer.app.get(`/stats.json`, function(req, res) {
         res.json(stats);
       });
-      app.get(`/stats.hash`, function(req, res) {
+      devServer.app.get(`/stats.hash`, function(req, res) {
         res.json(stats.hash.toString());
       });
-      app.get(`/assetsByChunkName`, function(req, res) {
+      devServer.app.get(`/assetsByChunkName`, function(req, res) {
         res.json(stats.assetsByChunkName);
       });
-      app.get(`/stop`, function(req, res) {
+      devServer.app.get(`/stop`, function(req, res) {
         // eslint-disable-next-line no-console
         console.log("Stopped 'webpack-dev-server'");
         process.exit(0);
@@ -362,5 +368,7 @@ module.exports = {
         configFile: tsconfigJsonFile
       }
     }),
+
+    new BuildStatusPlugin()
   ].filter(Boolean)
 };
