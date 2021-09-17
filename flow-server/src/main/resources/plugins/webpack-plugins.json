@@ -1,6 +1,7 @@
 {
   "plugins": [
     "stats-plugin",
+    "build-status-plugin",
     "application-theme-plugin",
     "theme-loader",
     "theme-live-reload-plugin"

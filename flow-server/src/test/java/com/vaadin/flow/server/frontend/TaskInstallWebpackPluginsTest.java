@@ -55,7 +55,7 @@ public class TaskInstallWebpackPluginsTest {
     public void getPluginsReturnsExpectedList() {
         String[] expectedPlugins = new String[] { "stats-plugin",
                 "application-theme-plugin", "theme-loader",
-                "theme-live-reload-plugin" };
+                "theme-live-reload-plugin", "build-status-plugin" };
         final List<String> plugins = task.getPlugins();
         Assert.assertEquals(
                 "Unexpected amount of plugins in 'webpack-plugins.json'",
