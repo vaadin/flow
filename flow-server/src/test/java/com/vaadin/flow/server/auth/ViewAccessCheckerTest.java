@@ -64,7 +64,6 @@ public class ViewAccessCheckerTest {
     @Before
     public void init() {
         this.viewAccessChecker = new ViewAccessChecker();
-        this.viewAccessChecker.enable();
         this.viewAccessChecker.setLoginView(TestLoginView.class);
     }
 
@@ -525,6 +524,15 @@ public class ViewAccessCheckerTest {
                 NoAnnotationPermitAllByGrandParentAsInterfacesIgnoredView.class,
                 User.USER_NO_ROLES);
         Assert.assertTrue(result.wasTargetViewRendered());
+    }
+
+    @Test
+    public void accessCheckerDisabled_beforeEnterReturns() {
+        BeforeEnterEvent beforeEnterEvent = Mockito.mock(BeforeEnterEvent.class);
+        viewAccessChecker = new ViewAccessChecker(false);
+        viewAccessChecker.beforeEnter(beforeEnterEvent);
+        Mockito.verify(beforeEnterEvent,
+                Mockito.times(0)).getNavigationTarget();
     }
 
     private void resetLoginView()
