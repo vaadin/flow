@@ -463,7 +463,11 @@ public class FrontendUtils {
             if (!config.isProductionMode() && config.enableDevServer()) {
                 Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
                         .getDevModeHandler(service);
-                assert devModeHandler.isPresent();
+                if (!devModeHandler.isPresent()) {
+                    throw new WebpackConnectionException(
+                            "DevModeHandlerManager implementation missing. Include the "
+                                    + "com.vaadin:vaadin-dev-server dependency.");
+                }
                 content = getStatsFromWebpack(devModeHandler.get());
             }
 
