@@ -139,7 +139,16 @@ public interface HasStyle extends HasElement {
      */
     default void addClassNames(String... classNames) {
         for (String rawClassName : classNames) {
-            String[] parts = rawClassName.split(" ");
+            if (rawClassName == null) {
+                throw new IllegalArgumentException(
+                        "CSS class names cannot include a null element");
+            }
+            rawClassName = rawClassName.trim();
+            if (rawClassName.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "CSS class names cannot include an empty class name");
+            }
+            String[] parts = rawClassName.split(" +");
             for (String part : parts) {
                 getClassNames().add(part);
             }
@@ -154,7 +163,16 @@ public interface HasStyle extends HasElement {
      */
     default void removeClassNames(String... classNames) {
         for (String rawClassName : classNames) {
-            String[] parts = rawClassName.split(" ");
+            if (rawClassName == null) {
+                throw new IllegalArgumentException(
+                        "CSS class names cannot include a null element");
+            }
+            rawClassName = rawClassName.trim();
+            if (rawClassName.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "CSS class names cannot include an empty class name");
+            }
+            String[] parts = rawClassName.split(" +");
             for (String part : parts) {
                 getClassNames().remove(part);
             }
