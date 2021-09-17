@@ -11,9 +11,8 @@
   "scripts": {
     "lint": "eslint \"src/main/frontend\"",
     "client": "node scripts/client.js",
-    "version": "node scripts/version.js",
     "webpack": "webpack --config=webpack.tests.config.js",
-    "build": "npm run client && npm run version && tsc",
+    "build": "npm run client && tsc",
     "compile": "npm run build && npm run lint",
     "test": "npm run build && npm run webpack && intern",
     "debug": "npm run build && webpack --config=webpack.tests.config.js -w >&2 | intern serveOnly"
@@ -49,8 +48,7 @@
     "xhr-mock": "2.5.0"
   },
   "dependencies": {
-    "@types/validator": "13.1.0",
-    "lit": "2.0.0-rc.4",
-    "validator": "13.1.17"
+    "@vaadin/common-frontend": "0.0.12",
+    "lit": "2.0.0-rc.4"
   }
 }

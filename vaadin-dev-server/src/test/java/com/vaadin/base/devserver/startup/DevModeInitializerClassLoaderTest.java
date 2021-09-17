@@ -73,10 +73,6 @@ public class DevModeInitializerClassLoaderTest {
         Assert.assertTrue(
                 "Js resource should have been copied from resource folder",
                 files.contains("resourceInFolder.js"));
-
-        Assert.assertTrue(
-                "The package.json file for client-side form should be copied",
-                files.contains("form" + File.separator + "package.json"));
     }
 
 }

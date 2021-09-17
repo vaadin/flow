@@ -191,29 +191,26 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void assertFormResourcesPackageJson() throws IOException {
-        JsonObject formPackageJson = nodeUpdater.getFormResourcesPackageJson();
-        Assert.assertEquals("@vaadin/form", formPackageJson.getString("name"));
-        Assert.assertEquals("UNLICENSED", formPackageJson.getString("license"));
-        Assert.assertEquals("index", formPackageJson.getString("main"));
-        Assert.assertEquals("1.0.0", formPackageJson.getString("version"));
-    }
+    public void shouldUpdateExistingLocalFormPackageToNpmPackage()
+            throws IOException {
+        JsonObject packageJson = Json.createObject();
+        JsonObject dependencies = Json.createObject();
+        packageJson.put(NodeUpdater.DEPENDENCIES, dependencies);
+        JsonObject vaadinDependencies = Json.createObject();
+        vaadinDependencies.put(NodeUpdater.DEPENDENCIES, Json.createObject());
+        packageJson.put(NodeUpdater.VAADIN_DEP_KEY, vaadinDependencies);
 
-    @Test
-    public void assertWriteFormResourcesPackageFile() throws IOException {
-        File formPackageJsonFile = new File(nodeUpdater.formResourcesFolder,
-                Constants.PACKAGE_JSON);
-        Assert.assertFalse(formPackageJsonFile.exists());
+        String formPackage = "@vaadin/form";
+        String legecyVersion = "./target/flow-frontend/form";
+        String newVersion = "22.0.0";
 
-        JsonObject formPackageJson = Json.createObject();
-        formPackageJson.put("foo", "bar");
+        dependencies.put(formPackage, legecyVersion);
 
-        nodeUpdater.writeFormResourcesPackageFile(formPackageJson);
+        nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES,
+                formPackage, newVersion);
 
-        Assert.assertTrue(formPackageJsonFile.exists());
-        JsonObject packageJson = NodeUpdater
-                .getJsonFileContent(formPackageJsonFile);
-        Assert.assertEquals("bar", packageJson.getString("foo"));
+        Assert.assertEquals(newVersion, packageJson
+                .getObject(NodeUpdater.DEPENDENCIES).getString(formPackage));
     }
 
     @Test

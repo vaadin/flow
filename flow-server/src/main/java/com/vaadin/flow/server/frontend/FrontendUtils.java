@@ -142,14 +142,6 @@ public class FrontendUtils {
             + "/";
 
     /**
-     * The NPM package name that will be used for the javascript files present
-     * in jar resources that will to be copied to the npm folder so as they are
-     * accessible to webpack.
-     */
-    public static final String FORM_NPM_PACKAGE_NAME = NodeUpdater.DEP_NAME_FORM_JARS
-            + "/";
-
-    /**
      * Default folder where front-end resources present in the classpath jars
      * are copied to. Relative to the
      * {@link com.vaadin.flow.server.InitParameters#BUILD_FOLDER}.

@@ -669,7 +669,7 @@ export class VaadinDevmodeGizmo extends LitElement {
       if (this.backend) {
         this.showMessage(
           MessageType.INFORMATION,
-          'Java live reload available: ' + VaadinDevmodeGizmo.BACKEND_DISPLAY_NAME[this.backend]
+          `Java live reload available: ${VaadinDevmodeGizmo.BACKEND_DISPLAY_NAME[this.backend]}`
         );
       }
     };
@@ -690,7 +690,7 @@ export class VaadinDevmodeGizmo extends LitElement {
     function getAbsoluteUrl(relative: string) {
       // Use innerHTML to obtain an absolute URL
       const div = document.createElement('div');
-      div.innerHTML = '<a href="' + relative + '"/>';
+      div.innerHTML = `<a href="${relative}"/>`;
       return (div.firstChild as HTMLLinkElement).href;
     }
     if (this.url === undefined) {
@@ -703,18 +703,18 @@ export class VaadinDevmodeGizmo extends LitElement {
       console.error('The protocol of the url should be http or https for live reload to work.');
       return undefined;
     }
-    return connectionBaseUrl.replace(/^http/, 'ws') + '?v-r=push&refresh_connection';
+    return `${connectionBaseUrl.replace(/^http/, 'ws')}?v-r=push&refresh_connection`;
   }
 
   getSpringBootWebSocketUrl(location: any) {
-    const hostname = location.hostname;
+    const { hostname } = location;
     const wsProtocol = location.protocol === 'https:' ? 'wss' : 'ws';
     if (hostname.endsWith('gitpod.io')) {
       // Gitpod uses `port-url` instead of `url:port`
       const hostnameWithoutPort = hostname.replace(/.*?-/, '');
-      return wsProtocol + '://' + this.springBootLiveReloadPort + '-' + hostnameWithoutPort;
+      return `${wsProtocol}://${this.springBootLiveReloadPort}-${hostnameWithoutPort}`;
     } else {
-      return wsProtocol + '://' + hostname + ':' + this.springBootLiveReloadPort;
+      return `${wsProtocol}://${hostname}:${this.springBootLiveReloadPort}`;
     }
   }
 
@@ -731,13 +731,10 @@ export class VaadinDevmodeGizmo extends LitElement {
     if (lastReload) {
       const count = window.sessionStorage.getItem(VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
       const now = new Date();
-      const reloaded =
-        ('0' + now.getHours()).slice(-2) +
-        ':' +
-        ('0' + now.getMinutes()).slice(-2) +
-        ':' +
-        ('0' + now.getSeconds()).slice(-2);
-      this.showSplashMessage('Automatic reload #' + count + ' finished at ' + reloaded);
+      const reloaded = `${`0${now.getHours()}`.slice(-2)}:${`0${now.getMinutes()}`.slice(
+        -2
+      )}:${`0${now.getSeconds()}`.slice(-2)}`;
+      this.showSplashMessage(`Automatic reload #${count} finished at ${reloaded}`);
       window.sessionStorage.removeItem(VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE);
     }
 
@@ -851,7 +848,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         !VaadinDevmodeGizmo.notificationDismissed(notification.persistentId)
       ) {
         let dismissed = window.localStorage.getItem(VaadinDevmodeGizmo.DISMISSED_NOTIFICATIONS_IN_LOCAL_STORAGE);
-        dismissed = dismissed === null ? notification.persistentId : dismissed + ',' + notification.persistentId;
+        dismissed = dismissed === null ? notification.persistentId : `${dismissed},${notification.persistentId}`;
         window.localStorage.setItem(VaadinDevmodeGizmo.DISMISSED_NOTIFICATIONS_IN_LOCAL_STORAGE, dismissed);
       }
 
@@ -1052,7 +1049,7 @@ class Connection extends Object {
       this.handleError(`[${e.name}: ${e.message}`);
       return;
     }
-    const command = json.command;
+    const { command } = json;
     switch (command) {
       case 'hello': {
         this.setStatus(ConnectionStatus.ACTIVE);
@@ -1077,7 +1074,7 @@ class Connection extends Object {
     console.error(msg);
     this.setStatus(ConnectionStatus.ERROR);
     if (msg instanceof Event && this.webSocket) {
-      this.onConnectionError('Error in WebSocket connection to ' + this.webSocket.url);
+      this.onConnectionError(`Error in WebSocket connection to ${this.webSocket.url}`);
     } else {
       this.onConnectionError(msg);
     }

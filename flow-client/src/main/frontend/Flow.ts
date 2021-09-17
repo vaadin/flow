@@ -1,5 +1,9 @@
-import { ConnectionIndicator } from './ConnectionIndicator';
-import { ConnectionState, ConnectionStateChangeListener, ConnectionStateStore } from './ConnectionState';
+import {
+  ConnectionIndicator,
+  ConnectionState,
+  ConnectionStateChangeListener,
+  ConnectionStateStore
+} from '@vaadin/common-frontend';
 
 export interface FlowConfig {
   imports?: () => void;
@@ -94,9 +98,10 @@ export class Flow {
     // Regular expression used to remove the app-context
     const elm = document.head.querySelector('base');
     this.baseRegex = new RegExp(
-      '^' +
+      `^${
         // IE11 does not support document.baseURI
         (document.baseURI || (elm && elm.href) || '/').replace(/^https?:\/\/[^/]+/i, '')
+      }`
     );
     this.appShellTitle = document.title;
     // Put a vaadin-connection-indicator in the dom
@@ -175,7 +180,7 @@ export class Flow {
     cmd?: PreventCommands
   ): Promise<any> {
     // server -> server, viewing offline stub, or browser is offline
-    const connectionState = $wnd.Vaadin.connectionState;
+    const { connectionState } = $wnd.Vaadin;
     if (this.pathname === ctx.pathname || !this.isFlowClientLoaded() || connectionState.offline) {
       return Promise.resolve({});
     }
@@ -335,7 +340,7 @@ export class Flow {
       const xhr = new XMLHttpRequest();
       const httpRequest = xhr as any;
       const serverRoutingParam = serverSideRouting ? '&serverSideRouting' : '';
-      const requestPath = `?v-r=init&location=${encodeURIComponent(this.getFlowRoute(location))}` + serverRoutingParam;
+      const requestPath = `?v-r=init&location=${encodeURIComponent(this.getFlowRoute(location))}${serverRoutingParam}`;
 
       httpRequest.open('GET', requestPath);
 

@@ -49,7 +49,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURC
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FLOW_DEPS;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FLOW_JARS;
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FORM_JARS;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static com.vaadin.flow.server.frontend.TaskUpdatePackages.VAADIN_APP_PACKAGE_HASH;
 import static elemental.json.impl.JsonUtil.stringify;
@@ -863,7 +862,6 @@ public abstract class AbstractNodeUpdatePackagesTest
         }
 
         Assert.assertTrue(dependencies.hasKey(DEP_NAME_FLOW_JARS));
-        Assert.assertTrue(dependencies.hasKey(DEP_NAME_FORM_JARS));
     }
 
     private JsonObject getDependencies(JsonObject json) {

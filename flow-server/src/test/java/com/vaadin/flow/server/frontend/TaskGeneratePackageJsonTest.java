@@ -51,8 +51,6 @@ public class TaskGeneratePackageJsonTest {
                 .updateDefaultDependencies(Mockito.any());
         Mockito.doReturn(null).when(task).writePackageFile(Mockito.any());
         Mockito.doReturn(null).when(task)
-                .writeFormResourcesPackageFile(Mockito.any());
-        Mockito.doReturn(null).when(task)
                 .writeResourcesPackageFile(Mockito.any());
     }
 
@@ -66,15 +64,11 @@ public class TaskGeneratePackageJsonTest {
     public void should_witeFlowAndFormResourcesPackageFiles()
             throws IOException {
         JsonObject resourcePackageJson = Mockito.mock(JsonObject.class);
-        JsonObject formReSourcePackageJson = Mockito.mock(JsonObject.class);
         Mockito.doReturn(resourcePackageJson).when(task)
                 .getResourcesPackageJson();
-        Mockito.doReturn(formReSourcePackageJson).when(task)
-                .getFormResourcesPackageJson();
 
         task.execute();
 
         verify(task).writeResourcesPackageFile(resourcePackageJson);
-        verify(task).writeFormResourcesPackageFile(formReSourcePackageJson);
     }
 }
