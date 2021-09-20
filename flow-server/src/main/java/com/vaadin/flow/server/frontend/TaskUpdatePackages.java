@@ -288,11 +288,18 @@ public class TaskUpdatePackages extends NodeUpdater {
         final JsonObject vaadinDeps = packageJson.getObject(VAADIN_DEP_KEY)
                 .getObject(DEPENDENCIES);
         final JsonObject packageJsonDeps = packageJson.getObject(DEPENDENCIES);
-        assert vaadinDeps != null; // exists at this point
-        assert packageJsonDeps != null;
-        packageJsonDeps.put(pkg, platformPinnedVersion.getFullVersion());
-        vaadinDeps.put(pkg, platformPinnedVersion.getFullVersion());
-        return true;
+        assert vaadinDeps != null :  "vaadin{ dependencies { } } should exist"; // exists at this point
+        assert packageJsonDeps != null : "dependencies { } should exist";
+        if (!packageJsonDeps.hasKey(pkg) || !vaadinDeps.hasKey(pkg)
+                || !platformPinnedVersion.equals(
+                        new FrontendVersion(packageJsonDeps.getString(pkg)))
+                || !platformPinnedVersion.equals(
+                        new FrontendVersion(vaadinDeps.getString(pkg)))) {
+            packageJsonDeps.put(pkg, platformPinnedVersion.getFullVersion());
+            vaadinDeps.put(pkg, platformPinnedVersion.getFullVersion());
+            return true;
+        }
+        return false;
     }
 
     /**
