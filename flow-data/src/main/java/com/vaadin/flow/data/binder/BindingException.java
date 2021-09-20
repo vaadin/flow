@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.binder;
 
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.data.binder.Binder.Binding;
 
 /**
  * A subclass of {@link RuntimeException} which may be thrown inside

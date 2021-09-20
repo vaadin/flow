@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Optional;
 
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.data.binder.Binder.Binding;
 
 /**
  * Handles an {@link Exception} which may be thrown inside {@link Binding} logic
