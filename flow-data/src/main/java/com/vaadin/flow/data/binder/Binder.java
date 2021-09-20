@@ -3240,10 +3240,26 @@ public class Binder<BEAN> implements Serializable {
         return validatorsDisabled;
     }
 
+    /**
+     * Sets a {@code handler} to customize the {@link RuntimeException} thrown
+     * by delegates (like {@link Setter}, {@link ValueProvider},
+     * {@link HasValue}) used inside {@link Binder} to be able to identify the
+     * bound field.
+     * 
+     * @see BindingExceptionHandler
+     * 
+     * @param handler
+     *            the exception handler, not {@code null}
+     */
     public void setBindingExceptionHandler(BindingExceptionHandler handler) {
-        exceptionHandler = handler;
+        exceptionHandler = Objects.requireNonNull(handler);
     }
 
+    /**
+     * Gets the current exception handler.
+     * 
+     * @return the exception handler, not {@code null}
+     */
     public BindingExceptionHandler getBindingExceptionHandler() {
         return exceptionHandler;
     }
