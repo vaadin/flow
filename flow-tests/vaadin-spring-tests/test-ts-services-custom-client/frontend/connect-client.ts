@@ -1,4 +1,4 @@
-import {ConnectClient, MiddlewareContext, MiddlewareNext} from '@vaadin/flow-frontend/Connect';
+import {ConnectClient, MiddlewareContext, MiddlewareNext} from '@vaadin/fusion-frontend';
 
 async function logger(context: MiddlewareContext, next: MiddlewareNext): Promise<Response> {
   const start = new Date().getTime();
