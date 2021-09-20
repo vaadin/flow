@@ -97,6 +97,8 @@ public class NodeTasks implements FallibleCommand {
 
         private boolean enablePnpm;
 
+        private boolean useGlobalPnpm = false;
+
         private File fusionJavaSourceFolder;
 
         private File fusionGeneratedOpenAPIFile;
@@ -486,6 +488,19 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
+         * Uses globally installed pnpm tool for frontend packages installation.
+         * 
+         * @param useGlobalPnpm
+         *            uses globally installed pnpm instead of default one, see
+         *            {@link FrontendTools#DEFAULT_PNPM_VERSION}.
+         * @return the builder, for chaining
+         */
+        public Builder useGlobalPnpm(boolean useGlobalPnpm) {
+            this.useGlobalPnpm = useGlobalPnpm;
+            return this;
+        }
+
+        /**
          * Requires node executable to be installed in vaadin home folder.
          *
          * @param requireHomeNodeExec
@@ -609,7 +624,8 @@ public class NodeTasks implements FallibleCommand {
             if (packageUpdater != null && builder.runNpmInstall) {
                 commands.add(new TaskRunNpmInstall(classFinder, packageUpdater,
                         builder.enablePnpm, builder.requireHomeNodeExec,
-                        builder.nodeVersion, builder.nodeDownloadRoot));
+                        builder.nodeVersion, builder.nodeDownloadRoot,
+                        builder.useGlobalPnpm));
 
                 commands.add(new TaskInstallWebpackPlugins(
                         new File(builder.npmFolder, builder.buildDirectory)));

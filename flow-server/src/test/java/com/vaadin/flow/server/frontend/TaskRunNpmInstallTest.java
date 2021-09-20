@@ -96,7 +96,7 @@ public class TaskRunNpmInstallTest {
     protected TaskRunNpmInstall createTask() {
         return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), false,
                 false, FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false);
     }
 
     @Test
@@ -263,7 +263,7 @@ public class TaskRunNpmInstallTest {
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(new TaskRunNpmInstall(
                 getClassFinder(), getNodeUpdater(), false, true,
                 FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)));
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false));
     }
 
     @Test

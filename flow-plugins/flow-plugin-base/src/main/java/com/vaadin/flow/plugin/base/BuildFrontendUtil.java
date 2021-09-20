@@ -286,6 +286,7 @@ public class BuildFrontendUtil {
                             .withTokenFile(
                                     BuildFrontendUtil.getTokenFile(adapter))
                             .enablePnpm(adapter.pnpmEnable())
+                            .useGlobalPnpm(adapter.useGlobalPnpm())
                             .withFusionApplicationProperties(
                                     adapter.applicationProperties())
                             .withFusionJavaSourceFolder(

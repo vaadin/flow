@@ -55,7 +55,7 @@ public class FrontendTools {
 
     public static final String DEFAULT_NODE_VERSION = "v16.7.0";
 
-    public static final String DEFAULT_PNPM_VERSION = "5";
+    public static final String DEFAULT_PNPM_VERSION = "5.18.10";
 
     public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm "
             + "-DnodeVersion=\"" + DEFAULT_NODE_VERSION + "\" ";
@@ -70,6 +70,12 @@ public class FrontendTools {
             + INSTALL_NODE_LOCALLY
             + "%n%nNote that in case you don't install it globally, you'll need to install it again for another Vaadin project."
             + "%nIn case you have just installed node.js globally, it was not discovered, so you need to restart your system to get the path variables updated."
+            + MSG_SUFFIX;
+
+    private static final String PNPM_NOT_FOUND = MSG_PREFIX
+            + "%nVaadin application is configured to use globally installed pnpm ('pnpm.global=true'), but no pnpm tool has been found on your system."
+            + "%nPlease install pnpm tool following the instruction given here https://pnpm.io/installation, "
+            + "%nor let Vaadin use the default pnpm version by excluding 'pnpm.global' (or setting it to false) from configuration."
             + MSG_SUFFIX;
 
     private static final String LOCAL_NODE_NOT_FOUND = MSG_PREFIX
@@ -161,6 +167,7 @@ public class FrontendTools {
     private final boolean ignoreVersionChecks;
 
     private final boolean forceAlternativeNode;
+    private final boolean useGlobalPnpm;
 
     /**
      * Creates an instance of the class using the {@code baseDir} as a base
@@ -184,7 +191,7 @@ public class FrontendTools {
             boolean forceAlternativeNode) {
         this(baseDir, alternativeDirGetter, DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
-                forceAlternativeNode);
+                forceAlternativeNode, false);
     }
 
     /**
@@ -206,7 +213,8 @@ public class FrontendTools {
     public FrontendTools(String baseDir,
             Supplier<String> alternativeDirGetter) {
         this(baseDir, alternativeDirGetter, DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false);
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
+                false);
     }
 
     /**
@@ -235,14 +243,17 @@ public class FrontendTools {
      *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
      * @param forceAlternativeNode
      *            force usage of node executable from alternative directory
+     * @param useGlobalPnpm
+     *            use globally installed pnpm instead of the default one (see
+     *            {@link #DEFAULT_PNPM_VERSION})
      */
     public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
             String nodeVersion, URI nodeDownloadRoot,
-            boolean forceAlternativeNode) {
+            boolean forceAlternativeNode, boolean useGlobalPnpm) {
         this(baseDir, alternativeDirGetter, nodeVersion, nodeDownloadRoot,
                 "true".equalsIgnoreCase(System.getProperty(
                         FrontendUtils.PARAM_IGNORE_VERSION_CHECKS)),
-                forceAlternativeNode);
+                forceAlternativeNode, useGlobalPnpm);
     }
 
     /**
@@ -273,18 +284,20 @@ public class FrontendTools {
     public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
             String nodeVersion, URI nodeDownloadRoot) {
         this(baseDir, alternativeDirGetter, nodeVersion, nodeDownloadRoot,
-                false);
+                false, false);
     }
 
     FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
             String nodeVersion, URI nodeDownloadRoot,
-            boolean ignoreVersionChecks, boolean forceAlternativeNode) {
+            boolean ignoreVersionChecks, boolean forceAlternativeNode,
+            boolean useGlobalPnpm) {
         this.baseDir = Objects.requireNonNull(baseDir);
         this.alternativeDirGetter = alternativeDirGetter;
         this.nodeVersion = Objects.requireNonNull(nodeVersion);
         this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
         this.ignoreVersionChecks = ignoreVersionChecks;
         this.forceAlternativeNode = forceAlternativeNode;
+        this.useGlobalPnpm = useGlobalPnpm;
     }
 
     /**
@@ -471,7 +484,7 @@ public class FrontendTools {
      * <p>
      * For example, the older versions of npm don't accept whitespaces in
      * folders path.
-     * 
+     *
      * @param folder
      *            the folder to check.
      * @return <code>true</code>, if the current version of npm accepts the
@@ -732,20 +745,27 @@ public class FrontendTools {
     }
 
     List<String> getSuitablePnpm() {
-        // install pnpm version < 6.0.0, later requires ensuring
-        // NodeJS >= 12.17
-        final String pnpmSpecifier = ignoreVersionChecks ? "pnpm"
-                : "pnpm@" + DEFAULT_PNPM_VERSION;
-        List<String> pnpmCommand = Stream.of(pnpmSpecifier)
-                // do NOT modify the order of the --yes and --quiet flags, as it
-                // changes the behavior of npx
-                .map(pnpm -> getNpmCliToolExecutable(NpmCliTool.NPX, "--yes",
-                        "--quiet", pnpm))
-                .filter(this::validatePnpmVersion).findFirst()
-                .orElseThrow(() -> new IllegalStateException(
-                        "Found too old 'pnpm'. If installed into the project "
-                                + "'node_modules', upgrade 'pnpm' to at least "
-                                + SUPPORTED_PNPM_VERSION.getFullVersion()));
+        List<String> pnpmCommand;
+        if (useGlobalPnpm) {
+            // try to locate already installed global pnpm, throw an exception
+            // if pnpm not found or its version is too old (< 5).
+            pnpmCommand = frontendToolsLocator.tryLocateTool("pnpm")
+                    .map(File::getAbsolutePath).map(Collections::singletonList)
+                    .orElseThrow(() -> new IllegalStateException(
+                            String.format(PNPM_NOT_FOUND)));
+            pnpmCommand = Stream.of(pnpmCommand)
+                    .filter(this::validatePnpmVersion).findFirst()
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least "
+                                    + SUPPORTED_PNPM_VERSION.getFullVersion()));
+        } else {
+            // install pnpm version < 6.0.0, later requires ensuring
+            // NodeJS >= 12.17 and doesn't support Node 10,
+            // see https://pnpm.io/installation#compatibility
+            final String pnpmSpecifier = "pnpm@" + DEFAULT_PNPM_VERSION;
+            pnpmCommand = getNpmCliToolExecutable(NpmCliTool.NPX, "--yes",
+                    "--quiet", "--ignore-existing", pnpmSpecifier);
+        }
         getLogger().info("using '{}' for frontend package installation",
                 String.join(" ", pnpmCommand));
         return pnpmCommand;
@@ -762,7 +782,7 @@ public class FrontendTools {
                     .isVersionAtLeast(pnpmVersion, SUPPORTED_PNPM_VERSION);
             boolean versionAccepted = ignoreVersionChecks || versionNewEnough;
             if (!versionAccepted) {
-                getLogger().info(
+                getLogger().warn(
                         "pnpm '{}' is version {} which is not supported (expected >={})",
                         commandLine, pnpmVersion.getFullVersion(),
                         SUPPORTED_PNPM_VERSION.getFullVersion());

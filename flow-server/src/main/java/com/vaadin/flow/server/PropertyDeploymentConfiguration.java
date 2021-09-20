@@ -169,6 +169,14 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
+    public boolean isGlobalPnpm() {
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM)) {
+            return super.isGlobalPnpm();
+        }
+        return parentConfig.isGlobalPnpm();
+    }
+
+    @Override
     public boolean reuseDevServer() {
         if (isOwnProperty(InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
             return super.reuseDevServer();
