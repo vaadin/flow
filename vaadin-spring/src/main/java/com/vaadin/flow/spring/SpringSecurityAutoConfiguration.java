@@ -68,7 +68,7 @@ public class SpringSecurityAutoConfiguration {
      */
     @Bean
     public ViewAccessChecker viewAccessChecker() {
-        return new ViewAccessChecker();
+        return new ViewAccessChecker(false);
     }
 
     /**
