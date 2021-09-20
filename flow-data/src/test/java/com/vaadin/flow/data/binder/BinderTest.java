@@ -1740,7 +1740,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test(expected = BindingException.class)
-    public void converterThrows_readBean_exceptionHandlerSet_bindingExceptionIsThrown() {
+    public void readBean_converterThrows_readBean_exceptionHandlerSet_bindingExceptionIsThrown() {
         TestTextField testField = new TestTextField();
         setExceptionHandler();
 
@@ -1753,7 +1753,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test(expected = BindingException.class)
-    public void getterThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
+    public void readBean_getterThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
         TestTextField testField = new TestTextField();
 
         setExceptionHandler();
@@ -1766,7 +1766,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test(expected = BindingException.class)
-    public void converterThrows_setBean_exceptionHandlerSet_bindingExceptionIsThrown() {
+    public void setBean_converterThrows_setBean_exceptionHandlerSet_bindingExceptionIsThrown() {
         TestTextField testField = new TestTextField();
 
         setExceptionHandler();
@@ -1782,7 +1782,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test(expected = BindingException.class)
-    public void setterThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
+    public void setBean_setterThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
         TestTextField testField = new TestTextField();
         setExceptionHandler();
 
@@ -1795,37 +1795,19 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test(expected = BindingException.class)
-    public void setValueThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
-        TestTextField testField = new TestTextField() {
-            @Override
-            public void setValue(String value) {
-                throw new NullPointerException();
-            }
-        }
+    public void setBean_setValueThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
+        TestTextField testField = new ThrowingSetter();
         setExceptionHandler();
-        
-        //todo
+
+        binder.forField(testField).bind(Person::getFirstName,
+                Person::setFirstName);
 
         binder.setBean(new Person());
     }
 
     @Test(expected = BindingException.class)
-    public void writeBean_setValueThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
-        TestTextField testField = new TestTextField() {
-            @Override
-            public void setValue(String value) {
-                throw new NullPointerException();
-            }
-        }
-        setExceptionHandler();
-        
-        //todo
-
-        binder.writeBean(new Person());
-    }
-
-    @Test(expected = BindingException.class)
-    public void writeBean_converterThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
+    public void writeBean_converterThrows_exceptionHandlerSet_bindingExceptionIsThrown()
+            throws ValidationException {
         TestTextField testField = new TestTextField();
 
         setExceptionHandler();
@@ -1841,26 +1823,43 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test(expected = BindingException.class)
-    public void writeBean_setterThrowsThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
+    public void writeBean_setterThrows_exceptionHandlerSet_bindingExceptionIsThrown()
+            throws ValidationException {
         TestTextField testField = new TestTextField();
         setExceptionHandler();
 
-        // todo
+        binder.forField(testField).bind(Person::getFirstName,
+                (person, field) -> {
+                    throw new NullPointerException();
+                });
+
+        Person person = new Person();
+        person.setFirstName("foo");
+        binder.writeBean(person);
+    }
+
+    @Test(expected = BindingException.class)
+    public void writeBean_setValueThrows_exceptionHandlerSet_bindingExceptionIsThrown()
+            throws ValidationException {
+        TestTextField testField = new ThrowingSetter();
+        setExceptionHandler();
+
+        binder.forField(testField)
+                .withConverter(
+                        Converter.from(name -> Result.ok(name), name -> "foo"))
+                .bind(Person::getFirstName, Person::setFirstName);
 
         binder.writeBean(new Person());
     }
 
     @Test(expected = BindingException.class)
-    public void writeBean_setterThrowsThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
-        TestTextField testField = new TestTextField() {
-            @Override
-            public String getValue() {
-                throw new NullPointerException();
-            }
-        }
+    public void writeBean_getValueThrows_exceptionHandlerSet_bindingExceptionIsThrown()
+            throws ValidationException {
+        TestTextField testField = new ThrowingGetter();
         setExceptionHandler();
-        
-        //todo
+
+        binder.forField(testField).bind(Person::getFirstName,
+                Person::setFirstName);
 
         binder.writeBean(new Person());
     }
@@ -1869,8 +1868,6 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     public void readBean_converterThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
         TestTextField testField = new TestTextField();
         setExceptionHandler();
-
-        // todo
 
         binder.forField(testField).withConverter(Converter.from(name -> {
             if (true) {
@@ -1883,18 +1880,26 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test(expected = BindingException.class)
-    public void readBean_setValueThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
-        TestTextField testField = new TestTextField() {
-            @Override
-            public String getValue() {
-                throw new NullPointerException();
-            }
-        }
+    public void bindingReadBean_setValueThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
+        TestTextField testField = new ThrowingSetter();
         setExceptionHandler();
-        
-        //todo
-        
-        binder.forField(testField).bind(Person::getFirstName, Person::setFirstName).read(new Person());
+
+        binder.forField(testField)
+                .bind(Person::getFirstName, Person::setFirstName)
+                .read(new Person());
+
+    }
+
+    @Test(expected = BindingException.class)
+    public void bindingReadBean_converterThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
+        TestTextField testField = new TestTextField();
+        setExceptionHandler();
+
+        binder.forField(testField)
+                .withConverter(Converter.from(name -> Result.ok(name), name -> {
+                    throw new NullPointerException();
+                })).bind(Person::getFirstName, Person::setFirstName)
+                .read(new Person());
 
     }
 
@@ -2015,6 +2020,20 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 ((DecimalFormat) format).setMinimumFractionDigits(2);
             }
             return format;
+        }
+    }
+
+    private static class ThrowingSetter extends TestTextField {
+        @Override
+        public void setValue(String value) {
+            throw new NullPointerException();
+        }
+    }
+
+    private static class ThrowingGetter extends TestTextField {
+        @Override
+        public String getValue() {
+            throw new NullPointerException();
         }
     }
 }
