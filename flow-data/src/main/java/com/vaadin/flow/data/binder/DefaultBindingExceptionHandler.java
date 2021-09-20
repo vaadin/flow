@@ -61,6 +61,7 @@ public class DefaultBindingExceptionHandler implements BindingExceptionHandler {
 
         UI ui = getUI(element);
         if (majorProperties.length() == 0 && ui != null
+                && ui.getSession() != null
                 && !ApplicationConfiguration
                         .get(ui.getSession().getService().getContext())
                         .isProductionMode()) {
