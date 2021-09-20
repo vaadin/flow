@@ -1744,8 +1744,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         TestTextField testField = new TestTextField();
         setExceptionHandler();
 
-        binder.forField(testField)
-                .withConverter(Converter.from(name -> Result.ok(name), name -> {
+        binder.forField(testField).withConverter(Converter
+                .<String, String> from(name -> Result.ok(name), name -> {
                     throw new NullPointerException();
                 })).bind(Person::getFirstName, Person::setFirstName);
 
@@ -1771,12 +1771,11 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         setExceptionHandler();
 
-        binder.forField(testField).withConverter(Converter.from(name -> {
-            if (true) {
-                throw new NullPointerException();
-            }
-            return Result.ok(name);
-        }, name -> name)).bind(Person::getFirstName, Person::setFirstName);
+        binder.forField(testField)
+                .withConverter(Converter.<String, String> from(name -> {
+                    throw new NullPointerException();
+                }, name -> name))
+                .bind(Person::getFirstName, Person::setFirstName);
 
         binder.setBean(new Person());
     }
@@ -1812,12 +1811,11 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         setExceptionHandler();
 
-        binder.forField(testField).withConverter(Converter.from(name -> {
-            if (true) {
-                throw new NullPointerException();
-            }
-            return Result.ok(name);
-        }, name -> name)).bind(Person::getFirstName, Person::setFirstName);
+        binder.forField(testField)
+                .withConverter(Converter.<String, String> from(name -> {
+                    throw new NullPointerException();
+                }, name -> name))
+                .bind(Person::getFirstName, Person::setFirstName);
 
         binder.writeBean(new Person());
     }
@@ -1845,8 +1843,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         setExceptionHandler();
 
         binder.forField(testField)
-                .withConverter(
-                        Converter.from(name -> Result.ok(name), name -> "foo"))
+                .withConverter(Converter.<String, String> from(
+                        name -> Result.ok(name), name -> "foo"))
                 .bind(Person::getFirstName, Person::setFirstName);
 
         binder.writeBean(new Person());
@@ -1869,12 +1867,11 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         TestTextField testField = new TestTextField();
         setExceptionHandler();
 
-        binder.forField(testField).withConverter(Converter.from(name -> {
-            if (true) {
-                throw new NullPointerException();
-            }
-            return Result.ok(name);
-        }, name -> name)).bind(Person::getFirstName, Person::setFirstName)
+        binder.forField(testField)
+                .withConverter(Converter.<String, String> from(name -> {
+                    throw new NullPointerException();
+                }, name -> name))
+                .bind(Person::getFirstName, Person::setFirstName)
                 .read(new Person());
 
     }
@@ -1895,8 +1892,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         TestTextField testField = new TestTextField();
         setExceptionHandler();
 
-        binder.forField(testField)
-                .withConverter(Converter.from(name -> Result.ok(name), name -> {
+        binder.forField(testField).withConverter(Converter
+                .<String, String> from(name -> Result.ok(name), name -> {
                     throw new NullPointerException();
                 })).bind(Person::getFirstName, Person::setFirstName)
                 .read(new Person());
