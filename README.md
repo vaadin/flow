@@ -17,10 +17,6 @@ The `master` branch is the latest version (9.0) that targets the [Vaadin platfor
 | Branch | [Platform Version](https://github.com/vaadin/platform/releases) | [Flow Version](https://github.com/vaadin/flow/releases) |
 |--------|-----------------------------------------------------------------|---------------------------------------------------------|
 |  1.0   |  10 (LTS)                                                       |  1.0                                                    |
-|  2.5   |  14.5.x (LTS)                                                   |  2.5.x                                                  |
-|  2.6   |  14.6.x (PRERELEASE)                                            |  2.6.x                                                  |
-|  5.0   |  18.0.x                                                         |  5.x                                                    |
-|  6.0   |  19.0.x                                                         |  6.x                                                    |
-|  7.0   |  20.0.x (LATEST)                                                |  7.x                                                    |
-|  8.0   |  21.0.x (PRERELEASE until 08/09/2021)                           |  8.x                                                    |
+|  2.7   |  14.7.x (LTS)                                                   |  2.7.x                                                  |
+|  8.0   |  21.0.x (LATEST)                                                |  8.x                                                    |
 |  master|  22.0.x (PRERELEASE)                                            |  9.x                                                    |
