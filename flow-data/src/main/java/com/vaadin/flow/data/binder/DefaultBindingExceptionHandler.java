@@ -26,7 +26,7 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
- * Default implementation of {@link DefaultBindingExceptionHandler}.
+ * Default implementation of {@link BindingExceptionHandler}.
  * <p>
  * The handler tries to identify the {@link HasElement} field using
  * {@code "label"} and {@code "id"} property values and if they are not
