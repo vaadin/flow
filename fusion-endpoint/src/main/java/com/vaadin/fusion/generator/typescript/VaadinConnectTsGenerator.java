@@ -98,10 +98,6 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     private static final String EXTENSION_VAADIN_CONNECT_SERVICE_NAME = "x-vaadin-connect-endpoint-name";
     private static final String EXTENSION_VAADIN_CONNECT_SHOW_TSDOC = "x-vaadin-connect-show-tsdoc";
     private static final String GENERATOR_NAME = "javascript-vaadin-connect";
-    private static final String JAVA_NAME_PATTERN = "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*";
-    // Pattern for matching fully qualified name in a complex type
-    // e.g. 'com.example.mypackage.Bean' will be extracted in the type
-    // `Map<String, Map<String, com.example.mypackage.Bean>>`
     private static final String OPERATION = "operation";
     private static final Pattern PATH_REGEX = Pattern
             .compile("^/([^/{}\n\t]+)/([^/{}\n\t]+)$");
@@ -486,6 +482,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
      *
      * @return A string value for the help message
      */
+    @Override
     public String getHelp() {
         return "Generates a Vaadin endpoint wrappers.";
     }
@@ -496,6 +493,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
      *
      * @return the friendly name for the generator
      */
+    @Override
     public String getName() {
         return GENERATOR_NAME;
     }
