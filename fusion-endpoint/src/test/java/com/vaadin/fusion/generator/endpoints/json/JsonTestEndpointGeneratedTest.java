@@ -25,7 +25,7 @@ import org.junit.Test;
 
 import com.vaadin.fusion.generator.OpenApiSpecGenerator;
 import com.vaadin.fusion.generator.VaadinConnectClientGenerator;
-import com.vaadin.fusion.generator.VaadinConnectTsGenerator;
+import com.vaadin.fusion.generator.typescript.VaadinConnectTsGenerator;
 import com.vaadin.fusion.generator.endpoints.AbstractEndpointGenerationTest;
 import com.vaadin.fusion.utils.TestUtils;
 

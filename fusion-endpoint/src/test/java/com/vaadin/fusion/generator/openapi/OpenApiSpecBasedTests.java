@@ -33,7 +33,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.fusion.generator.VaadinConnectClientGenerator;
-import com.vaadin.fusion.generator.VaadinConnectTsGenerator;
+import com.vaadin.fusion.generator.typescript.VaadinConnectTsGenerator;
 import com.vaadin.fusion.utils.TestUtils;
 
 import static org.junit.Assert.assertEquals;
