@@ -40,7 +40,6 @@ import io.swagger.codegen.v3.ClientOptInput;
 import io.swagger.codegen.v3.CodegenModel;
 import io.swagger.codegen.v3.CodegenOperation;
 import io.swagger.codegen.v3.CodegenParameter;
-import io.swagger.codegen.v3.CodegenProperty;
 import io.swagger.codegen.v3.CodegenResponse;
 import io.swagger.codegen.v3.CodegenType;
 import io.swagger.codegen.v3.DefaultGenerator;
@@ -103,15 +102,9 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     // Pattern for matching fully qualified name in a complex type
     // e.g. 'com.example.mypackage.Bean' will be extracted in the type
     // `Map<String, Map<String, com.example.mypackage.Bean>>`
-    private static final Pattern FULLY_QUALIFIED_NAME_PATTERN = Pattern.compile(
-            "(" + JAVA_NAME_PATTERN + "(\\." + JAVA_NAME_PATTERN + ")*)");
-    private static final Pattern MAPPED_TYPE_NAME_PATTERN = Pattern
-            .compile("Record<string, (.*)>");
     private static final String OPERATION = "operation";
     private static final Pattern PATH_REGEX = Pattern
             .compile("^/([^/{}\n\t]+)/([^/{}\n\t]+)$");
-    private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern
-            .compile("^(string|number|boolean)");
     private static final String VAADIN_CONNECT_CLASS_DESCRIPTION = "vaadinConnectClassDescription";
     private static final String VAADIN_FILE_PATH = "vaadinFilePath";
     private List<Tag> tags;
