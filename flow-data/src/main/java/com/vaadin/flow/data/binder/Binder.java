@@ -3245,8 +3245,17 @@ public class Binder<BEAN> implements Serializable {
      * by delegates (like {@link Setter}, {@link ValueProvider},
      * {@link HasValue}) used inside {@link Binder} to be able to identify the
      * bound field.
+     * <p>
+     * It allows to set a custom binding exception handler in case of exception
+     * details provided be the default handler are not enough, or, in other way
+     * around, it should be reduced.
+     * <p>
+     * {@link DefaultBindingExceptionHandler} instance is used if the handler is
+     * not explicitly set.
+     * 
      * 
      * @see BindingExceptionHandler
+     * @see DefaultBindingExceptionHandler
      * 
      * @param handler
      *            the exception handler, not {@code null}
@@ -3257,6 +3266,10 @@ public class Binder<BEAN> implements Serializable {
 
     /**
      * Gets the current exception handler.
+     * <p>
+     * If none has been set with
+     * {@link #setBindingExceptionHandler(BindingExceptionHandler)}, the default
+     * implementation is returned.
      * 
      * @return the exception handler, not {@code null}
      */

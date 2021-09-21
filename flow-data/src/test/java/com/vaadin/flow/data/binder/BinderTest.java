@@ -1900,6 +1900,14 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     }
 
+    @Test
+    public void getBindingExceptionHandler_defaultHandlerIsReturned() {
+        BindingExceptionHandler exceptionHandler = binder
+                .getBindingExceptionHandler();
+        Assert.assertTrue(
+                exceptionHandler instanceof DefaultBindingExceptionHandler);
+    }
+
     private void setExceptionHandler() {
         BindingException bindingException = new BindingException("foo");
         binder.setBindingExceptionHandler(
