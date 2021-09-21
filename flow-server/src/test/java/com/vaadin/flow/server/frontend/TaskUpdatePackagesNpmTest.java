@@ -464,6 +464,33 @@ public class TaskUpdatePackagesNpmTest {
                 vaadinDependencies.hasKey(VAADIN_CORE_NPM_PACKAGE));
     }
 
+    // #11888
+    @Test
+    public void npmIsInUse_versionsJsonContainsSameVersions_nothingIsModified()
+            throws IOException {
+        String versionJsonString = //@formatter:off
+                "{ \"core\": {"
+                        + "\"vaadin-element-mixin\": {\n"
+                        + "    \"jsVersion\": \"" + PLATFORM_DIALOG_VERSION + "\",\n"
+                        + "    \"npmName\": \"" + VAADIN_DIALOG
+                        + "\"\n"
+                        + "},\n"
+                + "}}},\n";//@formatter:on
+        FileUtils.write(versionJsonFile, versionJsonString,
+                StandardCharsets.UTF_8);
+
+        TaskUpdatePackages task = createTask(
+                createApplicationDependencies());
+        task.execute();
+        Assert.assertTrue("Creation of package.json should be marked with modified", task.modified);
+
+        // Rewriting with the same packages should not mark as modified
+        task = createTask(
+                createApplicationDependencies());
+        task.execute();
+        Assert.assertFalse("PackageJson modified without changes.", task.modified);
+    }
+
     private void createBasicVaadinVersionsJson() {
         createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
                 PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
