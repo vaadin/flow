@@ -348,6 +348,50 @@ public class Binder<BEAN> implements Serializable {
                 Setter<BEAN, TARGET> setter);
 
         /**
+         * Completes this binding using the given getter function representing a
+         * backing bean property. The function is used to update the field value
+         * from the property. The field value is not written back to the bean so
+         * the binding is read-only.
+         * <p>
+         * When a bean is bound with {@link Binder#setBean(Object)}, the field
+         * value is set to the return value of the given getter. The property
+         * value is then updated via the given setter whenever the field value
+         * changes.
+         * <p>
+         * If the Binder is already bound to some bean, the newly bound field is
+         * associated with the corresponding bean property as described above.
+         * <p>
+         * The getter can be arbitrary functions, for instance implementing
+         * user-defined conversion or validation. However, in the most basic use
+         * case you can simply a method references to this method as follows:
+         *
+         * <pre>
+         * class Person {
+         *     public String getName() { ... }
+         * }
+         *
+         * TextField nameField = new TextField();
+         * binder.forField(nameField).bindReadOnly(Person::getName);
+         * </pre>
+         * 
+         * <strong>Note:</strong> the field will be marked as readonly by
+         * invoking {@link HasValue#setReadOnly}.
+         * <p>
+         * This is a shorthand for {@link #bind(ValueProvider, Setter)} method
+         * called with {@code null} setter.
+         * 
+         * @see #bind(ValueProvider, Setter)
+         *
+         * @param getter
+         *            the function to get the value of the property to the
+         *            field, not null
+         * @return the newly created binding
+         * @throws IllegalStateException
+         *             if {@code bind} has already been called on this binding
+         */
+        Binding<BEAN, TARGET> bindReadOnly(ValueProvider<BEAN, TARGET> getter);
+
+        /**
          * Completes this binding by connecting the field to the property with
          * the given name. The getter and setter of the property are looked up
          * using a {@link PropertySet}.
@@ -381,6 +425,42 @@ public class Binder<BEAN> implements Serializable {
          * @see BindingBuilder#bind(ValueProvider, Setter)
          */
         Binding<BEAN, TARGET> bind(String propertyName);
+
+        /**
+         * Completes this binding by connecting the field to the property with
+         * the given name. The getter of the property is looked up using a
+         * {@link PropertySet}. The field value is not written back to the bean
+         * so the binding is read-only.
+         * <p>
+         * For a <code>Binder</code> created using the
+         * {@link Binder#Binder(Class)} constructor, introspection will be used
+         * to find a Java Bean property. If a JSR-303 bean validation
+         * implementation is present on the classpath, a {@link BeanValidator}
+         * is also added to the binding.
+         * <p>
+         * The property must have an accessible getter method.
+         *
+         * <p>
+         * <strong>Note:</strong> the field will be marked as readonly by
+         * invoking {@link HasValue#setReadOnly}.
+         * 
+         * @see #bind(String)
+         *
+         * @param propertyName
+         *            the name of the property to bind, not null
+         * @return the newly created binding
+         *
+         * @throws IllegalArgumentException
+         *             if the property name is invalid
+         * @throws IllegalArgumentException
+         *             if the property has no accessible getter
+         * @throws IllegalStateException
+         *             if the binder is not configured with an appropriate
+         *             {@link PropertySet}
+         *
+         * @see BindingBuilder#bind(ValueProvider, Setter)
+         */
+        Binding<BEAN, TARGET> bindReadOnly(String propertyName);
 
         /**
          * Adds a validator to this binding. Validators are applied, in
@@ -885,8 +965,32 @@ public class Binder<BEAN> implements Serializable {
         }
 
         @Override
-        @SuppressWarnings({ "unchecked", "rawtypes" })
+        public Binding<BEAN, TARGET> bindReadOnly(
+                ValueProvider<BEAN, TARGET> getter) {
+            return bind(getter, null);
+        }
+
+        @Override
         public Binding<BEAN, TARGET> bind(String propertyName) {
+            return bind(propertyName, false);
+        }
+
+        @Override
+        public Binding<BEAN, TARGET> bindReadOnly(String propertyName) {
+            return bind(propertyName, true);
+        }
+
+        @SuppressWarnings("unchecked")
+        private Converter<TARGET, Object> createConverter(Class<?> getterType) {
+            return Converter.from(getterType::cast,
+                    propertyValue -> (TARGET) propertyValue, exception -> {
+                        throw new RuntimeException(exception);
+                    });
+        }
+
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        private Binding<BEAN, TARGET> bind(String propertyName,
+                boolean readOnly) {
             Objects.requireNonNull(propertyName,
                     "Property name cannot be null");
             checkUnbound();
@@ -898,8 +1002,9 @@ public class Binder<BEAN> implements Serializable {
                                     + " from " + getBinder().propertySet));
 
             ValueProvider<BEAN, ?> getter = definition.getGetter();
-            Setter<BEAN, ?> setter = definition.getSetter().orElse(null);
-            if (setter == null) {
+            Setter<BEAN, ?> setter = readOnly ? null
+                    : definition.getSetter().orElse(null);
+            if (!readOnly && setter == null) {
                 getLogger().info(
                         propertyName + " does not have an accessible setter");
             }
@@ -922,14 +1027,6 @@ public class Binder<BEAN> implements Serializable {
                             .remove(getField());
                 }
             }
-        }
-
-        @SuppressWarnings("unchecked")
-        private Converter<TARGET, Object> createConverter(Class<?> getterType) {
-            return Converter.from(getterType::cast,
-                    propertyValue -> (TARGET) propertyValue, exception -> {
-                        throw new RuntimeException(exception);
-                    });
         }
 
         @Override
@@ -1770,6 +1867,61 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
+     * Binds a field to a bean property represented by the given getter. The
+     * function is used to update the field value from the property. The field
+     * value is not written back to the bean so the binding is read-only.
+     * <p>
+     * Use the {@link #forField(HasValue)} overload instead if you want to
+     * further configure the new binding.
+     * <p>
+     * <strong>Note:</strong> Not all {@link HasValue} implementations support
+     * passing {@code null} as the value. For these the Binder will
+     * automatically change {@code null} to a null representation provided by
+     * {@link HasValue#getEmptyValue()}. This conversion is one-way only, if you
+     * want to have a two-way mapping back to {@code null}, use
+     * {@link #forField(HasValue)} and
+     * {@link BindingBuilder#withNullRepresentation(Object)}.
+     * <p>
+     * When a bean is bound with {@link Binder#setBean(Object)}, the field value
+     * is set to the return value of the given getter.
+     * <p>
+     * If the Binder is already bound to some bean, the newly bound field is
+     * associated with the corresponding bean property as described above.
+     * <p>
+     * The getter can be arbitrary function, for instance implementing
+     * user-defined conversion or validation. However, in the most basic use
+     * case you can simply pass a pair of method references to this method as
+     * follows:
+     *
+     * <pre>
+     * class Person {
+     *     public String getName() { ... }
+     * }
+     *
+     * TextField nameField = new TextField();
+     * binder.bindReadOnly(nameField, Person::getName);
+     * </pre>
+     *
+     * <p>
+     * <strong>Note:</strong> the field will be marked as read-only by invoking
+     * ({@link HasValue#setReadOnly(boolean)}.
+     *
+     * @param <FIELDVALUE>
+     *            the value type of the field
+     * @param field
+     *            the field to bind, not null
+     * @param getter
+     *            the function to get the value of the property to the field,
+     *            not null
+     * @return the newly created binding
+     */
+    public <FIELDVALUE> Binding<BEAN, FIELDVALUE> bindReadOnly(
+            HasValue<?, FIELDVALUE> field,
+            ValueProvider<BEAN, FIELDVALUE> getter) {
+        return forField(field).bindReadOnly(getter);
+    }
+
+    /**
      * Binds the given field to the property with the given name. The getter and
      * setter of the property are looked up using a {@link PropertySet}.
      * <p>
@@ -1803,6 +1955,41 @@ public class Binder<BEAN> implements Serializable {
     public <FIELDVALUE> Binding<BEAN, FIELDVALUE> bind(
             HasValue<?, FIELDVALUE> field, String propertyName) {
         return forField(field).bind(propertyName);
+    }
+
+    /**
+     * Binds the given field to the property with the given name. The getter of
+     * the property is looked up using a {@link PropertySet}. The field value is
+     * not written back to the bean so the binding is read-only.
+     * <p>
+     * For a <code>Binder</code> created using the {@link Binder#Binder(Class)}
+     * constructor, introspection will be used to find a Java Bean property. If
+     * a JSR-303 bean validation implementation is present on the classpath, a
+     * {@link BeanValidator} is also added to the binding.
+     * <p>
+     * The property must have an accessible getter method.
+     *
+     * @param <FIELDVALUE>
+     *            the value type of the field to bind
+     * @param field
+     *            the field to bind, not null
+     * @param propertyName
+     *            the name of the property to bind, not null
+     * @return the newly created binding
+     *
+     * @throws IllegalArgumentException
+     *             if the property name is invalid
+     * @throws IllegalArgumentException
+     *             if the property has no accessible getter
+     * @throws IllegalStateException
+     *             if the binder is not configured with an appropriate
+     *             {@link PropertySet}
+     *
+     * @see #bind(HasValue, ValueProvider, Setter)
+     */
+    public <FIELDVALUE> Binding<BEAN, FIELDVALUE> bindReadOnly(
+            HasValue<?, FIELDVALUE> field, String propertyName) {
+        return forField(field).bindReadOnly(propertyName);
     }
 
     /**
