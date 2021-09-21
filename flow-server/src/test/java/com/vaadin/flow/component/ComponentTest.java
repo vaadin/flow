@@ -18,6 +18,7 @@ package com.vaadin.flow.component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -1649,6 +1650,17 @@ public class ComponentTest {
 
         // then
         ui2.add(child);
+    }
+
+    @Test
+    public void getTranslation_delegateToDeprecated() {
+        Component component = Mockito.mock(Component.class);
+        Mockito.doCallRealMethod().when(component).getTranslation(
+                Mockito.any(Locale.class), Mockito.anyString(), Mockito.any());
+
+        component.getTranslation(Locale.GERMAN, "foo");
+
+        Mockito.verify(component).getTranslation("foo", Locale.GERMAN);
     }
 
     private void enabledStateChangeOnAttachCalledForParentState(
