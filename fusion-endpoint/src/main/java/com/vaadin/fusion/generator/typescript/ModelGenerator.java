@@ -33,221 +33,221 @@ import com.vaadin.fusion.generator.OpenApiObjectGenerator;
 import static com.vaadin.fusion.generator.typescript.CodeGeneratorUtils.getSimpleNameFromImports;
 
 class ModelGenerator {
-  private ModelGenerator() {
-  }
-
-  static Helper<CodegenProperty> getModelArgumentsHelper() {
-    return (prop, options) -> getModelArguments(prop, options.param(0));
-  }
-
-  static Helper<CodegenProperty> getModelFullTypeHelper() {
-    return (prop, options) -> getModelFullType(
-        getSimpleNameFromImports(prop.datatype, options.param(0)));
-  }
-
-  private static List<String> getConstrainsArguments(
-      CodegenProperty property) {
-    List<String> annotations = (List) property.getVendorExtensions()
-        .get(OpenApiObjectGenerator.CONSTRAINT_ANNOTATIONS);
-    if (annotations != null) {
-      return annotations.stream()
-          .map(annotation -> String.format("new " + "%s", annotation))
-          .collect(Collectors.toList());
-    }
-    return Collections.emptyList();
-  }
-
-  private static String getModelArguments(CodegenProperty property,
-      List<Map<String, String>> imports) {
-    String dataType = property.datatype;
-    boolean optional = !property.required;
-    String simpleName = getSimpleNameFromImports(dataType, imports);
-    return getModelVariableArguments(simpleName, optional,
-        getConstrainsArguments(property));
-  }
-
-  private static String getModelFullType(String name) {
-    return TypeParser.parse(name).traverse()
-        .visit(new ModelTypeModelVisitor()).finish().toString();
-  }
-
-  private static String getModelVariableArguments(String name,
-      boolean optional, List<String> constrainArguments) {
-    ModelArgumentsModelVisitor visitor = new ModelArgumentsModelVisitor(
-        optional, constrainArguments);
-
-    TypeParser.parse(name).traverse().visit(visitor).finish();
-
-    return visitor.getResult();
-  }
-
-  private static class ModelArgumentsModelVisitor extends ModelVisitor {
-    private final StringBuilder builder = new StringBuilder();
-    private final List<String> constrainArguments;
-    private final boolean isRootOptional;
-
-    ModelArgumentsModelVisitor(boolean isRootOptional,
-        List<String> constrainArguments) {
-      this.isRootOptional = isRootOptional;
-      this.constrainArguments = constrainArguments;
+    private ModelGenerator() {
     }
 
-    @Override
-    public TypeParser.Node enter(TypeParser.Node node,
-        TypeParser.Node parent) {
-      if (parent == null || isArray(parent)) {
-        if (parent != null) {
-          builder.append(", ");
+    static Helper<CodegenProperty> getModelArgumentsHelper() {
+        return (prop, options) -> getModelArguments(prop, options.param(0));
+    }
+
+    static Helper<CodegenProperty> getModelFullTypeHelper() {
+        return (prop, options) -> getModelFullType(
+                getSimpleNameFromImports(prop.datatype, options.param(0)));
+    }
+
+    private static List<String> getConstrainsArguments(
+            CodegenProperty property) {
+        List<String> annotations = (List) property.getVendorExtensions()
+                .get(OpenApiObjectGenerator.CONSTRAINT_ANNOTATIONS);
+        if (annotations != null) {
+            return annotations.stream()
+                    .map(annotation -> String.format("new " + "%s", annotation))
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
+    private static String getModelArguments(CodegenProperty property,
+            List<Map<String, String>> imports) {
+        String dataType = property.datatype;
+        boolean optional = !property.required;
+        String simpleName = getSimpleNameFromImports(dataType, imports);
+        return getModelVariableArguments(simpleName, optional,
+                getConstrainsArguments(property));
+    }
+
+    private static String getModelFullType(String name) {
+        return TypeParser.parse(name).traverse()
+                .visit(new ModelTypeModelVisitor()).finish().toString();
+    }
+
+    private static String getModelVariableArguments(String name,
+            boolean optional, List<String> constrainArguments) {
+        ModelArgumentsModelVisitor visitor = new ModelArgumentsModelVisitor(
+                optional, constrainArguments);
+
+        TypeParser.parse(name).traverse().visit(visitor).finish();
+
+        return visitor.getResult();
+    }
+
+    private static class ModelArgumentsModelVisitor extends ModelVisitor {
+        private final StringBuilder builder = new StringBuilder();
+        private final List<String> constrainArguments;
+        private final boolean isRootOptional;
+
+        ModelArgumentsModelVisitor(boolean isRootOptional,
+                List<String> constrainArguments) {
+            this.isRootOptional = isRootOptional;
+            this.constrainArguments = constrainArguments;
         }
 
-        builder.append(prepareModelName(node));
-        builder.append(", [");
-        builder.append(
-            parent == null ? isRootOptional : node.isUndefined());
+        @Override
+        public TypeParser.Node enter(TypeParser.Node node,
+                TypeParser.Node parent) {
+            if (parent == null || isArray(parent)) {
+                if (parent != null) {
+                    builder.append(", ");
+                }
 
-        return node;
-      }
+                builder.append(prepareModelName(node));
+                builder.append(", [");
+                builder.append(
+                        parent == null ? isRootOptional : node.isUndefined());
 
-      // If array chain ended, let's just remove all children nodes
-      return null;
-    }
+                return node;
+            }
 
-    @Override
-    public void exit(TypeParser.Node node, TypeParser.Node parent) {
-      if (parent == null && !constrainArguments.isEmpty()) {
-        builder.append(", ");
-        builder.append(String.join(", ", constrainArguments));
-      }
-
-      if (parent == null || isArray(parent)) {
-        builder.append("]");
-      }
-    }
-
-    String getResult() {
-      return builder.toString();
-    }
-
-    private String prepareModelName(TypeParser.Node node) {
-      if (isArray(node)) {
-        return ARRAY_MODEL_NAME;
-      } else if (isObject(node)) {
-        return OBJECT_MODEL_NAME;
-      } else if (isPrimitive(node)) {
-        return getPrimitiveModelName(node);
-      }
-
-      return getOtherModelName(node);
-    }
-  }
-
-  private static class ModelTypeModelVisitor extends ModelVisitor {
-    private final Set<TypeParser.Node> visitedNodes = new HashSet<>();
-
-    @Override
-    public TypeParser.Node enter(TypeParser.Node node,
-        TypeParser.Node parent) {
-      node.setUndefined(false);
-
-      if (isArray(node)) {
-        // if node is Array<Type>
-
-        TypeParser.Node newNode = new TypeParser.Node(ARRAY_MODEL_NAME);
-
-        TypeParser.Node arrayItem = node.getNested().get(0);
-
-        if (isPrimitive(arrayItem)) {
-          newNode.addNested(arrayItem);
-          visitedNodes.add(arrayItem);
-        } else {
-          newNode.addNested(getModelValueType(arrayItem));
+            // If array chain ended, let's just remove all children nodes
+            return null;
         }
 
-        newNode.addNested(arrayItem.copy());
+        @Override
+        public void exit(TypeParser.Node node, TypeParser.Node parent) {
+            if (parent == null && !constrainArguments.isEmpty()) {
+                builder.append(", ");
+                builder.append(String.join(", ", constrainArguments));
+            }
 
-        visitedNodes.add(newNode);
-
-        return newNode;
-      } else if (isObject(node)
-          && (parent == null || !isObjectModel(parent))) {
-        // if node is Record<Type, Type>
-
-        TypeParser.Node wrapper = new TypeParser.Node(
-            OBJECT_MODEL_NAME);
-        wrapper.addNested(node);
-
-        // Record<Type, Type>
-        TypeParser.Node key = node.getNested().get(0);
-        TypeParser.Node value = node.getNested().get(1);
-
-        if (isPrimitive(value)) {
-          node.getNested().set(1, value);
-          visitedNodes.add(value);
-        } else {
-          node.getNested().set(1, getModelValueType(value));
+            if (parent == null || isArray(parent)) {
+                builder.append("]");
+            }
         }
 
-        visitedNodes.add(wrapper);
-        visitedNodes.add(node);
-        visitedNodes.add(key);
+        String getResult() {
+            return builder.toString();
+        }
 
-        return wrapper;
-      } else if (isPrimitive(node) && !visitedNodes.contains(node)) {
-        node.setName(getPrimitiveModelName(node));
-        visitedNodes.add(node);
-        return node;
-      }
+        private String prepareModelName(TypeParser.Node node) {
+            if (isArray(node)) {
+                return ARRAY_MODEL_NAME;
+            } else if (isObject(node)) {
+                return OBJECT_MODEL_NAME;
+            } else if (isPrimitive(node)) {
+                return getPrimitiveModelName(node);
+            }
 
-      if (!visitedNodes.contains(node)) {
-        node.setName(getOtherModelName(node));
-      }
-
-      return node;
+            return getOtherModelName(node);
+        }
     }
 
-    private TypeParser.Node getModelValueType(TypeParser.Node node) {
-      TypeParser.Node modelValueNode = new TypeParser.Node(
-          VaadinConnectTsGenerator.MODEL + "Value");
-      modelValueNode.addNested(node);
+    private static class ModelTypeModelVisitor extends ModelVisitor {
+        private final Set<TypeParser.Node> visitedNodes = new HashSet<>();
 
-      visitedNodes.add(modelValueNode);
+        @Override
+        public TypeParser.Node enter(TypeParser.Node node,
+                TypeParser.Node parent) {
+            node.setUndefined(false);
 
-      return modelValueNode;
+            if (isArray(node)) {
+                // if node is Array<Type>
+
+                TypeParser.Node newNode = new TypeParser.Node(ARRAY_MODEL_NAME);
+
+                TypeParser.Node arrayItem = node.getNested().get(0);
+
+                if (isPrimitive(arrayItem)) {
+                    newNode.addNested(arrayItem);
+                    visitedNodes.add(arrayItem);
+                } else {
+                    newNode.addNested(getModelValueType(arrayItem));
+                }
+
+                newNode.addNested(arrayItem.copy());
+
+                visitedNodes.add(newNode);
+
+                return newNode;
+            } else if (isObject(node)
+                    && (parent == null || !isObjectModel(parent))) {
+                // if node is Record<Type, Type>
+
+                TypeParser.Node wrapper = new TypeParser.Node(
+                        OBJECT_MODEL_NAME);
+                wrapper.addNested(node);
+
+                // Record<Type, Type>
+                TypeParser.Node key = node.getNested().get(0);
+                TypeParser.Node value = node.getNested().get(1);
+
+                if (isPrimitive(value)) {
+                    node.getNested().set(1, value);
+                    visitedNodes.add(value);
+                } else {
+                    node.getNested().set(1, getModelValueType(value));
+                }
+
+                visitedNodes.add(wrapper);
+                visitedNodes.add(node);
+                visitedNodes.add(key);
+
+                return wrapper;
+            } else if (isPrimitive(node) && !visitedNodes.contains(node)) {
+                node.setName(getPrimitiveModelName(node));
+                visitedNodes.add(node);
+                return node;
+            }
+
+            if (!visitedNodes.contains(node)) {
+                node.setName(getOtherModelName(node));
+            }
+
+            return node;
+        }
+
+        private TypeParser.Node getModelValueType(TypeParser.Node node) {
+            TypeParser.Node modelValueNode = new TypeParser.Node(
+                    VaadinConnectTsGenerator.MODEL + "Value");
+            modelValueNode.addNested(node);
+
+            visitedNodes.add(modelValueNode);
+
+            return modelValueNode;
+        }
     }
-  }
 
-  private abstract static class ModelVisitor implements TypeParser.Visitor {
-    protected static final String ARRAY_MODEL_NAME = "Array"
-        + VaadinConnectTsGenerator.MODEL;
-    protected static final String OBJECT_MODEL_NAME = "Object"
-        + VaadinConnectTsGenerator.MODEL;
-    private static final Set<String> PRIMITIVES = Collections
-        .unmodifiableSet(new HashSet<>(
-            Arrays.asList("string", "number", "boolean")));
+    private abstract static class ModelVisitor implements TypeParser.Visitor {
+        protected static final String ARRAY_MODEL_NAME = "Array"
+                + VaadinConnectTsGenerator.MODEL;
+        protected static final String OBJECT_MODEL_NAME = "Object"
+                + VaadinConnectTsGenerator.MODEL;
+        private static final Set<String> PRIMITIVES = Collections
+                .unmodifiableSet(new HashSet<>(
+                        Arrays.asList("string", "number", "boolean")));
 
-    protected String getOtherModelName(TypeParser.Node node) {
-      return node.getName() + VaadinConnectTsGenerator.MODEL;
+        protected String getOtherModelName(TypeParser.Node node) {
+            return node.getName() + VaadinConnectTsGenerator.MODEL;
+        }
+
+        protected String getPrimitiveModelName(TypeParser.Node node) {
+            return GeneratorUtils.capitalize(node.getName())
+                    + VaadinConnectTsGenerator.MODEL;
+        }
+
+        protected boolean isArray(TypeParser.Node node) {
+            return Objects.equals(node.getName(), "Array");
+        }
+
+        protected boolean isObject(TypeParser.Node node) {
+            return Objects.equals(node.getName(), "Record");
+        }
+
+        protected boolean isObjectModel(TypeParser.Node node) {
+            return Objects.equals(node.getName(), OBJECT_MODEL_NAME);
+        }
+
+        protected boolean isPrimitive(TypeParser.Node node) {
+            return PRIMITIVES.contains(node.getName());
+        }
     }
-
-    protected String getPrimitiveModelName(TypeParser.Node node) {
-      return GeneratorUtils.capitalize(node.getName())
-          + VaadinConnectTsGenerator.MODEL;
-    }
-
-    protected boolean isArray(TypeParser.Node node) {
-      return Objects.equals(node.getName(), "Array");
-    }
-
-    protected boolean isObject(TypeParser.Node node) {
-      return Objects.equals(node.getName(), "Record");
-    }
-
-    protected boolean isObjectModel(TypeParser.Node node) {
-      return Objects.equals(node.getName(), OBJECT_MODEL_NAME);
-    }
-
-    protected boolean isPrimitive(TypeParser.Node node) {
-      return PRIMITIVES.contains(node.getName());
-    }
-  }
 }

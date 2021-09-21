@@ -22,13 +22,13 @@ import com.vaadin.fusion.Endpoint;
 
 @Endpoint
 public class ComplexTypeEndpoint {
-  public ComplexTypeModel getComplexTypeModel(
-      List<Map<String, String>> data) {
-    return new ComplexTypeModel();
-  }
+    public ComplexTypeModel getComplexTypeModel(
+            List<Map<String, String>> data) {
+        return new ComplexTypeModel();
+    }
 
-  public static class ComplexTypeModel {
-    List<Map<String, List<String>>> complexList;
-    Map<String, List<String>> complexMap;
-  }
+    public static class ComplexTypeModel {
+        List<Map<String, List<String>>> complexList;
+        Map<String, List<String>> complexMap;
+    }
 }

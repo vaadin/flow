@@ -22,12 +22,12 @@ import org.junit.Test;
 import com.vaadin.fusion.generator.endpoints.AbstractEndpointGenerationTest;
 
 public class ComplexTypeEndpointTest extends AbstractEndpointGenerationTest {
-  public ComplexTypeEndpointTest() {
-    super(Collections.singletonList(ComplexTypeEndpoint.class));
-  }
+    public ComplexTypeEndpointTest() {
+        super(Collections.singletonList(ComplexTypeEndpoint.class));
+    }
 
-  @Test
-  public void should_CorrectlyHandleComplexTypes() {
-    verifyOpenApiObjectAndGeneratedTs();
-  }
+    @Test
+    public void should_CorrectlyHandleComplexTypes() {
+        verifyOpenApiObjectAndGeneratedTs();
+    }
 }
