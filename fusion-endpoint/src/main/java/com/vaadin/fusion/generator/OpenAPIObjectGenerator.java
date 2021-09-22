@@ -241,8 +241,7 @@ public class OpenAPIObjectGenerator {
             schemas.forEach(schema -> {
                 if (qualifiedNameToPath.get(schema.getName()) != null) {
                     schema.addExtension(EXTENSION_VAADIN_FILE_PATH,
-                            GeneratorUtils.escapeFilePath(
-                                    qualifiedNameToPath.get(schema.getName())));
+                                    qualifiedNameToPath.get(schema.getName()));
                 }
                 openApiModel.getComponents().addSchemas(schema.getName(),
                         schema);
@@ -281,9 +280,9 @@ public class OpenAPIObjectGenerator {
             tag.name(simpleClassName);
             tag.description(endpointJavadoc.getValue());
             tag.addExtension(EXTENSION_VAADIN_FILE_PATH,
-                    GeneratorUtils.escapeFilePath(qualifiedNameToPath
+                    qualifiedNameToPath
                             .get(endpointDeclaration.getFullyQualifiedName()
-                                    .orElse(simpleClassName))));
+                                    .orElse(simpleClassName)));
             openApiModel.addTagsItem(tag);
         }
     }
@@ -378,7 +377,7 @@ public class OpenAPIObjectGenerator {
                 String className = enumDeclaration.getFullyQualifiedName()
                         .orElse(enumDeclaration.getNameAsString());
                 qualifiedNameToPath.put(className,
-                        storage.getPath().toString());
+                        storage.getPath().toUri().toString());
             });
             nonEndpointMap.put(enumDeclaration.resolve().getQualifiedName(),
                     enumDeclaration);
@@ -392,7 +391,7 @@ public class OpenAPIObjectGenerator {
         compilationUnit.getStorage().ifPresent(storage -> {
             String className = classDeclaration.getFullyQualifiedName()
                     .orElse(classDeclaration.getNameAsString());
-            qualifiedNameToPath.put(className, storage.getPath().toString());
+            qualifiedNameToPath.put(className, storage.getPath().toUri().toString());
         });
         if (!GeneratorUtils.hasAnnotation(classDeclaration, compilationUnit,
                 Endpoint.class)) {
