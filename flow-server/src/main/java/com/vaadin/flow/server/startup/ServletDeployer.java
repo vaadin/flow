@@ -44,7 +44,6 @@ import com.vaadin.flow.server.VaadinServletConfig;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 /**
  * Context listener that automatically registers Vaadin servlets.
@@ -298,21 +297,6 @@ public class ServletDeployer implements ServletContextListener {
 
     private VaadinServletCreation createAppServlet(
             ServletContext servletContext) {
-        VaadinServletContext context = new VaadinServletContext(servletContext);
-        boolean createServlet = ApplicationRouteRegistry.getInstance(context)
-                .hasNavigationTargets();
-
-        createServlet = createServlet || WebComponentConfigurationRegistry
-                .getInstance(context).hasConfigurations();
-
-        if (!createServlet) {
-            servletCreationMessage = String.format(
-                    "%s there are no navigation targets registered to the "
-                            + "route registry and there are no web component exporters.",
-                    SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE);
-            return VaadinServletCreation.NO_CREATION;
-        }
-
         ServletRegistration vaadinServlet = findVaadinServlet(servletContext);
         if (vaadinServlet != null) {
             servletCreationMessage = String.format(
