@@ -618,12 +618,34 @@ public abstract class Component
      * @param params
      *            parameters used in translation string
      * @return translation for key if found
+     * @deprecated Use {@link #getTranslation(Locale, String, Object...)}
+     *             instead
      */
+    @Deprecated
     public String getTranslation(String key, Locale locale, Object... params) {
         if (getI18NProvider() == null) {
             return "!{" + key + "}!";
         }
         return getI18NProvider().getTranslation(key, locale, params);
+    }
+
+    /**
+     * Get the translation for key with given locale.
+     * <p>
+     * The method never returns a null. If there is no {@link I18NProvider}
+     * available or no translation for the {@code key} it returns an exception
+     * string e.g. '!{key}!'.
+     *
+     * @param locale
+     *            locale to use
+     * @param key
+     *            translation key
+     * @param params
+     *            parameters used in translation string
+     * @return translation for key if found
+     */
+    public String getTranslation(Locale locale, String key, Object... params) {
+        return getTranslation(key, locale, params);
     }
 
     private I18NProvider getI18NProvider() {
