@@ -105,26 +105,4 @@ public class GeneratorUtilsTest {
                         compilationUnitWithVaadinEndpointImport,
                         Endpoint.class));
     }
-
-    @Test
-    // https://github.com/vaadin/fusion/issues/61
-    public void should_escapeWhiteSpaceInFilePath() {
-        String filePath = "/my project/foo/bar bar";
-        Object result = GeneratorUtils.escapeFilePath(filePath);
-        Assert.assertEquals("/my%20project/foo/bar%20bar", result);
-    }
-
-    @Test
-    public void should_returnSameValue_whenNothingToEscapeInFilePath() {
-        String filePath = "/myproject/foo/barbar";
-        Object result = GeneratorUtils.escapeFilePath(filePath);
-        Assert.assertEquals(filePath, result);
-    }
-
-    @Test
-    public void should_returnNull_whenFilePathIsNull() {
-        String filePath = null;
-        Object result = GeneratorUtils.escapeFilePath(filePath);
-        Assert.assertEquals(filePath, result);
-    }
 }
