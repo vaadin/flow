@@ -22,7 +22,7 @@ import com.vaadin.fusion.EndpointExposed;
 import com.vaadin.fusion.generator.OpenApiConfiguration;
 import com.vaadin.fusion.generator.OpenApiObjectGenerator;
 import com.vaadin.fusion.generator.OpenApiSpecGenerator;
-import com.vaadin.fusion.generator.VaadinConnectTsGenerator;
+import com.vaadin.fusion.generator.typescript.VaadinConnectTsGenerator;
 import com.vaadin.fusion.utils.TestUtils;
 
 import elemental.json.Json;

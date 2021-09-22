@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
-import static com.vaadin.fusion.generator.VaadinConnectTsGenerator.TS;
+import static com.vaadin.fusion.generator.typescript.VaadinConnectTsGenerator.TS;
 
 /**
  * Generates the Vaadin connect-client file, based on the application
