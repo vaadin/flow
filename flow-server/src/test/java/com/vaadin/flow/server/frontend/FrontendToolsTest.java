@@ -735,7 +735,8 @@ public class FrontendToolsTest {
     }
 
     private void installGlobalPnpm(String pnpmVersion) {
-        Optional<File> npmInstalled = frontendToolsLocator.tryLocateTool("npm");
+        Optional<File> npmInstalled = frontendToolsLocator
+                .tryLocateTool(getNpmCommand());
         if (!npmInstalled.isPresent()) {
             installNodeToTempFolder();
         }
@@ -754,7 +755,7 @@ public class FrontendToolsTest {
     private void doInstallPnpmGlobally(String pnpmVersion, boolean uninstall) {
         final String pnpmPackageSpecifier = "pnpm"
                 + (uninstall ? "" : "@" + pnpmVersion);
-        final List<String> installPnpmCommand = Arrays.asList("npm",
+        final List<String> installPnpmCommand = Arrays.asList(getNpmCommand(),
                 uninstall ? "rm" : "install", "-g", pnpmPackageSpecifier);
         try {
             FrontendUtils.executeCommand(installPnpmCommand);
@@ -763,5 +764,9 @@ public class FrontendToolsTest {
                     "Pnpm installation failed, pnpm version='%s', uninstall='%s'",
                     pnpmVersion, uninstall), e);
         }
+    }
+
+    private String getNpmCommand() {
+        return FrontendUtils.isWindows() ? "npm.cmd" : "npm";
     }
 }

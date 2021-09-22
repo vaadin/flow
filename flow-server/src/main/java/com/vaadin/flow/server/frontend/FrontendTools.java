@@ -749,7 +749,9 @@ public class FrontendTools {
         if (useGlobalPnpm) {
             // try to locate already installed global pnpm, throw an exception
             // if pnpm not found or its version is too old (< 5).
-            pnpmCommand = frontendToolsLocator.tryLocateTool("pnpm")
+            pnpmCommand = frontendToolsLocator
+                    .tryLocateTool(
+                            FrontendUtils.isWindows() ? "pnpm.cmd" : "pnpm")
                     .map(File::getAbsolutePath).map(Collections::singletonList)
                     .orElseThrow(() -> new IllegalStateException(
                             String.format(PNPM_NOT_FOUND)));
