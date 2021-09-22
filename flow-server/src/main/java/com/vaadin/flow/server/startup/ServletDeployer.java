@@ -187,21 +187,6 @@ public class ServletDeployer implements ServletContextListener {
                             new VaadinServletConfig(servletConfig));
         }
 
-        /**
-         * Creates a DeploymentConfiguration.
-         *
-         * @param context
-         *            the ServletContext
-         * @param servletClass
-         *            the class to look for properties defined with annotations
-         * @return a DeploymentConfiguration instance
-         */
-        public static DeploymentConfiguration createDeploymentConfiguration(
-                ServletContext context, Class<?> servletClass) {
-            return new DeploymentConfigurationFactory()
-                    .createPropertyDeploymentConfiguration(servletClass,
-                            new VaadinServletContextConfig(context));
-        }
     }
 
     @Override
@@ -210,11 +195,12 @@ public class ServletDeployer implements ServletContextListener {
         Collection<DeploymentConfiguration> servletConfigurations = getServletConfigurations(
                 context);
 
-        boolean enableServlets = true;
+        VaadinServletContext vaadinContext = new VaadinServletContext(context);
+        ApplicationConfiguration config = ApplicationConfiguration
+                .get(vaadinContext);
+        boolean enableServlets = !config.disableAutomaticServletRegistration();
         boolean productionMode = false;
         for (DeploymentConfiguration configuration : servletConfigurations) {
-            enableServlets = enableServlets
-                    && !configuration.disableAutomaticServletRegistration();
             productionMode = productionMode || configuration.isProductionMode();
         }
 
