@@ -12,6 +12,7 @@ const { DefinePlugin } = require('webpack');
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 // Flow plugins
 const StatsPlugin = require('@vaadin/stats-plugin');
@@ -20,6 +21,7 @@ const ThemeLiveReloadPlugin = require('@vaadin/theme-live-reload-plugin');
 const { ApplicationThemePlugin, processThemeResources, extractThemeName, findParentThemes } = require('@vaadin/application-theme-plugin');
 
 const path = require('path');
+const {resolve} = require("./webpack.generated");
 
 // this matches /themes/my-theme/ and is used to check css url handling and file path build.
 const themePartRegex = /(\\|\/)themes\1[\s\S]*?\1/;
@@ -367,6 +369,10 @@ module.exports = {
       typescript: {
         configFile: tsconfigJsonFile
       }
+    }),
+
+    enableTypeScript && new TsconfigPathsPlugin({
+      configFile: tsconfigJsonFile
     }),
 
     new BuildStatusPlugin()
