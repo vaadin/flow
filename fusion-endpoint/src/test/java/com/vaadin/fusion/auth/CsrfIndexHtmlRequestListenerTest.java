@@ -39,7 +39,8 @@ public class CsrfIndexHtmlRequestListenerTest {
 
     @Before
     public void setup() {
-        csrfIndexHtmlRequestListener = Mockito.spy(new CsrfIndexHtmlRequestListener());
+        csrfIndexHtmlRequestListener = Mockito
+                .spy(new CsrfIndexHtmlRequestListener());
         vaadinRequest = Mockito.mock(VaadinRequest.class);
         Mockito.doReturn(TEST_CONTEXT_PATH).when(vaadinRequest)
                 .getContextPath();

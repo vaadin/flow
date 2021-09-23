@@ -173,7 +173,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private void addInitialFlow(JsonObject initialJson, Document indexDocument,
             VaadinRequest request) {
-        SpringCsrfTokenUtil.addTokenAsMetaTagsToHeadIfPresentInRequest(indexDocument.head(), request);
+        SpringCsrfTokenUtil.addTokenAsMetaTagsToHeadIfPresentInRequest(
+                indexDocument.head(), request);
         Element elm = new Element("script");
         elm.attr("initial", "");
         elm.appendChild(new DataNode("window.Vaadin = {TypeScript: "

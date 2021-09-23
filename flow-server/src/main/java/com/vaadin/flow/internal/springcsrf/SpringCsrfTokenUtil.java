@@ -21,20 +21,23 @@ public class SpringCsrfTokenUtil {
     private static final String SPRING_CSRF_HEADER_NAME_ATTRIBUTE = "_csrf_header";
     private static final String SPRING_CSRF_TOKEN_ATTRIBUTE = "_csrf";
     private static final String META_TAG = "meta";
-    
-    public static Optional<SpringCsrfToken> getSpringCsrfToken(VaadinRequest request) {
+
+    public static Optional<SpringCsrfToken> getSpringCsrfToken(
+            VaadinRequest request) {
         Object springCsrfToken = request
                 .getAttribute(SPRING_CSRF_TOKEN_ATTRIBUTE_IN_REQUEST);
         return extractTokenFromBean(springCsrfToken);
     }
 
-    public static Optional<SpringCsrfToken> getSpringCsrfToken(ServletRequest request) {
+    public static Optional<SpringCsrfToken> getSpringCsrfToken(
+            ServletRequest request) {
         Object springCsrfToken = request
                 .getAttribute(SPRING_CSRF_TOKEN_ATTRIBUTE_IN_REQUEST);
         return extractTokenFromBean(springCsrfToken);
     }
 
-    private static Optional<SpringCsrfToken> extractTokenFromBean(Object springCsrfToken) {
+    private static Optional<SpringCsrfToken> extractTokenFromBean(
+            Object springCsrfToken) {
         if (springCsrfToken != null) {
             JsonObject springCsrfTokenJson = JsonUtils
                     .beanToJson(springCsrfToken);
@@ -49,28 +52,28 @@ public class SpringCsrfTokenUtil {
                 String parameterName = springCsrfTokenJson
                         .getString(SPRING_CSRF_PARAMETER_PROPERTY);
 
-                return Optional.of(new SpringCsrfToken(headerName, parameterName, token));
+                return Optional.of(
+                        new SpringCsrfToken(headerName, parameterName, token));
             }
         }
         return Optional.empty();
     }
 
-    public static void addTokenAsMetaTagsToHeadIfPresentInRequest(Element head, VaadinRequest request) {
+    public static void addTokenAsMetaTagsToHeadIfPresentInRequest(Element head,
+            VaadinRequest request) {
         Optional<SpringCsrfToken> springCsrfToken = getSpringCsrfToken(request);
         springCsrfToken.ifPresent(csrfToken -> {
-            addMetaTagToHead(head,
-                    SPRING_CSRF_TOKEN_ATTRIBUTE, 
+            addMetaTagToHead(head, SPRING_CSRF_TOKEN_ATTRIBUTE,
                     csrfToken.getToken());
-            addMetaTagToHead(head,
-                    SPRING_CSRF_HEADER_NAME_ATTRIBUTE,
+            addMetaTagToHead(head, SPRING_CSRF_HEADER_NAME_ATTRIBUTE,
                     csrfToken.getHeaderName());
-            addMetaTagToHead(head,
-                    SPRING_CSRF_PARAMETER_NAME_ATTRIBUTE,
+            addMetaTagToHead(head, SPRING_CSRF_PARAMETER_NAME_ATTRIBUTE,
                     csrfToken.getParameterName());
         });
     }
 
-    private static void addMetaTagToHead(Element head, String name, String value) {
+    private static void addMetaTagToHead(Element head, String name,
+            String value) {
         Element meta = new Element(META_TAG);
         meta.attr(NAME_ATTRIBUTE, name);
         meta.attr(CONTENT_ATTRIBUTE, value);

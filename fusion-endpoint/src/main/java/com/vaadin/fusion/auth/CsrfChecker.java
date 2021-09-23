@@ -89,7 +89,8 @@ public class CsrfChecker {
         return true;
     }
 
-    private boolean compareCsrfTokens(String csrfTokenInCookie, String csrfTokenInRequest) {
+    private boolean compareCsrfTokens(String csrfTokenInCookie,
+            String csrfTokenInRequest) {
         return csrfTokenInRequest == null || !MessageDigest.isEqual(
                 csrfTokenInCookie.getBytes(StandardCharsets.UTF_8),
                 csrfTokenInRequest.getBytes(StandardCharsets.UTF_8));
@@ -100,9 +101,10 @@ public class CsrfChecker {
     }
 
     String getCsrfTokenInCookie(HttpServletRequest request) {
-        return Optional.ofNullable(request.getCookies())
-                .map(Arrays::stream).orElse(Stream.empty())
-                .filter(cookie -> cookie.getName().equals(VAADIN_CSRF_COOKIE_NAME))
+        return Optional.ofNullable(request.getCookies()).map(Arrays::stream)
+                .orElse(Stream.empty())
+                .filter(cookie -> cookie.getName()
+                        .equals(VAADIN_CSRF_COOKIE_NAME))
                 .findFirst().map(Cookie::getValue).orElse(null);
     }
 
