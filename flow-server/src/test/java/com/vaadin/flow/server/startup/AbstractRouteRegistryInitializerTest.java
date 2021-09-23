@@ -57,14 +57,15 @@ public class AbstractRouteRegistryInitializerTest {
 
     @Test(expected = InvalidRouteLayoutConfigurationException.class)
     public void routeAndParentLayout_notRouterLayout_throws() {
-        initializer.validateRouteClasses(Stream.of(RouteAndParentLayout.class));
+        initializer.validateRouteClasses(null,
+                Stream.of(RouteAndParentLayout.class));
 
     }
 
     @Test
     public void routeAndParentLayout_routerLayout_returnsValidatedClass() {
         Set<Class<? extends Component>> classes = initializer
-                .validateRouteClasses(
+                .validateRouteClasses(null,
                         Stream.of(RouteAndParentRouterLayout.class));
         Assert.assertEquals(1, classes.size());
         Assert.assertEquals(RouteAndParentRouterLayout.class,

@@ -38,6 +38,7 @@ import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.server.StaticFileHandlerFactory;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
@@ -57,7 +58,8 @@ import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
         EndpointGeneratorTaskFactory.class,
         ApplicationConfigurationFactory.class, AbstractLookupInitializer.class,
         AppShellPredicate.class, StaticFileHandlerFactory.class,
-        DevModeHandlerManager.class, BrowserLiveReloadAccessor.class })
+        DevModeHandlerManager.class, BrowserLiveReloadAccessor.class,
+        RoutePathProvider.class })
 public class LookupServletContainerInitializer
         implements ClassLoaderAwareServletContainerInitializer {
 

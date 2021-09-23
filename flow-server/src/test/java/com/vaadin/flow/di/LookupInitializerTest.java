@@ -46,6 +46,8 @@ import com.vaadin.flow.di.LookupInitializer.AppShellPredicateImpl;
 import com.vaadin.flow.di.LookupInitializer.ResourceProviderImpl;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
+import com.vaadin.flow.router.DefaultRoutePathProvider;
+import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.server.StaticFileHandler;
 import com.vaadin.flow.server.StaticFileHandlerFactory;
 import com.vaadin.flow.server.StaticFileServer;
@@ -181,6 +183,32 @@ public class LookupInitializerTest {
         Assert.assertEquals(1, collection.size());
         Class<?> clazz = collection.iterator().next();
         Assert.assertEquals(ResourceProviderImpl.class, clazz);
+    }
+
+    @Test
+    public void ensureRoutePathResolver_defaultImplClassIsStoredAsAService() {
+        HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
+        initializer.ensureService(map, RoutePathProvider.class,
+                DefaultRoutePathProvider.class);
+
+        Collection<Class<?>> collection = map.get(RoutePathProvider.class);
+        Assert.assertEquals(1, collection.size());
+        Class<?> clazz = collection.iterator().next();
+        Assert.assertEquals(DefaultRoutePathProvider.class, clazz);
+    }
+
+    @Test
+    public void ensureRoutePathResolver_defaultImplClassIsProvided_defaultImplIsStoredAsAService() {
+        HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
+        map.put(RoutePathProvider.class,
+                Collections.singletonList(DefaultRoutePathProvider.class));
+        initializer.ensureService(map, RoutePathProvider.class,
+                DefaultRoutePathProvider.class);
+
+        Collection<Class<?>> collection = map.get(RoutePathProvider.class);
+        Assert.assertEquals(1, collection.size());
+        Class<?> clazz = collection.iterator().next();
+        Assert.assertEquals(DefaultRoutePathProvider.class, clazz);
     }
 
     @Test

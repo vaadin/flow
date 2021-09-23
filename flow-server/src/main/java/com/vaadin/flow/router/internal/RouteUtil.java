@@ -30,10 +30,12 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.RouteRegistry;
@@ -282,7 +284,10 @@ public class RouteUtil {
      *            the annotation
      * @return The value of the annotation or naming convention based value if
      *         no explicit value is given.
+     * @deprecated Use {@link RoutePathProvider}
+     *             {@link DefaultRoutePathProvider} instead
      */
+    @Deprecated
     public static String resolve(Class<?> component, Route route) {
         if (route.value().length == 0) {
             String simpleName = component.getSimpleName();

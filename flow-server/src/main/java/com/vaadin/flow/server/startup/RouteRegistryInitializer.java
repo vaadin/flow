@@ -58,7 +58,7 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
                     .getInstance(context);
 
             Set<Class<? extends Component>> routes = validateRouteClasses(
-                    routesSet.stream());
+                    context, routesSet.stream());
 
             routeRegistry.update(() -> {
                 if (removePreviousRoutes(context, routeRegistry)) {
@@ -67,7 +67,7 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
 
                 configureRoutes(routes, routeRegistry);
             });
-            routeRegistry.setPwaConfigurationClass(validatePwaClass(
+            routeRegistry.setPwaConfigurationClass(validatePwaClass(context,
                     routes.stream().map(clazz -> (Class<?>) clazz)));
         } catch (InvalidRouteConfigurationException irce) {
             throw new VaadinInitializerException(
