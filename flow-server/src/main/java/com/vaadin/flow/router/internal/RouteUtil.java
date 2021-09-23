@@ -273,7 +273,7 @@ public class RouteUtil {
      *         no explicit value is given.
      */
     public static String resolve(Class<?> component, Route route) {
-        if (route.value().equals(Route.NAMING_CONVENTION)) {
+        if (route.value().length == 0) {
             String simpleName = component.getSimpleName();
             if ("MainView".equals(simpleName) || "Main".equals(simpleName)) {
                 return "";
@@ -285,7 +285,7 @@ public class RouteUtil {
             }
             return simpleName.toLowerCase();
         }
-        return route.value();
+        return route.value()[0];
     }
 
     /**

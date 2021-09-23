@@ -157,9 +157,6 @@ final class FrontendClassVisitor extends ClassVisitor {
                     endPoint.layout = ((Type) value).getClassName();
                     children.add(endPoint.layout);
                 }
-                if (VALUE.equals(name)) {
-                    endPoint.route = value.toString();
-                }
             }
         };
         // Visitor for @Theme annotations in classes annotated with @Route
