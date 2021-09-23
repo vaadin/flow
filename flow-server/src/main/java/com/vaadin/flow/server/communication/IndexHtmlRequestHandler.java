@@ -34,8 +34,8 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
-import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
+import com.vaadin.flow.internal.springcsrf.SpringCsrfTokenUtil;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
@@ -62,17 +62,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * For internal use only. May be renamed or removed in a future release.
  */
 public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
-
-    private static final String CONTENT_ATTRIBUTE = "content";
-    private static final String NAME_ATTRIBUTE = "name";
-    private static final String SPRING_CSRF_TOKEN_ATTRIBUTE_IN_SESSION = "org.springframework.security.web.csrf.CsrfToken";
-    private static final String SPRING_CSRF_HEADER_PROPERTY = "headerName";
-    private static final String SPRING_CSRF_PARAMETER_PROPERTY = "parameterName";
-    private static final String SPRING_CSRF_TOKEN_PROPERTY = "token";
-    private static final String SPRING_CSRF_PARAMETER_NAME_ATTRIBUTE = "_csrf_parameter";
-    private static final String SPRING_CSRF_HEADER_NAME_ATTRIBUTE = "_csrf_header";
-    private static final String SPRING_CSRF_TOKEN_ATTRIBUTE = "_csrf";
-    private static final String META_TAG = "meta";
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -184,45 +173,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private void addInitialFlow(JsonObject initialJson, Document indexDocument,
             VaadinRequest request) {
-        Object springCsrfToken = request
-                .getAttribute(SPRING_CSRF_TOKEN_ATTRIBUTE_IN_SESSION);
-        if (springCsrfToken != null) {
-            JsonObject springCsrfTokenJson = JsonUtils
-                    .beanToJson(springCsrfToken);
-            if (springCsrfTokenJson != null
-                    && springCsrfTokenJson.hasKey(SPRING_CSRF_TOKEN_PROPERTY)
-                    && springCsrfTokenJson
-                            .hasKey(SPRING_CSRF_HEADER_PROPERTY)) {
-                String springCsrfTokenString = springCsrfTokenJson
-                        .getString(SPRING_CSRF_TOKEN_PROPERTY);
-                String springCsrfTokenHeaderName = springCsrfTokenJson
-                        .getString(SPRING_CSRF_HEADER_PROPERTY);
-                String springCsrfTokenParameterName = springCsrfTokenJson
-                        .getString(SPRING_CSRF_PARAMETER_PROPERTY);
-
-                addMetaTagToHead(indexDocument.head(),
-                        SPRING_CSRF_TOKEN_ATTRIBUTE, springCsrfTokenString);
-                addMetaTagToHead(indexDocument.head(),
-                        SPRING_CSRF_HEADER_NAME_ATTRIBUTE,
-                        springCsrfTokenHeaderName);
-                addMetaTagToHead(indexDocument.head(),
-                        SPRING_CSRF_PARAMETER_NAME_ATTRIBUTE,
-                        springCsrfTokenParameterName);
-            }
-        }
-
+        SpringCsrfTokenUtil.addTokenAsMetaTagsToHeadIfPresentInRequest(indexDocument.head(), request);
         Element elm = new Element("script");
         elm.attr("initial", "");
         elm.appendChild(new DataNode("window.Vaadin = {TypeScript: "
                 + JsonUtil.stringify(initialJson) + "};"));
         indexDocument.head().insertChildren(0, elm);
-    }
-
-    private void addMetaTagToHead(Element head, String name, String value) {
-        Element meta = new Element(META_TAG);
-        meta.attr(NAME_ATTRIBUTE, name);
-        meta.attr(CONTENT_ATTRIBUTE, value);
-        head.insertChildren(0, meta);
     }
 
     private void includeInitialUidl(JsonObject initialJson,
