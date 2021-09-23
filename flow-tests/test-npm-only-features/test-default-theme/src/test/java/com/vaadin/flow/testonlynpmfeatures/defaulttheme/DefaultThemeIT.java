@@ -38,8 +38,9 @@ public class DefaultThemeIT extends ChromeBrowserTest {
                 .flatMap(customStyle -> customStyle.$("style").all().stream())
                 .collect(Collectors.toList());
 
-        // 8 from Lumo and 1 custom-style from frontend/styles/styles.js
-        Assert.assertEquals("Should have found 9 custom-styles", 9,
+        // Lumo adds 5 style blocks that used to be custom styles so now we have
+        // 3 from Lumo and 1 custom-style from frontend/styles/styles.js
+        Assert.assertEquals("Should have found 9 custom-styles", 4,
                 customStyles.size());
     }
 
