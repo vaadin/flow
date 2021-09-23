@@ -289,6 +289,44 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    public void bindReadOnly_valueChangesIgnored_fieldIsReadOnly() {
+        binder.bindReadOnly(nameField, Person::getFirstName);
+        binder.setBean(item);
+        nameField.setValue("Artur");
+        assertEquals(item.getFirstName(), "Johannes");
+        Assert.assertTrue(nameField.isReadOnly());
+    }
+
+    @Test
+    public void bindReadOnly_proeprtyBinding_valueChangesIgnored_fieldIsReadOnly() {
+        binder = new Binder<>(Person.class);
+        binder.bindReadOnly(nameField, "firstName");
+        binder.setBean(item);
+        nameField.setValue("Artur");
+        assertEquals(item.getFirstName(), "Johannes");
+        Assert.assertTrue(nameField.isReadOnly());
+    }
+
+    @Test
+    public void bindBindingReadOnly_valueChangesIgnored_fieldIsReadOnly() {
+        binder.forField(nameField).bindReadOnly(Person::getFirstName);
+        binder.setBean(item);
+        nameField.setValue("Artur");
+        assertEquals(item.getFirstName(), "Johannes");
+        Assert.assertTrue(nameField.isReadOnly());
+    }
+
+    @Test
+    public void bindBindingReadOnly_proeprtyBinding_valueChangesIgnored_fieldIsReadOnly() {
+        binder = new Binder<>(Person.class);
+        binder.forField(nameField).bindReadOnly("firstName");
+        binder.setBean(item);
+        nameField.setValue("Artur");
+        assertEquals(item.getFirstName(), "Johannes");
+        Assert.assertTrue(nameField.isReadOnly());
+    }
+
+    @Test
     public void bound_bindToAnotherBean_stopsUpdatingOriginal() {
         bindName();
         nameField.setValue("Leif");
@@ -1645,6 +1683,22 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.setBean(bean);
 
         Assert.assertSame(val, bean.getVals());
+    }
+
+    @Test
+    public void setBean_readOnlyBindingMethod_propertyBinding_valueIsNotUpdated() {
+        Binder<ExampleBean> binder = new Binder<>(ExampleBean.class);
+
+        binder.forField(nameField).withNullRepresentation("")
+                .withConverter(new TestConverter()).bindReadOnly("vals");
+
+        ExampleBean bean = new ExampleBean();
+        SubPropClass val = new SubPropClass();
+        bean.setVals(val);
+        binder.setBean(bean);
+
+        Assert.assertSame(val, bean.getVals());
+        Assert.assertTrue(nameField.isReadOnly());
     }
 
     @Test
