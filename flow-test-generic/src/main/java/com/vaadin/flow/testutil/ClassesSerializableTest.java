@@ -146,6 +146,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.Key",
                 "com\\.vaadin\\.flow\\.server\\.VaadinRequest",
                 "com\\.vaadin\\.flow\\.server\\.DevServerWatchDog(\\$.*)?",
+                "com\\.vaadin\\.flow\\.router\\.DefaultRoutePathProvider",
+                "com\\.vaadin\\.flow\\.router\\.RoutePathProvider",
                 "com\\.vaadin\\.flow\\.router\\.RouteNotFoundError\\$LazyInit",
                 "com\\.vaadin\\.flow\\.router\\.internal\\.RouteSegment\\$RouteSegmentValue",
                 // De-facto abstract class
