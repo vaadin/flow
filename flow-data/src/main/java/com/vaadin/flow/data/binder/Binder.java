@@ -354,9 +354,7 @@ public class Binder<BEAN> implements Serializable {
          * the binding is read-only.
          * <p>
          * When a bean is bound with {@link Binder#setBean(Object)}, the field
-         * value is set to the return value of the given getter. The property
-         * value is then updated via the given setter whenever the field value
-         * changes.
+         * value is set to the return value of the given getter.
          * <p>
          * If the Binder is already bound to some bean, the newly bound field is
          * associated with the corresponding bean property as described above.
