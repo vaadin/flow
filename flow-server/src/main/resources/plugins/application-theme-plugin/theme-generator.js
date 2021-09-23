@@ -192,6 +192,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
     lumoImports.forEach((lumoImport) => {
       lumoCssCode.push(`addStyleInclude("lumo-${lumoImport}", target);\n`);
     });
+    lumoCssCode.push('if(window.ShadyCSS) { window.ShadyCSS.CustomStyleInterface.processStyles(); }');
     lumoCssCode.push(`document['${lumoCssFlag}'] = true;\n`);
     lumoCssCode.push(`}\n`);
   }
