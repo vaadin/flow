@@ -29,7 +29,7 @@ public interface RoutePathProvider {
     /**
      * Produces a path for the {@code navigationTarget} component class.
      * 
-     * @param component
+     * @param navigationTarget
      *            a navigation target class
      * @return a route path for the navigation target, may be {@code null} if
      *         the provided class is not a navigation target
