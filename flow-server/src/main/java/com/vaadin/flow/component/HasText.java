@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.Locale;
+import java.util.Objects;
+import java.util.stream.Stream;
+
 /**
  * A component that supports text content.
  * <p>
@@ -27,6 +31,21 @@ package com.vaadin.flow.component;
  * @since 1.0
  */
 public interface HasText extends HasElement {
+
+    enum WhiteSpace {
+        NORMAL, NOWRAP, PRE, PRE_WRAP, PRE_LINE, BREAK_SPACES, INHERIT, INITIAL;
+
+        @Override
+        public String toString() {
+            return name().toLowerCase(Locale.ENGLISH).replace('_', '-');
+        }
+
+        public static WhiteSpace forString(String value) {
+            return Stream.of(values())
+                    .filter(whiteSpace -> whiteSpace.toString().equals(value))
+                    .findFirst().orElse(null);
+        }
+    }
 
     /**
      * Sets the given string as the content of this component. This removes any
@@ -51,5 +70,33 @@ public interface HasText extends HasElement {
      */
     default String getText() {
         return getElement().getText();
+    }
+
+    /**
+     * Sets the given {@code value} as {@code "white-space"} style value.
+     * 
+     * @param value
+     *            the {@code "white-space"} style value, not {@code null}
+     */
+    default void setWhiteSpace(WhiteSpace value) {
+        getElement().getStyle().set("white-space",
+                Objects.requireNonNull(value).toString());
+    }
+
+    /**
+     * Gets the {@code "white-space"} style value.
+     * <p>
+     * The default value is {@literal WhiteSpace#NORMAL}. If the
+     * {@code "white-space"} style value is non standard then {@code null} is
+     * returned.
+     * 
+     * @return the {@code "white-space"} style value, may be {@code null}
+     */
+    default WhiteSpace getWhiteSpace() {
+        String value = getElement().getStyle().get("white-space");
+        if (value == null) {
+            return WhiteSpace.NORMAL;
+        }
+        return WhiteSpace.forString(value);
     }
 }
