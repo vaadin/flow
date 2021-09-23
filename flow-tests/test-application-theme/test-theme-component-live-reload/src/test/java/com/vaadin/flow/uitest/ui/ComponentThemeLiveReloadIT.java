@@ -161,6 +161,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
 
     private boolean isComponentCustomStyle(String borderRadius) {
         try {
+            waitForElementPresent(By.id(THEMED_COMPONENT_ID));
             TestBenchElement themedTextField = $(TestBenchElement.class)
                     .id(THEMED_COMPONENT_ID);
             TestBenchElement input = themedTextField.$(DivElement.class)
