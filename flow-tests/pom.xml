@@ -319,7 +319,6 @@
                 <module>test-memory-leaks</module>
                 <module>test-servlet</module>
                 <module>test-themes</module>
-                <module>test-theme-no-polymer</module>
                 <module>servlet-containers</module>
 
                 <!-- web component embedding -->
@@ -348,6 +347,7 @@
                 <!-- move theme tests to the end, because theme switch live reload-->
                 <!-- test impacts startup test-->
                 <module>test-application-theme</module>
+                <module>test-theme-no-polymer</module>
             </modules>
         </profile>
         <profile>
