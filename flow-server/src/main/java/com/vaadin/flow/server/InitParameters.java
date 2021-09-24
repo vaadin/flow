@@ -165,6 +165,14 @@ public class InitParameters implements Serializable {
     public static final String REQUIRE_HOME_NODE_EXECUTABLE = "require.home.node";
 
     /**
+     * Configuration parameter name for requiring node executable installed in
+     * home directory.
+     *
+     * @since
+     */
+    public static final String NODE_AUTO_UPDATE = "node.auto.update";
+
+    /**
      * Configuration name for the parameter that sets the compiled web
      * components path. The path should be the same as
      * {@code webComponentOutputDirectoryName} in the maven plugin that

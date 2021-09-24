@@ -58,6 +58,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
@@ -655,9 +656,19 @@ public final class DevModeHandlerImpl
 
         boolean useHomeNodeExec = config.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
-        FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
-                useHomeNodeExec);
+        boolean nodeAutoUpdate = config
+                .getBooleanProperty(InitParameters.NODE_AUTO_UPDATE, false);
+        boolean useGlobalPnpm = config.getBooleanProperty(
+                InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, false);
+
+        FrontendToolsSettings settings = new FrontendToolsSettings(
+                npmFolder.getAbsolutePath(),
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+        settings.setForceAlternativeNode(useHomeNodeExec);
+        settings.setAutoUpdate(nodeAutoUpdate);
+        settings.setUseGlobalPnpm(useGlobalPnpm);
+
+        FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
 
         String nodeExec = null;

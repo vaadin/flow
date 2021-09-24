@@ -140,6 +140,8 @@ public class NodeTasks implements FallibleCommand {
         private URI nodeDownloadRoot = URI
                 .create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
 
+        private boolean nodeAutoUpdate = false;
+
         private Lookup lookup;
 
         /**
@@ -542,6 +544,19 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
+         * Sets whether it is fine to automatically update the alternate node
+         * installation if installed version is older than the current default.
+         *
+         * @param update
+         *            true to update alternate node when used
+         * @return the builder
+         */
+        public Builder setNodeAutoUpdate(boolean update) {
+            this.nodeAutoUpdate = update;
+            return this;
+        }
+
+        /**
          * Get the npm folder used for this build.
          *
          * @return npmFolder
@@ -625,7 +640,7 @@ public class NodeTasks implements FallibleCommand {
                 commands.add(new TaskRunNpmInstall(classFinder, packageUpdater,
                         builder.enablePnpm, builder.requireHomeNodeExec,
                         builder.nodeVersion, builder.nodeDownloadRoot,
-                        builder.useGlobalPnpm));
+                        builder.useGlobalPnpm, builder.nodeAutoUpdate));
 
                 commands.add(new TaskInstallWebpackPlugins(
                         new File(builder.npmFolder, builder.buildDirectory)));
