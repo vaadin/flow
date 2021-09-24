@@ -411,10 +411,10 @@ public class RouteUtil {
     /**
      * Gets the effective route path value of the annotated class.
      *
+     * @param context
+     *            a Vaadin contexxt
      * @param component
      *            the component where the route points to
-     * @param route
-     *            the annotation
      * @return The value of the annotation or naming convention based value if
      *         no explicit value is given.
      */
