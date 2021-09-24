@@ -20,3 +20,4 @@ The `master` branch is the latest version (9.0) that targets the [Vaadin platfor
 |  2.7   |  14.7.x (LTS)                                                   |  2.7.x                                                  |
 |  8.0   |  21.0.x (LATEST)                                                |  8.x                                                    |
 |  master|  22.0.x (PRERELEASE)                                            |  9.x                                                    |
+
