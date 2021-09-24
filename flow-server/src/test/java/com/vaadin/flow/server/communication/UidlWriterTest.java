@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -36,15 +37,19 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.BootstrapHandlerTest;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.MockVaadinContext.RoutePathProviderImpl;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -303,6 +308,12 @@ public class UidlWriterTest {
 
     private UI initializeUIForDependenciesTest(UI ui) throws Exception {
         mocks = new MockServletServiceSessionSetup();
+
+        VaadinServletContext context = (VaadinServletContext) mocks.getService()
+                .getContext();
+        Lookup lookup = context.getAttribute(Lookup.class);
+        Mockito.when(lookup.lookup(RoutePathProvider.class))
+                .thenReturn(new RoutePathProviderImpl());
 
         VaadinSession session = mocks.getSession();
         session.lock();

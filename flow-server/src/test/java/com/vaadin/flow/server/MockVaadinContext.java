@@ -27,7 +27,7 @@ public class MockVaadinContext extends VaadinServletContext {
 
     private Lookup lookup = Mockito.mock(Lookup.class);
 
-    private static class RoutePathProviderImpl implements RoutePathProvider {
+    public static class RoutePathProviderImpl implements RoutePathProvider {
 
         @Override
         public String getRoutePath(Class<?> navigationTarget) {
