@@ -52,10 +52,13 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
 
     private final ArrayList<NavigationTargetFilter> routeFilters = new ArrayList<>();
 
+    private final VaadinContext context;
+
     /**
      * Creates a new uninitialized route registry.
      */
-    protected ApplicationRouteRegistry() {
+    protected ApplicationRouteRegistry(VaadinContext context) {
+        this.context = context;
         ServiceLoader.load(NavigationTargetFilter.class)
                 .forEach(routeFilters::add);
     }
@@ -206,6 +209,11 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
         }
     }
 
+    @Override
+    public VaadinContext getContext() {
+        return context;
+    }
+
     /**
      * Handles an attempt to initialize already initialized route registry.
      */
@@ -227,6 +235,6 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
 
     private static ApplicationRouteRegistry createRegistry(
             VaadinContext context) {
-        return new ApplicationRouteRegistry();
+        return new ApplicationRouteRegistry(context);
     }
 }

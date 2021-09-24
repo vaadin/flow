@@ -46,6 +46,10 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
     private static class PreviouslyStoredRoutesRegistry
             extends ApplicationRouteRegistry {
 
+        private PreviouslyStoredRoutesRegistry(VaadinContext context) {
+            super(context);
+        }
+
     }
 
     @Override
@@ -78,7 +82,8 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
 
     private void configureStaticRoutesRegistry(VaadinContext context,
             Set<Class<? extends Component>> routes) {
-        PreviouslyStoredRoutesRegistry registry = new PreviouslyStoredRoutesRegistry();
+        PreviouslyStoredRoutesRegistry registry = new PreviouslyStoredRoutesRegistry(
+                context);
 
         configureRoutes(routes, registry);
         context.setAttribute(registry);

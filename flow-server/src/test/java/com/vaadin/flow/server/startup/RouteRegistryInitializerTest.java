@@ -73,7 +73,9 @@ import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
+import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.PageConfigurator;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 
 /**
@@ -1604,6 +1606,10 @@ public class RouteRegistryInitializerTest {
         boolean cleanCalled;
 
         boolean removeCalled;
+
+        TestApplicationRouteRegistry() {
+            super(new MockVaadinContext());
+        }
 
         @Override
         public void clean() {

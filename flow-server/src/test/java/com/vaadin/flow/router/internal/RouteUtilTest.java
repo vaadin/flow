@@ -29,7 +29,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 /**
@@ -474,7 +476,12 @@ public class RouteUtilTest {
         @Route("a")
         class A extends Component {
         }
-        MockVaadinServletService service = new MockVaadinServletService();
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(service.getContext());
 
@@ -514,7 +521,12 @@ public class RouteUtilTest {
         @Route("aa")
         class A extends Component {
         }
-        MockVaadinServletService service = new MockVaadinServletService();
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(service.getContext());
         registry.setRoute("a", A.class, Collections.emptyList());

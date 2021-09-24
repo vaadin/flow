@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 /**
@@ -28,6 +29,10 @@ public class TestRouteRegistry extends ApplicationRouteRegistry {
      * Creates a new test route registry.
      */
     public TestRouteRegistry() {
-        super();
+        super(new MockVaadinContext(new DefaultRoutePathProvider()));
+    }
+
+    public TestRouteRegistry(RoutePathProvider provider) {
+        super(new MockVaadinContext(provider));
     }
 }
