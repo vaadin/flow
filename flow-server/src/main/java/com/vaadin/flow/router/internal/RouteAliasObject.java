@@ -15,20 +15,38 @@
  */
 package com.vaadin.flow.router.internal;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
 
 /**
+ * A data transfer object to keep information the same as {@link RouteAlias}
+ * contains using plain Java object.
+ * 
  * @author Vaadin Ltd
  * @since
+ * 
+ * @see RouteAlias
  *
  */
-public class RouteAliasObject {
+public class RouteAliasObject implements Serializable {
 
     private final String alias;
     private final Class<? extends RouterLayout> layout;
     private final boolean absolute;
 
+    /**
+     * Creates a new instance using {@code alias} path, parent {@code layout}
+     * and {@code absolute} calue.
+     * 
+     * @param alias
+     *            a path
+     * @param layout
+     *            a parent layout
+     * @param absolute
+     *            whether the alias path us absolute
+     */
     public RouteAliasObject(String alias, Class<? extends RouterLayout> layout,
             boolean absolute) {
         this.alias = alias;
@@ -36,18 +54,39 @@ public class RouteAliasObject {
         this.absolute = absolute;
     }
 
+    /**
+     * Creates a new instance with data based on provided {@code routeAlias}
+     * 
+     * @param routeAlias
+     *            a route alias annotation
+     */
     public RouteAliasObject(RouteAlias routeAlias) {
         this(routeAlias.value(), routeAlias.layout(), routeAlias.absolute());
     }
 
+    /**
+     * Gets the alias path.
+     * 
+     * @return the alias path
+     */
     public String getAlias() {
         return alias;
     }
 
+    /**
+     * Gets the parent router layout.
+     * 
+     * @return the router layout
+     */
     public Class<? extends RouterLayout> getLayout() {
         return layout;
     }
 
+    /**
+     * Gets whether the alias path is absolute.
+     * 
+     * @return whether the alias path is absolute
+     */
     public boolean isAbsolute() {
         return absolute;
     }

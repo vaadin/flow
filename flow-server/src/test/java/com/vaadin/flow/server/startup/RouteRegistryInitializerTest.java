@@ -1254,36 +1254,41 @@ public class RouteRegistryInitializerTest {
                 registeredRoutes.size());
 
         RouteData routeData = registeredRoutes.get(0);
-        Assert.assertEquals("Not all registered routes were returned", 5,
+        Assert.assertEquals("Not all registered routes were returned", 6,
                 routeData.getRouteAliases().size());
 
         List<RouteAliasData> routeAliases = routeData.getRouteAliases();
 
         Assert.assertEquals("Sort order was not the one expected",
                 "absolute/alias2", routeAliases.get(0).getTemplate());
+        Assert.assertEquals("Sort order was not the one expected",
+                "absolute/routeAlias", routeAliases.get(1).getTemplate());
         Assert.assertEquals("Sort order was not the one expected", "alias3",
-                routeAliases.get(1).getTemplate());
-        Assert.assertEquals("Sort order was not the one expected", "alias4",
                 routeAliases.get(2).getTemplate());
+        Assert.assertEquals("Sort order was not the one expected", "alias4",
+                routeAliases.get(3).getTemplate());
         Assert.assertEquals("Sort order was not the one expected",
-                "parent/alias1", routeAliases.get(3).getTemplate());
+                "parent/alias1", routeAliases.get(4).getTemplate());
         Assert.assertEquals("Sort order was not the one expected",
-                "parent/middle/alias5", routeAliases.get(4).getTemplate());
+                "parent/middle/alias5", routeAliases.get(5).getTemplate());
 
         Assert.assertEquals("Sort order was not the one expected",
                 AbsoluteMiddleParent.class,
                 routeAliases.get(0).getParentLayout());
         Assert.assertEquals("Sort order was not the one expected",
-                ParentWithRoutePrefix.class,
+                AbsoluteMiddleParent.class,
                 routeAliases.get(1).getParentLayout());
         Assert.assertEquals("Sort order was not the one expected",
+                ParentWithRoutePrefix.class,
+                routeAliases.get(2).getParentLayout());
+        Assert.assertEquals("Sort order was not the one expected",
                 Collections.emptyList(),
-                routeAliases.get(2).getParentLayouts());
+                routeAliases.get(3).getParentLayouts());
         Assert.assertEquals("Sort order was not the one expected",
                 ParentWithRoutePrefix.class,
-                routeAliases.get(3).getParentLayout());
+                routeAliases.get(4).getParentLayout());
         Assert.assertEquals("Sort order was not the one expected",
-                MiddleParent.class, routeAliases.get(4).getParentLayout());
+                MiddleParent.class, routeAliases.get(5).getParentLayout());
     }
 
     @Route("ignored")
