@@ -21,12 +21,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.PathUtil;
+import com.vaadin.flow.router.internal.RouteAliasObject;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
@@ -229,17 +231,26 @@ public class RouteConfiguration implements Serializable {
                     navigationTarget.getName());
             throw new InvalidRouteConfigurationException(message);
         }
+        Route routeAnnotation = navigationTarget.getAnnotation(Route.class);
+
         String route = RouteUtil.getRoutePath(navigationTarget,
-                navigationTarget.getAnnotation(Route.class));
+                routeAnnotation);
         handledRegistry.setRoute(route, navigationTarget,
                 RouteUtil.getParentLayouts(navigationTarget, route));
 
-        for (RouteAlias alias : navigationTarget
-                .getAnnotationsByType(RouteAlias.class)) {
+        String[] value = routeAnnotation.value();
+        Stream<RouteAliasObject> aliases = Stream.of(value).skip(1)
+                .map(path -> new RouteAliasObject(path,
+                        routeAnnotation.layout(), routeAnnotation.absolute()));
+        aliases = Stream.concat(aliases,
+                Stream.of(
+                        navigationTarget.getAnnotationsByType(RouteAlias.class))
+                        .map(RouteAliasObject::new));
+        aliases.forEach(alias -> {
             String path = RouteUtil.getRouteAliasPath(navigationTarget, alias);
             handledRegistry.setRoute(path, navigationTarget,
                     RouteUtil.getParentLayouts(navigationTarget, path));
-        }
+        });
     }
 
     /**

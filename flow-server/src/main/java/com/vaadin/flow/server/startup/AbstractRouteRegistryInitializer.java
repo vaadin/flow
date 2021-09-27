@@ -33,6 +33,7 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.RouteAliasObject;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PWA;
@@ -117,10 +118,21 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
         /* Validate PageConfigurator usage */
         validateRouteImplementation(route, PageConfigurator.class);
 
-        for (RouteAlias alias : route.getAnnotationsByType(RouteAlias.class)) {
-            validateRouteAliasImplementation(route, alias,
-                    PageConfigurator.class);
+        Stream<RouteAliasObject> aliases = Stream.empty();
+
+        Route routeAnnotation = route.getAnnotation(Route.class);
+        if (routeAnnotation != null) {
+            aliases = Stream.of(routeAnnotation.value()).skip(1)
+                    .map(path -> new RouteAliasObject(path,
+                            routeAnnotation.layout(),
+                            routeAnnotation.absolute()));
         }
+        aliases = Stream.concat(aliases,
+                Stream.of(route.getAnnotationsByType(RouteAlias.class))
+                        .map(RouteAliasObject::new));
+
+        aliases.forEach(alias -> validateRouteAliasImplementation(route, alias,
+                PageConfigurator.class));
     }
 
     private Stream<Class<?>> getValidationAnnotations() {
@@ -159,21 +171,21 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
     }
 
     private void validateRouteAliasImplementation(Class<?> route,
-            RouteAlias alias, Class<?> implementation) {
-        if (!UI.class.equals(alias.layout())) {
+            RouteAliasObject alias, Class<?> implementation) {
+        if (!UI.class.equals(alias.getLayout())) {
             if (PageConfigurator.class.isAssignableFrom(route)) {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("%s needs to be the top parent layout '%s' not '%s'",
                                 implementation.getSimpleName(),
                                 RouteUtil.getTopParentLayout(route,
-                                        alias.value()).getName(),
+                                        alias.getAlias()).getName(),
                                 route.getName()));
             }
 
             List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
-                    .getParentLayouts(route, alias.value());
+                    .getParentLayouts(route, alias.getAlias());
             Class<? extends RouterLayout> topParentLayout = RouteUtil
-                    .getTopParentLayout(route, alias.value());
+                    .getTopParentLayout(route, alias.getAlias());
 
             validateParentImplementation(parentLayouts, topParentLayout,
                     implementation);

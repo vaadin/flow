@@ -67,6 +67,7 @@ public class RouteUtil {
 
         Optional<Route> route = AnnotationReader.getAnnotationFor(component,
                 Route.class);
+
         List<RouteAlias> routeAliases = AnnotationReader
                 .getAnnotationsFor(component, RouteAlias.class);
         if (route.isPresent()
@@ -74,12 +75,20 @@ public class RouteUtil {
                 && !route.get().layout().equals(UI.class)) {
             list.addAll(collectRouteParentLayouts(route.get().layout()));
         } else {
+            Stream<RouteAliasObject> aliases = route.isPresent() ? Stream
+                    .of(route.get().value()).skip(1)
+                    .map(routePath -> new RouteAliasObject(routePath,
+                            route.get().layout(), route.get().absolute()))
+                    : Stream.empty();
 
-            Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
-                    component, path, routeAliases);
+            aliases = Stream.concat(aliases,
+                    routeAliases.stream().map(RouteAliasObject::new));
+
+            Optional<RouteAliasObject> matchingRoute = getMatchingRouteAlias(
+                    component, path, aliases);
             if (matchingRoute.isPresent()) {
                 list.addAll(collectRouteParentLayouts(
-                        matchingRoute.get().layout()));
+                        matchingRoute.get().getLayout()));
             }
         }
 
@@ -117,11 +126,26 @@ public class RouteUtil {
      */
     public static String getRouteAliasPath(Class<?> component,
             RouteAlias alias) {
-        if (alias.absolute()) {
-            return alias.value();
+        return getRouteAliasPath(component, new RouteAliasObject(alias));
+    }
+
+    /**
+     * Get the actual route path including all parent layout
+     * {@link RoutePrefix}.
+     *
+     * @param component
+     *            navigation target component to get route path for
+     * @param alias
+     *            route alias data
+     * @return actual path for given route alias target
+     */
+    public static String getRouteAliasPath(Class<?> component,
+            RouteAliasObject alias) {
+        if (alias.isAbsolute()) {
+            return alias.getAlias();
         }
         List<String> parentRoutePrefixes = getRoutePrefixes(component,
-                alias.layout(), alias.value());
+                alias.getLayout(), alias.getAlias());
         return parentRoutePrefixes.stream().collect(Collectors.joining("/"));
     }
 
@@ -164,11 +188,11 @@ public class RouteUtil {
         return list;
     }
 
-    static Optional<RouteAlias> getMatchingRouteAlias(Class<?> component,
-            String path, List<RouteAlias> routeAliases) {
-        return routeAliases.stream().filter(
+    static Optional<RouteAliasObject> getMatchingRouteAlias(Class<?> component,
+            String path, Stream<RouteAliasObject> routeAliases) {
+        return routeAliases.filter(
                 alias -> path.equals(getRouteAliasPath(component, alias))
-                        && !alias.layout().equals(UI.class))
+                        && !alias.getLayout().equals(UI.class))
                 .findFirst();
     }
 
@@ -241,10 +265,19 @@ public class RouteUtil {
                 && !route.get().layout().equals(UI.class)) {
             return recurseToTopLayout(route.get().layout());
         } else {
-            Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
-                    component, path, routeAliases);
+            Stream<RouteAliasObject> aliases = route.isPresent() ? Stream
+                    .of(route.get().value()).skip(1)
+                    .map(routePath -> new RouteAliasObject(routePath,
+                            route.get().layout(), route.get().absolute()))
+                    : Stream.empty();
+
+            aliases = Stream.concat(aliases,
+                    routeAliases.stream().map(RouteAliasObject::new));
+
+            Optional<RouteAliasObject> matchingRoute = getMatchingRouteAlias(
+                    component, path, aliases);
             if (matchingRoute.isPresent()) {
-                return recurseToTopLayout(matchingRoute.get().layout());
+                return recurseToTopLayout(matchingRoute.get().getLayout());
             }
         }
 

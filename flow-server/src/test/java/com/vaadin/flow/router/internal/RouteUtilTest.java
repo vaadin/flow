@@ -54,20 +54,20 @@ public class RouteUtilTest {
             implements RouterLayout {
     }
 
-    @Route(value = "", layout = RoutePrefixParent.class)
+    @Route(value = { "", "routeAlias" }, layout = RoutePrefixParent.class)
     @RouteAlias("alias")
     @Tag(Tag.DIV)
     public static class BaseRouteWithParentPrefixAndRouteAlias
             extends Component {
     }
 
-    @Route(value = "flow", layout = RoutePrefixParent.class)
+    @Route(value = { "flow", "routeAlias" }, layout = RoutePrefixParent.class)
     @RouteAlias("alias")
     @Tag(Tag.DIV)
     public static class RouteWithParentPrefixAndRouteAlias extends Component {
     }
 
-    @Route(value = "flow", layout = RoutePrefixParent.class)
+    @Route(value = { "flow", "routeAlias" }, layout = RoutePrefixParent.class)
     @RouteAlias(value = "alias", layout = RouteAliasPrefixParent.class)
     @Tag(Tag.DIV)
     public static class RouteAliasWithParentPrefix extends Component {
@@ -105,7 +105,7 @@ public class RouteUtilTest {
     public static class NonRouteTargetWithParents extends Component {
     }
 
-    @Route(value = "", layout = Parent.class)
+    @Route(value = { "", "routeAlias" }, layout = Parent.class)
     @RouteAlias(value = "alias", layout = MiddleParent.class)
     @Tag(Tag.DIV)
     @ParentLayout(RoutePrefixParent.class)
@@ -208,6 +208,14 @@ public class RouteUtilTest {
         Assert.assertNotNull("Didn't find any parent for route", parent);
         Assert.assertEquals("Received wrong parent class.",
                 RoutePrefixParent.class, parent);
+
+        parent = RouteUtil.getTopParentLayout(
+                BaseRouteWithParentPrefixAndRouteAlias.class,
+                "parent/routeAlias");
+
+        Assert.assertNotNull("Didn't find any parent for @Route alias", parent);
+        Assert.assertEquals("Received wrong parent class.",
+                RoutePrefixParent.class, parent);
     }
 
     @Test
@@ -216,6 +224,13 @@ public class RouteUtilTest {
                 RouteWithParentPrefixAndRouteAlias.class, "parent/flow");
 
         Assert.assertNotNull("Didn't find any parent for route", parent);
+        Assert.assertEquals("Received wrong parent class.",
+                RoutePrefixParent.class, parent);
+
+        parent = RouteUtil.getTopParentLayout(
+                RouteWithParentPrefixAndRouteAlias.class, "parent/routeAlias");
+
+        Assert.assertNotNull("Didn't find any parent for @Route alias", parent);
         Assert.assertEquals("Received wrong parent class.",
                 RoutePrefixParent.class, parent);
     }
@@ -237,6 +252,13 @@ public class RouteUtilTest {
         Assert.assertNotNull("Didn't find any parent for route", parent);
         Assert.assertEquals("Received wrong parent class.",
                 RouteAliasPrefixParent.class, parent);
+
+        parent = RouteUtil.getTopParentLayout(RouteAliasWithParentPrefix.class,
+                "parent/routeAlias");
+
+        Assert.assertNotNull("Didn't find any parent for @Route alias", parent);
+        Assert.assertEquals("Received wrong parent class.",
+                RoutePrefixParent.class, parent);
     }
 
     @Test
@@ -320,9 +342,17 @@ public class RouteUtilTest {
                         "aliasparent/alias");
 
         Assert.assertThat(
-                "Get parent layouts for route \"\" with parent prefix \"parent\" gave wrong result.",
+                "Get parent layouts for route \"alias\" with parent prefix \"aliasparent\" gave wrong result.",
                 parentLayouts, IsIterableContainingInOrder.contains(
                         new Class[] { RouteAliasPrefixParent.class }));
+
+        parentLayouts = RouteUtil.getParentLayouts(
+                RouteAliasWithParentPrefix.class, "parent/routeAlias");
+
+        Assert.assertThat(
+                "Get parent layouts for route \"routeAlias\" with parent prefix \"parent\" gave wrong result.",
+                parentLayouts, IsIterableContainingInOrder
+                        .contains(new Class[] { RoutePrefixParent.class }));
     }
 
     @Test
@@ -384,6 +414,12 @@ public class RouteUtilTest {
                 Parent.class, topParentLayout);
 
         topParentLayout = RouteUtil.getTopParentLayout(MultiTarget.class,
+                "routeAlias");
+        Assert.assertEquals(
+                "@Route alias path should have gotten Parent as top parent layout",
+                Parent.class, topParentLayout);
+
+        topParentLayout = RouteUtil.getTopParentLayout(MultiTarget.class,
                 "alias");
         Assert.assertEquals(
                 "@RouteAlias path should have gotten Parent as top parent layout",
@@ -407,10 +443,18 @@ public class RouteUtilTest {
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { Parent.class }));
 
+        parentLayouts = RouteUtil.getParentLayouts(MultiTarget.class,
+                "routeAlias");
+
+        Assert.assertThat(
+                "Get parent layouts for @Route alias \"routeAlias\" gave wrong result.",
+                parentLayouts, IsIterableContainingInOrder
+                        .contains(new Class[] { Parent.class }));
+
         parentLayouts = RouteUtil.getParentLayouts(MultiTarget.class, "alias");
 
         Assert.assertThat(
-                "Get parent layouts for routeAlias \"alias\" gave wrong result.",
+                "Get parent layouts for route alias \"alias\" gave wrong result.",
                 parentLayouts, IsIterableContainingInOrder.contains(
                         new Class[] { MiddleParent.class, Parent.class }));
 

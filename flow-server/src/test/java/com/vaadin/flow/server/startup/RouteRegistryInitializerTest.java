@@ -152,6 +152,15 @@ public class RouteRegistryInitializerTest {
                 servletContext);
     }
 
+    @Test(expected = ServletException.class)
+    public void process_duplicate_routesViaRouteAlias_throws()
+            throws ServletException {
+        routeRegistryInitializer.process(
+                Stream.of(NavigationTargetBar.class, NavigationTargetBar3.class)
+                        .collect(Collectors.toSet()),
+                servletContext);
+    }
+
     @Test
     public void routeRegistry_fails_for_multiple_registration_of_same_route() {
         expectedEx.expect(InvalidRouteConfigurationException.class);
@@ -255,6 +264,9 @@ public class RouteRegistryInitializerTest {
         Assert.assertTrue(url.isPresent());
 
         Assert.assertEquals("absolute/levels", url.get());
+
+        assertRouteTarget(MultiLevelRouteAlias.class, "absolute/routeAlias",
+                "RouteAlias 'routeAlias' was not registered correctly");
 
         assertRouteTarget(MultiLevelRouteAlias.class, "parent/alias1",
                 "RouteAlias 'alias1' was not registered correctly");
@@ -407,6 +419,10 @@ public class RouteRegistryInitializerTest {
     private static class NavigationTargetBar2 extends Component {
     }
 
+    @Route({ "bar2", "bar" })
+    private static class NavigationTargetBar3 extends Component {
+    }
+
     private static class RouteParentLayout extends Component
             implements RouterLayout {
     }
@@ -454,7 +470,8 @@ public class RouteRegistryInitializerTest {
     private static class MultiLevelRoute extends Component {
     }
 
-    @Route(value = "levels", layout = AbsoluteMiddleParent.class)
+    @Route(value = { "levels",
+            "routeAlias" }, layout = AbsoluteMiddleParent.class)
     @RouteAlias(value = "alias1", layout = ParentWithRoutePrefix.class)
     @RouteAlias(value = "alias2", layout = AbsoluteMiddleParent.class)
     @RouteAlias(value = "alias3", absolute = true, layout = ParentWithRoutePrefix.class)
@@ -595,7 +612,7 @@ public class RouteRegistryInitializerTest {
     public static class FailingAliasView extends Component {
     }
 
-    @Route("")
+    @Route({ "", "routeAlias" })
     @RouteAlias(value = "alias", layout = Parent.class)
     @Tag(Tag.DIV)
     public static class AliasView extends Component {
@@ -730,6 +747,11 @@ public class RouteRegistryInitializerTest {
     public static class BodyAliasView extends Component {
     }
 
+    @Route(value = { "", "alias" }, layout = BodyParent.class)
+    @Tag(Tag.DIV)
+    public static class BodyRouteAliasView extends Component {
+    }
+
     @Test
     public void process_wrong_position_body_size_view_layout_throws()
             throws ServletException {
@@ -798,6 +820,14 @@ public class RouteRegistryInitializerTest {
             throws ServletException {
         routeRegistryInitializer.process(
                 Stream.of(BodyAliasView.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void process_valid_body_size_routeAlias_does_not_throw()
+            throws ServletException {
+        routeRegistryInitializer.process(
+                Stream.of(BodyRouteAliasView.class).collect(Collectors.toSet()),
                 servletContext);
     }
 
