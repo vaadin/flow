@@ -161,10 +161,6 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        <repository>
-            <id>testing-atmosphere</id>
-            <url>https://oss.sonatype.org/content/repositories/comvaadin-4505</url>
-        </repository>
     </repositories>
 
     <pluginRepositories>
