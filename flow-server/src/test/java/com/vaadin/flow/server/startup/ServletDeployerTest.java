@@ -115,7 +115,7 @@ public class ServletDeployerTest {
     public void doNotRegisterAnythingIfRegistrationIsDisabled()
             throws Exception {
         disableAutomaticServletRegistration = true;
-        deployer.contextInitialized(getContextEvent(true, true,
+        deployer.contextInitialized(getContextEvent(
                 getServletRegistration("testServlet", TestServlet.class,
                         singletonList("/test/*"), Collections.emptyMap())));
 
