@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
@@ -22,12 +21,89 @@
 
     </dependencies>
 
+    <properties>
+        <pushDirectory>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/push</pushDirectory>
+        <vaadinPush.js>${pushDirectory}/vaadinPush.js</vaadinPush.js>
+        <vaadinPush-min.js>${pushDirectory}/vaadinPush-min.js</vaadinPush-min.js>
+    </properties>
+
     <build>
         <plugins>
+            <plugin>
+                <!-- Create minified vaadin push js-->
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>yuicompressor-maven-plugin</artifactId>
+                <version>1.5.1</version>
+                <executions>
+                    <execution>
+                        <id>minifyjs</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>compress</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <sourceDirectory>${pushDirectory}</sourceDirectory>
+                    <includes>
+                        <include>vaadinPush.js</include>
+                    </includes>
+                    <outputDirectory>${pushDirectory}</outputDirectory>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>unpack-atmosphere-js</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.atmosphere.client</groupId>
+                                    <artifactId>javascript</artifactId>
+                                    <version>${atmosphere.client.version}</version>
+                                    <type>war</type>
+                                    <outputDirectory>${project.build.directory}/temp</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>1.8</version>
                 <executions>
+                    <execution>
+                        <id>unpack-atmosphere-js</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <property name="javascript.unpack" location="${project.build.directory}/temp" />
+                                <property name="templates.dir" location="${project.build.sourceDirectory}/../templates" />
+
+                                <loadfile srcfile="${javascript.unpack}/javascript/atmosphere.js" property="atmosphere.js.contents" />
+
+                                <loadfile srcfile="${templates.dir}/vaadinPush.js.tpl" property="vaadinPush.js.contents">
+                                    <filterchain>
+                                        <replacetokens begintoken="@" endtoken="@">
+                                            <token key="atmosphere.js" value="${atmosphere.js.contents}" />
+                                        </replacetokens>
+                                    </filterchain>
+                                </loadfile>
+                                <echo file="${vaadinPush.js}">${vaadinPush.js.contents}</echo>
+                            </target>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>compresspush</id>
                         <phase>compile</phase>
@@ -36,17 +112,9 @@
                         </goals>
                         <configuration>
                             <target>
-                                <property name="vaadinPush.js"
-                                    location="${project.build.outputDirectory}/META-INF/resources/VAADIN/static/push/vaadinPush.js" />
-                                <property
-                                    name="vaadinPush-min.js"
-                                    location="${project.build.outputDirectory}/META-INF/resources/VAADIN/static/push/vaadinPush-min.js" />
-
                                 <!-- Gzipped versions -->
-                                <gzip src="${vaadinPush.js}"
-                                    destfile="${vaadinPush.js}.gz" />
-                                <gzip src="${vaadinPush-min.js}"
-                                    destfile="${vaadinPush-min.js}.gz" />
+                                <gzip src="${vaadinPush.js}" destfile="${vaadinPush.js}.gz" />
+                                <gzip src="${vaadinPush-min.js}" destfile="${vaadinPush-min.js}.gz" />
                             </target>
                         </configuration>
                     </execution>
