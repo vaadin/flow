@@ -349,6 +349,7 @@
                 <!-- move theme tests to the end, because theme switch live reload-->
                 <!-- test impacts startup test-->
                 <module>test-application-theme</module>
+                <module>test-theme-no-polymer</module>
             </modules>
         </profile>
         <profile>

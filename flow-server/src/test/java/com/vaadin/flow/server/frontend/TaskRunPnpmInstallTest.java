@@ -422,7 +422,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             "{"
                 + "\"vaadin\": {"
                   + "\"dependencies\": {"
-                    + "\"lit\": \"2.0.0-rc.4\","
+                    + "\"lit\": \"2.0.0\","
                     + "\"@vaadin/router\": \"1.7.4\","
                     + "\"@polymer/polymer\": \"3.2.0\","
                   + "},"
@@ -432,7 +432,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                   + "}"
                 + "},"
                 + "\"dependencies\": {"
-                  + "\"lit\": \"2.0.0-rc.4\","
+                  + "\"lit\": \"2.0.0\","
                   + "\"@vaadin/router\": \"1.7.4\","
                   + "\"@polymer/polymer\": \"3.2.0\","
                 + "},"
@@ -453,8 +453,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
                 generatedVersionsFile, StandardCharsets.UTF_8));
         Assert.assertEquals(
-                "{" + "\"lit\":\"2.0.0-rc.4\","
-                        + "\"@vaadin/router\":\"1.7.4\","
+                "{" + "\"lit\":\"2.0.0\"," + "\"@vaadin/router\":\"1.7.4\","
                         + "\"@polymer/polymer\":\"3.2.0\","
                         + "\"css-loader\":\"4.2.1\","
                         + "\"file-loader\":\"6.1.0\"" + "}",
