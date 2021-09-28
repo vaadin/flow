@@ -17,7 +17,6 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
@@ -34,7 +33,6 @@ import static com.vaadin.flow.uitest.ui.PushLongPollingWithPreserveOnRefreshView
 @Category(IgnoreOSGi.class)
 public class PushLongPollingWithPreserveOnRefreshIT extends ChromeBrowserTest {
 
-    @Ignore("https://github.com/vaadin/flow/issues/10103")
     @Test
     public void addDiv_refreshThePage_ensureNoErrorHappensAndDivIsPresent() {
 
