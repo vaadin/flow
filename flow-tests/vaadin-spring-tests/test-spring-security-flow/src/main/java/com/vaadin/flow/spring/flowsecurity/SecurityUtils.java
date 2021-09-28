@@ -22,6 +22,12 @@ public class SecurityUtils {
 
     public UserDetails getAuthenticatedUser() {
         SecurityContext context = SecurityContextHolder.getContext();
+        if (context == null) {
+            throw new IllegalStateException("No security context available");
+        }
+        if (context.getAuthentication() == null) {
+            return null;
+        }
         Object principal = context.getAuthentication().getPrincipal();
         if (principal instanceof UserDetails) {
             UserDetails userDetails = (UserDetails) context.getAuthentication()

@@ -3,22 +3,33 @@ package com.vaadin.flow.spring.flowsecurity.views;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.concurrent.Executor;
 
 import javax.annotation.security.PermitAll;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.spring.flowsecurity.SecurityUtils;
 import com.vaadin.flow.spring.flowsecurity.service.BankService;
+
+import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
 
 @Route(value = "private", layout = MainView.class)
 @PageTitle("Private View")
@@ -28,15 +39,27 @@ public class PrivateView extends VerticalLayout {
     private BankService bankService;
     private Span balanceSpan = new Span();
     private SecurityUtils utils;
+    private DelegatingSecurityContextExecutor executor;
+    private Registration registration;
 
-    public PrivateView(BankService bankService, SecurityUtils utils) {
+    public PrivateView(BankService bankService, SecurityUtils utils,
+            Executor executor) {
         this.bankService = bankService;
         this.utils = utils;
+        this.executor = new DelegatingSecurityContextExecutor(executor);
 
         updateBalanceText();
         balanceSpan.setId("balanceText");
         add(balanceSpan);
         add(new Button("Apply for a loan", this::applyForLoan));
+        add(new Button("Apply for a huge loan",
+                this::applyForHugeLoanUsingExecutor));
+
+        Button globalRefresh = new Button("Send global refresh event",
+                e -> Broadcaster.sendMessage());
+        globalRefresh.setId("sendRefresh");
+        add(globalRefresh);
+
         Upload upload = new Upload();
         ByteArrayOutputStream imageStream = new ByteArrayOutputStream();
         upload.setReceiver((filename, mimeType) -> {
@@ -57,16 +80,57 @@ public class PrivateView extends VerticalLayout {
         add(upload);
     }
 
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        attachEvent.getUI().setPollInterval(1000);
+        registration = Broadcaster.addMessageListener(e -> {
+            getUI().get().access(() -> this.updateBalanceText());
+        });
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
+        detachEvent.getUI().setPollInterval(-1);
+        registration.remove();
+    }
+
     private void updateBalanceText() {
         String name = utils.getAuthenticatedUserInfo().getFullName();
         BigDecimal balance = bankService.getBalance();
         this.balanceSpan.setText(String.format(
                 "Hello %s, your bank account balance is $%s.", name, balance));
-
     }
 
     private void applyForLoan(ClickEvent<Button> e) {
         bankService.applyForLoan();
         updateBalanceText();
+    }
+
+    private void applyForHugeLoanUsingExecutor(ClickEvent<Button> e) {
+        Dialog waitDialog = new Dialog();
+        waitDialog.add(new Text("Processing loan application..."));
+        waitDialog.open();
+        UI ui = getUI().get();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    bankService.applyForHugeLoan();
+                } catch (Exception e) {
+                    getUI().get().access(() -> {
+                        Notification
+                                .show("Application failed: " + e.getMessage());
+                    });
+
+                }
+                ui.access(() -> {
+                    updateBalanceText();
+                    waitDialog.close();
+                });
+            }
+        };
+        executor.execute(runnable);
     }
 }
