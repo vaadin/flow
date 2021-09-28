@@ -1,6 +1,8 @@
 package com.vaadin.experimental;
 
-public class Feature {
+import java.io.Serializable;
+
+public class Feature implements Serializable {
 
     private String title;
     private String id;

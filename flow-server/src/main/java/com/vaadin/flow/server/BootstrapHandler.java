@@ -649,7 +649,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             setupPwa(document, context);
 
             if (!config.isProductionMode()) {
-                showWebpackErrors(context.getService(), document);
+                showDevModeErrors(context.getService(), document);
             }
 
             BootstrapPageResponse response = new BootstrapPageResponse(
@@ -1528,7 +1528,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return pushJSPath;
     }
 
-    protected static void showWebpackErrors(VaadinService service,
+    protected static void showDevModeErrors(VaadinService service,
             Document document) {
         Optional<DevModeHandler> devServer = DevModeHandlerManager
                 .getDevModeHandler(service);

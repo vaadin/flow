@@ -62,7 +62,9 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.base.devserver.WebpackHandler;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.router.HasErrorParameter;
@@ -109,8 +111,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 
 /**
- * Servlet initializer starting node updaters as well as the webpack-dev-mode
- * server.
+ * Servlet initializer starting node updaters as well as the dev mode server.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -313,13 +314,21 @@ public class DevModeInitializer
         File generatedPackages = new File(builder.getGeneratedFolder(),
                 PACKAGE_JSON);
 
-        // Regenerate webpack configuration, as it may be necessary to update it
-        // TODO: make sure target directories are aligned with build config,
-        // see https://github.com/vaadin/flow/issues/9082
         File target = new File(baseDir, config.getBuildFolder());
-        builder.withWebpack(new File(target, VAADIN_WEBAPP_RESOURCES),
-                new File(target, VAADIN_SERVLET_RESOURCES),
-                FrontendUtils.WEBPACK_CONFIG, FrontendUtils.WEBPACK_GENERATED);
+        if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
+            // builder.withVite(new File(target, VAADIN_WEBAPP_RESOURCES),
+            // new File(target, VAADIN_SERVLET_RESOURCES),
+            // FrontendUtils.WEBPACK_CONFIG, FrontendUtils.WEBPACK_GENERATED);
+        } else {
+            // Regenerate webpack configuration, as it may be necessary to
+            // update it
+            // TODO: make sure target directories are aligned with build config,
+            // see https://github.com/vaadin/flow/issues/9082
+            builder.withWebpack(new File(target, VAADIN_WEBAPP_RESOURCES),
+                    new File(target, VAADIN_SERVLET_RESOURCES),
+                    FrontendUtils.WEBPACK_CONFIG,
+                    FrontendUtils.WEBPACK_GENERATED);
+        }
 
         builder.useV14Bootstrap(config.useV14Bootstrap());
 
@@ -393,10 +402,17 @@ public class DevModeInitializer
         CompletableFuture<Void> nodeTasksFuture = CompletableFuture
                 .runAsync(runnable);
 
-        WebpackHandler.start(
-                Lookup.compose(lookup,
-                        Lookup.of(config, ApplicationConfiguration.class)),
-                builder.getNpmFolder(), nodeTasksFuture);
+        if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
+            ViteHandler.start(
+                    Lookup.compose(lookup,
+                            Lookup.of(config, ApplicationConfiguration.class)),
+                    builder.getNpmFolder(), nodeTasksFuture);
+        } else {
+            WebpackHandler.start(
+                    Lookup.compose(lookup,
+                            Lookup.of(config, ApplicationConfiguration.class)),
+                    builder.getNpmFolder(), nodeTasksFuture);
+        }
     }
 
     private static boolean isEndpointServiceAvailable(Lookup lookup) {
@@ -450,9 +466,16 @@ public class DevModeInitializer
 
     @Override
     public void contextDestroyed(ServletContextEvent ctx) {
-        WebpackHandler handler = WebpackHandler.getDevModeHandler();
-        if (handler != null) {
-            handler.stop();
+        if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
+            ViteHandler handler = ViteHandler.getDevModeHandler();
+            if (handler != null) {
+                handler.stop();
+            }
+        } else {
+            WebpackHandler handler = WebpackHandler.getDevModeHandler();
+            if (handler != null) {
+                handler.stop();
+            }
         }
     }
 

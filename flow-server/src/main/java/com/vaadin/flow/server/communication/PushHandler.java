@@ -538,8 +538,9 @@ public class PushHandler {
                 BrowserLiveReloadAccessor.getLiveReloadFromService(service)
                         .ifPresent(liveReload -> liveReload.onMessage(msg));
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                getLogger().error(
+                        "Unable to read contents of debug connection message",
+                        e);
             } finally {
                 CurrentInstance.clearAll();
             }

@@ -29,11 +29,15 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.server.AppShellRegistry;
@@ -45,6 +49,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -111,7 +116,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         configureErrorDialogStyles(indexDocument);
 
-        showWebpackErrors(session.getService(), indexDocument);
+        showDevModeErrors(session.getService(), indexDocument);
 
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
@@ -272,7 +277,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             throws IOException {
         String index = FrontendUtils.getIndexHtmlContent(service);
         if (index != null) {
-            return Jsoup.parse(index);
+            Document indexHtmlDocument = Jsoup.parse(index);
+            if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
+                modifyIndexHtmlForVite(service, indexHtmlDocument);
+            }
+            return indexHtmlDocument;
         }
         String frontendDir = FrontendUtils
                 .getProjectFrontendDir(service.getDeploymentConfiguration());
@@ -290,6 +299,58 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                         + "using client side bootstrapping.",
                 indexHtmlFilePath);
         throw new IOException(message);
+    }
+
+    /**
+     * Experimental Vite support.
+     * 
+     * @deprecated This is an experimental feature that can disappear at any
+     *             moment
+     */
+    @Deprecated
+    private static void modifyIndexHtmlForVite(VaadinService service,
+            Document indexHtmlDocument) {
+        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
+                .getDevModeHandler(service);
+        if (devModeHandler.isPresent()) {
+            int port = devModeHandler.get().getPort();
+            String viteServer = "http://localhost:" + port;
+
+            Elements scripts = indexHtmlDocument.head().select("script");
+            for (Element script : scripts) {
+                String src = script.attr("src");
+                if (src.startsWith("/@vite/client")) {
+                    script.attr("src", viteServer + src);
+                }
+            }
+
+            String indexTsLocation;
+            String devHandlerIndexTs;
+            try {
+                devHandlerIndexTs = FrontendUtils
+                        .streamToString(FrontendUtils.getFileFromDevModeHandler(
+                                devModeHandler.get(), "index.ts"));
+            } catch (Exception e) {
+                devHandlerIndexTs = null;
+            }
+            if (devHandlerIndexTs != null) {
+                indexTsLocation = "./index.ts";
+            } else {
+                ApplicationConfiguration config = ApplicationConfiguration
+                        .get(service.getContext());
+                String path = config
+                        .getStringProperty(FrontendUtils.PROJECT_BASEDIR, "");
+                indexTsLocation = "/@fs/" + path + "/target/index.ts";
+            }
+            indexHtmlDocument.head()
+                    .appendChild(new Element("script").attr("type", "module")
+                            .attr("src", viteServer + indexTsLocation));
+
+            // Workaround for https://github.com/vitejs/vite/issues/5142
+            indexHtmlDocument.head().prepend(
+                    "<script type='text/javascript'>window.JSCompiler_renameProperty = function(a) { return a;}</script>");
+
+        }
     }
 
     // Holds parsed index.html to avoid re-parsing on every request in

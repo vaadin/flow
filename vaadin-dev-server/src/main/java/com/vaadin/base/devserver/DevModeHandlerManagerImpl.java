@@ -19,6 +19,7 @@ import javax.servlet.annotation.HandlesTypes;
 import java.util.Set;
 
 import com.vaadin.base.devserver.startup.DevModeInitializer;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.VaadinContext;
@@ -26,7 +27,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 
 /**
- * Provides API to access to the {@link DevModeHandler} instance by a
+ * Provides API to access to a {@link DevModeHandler} instance by a
  * {@link VaadinService}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -50,7 +51,11 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
     @Override
     public DevModeHandler getDevModeHandler() {
-        return WebpackHandler.getDevModeHandler();
+        if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
+            return ViteHandler.getDevModeHandler();
+        } else {
+            return WebpackHandler.getDevModeHandler();
+        }
     }
 
     @Override

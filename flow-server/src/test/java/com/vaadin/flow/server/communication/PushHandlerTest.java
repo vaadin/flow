@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.server.communication;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -130,6 +133,12 @@ public class PushHandlerTest {
         AtomicReference<AtmosphereResource> res = new AtomicReference<>();
         runTest(service, (handler, resource) -> {
             AtmosphereRequest request = resource.getRequest();
+            try {
+                Mockito.when(request.getReader())
+                        .thenReturn(new BufferedReader(new StringReader("")));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             Mockito.when(request
                     .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION))
                     .thenReturn("");

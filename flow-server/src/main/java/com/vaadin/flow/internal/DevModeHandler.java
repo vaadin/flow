@@ -69,6 +69,11 @@ public interface DevModeHandler extends RequestHandler {
             HttpServletResponse response) throws IOException;
 
     /**
+     * Gets the port the handler is running on.
+     */
+    int getPort();
+
+    /**
      * Stop the dev-server.
      */
     void stop();
