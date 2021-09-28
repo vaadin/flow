@@ -136,13 +136,13 @@ public class FrontendTools {
     private static final FrontendVersion SUPPORTED_PNPM_VERSION = new FrontendVersion(
             SUPPORTED_PNPM_MAJOR_VERSION, SUPPORTED_PNPM_MINOR_VERSION);
 
-    private enum NpmCliTool {
-        NPM("npm", "npm-cli.js"), NPX("npx", "npx-cli.js");
+    private enum BuildTool {
+        NPM("npm", "npm-cli.js"), NPX("npx", "npx-cli.js"), PNPM("pnpm", null);
 
         private final String name;
         private final String script;
 
-        NpmCliTool(String tool, String script) {
+        BuildTool(String tool, String script) {
             this.name = tool;
             this.script = script;
         }
@@ -152,6 +152,10 @@ public class FrontendTools {
         }
 
         String getScript() {
+            if (script == null) {
+                throw new RuntimeException(String.format(
+                        "'%s' build tool doesn't have a CLI script", name));
+            }
             return script;
         }
     }
@@ -678,7 +682,7 @@ public class FrontendTools {
 
     private List<String> getNpmExecutable(boolean removePnpmLock) {
         List<String> returnCommand = new ArrayList<>(
-                getNpmCliToolExecutable(NpmCliTool.NPM));
+                getNpmCliToolExecutable(BuildTool.NPM));
         returnCommand.add("--no-update-notifier");
         returnCommand.add("--no-audit");
         returnCommand.add("--scripts-prepend-node-path=true");
@@ -694,7 +698,7 @@ public class FrontendTools {
         return returnCommand;
     }
 
-    private List<String> getNpmCliToolExecutable(NpmCliTool cliTool,
+    private List<String> getNpmCliToolExecutable(BuildTool cliTool,
             String... flags) {
         // First look for *-cli.js script in project/node_modules
         List<String> returnCommand = getNpmScriptCommand(baseDir,
@@ -750,8 +754,7 @@ public class FrontendTools {
             // try to locate already installed global pnpm, throw an exception
             // if pnpm not found or its version is too old (< 5).
             pnpmCommand = frontendToolsLocator
-                    .tryLocateTool(
-                            FrontendUtils.isWindows() ? "pnpm.cmd" : "pnpm")
+                    .tryLocateTool(BuildTool.PNPM.getCommand())
                     .map(File::getAbsolutePath).map(Collections::singletonList)
                     .orElseThrow(() -> new IllegalStateException(
                             String.format(PNPM_NOT_FOUND)));
@@ -765,7 +768,7 @@ public class FrontendTools {
             // NodeJS >= 12.17 and doesn't support Node 10,
             // see https://pnpm.io/installation#compatibility
             final String pnpmSpecifier = "pnpm@" + DEFAULT_PNPM_VERSION;
-            pnpmCommand = getNpmCliToolExecutable(NpmCliTool.NPX, "--yes",
+            pnpmCommand = getNpmCliToolExecutable(BuildTool.NPX, "--yes",
                     "--quiet", "--ignore-existing", pnpmSpecifier);
         }
         getLogger().info("using '{}' for frontend package installation",
