@@ -123,14 +123,13 @@ public class ServletDeployerTest {
     }
 
     @Test
-    public void registeredServlets_compatibilityMode_servletsAreNotRegistered()
+    public void registeredNonVaadinServlets_vaadinServletsAreRegistered()
             throws Exception {
-        assertservletsAreNotRegistered_registeredServlets(true);
-    }
+        deployer.contextInitialized(getContextEvent(
+                getServletRegistration("testServlet", TestServlet.class,
+                        singletonList("/test/*"), Collections.emptyMap())));
 
-    @Test
-    public void registeredServlets_servletsAreNotRegistered() throws Exception {
-        assertservletsAreNotRegistered_registeredServlets(false);
+        assertMappingsCount(1, 1);
     }
 
     @Test
@@ -318,15 +317,6 @@ public class ServletDeployerTest {
                 .anyTimes();
         replay(registrationMock);
         return registrationMock;
-    }
-
-    private void assertservletsAreNotRegistered_registeredServlets(
-            boolean compatibilityMode) throws Exception {
-        deployer.contextInitialized(getContextEvent(
-                getServletRegistration("testServlet", TestServlet.class,
-                        singletonList("/test/*"), Collections.emptyMap())));
-
-        assertMappingsCount(1, 1);
     }
 
 }
