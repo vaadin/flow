@@ -22,6 +22,7 @@ import java.util.Enumeration;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.AbstractConfiguration;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 
@@ -104,5 +105,22 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
      *         {@code false} otherwise
      */
     boolean isDevModeSessionSerializationEnabled();
+
+    /**
+     * Determines if Flow should automatically register servlets. For more
+     * information on the servlets registered, refer to
+     * {@link com.vaadin.flow.server.startup.ServletDeployer} javadoc.
+     *
+     * User can explicitly disable automatic servlet registration by setting the
+     * {@link InitParameters#DISABLE_AUTOMATIC_SERVLET_REGISTRATION} property to
+     * {@code true}.
+     *
+     * @return {@code true} if Flow should not automatically register servlets
+     * @see com.vaadin.flow.server.startup.ServletDeployer
+     */
+    default boolean disableAutomaticServletRegistration() {
+        return getBooleanProperty(
+                InitParameters.DISABLE_AUTOMATIC_SERVLET_REGISTRATION, false);
+    }
 
 }

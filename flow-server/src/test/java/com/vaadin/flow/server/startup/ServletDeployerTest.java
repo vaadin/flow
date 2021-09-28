@@ -64,6 +64,8 @@ public class ServletDeployerTest {
 
     private Consumer<ServletRegistration.Dynamic> dynamicMockCheck;
 
+    private boolean disableAutomaticServletRegistration = false;
+
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
 
@@ -125,12 +127,10 @@ public class ServletDeployerTest {
     @Test
     public void doNotRegisterAnythingIfRegistrationIsDisabled()
             throws Exception {
+        disableAutomaticServletRegistration = true;
         deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("testServlet", TestServlet.class,
-                        singletonList("/test/*"),
-                        singletonMap(
-                                InitParameters.DISABLE_AUTOMATIC_SERVLET_REGISTRATION,
-                                "true"))));
+                        singletonList("/test/*"), Collections.emptyMap())));
 
         assertMappingsCount(0, 0);
     }
@@ -279,6 +279,9 @@ public class ServletDeployerTest {
         expect(appConfig.isProductionMode()).andReturn(false);
         FallbackChunk chunk = mock(FallbackChunk.class);
         expect(appConfig.getFallbackChunk()).andReturn(chunk).anyTimes();
+
+        expect(appConfig.disableAutomaticServletRegistration())
+                .andReturn(disableAutomaticServletRegistration).anyTimes();
 
         replay(appConfig);
 
