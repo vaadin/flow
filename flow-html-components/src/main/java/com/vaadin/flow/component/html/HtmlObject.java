@@ -132,18 +132,6 @@ public class HtmlObject extends HtmlContainer implements ClickNotifier<Header>,
     }
 
     /**
-     * Creates a new <code>&lt;object&gt;</code> component with given data.
-     * 
-     * @see #setData(String)
-     * 
-     * @param data
-     *            a data attribute value
-     */
-    public HtmlObject(String data) {
-        setData(data);
-    }
-
-    /**
      * Creates a new <code>&lt;object&gt;</code> component with given data and
      * "param" components.
      * 
