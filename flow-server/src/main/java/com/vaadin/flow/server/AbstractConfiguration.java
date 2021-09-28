@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.File;
 import java.io.Serializable;
 import java.nio.file.Paths;
 
@@ -158,5 +159,18 @@ public interface AbstractConfiguration extends Serializable {
     default String getFlowResourcesFolder() {
         return Paths.get(getBuildFolder(),
                 FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER).toString();
+    }
+
+    /**
+     * Gets the folder where resource sources are stored.
+     * <p>
+     * Only available in development mode.
+     * 
+     * @return the folder where resources are stored, typically
+     *         {@code src/main/resources}.
+     */
+    default File getJavaResourceFolder() {
+        return new File(getStringProperty(Constants.JAVA_RESOURCE_FOLDER_TOKEN,
+                "src/main/resources"));
     }
 }

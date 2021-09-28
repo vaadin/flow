@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.PwaConfiguration;
@@ -595,6 +596,7 @@ public class NodeTasks implements FallibleCommand {
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
             TaskUpdateWebpack.class,
+            TaskUpdateVite.class,
             TaskUpdateImports.class,
             TaskUpdateThemeImport.class
         ));
@@ -685,7 +687,10 @@ public class NodeTasks implements FallibleCommand {
                     builder.flowResourcesFolder, builder.localResourcesFolder));
         }
 
-        if (enableWebpackConfigUpdate) {
+        if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
+            commands.add(new TaskUpdateVite(builder.frontendDirectory,
+                    builder.npmFolder));
+        } else if (enableWebpackConfigUpdate) {
             PwaConfiguration pwaConfiguration = frontendDependencies
                     .getPwaConfiguration();
             commands.add(new TaskUpdateWebpack(builder.frontendDirectory,

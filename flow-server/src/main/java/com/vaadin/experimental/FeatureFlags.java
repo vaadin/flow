@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -48,13 +47,19 @@ public class FeatureFlags implements Serializable {
 
     public static final Feature EXAMPLE = new Feature(
             "Example feature. Will be removed once the first real feature flag is added",
-            "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004");
+            "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004",
+            false);
+    public static final Feature VITE = new Feature(
+            "Use Vite for the frontend build", "viteForFrontendBuild",
+            "https://github.com/vaadin/platform/issues/2448", true);
+
     private static List<Feature> features = new ArrayList<>();
 
     static File propertiesFolder = null;
 
     static {
         features.add(EXAMPLE);
+        features.add(VITE);
         loadProperties();
     }
 
@@ -200,9 +205,7 @@ public class FeatureFlags implements Serializable {
             if (config == null) {
                 return null;
             }
-            propertiesFolder = new File(config.getStringProperty(
-                    Constants.JAVA_RESOURCE_FOLDER_TOKEN,
-                    "src/main/resources"));
+            propertiesFolder = config.getJavaResourceFolder();
 
         }
         return new File(propertiesFolder, PROPERTIES_FILENAME);
