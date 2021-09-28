@@ -32,6 +32,7 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -85,6 +86,11 @@ public abstract class VaadinWebSecurityConfigurerAdapter
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        // Use a security context holder that can find the context from Vaadin
+        // specific classes
+        SecurityContextHolder.setStrategyName(
+                VaadinAwareSecurityContextHolderStrategy.class.getName());
+
         // Vaadin has its own CSRF protection.
         // Spring CSRF is not compatible with Vaadin internal requests
         http.csrf().ignoringRequestMatchers(
