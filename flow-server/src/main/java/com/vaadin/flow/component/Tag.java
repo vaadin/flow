@@ -142,6 +142,11 @@ public @interface Tag {
      * Tag for an <code>&lt;nav&gt;</code>.
      */
     String NAV = "nav";
+
+    /**
+     * Tag for an <code>&lt;object&gt;</code>.
+     */
+    String OBJECT = "object";
     /**
      * Tag for an <code>&lt;ol&gt;</code>.
      */
@@ -154,6 +159,11 @@ public @interface Tag {
      * Tag for an <code>&lt;p&gt;</code>.
      */
     String P = "p";
+
+    /**
+     * Tag for an <code>&lt;param&gt;</code>.
+     */
+    String PARAM = "param";
     /**
      * Tag for an <code>&lt;pre&gt;</code>.
      */
