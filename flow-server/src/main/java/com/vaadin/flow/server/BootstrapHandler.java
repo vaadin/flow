@@ -619,8 +619,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
 
             // To not init theme for webcomponents we use a flag on the dom
-            if (context.isInitTheme() && context.getTheme().isPresent()
-                    && !"".equals(context.getTheme().get().getName())) {
+            if (context.isInitTheme()) {
                 head.prependElement("script").attr("type", "text/javascript")
                         .appendChild(new DataNode(
                                 "window.Vaadin = window.Vaadin || {}; window.Vaadin.theme = window.Vaadin.theme || {};"
