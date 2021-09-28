@@ -168,7 +168,7 @@ public class HtmlObject extends HtmlContainer implements ClickNotifier<Header>,
      * @see #setData(AbstractStreamResource)
      *
      * @param data
-     *            the resource value, not null
+     *            the resource value, not {@code null}
      */
     public HtmlObject(AbstractStreamResource data) {
         setData(data);
@@ -182,7 +182,7 @@ public class HtmlObject extends HtmlContainer implements ClickNotifier<Header>,
      * @see #add(Component...)
      *
      * @param data
-     *            the resource value, not null
+     *            the resource value, not {@code null}
      */
     public HtmlObject(AbstractStreamResource data, Param... params) {
         setData(data);
@@ -193,7 +193,7 @@ public class HtmlObject extends HtmlContainer implements ClickNotifier<Header>,
      * Sets the "data" attribute value.
      * 
      * @param data
-     *            a "data" attribute value, not {@cod null}
+     *            a "data" attribute value
      */
     public void setData(String data) {
         set(dataDescriptor, data);
@@ -203,7 +203,7 @@ public class HtmlObject extends HtmlContainer implements ClickNotifier<Header>,
      * Sets the {@link StreamResource} URL as "data" attribute value .
      * 
      * @param data
-     *            a "data" attribute value.
+     *            a "data" attribute value,, not {@code null}
      */
     public void setData(AbstractStreamResource data) {
         getElement().setAttribute("data", data);
