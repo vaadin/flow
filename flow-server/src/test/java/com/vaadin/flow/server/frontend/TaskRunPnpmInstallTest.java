@@ -138,10 +138,11 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             throws IOException, ExecutionFailedException {
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
-        assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(new TaskRunNpmInstall(
-                getClassFinder(), getNodeUpdater(), true, true,
-                FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false));
+        assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
+                new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
+                        true, FrontendTools.DEFAULT_NODE_VERSION,
+                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
+                        false, false));
     }
 
     @Test
@@ -422,7 +423,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             "{"
                 + "\"vaadin\": {"
                   + "\"dependencies\": {"
-                    + "\"lit\": \"2.0.0-rc.4\","
+                    + "\"lit\": \"2.0.0\","
                     + "\"@vaadin/router\": \"1.7.4\","
                     + "\"@polymer/polymer\": \"3.2.0\","
                   + "},"
@@ -432,7 +433,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                   + "}"
                 + "},"
                 + "\"dependencies\": {"
-                  + "\"lit\": \"2.0.0-rc.4\","
+                  + "\"lit\": \"2.0.0\","
                   + "\"@vaadin/router\": \"1.7.4\","
                   + "\"@polymer/polymer\": \"3.2.0\","
                 + "},"
@@ -453,8 +454,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
                 generatedVersionsFile, StandardCharsets.UTF_8));
         Assert.assertEquals(
-                "{" + "\"lit\":\"2.0.0-rc.4\","
-                        + "\"@vaadin/router\":\"1.7.4\","
+                "{" + "\"lit\":\"2.0.0\"," + "\"@vaadin/router\":\"1.7.4\","
                         + "\"@polymer/polymer\":\"3.2.0\","
                         + "\"css-loader\":\"4.2.1\","
                         + "\"file-loader\":\"6.1.0\"" + "}",
@@ -644,13 +644,15 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     protected TaskRunNpmInstall createTask() {
         return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
                 false, FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false);
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
+                false);
     }
 
     protected TaskRunNpmInstall createTask(String versionsContent) {
         return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
                 false, FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false) {
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
+                false) {
             @Override
             protected String generateVersionsJson() {
                 try {
@@ -675,7 +677,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         TaskRunNpmInstall task = new TaskRunNpmInstall(getClassFinder(),
                 getNodeUpdater(), true, false,
                 FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false);
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
+                false);
 
         String path = task.generateVersionsJson();
 

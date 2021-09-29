@@ -347,7 +347,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("@polymer/polymer", POLYMER_VERSION);
 
-        defaults.put("lit", "2.0.0-rc.4");
+        defaults.put("lit", "2.0.0");
 
         // Constructable style sheets is only implemented for chrome,
         // polyfill needed for FireFox et.al. at the moment
@@ -381,7 +381,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("workbox-precaching", WORKBOX_VERSION);
         defaults.put("glob", "7.1.6");
         defaults.put("webpack-manifest-plugin", "3.0.0");
-        defaults.put("@vaadin/common-frontend", "0.0.12");
+        defaults.put("@vaadin/common-frontend", "0.0.16");
 
         // Forcing chokidar version for now until new babel version is available
         // check out https://github.com/babel/babel/issues/11488

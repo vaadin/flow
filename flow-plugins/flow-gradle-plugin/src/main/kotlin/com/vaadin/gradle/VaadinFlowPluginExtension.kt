@@ -169,6 +169,11 @@ public open class VaadinFlowPluginExtension(project: Project) {
     public var nodeDownloadRoot: String = NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT
 
     /**
+     * Allow automatic update of node installed to alternate location. Default `false`
+     */
+    public var nodeAutoUpdate: Boolean = false
+
+    /**
      * Defines the output directory for generated non-served resources, such as
      * the token file. Defaults to `build/vaadin-generated` folder.
      *
@@ -250,6 +255,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
             "generatedTsFolder=$generatedTsFolder, " +
             "nodeVersion=$nodeVersion, " +
             "nodeDownloadRoot=$nodeDownloadRoot, " +
+            "nodeAutoUpdate=$nodeAutoUpdate" +
             "resourceOutputDirectory=$resourceOutputDirectory" +
             ")"
 }

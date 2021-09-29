@@ -115,6 +115,13 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private String nodeVersion;
 
     /**
+     * Setting defining if the automatically installed node version may be
+     * updated to the default Vaadin node version.
+     */
+    @Parameter(property = InitParameters.NODE_AUTO_UPDATE, defaultValue = Constants.DEFAULT_NODE_AUTO_UPDATE)
+    private boolean nodeAutoUpdate;
+
+    /**
      * The folder where `package.json` file is located. Default is project root
      * dir.
      */
@@ -162,7 +169,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * absent. Then it will be used instead of globally 'node' or locally
      * installed installed 'node'.
      */
-    @Parameter(property = Constants.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = "false")
+    @Parameter(property = Constants.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE)
     private boolean requireHomeNodeExec;
 
     /**
@@ -327,6 +334,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
             throw new URISyntaxException(nodeDownloadRoot,
                     "Failed to parse nodeDownloadRoot uri");
         }
+    }
+
+    @Override
+    public boolean nodeAutoUpdate() {
+        return nodeAutoUpdate;
     }
 
     @Override

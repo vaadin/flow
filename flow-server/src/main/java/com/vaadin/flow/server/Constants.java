@@ -28,7 +28,7 @@ import java.io.Serializable;
 public final class Constants implements Serializable {
 
     // Keep the version number in sync with flow-push/pom.xml
-    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.4.30.slf4jvaadin1";
+    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.7.2.slf4jvaadin1";
 
     /**
      * The prefix used for System property parameters.
@@ -322,6 +322,16 @@ public final class Constants implements Serializable {
      * instead of boolean.
      */
     public static final String GLOBAL_PNPM_DEFAULT_STRING = "false";
+
+    /**
+     * The default value for {@link InitParameters#NODE_AUTO_UPDATE}.
+     */
+    public static final String DEFAULT_NODE_AUTO_UPDATE = "false";
+
+    /**
+     * The default value for {@link #REQUIRE_HOME_NODE_EXECUTABLE}.
+     */
+    public static final String DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE = "false";
 
     /**
      * @deprecated Use {@link InitParameters#REQUIRE_HOME_NODE_EXECUTABLE}
