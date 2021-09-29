@@ -324,6 +324,16 @@ public final class Constants implements Serializable {
     public static final String GLOBAL_PNPM_DEFAULT_STRING = "false";
 
     /**
+     * The default value for {@link InitParameters#NODE_AUTO_UPDATE}.
+     */
+    public static final String DEFAULT_NODE_AUTO_UPDATE = "false";
+
+    /**
+     * The default value for {@link #REQUIRE_HOME_NODE_EXECUTABLE}.
+     */
+    public static final String DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE = "false";
+
+    /**
      * @deprecated Use {@link InitParameters#REQUIRE_HOME_NODE_EXECUTABLE}
      *             instead.
      */

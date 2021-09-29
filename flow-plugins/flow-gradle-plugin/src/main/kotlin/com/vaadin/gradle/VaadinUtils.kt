@@ -15,12 +15,13 @@
  */
 package com.vaadin.gradle
 
+import com.vaadin.flow.function.SerializableSupplier
 import com.vaadin.flow.server.frontend.FrontendTools
+import com.vaadin.flow.server.frontend.FrontendToolsSettings
 import com.vaadin.flow.server.frontend.FrontendUtils
 import org.gradle.api.Project
 import java.io.File
 import java.net.URI
-import java.util.function.Supplier
 
 /**
  * Finds the value of a boolean property. It searches in gradle and system properties.
@@ -62,9 +63,10 @@ public fun Project.vaadin(block: VaadinFlowPluginExtension.() -> Unit) {
 
 internal fun Collection<File>.toPrettyFormat(): String = joinToString(prefix = "[", postfix = "]") { if (it.isFile) it.name else it.absolutePath }
 
-internal fun VaadinFlowPluginExtension.createFrontendTools(): FrontendTools =
-    FrontendTools(npmFolder.absolutePath,
-        Supplier { FrontendUtils.getVaadinHomeDirectory().absolutePath },
-        nodeVersion,
-        URI(nodeDownloadRoot)
-    )
+internal fun VaadinFlowPluginExtension.createFrontendTools(): FrontendTools {
+    var settings = FrontendToolsSettings(npmFolder.absolutePath, SerializableSupplier { FrontendUtils.getVaadinHomeDirectory().absolutePath })
+    settings.setNodeVersion(nodeVersion)
+    settings.setNodeDownloadRoot(URI(nodeDownloadRoot))
+    return FrontendTools(settings)
+}
+

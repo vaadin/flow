@@ -96,7 +96,8 @@ public class TaskRunNpmInstallTest {
     protected TaskRunNpmInstall createTask() {
         return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), false,
                 false, FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false);
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
+                false);
     }
 
     @Test
@@ -260,10 +261,11 @@ public class TaskRunNpmInstallTest {
             throws IOException, ExecutionFailedException {
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
-        assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(new TaskRunNpmInstall(
-                getClassFinder(), getNodeUpdater(), false, true,
-                FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false));
+        assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
+                new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), false,
+                        true, FrontendTools.DEFAULT_NODE_VERSION,
+                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
+                        false, false));
     }
 
     @Test
