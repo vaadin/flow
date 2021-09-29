@@ -171,6 +171,8 @@ public class HtmlObject extends HtmlContainer implements
      *
      * @param data
      *            the resource value, not {@code null}
+     * @param params
+     *            parameter components
      */
     public HtmlObject(AbstractStreamResource data, Param... params) {
         setData(data);
