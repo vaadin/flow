@@ -97,7 +97,6 @@ public class FrontendToolsTest {
     }
 
     @Test
-    @Ignore("Ignored to lessen PRs hitting the server too often")
     public void installNode_NodeIsInstalledToTargetDirectory()
             throws FrontendUtils.UnknownVersionException {
         String nodeExecutable = tools
@@ -127,7 +126,6 @@ public class FrontendToolsTest {
     }
 
     @Test
-    // @Ignore("Ignored to lessen PRs hitting the server too often")
     public void updateTooOldNode_NodeInstalledToTargetDirectoryIsUpdated()
             throws FrontendUtils.UnknownVersionException {
         settings.setForceAlternativeNode(true);
@@ -156,7 +154,6 @@ public class FrontendToolsTest {
     }
 
     @Test
-    // @Ignore("Ignored to lessen PRs hitting the server too often")
     public void supportedNodeInstalled_autoUpdateFalse_NodeNotUpdated()
             throws FrontendUtils.UnknownVersionException {
         settings.setForceAlternativeNode(true);
@@ -183,7 +180,6 @@ public class FrontendToolsTest {
     }
 
     @Test
-    // @Ignore("Ignored to lessen PRs hitting the server too often")
     public void supportedNodeInstalled_autoUpdateTrue_NodeUpdated()
             throws FrontendUtils.UnknownVersionException {
         settings.setForceAlternativeNode(true);
