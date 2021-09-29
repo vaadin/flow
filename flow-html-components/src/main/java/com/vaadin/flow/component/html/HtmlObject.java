@@ -36,8 +36,8 @@ import com.vaadin.flow.server.StreamResource;
  *
  */
 @Tag(Tag.OBJECT)
-public class HtmlObject extends HtmlContainer implements ClickNotifier<Header>,
-        HasOrderedComponents, Focusable<HtmlObject> {
+public class HtmlObject extends HtmlContainer implements
+        ClickNotifier<HtmlObject>, HasOrderedComponents, Focusable<HtmlObject> {
 
     private static final PropertyDescriptor<String, String> dataDescriptor = PropertyDescriptors
             .attributeWithDefault("data", "");
@@ -228,16 +228,6 @@ public class HtmlObject extends HtmlContainer implements ClickNotifier<Header>,
      */
     public Optional<String> getType() {
         return get(typeDescriptor);
-    }
-
-    /**
-     * Removes "data" attribute.
-     * 
-     * @see #setData(String)
-     * @see #setData(AbstractStreamResource)
-     */
-    public void removeData() {
-        getElement().removeAttribute("data");
     }
 
 }

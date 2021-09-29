@@ -106,12 +106,4 @@ public class Param extends HtmlComponent {
         return get(valueDescriptor);
     }
 
-    /**
-     * Removes "name" attribute.
-     * 
-     * @see #setName(String)
-     */
-    public void removeName() {
-        getElement().removeAttribute("name");
-    }
 }
