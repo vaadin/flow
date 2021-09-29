@@ -35,6 +35,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEventHandler;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ClientCallableHandlers;
@@ -285,15 +286,9 @@ public class PublishedServerEventHandlerRpcHandler
         // come up with method to know that it's an id and should be gotten from
         // the model
         assert argValue != null;
+
         if (type.isPrimitive() && argValue.getType() == JsonType.NULL) {
-            String msg = String.format(
-                    "Null values are not allowed for primitive types but "
-                            + "a 'null' value was received for parameter %d "
-                            + "which refers to primitive type '%s' "
-                            + "in the method '%s' defined in the class '%s'",
-                    index, type.getName(), method.getName(),
-                    method.getDeclaringClass().getName());
-            throw new IllegalArgumentException(msg);
+            return JsonCodec.decodeAs(argValue, type);
         } else if (type.isArray()) {
             return decodeArray(method, type, index, argValue);
         } else {

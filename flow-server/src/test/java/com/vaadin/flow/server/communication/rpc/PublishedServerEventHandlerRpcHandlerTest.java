@@ -17,6 +17,7 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.List;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,6 +32,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinService;
@@ -42,7 +44,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class PublishedServerEventHandlerRpcHandlerTest {
@@ -134,6 +135,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     public static class MethodWithParameters extends ComponentWithCompute {
 
         private int intArg;
+        private boolean booleanArg;
         private String strArg;
         private boolean[] arrayArg;
         private Double[] doubleArg;
@@ -145,6 +147,11 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         @ClientCallable
         protected void intMethod(@EventData("foo") int i) {
             intArg = i;
+        }
+
+        @EventHandler
+        protected void booleanMethod(@EventData("foo") boolean value) {
+            booleanArg = value;
         }
 
         @ClientCallable
@@ -416,6 +423,24 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         Assert.assertArrayEquals(new String[] { value.getString(0) },
                 component.varArg);
+    }
+
+    @Test
+    public void nullValueAreAcceptedForPrimitive() {
+        JsonArray array = Json.createArray();
+        array.set(0, Json.createNull());
+        MethodWithParameters component = new MethodWithParameters();
+        component.intArg = -1;
+        component.booleanArg = true;
+        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                component.getClass(), "intMethod", array, -1);
+
+        Assert.assertEquals(0, component.intArg);
+
+        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                component.getClass(), "booleanMethod", array, -1);
+
+        Assert.assertFalse(component.booleanArg);
     }
 
     @Test(expected = IllegalStateException.class)

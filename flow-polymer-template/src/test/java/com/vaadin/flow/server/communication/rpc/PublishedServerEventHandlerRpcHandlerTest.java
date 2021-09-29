@@ -97,6 +97,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     public static class MethodWithParameters extends ComponentWithMethod {
 
         private int intArg;
+        private boolean booleanArg;
         private String strArg;
         private boolean[] arrayArg;
         private Double[] doubleArg;
@@ -108,6 +109,11 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         @EventHandler
         protected void intMethod(@EventData("foo") int i) {
             intArg = i;
+        }
+
+        @EventHandler
+        protected void booleanMethod(@EventData("foo") boolean value) {
+            booleanArg = value;
         }
 
         @EventHandler
@@ -450,13 +456,22 @@ public class PublishedServerEventHandlerRpcHandlerTest {
                 component.varArg);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void nullValueIsNotAcceptedForPrimitive() {
+    @Test
+    public void nullValueAreAcceptedForPrimitive() {
         JsonArray array = Json.createArray();
         array.set(0, Json.createNull());
         MethodWithParameters component = new MethodWithParameters();
+        component.intArg = -1;
+        component.booleanArg = true;
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method", array, -1);
+                component.getClass(), "intMethod", array, -1);
+
+        Assert.assertEquals(0, component.intArg);
+
+        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                component.getClass(), "booleanMethod", array, -1);
+
+        Assert.assertFalse(component.booleanArg);
     }
 
     @Test(expected = IllegalStateException.class)
