@@ -22,6 +22,13 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.experimental.Feature;
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.internal.BrowserLiveReload;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.internal.BrowserLiveReload;
@@ -29,6 +36,9 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
  * {@link BrowserLiveReload} implementation class.
@@ -110,6 +120,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 resource);
 
         send(resource, "serverInfo", new ServerInfo());
+        send(resource, "featureFlags",
+                new FeatureFlagMessage(FeatureFlags.getFeatures()));
     }
 
     private void send(AtmosphereResource resource, String command,
@@ -150,12 +162,22 @@ public class DebugWindowConnection implements BrowserLiveReload {
         });
     }
 
+    @Override
+    public void onMessage(String message) {
+        if (message.isEmpty()) {
+            getLogger().debug("Received live reload heartbeat");
+            return;
+        }
+        JsonObject json = Json.parse(message);
+        if ("setFeature".equals(json.getString("command"))) {
+            JsonObject data = json.getObject("data");
+            FeatureFlags.setEnabled(data.getString("featureId"),
+                    data.getBoolean("enabled"));
+        }
+    }
+
     private static Logger getLogger() {
         return LoggerFactory.getLogger(DebugWindowConnection.class.getName());
     }
 
-    @Override
-    public void onMessage(String message) {
-        // No messages supported yet
-    }
 }

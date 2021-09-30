@@ -35,6 +35,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
 import com.vaadin.flow.server.Constants;
@@ -61,6 +62,13 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      */
     @Parameter(defaultValue = "${project.basedir}/src/main/resources/application.properties")
     private File applicationProperties;
+
+    /**
+     * Feature flag properties file.
+     */
+    @Parameter(defaultValue = "${project.basedir}/src/main/resources/"
+            + FeatureFlags.PROPERTIES_FILENAME)
+    protected File featureflagsProperties;
 
     /**
      * Whether or not insert the initial Uidl object in the bootstrap index.html

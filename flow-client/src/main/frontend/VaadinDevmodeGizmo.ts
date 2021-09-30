@@ -11,6 +11,13 @@ interface ServerInfo {
   osVersion: string;
 }
 
+interface Feature {
+  id: string;
+  title: string;
+  moreInfoLink: string;
+  moreInfoText: string;
+  enabled: boolean;
+}
 export class VaadinDevmodeGizmo extends LitElement {
   static BLUE_HSL = css`206, 100%, 70%`;
   static GREEN_HSL = css`145, 80%, 42%`;
@@ -277,7 +284,6 @@ export class VaadinDevmodeGizmo extends LitElement {
         font-weight: 600;
         padding-inline-end: 0.5rem;
       }
-
       .tab.active {
         color: var(--gizmo-text-color-active);
       }
@@ -316,7 +322,8 @@ export class VaadinDevmodeGizmo extends LitElement {
         --gizmo-notification-color: var(--gizmo-blue-color);
       }
 
-      .message.warning {
+      .message.warning,
+      .experimental-warning {
         --gizmo-notification-color: var(--gizmo-yellow-color);
       }
 
@@ -341,7 +348,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         user-select: text;
       }
 
-      .message .message-heading {
+      .message-heading {
         position: relative;
         display: flex;
         align-items: center;
@@ -352,7 +359,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         font-weight: 600;
       }
 
-      .message .message-heading::before {
+      .message-heading::before {
         position: absolute;
         margin-left: -1.5rem;
         display: inline-block;
@@ -374,12 +381,27 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
 
       .message.warning .message-heading::before,
-      .message.error .message-heading::before {
+      .message.error .message-heading::before,
+      .experimental-warning.message-heading::before {
         content: '!';
         color: var(--gizmo-background-color-active);
         background-color: var(--gizmo-notification-color);
       }
 
+      .features-tray {
+        padding-left: 0.5rem;
+        padding-top: 0.5rem;
+      }
+      .feature-toggle {
+        position: absolute;
+      }
+      .feature-title {
+        padding-left: 1.7rem;
+        display: block;
+      }
+      .experimental-warning {
+        padding-left: 1.7rem;
+      }
       .message .message-details {
         font-weight: 400;
         color: var(--gizmo-text-color-secondary);
@@ -645,6 +667,9 @@ export class VaadinDevmodeGizmo extends LitElement {
   @state()
   serverInfo: ServerInfo = { flowVersion: '', vaadinVersion: '', javaVersion: '', osVersion: '' };
 
+  @state()
+  features: Feature[] = [];
+
   javaConnection?: Connection;
   frontendConnection?: Connection;
 
@@ -690,6 +715,8 @@ export class VaadinDevmodeGizmo extends LitElement {
     frontendConnection.onMessage = (message: any) => {
       if (message?.command === 'serverInfo') {
         this.serverInfo = message.data as ServerInfo;
+      } else if (message?.command === 'featureFlags') {
+        this.features = message.data.features as Feature[];
       } else {
         // eslint-disable-next-line no-console
         console.error('Unknown message from frontend connection:', JSON.stringify(message));
@@ -1038,7 +1065,12 @@ export class VaadinDevmodeGizmo extends LitElement {
             @click=${() => (this.activeTab = 'info')}
             >Info</span
           >
-
+          <span
+            class=${classMap({ tab: true, active: this.activeTab === 'features' })}
+            id="features"
+            @click=${() => (this.activeTab = 'features')}
+            >Features</span
+          >
           <label class="switch">
             <input
               id="toggle"
@@ -1078,6 +1110,32 @@ export class VaadinDevmodeGizmo extends LitElement {
               <div class="info-message">Browser: ${navigator.userAgent}</div>
             </div>`
           : nothing}
+        ${this.activeTab === 'features'
+          ? html`<div class="features-tray">
+              <p class="message-heading experimental-warning">Experimental features ahead!</p>
+              <p>
+                These features are work in progress and the implementation, API, look and feel is not yet finished.
+              </p>
+
+                ${this.features.map(
+                  (feature) => html`<div class="feature">
+                    <input
+                      class="feature-toggle"
+                      id="feature-toggle-${feature.id}"
+                      type="checkbox"
+                      ?checked=${feature.enabled}
+                      @change=${(e: Event) => this.toggleFeatureFlag(e, feature)}
+                    />
+
+                    <label for="feature-toggle-${feature.id}" class="feature-title">${feature.title}</label
+                    ><span class="feature-link">
+                      <a href="${feature.moreInfoLink}" target="_blank">${feature.moreInfoText}</a>
+                    </span>
+                  </div>`
+                )}
+              </p>
+            </div>`
+          : nothing}
       </div>
 
       <div class="notification-tray">${this.notifications.map((msg) => this.renderMessage(msg))}</div>
@@ -1102,6 +1160,7 @@ export class VaadinDevmodeGizmo extends LitElement {
           : html`<span class="status-description">Live reload (JS: ${this.frontendStatus}, Java: ${this.javaStatus}) </span><span class="ahreflike">Details</span></div>`}
       </div>`;
   }
+
   copyInfoToClipboard(): void {
     const messages = this.renderRoot.querySelectorAll('.info-message');
     const text = Array.from(messages)
@@ -1109,6 +1168,16 @@ export class VaadinDevmodeGizmo extends LitElement {
       .join('\n');
     copy(text);
     this.showNotification(MessageType.INFORMATION, 'Version information copied to clipboard');
+  }
+
+  toggleFeatureFlag(e: Event, feature: Feature) {
+    const enabled = (e.target! as any).checked;
+    if (this.frontendConnection) {
+      this.frontendConnection.setFeature(feature.id, enabled);
+      this.log(MessageType.INFORMATION, `Feature '${feature.title}' ${enabled ? 'enabled' : 'disabled'}`);
+    } else {
+      this.log(MessageType.ERROR, `Unable to toggle feature ${feature.title}: No server connection available`);
+    }
   }
 }
 
@@ -1205,6 +1274,15 @@ class Connection extends Object {
       this.status = status;
       this.onStatusChange(status);
     }
+  }
+
+  private send(command: string, data: any) {
+    const message = { command, data };
+    this.webSocket!.send(JSON.stringify(message));
+  }
+
+  setFeature(featureId: string, enabled: boolean) {
+    this.send('setFeature', { featureId, enabled });
   }
 }
 
