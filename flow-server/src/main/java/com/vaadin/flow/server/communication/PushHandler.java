@@ -23,6 +23,7 @@ import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.Optional;
 
+import org.apache.commons.io.IOUtils;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
@@ -49,6 +50,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.communication.PushMode;
 
+import elemental.json.Json;
 import elemental.json.JsonException;
 
 /**
@@ -528,7 +530,19 @@ public class PushHandler {
      */
     void onMessage(AtmosphereResource resource) {
         if (isLiveReloadConnection(resource)) {
-            getLogger().debug("Received live reload heartbeat");
+            try {
+                service.setCurrentInstances(new VaadinServletRequest(
+                        resource.getRequest(), service), null);
+                String msg = IOUtils
+                        .toString(resource.getRequest().getReader());
+                BrowserLiveReloadAccessor.getLiveReloadFromService(service)
+                        .ifPresent(liveReload -> liveReload.onMessage(msg));
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } finally {
+                CurrentInstance.clearAll();
+            }
         } else {
             callWithUi(resource, receiveCallback);
         }

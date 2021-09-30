@@ -1,6 +1,15 @@
-import { css, html, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { css, html, LitElement, nothing } from 'lit';
+import { property, state } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 
+interface Feature {
+  id: string;
+  title: string;
+  moreInfoLink: string;
+  moreInfoText: string;
+  serverRestartRequired: boolean;
+  enabled: boolean;
+}
 export class VaadinDevmodeGizmo extends LitElement {
   static BLUE_HSL = css`206, 100%, 70%`;
   static GREEN_HSL = css`145, 80%, 42%`;
@@ -21,6 +30,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         --gizmo-text-color: rgba(255, 255, 255, 0.85);
         --gizmo-text-color-secondary: rgba(255, 255, 255, 0.65);
         --gizmo-text-color-emphasis: rgba(255, 255, 255, 1);
+        --gizmo-text-color-active: rgba(255, 255, 255, 1);
 
         --gizmo-background-color-inactive: rgba(50, 50, 50, 0.15);
         --gizmo-background-color-active: rgba(50, 50, 50, 0.98);
@@ -261,6 +271,10 @@ export class VaadinDevmodeGizmo extends LitElement {
       .tab {
         color: var(--gizmo-text-color-secondary);
         font-weight: 600;
+        padding-inline-end: var(--lumo-space-s);
+      }
+      .tab.active {
+        color: var(--gizmo-text-color-active);
       }
 
       .ahreflike {
@@ -444,6 +458,9 @@ export class VaadinDevmodeGizmo extends LitElement {
         color: var(--gizmo-text-color);
       }
 
+      .feature {
+        padding-inline-end: var(--lumo-space-s);
+      }
       .notification-tray {
         display: flex;
         flex-direction: column-reverse;
@@ -602,6 +619,11 @@ export class VaadinDevmodeGizmo extends LitElement {
   @property({ type: String, attribute: false })
   javaStatus: ConnectionStatus = ConnectionStatus.UNAVAILABLE;
 
+  @state()
+  activeTab: string = 'log';
+  @state()
+  features: Feature[] = [];
+
   javaConnection?: Connection;
   frontendConnection?: Connection;
 
@@ -640,6 +662,15 @@ export class VaadinDevmodeGizmo extends LitElement {
     frontendConnection.onReload = onReload;
     frontendConnection.onStatusChange = (status: ConnectionStatus) => {
       this.frontendStatus = status;
+    };
+    frontendConnection.onMessage = (message: any) => {
+      const json = JSON.parse(message.data);
+      if (json?.command === 'featureflags') {
+        this.features = json.features as Feature[];
+      } else {
+        // eslint-disable-next-line no-console
+        console.error('Unknown message from frontend connection:', message);
+      }
     };
     this.frontendConnection = frontendConnection;
 
@@ -798,7 +829,10 @@ export class VaadinDevmodeGizmo extends LitElement {
     this.updateComplete.then(() => {
       // Scroll into view
       setTimeout(() => {
-        this.shadowRoot!.querySelector('.message-tray .message:last-child')!.scrollIntoView({ behavior: 'smooth' });
+        const messageTray = this.shadowRoot!.querySelector('.message-tray .message:last-child');
+        if (messageTray) {
+          messageTray.scrollIntoView({ behavior: 'smooth' });
+        }
       }, this.transitionDuration);
     });
   }
@@ -944,7 +978,18 @@ export class VaadinDevmodeGizmo extends LitElement {
   render() {
     return html` <div class="window ${this.expanded ? 'visible' : 'hidden'}">
         <div class="window-toolbar">
-          <span class="tab">Log</span>
+          <span
+            class=${classMap({ tab: true, active: this.activeTab === 'log' })}
+            id="log"
+            @click=${() => (this.activeTab = 'log')}
+            >Log</span
+          >
+          <span
+            class=${classMap({ tab: true, active: this.activeTab === 'features' })}
+            id="features"
+            @click=${() => (this.activeTab = 'features')}
+            >Features</span
+          >
           <label class="switch">
             <input
               id="toggle"
@@ -970,7 +1015,28 @@ export class VaadinDevmodeGizmo extends LitElement {
             </svg>
           </button>
         </div>
-        <div class="message-tray">${this.messages.map((msg) => this.renderMessage(msg))}</div>
+        ${this.activeTab === 'log'
+          ? html`<div class="message-tray">${this.messages.map((msg) => this.renderMessage(msg))}</div>`
+          : nothing}
+        ${this.activeTab === 'features'
+          ? html`<div class="features-tray">
+              ${this.features.map(
+                (feature) => html`<div class="feature">
+                  <input
+                    class="feature-toggle"
+                    type="checkbox"
+                    ?checked=${feature.enabled}
+                    @change=${(e: Event) => this.toggleFeatureFlag(e, feature)}
+                  />
+
+                  <span class="feature-title">${feature.title}</span
+                  ><span class="feature-link">
+                    <a href="${feature.moreInfoLink}" target="_blank">${feature.moreInfoText}</a>
+                  </span>
+                </div>`
+              )}
+            </div>`
+          : nothing}
       </div>
 
       <div class="notification-tray">${this.notifications.map((msg) => this.renderMessage(msg))}</div>
@@ -994,6 +1060,15 @@ export class VaadinDevmodeGizmo extends LitElement {
           ? html`<span class="status-description">${this.splashMessage}</span></div>`
           : html`<span class="status-description">Live reload (JS: ${this.frontendStatus}, Java: ${this.javaStatus}) </span><span class="ahreflike">Details</span></div>`}
       </div>`;
+  }
+  toggleFeatureFlag(e: Event, feature: Feature) {
+    const enabled = (e.target! as any).checked;
+    if (this.frontendConnection) {
+      this.frontendConnection.setFeature(feature.id, enabled);
+      this.showMessage(MessageType.INFORMATION, `Feature '${feature.title}' ${enabled ? 'enabled' : 'disabled'}`);
+    } else {
+      this.showMessage(MessageType.ERROR, `Unable to toggle feature ${feature.title}: No server connection available`);
+    }
   }
 }
 
@@ -1041,6 +1116,8 @@ class Connection extends Object {
 
   onStatusChange(_: ConnectionStatus) {}
 
+  onMessage(_message: any) {}
+
   handleMessage(msg: any) {
     let json;
     try {
@@ -1064,8 +1141,7 @@ class Connection extends Object {
         break;
 
       default:
-        // eslint-disable-next-line no-console
-        console.error('Unknown command received from the live reload server:', command);
+        this.onMessage(msg);
     }
   }
 
@@ -1093,6 +1169,15 @@ class Connection extends Object {
       this.status = status;
       this.onStatusChange(status);
     }
+  }
+
+  private send(command: string, data: any) {
+    const message = { command, data };
+    this.webSocket!.send(JSON.stringify(message));
+  }
+
+  setFeature(featureId: string, enabled: boolean) {
+    this.send('setFeature', { featureId, enabled });
   }
 }
 

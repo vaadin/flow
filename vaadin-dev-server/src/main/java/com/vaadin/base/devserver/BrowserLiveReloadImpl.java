@@ -22,12 +22,20 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.experimental.Feature;
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.internal.BrowserLiveReload;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.internal.BrowserLiveReload;
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
  * {@link BrowserLiveReload} implementation class.
@@ -56,6 +64,24 @@ public class BrowserLiveReloadImpl implements BrowserLiveReload {
         IDENTIFIER_CLASSES.put(Backend.SPRING_BOOT_DEVTOOLS, Arrays.asList(
                 "com.vaadin.flow.spring.SpringServlet",
                 "org.springframework.boot.devtools.livereload.LiveReloadServer"));
+    }
+
+    public static class FeatureFlagMessage {
+        private String command = "featureflags";
+        private List<Feature> features;
+
+        public FeatureFlagMessage(List<Feature> features) {
+            this.features = features;
+        }
+
+        public String getCommand() {
+            return command;
+        }
+
+        public List<Feature> getFeatures() {
+            return features;
+        }
+
     }
 
     BrowserLiveReloadImpl() {
@@ -105,6 +131,16 @@ public class BrowserLiveReloadImpl implements BrowserLiveReload {
         atmosphereResources.add(new WeakReference<>(resource));
         resource.getBroadcaster().broadcast("{\"command\": \"hello\"}",
                 resource);
+
+        ObjectMapper mapper = new ObjectMapper();
+        FeatureFlagMessage featureFlagMessage = new FeatureFlagMessage(
+                FeatureFlags.getFeatures());
+        try {
+            resource.getBroadcaster().broadcast(
+                    mapper.writeValueAsString(featureFlagMessage), resource);
+        } catch (JsonProcessingException e) {
+            getLogger().error("Error sending feature flags", e);
+        }
     }
 
     @Override
@@ -133,6 +169,20 @@ public class BrowserLiveReloadImpl implements BrowserLiveReload {
                         resource);
             }
         });
+    }
+
+    @Override
+    public void onMessage(String message) {
+        if (message.isEmpty()) {
+            getLogger().debug("Received live reload heartbeat");
+            return;
+        }
+        JsonObject json = Json.parse(message);
+        if ("setFeature".equals(json.getString("command"))) {
+            JsonObject data = json.getObject("data");
+            FeatureFlags.setEnabled(data.getString("featureId"),
+                    data.getBoolean("enabled"));
+        }
     }
 
     private static Logger getLogger() {

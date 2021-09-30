@@ -82,4 +82,6 @@ public interface BrowserLiveReload {
      */
     void reload();
 
+    void onMessage(String message);
+
 }
