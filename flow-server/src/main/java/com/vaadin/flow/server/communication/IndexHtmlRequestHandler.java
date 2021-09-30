@@ -324,27 +324,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 }
             }
 
-            String indexTsLocation;
-            String devHandlerIndexTs;
-            try {
-                devHandlerIndexTs = FrontendUtils
-                        .streamToString(FrontendUtils.getFileFromDevModeHandler(
-                                devModeHandler.get(), "index.ts"));
-            } catch (Exception e) {
-                devHandlerIndexTs = null;
-            }
-            if (devHandlerIndexTs != null) {
-                indexTsLocation = "./index.ts";
-            } else {
-                ApplicationConfiguration config = ApplicationConfiguration
-                        .get(service.getContext());
-                String path = config
-                        .getStringProperty(FrontendUtils.PROJECT_BASEDIR, "");
-                indexTsLocation = "/@fs/" + path + "/target/index.ts";
-            }
             indexHtmlDocument.head()
                     .appendChild(new Element("script").attr("type", "module")
-                            .attr("src", viteServer + indexTsLocation));
+                            .attr("src", viteServer + "/generated/vaadin.ts"));
 
             // Workaround for https://github.com/vitejs/vite/issues/5142
             indexHtmlDocument.head().prepend(
