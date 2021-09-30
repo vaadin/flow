@@ -62,8 +62,9 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.base.devserver.DevModeHandlerImpl;
+import com.vaadin.base.devserver.WebpackHandler;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
@@ -392,7 +393,7 @@ public class DevModeInitializer
         CompletableFuture<Void> nodeTasksFuture = CompletableFuture
                 .runAsync(runnable);
 
-        DevModeHandlerImpl.start(
+        WebpackHandler.start(
                 Lookup.compose(lookup,
                         Lookup.of(config, ApplicationConfiguration.class)),
                 builder.getNpmFolder(), nodeTasksFuture);
@@ -406,7 +407,7 @@ public class DevModeInitializer
     }
 
     /**
-     * Shows whether {@link DevModeHandlerImpl} has been already started or not.
+     * Shows whether {@link DevModeHandler} has been already started or not.
      *
      * @deprecated Use {@link #isDevModeAlreadyStarted(VaadinContext)} instead
      *             by wrapping {@link ServletContext} with
@@ -414,7 +415,7 @@ public class DevModeInitializer
      *
      * @param servletContext
      *            The servlet context, not <code>null</code>
-     * @return <code>true</code> if {@link DevModeHandlerImpl} has already been
+     * @return <code>true</code> if {@link DevModeHandler} has already been
      *         started, <code>false</code> - otherwise
      */
     @Deprecated
@@ -425,11 +426,11 @@ public class DevModeInitializer
     }
 
     /**
-     * Shows whether {@link DevModeHandlerImpl} has been already started or not.
+     * Shows whether {@link DevModeHandler} has been already started or not.
      *
      * @param context
      *            The {@link VaadinContext}, not <code>null</code>
-     * @return <code>true</code> if {@link DevModeHandlerImpl} has already been
+     * @return <code>true</code> if {@link DevModeHandler} has already been
      *         started, <code>false</code> - otherwise
      */
     public static boolean isDevModeAlreadyStarted(VaadinContext context) {
@@ -449,7 +450,7 @@ public class DevModeInitializer
 
     @Override
     public void contextDestroyed(ServletContextEvent ctx) {
-        DevModeHandlerImpl handler = DevModeHandlerImpl.getDevModeHandler();
+        WebpackHandler handler = WebpackHandler.getDevModeHandler();
         if (handler != null) {
             handler.stop();
         }

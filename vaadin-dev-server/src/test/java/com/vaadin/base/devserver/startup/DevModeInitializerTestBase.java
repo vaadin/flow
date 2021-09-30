@@ -28,7 +28,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.base.devserver.DevModeHandlerImpl;
+import com.vaadin.base.devserver.WebpackHandler;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -42,7 +42,7 @@ import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.base.devserver.DevModeHandlerImpl.getDevModeHandler;
+import static com.vaadin.base.devserver.WebpackHandler.getDevModeHandler;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
@@ -210,9 +210,9 @@ public class DevModeInitializerTestBase {
 
     protected void waitForDevModeServer() throws NoSuchMethodException,
             IllegalAccessException, InvocationTargetException {
-        DevModeHandlerImpl handler = DevModeHandlerImpl.getDevModeHandler();
+        WebpackHandler handler = WebpackHandler.getDevModeHandler();
         Assert.assertNotNull(handler);
-        Method join = DevModeHandlerImpl.class.getDeclaredMethod("join");
+        Method join = WebpackHandler.class.getDeclaredMethod("join");
         join.setAccessible(true);
         join.invoke(handler);
     }

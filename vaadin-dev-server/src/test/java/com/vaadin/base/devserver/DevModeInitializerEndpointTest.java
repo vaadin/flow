@@ -62,7 +62,7 @@ public class DevModeInitializerEndpointTest {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setup() throws Exception {
         assertNull("No DevModeHandler should be available at test start",
-                DevModeHandlerImpl.getDevModeHandler());
+                WebpackHandler.getDevModeHandler());
 
         temporaryFolder.create();
         baseDir = temporaryFolder.getRoot().getPath();
@@ -125,12 +125,12 @@ public class DevModeInitializerEndpointTest {
 
     @After
     public void teardown() throws Exception {
-        final DevModeHandlerImpl devModeHandler = DevModeHandlerImpl
+        final WebpackHandler devModeHandler = WebpackHandler
                 .getDevModeHandler();
         if (devModeHandler != null) {
             devModeHandler.stop();
             // Wait until dev mode handler has stopped.
-            while (DevModeHandlerImpl.getDevModeHandler() != null) {
+            while (WebpackHandler.getDevModeHandler() != null) {
                 Thread.sleep(200); // NOSONAR
             }
         }
@@ -202,9 +202,9 @@ public class DevModeInitializerEndpointTest {
 
     private void waitForDevModeServer() throws NoSuchMethodException,
             IllegalAccessException, InvocationTargetException {
-        DevModeHandlerImpl handler = DevModeHandlerImpl.getDevModeHandler();
+        WebpackHandler handler = WebpackHandler.getDevModeHandler();
         Assert.assertNotNull(handler);
-        Method join = DevModeHandlerImpl.class.getDeclaredMethod("join");
+        Method join = WebpackHandler.class.getDeclaredMethod("join");
         join.setAccessible(true);
         join.invoke(handler);
     }

@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.UUID;
 
-import com.vaadin.base.devserver.DevModeHandlerImpl;
+import com.vaadin.base.devserver.WebpackHandler;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
@@ -42,7 +42,7 @@ public class WebpackDevServerPortView extends Div {
         unique.setId(UUID_ID);
         add(unique);
 
-        DevModeHandlerImpl handler = DevModeHandlerImpl.getDevModeHandler();
+        WebpackHandler handler = WebpackHandler.getDevModeHandler();
         Span portSpan = new Span(String.valueOf(handler.getPort()));
         portSpan.setId(WEBPACK_PORT_ID);
         add(portSpan);
