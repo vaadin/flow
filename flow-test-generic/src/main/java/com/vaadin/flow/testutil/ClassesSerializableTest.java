@@ -198,6 +198,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskCopyLocalFrontendFiles",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGeneratePackageJson",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskRunNpmInstall",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskRunNpmInstall\\$NpmSettings",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdateImports(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdatePackages",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdateWebpack",

@@ -34,7 +34,6 @@ import org.apache.commons.io.FileUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
@@ -90,7 +89,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
     private final boolean enablePnpm;
     private final boolean requireHomeNodeExec;
     private final boolean autoUpdate;
-    private final ClassFinder classFinder;
 
     private final String nodeVersion;
     private final URI nodeDownloadRoot;
@@ -99,41 +97,17 @@ public class TaskRunNpmInstall implements FallibleCommand {
     /**
      * Create an instance of the command.
      *
-     * @param classFinder
-     *            a reusable class finder
-     * @param packageUpdater
-     *            package-updater instance used for checking if previous
-     *            execution modified the package.json file
-     * @param enablePnpm
-     *            whether PNPM should be used instead of NPM
-     * @param requireHomeNodeExec
-     *            whether vaadin home node executable has to be used
-     * @param nodeVersion
-     *            The node.js version to be used when node.js is installed
-     *            automatically by Vaadin, for example <code>"v16.0.0"</code>.
-     *            Use {@value FrontendTools#DEFAULT_NODE_VERSION} by default.
-     * @param nodeDownloadRoot
-     *            Download node.js from this URL. Handy in heavily firewalled
-     *            corporate environments where the node.js download can be
-     *            provided from an intranet mirror. Use
-     *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
-     * @param useGlobalPnpm
-     *            use globally installed pnpm instead of the default one (see
-     *            {@link FrontendTools#DEFAULT_PNPM_VERSION})
-     * @param autoUpdate
-     *            {@code true} to automatically update to a new node version
+     * @param settings
+     *            setting to use when running npm
      */
-    TaskRunNpmInstall(ClassFinder classFinder, NodeUpdater packageUpdater,
-            boolean enablePnpm, boolean requireHomeNodeExec, String nodeVersion,
-            URI nodeDownloadRoot, boolean useGlobalPnpm, boolean autoUpdate) {
-        this.classFinder = classFinder;
-        this.packageUpdater = packageUpdater;
-        this.enablePnpm = enablePnpm;
-        this.requireHomeNodeExec = requireHomeNodeExec;
-        this.nodeVersion = Objects.requireNonNull(nodeVersion);
-        this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
-        this.useGlobalPnpm = useGlobalPnpm;
-        this.autoUpdate = autoUpdate;
+    TaskRunNpmInstall(NpmSettings settings) {
+        this.packageUpdater = settings.getPackageUpdater();
+        this.enablePnpm = settings.isEnablePnpm();
+        this.requireHomeNodeExec = settings.isRequireHomeNodeExec();
+        this.nodeVersion = settings.getNodeVersion();
+        this.nodeDownloadRoot = settings.getNodeDownloadRoot();
+        this.useGlobalPnpm = settings.isUseGlobalPnpm();
+        this.autoUpdate = settings.isAutoUpdate();
     }
 
     @Override
@@ -551,6 +525,167 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 && !tools.folderIsAcceptableByNpm(npmCacheDir)) {
             throw new IllegalStateException(
                     String.format(NPM_VALIDATION_FAIL_MESSAGE));
+        }
+    }
+
+    /**
+     * Settings to use when executing npm install task.
+     */
+    public static class NpmSettings {
+        private final NodeUpdater packageUpdater;
+
+        private boolean enablePnpm = Boolean
+                .parseBoolean(Constants.ENABLE_PNPM_DEFAULT_STRING);
+        private boolean requireHomeNodeExec = Boolean
+                .parseBoolean(Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE);
+
+        private String nodeVersion = FrontendTools.DEFAULT_NODE_VERSION;
+        private URI nodeDownloadRoot = URI
+                .create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
+
+        private boolean useGlobalPnpm = Boolean
+                .parseBoolean(Constants.GLOBAL_PNPM_DEFAULT_STRING);
+        private boolean autoUpdate = Boolean
+                .parseBoolean(Constants.DEFAULT_NODE_AUTO_UPDATE);
+
+        /**
+         * Constructor with default values set.
+         *
+         * @param packageUpdater
+         *            package-updater instance used for checking if previous
+         *            execution modified the package.json file
+         */
+        public NpmSettings(
+                NodeUpdater packageUpdater) {
+            this.packageUpdater = packageUpdater;
+        }
+
+        /**
+         * Set whether PNPM should be used instead of NPM.
+         * 
+         * @param enablePnpm
+         *            {@code true} to enable pnpm
+         */
+        public void setEnablePnpm(boolean enablePnpm) {
+            this.enablePnpm = enablePnpm;
+        }
+
+        /**
+         * Set whether vaadin home node executable has to be used.
+         * 
+         * @param requireHomeNodeExec
+         *            {@code true} to force home node usage
+         */
+        public void setRequireHomeNodeExec(boolean requireHomeNodeExec) {
+            this.requireHomeNodeExec = requireHomeNodeExec;
+        }
+
+        /**
+         * Set the version of node.js to be used when it is automatically
+         * installed by Vaadin, for instance {@code "v16.0.0"}. Default value is
+         * {@value FrontendTools#DEFAULT_NODE_VERSION}.
+         *
+         * @param nodeVersion
+         *            the node version to auto install
+         */
+        public void setNodeVersion(String nodeVersion) {
+            this.nodeVersion = Objects.requireNonNull(nodeVersion);
+        }
+
+        /**
+         * Set the URL to download node.js from. Default value is
+         * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
+         * 
+         * @param nodeDownloadRoot
+         *            URL to download nodejs from
+         */
+        public void setNodeDownloadRoot(URI nodeDownloadRoot) {
+            this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
+        }
+
+        /**
+         * Set whether globally installed pnpm should be used instead of the
+         * default one. Default value is {@code false}.
+         * 
+         * @param useGlobalPnpm
+         *            {@code true} to use global pnpm
+         */
+        public void setUseGlobalPnpm(boolean useGlobalPnpm) {
+            this.useGlobalPnpm = useGlobalPnpm;
+        }
+
+        /**
+         * Set whether automatic update of framework installed node.js is
+         * allowed. Default value is {@code false}.
+         *
+         * @param autoUpdate
+         *            {@code true} to enable automatic update of node.js
+         */
+        public void setAutoUpdate(boolean autoUpdate) {
+            this.autoUpdate = autoUpdate;
+        }
+
+        /**
+         * Get the defined package updater.
+         * 
+         * @return package update to be used
+         */
+        public NodeUpdater getPackageUpdater() {
+            return packageUpdater;
+        }
+
+        /**
+         * Check if pnpm is enabled.
+         * 
+         * @return is pnpm enabled
+         */
+        public boolean isEnablePnpm() {
+            return enablePnpm;
+        }
+
+        /**
+         * Check if home node should be used.
+         * 
+         * @return use home node
+         */
+        public boolean isRequireHomeNodeExec() {
+            return requireHomeNodeExec;
+        }
+
+        /**
+         * Get the defined node version.
+         * 
+         * @return node version
+         */
+        public String getNodeVersion() {
+            return nodeVersion;
+        }
+
+        /**
+         * Get the node.js download URI.
+         * 
+         * @return node download URI
+         */
+        public URI getNodeDownloadRoot() {
+            return nodeDownloadRoot;
+        }
+
+        /**
+         * Check if global pnpm should be used.
+         * 
+         * @return use global pnpm
+         */
+        public boolean isUseGlobalPnpm() {
+            return useGlobalPnpm;
+        }
+
+        /**
+         * Check if automatic update is allowed.
+         * 
+         * @return use automatic update
+         */
+        public boolean isAutoUpdate() {
+            return autoUpdate;
         }
     }
 }

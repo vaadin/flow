@@ -17,7 +17,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
@@ -30,7 +29,6 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.testutil.FrontendStubs;
 
@@ -78,8 +76,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 "@vaadin/vaadin-overlay/package.json");
 
         // The resulting version should be the one specified via
-        // platform
-        // versions file
+        // platform versions file
         JsonObject overlayPackage = Json.parse(FileUtils
                 .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
         Assert.assertEquals(PINNED_VERSION,
@@ -138,11 +135,9 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             throws IOException, ExecutionFailedException {
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
+        npmSettings.setRequireHomeNodeExec(true);
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
-                new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
-                        true, FrontendTools.DEFAULT_NODE_VERSION,
-                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
-                        false, false));
+                new TaskRunNpmInstall(npmSettings));
     }
 
     @Test
@@ -642,17 +637,11 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     @Override
     protected TaskRunNpmInstall createTask() {
-        return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
-                false, FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false);
+        return new TaskRunNpmInstall(npmSettings);
     }
 
     protected TaskRunNpmInstall createTask(String versionsContent) {
-        return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
-                false, FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false) {
+        return new TaskRunNpmInstall(npmSettings) {
             @Override
             protected String generateVersionsJson() {
                 try {
@@ -674,11 +663,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         Mockito.when(classFinder.getResource(Constants.VAADIN_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
-        TaskRunNpmInstall task = new TaskRunNpmInstall(getClassFinder(),
-                getNodeUpdater(), true, false,
-                FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false);
+        TaskRunNpmInstall task = new TaskRunNpmInstall(npmSettings);
 
         String path = task.generateVersionsJson();
 

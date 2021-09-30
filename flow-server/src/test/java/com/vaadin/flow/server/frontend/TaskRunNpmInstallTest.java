@@ -17,7 +17,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
@@ -34,7 +33,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
@@ -69,6 +67,7 @@ public class TaskRunNpmInstallTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
+    protected TaskRunNpmInstall.NpmSettings npmSettings;
 
     @Before
     public void setUp() throws IOException {
@@ -90,14 +89,13 @@ public class TaskRunNpmInstallTest {
             }
 
         };
+        npmSettings = new TaskRunNpmInstall.NpmSettings(getNodeUpdater());
         task = createTask();
     }
 
     protected TaskRunNpmInstall createTask() {
-        return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), false,
-                false, FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false);
+        npmSettings.setEnablePnpm(false);
+        return new TaskRunNpmInstall(npmSettings);
     }
 
     @Test
@@ -261,11 +259,9 @@ public class TaskRunNpmInstallTest {
             throws IOException, ExecutionFailedException {
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
+        npmSettings.setRequireHomeNodeExec(true);
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
-                new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), false,
-                        true, FrontendTools.DEFAULT_NODE_VERSION,
-                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
-                        false, false));
+                new TaskRunNpmInstall(npmSettings));
     }
 
     @Test

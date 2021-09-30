@@ -573,6 +573,25 @@ public class NodeTasks implements FallibleCommand {
         public File getGeneratedFolder() {
             return generatedFolder;
         }
+
+        /**
+         * Setup npm settings for given packageUpdater.
+         * 
+         * @param packageUpdater
+         *            package updater to use with npm
+         * @return npm settings
+         */
+        public TaskRunNpmInstall.NpmSettings getNpmSettings(
+                TaskUpdatePackages packageUpdater) {
+            TaskRunNpmInstall.NpmSettings settings = new TaskRunNpmInstall.NpmSettings(packageUpdater);
+            settings.setEnablePnpm(enablePnpm);
+            settings.setRequireHomeNodeExec(requireHomeNodeExec);
+            settings.setNodeVersion(nodeVersion);
+            settings.setNodeDownloadRoot(nodeDownloadRoot);
+            settings.setUseGlobalPnpm(useGlobalPnpm);
+            settings.setAutoUpdate(nodeAutoUpdate);
+            return settings;
+        }
     }
 
     // @formatter:off
@@ -637,10 +656,8 @@ public class NodeTasks implements FallibleCommand {
 
             }
             if (packageUpdater != null && builder.runNpmInstall) {
-                commands.add(new TaskRunNpmInstall(classFinder, packageUpdater,
-                        builder.enablePnpm, builder.requireHomeNodeExec,
-                        builder.nodeVersion, builder.nodeDownloadRoot,
-                        builder.useGlobalPnpm, builder.nodeAutoUpdate));
+                commands.add(new TaskRunNpmInstall(
+                        builder.getNpmSettings(packageUpdater)));
 
                 commands.add(new TaskInstallWebpackPlugins(
                         new File(builder.npmFolder, builder.buildDirectory)));
