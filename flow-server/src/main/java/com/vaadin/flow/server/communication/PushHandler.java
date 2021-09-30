@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import org.apache.commons.io.IOUtils;
 import org.atmosphere.cpr.AtmosphereRequest;
@@ -175,6 +176,27 @@ public class PushHandler {
             resource.suspend(getLongPollingSuspendTimeout());
         } else {
             resource.suspend(-1);
+        }
+    }
+
+    /**
+     * Invokes a command with the current service set.
+     *
+     * @param resource
+     *            the atmosphere resource for the current request
+     * @param command
+     *            the command to run
+     */
+    private void callWithService(final AtmosphereResource resource,
+            final Consumer<AtmosphereRequest> command) {
+        AtmosphereRequest req = resource.getRequest();
+        VaadinServletRequest vaadinRequest = new VaadinServletRequest(req,
+                service);
+        service.setCurrentInstances(vaadinRequest, null);
+        try {
+            command.accept(req);
+        } finally {
+            CurrentInstance.clearAll();
         }
     }
 
@@ -514,8 +536,9 @@ public class PushHandler {
      */
     void onConnect(AtmosphereResource resource) {
         if (isDebugWindowConnection(resource)) {
-            BrowserLiveReloadAccessor.getLiveReloadFromService(service)
-                    .ifPresent(liveReload -> liveReload.onConnect(resource));
+            callWithService(resource, (request) -> BrowserLiveReloadAccessor
+                    .getLiveReloadFromService(service)
+                    .ifPresent(liveReload -> liveReload.onConnect(resource)));
         } else {
             callWithUi(resource, establishCallback);
         }
@@ -529,19 +552,15 @@ public class PushHandler {
      */
     void onMessage(AtmosphereResource resource) {
         if (isDebugWindowConnection(resource)) {
-            handleDebugWindowMessage(resource);
+            callWithService(resource, this::handleDebugWindowMessage);
         } else {
             callWithUi(resource, receiveCallback);
         }
     }
 
-    private void handleDebugWindowMessage(AtmosphereResource resource) {
-        AtmosphereRequest req = resource.getRequest();
-        VaadinServletRequest vaadinRequest = new VaadinServletRequest(req,
-                service);
-        service.setCurrentInstances(vaadinRequest, null);
+    private void handleDebugWindowMessage(AtmosphereRequest request) {
         try {
-            String msg = IOUtils.toString(req.getReader());
+            String msg = IOUtils.toString(request.getReader());
             Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
                     .getLiveReloadFromService(service);
             if (liveReload.isPresent()) {
