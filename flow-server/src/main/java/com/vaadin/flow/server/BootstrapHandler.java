@@ -605,6 +605,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             document.outputSettings().prettyPrint(false);
 
+            // To not init theme for webcomponents we use a flag on the dom
+            if (context.isInitTheme()) {
+                head.prependElement("script").attr("type", "text/javascript")
+                        .appendChild(new DataNode(
+                                "window.Vaadin = window.Vaadin || {}; window.Vaadin.theme = window.Vaadin.theme || {};"
+                                        + "window.Vaadin.theme.flowBootstrap = true;"));
+            }
+
             BootstrapUtils.getInlineTargets(context)
                     .ifPresent(targets -> handleInlineTargets(context, head,
                             document.body(), targets));
@@ -616,15 +624,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (config.isCompatibilityMode()) {
                 /* Append any theme elements to initial page. */
                 handleThemeContents(context, document);
-            }
-
-            // To not init theme for webcomponents we use a flag on the dom
-            if (context.isInitTheme() && context.getTheme().isPresent()
-                    && !"".equals(context.getTheme().get().getName())) {
-                head.prependElement("script").attr("type", "text/javascript")
-                        .appendChild(new DataNode(
-                                "window.Vaadin = window.Vaadin || {}; window.Vaadin.theme = window.Vaadin.theme || {};"
-                                        + "window.Vaadin.theme.flowBootstrap = true;"));
             }
 
             if (!config.isProductionMode()) {
