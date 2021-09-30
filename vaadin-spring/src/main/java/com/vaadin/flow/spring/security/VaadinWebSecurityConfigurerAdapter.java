@@ -15,16 +15,10 @@
  */
 package com.vaadin.flow.spring.security;
 
+import javax.crypto.SecretKey;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.internal.RouteUtil;
-import com.vaadin.flow.server.HandlerHelper;
-import com.vaadin.flow.server.auth.ViewAccessChecker;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -33,9 +27,18 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.auth.ViewAccessChecker;
 
 /**
  * Provides basic Vaadin security configuration for the project.
@@ -55,10 +58,9 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 &#64;EnableWebSecurity
 &#64;Configuration
 public class MySecurityConfigurerAdapter extends VaadinWebSecurityConfigurerAdapter {
-    
-} 
+
+}
  * </code>
- * 
  */
 public abstract class VaadinWebSecurityConfigurerAdapter
         extends WebSecurityConfigurerAdapter {
@@ -157,7 +159,7 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      * <p>
      * This is used when your application uses a Fusion based login view
      * available at the given path.
-     * 
+     *
      * @param http
      *            the http security from {@link #configure(HttpSecurity)}
      * @param fusionLoginViewPath
@@ -176,7 +178,7 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      * <p>
      * This is used when your application uses a Fusion based login view
      * available at the given path.
-     * 
+     *
      * @param http
      *            the http security from {@link #configure(HttpSecurity)}
      * @param fusionLoginViewPath
@@ -191,14 +193,14 @@ public abstract class VaadinWebSecurityConfigurerAdapter
         FormLoginConfigurer<HttpSecurity> formLogin = http.formLogin();
         formLogin.loginPage(fusionLoginViewPath).permitAll();
         formLogin.successHandler(
-                new VaadinSavedRequestAwareAuthenticationSuccessHandler());
+                getVaadinSavedRequestAwareAuthenticationSuccessHandler(http));
         http.logout().logoutSuccessUrl(logoutUrl);
         viewAccessChecker.setLoginView(fusionLoginViewPath);
     }
 
     /**
      * Sets up login for the application using the given Flow login view.
-     * 
+     *
      * @param http
      *            the http security from {@link #configure(HttpSecurity)}
      * @param flowLoginView
@@ -213,14 +215,14 @@ public abstract class VaadinWebSecurityConfigurerAdapter
 
     /**
      * Sets up login for the application using the given Flow login view.
-     * 
+     *
      * @param http
      *            the http security from {@link #configure(HttpSecurity)}
      * @param flowLoginView
      *            the login view to use
      * @param logoutUrl
      *            the URL to redirect the user to after logging out
-     * 
+     *
      * @throws Exception
      *             if something goes wrong
      */
@@ -245,10 +247,63 @@ public abstract class VaadinWebSecurityConfigurerAdapter
         FormLoginConfigurer<HttpSecurity> formLogin = http.formLogin();
         formLogin.loginPage(loginPath).permitAll();
         formLogin.successHandler(
-                new VaadinSavedRequestAwareAuthenticationSuccessHandler());
+                getVaadinSavedRequestAwareAuthenticationSuccessHandler(http));
         http.csrf().ignoringAntMatchers(loginPath);
         http.logout().logoutSuccessUrl(logoutUrl);
         viewAccessChecker.setLoginView(flowLoginView);
     }
 
+    /**
+     * Sets up stateless JWT authentication using cookies.
+     *
+     * @param http
+     *            the http security from {@link #configure(HttpSecurity)}
+     * @param secretKey
+     *            the secret key for encoding and decoding JWTs, must use a
+     *            {@link MacAlgorithm} algorithm name
+     * @param issuer
+     *            the issuer JWT claim
+     * @throws Exception
+     *             if something goes wrong
+     */
+    protected void setStatelessAuthentication(HttpSecurity http,
+            SecretKey secretKey, String issuer) throws Exception {
+        setStatelessAuthentication(http, secretKey, issuer, 1800L);
+    }
+
+    /**
+     * Sets up stateless JWT authentication using cookies.
+     *
+     * @param http
+     *            the http security from {@link #configure(HttpSecurity)}
+     * @param secretKey
+     *            the secret key for encoding and decoding JWTs, must use a
+     *            {@link MacAlgorithm} algorithm name
+     * @param issuer
+     *            the issuer JWT claim
+     * @param expiresIn
+     *            lifetime of the JWT and cookies, in seconds
+     * @throws Exception
+     *             if something goes wrong
+     */
+    protected void setStatelessAuthentication(HttpSecurity http,
+            SecretKey secretKey, String issuer, long expiresIn)
+            throws Exception {
+        VaadinStatelessSecurityConfigurer<HttpSecurity> vaadinStatelessSecurityConfigurer = new VaadinStatelessSecurityConfigurer<>();
+        http.apply(vaadinStatelessSecurityConfigurer);
+
+        vaadinStatelessSecurityConfigurer.withSecretKey().secretKey(secretKey)
+                .and().issuer(issuer).expiresIn(expiresIn);
+    }
+
+    private VaadinSavedRequestAwareAuthenticationSuccessHandler getVaadinSavedRequestAwareAuthenticationSuccessHandler(
+            HttpSecurity http) {
+        VaadinSavedRequestAwareAuthenticationSuccessHandler vaadinSavedRequestAwareAuthenticationSuccessHandler = new VaadinSavedRequestAwareAuthenticationSuccessHandler();
+        RequestCache requestCache = http.getSharedObject(RequestCache.class);
+        if (requestCache != null) {
+            vaadinSavedRequestAwareAuthenticationSuccessHandler.setRequestCache(
+                    requestCache);
+        }
+        return vaadinSavedRequestAwareAuthenticationSuccessHandler;
+    }
 }

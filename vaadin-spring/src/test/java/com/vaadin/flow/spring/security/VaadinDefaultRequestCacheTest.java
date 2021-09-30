@@ -1,18 +1,9 @@
 package com.vaadin.flow.spring.security;
 
-import java.lang.reflect.Method;
-import java.util.Collections;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.vaadin.flow.server.HandlerHelper.RequestType;
-import com.vaadin.fusion.Endpoint;
-import com.vaadin.fusion.EndpointRegistry;
-import com.vaadin.fusion.FusionControllerConfiguration;
-import com.vaadin.fusion.FusionEndpointProperties;
-import com.vaadin.flow.spring.SpringBootAutoConfiguration;
-import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
+import java.lang.reflect.Method;
+import java.util.Collections;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,8 +11,19 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.spring.SpringBootAutoConfiguration;
+import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
+import com.vaadin.fusion.Endpoint;
+import com.vaadin.fusion.EndpointRegistry;
+import com.vaadin.fusion.FusionControllerConfiguration;
+import com.vaadin.fusion.FusionEndpointProperties;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { FusionEndpointProperties.class })
@@ -87,6 +89,73 @@ public class VaadinDefaultRequestCacheTest {
 
         cache.saveRequest(request, response);
         Assert.assertNull(cache.getRequest(request, response));
+    }
+
+    @Test
+    public void getRequest_uses_delegateRequestCache() throws Exception {
+        HttpServletRequest request = RequestUtilTest.createRequest(
+                "/hello-world", null);
+        HttpServletResponse response = createResponse();
+        SavedRequest expectedSavedRequest = Mockito.mock(SavedRequest.class);
+        RequestCache delegateRequestCache = Mockito.mock(RequestCache.class);
+        Mockito.doReturn(expectedSavedRequest).when(delegateRequestCache)
+                .getRequest(request, response);
+        cache.setDelegateRequestCache(delegateRequestCache);
+
+        SavedRequest actualSavedRequest = cache.getRequest(request, response);
+        Mockito.verify(delegateRequestCache).getRequest(request, response);
+        Assert.assertEquals(expectedSavedRequest, actualSavedRequest);
+
+        cache.setDelegateRequestCache(new HttpSessionRequestCache());
+    }
+
+    @Test
+    public void getMatchingRequest_uses_delegateRequestCache()
+            throws Exception {
+        HttpServletRequest request = RequestUtilTest.createRequest(
+                "/hello-world", null);
+        HttpServletResponse response = createResponse();
+        HttpServletRequest expectedMachingRequest = RequestUtilTest.createRequest(
+                "", null);
+        RequestCache delegateRequestCache = Mockito.mock(RequestCache.class);
+        Mockito.doReturn(expectedMachingRequest).when(delegateRequestCache)
+                .getMatchingRequest(request, response);
+        cache.setDelegateRequestCache(delegateRequestCache);
+
+        HttpServletRequest actualMatchingRequest = cache.getMatchingRequest(
+                request, response);
+        Mockito.verify(delegateRequestCache).getMatchingRequest(request, response);
+        Assert.assertEquals(expectedMachingRequest, actualMatchingRequest);
+
+        cache.setDelegateRequestCache(new HttpSessionRequestCache());
+    }
+
+    @Test
+    public void saveRequest_uses_delegateRequestCache() throws Exception {
+        HttpServletRequest request = RequestUtilTest.createRequest(
+                "/hello-world", null);
+        HttpServletResponse response = createResponse();
+        RequestCache delegateRequestCache = Mockito.mock(RequestCache.class);
+        cache.setDelegateRequestCache(delegateRequestCache);
+
+        cache.saveRequest(request, response);
+        Mockito.verify(delegateRequestCache).saveRequest(request, response);
+
+        cache.setDelegateRequestCache(new HttpSessionRequestCache());
+    }
+
+    @Test
+    public void removeRequest_uses_delegateRequestCache() throws Exception {
+        HttpServletRequest request = RequestUtilTest.createRequest(
+                "/hello-world", null);
+        HttpServletResponse response = createResponse();
+        RequestCache delegateRequestCache = Mockito.mock(RequestCache.class);
+        cache.setDelegateRequestCache(delegateRequestCache);
+
+        cache.removeRequest(request, response);
+        Mockito.verify(delegateRequestCache).removeRequest(request, response);
+
+        cache.setDelegateRequestCache(new HttpSessionRequestCache());
     }
 
     private HttpServletResponse createResponse() {
