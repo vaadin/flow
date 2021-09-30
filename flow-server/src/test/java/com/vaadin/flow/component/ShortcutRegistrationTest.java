@@ -19,6 +19,7 @@ package com.vaadin.flow.component;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
@@ -512,6 +513,86 @@ public class ShortcutRegistrationTest {
                 .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
 
         Assert.assertNull(event.get());
+    }
+
+    @Test
+    public void constructedRegistration_lifeCycleOwnerIsDetached_detachListenerIsDeregisteredFromListenOnComponents() {
+        AtomicReference<ComponentEventListener> detachListener = new AtomicReference<>();
+        Mockito.doAnswer(invocaation -> {
+            detachListener.set(
+                    invocaation.getArgument(0, ComponentEventListener.class));
+            return mock(Registration.class);
+        }).when(lifecycleOwner).addDetachListener(any());
+
+        new ShortcutRegistration(lifecycleOwner, () -> listenOn, event -> {
+        }, Key.KEY_A);
+
+        Registration registration = Mockito.mock(Registration.class);
+        for (Component component : listenOn) {
+            Mockito.when(component.addDetachListener(Mockito.any()))
+                    .thenReturn(registration);
+        }
+
+        clientResponse();
+
+        detachListener.get().onComponentEvent(new DetachEvent(lifecycleOwner));
+
+        Mockito.verify(registration, Mockito.times(3)).remove();
+    }
+
+    @Test
+    public void reattachComponent_detachListenerIsAddedOnEveryAttach_listenOnUIIsClosing_eventIsPopulatedForANewUI() {
+        UI ui = Mockito.spy(UI.class);
+        Component owner = new FakeComponent();
+
+        Registration registration = Mockito.mock(Registration.class);
+        AtomicInteger count = new AtomicInteger();
+        Mockito.when(ui.addDetachListener(any())).thenAnswer(invocation -> {
+            count.incrementAndGet();
+            return registration;
+        });
+
+        Component[] components = new Component[] { ui };
+
+        ui.add(owner);
+        new ShortcutRegistration(owner, () -> components, event -> {
+        }, Key.KEY_A);
+
+        ArgumentCaptor<SerializableConsumer> captor = ArgumentCaptor
+                .forClass(SerializableConsumer.class);
+        verify(ui, atLeastOnce()).beforeClientResponse(eq(owner),
+                captor.capture());
+
+        SerializableConsumer consumer = captor.getValue();
+
+        // Fake beforeClientExecution call.
+        consumer.accept(mock(ExecutionContext.class));
+        Assert.assertEquals(1, count.get());
+
+        ui.remove(owner);
+
+        // reattach
+        ui.add(owner);
+
+        // Fake beforeClientExecution call.
+        consumer.accept(mock(ExecutionContext.class));
+        Assert.assertEquals(2, count.get());
+
+        UI newUI = Mockito.spy(UI.class);
+        // close the prevopus UI
+        ui.close();
+        components[0] = newUI;
+
+        owner.getElement().removeFromTree();
+        newUI.add(owner);
+
+        verify(newUI, atLeastOnce()).beforeClientResponse(eq(owner),
+                captor.capture());
+        // Fake beforeClientExecution call.
+        captor.getValue().accept(mock(ExecutionContext.class));
+
+        // the new UI should now also have expression with KeyA
+        Assert.assertTrue(hasKeyAInKeyDownExpression(newUI));
     }
 
     private Element mockLifecycle(boolean visible) {
