@@ -386,10 +386,9 @@ public final class WebpackHandler implements DevModeHandler {
         return true;
     }
 
-    private boolean checkWebpackConnection() {
+    private boolean checkConnection() {
         try {
-            readManifestPaths();
-            return true;
+            return readManifestPaths();
         } catch (IOException e) {
             getLogger().debug("Error checking webpack dev server connection",
                     e);
@@ -550,9 +549,10 @@ public final class WebpackHandler implements DevModeHandler {
      * Those paths do not necessarily start with /VAADIN, as some resources must
      * be served from the root directory, e. g., service worker JS.
      *
+     * @return true if reading succeeded, false otherwise
      * @throws IOException
      */
-    private void readManifestPaths() throws IOException {
+    private boolean readManifestPaths() throws IOException {
         getLogger().debug("Reading manifest.json from webpack");
         HttpURLConnection connection = prepareConnection("/manifest.json",
                 "GET");
@@ -562,7 +562,7 @@ public final class WebpackHandler implements DevModeHandler {
                     "Unable to get manifest.json from "
                             + "webpack-dev-server, got {} {}",
                     responseCode, connection.getResponseMessage());
-            return;
+            return false;
         }
 
         String manifestJson = FrontendUtils
@@ -573,6 +573,7 @@ public final class WebpackHandler implements DevModeHandler {
                     "Got asset paths from webpack manifest.json: \n    {}",
                     String.join("\n    ", manifestPaths));
         }
+        return true;
     }
 
     private void saveRunningDevServerPort() {
@@ -585,7 +586,7 @@ public final class WebpackHandler implements DevModeHandler {
     }
 
     private boolean checkPort() {
-        if (checkWebpackConnection()) {
+        if (checkConnection()) {
             getLogger().info("Reusing webpack-dev-server running at {}:{}",
                     WEBPACK_HOST, port);
 
@@ -604,7 +605,7 @@ public final class WebpackHandler implements DevModeHandler {
             throws ExecutionFailedException {
         // If port is defined, means that webpack is already running
         if (port > 0) {
-            if (!checkWebpackConnection()) {
+            if (!checkConnection()) {
                 throw new IllegalStateException(format(
                         "%s webpack-dev-server port '%d' is defined but it's not working properly",
                         START_FAILURE, port));
@@ -614,7 +615,7 @@ public final class WebpackHandler implements DevModeHandler {
         }
         port = getRunningDevServerPort(npmFolder);
         if (port > 0) {
-            if (checkWebpackConnection()) {
+            if (checkConnection()) {
                 reuseExistingPort(port);
                 return;
             } else {
