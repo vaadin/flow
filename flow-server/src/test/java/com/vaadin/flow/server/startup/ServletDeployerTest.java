@@ -29,17 +29,13 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -107,18 +103,9 @@ public class ServletDeployerTest {
     }
 
     @Test
-    public void hasRoutes_automaticallyRegisterTwoServletsWhenNoServletsPresent()
+    public void automaticallyRegisterTwoServletsWhenNoServletsPresent()
             throws Exception {
-        deployer.contextInitialized(getContextEvent(true, false));
-
-        assertMappingsCount(1, 1);
-        assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
-    }
-
-    @Test
-    public void hasWebComponents_automaticallyRegisterOneServletsWhenNoServletsPresent()
-            throws Exception {
-        deployer.contextInitialized(getContextEvent(false, true));
+        deployer.contextInitialized(getContextEvent());
 
         assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
@@ -128,7 +115,7 @@ public class ServletDeployerTest {
     public void doNotRegisterAnythingIfRegistrationIsDisabled()
             throws Exception {
         disableAutomaticServletRegistration = true;
-        deployer.contextInitialized(getContextEvent(true, true,
+        deployer.contextInitialized(getContextEvent(
                 getServletRegistration("testServlet", TestServlet.class,
                         singletonList("/test/*"), Collections.emptyMap())));
 
@@ -136,36 +123,22 @@ public class ServletDeployerTest {
     }
 
     @Test
-    public void noServlets_noRoutes_noWebComponents_servletsAreNotRegistered()
+    public void registeredNonVaadinServlets_vaadinServletsAreRegistered()
             throws Exception {
-        deployer.contextInitialized(getContextEvent(false, false));
+        deployer.contextInitialized(getContextEvent(
+                getServletRegistration("testServlet", TestServlet.class,
+                        singletonList("/test/*"), Collections.emptyMap())));
 
-        assertMappingsCount(0, 0);
-    }
-
-    @Test
-    public void registeredServlets_noRoutes_noWebComponents_compatibilityMode_servletsAreNotRegistered()
-            throws Exception {
-        assertservletsAreNotRegistered_registeredServlets_noRoutes_noWebComponents(
-                true);
-    }
-
-    @Test
-    public void registeredServlets_noRoutes_noWebComponents_servletsAreNotRegistered()
-            throws Exception {
-        assertservletsAreNotRegistered_registeredServlets_noRoutes_noWebComponents(
-                false);
+        assertMappingsCount(1, 1);
     }
 
     @Test
     public void frontendServletIsNotRegisteredWhenProductionModeIsActive()
             throws Exception {
-        deployer.contextInitialized(getContextEvent(true, true,
-                getServletRegistration("testServlet", TestServlet.class,
-                        singletonList("/test/*"),
-                        singletonMap(
-                                InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
-                                "true"))));
+        deployer.contextInitialized(getContextEvent(getServletRegistration(
+                "testServlet", TestServlet.class, singletonList("/test/*"),
+                singletonMap(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
+                        "true"))));
 
         assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
@@ -174,7 +147,7 @@ public class ServletDeployerTest {
     @Test
     public void frontendServletIsNotRegistered_whenMainServletIsRegistered()
             throws Exception {
-        deployer.contextInitialized(getContextEvent(true, true));
+        deployer.contextInitialized(getContextEvent());
 
         assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
@@ -187,7 +160,7 @@ public class ServletDeployerTest {
                 .expect(registration.setInitParameters(Collections.emptyMap()))
                 .andReturn(null).once();
 
-        deployer.contextInitialized(getContextEvent(true, true,
+        deployer.contextInitialized(getContextEvent(
                 getServletRegistration("test", TestServlet.class,
                         singletonList("/*"), Collections.emptyMap())));
 
@@ -197,7 +170,7 @@ public class ServletDeployerTest {
     @Test
     public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_frontendServlet()
             throws Exception {
-        deployer.contextInitialized(getContextEvent(true, true,
+        deployer.contextInitialized(getContextEvent(
                 getServletRegistration("test", TestServlet.class,
                         singletonList("/frontend/*"), Collections.emptyMap())));
 
@@ -236,8 +209,7 @@ public class ServletDeployerTest {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private ServletContextEvent getContextEvent(boolean addRoutes,
-            boolean addWebComponents,
+    private ServletContextEvent getContextEvent(
             ServletRegistration... servletRegistrations) throws Exception {
         ServletRegistration.Dynamic dynamicMock = mock(
                 ServletRegistration.Dynamic.class);
@@ -307,40 +279,6 @@ public class ServletDeployerTest {
         expect(contextMock.getServletRegistrations()).andReturn(hack)
                 .anyTimes();
 
-        if (addRoutes) {
-            expect(contextMock.getAttribute(
-                    ApplicationRouteRegistry.ApplicationRouteRegistryWrapper.class
-                            .getName())).andAnswer(() -> {
-                                ApplicationRouteRegistry registry = new ApplicationRouteRegistry();
-
-                                RouteConfiguration routeConfiguration = RouteConfiguration
-                                        .forRegistry(registry);
-                                routeConfiguration.update(() -> {
-                                    routeConfiguration.getHandledRegistry()
-                                            .clean();
-                                    routeConfiguration.setAnnotatedRoute(
-                                            ComponentWithRoute.class);
-                                });
-                                return new ApplicationRouteRegistry.ApplicationRouteRegistryWrapper(
-                                        registry);
-                            }).anyTimes();
-        }
-        if (addWebComponents) {
-            expect(contextMock.getAttribute(
-                    WebComponentConfigurationRegistry.class.getName()))
-                            .andAnswer(() -> {
-                                WebComponentConfigurationRegistry registry = new WebComponentConfigurationRegistry() {
-                                };
-                                registry.setConfigurations(
-                                        Collections.singleton(
-                                                new WebComponentExporter.WebComponentConfigurationFactory()
-                                                        .create(new FakeExporter())));
-
-                                return registry;
-                            }).anyTimes();
-
-        }
-
         expect(contextMock.getAttribute(anyString())).andReturn(null)
                 .anyTimes();
         contextMock.setAttribute(anyObject(), anyObject());
@@ -381,25 +319,4 @@ public class ServletDeployerTest {
         return registrationMock;
     }
 
-    private void assertservletsAreNotRegistered_registeredServlets_noRoutes_noWebComponents(
-            boolean compatibilityMode) throws Exception {
-        deployer.contextInitialized(getContextEvent(false, false,
-                getServletRegistration("testServlet", TestServlet.class,
-                        singletonList("/test/*"), Collections.emptyMap())));
-
-        assertMappingsCount(0, 0);
-    }
-
-    public final static class FakeExporter
-            extends WebComponentExporter<Component> {
-        public FakeExporter() {
-            super("tag");
-        }
-
-        @Override
-        public void configureInstance(WebComponent<Component> webComponent,
-                Component component) {
-
-        }
-    }
 }

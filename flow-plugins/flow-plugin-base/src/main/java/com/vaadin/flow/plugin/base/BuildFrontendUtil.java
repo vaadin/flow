@@ -37,6 +37,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -117,10 +118,9 @@ public class BuildFrontendUtil {
             throws IOException, ExecutionFailedException, URISyntaxException {
 
         final URI nodeDownloadRootURI = adapter.nodeDownloadRoot();
-        FrontendTools tools = new FrontendTools(
-                adapter.npmFolder().getAbsolutePath(),
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
-                adapter.nodeVersion(), nodeDownloadRootURI);
+
+        FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
+        FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
 
         try {
@@ -147,6 +147,7 @@ public class BuildFrontendUtil {
                         .runNpmInstall(false)
                         .withNodeVersion(adapter.nodeVersion())
                         .withNodeDownloadRoot(nodeDownloadRootURI)
+                        .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                         .withHomeNodeExecRequired(
                                 adapter.requireHomeNodeExec());
         // If building a jar project copy jar artifact contents now as we
@@ -168,6 +169,20 @@ public class BuildFrontendUtil {
                     throwable);
         }
 
+    }
+
+    private static FrontendToolsSettings getFrontendToolsSettings(
+            PluginAdapterBase adapter) throws URISyntaxException {
+        FrontendToolsSettings settings = new FrontendToolsSettings(
+                adapter.npmFolder().getAbsolutePath(),
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+        settings.setNodeDownloadRoot(adapter.nodeDownloadRoot());
+        settings.setNodeVersion(adapter.nodeVersion());
+        settings.setAutoUpdate(adapter.nodeAutoUpdate());
+        settings.setUseGlobalPnpm(adapter.useGlobalPnpm());
+        settings.setForceAlternativeNode(adapter.requireHomeNodeExec());
+
+        return settings;
     }
 
     /**
@@ -298,7 +313,8 @@ public class BuildFrontendUtil {
                             .withHomeNodeExecRequired(
                                     adapter.requireHomeNodeExec())
                             .withNodeVersion(adapter.nodeVersion())
-                            .withNodeDownloadRoot(nodeDownloadRootURI).build()
+                            .withNodeDownloadRoot(nodeDownloadRootURI)
+                            .setNodeAutoUpdate(adapter.nodeAutoUpdate()).build()
                             .execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -338,13 +354,9 @@ public class BuildFrontendUtil {
                     webpackExecutable.getAbsolutePath()));
         }
 
-        final URI nodeDownloadRootURI;
-        nodeDownloadRootURI = adapter.nodeDownloadRoot();
         String nodePath;
-        FrontendTools tools = new FrontendTools(
-                adapter.npmFolder().getAbsolutePath(),
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
-                adapter.nodeVersion(), nodeDownloadRootURI);
+        FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
+        FrontendTools tools = new FrontendTools(settings);
         if (adapter.requireHomeNodeExec()) {
             nodePath = tools.forceAlternativeNodeExecutable();
         } else {

@@ -89,6 +89,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             MODULES_YAML);
     private final boolean enablePnpm;
     private final boolean requireHomeNodeExec;
+    private final boolean autoUpdate;
     private final ClassFinder classFinder;
 
     private final String nodeVersion;
@@ -119,11 +120,12 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * @param useGlobalPnpm
      *            use globally installed pnpm instead of the default one (see
      *            {@link FrontendTools#DEFAULT_PNPM_VERSION})
-     *
+     * @param autoUpdate
+     *            {@code true} to automatically update to a new node version
      */
     TaskRunNpmInstall(ClassFinder classFinder, NodeUpdater packageUpdater,
             boolean enablePnpm, boolean requireHomeNodeExec, String nodeVersion,
-            URI nodeDownloadRoot, boolean useGlobalPnpm) {
+            URI nodeDownloadRoot, boolean useGlobalPnpm, boolean autoUpdate) {
         this.classFinder = classFinder;
         this.packageUpdater = packageUpdater;
         this.enablePnpm = enablePnpm;
@@ -131,6 +133,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
         this.nodeVersion = Objects.requireNonNull(nodeVersion);
         this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
         this.useGlobalPnpm = useGlobalPnpm;
+        this.autoUpdate = autoUpdate;
     }
 
     @Override
@@ -330,10 +333,14 @@ public class TaskRunNpmInstall implements FallibleCommand {
         List<String> executable;
         String baseDir = packageUpdater.npmFolder.getAbsolutePath();
 
-        FrontendTools tools = new FrontendTools(baseDir,
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
-                nodeVersion, nodeDownloadRoot, requireHomeNodeExec,
-                useGlobalPnpm);
+        FrontendToolsSettings settings = new FrontendToolsSettings(baseDir,
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+        settings.setNodeDownloadRoot(nodeDownloadRoot);
+        settings.setForceAlternativeNode(requireHomeNodeExec);
+        settings.setUseGlobalPnpm(useGlobalPnpm);
+        settings.setAutoUpdate(autoUpdate);
+        settings.setNodeVersion(nodeVersion);
+        FrontendTools tools = new FrontendTools(settings);
         try {
             if (requireHomeNodeExec) {
                 tools.forceAlternativeNodeExecutable();

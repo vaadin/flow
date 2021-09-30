@@ -121,6 +121,8 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
     override fun nodeDownloadRoot(): URI =
         URI.create(extension.nodeDownloadRoot)
 
+    override fun nodeAutoUpdate(): Boolean = extension.nodeAutoUpdate
+
     override fun nodeVersion(): String = extension.nodeVersion
 
     override fun npmFolder(): File = extension.npmFolder

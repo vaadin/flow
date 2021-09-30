@@ -30,6 +30,7 @@ import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,13 +137,13 @@ public class FrontendTools {
     private static final FrontendVersion SUPPORTED_PNPM_VERSION = new FrontendVersion(
             SUPPORTED_PNPM_MAJOR_VERSION, SUPPORTED_PNPM_MINOR_VERSION);
 
-    private enum NpmCliTool {
-        NPM("npm", "npm-cli.js"), NPX("npx", "npx-cli.js");
+    private enum BuildTool {
+        NPM("npm", "npm-cli.js"), NPX("npx", "npx-cli.js"), PNPM("pnpm", null);
 
         private final String name;
         private final String script;
 
-        NpmCliTool(String tool, String script) {
+        BuildTool(String tool, String script) {
             this.name = tool;
             this.script = script;
         }
@@ -152,6 +153,10 @@ public class FrontendTools {
         }
 
         String getScript() {
+            if (script == null) {
+                throw new RuntimeException(String.format(
+                        "'%s' build tool doesn't have a CLI script", name));
+            }
             return script;
         }
     }
@@ -165,9 +170,9 @@ public class FrontendTools {
     private final URI nodeDownloadRoot;
 
     private final boolean ignoreVersionChecks;
-
     private final boolean forceAlternativeNode;
     private final boolean useGlobalPnpm;
+    private final boolean autoUpdate;
 
     /**
      * Creates an instance of the class using the {@code baseDir} as a base
@@ -176,128 +181,23 @@ public class FrontendTools {
      * not found and use it as an alternative tools location.
      * <p>
      * If {@code alternativeDir} is {@code null} tools won't be installed.
-     *
-     *
-     * @param baseDir
-     *            the base directory to locate the tools, not {@code null}
-     * @param alternativeDirGetter
-     *            the getter for a directory where tools will be installed if
-     *            they are not found globally or in the {@code baseDir}, may be
-     *            {@code null}
-     * @param forceAlternativeNode
-     *            force usage of node executable from alternative directory
-     */
-    public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
-            boolean forceAlternativeNode) {
-        this(baseDir, alternativeDirGetter, DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
-                forceAlternativeNode, false);
-    }
-
-    /**
-     * Creates an instance of the class using the {@code baseDir} as a base
-     * directory to locate the tools and the directory returned by the
-     * {@code alternativeDirGetter} as a directory to install tools if they are
-     * not found and use it as an alternative tools location.
      * <p>
-     * If {@code alternativeDir} is {@code null} tools won't be installed.
+     * Note: settings for this object can not be changed through the settings
+     * object after creation.
      *
-     *
-     * @param baseDir
-     *            the base directory to locate the tools, not {@code null}
-     * @param alternativeDirGetter
-     *            the getter for a directory where tools will be installed if
-     *            they are not found globally or in the {@code baseDir}, may be
-     *            {@code null}
+     * @param settings
+     *            tooling settings to use
      */
-    public FrontendTools(String baseDir,
-            Supplier<String> alternativeDirGetter) {
-        this(baseDir, alternativeDirGetter, DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false);
-    }
-
-    /**
-     * Creates an instance of the class using the {@code baseDir} as a base
-     * directory to locate the tools and the directory returned by the
-     * {@code alternativeDirGetter} as a directory to install tools if they are
-     * not found and use it as an alternative tools location.
-     * <p>
-     * If {@code alternativeDir} is {@code null} tools won't be installed.
-     *
-     *
-     * @param baseDir
-     *            the base directory to locate the tools, not {@code null}
-     * @param alternativeDirGetter
-     *            the getter for a directory where tools will be installed if
-     *            they are not found globally or in the {@code baseDir}, may be
-     *            {@code null}
-     * @param nodeVersion
-     *            The node.js version to be used when node.js is installed
-     *            automatically by Vaadin, for example <code>"v16.0.0"</code>.
-     *            Use {@value #DEFAULT_NODE_VERSION} by default.
-     * @param nodeDownloadRoot
-     *            Download node.js from this URL. Handy in heavily firewalled
-     *            corporate environments where the node.js download can be
-     *            provided from an intranet mirror. Use
-     *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
-     * @param forceAlternativeNode
-     *            force usage of node executable from alternative directory
-     * @param useGlobalPnpm
-     *            use globally installed pnpm instead of the default one (see
-     *            {@link #DEFAULT_PNPM_VERSION})
-     */
-    public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
-            String nodeVersion, URI nodeDownloadRoot,
-            boolean forceAlternativeNode, boolean useGlobalPnpm) {
-        this(baseDir, alternativeDirGetter, nodeVersion, nodeDownloadRoot,
-                "true".equalsIgnoreCase(System.getProperty(
-                        FrontendUtils.PARAM_IGNORE_VERSION_CHECKS)),
-                forceAlternativeNode, useGlobalPnpm);
-    }
-
-    /**
-     * Creates an instance of the class using the {@code baseDir} as a base
-     * directory to locate the tools and the directory returned by the
-     * {@code alternativeDirGetter} as a directory to install tools if they are
-     * not found and use it as an alternative tools location.
-     * <p>
-     * If {@code alternativeDir} is {@code null} tools won't be installed.
-     *
-     *
-     * @param baseDir
-     *            the base directory to locate the tools, not {@code null}
-     * @param alternativeDirGetter
-     *            the getter for a directory where tools will be installed if
-     *            they are not found globally or in the {@code baseDir}, may be
-     *            {@code null}
-     * @param nodeVersion
-     *            The node.js version to be used when node.js is installed
-     *            automatically by Vaadin, for example <code>"v16.0.0"</code>.
-     *            Use {@value #DEFAULT_NODE_VERSION} by default.
-     * @param nodeDownloadRoot
-     *            Download node.js from this URL. Handy in heavily firewalled
-     *            corporate environments where the node.js download can be
-     *            provided from an intranet mirror. Use
-     *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
-     */
-    public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
-            String nodeVersion, URI nodeDownloadRoot) {
-        this(baseDir, alternativeDirGetter, nodeVersion, nodeDownloadRoot,
-                false, false);
-    }
-
-    FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
-            String nodeVersion, URI nodeDownloadRoot,
-            boolean ignoreVersionChecks, boolean forceAlternativeNode,
-            boolean useGlobalPnpm) {
-        this.baseDir = Objects.requireNonNull(baseDir);
-        this.alternativeDirGetter = alternativeDirGetter;
-        this.nodeVersion = Objects.requireNonNull(nodeVersion);
-        this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
-        this.ignoreVersionChecks = ignoreVersionChecks;
-        this.forceAlternativeNode = forceAlternativeNode;
-        this.useGlobalPnpm = useGlobalPnpm;
+    public FrontendTools(FrontendToolsSettings settings) {
+        this.baseDir = Objects.requireNonNull(settings.getBaseDir());
+        this.alternativeDirGetter = settings.getAlternativeDirGetter();
+        this.nodeVersion = Objects.requireNonNull(settings.getNodeVersion());
+        this.nodeDownloadRoot = Objects
+                .requireNonNull(settings.getNodeDownloadRoot());
+        this.ignoreVersionChecks = settings.isIgnoreVersionChecks();
+        this.forceAlternativeNode = settings.isForceAlternativeNode();
+        this.useGlobalPnpm = settings.isUseGlobalPnpm();
+        this.autoUpdate = settings.isAutoUpdate();
     }
 
     /**
@@ -308,12 +208,13 @@ public class FrontendTools {
     public String getNodeExecutable() {
         Pair<String, String> nodeCommands = getNodeCommands();
         File file = getExecutable(baseDir, nodeCommands.getSecond());
-        if (file == null) {
+        if (file == null && !forceAlternativeNode) {
             file = frontendToolsLocator.tryLocateTool(nodeCommands.getFirst())
                     .orElse(null);
         }
         if (file == null) {
-            file = getExecutable(getAlternativeDir(), nodeCommands.getSecond());
+            file = updateAlternateIfNeeded(getExecutable(getAlternativeDir(),
+                    nodeCommands.getSecond()));
         }
         if (file == null && alternativeDirGetter != null) {
             getLogger().info("Couldn't find {}. Installing Node and NPM to {}.",
@@ -324,6 +225,54 @@ public class FrontendTools {
             throw new IllegalStateException(String.format(NODE_NOT_FOUND));
         }
         return file.getAbsolutePath();
+    }
+
+    /**
+     * Update installed node version if installed version is not supported.
+     * <p>
+     * Also update is {@code auto.update} flag set and installed version is
+     * older than the current default version.
+     *
+     * @param file
+     *            node executable
+     * @return node executable after possible installation of new version
+     */
+    private File updateAlternateIfNeeded(File file) {
+        if (file == null) {
+            return null;
+        }
+        // If auto-update flag set or installed node older than minimum
+        // supported
+        try {
+            List<String> versionCommand = Lists.newArrayList();
+            versionCommand.add(file.getAbsolutePath());
+            versionCommand.add("--version"); // NOSONAR
+            final FrontendVersion installedNodeVersion = FrontendUtils
+                    .getVersion("node", versionCommand);
+
+            boolean installDefault = false;
+            final FrontendVersion defaultVersion = new FrontendVersion(
+                    nodeVersion);
+            if (installedNodeVersion.isOlderThan(SHOULD_WORK_NODE_VERSION)) {
+                getLogger().info("Updating unsupported node version {} to {}",
+                        installedNodeVersion.getFullVersion(),
+                        defaultVersion.getFullVersion());
+                installDefault = true;
+            } else if (autoUpdate
+                    && installedNodeVersion.isOlderThan(defaultVersion)) {
+                getLogger().info(
+                        "Updating current installed node version from {} to {}",
+                        installedNodeVersion.getFullVersion(),
+                        defaultVersion.getFullVersion());
+                installDefault = true;
+            }
+            if (installDefault) {
+                file = new File(installNode(nodeVersion, nodeDownloadRoot));
+            }
+        } catch (UnknownVersionException e) {
+            getLogger().error("Failed to get version for installed node.", e);
+        }
+        return file;
     }
 
     /**
@@ -678,7 +627,7 @@ public class FrontendTools {
 
     private List<String> getNpmExecutable(boolean removePnpmLock) {
         List<String> returnCommand = new ArrayList<>(
-                getNpmCliToolExecutable(NpmCliTool.NPM));
+                getNpmCliToolExecutable(BuildTool.NPM));
         returnCommand.add("--no-update-notifier");
         returnCommand.add("--no-audit");
         returnCommand.add("--scripts-prepend-node-path=true");
@@ -694,7 +643,7 @@ public class FrontendTools {
         return returnCommand;
     }
 
-    private List<String> getNpmCliToolExecutable(NpmCliTool cliTool,
+    private List<String> getNpmCliToolExecutable(BuildTool cliTool,
             String... flags) {
         // First look for *-cli.js script in project/node_modules
         List<String> returnCommand = getNpmScriptCommand(baseDir,
@@ -749,7 +698,8 @@ public class FrontendTools {
         if (useGlobalPnpm) {
             // try to locate already installed global pnpm, throw an exception
             // if pnpm not found or its version is too old (< 5).
-            pnpmCommand = frontendToolsLocator.tryLocateTool("pnpm")
+            pnpmCommand = frontendToolsLocator
+                    .tryLocateTool(BuildTool.PNPM.getCommand())
                     .map(File::getAbsolutePath).map(Collections::singletonList)
                     .orElseThrow(() -> new IllegalStateException(
                             String.format(PNPM_NOT_FOUND)));
@@ -763,7 +713,7 @@ public class FrontendTools {
             // NodeJS >= 12.17 and doesn't support Node 10,
             // see https://pnpm.io/installation#compatibility
             final String pnpmSpecifier = "pnpm@" + DEFAULT_PNPM_VERSION;
-            pnpmCommand = getNpmCliToolExecutable(NpmCliTool.NPX, "--yes",
+            pnpmCommand = getNpmCliToolExecutable(BuildTool.NPX, "--yes",
                     "--quiet", "--ignore-existing", pnpmSpecifier);
         }
         getLogger().info("using '{}' for frontend package installation",
