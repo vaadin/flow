@@ -714,11 +714,11 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private void addBootstrapTasks(Builder builder) {
+        TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
+                builder.frontendDirectory, builder.frontendDirectory);
+        commands.add(taskGenerateIndexHtml);
         File outputDirectory = new File(builder.npmFolder,
                 builder.buildDirectory);
-        TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
-                builder.frontendDirectory, outputDirectory);
-        commands.add(taskGenerateIndexHtml);
         TaskGenerateIndexTs taskGenerateIndexTs = new TaskGenerateIndexTs(
                 builder.frontendDirectory,
                 new File(builder.generatedFolder, IMPORTS_NAME),
