@@ -201,6 +201,205 @@ public class FrontendTools {
     }
 
     /**
+     * Creates an instance of the class using the {@code baseDir} as a base
+     * directory to locate the tools and the directory returned by the
+     * {@code alternativeDirGetter} as a directory to install tools if they are
+     * not found and use it as an alternative tools location.
+     * <p>
+     * If {@code alternativeDir} is {@code null} tools won't be installed.
+     *
+     *
+     * @param baseDir
+     *            the base directory to locate the tools, not {@code null}
+     * @param alternativeDirGetter
+     *            the getter for a directory where tools will be installed if
+     *            they are not found globally or in the {@code baseDir}, may be
+     *            {@code null}
+     * @deprecated use
+     *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
+     *             instead, as it simplifies configuring the frontend tools and
+     *             gives the default values to configuration parameters.
+     */
+    @Deprecated
+    public FrontendTools(String baseDir,
+            Supplier<String> alternativeDirGetter) {
+        this(baseDir, alternativeDirGetter, DEFAULT_NODE_VERSION,
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
+                false);
+    }
+
+    /**
+     * Creates an instance of the class using the {@code baseDir} as a base
+     * directory to locate the tools and the directory returned by the
+     * {@code alternativeDirGetter} as a directory to install tools if they are
+     * not found and use it as an alternative tools location.
+     * <p>
+     * If {@code alternativeDir} is {@code null} tools won't be installed.
+     *
+     *
+     * @param baseDir
+     *            the base directory to locate the tools, not {@code null}
+     * @param alternativeDirGetter
+     *            the getter for a directory where tools will be installed if
+     *            they are not found globally or in the {@code baseDir}, may be
+     *            {@code null}
+     * @param forceAlternativeNode
+     *            force usage of node executable from alternative directory
+     * @deprecated use
+     *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
+     *             instead, as it simplifies configuring the frontend tools and
+     *             gives the default values to configuration parameters.
+     */
+    @Deprecated
+    public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
+            boolean forceAlternativeNode) {
+        this(baseDir, alternativeDirGetter, DEFAULT_NODE_VERSION,
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
+                forceAlternativeNode, false);
+    }
+
+    /**
+     * Creates an instance of the class using the {@code baseDir} as a base
+     * directory to locate the tools and the directory returned by the
+     * {@code alternativeDirGetter} as a directory to install tools if they are
+     * not found and use it as an alternative tools location.
+     * <p>
+     * If {@code alternativeDir} is {@code null} tools won't be installed.
+     *
+     *
+     * @param baseDir
+     *            the base directory to locate the tools, not {@code null}
+     * @param alternativeDirGetter
+     *            the getter for a directory where tools will be installed if
+     *            they are not found globally or in the {@code baseDir}, may be
+     *            {@code null}
+     * @param nodeVersion
+     *            The node.js version to be used when node.js is installed
+     *            automatically by Vaadin, for example <code>"v16.0.0"</code>.
+     *            Use {@value #DEFAULT_NODE_VERSION} by default.
+     * @param nodeDownloadRoot
+     *            Download node.js from this URL. Handy in heavily firewalled
+     *            corporate environments where the node.js download can be
+     *            provided from an intranet mirror. Use
+     *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
+     * @deprecated use
+     *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
+     *             instead, as it simplifies configuring the frontend tools and
+     *             gives the default values to configuration parameters.
+     */
+    @Deprecated
+    public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
+            String nodeVersion, URI nodeDownloadRoot) {
+        this(baseDir, alternativeDirGetter, nodeVersion, nodeDownloadRoot,
+                false, false);
+    }
+
+    /**
+     * Creates an instance of the class using the {@code baseDir} as a base
+     * directory to locate the tools and the directory returned by the
+     * {@code alternativeDirGetter} as a directory to install tools if they are
+     * not found and use it as an alternative tools location.
+     * <p>
+     * If {@code alternativeDir} is {@code null} tools won't be installed.
+     *
+     *
+     * @param baseDir
+     *            the base directory to locate the tools, not {@code null}
+     * @param alternativeDirGetter
+     *            the getter for a directory where tools will be installed if
+     *            they are not found globally or in the {@code baseDir}, may be
+     *            {@code null}
+     * @param nodeVersion
+     *            The node.js version to be used when node.js is installed
+     *            automatically by Vaadin, for example <code>"v16.0.0"</code>.
+     *            Use {@value #DEFAULT_NODE_VERSION} by default.
+     * @param nodeDownloadRoot
+     *            Download node.js from this URL. Handy in heavily firewalled
+     *            corporate environments where the node.js download can be
+     *            provided from an intranet mirror. Use
+     *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
+     * @param forceAlternativeNode
+     *            force usage of node executable from alternative directory
+     * @param useGlobalPnpm
+     *            use globally installed pnpm instead of the default one (see
+     *            {@link #DEFAULT_PNPM_VERSION})
+     * @deprecated use
+     *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
+     *             instead, as it simplifies configuring the frontend tools and
+     *             gives the default values to configuration parameters.
+     */
+    @Deprecated
+    public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
+            String nodeVersion, URI nodeDownloadRoot,
+            boolean forceAlternativeNode, boolean useGlobalPnpm) {
+        this(baseDir, alternativeDirGetter, nodeVersion, nodeDownloadRoot,
+                forceAlternativeNode, useGlobalPnpm, false);
+    }
+
+    /**
+     * Creates an instance of the class using the {@code baseDir} as a base
+     * directory to locate the tools and the directory returned by the
+     * {@code alternativeDirGetter} as a directory to install tools if they are
+     * not found and use it as an alternative tools location.
+     * <p>
+     * If {@code alternativeDir} is {@code null} tools won't be installed.
+     *
+     *
+     * @param baseDir
+     *            the base directory to locate the tools, not {@code null}
+     * @param alternativeDirGetter
+     *            the getter for a directory where tools will be installed if
+     *            they are not found globally or in the {@code baseDir}, may be
+     *            {@code null}
+     * @param nodeVersion
+     *            The node.js version to be used when node.js is installed
+     *            automatically by Vaadin, for example <code>"v16.0.0"</code>.
+     *            Use {@value #DEFAULT_NODE_VERSION} by default.
+     * @param nodeDownloadRoot
+     *            Download node.js from this URL. Handy in heavily firewalled
+     *            corporate environments where the node.js download can be
+     *            provided from an intranet mirror. Use
+     *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
+     * @param forceAlternativeNode
+     *            force usage of node executable from alternative directory
+     * @param useGlobalPnpm
+     *            use globally installed pnpm instead of the default one (see
+     *            {@link #DEFAULT_PNPM_VERSION})
+     * @param autoUpdate
+     *            update node in {@link #alternativeDirGetter} if version older
+     *            than the current default
+     *            {@value FrontendTools#DEFAULT_NODE_VERSION}
+     * @deprecated use
+     *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
+     *             instead, as it simplifies configuring the frontend tools and
+     *             gives the default values to configuration parameters.
+     */
+    @Deprecated
+    public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
+            String nodeVersion, URI nodeDownloadRoot,
+            boolean forceAlternativeNode, boolean useGlobalPnpm,
+            boolean autoUpdate) {
+        this(baseDir, alternativeDirGetter, nodeVersion, nodeDownloadRoot,
+                "true".equalsIgnoreCase(System.getProperty(
+                        FrontendUtils.PARAM_IGNORE_VERSION_CHECKS)),
+                forceAlternativeNode, useGlobalPnpm, autoUpdate);
+    }
+
+    FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
+            String nodeVersion, URI nodeDownloadRoot,
+            boolean ignoreVersionChecks, boolean forceAlternativeNode,
+            boolean useGlobalPnpm, boolean autoUpdate) {
+        this.baseDir = Objects.requireNonNull(baseDir);
+        this.alternativeDirGetter = alternativeDirGetter;
+        this.nodeVersion = Objects.requireNonNull(nodeVersion);
+        this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
+        this.ignoreVersionChecks = ignoreVersionChecks;
+        this.forceAlternativeNode = forceAlternativeNode;
+        this.useGlobalPnpm = useGlobalPnpm;
+        this.autoUpdate = autoUpdate;
+    }
+
+    /**
      * Locate <code>node</code> executable.
      *
      * @return the full path to the executable
