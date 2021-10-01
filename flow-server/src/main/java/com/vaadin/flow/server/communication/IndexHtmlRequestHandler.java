@@ -313,20 +313,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
                 .getDevModeHandler(service);
         if (devModeHandler.isPresent()) {
-            int port = devModeHandler.get().getPort();
-            String viteServer = "http://localhost:" + port;
-
-            Elements scripts = indexHtmlDocument.head().select("script");
-            for (Element script : scripts) {
-                String src = script.attr("src");
-                if (src.startsWith("/@vite/client")) {
-                    script.attr("src", viteServer + src);
-                }
-            }
-
             indexHtmlDocument.head()
                     .appendChild(new Element("script").attr("type", "module")
-                            .attr("src", viteServer + "/generated/vaadin.ts"));
+                            .attr("src", "VAADIN/generated/vaadin.ts"));
 
             // Workaround for https://github.com/vitejs/vite/issues/5142
             indexHtmlDocument.head().prepend(
