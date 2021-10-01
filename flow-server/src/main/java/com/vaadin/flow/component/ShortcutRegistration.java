@@ -686,7 +686,7 @@ public class ShortcutRegistration implements Registration, Serializable {
         listenOnComponents = null;
     }
 
-    private void removeListenOnDetachLsiteners() {
+    private void removeListenOnDetachListeners() {
         registrations.forEach(Registration::remove);
         registrations.clear();
     }
