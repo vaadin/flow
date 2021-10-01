@@ -579,7 +579,7 @@ public class ShortcutRegistrationTest {
         Assert.assertEquals(2, count.get());
 
         UI newUI = Mockito.spy(UI.class);
-        // close the prevopus UI
+        // close the previous UI
         ui.close();
         components[0] = newUI;
 
