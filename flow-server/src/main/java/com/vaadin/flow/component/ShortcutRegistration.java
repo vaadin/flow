@@ -92,6 +92,8 @@ public class ShortcutRegistration implements Registration, Serializable {
         if (listenOnComponents == null) {
             initListenOnComponent();
         }
+        addListenOnDetachListeners();
+
         boolean reinit = false;
         /*
          * In PreserveOnRefersh case the UI instance is not detached immediately
@@ -111,6 +113,7 @@ public class ShortcutRegistration implements Registration, Serializable {
         if (reinit) {
             removeAllListenerRegistrations();
             initListenOnComponent();
+            addListenOnDetachListeners();
         }
 
         for (int i = 0; i < listenOnComponents.length; i++) {
@@ -620,7 +623,7 @@ public class ShortcutRegistration implements Registration, Serializable {
 
         // remove shortcut listener when detached
         Registration detachRegistration = owner
-                .addDetachListener(e -> removeListenerRegistration());
+                .addDetachListener(e -> removeLifecycleOwnerRegistrations());
 
         lifecycleRegistration = new CompoundRegistration(attachRegistration,
                 detachRegistration);
@@ -659,7 +662,7 @@ public class ShortcutRegistration implements Registration, Serializable {
                                         listenOnIndex)));
                 listenOnAttachListenerRegistrations[i]
                         .addRegistration(component.addDetachListener(
-                                detachEvent -> removeListenerRegistration()));
+                                detachEvent -> removeLifecycleOwnerRegistrations()));
             }
 
             // either the scope is an active UI, or the component is attached to
@@ -679,13 +682,16 @@ public class ShortcutRegistration implements Registration, Serializable {
             }
             listenOnAttachListenerRegistrations = null;
         }
-        registrations.forEach(Registration::remove);
-        registrations.clear();
-        removeListenerRegistration();
+        removeLifecycleOwnerRegistrations();
         listenOnComponents = null;
     }
 
-    private void removeListenerRegistration() {
+    private void removeListenOnDetachListeners() {
+        registrations.forEach(Registration::remove);
+        registrations.clear();
+    }
+
+    private void removeLifecycleOwnerRegistrations() {
         if (shortcutListenerRegistrations != null) {
             for (CompoundRegistration shortcutListenerRegistration : shortcutListenerRegistrations) {
                 if (shortcutListenerRegistration != null)
@@ -694,6 +700,7 @@ public class ShortcutRegistration implements Registration, Serializable {
             shortcutListenerRegistrations = null;
         }
         shortcutActive = false;
+        removeListenOnDetachListeners();
     }
 
     private void queueBeforeExecutionCallback() {
@@ -823,6 +830,12 @@ public class ShortcutRegistration implements Registration, Serializable {
 
     private void initListenOnComponent() {
         listenOnComponents = registerOwnerListeners();
+    }
+
+    private void addListenOnDetachListeners() {
+        if (!registrations.isEmpty()) {
+            return;
+        }
         for (Component component : listenOnComponents) {
             Registration registration = component.addDetachListener(
                     event -> removeAllListenerRegistrations());
