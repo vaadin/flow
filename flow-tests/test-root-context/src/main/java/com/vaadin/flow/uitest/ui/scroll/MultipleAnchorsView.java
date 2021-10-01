@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,7 +27,8 @@ public class MultipleAnchorsView extends AbstractDivView {
     static final int NUMBER_OF_ANCHORS = 6;
     static final String ANCHOR_URL_ID_BASE = "anchorUrlId";
     static final String ANCHOR_DIV_ID_BASE = "anchorDivId";
-    static final String ANCHOR_URL_BASE = MultipleAnchorsView.class.getCanonicalName() + '#' + ANCHOR_DIV_ID_BASE;
+    static final String ANCHOR_URL_BASE = MultipleAnchorsView.class
+            .getCanonicalName() + '#' + ANCHOR_DIV_ID_BASE;
 
     public MultipleAnchorsView() {
         boolean isRouterLink = true;
@@ -50,6 +51,7 @@ public class MultipleAnchorsView extends AbstractDivView {
             anchorDivContainer.add(ScrollView.createSpacerDiv(200), anchorDiv);
         }
 
-        add(ScrollView.createSpacerDiv(1000), anchorDivContainer, ScrollView.createSpacerDiv(1000));
+        add(ScrollView.createSpacerDiv(1000), anchorDivContainer,
+                ScrollView.createSpacerDiv(1000));
     }
 }

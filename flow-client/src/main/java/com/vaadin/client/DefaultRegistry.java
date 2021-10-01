@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -113,13 +113,14 @@ public class DefaultRegistry extends Registry {
                 new DefaultConnectionStateHandler(this));
         set(XhrConnection.class, new XhrConnection(this));
         set(PushConfiguration.class, new PushConfiguration(this));
-        set(ReconnectConfiguration.class,
-                new ReconnectConfiguration(this));
+        set(ReconnectConfiguration.class, new ReconnectConfiguration(this));
         if (!applicationConfiguration.isClientRouting()) {
             if (applicationConfiguration.isWebComponentMode()) {
-                set(ScrollPositionHandler.class, new WebComponentScrollHandler());
+                set(ScrollPositionHandler.class,
+                        new WebComponentScrollHandler());
             } else {
-                set(ScrollPositionHandler.class, new ScrollPositionHandler(this));
+                set(ScrollPositionHandler.class,
+                        new ScrollPositionHandler(this));
             }
         }
         set(Poller.class, new Poller(this));

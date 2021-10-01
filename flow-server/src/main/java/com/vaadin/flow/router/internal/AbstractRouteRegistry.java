@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,18 +32,19 @@ import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.RoutesChangedListener;
-import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.shared.Registration;
 
 /**
  * AbstractRouteRegistry with locking support and configuration.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.3
  */
@@ -279,8 +280,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
         HasUrlParameterFormat.checkMandatoryParameter(navigationTarget, null);
 
-        return Optional.ofNullable(
-                getConfiguration().getTargetUrl(navigationTarget));
+        return Optional
+                .ofNullable(getConfiguration().getTargetUrl(navigationTarget));
     }
 
     @Override
@@ -292,8 +293,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         HasUrlParameterFormat.checkMandatoryParameter(navigationTarget,
                 parameters);
 
-        return Optional.ofNullable(getConfiguration()
-                .getTargetUrl(navigationTarget, parameters));
+        return Optional.ofNullable(
+                getConfiguration().getTargetUrl(navigationTarget, parameters));
     }
 
     @Override
@@ -301,8 +302,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
             Class<? extends Component> navigationTarget) {
         Objects.requireNonNull(navigationTarget, TARGET_MUST_NOT_BE_NULL);
 
-        return Optional.ofNullable(
-                getConfiguration().getTemplate(navigationTarget));
+        return Optional
+                .ofNullable(getConfiguration().getTemplate(navigationTarget));
     }
 
     @Override
@@ -355,6 +356,30 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         });
     }
 
+    @Override
+    public NavigationRouteTarget getNavigationRouteTarget(String url) {
+        return getConfiguration().getNavigationRouteTarget(url);
+    }
+
+    @Override
+    public RouteTarget getRouteTarget(Class<? extends Component> target,
+            RouteParameters parameters) {
+        return getConfiguration().getRouteTarget(target, parameters);
+    }
+
+    @Override
+    public Optional<Class<? extends Component>> getNavigationTarget(
+            String url) {
+        Objects.requireNonNull(url, "url must not be null.");
+        return getConfiguration().getTarget(url);
+    }
+
+    @Override
+    public Optional<Class<? extends Component>> getNavigationTarget(String url,
+            List<String> segments) {
+        return getNavigationTarget(PathUtil.getPath(url, segments));
+    }
+
     /**
      * Add the given error target to the exceptionTargetMap. This will handle
      * existing overlapping exception types by assigning the correct error
@@ -387,7 +412,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      * Register a child handler if parent registered or leave as is if child
      * registered.
      * <p>
-     * If the target is not related to the registered handler then throw
+     * If the target is not related to the registered handler and neither
+     * handler is annotated as {@link DefaultErrorHandler} then throw
      * configuration exception as only one handler for each exception type is
      * allowed.
      *
@@ -395,6 +421,10 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      *            target being handled
      * @param exceptionType
      *            type of the handled exception
+     * @throws InvalidRouteConfigurationException
+     *             thrown if multiple exception handlers are registered for the
+     *             same exception without relation or the other being a default
+     *             handler
      */
     private void handleRegisteredExceptionType(
             Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap,
@@ -406,11 +436,15 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (registered.isAssignableFrom(target)) {
             exceptionTargetsMap.put(exceptionType, target);
         } else if (!target.isAssignableFrom(registered)) {
-            String msg = String.format(
-                    "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
-                    target.getName(), registered.getName(),
-                    exceptionType.getName());
-            throw new InvalidRouteLayoutConfigurationException(msg);
+            if (registered.isAnnotationPresent(DefaultErrorHandler.class)) {
+                exceptionTargetsMap.put(exceptionType, target);
+            } else if (!target.isAnnotationPresent(DefaultErrorHandler.class)) {
+                String msg = String.format(
+                        "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
+                        target.getName(), registered.getName(),
+                        exceptionType.getName());
+                throw new InvalidRouteConfigurationException(msg);
+            }
         }
     }
 
@@ -462,5 +496,5 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
         return Optional.empty();
     }
-    
+
 }

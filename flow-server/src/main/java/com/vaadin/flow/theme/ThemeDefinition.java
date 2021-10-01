@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,8 +42,8 @@ public class ThemeDefinition implements Serializable {
      * @param name
      *            name of the theme, not <code>null</code>
      */
-    public ThemeDefinition(Class<? extends AbstractTheme> theme,
-            String variant, String name) {
+    public ThemeDefinition(Class<? extends AbstractTheme> theme, String variant,
+            String name) {
 
         Objects.requireNonNull(theme);
         Objects.requireNonNull(variant);
@@ -62,7 +62,8 @@ public class ThemeDefinition implements Serializable {
      *            the annotation to get the definition from
      */
     public ThemeDefinition(Theme themeAnnotation) {
-        this(themeAnnotation.themeClass(), themeAnnotation.variant(), themeAnnotation.value());
+        this(themeAnnotation.themeClass(), themeAnnotation.variant(),
+                themeAnnotation.value());
     }
 
     /**

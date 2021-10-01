@@ -13,7 +13,6 @@
 	<inherits name="com.google.gwt.http.HTTP" />
 
 	<inherits name="com.google.gwt.useragent.UserAgent" />
-	<inherits name="com.google.gwt.precompress.Precompress" />
 
 	<source path="client" />
 	<source path="flow/shared" />

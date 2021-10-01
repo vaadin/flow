@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -212,13 +212,12 @@ public class JsonCodecTest {
                 JsonCodec.decodeAs(json, int.class));
         Assert.assertEquals(Integer.valueOf(0),
                 JsonCodec.decodeAs(Json.createNull(), int.class));
-        //double
+        // double
         Assert.assertNull(JsonCodec.decodeAs(Json.createNull(), Double.class));
         Assert.assertTrue(JsonCodec.decodeAs(json, Double.class).isNaN());
         Assert.assertTrue(JsonCodec.decodeAs(json, double.class).isNaN());
         Assert.assertEquals(0.0d,
-                JsonCodec.decodeAs(Json.createNull(), double.class),
-                0.0001d);
+                JsonCodec.decodeAs(Json.createNull(), double.class), 0.0001d);
     }
 
     @Test(expected = ClassCastException.class)
@@ -230,7 +229,6 @@ public class JsonCodecTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void decodeAs_unsupportedType() {
-        Assert.assertNull(
-                JsonCodec.decodeAs(Json.create("foo"), float.class));
+        Assert.assertNull(JsonCodec.decodeAs(Json.create("foo"), float.class));
     }
 }

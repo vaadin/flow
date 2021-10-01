@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,10 +32,11 @@ public class VaadinServletConfig implements VaadinConfig {
      * Vaadin servlet configuration wrapper constructor.
      *
      * @param config
-     *         servlet configuration object, not <code>null</code>
+     *            servlet configuration object, not <code>null</code>
      */
     public VaadinServletConfig(ServletConfig config) {
-        Objects.requireNonNull(config, "VaadinServletConfig requires the ServletConfig object");
+        Objects.requireNonNull(config,
+                "VaadinServletConfig requires the ServletConfig object");
         this.config = config;
     }
 
@@ -43,8 +44,8 @@ public class VaadinServletConfig implements VaadinConfig {
      * Ensures there is a valid instance of {@link ServletConfig}.
      */
     private void ensureServletConfig() {
-        if (config == null && VaadinService
-                .getCurrent() instanceof VaadinServletService) {
+        if (config == null
+                && VaadinService.getCurrent() instanceof VaadinServletService) {
             config = ((VaadinServletService) VaadinService.getCurrent())
                     .getServlet().getServletConfig();
         } else if (config == null) {

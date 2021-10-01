@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -63,7 +63,8 @@ public class ConnectionIndicator {
     /**
      * Set the connection state to be displayed by the loading indicator.
      *
-     * @param state the connection state
+     * @param state
+     *            the connection state
      */
     public static native void setState(String state)
     /*-{
@@ -89,8 +90,10 @@ public class ConnectionIndicator {
     /**
      * Set a property of the connection indicator component.
      *
-     * @param property the property to set
-     * @param value    the value to set
+     * @param property
+     *            the property to set
+     * @param value
+     *            the value to set
      */
     public static native void setProperty(String property, Object value)
     /*-{

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,6 @@
  */
 package com.vaadin.flow.component.littemplate;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static elemental.json.JsonType.ARRAY;
-import static elemental.json.JsonType.OBJECT;
-import static elemental.json.JsonType.STRING;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,14 +25,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.server.VaadinService;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static elemental.json.JsonType.ARRAY;
+import static elemental.json.JsonType.OBJECT;
+import static elemental.json.JsonType.STRING;
+
 /**
  * Parse statistics data provided by webpack.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since
@@ -122,11 +124,13 @@ public final class BundleLitParser {
      *            name of the file to get from the json
      * @param statistics
      *            statistics json as a JsonObject
+     * @param service
+     *            current VaadinService
      * @return JsonObject for the file statistic
      */
     public static String getSourceFromStatistics(String fileName,
-            JsonObject statistics) {
-        return getSourceFromObject(statistics, fileName);
+            JsonObject statistics, VaadinService service) {
+        return getSourceFromObject(statistics, fileName, service);
     }
 
     /**
@@ -169,13 +173,15 @@ public final class BundleLitParser {
 
     // find the first module whose name matches the file name
     private static String getSourceFromObject(JsonObject module,
-            String fileName) {
+            String fileName, VaadinService service) {
         String source = null;
         if (validKey(module, MODULES, ARRAY)) {
-            source = getSourceFromArray(module.getArray(MODULES), fileName);
+            source = getSourceFromArray(module.getArray(MODULES), fileName,
+                    service);
         }
         if (source == null && validKey(module, CHUNKS, ARRAY)) {
-            source = getSourceFromArray(module.getArray(CHUNKS), fileName);
+            source = getSourceFromArray(module.getArray(CHUNKS), fileName,
+                    service);
         }
         if (source == null && validKey(module, NAME, STRING)
                 && validKey(module, SOURCE, STRING)) {
@@ -192,8 +198,9 @@ public final class BundleLitParser {
             // using ./ as the actual path contains
             // "node_modules/@vaadin/flow-frontend/" instead of "./"
             // "target/flow-frontend/" instead of "./"
-            if (name.contains(FLOW_NPM_PACKAGE_NAME)
-                    || name.contains(DEAULT_FLOW_RESOURCES_FOLDER)) {
+            if (name.contains(FLOW_NPM_PACKAGE_NAME) || name.contains(service
+                    .getDeploymentConfiguration().getFlowResourcesFolder()
+                    .replaceAll("\\\\", "/"))) {
                 alternativeFileName = alternativeFileName.replaceFirst("\\./",
                         "");
             }
@@ -212,12 +219,12 @@ public final class BundleLitParser {
 
     // Visits all elements of a JsonArray and returns the first element with a
     // valid source module
-    private static String getSourceFromArray(JsonArray objects,
-            String fileName) {
+    private static String getSourceFromArray(JsonArray objects, String fileName,
+            VaadinService service) {
         String source = null;
         for (int i = 0; source == null && i < objects.length(); i++) {
             if (objects.get(i).getType().equals(OBJECT)) {
-                source = getSourceFromObject(objects.get(i), fileName);
+                source = getSourceFromObject(objects.get(i), fileName, service);
             }
         }
         return source;

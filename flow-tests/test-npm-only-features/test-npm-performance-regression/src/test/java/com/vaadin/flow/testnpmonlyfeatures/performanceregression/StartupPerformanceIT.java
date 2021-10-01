@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -55,8 +55,7 @@ public class StartupPerformanceIT extends ChromeBrowserTest {
         final int thresholdMs = Boolean.getBoolean(
                 System.getProperty("vaadin.useDeprecatedV14Bootstrapping"))
                         ? 5500
-                        : 15000;
-
+                        : 12000;
 
         Assert.assertTrue(
                 String.format("startup time expected <= %d but was %d",

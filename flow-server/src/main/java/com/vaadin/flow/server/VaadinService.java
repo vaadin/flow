@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,6 +29,8 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -76,7 +78,6 @@ import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
 import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
@@ -200,28 +201,6 @@ public abstract class VaadinService implements Serializable {
      */
     public VaadinService(DeploymentConfiguration deploymentConfiguration) {
         this.deploymentConfiguration = deploymentConfiguration;
-
-        final String classLoaderName = getDeploymentConfiguration()
-                .getClassLoaderName();
-        if (classLoaderName != null) {
-            try {
-                final Class<?> classLoaderClass = getClass().getClassLoader()
-                        .loadClass(classLoaderName);
-                final Constructor<?> c = classLoaderClass
-                        .getConstructor(ClassLoader.class);
-                setClassLoader((ClassLoader) c.newInstance(
-                        new Object[] { getClass().getClassLoader() }));
-            } catch (final Exception e) {
-                throw new RuntimeException(
-                        "Could not find specified class loader: "
-                                + classLoaderName,
-                        e);
-            }
-        }
-
-        if (getClassLoader() == null) {
-            setDefaultClassLoader();
-        }
     }
 
     /**
@@ -245,6 +224,7 @@ public abstract class VaadinService implements Serializable {
      *             if a problem occurs when creating the service
      */
     public void init() throws ServiceException {
+        doSetClassLoader();
         instantiator = createInstantiator();
 
         // init the router now so that registry will be available for
@@ -350,24 +330,12 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new UidlRequestHandler());
         handlers.add(new UnsupportedBrowserHandler());
         handlers.add(new StreamRequestHandler());
-        PwaRegistry pwaRegistry = getPwaRegistry();
-        if (pwaRegistry != null
-                && pwaRegistry.getPwaConfiguration().isEnabled()) {
-            handlers.add(new PwaHandler(pwaRegistry));
-        }
+        handlers.add(new PwaHandler(() -> getPwaRegistry()));
 
-        if (hasWebComponentConfigurations()) {
-            handlers.add(new WebComponentProvider());
-            handlers.add(new WebComponentBootstrapHandler());
-        }
+        handlers.add(new WebComponentProvider());
+        handlers.add(new WebComponentBootstrapHandler());
 
         return handlers;
-    }
-
-    private boolean hasWebComponentConfigurations() {
-        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                .getInstance(getContext());
-        return registry.hasConfigurations();
     }
 
     /**
@@ -795,13 +763,22 @@ public abstract class VaadinService implements Serializable {
     /**
      * Locks the given session for this service instance. Typically you want to
      * call {@link VaadinSession#lock()} instead of this method.
+     * <p>
+     * Note: The method and its signature has been changed to return lock
+     * instance in Vaadin X.X.X. If you have overriden this method, you need to
+     * update your implementation.
+     * <p>
+     * Note: Overriding this method is not recommended, for custom lock storage
+     * strategy override {@link #getSessionLock(WrappedSession)} and
+     * {@link #setSessionLock(WrappedSession,Lock)} instead.
      *
      * @param wrappedSession
      *            The session to lock
+     * @return Lock instance
      * @throws IllegalStateException
      *             if the session is invalidated before it can be locked
      */
-    protected void lockSession(WrappedSession wrappedSession) {
+    protected Lock lockSession(WrappedSession wrappedSession) {
         Lock lock = getSessionLock(wrappedSession);
         if (lock == null) {
             /*
@@ -831,21 +808,31 @@ public abstract class VaadinService implements Serializable {
             lock.unlock();
             throw e;
         }
+        return lock;
     }
 
     /**
      * Releases the lock for the given session for this service instance.
      * Typically you want to call {@link VaadinSession#unlock()} instead of this
      * method.
+     * <p>
+     * Note: The method and its signature has been changed to get lock instance
+     * as parameter in Vaadin X.X.0. If you have overriden this method, you need
+     * to update your implementation.
+     * <p>
+     * Note: Overriding this method is not recommended, for custom lock storage
+     * strategy override {@link #getSessionLock(WrappedSession)} and
+     * {@link #setSessionLock(WrappedSession,Lock)} instead.
      *
      * @param wrappedSession
      *            The session to unlock
+     * @param lock
+     *            Lock instance to unlock
      */
-    protected void unlockSession(WrappedSession wrappedSession) {
-        assert getSessionLock(wrappedSession) != null;
-        assert ((ReentrantLock) getSessionLock(wrappedSession))
+    protected void unlockSession(WrappedSession wrappedSession, Lock lock) {
+        assert ((ReentrantLock) lock)
                 .isHeldByCurrentThread() : "Trying to unlock the session but it has not been locked by this thread";
-        getSessionLock(wrappedSession).unlock();
+        lock.unlock();
     }
 
     private VaadinSession findOrCreateVaadinSession(VaadinRequest request)
@@ -854,8 +841,9 @@ public abstract class VaadinService implements Serializable {
         WrappedSession wrappedSession = getWrappedSession(request,
                 requestCanCreateSession);
 
+        final Lock lock;
         try {
-            lockSession(wrappedSession);
+            lock = lockSession(wrappedSession);
         } catch (IllegalStateException e) {
             throw new SessionExpiredException();
         }
@@ -864,7 +852,7 @@ public abstract class VaadinService implements Serializable {
             return doFindOrCreateVaadinSession(request,
                     requestCanCreateSession);
         } finally {
-            unlockSession(wrappedSession);
+            unlockSession(wrappedSession, lock);
         }
 
     }
@@ -1223,8 +1211,13 @@ public abstract class VaadinService implements Serializable {
             if (value instanceof VaadinSession) {
                 // set flag to avoid cleanup
                 VaadinSession serviceSession = (VaadinSession) value;
-                serviceSession.setAttribute(PRESERVE_UNBOUND_SESSION_ATTRIBUTE,
-                        Boolean.TRUE);
+                serviceSession.lock();
+                try {
+                    serviceSession.setAttribute(
+                            PRESERVE_UNBOUND_SESSION_ATTRIBUTE, Boolean.TRUE);
+                } finally {
+                    serviceSession.unlock();
+                }
             }
             attrs.put(name, value);
         }
@@ -1251,8 +1244,13 @@ public abstract class VaadinService implements Serializable {
                         serviceSession.getLockInstance());
 
                 service.storeSession(serviceSession, newSession);
-                serviceSession.setAttribute(PRESERVE_UNBOUND_SESSION_ATTRIBUTE,
-                        null);
+                serviceSession.lock();
+                try {
+                    serviceSession.setAttribute(
+                            PRESERVE_UNBOUND_SESSION_ATTRIBUTE, null);
+                } finally {
+                    serviceSession.unlock();
+                }
             }
         }
 
@@ -1715,7 +1713,17 @@ public abstract class VaadinService implements Serializable {
                  * endless loop. This can at least happen if refreshing a
                  * resource when the session has expired.
                  */
-                response.sendError(HttpServletResponse.SC_GONE,
+
+                // Ensure that the browser does not cache expired responses.
+                // iOS 6 Safari requires this
+                // (https://github.com/vaadin/framework/issues/3226)
+                response.setHeader("Cache-Control", "no-cache");
+                // If Content-Type is not set, browsers assume text/html and may
+                // complain about the empty response body
+                // (https://github.com/vaadin/framework/issues/4167)
+                response.setHeader("Content-Type", "text/plain");
+
+                response.sendError(HttpServletResponse.SC_FORBIDDEN,
                         "Session expired");
             }
         } catch (IOException e) {
@@ -1931,7 +1939,7 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Verifies that the given CSRF token (aka double submit cookie) is valid
+     * Verifies that the given CSRF token (synchronizer token pattern) is valid
      * for the given UI. This is used to protect against Cross Site Request
      * Forgery attacks.
      * <p>
@@ -1955,7 +1963,9 @@ public abstract class VaadinService implements Serializable {
                 .isXsrfProtectionEnabled()) {
             String uiToken = ui.getCsrfToken();
 
-            if (uiToken == null || !uiToken.equals(requestToken)) {
+            if (uiToken == null || !MessageDigest.isEqual(
+                    uiToken.getBytes(StandardCharsets.UTF_8),
+                    requestToken.getBytes(StandardCharsets.UTF_8))) {
                 return false;
             }
         }
@@ -2128,8 +2138,6 @@ public abstract class VaadinService implements Serializable {
             WrappedSession wrappedSession) {
         assert VaadinSession.hasLock(this, wrappedSession);
         writeToHttpSession(wrappedSession, session);
-        wrappedSession.setAttribute(getCsrfTokenAttributeName(),
-                session.getCsrfToken());
         session.refreshTransients(wrappedSession, this);
     }
 
@@ -2172,6 +2180,10 @@ public abstract class VaadinService implements Serializable {
      * Performs the actual read of the VaadinSession from the underlying HTTP
      * session after sanity checks have been performed.
      * <p>
+     * If a VaadinSession that was ignored during serialization is found, it is
+     * removed from the session and {@code null} is returned so a new, proper
+     * session can be created.
+     * <p>
      * Called by {@link #loadSession(WrappedSession)}.
      *
      * @param wrappedSession
@@ -2179,8 +2191,9 @@ public abstract class VaadinService implements Serializable {
      * @return the VaadinSession or null if no session was found
      */
     protected VaadinSession readFromHttpSession(WrappedSession wrappedSession) {
-        return (VaadinSession) wrappedSession
+        VaadinSession session = (VaadinSession) wrappedSession
                 .getAttribute(getSessionAttributeName());
+        return session;
     }
 
     /**
@@ -2193,7 +2206,6 @@ public abstract class VaadinService implements Serializable {
     public void removeSession(WrappedSession wrappedSession) {
         assert VaadinSession.hasLock(this, wrappedSession);
         removeFromHttpSession(wrappedSession);
-        wrappedSession.removeAttribute(getCsrfTokenAttributeName());
     }
 
     /**
@@ -2204,6 +2216,13 @@ public abstract class VaadinService implements Serializable {
      *            the underlying HTTP session
      */
     protected void removeFromHttpSession(WrappedSession wrappedSession) {
+        VaadinSession vaadinSession = readFromHttpSession(wrappedSession);
+        if (vaadinSession != null) {
+            // mark Vaadin session as closed explicitly (opposite to closing as
+            // a result of invalidated HTTP session)
+            vaadinSession.setAttribute(VaadinSession.CLOSE_SESSION_EXPLICITLY,
+                    true);
+        }
         wrappedSession.removeAttribute(getSessionAttributeName());
 
     }
@@ -2397,5 +2416,30 @@ public abstract class VaadinService implements Serializable {
     public static String getCsrfTokenAttributeName() {
         return VaadinSession.class.getName() + "."
                 + ApplicationConstants.CSRF_TOKEN;
+    }
+
+    private void doSetClassLoader() {
+        final String classLoaderName = getDeploymentConfiguration() == null
+                ? null
+                : getDeploymentConfiguration().getClassLoaderName();
+        if (classLoaderName != null) {
+            try {
+                final Class<?> classLoaderClass = getClass().getClassLoader()
+                        .loadClass(classLoaderName);
+                final Constructor<?> c = classLoaderClass
+                        .getConstructor(ClassLoader.class);
+                setClassLoader((ClassLoader) c.newInstance(
+                        new Object[] { getClass().getClassLoader() }));
+            } catch (final Exception e) {
+                throw new RuntimeException(
+                        "Could not find specified class loader: "
+                                + classLoaderName,
+                        e);
+            }
+        }
+
+        if (getClassLoader() == null) {
+            setDefaultClassLoader();
+        }
     }
 }

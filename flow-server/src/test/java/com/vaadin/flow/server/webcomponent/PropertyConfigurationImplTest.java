@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,8 +43,9 @@ public class PropertyConfigurationImplTest {
 
         intPropertyConf.getOnChangeHandler().accept(myComponent, 5);
 
-        Assert.assertEquals("onChangeHandler should have been set and value " +
-                "updated", 5, myComponent.value);
+        Assert.assertEquals(
+                "onChangeHandler should have been set and value " + "updated",
+                5, myComponent.value);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -61,7 +62,7 @@ public class PropertyConfigurationImplTest {
 
         // verify default value for completeness
         Assert.assertEquals("default value is 1", 1,
-                (int)data.getDefaultValue());
+                (int) data.getDefaultValue());
 
         Assert.assertTrue("read-only flag should have been set to true",
                 data.isReadOnly());

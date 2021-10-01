@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -236,15 +236,15 @@ class JsniHelper {
 
     static native <T> int pushArray(JsArray<T> array,
             JsArray<? extends T> values)
-            /*-{
-                return array.push.apply(array, values);
-            }-*/;
+    /*-{
+        return array.push.apply(array, values);
+    }-*/;
 
     static native <T> JsArray<T> spliceArray(JsArray<T> array, int index,
             int remove, JsArray<? extends T> add)
-            /*-{
-                return array.splice.apply(array, [index, remove].concat(add));
-            }-*/;
+    /*-{
+        return array.splice.apply(array, [index, remove].concat(add));
+    }-*/;
 
     static native void clear(JsArray<?> array)
     /*-{

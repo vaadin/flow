@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.server.communication;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -36,6 +39,8 @@ import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletResponse;
 import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -72,19 +77,28 @@ public class JavaScriptBootstrapHandlerTest {
 
     @Test
     public void should_handleRequest_when_initTypeRequest() throws Exception {
-        VaadinRequest request = mocks.createRequest(mocks, "/foo/?v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo");
         Assert.assertTrue(jsInitHandler.canHandleRequest(request));
     }
 
     @Test
-    public void should_not_handleRequest_if_not_initTypeRequest() throws Exception {
-        VaadinRequest request = mocks.createRequest(mocks, "/foo/?v-r=bar");
+    public void should_not_handleRequest_when_pathInfo_set() throws Exception {
+        VaadinRequest request = mocks.createRequest(mocks, "/foo",
+                "v-r=init&foo");
+        Assert.assertFalse(jsInitHandler.canHandleRequest(request));
+    }
+
+    @Test
+    public void should_not_handleRequest_if_not_initTypeRequest()
+            throws Exception {
+        VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=bar");
         Assert.assertFalse(jsInitHandler.canHandleRequest(request));
     }
 
     @Test
     public void should_produceValidJsonResponse() throws Exception {
-        VaadinRequest request = mocks.createRequest(mocks, "/foo/?v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location");
         jsInitHandler.handleRequest(session, request, response);
 
         Assert.assertEquals(200, response.getErrorCode());
@@ -97,44 +111,55 @@ public class JavaScriptBootstrapHandlerTest {
         Assert.assertTrue(json.hasKey("errors"));
         Assert.assertTrue(json.hasKey("appConfig"));
         Assert.assertTrue(json.getObject("appConfig").hasKey("appId"));
-        Assert.assertTrue(json.getObject("appConfig").getObject("uidl").hasKey("changes"));
+        Assert.assertTrue(json.getObject("appConfig").getObject("uidl")
+                .hasKey("changes"));
         Assert.assertTrue(json.getObject("appConfig").getBoolean("debug"));
-        Assert.assertFalse(json.getObject("appConfig").hasKey("webComponentMode"));
+        Assert.assertFalse(
+                json.getObject("appConfig").hasKey("webComponentMode"));
 
-        Assert.assertEquals("./", json.getObject("appConfig").getString("contextRootUrl"));
+        Assert.assertEquals("./",
+                json.getObject("appConfig").getString("contextRootUrl"));
         Assert.assertNull(
                 "ServiceUrl should not be set. It will be computed by flow-client",
                 json.getObject("appConfig").get("serviceUrl"));
-        Assert.assertEquals("http://localhost:8888/foo/", json.getObject("appConfig").getString("requestURL"));
+        Assert.assertEquals("http://localhost:8888/",
+                json.getObject("appConfig").getString("requestURL"));
 
         Assert.assertFalse(json.hasKey("pushScript"));
     }
 
     @Test
     public void should_initialize_UI() throws Exception {
-        VaadinRequest request = mocks.createRequest(mocks, "/foo/?v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
 
         Assert.assertNotNull(UI.getCurrent());
-        Assert.assertEquals(JavaScriptBootstrapUI.class, UI.getCurrent().getClass());
+        Assert.assertEquals(JavaScriptBootstrapUI.class,
+                UI.getCurrent().getClass());
 
-        Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING, Boolean.TRUE);
+        Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING,
+                Boolean.TRUE);
 
     }
 
     @Test
     public void should_attachViewTo_UiContainer() throws Exception {
-        VaadinRequest request = mocks.createRequest(mocks, "/foo/?v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
 
         JavaScriptBootstrapUI ui = (JavaScriptBootstrapUI) UI.getCurrent();
-        ui.connectClient("a-tag", "an-id", "a-route", "");
+        ui.connectClient("a-tag", "an-id", "a-route", "", null);
 
         TestNodeVisitor visitor = new TestNodeVisitor(true);
-        BasicElementStateProvider.get().visit(ui.getElement().getNode(), visitor);
+        BasicElementStateProvider.get().visit(ui.getElement().getNode(),
+                visitor);
 
-        Assert.assertTrue(hasNodeTag(visitor, "^<body>.*", ElementType.REGULAR));
-        Assert.assertTrue(hasNodeTag(visitor, "^<a-tag>.*", ElementType.VIRTUAL_ATTACHED));
+        Assert.assertTrue(
+                hasNodeTag(visitor, "^<body>.*", ElementType.REGULAR));
+        Assert.assertTrue(hasNodeTag(visitor, "^<a-tag>.*",
+                ElementType.VIRTUAL_ATTACHED));
         Assert.assertTrue(hasNodeTag(visitor, "^<div>.*", ElementType.REGULAR));
         Assert.assertTrue(
                 hasNodeTag(visitor, "^<div>.*Could not navigate to 'a-route'.*",
@@ -143,24 +168,26 @@ public class JavaScriptBootstrapHandlerTest {
     }
 
     @Test
-    public void should_attachViewTo_Body_when_location() throws Exception {
-
-        VaadinRequest request = mocks.createRequest(mocks, "/foo/?v-r=init&location=%2Fbar%3Fpar1%26par2");
+    public void should_attachViewTo_Body_when_serverRouting() throws Exception {
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&location=bar%3Fpar1%26par2&serverSideRouting");
 
         jsInitHandler.handleRequest(session, request, response);
 
         JavaScriptBootstrapUI ui = (JavaScriptBootstrapUI) UI.getCurrent();
 
         TestNodeVisitor visitor = new TestNodeVisitor(true);
-        BasicElementStateProvider.get().visit(ui.getElement().getNode(), visitor);
+        BasicElementStateProvider.get().visit(ui.getElement().getNode(),
+                visitor);
 
-        Assert.assertTrue(hasNodeTag(visitor, "^<body>.*", ElementType.REGULAR));
-        Assert.assertTrue(hasNodeTag(visitor, "^<div>.*", ElementType.REGULAR));
         Assert.assertTrue(
-                hasNodeTag(visitor, "^<div>.*Could not navigate to 'bar'.*",
-                        ElementType.REGULAR));
+                hasNodeTag(visitor, "^<body>.*", ElementType.REGULAR));
+        Assert.assertTrue(hasNodeTag(visitor, "^<div>.*", ElementType.REGULAR));
+        Assert.assertTrue(hasNodeTag(visitor,
+                "^<div>.*Could not navigate to 'bar'.*", ElementType.REGULAR));
+        Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING,
+                Boolean.TRUE);
 
-        Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING, Boolean.TRUE);
     }
 
     @Test
@@ -168,8 +195,8 @@ public class JavaScriptBootstrapHandlerTest {
             throws Exception {
         mocks.getDeploymentConfiguration().setPushMode(PushMode.AUTOMATIC);
 
-        VaadinRequest request = mocks.createRequest(mocks,
-                "/foo/?v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
 
         Assert.assertEquals(200, response.getErrorCode());
@@ -186,8 +213,8 @@ public class JavaScriptBootstrapHandlerTest {
         AppShellRegistry registry = Mockito.mock(AppShellRegistry.class);
         mocks.setAppShellRegistry(registry);
 
-        VaadinRequest request = mocks.createRequest(mocks,
-                "/foo/?v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
 
         Mockito.verify(registry)
@@ -197,11 +224,14 @@ public class JavaScriptBootstrapHandlerTest {
     @Test
     public void should_respondPushScript_when_annotatedInAppShell()
             throws Exception {
-        AppShellRegistry registry = new AppShellRegistry();
+        VaadinServletContext context = new VaadinServletContext(
+                mocks.getServletContext());
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
         registry.setShell(PushAppShell.class);
         mocks.setAppShellRegistry(registry);
 
-        VaadinRequest request = mocks.createRequest(mocks, "/foo/?v-r=init&foo");
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location");
         jsInitHandler.handleRequest(session, request, response);
 
         Assert.assertEquals(200, response.getErrorCode());
@@ -213,15 +243,59 @@ public class JavaScriptBootstrapHandlerTest {
                 "^\\./VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
     }
 
-    private boolean hasNodeTag(TestNodeVisitor visitor, String htmContent, ElementType type) {
+    @Test
+    public void synchronizedHandleRequest_badLocation_noUiCreated()
+            throws IOException {
+        final JavaScriptBootstrapHandler bootstrapHandler = new JavaScriptBootstrapHandler();
+
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&location=..**");
+
+        final MockServletServiceSessionSetup.TestVaadinServletResponse response = mocks
+                .createResponse();
+
+        final boolean value = bootstrapHandler.synchronizedHandleRequest(
+                mocks.getSession(), request, response);
+        Assert.assertTrue("No further request handlers should be called",
+                value);
+
+        Assert.assertEquals("Invalid status code reported", 400,
+                response.getErrorCode());
+        Assert.assertEquals("Invalid message reported",
+                "Invalid location: Relative path cannot contain .. segments",
+                response.getErrorMessage());
+    }
+
+    @Test
+    public void synchronizedHandleRequest_noLocationParameter_noUiCreated()
+            throws IOException {
+        final JavaScriptBootstrapHandler bootstrapHandler = new JavaScriptBootstrapHandler();
+
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=ini&foobar");
+
+        final MockServletServiceSessionSetup.TestVaadinServletResponse response = mocks
+                .createResponse();
+
+        final boolean value = bootstrapHandler.synchronizedHandleRequest(
+                mocks.getSession(), request, response);
+        Assert.assertTrue("No further request handlers should be called",
+                value);
+
+        Assert.assertEquals("Invalid status code reported", 400,
+                response.getErrorCode());
+        Assert.assertEquals("Invalid message reported",
+                "Invalid location: Location parameter missing from bootstrap request to server.",
+                response.getErrorMessage());
+    }
+
+    private boolean hasNodeTag(TestNodeVisitor visitor, String htmContent,
+            ElementType type) {
         Pattern regex = Pattern.compile(htmContent, Pattern.DOTALL);
-        return visitor
-                .getVisited()
-                .entrySet()
-                .stream()
-                .anyMatch(entry -> {
-                    return entry.getValue().equals(type) && regex.matcher(entry.getKey().toString()).find();
-                });
+        return visitor.getVisited().entrySet().stream().anyMatch(entry -> {
+            return entry.getValue().equals(type)
+                    && regex.matcher(entry.getKey().toString()).find();
+        });
     }
 
 }

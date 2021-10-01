@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +50,8 @@ import com.vaadin.flow.router.internal.RouteUtil;
 
 /**
  * Utility methods used by the BootstrapHandler.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */
@@ -137,21 +138,11 @@ class BootstrapUtils {
     private static InitialPageSettings createInitialPageSettingsObject(
             BootstrapHandler.BootstrapContext context) {
         UI ui = context.getUI();
-        VaadinRequest request = context.getRequest();
         WebBrowser browser = context.getSession().getBrowser();
 
-        String pathInfo = request.getPathInfo();
-        if (pathInfo == null) {
-            pathInfo = "";
-        } else {
-            assert pathInfo.startsWith("/");
-            pathInfo = pathInfo.substring(1);
-        }
         Router router = ui.getInternals().getRouter();
         NavigationEvent navigationEvent = new NavigationEvent(router,
-                new Location(pathInfo,
-                        QueryParameters.full(request.getParameterMap())),
-                ui, NavigationTrigger.PAGE_LOAD);
+                context.getRoute(), ui, NavigationTrigger.PAGE_LOAD);
 
         List<HasElement> components = ui.getChildren()
                 .map(component -> (HasElement) component)
@@ -162,8 +153,8 @@ class BootstrapUtils {
                         navigationEvent.getUI(), navigationEvent.getTrigger(),
                         navigationEvent.getLocation(), components));
 
-        return new InitialPageSettings(request, ui, afterNavigationEvent,
-                browser);
+        return new InitialPageSettings(context.getRequest(), ui,
+                afterNavigationEvent, browser);
     }
 
     /**
@@ -218,7 +209,7 @@ class BootstrapUtils {
         } else {
             InlineTargets inlines = new InlineTargets();
             inlineAnnotations.forEach(inline -> inlines
-                    .addInlineDependency(inline, context.getRequest()));
+                    .addInlineDependency(inline, context.getService()));
             return Optional.of(inlines);
         }
     }
@@ -227,23 +218,18 @@ class BootstrapUtils {
      *
      * Read the contents of the given file from the classpath.
      *
-     * @param request
-     *            the request for the ui
+     * @param service
+     *            the service that can provide the file
      * @param file
      *            target file to read contents for
      * @return file contents as a {@link String}
      */
-    static String getDependencyContents(VaadinRequest request, String file) {
-        Charset requestCharset = Optional
-                .ofNullable(request.getCharacterEncoding())
-                .filter(string -> !string.isEmpty()).map(Charset::forName)
-                .orElse(StandardCharsets.UTF_8);
-
-        try (InputStream inlineResourceStream = getInlineResourceStream(request,
+    static String getDependencyContents(VaadinService service, String file) {
+        try (InputStream inlineResourceStream = getInlineResourceStream(service,
                 file);
                 BufferedReader bufferedReader = new BufferedReader(
                         new InputStreamReader(inlineResourceStream,
-                                requestCharset))) {
+                                StandardCharsets.UTF_8))) {
             return bufferedReader.lines()
                     .collect(Collectors.joining(System.lineSeparator()));
         } catch (IOException e) {
@@ -252,9 +238,8 @@ class BootstrapUtils {
         }
     }
 
-    private static InputStream getInlineResourceStream(VaadinRequest request,
+    private static InputStream getInlineResourceStream(VaadinService service,
             String file) {
-        VaadinService service = request.getService();
         ResourceProvider resourceProvider = service.getContext()
                 .getAttribute(Lookup.class).lookup(ResourceProvider.class);
         URL appResource = resourceProvider.getApplicationResource(file);
@@ -279,24 +264,51 @@ class BootstrapUtils {
     /**
      * Finds the class on on which page configuration annotation should be
      * defined.
-     *
+     * <p>
+     * This method is only valid for V14 bootstrapping
+     * 
      * @param ui
      *            the UI for which to do the lookup, not <code>null</code>
      * @param request
      *            the request for which to do the lookup, not <code>null</code>
      * @return the class for which page configuration annotations should be
      *         defined, or an empty optional if no such class is available
+     * @deprecated use {@link #resolvePageConfigurationHolder(UI, Location)}
+     *             instead
      */
+    @Deprecated
     public static Optional<Class<?>> resolvePageConfigurationHolder(UI ui,
             VaadinRequest request) {
         assert ui != null;
         assert request != null;
+
+        Location route = new Location(request.getPathInfo(),
+                QueryParameters.full(request.getParameterMap()));
+        return resolvePageConfigurationHolder(ui, route);
+    }
+
+    /**
+     * Finds the class on on which page configuration annotation should be
+     * defined.
+     *
+     * @param ui
+     *            the UI for which to do the lookup, not <code>null</code>
+     * @param route
+     *            the route for which to do the lookup, not <code>null</code>
+     * @return the class for which page configuration annotations should be
+     *         defined, or an empty optional if no such class is available
+     */
+    public static Optional<Class<?>> resolvePageConfigurationHolder(UI ui,
+            Location route) {
+        assert ui != null;
+        assert route != null;
+
         if (ui.getInternals().getRouter() == null) {
             return Optional.empty();
         }
+
         Optional<Class<?>> navigationTarget = ui.getInternals().getRouter()
-                .resolveNavigationTarget(request.getPathInfo(),
-                        request.getParameterMap())
+                .resolveNavigationTarget(route)
                 .map(BootstrapUtils::resolveTopParentLayout);
         if (navigationTarget.isPresent()) {
             return navigationTarget;

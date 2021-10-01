@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,11 +28,12 @@ public class ViewWithServerViewButton extends Div {
                 e -> UI.getCurrent().navigate("serverview"));
         serverViewButton.setId("serverViewButton");
 
-        NativeButton serverViewThrowsExcpetionButton = 
-            new NativeButton("Go to a server view that thorws exception", 
+        NativeButton serverViewThrowsExcpetionButton = new NativeButton(
+                "Go to a server view that thorws exception",
                 e -> UI.getCurrent().navigate(ViewThrowsException.class));
-        serverViewThrowsExcpetionButton.setId("serverViewThrowsExcpetionButton");
-        
+        serverViewThrowsExcpetionButton
+                .setId("serverViewThrowsExcpetionButton");
+
         add(serverViewButton, serverViewThrowsExcpetionButton);
     }
 }

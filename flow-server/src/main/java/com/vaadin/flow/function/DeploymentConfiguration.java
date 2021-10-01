@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -218,23 +218,6 @@ public interface DeploymentConfiguration
      * @return the configured class loader name
      */
     String getClassLoaderName();
-
-    /**
-     * Determines if Flow should automatically register servlets. For more
-     * information on the servlets registered, refer to
-     * {@link com.vaadin.flow.server.startup.ServletDeployer} javadoc.
-     *
-     * User can explicitly disable automatic servlet registration by setting the
-     * {@link InitParameters#DISABLE_AUTOMATIC_SERVLET_REGISTRATION} property to
-     * {@code true}.
-     *
-     * @return {@code true} if Flow should not automatically register servlets
-     * @see com.vaadin.flow.server.startup.ServletDeployer
-     */
-    default boolean disableAutomaticServletRegistration() {
-        return getBooleanProperty(
-                InitParameters.DISABLE_AUTOMATIC_SERVLET_REGISTRATION, false);
-    }
 
     /**
      * Checks whether precompressed Brotli files should be used if available.

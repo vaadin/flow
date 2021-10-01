@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,18 +17,18 @@
 package com.vaadin.flow.component.littemplate;
 
 /**
- * Thrown to indicate that an element had an illegal or
- * inappropriate attribute.
+ * Thrown to indicate that an element had an illegal or inappropriate attribute.
  *
  * @since
  */
 public class IllegalAttributeException extends RuntimeException {
 
     /**
-     * Constructs an <code>IllegalAttributeException</code> with the
-     * specified detail message.
+     * Constructs an <code>IllegalAttributeException</code> with the specified
+     * detail message.
      *
-     * @param   s   the detail message.
+     * @param s
+     *            the detail message.
      */
     public IllegalAttributeException(String s) {
         super(s);

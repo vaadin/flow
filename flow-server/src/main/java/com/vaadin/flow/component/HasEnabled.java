@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -74,6 +74,9 @@ public interface HasEnabled extends HasElement {
          * XXX WARNING Do not override this method. Propagating the enabled
          * state to the element in this way is critical to fulfill generic
          * assumptions with regards to application security.
+         *
+         * Override Component::onEnabledStateChanged if you need to adjust how
+         * the disabled state is visually represented in the browser.
          */
         getElement().setEnabled(enabled);
     }

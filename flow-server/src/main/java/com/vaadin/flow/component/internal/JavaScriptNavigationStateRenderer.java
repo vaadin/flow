@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,9 +16,12 @@
 package com.vaadin.flow.component.internal;
 
 import javax.servlet.http.HttpServletResponse;
+
 import java.util.Optional;
 
-import com.vaadin.flow.component.UI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
@@ -26,12 +29,13 @@ import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Handle navigation events in relation to the client side bootstrap UI
  * {@link JavaScriptBootstrapUI}.
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
 
@@ -69,8 +73,8 @@ class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
     @Override
     public int handle(NavigationEvent event) {
 
-        continueNavigationAction = event.getUI()
-                .getInternals().getContinueNavigationAction();
+        continueNavigationAction = event.getUI().getInternals()
+                .getContinueNavigationAction();
 
         return super.handle(event);
     }

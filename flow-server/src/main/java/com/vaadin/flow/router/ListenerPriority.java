@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -47,12 +47,12 @@ import java.lang.annotation.Target;
  * @author Bernd Hopp
  * @since 1.0
  */
- @Retention(RetentionPolicy.RUNTIME)
- @Target(ElementType.TYPE)
- public @interface ListenerPriority {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface ListenerPriority {
     /**
-     * The priority of the annotated listener, can be any integer. Larger numbers
-     * indicate higher priority.
+     * The priority of the annotated listener, can be any integer. Larger
+     * numbers indicate higher priority.
      *
      * @return the priority-value.
      */

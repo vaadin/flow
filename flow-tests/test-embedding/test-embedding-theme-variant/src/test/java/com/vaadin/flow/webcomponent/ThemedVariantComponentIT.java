@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,12 +36,5 @@ public class ThemedVariantComponentIT extends ChromeBrowserTest {
         TestBenchElement webComponent = $("themed-variant-web-component")
                 .first();
         Assert.assertEquals("dark", webComponent.getAttribute("theme"));
-
-        String customStyle = $("custom-style").first()
-                .getAttribute("innerHTML");
-        Assert.assertThat(customStyle,
-                CoreMatchers.allOf(
-                        CoreMatchers.containsString("theme~=\"dark\""),
-                        CoreMatchers.containsString("--lumo-base-color")));
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -44,11 +44,10 @@ public class AbstractDataViewTest {
 
     @Before
     public void init() {
-        items = new ArrayList<>(Arrays.asList(
-                new Item(1L, "first", "description1"),
-                new Item(2L, "middle", "description2"),
-                new Item(3L, "last", "description3")
-        ));
+        items = new ArrayList<>(
+                Arrays.asList(new Item(1L, "first", "description1"),
+                        new Item(2L, "middle", "description2"),
+                        new Item(3L, "last", "description3")));
         dataProvider = DataProvider.ofCollection(items);
         component = new TestComponent();
         dataView = new DataViewImpl(() -> dataProvider, component);
@@ -83,16 +82,15 @@ public class AbstractDataViewTest {
         dataView.addItemCountChangeListener(
                 event -> fired.compareAndSet(0, event.getItemCount()));
 
-        ComponentUtil
-                .fireEvent(component, new ItemCountChangeEvent<>(component, 10, false));
+        ComponentUtil.fireEvent(component,
+                new ItemCountChangeEvent<>(component, 10, false));
 
         Assert.assertEquals(10, fired.get());
     }
 
     @Test
     public void refreshAll_listenersNotified() {
-        AtomicReference<DataChangeEvent<Item>> refreshAllEvent =
-                new AtomicReference<>();
+        AtomicReference<DataChangeEvent<Item>> refreshAllEvent = new AtomicReference<>();
         dataProvider.addDataProviderListener(event -> {
             Assert.assertNull(refreshAllEvent.get());
             refreshAllEvent.set(event);
@@ -103,8 +101,8 @@ public class AbstractDataViewTest {
     }
 
     /**
-     * setIdentifierProvider is tested in AbstractListDataView since it
-     * has the container(T item) method.
+     * setIdentifierProvider is tested in AbstractListDataView since it has the
+     * container(T item) method.
      */
 
     @Tag("test-component")

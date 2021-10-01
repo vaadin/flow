@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -70,16 +70,16 @@ public class LoadingIndicatorIT extends ChromeBrowserTest {
 
         // Check that default theme is applied
         Assert.assertEquals(
-                "Default loading indicator theming should be applied",
-                "4px", loadingIndicator.getCssValue("height"));
+                "Default loading indicator theming should be applied", "4px",
+                loadingIndicator.getCssValue("height"));
         int count = findElements(By.cssSelector("head > style")).size();
 
         // Removes the style tag with default theme from the client
         findElement(By.id("disable-theme")).click();
 
         // Check that one style tag was removed from head
-        Assert.assertEquals("One style tag should be removed",
-                1, count - findElements(By.cssSelector("head > style")).size());
+        Assert.assertEquals("One style tag should be removed", 1,
+                count - findElements(By.cssSelector("head > style")).size());
         // Check that default theme is not being applied
         Assert.assertEquals(
                 "Default loading indicator theming should not be applied",

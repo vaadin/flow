@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -101,9 +101,9 @@ public class CompositeView extends AbstractDivView {
         serverInput.setId(SERVER_INPUT_ID);
         NativeButton serverInputButton = createButton("Set",
                 SERVER_INPUT_BUTTON_ID, e -> {
-            nameField.setName(serverInput.getValue());
-            serverInput.clear();
-        });
+                    nameField.setName(serverInput.getValue());
+                    serverInput.clear();
+                });
         add(new Text("Enter a value to set the name on the server"),
                 serverInput, serverInputButton);
 

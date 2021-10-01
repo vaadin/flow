@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,14 +28,13 @@ public class InitParametersTest {
             int modifiers = field.getModifiers();
             if (Modifier.isPublic(modifiers)) {
                 Assert.assertEquals(
-                        String.format("field '%s' expected String", field.getName()),
+                        String.format("field '%s' expected String",
+                                field.getName()),
                         String.class, field.getType());
-                Assert.assertTrue(
-                        String.format("field '%s' expected static", field.getName()),
-                        Modifier.isStatic(modifiers));
-                Assert.assertTrue(
-                        String.format("field '%s' expected final", field.getName()),
-                        Modifier.isFinal(modifiers));
+                Assert.assertTrue(String.format("field '%s' expected static",
+                        field.getName()), Modifier.isStatic(modifiers));
+                Assert.assertTrue(String.format("field '%s' expected final",
+                        field.getName()), Modifier.isFinal(modifiers));
             }
         }
     }

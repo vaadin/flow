@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,6 +32,9 @@ import com.vaadin.flow.server.VaadinSession;
  * Throwing is unfortunately only practical for this immediate instance, but
  * there isn't any sensible way of also intercepting for instances derived using
  * e.g. <code>thenAccept</code>.
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.1.4
  */

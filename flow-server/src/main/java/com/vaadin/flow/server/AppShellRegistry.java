@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,7 +35,9 @@ import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.server.startup.AppShellPredicate;
 import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.getClassAnnotations;
@@ -72,6 +74,8 @@ public class AppShellRegistry implements Serializable {
 
     private Class<? extends AppShellConfigurator> appShellClass;
 
+    private final Lookup lookup;
+
     /**
      * A wrapper class for storing the {@link AppShellRegistry} instance in the
      * servlet context.
@@ -90,6 +94,10 @@ public class AppShellRegistry implements Serializable {
         }
     }
 
+    private AppShellRegistry(VaadinContext context) {
+        this.lookup = context.getAttribute(Lookup.class);
+    }
+
     /**
      * Returns the instance of the registry, or create a new one if it does not
      * exist yet.
@@ -103,7 +111,8 @@ public class AppShellRegistry implements Serializable {
             AppShellRegistryWrapper attribute = context
                     .getAttribute(AppShellRegistryWrapper.class);
             if (attribute == null) {
-                attribute = new AppShellRegistryWrapper(new AppShellRegistry());
+                attribute = new AppShellRegistryWrapper(
+                        new AppShellRegistry(context));
                 context.setAttribute(attribute);
             }
             return attribute.registry;
@@ -149,22 +158,14 @@ public class AppShellRegistry implements Serializable {
      * @param clz
      *            the class to check.
      * @return true if the class extends {@link AppShellConfigurator}.
+     * @deprecated use {@link AppShellPredicate} to test whether the class is an
+     *             {@link AppShellConfigurator} or not
      */
+    @Deprecated
     public boolean isShell(Class<?> clz) {
         assert clz != null;
-        try {
-            // first try to check without loading class via the {@code clz}
-            // classloader
-            if (AppShellConfigurator.class.isAssignableFrom(clz)) {
-                return true;
-            }
-            // Use the same class-loader for the checking
-            return clz.getClassLoader()
-                    .loadClass(AppShellConfigurator.class.getName())
-                    .isAssignableFrom(clz);
-        } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException(e);
-        }
+        AppShellPredicate predicate = lookup.lookup(AppShellPredicate.class);
+        return predicate.isShell(clz);
     }
 
     /**
@@ -182,9 +183,11 @@ public class AppShellRegistry implements Serializable {
         List<Class<?>> validOnlyForAppShell = (List) getValidAnnotations();
         // PageTitle can be in AppShell and Views
         validOnlyForAppShell.remove(PageTitle.class);
-        if(WebComponentExporter.class.isAssignableFrom(clz)) {
+        if (WebComponentExporter.class.isAssignableFrom(clz)) {
             // Webcomponent exporter should have the theme annotation
+            // and Push annotation as it is not appShell configured.
             validOnlyForAppShell.remove(Theme.class);
+            validOnlyForAppShell.remove(Push.class);
         }
 
         String offending = getClassAnnotations(clz, validOnlyForAppShell);
@@ -252,18 +255,20 @@ public class AppShellRegistry implements Serializable {
         settings.getHeadElements(Position.APPEND).forEach(
                 elm -> insertElement(elm, document.head()::appendChild));
 
-        settings.getInlineElements(request, TargetElement.HEAD,
+        settings.getInlineElements(request.getService(), TargetElement.HEAD,
                 Position.PREPEND)
                 .forEach(elm -> insertInlineElement(elm,
                         document.head()::prependChild));
-        settings.getInlineElements(request, TargetElement.HEAD, Position.APPEND)
+        settings.getInlineElements(request.getService(), TargetElement.HEAD,
+                Position.APPEND)
                 .forEach(elm -> insertInlineElement(elm,
                         document.head()::appendChild));
-        settings.getInlineElements(request, TargetElement.BODY,
+        settings.getInlineElements(request.getService(), TargetElement.BODY,
                 Position.PREPEND)
                 .forEach(elm -> insertInlineElement(elm,
                         document.body()::prependChild));
-        settings.getInlineElements(request, TargetElement.BODY, Position.APPEND)
+        settings.getInlineElements(request.getService(), TargetElement.BODY,
+                Position.APPEND)
                 .forEach(elm -> insertInlineElement(elm,
                         document.body()::appendChild));
     }

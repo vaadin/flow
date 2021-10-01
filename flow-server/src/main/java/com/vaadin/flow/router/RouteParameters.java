@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -133,7 +133,13 @@ public final class RouteParameters implements Serializable {
             return Optional.empty();
         }
 
-        return Optional.of(Integer.valueOf(value));
+        try {
+            return Optional.of(Integer.valueOf(value));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(String.format(
+                    "Couldn't parse '%s' parameter value '%s' as integer",
+                    parameterName, value), e);
+        }
     }
 
     /**
@@ -152,7 +158,13 @@ public final class RouteParameters implements Serializable {
             return Optional.empty();
         }
 
-        return Optional.of(Long.valueOf(value));
+        try {
+            return Optional.of(Long.valueOf(value));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(String.format(
+                    "Couldn't parse '%s' parameter value '%s' as long",
+                    parameterName, value), e);
+        }
     }
 
     /**

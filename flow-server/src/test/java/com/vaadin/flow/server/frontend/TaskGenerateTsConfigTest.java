@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,8 +42,7 @@ public class TaskGenerateTsConfigTest {
     }
 
     @Test
-    public void should_generateTsConfig_TsConfigNotExist()
-            throws Exception {
+    public void should_generateTsConfig_TsConfigNotExist() throws Exception {
         taskGenerateTsConfig.execute();
         Assert.assertFalse(
                 "Should generate tsconfig.json when "
@@ -60,8 +59,7 @@ public class TaskGenerateTsConfigTest {
     }
 
     @Test
-    public void should_notGenerateTsConfig_TsConfigExist()
-            throws Exception {
+    public void should_notGenerateTsConfig_TsConfigExist() throws Exception {
         Files.createFile(new File(npmFolder, "tsconfig.json").toPath());
         taskGenerateTsConfig.execute();
         Assert.assertFalse(
@@ -70,5 +68,4 @@ public class TaskGenerateTsConfigTest {
         Assert.assertTrue("The tsconfig.json should already exist",
                 taskGenerateTsConfig.getGeneratedFile().exists());
     }
-
 }

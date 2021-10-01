@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,9 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.function.SerializableConsumer;
 
 public class FireEventComponent extends Div {
-    public enum OptionsType {NoBubble_NoCancel, Bubble_NoCancel, Bubble_Cancel}
+    public enum OptionsType {
+        NoBubble_NoCancel, Bubble_NoCancel, Bubble_Cancel
+    }
 
     private SerializableConsumer<Double> numberConsumer;
     private SerializableConsumer<String> errorConsumer;

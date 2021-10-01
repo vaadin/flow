@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -57,6 +58,8 @@ import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSI
 
 /**
  * Represents the class dependency tree of the application.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
@@ -67,6 +70,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private AbstractTheme themeInstance;
     private final HashMap<String, String> packages = new HashMap<>();
     private final Set<String> visited = new HashSet<>();
+    private final boolean useV14Bootstrap;
     private PwaConfiguration pwaConfiguration;
 
     /**
@@ -76,7 +80,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      *            the class finder
      */
     public FrontendDependencies(ClassFinder finder) {
-        this(finder, true);
+        this(finder, true, false);
     }
 
     /**
@@ -93,7 +97,27 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      */
     public FrontendDependencies(ClassFinder finder,
             boolean generateEmbeddableWebComponents) {
+        this(finder, generateEmbeddableWebComponents, false);
+    }
+
+    /**
+     * Tertiary constructor, which allows declaring whether embeddable web
+     * components should be checked for resource dependencies.
+     *
+     * @param finder
+     *            the class finder
+     * @param generateEmbeddableWebComponents
+     *            {@code true} checks the
+     *            {@link com.vaadin.flow.component.WebComponentExporter} classes
+     *            for dependencies. {@code true} is default for
+     *            {@link FrontendDependencies#FrontendDependencies(ClassFinder)}
+     * @param useV14Bootstrap
+     *            whether we are in legacy V14 bootstrap mode
+     */
+    public FrontendDependencies(ClassFinder finder,
+            boolean generateEmbeddableWebComponents, boolean useV14Bootstrap) {
         super(finder);
+        this.useV14Bootstrap = useV14Bootstrap;
         log().info(
                 "Scanning classes to find frontend configurations and dependencies...");
         long start = System.nanoTime();
@@ -261,12 +285,21 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 getFinder().loadClass(HasErrorParameter.class.getName()))) {
             collectEndpoints(errorParameters);
         }
+
+        // UI should always be collected as it contains 'ConnectionIndicator.js'
+        // which else goes into fallback making it always load.
+        collectEndpoints(UI.class);
     }
 
     private void collectEndpoints(Class<?> entry) throws IOException {
         String className = entry.getName();
-        EndPointData data = new EndPointData(entry);
-        endPoints.put(className, visitClass(className, data, false));
+        if (!endPoints.containsKey(className)) {
+            EndPointData data = new EndPointData(entry);
+            endPoints.put(className, visitClass(className, data, false));
+        } else {
+            LoggerFactory.getLogger(FrontendDependencies.class).trace(
+                    "Entry for class {} has already been visited.", className);
+        }
     }
 
     /*
@@ -294,8 +327,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         Set<ThemeData> themes = endPoints.values().stream()
                 // consider only endPoints with theme information
-                .filter(data -> data.getTheme().getThemeClass() != null ||
-                    (data.getTheme().getThemeName() != null && !data.getTheme().getThemeName().isEmpty())
+                .filter(data -> data.getTheme().getThemeClass() != null
+                        || (data.getTheme().getThemeName() != null
+                                && !data.getTheme().getThemeName().isEmpty())
                         || data.getTheme().isNotheme())
                 .map(EndPointData::getTheme)
                 // Remove duplicates by returning a set
@@ -303,8 +337,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         if (themes.size() > 1) {
             String names = endPoints.values().stream()
-                    .filter(data -> data.getTheme().getThemeClass() != null ||
-                        data.getTheme().getThemeName() != null
+                    .filter(data -> data.getTheme().getThemeClass() != null
+                            || data.getTheme().getThemeName() != null
                             || data.getTheme().isNotheme())
                     .map(data -> "found '"
                             + (data.getTheme().isNotheme()
@@ -329,8 +363,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 String themeClass = themeData.getThemeClass();
                 if (!themeData.getThemeName().isEmpty() && themeClass != null) {
                     throw new IllegalStateException(
-                        "Theme name and theme class can not both be specified. "
-                            + "Theme name uses Lumo and can not be used in combination with custom theme class.");
+                            "Theme name and theme class can not both be specified. "
+                                    + "Theme name uses Lumo and can not be used in combination with custom theme class.");
                 }
                 variant = themeData.getVariant();
                 if (themeClass != null) {
@@ -339,7 +373,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                     theme = getDefaultTheme();
                     if (theme == null) {
                         throw new IllegalStateException(
-                            "Lumo dependency needs to be available on the classpath when using a theme name.");
+                                "Lumo dependency needs to be available on the classpath when using a theme name.");
                     }
                 }
                 themeName = themeData.getThemeName();
@@ -417,17 +451,16 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private void computePwaConfiguration() throws ClassNotFoundException {
         FrontendAnnotatedClassVisitor pwaVisitor = new FrontendAnnotatedClassVisitor(
                 getFinder(), PWA.class.getName());
-        Class<?> appShellConfiguratorClass = getFinder().loadClass(
-                AppShellConfigurator.class.getName());
+        Class<?> appShellConfiguratorClass = getFinder()
+                .loadClass(AppShellConfigurator.class.getName());
 
-        for (Class<?> hopefullyAppShellClass :
-                getFinder().getAnnotatedClasses(PWA.class.getName())) {
-                    if (!Arrays.asList(hopefullyAppShellClass.getInterfaces())
-                            .contains(appShellConfiguratorClass)) {
-                        throw new IllegalStateException(
-                                ERROR_INVALID_PWA_ANNOTATION);
-                    }
-                    pwaVisitor.visitClass(hopefullyAppShellClass.getName());
+        for (Class<?> hopefullyAppShellClass : getFinder()
+                .getAnnotatedClasses(PWA.class.getName())) {
+            if (!Arrays.asList(hopefullyAppShellClass.getInterfaces())
+                    .contains(appShellConfiguratorClass)) {
+                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
+            }
+            pwaVisitor.visitClass(hopefullyAppShellClass.getName());
         }
 
         Set<String> dependencies = pwaVisitor.getValues("name");
@@ -435,7 +468,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
         }
         if (dependencies.isEmpty()) {
-            this.pwaConfiguration = new PwaConfiguration();
+            this.pwaConfiguration = new PwaConfiguration(useV14Bootstrap);
             return;
         }
 
@@ -445,7 +478,6 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         String backgroundColor = pwaVisitor.getValue("backgroundColor");
         String themeColor = pwaVisitor.getValue("themeColor");
         String iconPath = pwaVisitor.getValue("iconPath");
-        log().error("iconPath in {}: {}", getClass().getSimpleName(), iconPath);
         String manifestPath = pwaVisitor.getValue("manifestPath");
         String offlinePath = pwaVisitor.getValue("offlinePath");
         String display = pwaVisitor.getValue("display");
@@ -455,7 +487,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         this.pwaConfiguration = new PwaConfiguration(true, name, shortName,
                 description, backgroundColor, themeColor, iconPath,
                 manifestPath, offlinePath, display, startPath,
-                offlineResources.toArray(new String[] {}));
+                offlineResources.toArray(new String[] {}), useV14Bootstrap);
     }
 
     private Logger log() {
@@ -478,7 +510,6 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      *
      * @param clazz
      *            the exporter endpoint class
-     *
      * @throws ClassNotFoundException
      *             if unable to load a class by class name
      * @throws IOException
@@ -504,25 +535,37 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         for (Class<?> exporter : exporterClasses) {
             String exporterClassName = exporter.getName();
-            EndPointData exporterData = new EndPointData(exporter);
-            exportedPoints.put(exporterClassName,
-                    visitClass(exporterClassName, exporterData, false));
+            if (!endPoints.containsKey(exporterClassName)) {
+                EndPointData exporterData = new EndPointData(exporter);
+                exportedPoints.put(exporterClassName,
+                        visitClass(exporterClassName, exporterData, false));
+            }
 
             if (!Modifier.isAbstract(exporter.getModifiers())) {
-                Class<? extends Component> componentClass = (Class<? extends Component>) ReflectTools
-                        .getGenericInterfaceType(exporter, exporterClass);
-                if (componentClass != null
-                        && !componentClass.isAnnotationPresent(routeClass)) {
-                    String componentClassName = componentClass.getName();
-                    EndPointData configurationData = new EndPointData(
-                            componentClass);
-                    exportedPoints.put(componentClassName, visitClass(
-                            componentClassName, configurationData, false));
-                }
+                visitComponenClass(routeClass, exporterClass, exportedPoints,
+                        exporter);
             }
         }
 
         endPoints.putAll(exportedPoints);
+    }
+
+    private void visitComponenClass(Class<? extends Annotation> routeClass,
+            Class<?> exporterClass,
+            HashMap<String, EndPointData> exportedPoints, Class<?> exporter)
+            throws IOException {
+        Class<? extends Component> componentClass = (Class<? extends Component>) ReflectTools
+                .getGenericInterfaceType(exporter, exporterClass);
+        if (componentClass != null
+                && !componentClass.isAnnotationPresent(routeClass)) {
+            String componentClassName = componentClass.getName();
+            if (endPoints.containsKey(componentClassName)) {
+                return;
+            }
+            EndPointData configurationData = new EndPointData(componentClass);
+            exportedPoints.put(componentClassName,
+                    visitClass(componentClassName, configurationData, false));
+        }
     }
 
     /**

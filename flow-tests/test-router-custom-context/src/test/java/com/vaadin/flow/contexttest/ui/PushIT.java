@@ -71,7 +71,8 @@ public class PushIT extends ChromeBrowserTest {
         doTest("routed/sub-context", Transport.LONG_POLLING, true);
     }
 
-    private void doTest(final String subContext, Transport transport, boolean pushMustWork) throws InterruptedException {
+    private void doTest(final String subContext, Transport transport,
+            boolean pushMustWork) throws InterruptedException {
         String url = getRootURL() + "/custom-context-router/" + subContext;
         if (transport != null) {
             url += "?transport=" + transport.getIdentifier();
@@ -82,7 +83,8 @@ public class PushIT extends ChromeBrowserTest {
         findElement(By.id(DependencyLayout.RUN_PUSH_ID)).click();
 
         WebElement signal = findElement(By.id(DependencyLayout.PUSH_SIGNAL_ID));
-        String sampleText = pushMustWork ? DependencyLayout.PUSH_WORKS_TEXT : DependencyLayout.NO_PUSH_YET_TEXT;
+        String sampleText = pushMustWork ? DependencyLayout.PUSH_WORKS_TEXT
+                : DependencyLayout.NO_PUSH_YET_TEXT;
         try {
             waitUntil(driver -> signal.getText().equals(sampleText), 2);
         } catch (TimeoutException e) {

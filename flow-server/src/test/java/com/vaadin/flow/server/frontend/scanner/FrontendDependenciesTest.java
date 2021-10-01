@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,11 +30,18 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.ErrorComponent;
@@ -76,14 +83,16 @@ public class FrontendDependenciesTest {
         Mockito.when(classFinder.loadClass(FrontendDependencies.LUMO))
                 .thenReturn((Class) FakeLumo.class);
 
-        Mockito
-            .when(classFinder.loadClass(AppShellConfigurator.class.getName()))
-            .thenReturn((Class) AppShellConfigurator.class);
+        Mockito.when(
+                classFinder.loadClass(AppShellConfigurator.class.getName()))
+                .thenReturn((Class) AppShellConfigurator.class);
 
-        Mockito.doAnswer(invocation ->
-            FrontendDependenciesTest.class.getClassLoader()
-                    .getResource(invocation.getArgumentAt(0, String.class))
-        ).when(classFinder).getResource(Mockito.anyString());
+        Mockito.doAnswer(invocation -> FrontendDependenciesTest.class
+                .getClassLoader().getResource(invocation.getArgument(0)))
+                .when(classFinder).getResource(Mockito.anyString());
+
+        Mockito.when(classFinder.loadClass(UI.class.getName()))
+                .thenReturn((Class) UI.class);
     }
 
     @Test
@@ -103,71 +112,71 @@ public class FrontendDependenciesTest {
 
     @Test
     public void appShellConfigurator_collectedAsEndpoint()
-        throws ClassNotFoundException {
+            throws ClassNotFoundException {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
-            .thenReturn(Collections.singleton(MyAppShell.class));
+                .thenReturn(Collections.singleton(MyAppShell.class));
         Mockito.when(classFinder.loadClass(FakeLumo.class.getName()))
-            .thenReturn((Class) FakeLumo.class);
+                .thenReturn((Class) FakeLumo.class);
 
         FrontendDependencies dependencies = new FrontendDependencies(
-            classFinder, false);
+                classFinder, false);
 
-        Assert.assertEquals(1, dependencies.getEndPoints().size());
+        Assert.assertEquals("UI and AppShell should be found", 2,
+                dependencies.getEndPoints().size());
 
         AbstractTheme theme = dependencies.getTheme();
         Assert.assertNotNull("Theme not found in endpoint", theme);
 
         ThemeDefinition themeDefinition = dependencies.getThemeDefinition();
         Assert.assertNotNull("ThemeDefinition is not filled", themeDefinition);
-        Assert.assertEquals(FakeLumo.class,
-            themeDefinition.getTheme());
+        Assert.assertEquals(FakeLumo.class, themeDefinition.getTheme());
     }
 
     @Test
     public void themeDefiningClassAndName_throwsException()
-        throws ClassNotFoundException {
+            throws ClassNotFoundException {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
-            .thenReturn(Collections.singleton(FaultyThemeAnnotation.class));
+                .thenReturn(Collections.singleton(FaultyThemeAnnotation.class));
         Mockito.when(classFinder.loadClass(FakeLumo.class.getName()))
-            .thenReturn((Class) FakeLumo.class);
+                .thenReturn((Class) FakeLumo.class);
 
-        IllegalStateException exception = Assert
-            .assertThrows(IllegalStateException.class,
+        IllegalStateException exception = Assert.assertThrows(
+                IllegalStateException.class,
                 () -> new FrontendDependencies(classFinder, false));
 
         Assert.assertEquals("Unexpected message for the thrown exception",
-            "Theme name and theme class can not both be specified. "
-                + "Theme name uses Lumo and can not be used in combination with custom theme class.",
-            exception.getMessage());
+                "Theme name and theme class can not both be specified. "
+                        + "Theme name uses Lumo and can not be used in combination with custom theme class.",
+                exception.getMessage());
     }
 
     @Test
     public void noDefaultThemeAvailable_throwsException()
-        throws ClassNotFoundException {
+            throws ClassNotFoundException {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
-            .thenReturn(Collections.singleton(MyAppThemeShell.class));
+                .thenReturn(Collections.singleton(MyAppThemeShell.class));
         Mockito.when(classFinder.loadClass(FrontendDependencies.LUMO))
-            .thenThrow(ClassNotFoundException.class);
+                .thenThrow(ClassNotFoundException.class);
 
-        IllegalStateException exception = Assert
-            .assertThrows(IllegalStateException.class,
+        IllegalStateException exception = Assert.assertThrows(
+                IllegalStateException.class,
                 () -> new FrontendDependencies(classFinder, false));
 
         Assert.assertEquals("Thrown exception didn't contain correct message",
-            "Lumo dependency needs to be available on the classpath when using a theme name.",
-            exception.getMessage());
+                "Lumo dependency needs to be available on the classpath when using a theme name.",
+                exception.getMessage());
     }
 
     @Test
     public void appThemeDefined_getsLumoAsTheme() {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
-            .thenReturn(Collections.singleton(MyAppThemeShell.class));
+                .thenReturn(Collections.singleton(MyAppThemeShell.class));
 
-        FrontendDependencies dependencies = new FrontendDependencies(classFinder, false);
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false);
 
-        Assert.assertEquals("Faulty default theme received",
-            FakeLumo.class, dependencies.getThemeDefinition().getTheme());
-
+        Assert.assertEquals("Faulty default theme received", FakeLumo.class,
+                dependencies.getThemeDefinition().getTheme());
 
     }
 
@@ -273,6 +282,57 @@ public class FrontendDependenciesTest {
         Assert.assertNotNull(dependencies.getThemeDefinition());
     }
 
+    @Test // #9861
+    public void collectEndpoints_uiIsAlwaysCollected() {
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false);
+
+        Assert.assertEquals("UI should be visited found", 1,
+                dependencies.getEndPoints().size());
+    }
+
+    @Test // #9861
+    public void classInMultipleEndpoints_collectEndpointsNotOverrideInitial() {
+        // Reference found through first endpoint
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(Collections.singleton(TestRoute.class));
+        // Reference found through second endpoint, should not clear
+        Mockito.when(classFinder.getSubTypesOf(HasErrorParameter.class))
+                .thenReturn(Collections.singleton(TestRoute.class));
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false);
+        List<String> modules = dependencies.getModules();
+
+        Assert.assertEquals("Should contain UI and Referenced modules", 2,
+                modules.size());
+        Assert.assertTrue(modules.contains("reference.js"));
+    }
+
+    @Test // #9861
+    public void visitedExporter_previousEndpointsNotOverridden()
+            throws InstantiationException, IllegalAccessException {
+
+        FakeLumo.class.newInstance();
+        // Reference found through first endpoint
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(Collections.singleton(ReferenceExporter.class));
+        // Re-visit through exporter.
+        Mockito.when(classFinder.getSubTypesOf(WebComponentExporter.class))
+                .thenReturn(Stream.of(ReferenceExporter.class)
+                        .collect(Collectors.toSet()));
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, true);
+
+        List<String> modules = dependencies.getModules();
+
+        Assert.assertEquals(3, dependencies.getEndPoints().size());
+        Assert.assertEquals("Should contain UI and Referenced modules", 2,
+                modules.size());
+        Assert.assertTrue(modules.contains("reference.js"));
+    }
+
     public static class MyComponent extends Component {
     }
 
@@ -310,8 +370,44 @@ public class FrontendDependenciesTest {
     public static class MyAppThemeShell implements AppShellConfigurator {
     }
 
-
     @Theme(value = "my-theme", themeClass = FakeLumo.class)
     public static class FaultyThemeAnnotation implements AppShellConfigurator {
     }
+
+    @JsModule("reference.js")
+    @Tag("div")
+    public static class Referenced extends Component {
+    }
+
+    @Route("reference")
+    public static class ReferenceExporter
+            extends WebComponentExporter<MyComponent> {
+        public ReferenceExporter() {
+            super("tag-tag");
+        }
+
+        @Override
+        protected void configureInstance(WebComponent<MyComponent> webComponent,
+                MyComponent component) {
+            Referenced ref = new Referenced();
+        }
+    }
+
+    @Route("reference")
+    @Tag("div")
+    public static class TestRoute extends Component
+            implements HasErrorParameter<NotFoundException> {
+        Referenced ref;
+
+        public TestRoute() {
+            ref = new Referenced();
+        }
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<NotFoundException> parameter) {
+            return 0;
+        }
+    }
+
 }

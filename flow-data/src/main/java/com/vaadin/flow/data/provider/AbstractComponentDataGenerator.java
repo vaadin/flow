@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,7 +19,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.NodeOwner;
+import com.vaadin.flow.internal.StateTree;
 
 /**
  * Abstract class used as base for DataGenerators that need to manage the
@@ -126,6 +129,20 @@ public abstract class AbstractComponentDataGenerator<T>
 
         Element element = component.getElement();
         getContainer().appendChild(element);
+        NodeOwner owner = getContainer().getNode().getOwner();
+        UI containerUi = null;
+        if (owner instanceof StateTree) {
+            containerUi = ((StateTree) owner).getUI();
+        }
+        if (containerUi != null && component.getUI().isPresent()
+                && containerUi != component.getUI().get()) {
+            throw new IllegalStateException("The component '"
+                    + component.getClass()
+                    + "' is already attached to a UI instance which differs "
+                    + "from the conainer's UI instance. It means that the component instance is "
+                    + "reused instead being produced every time on 'createComponent' call."
+                    + " Check whether the component instance is a singleton or has inappropriate Spring scope.");
+        }
         renderedComponents.put(itemKey, component);
     }
 

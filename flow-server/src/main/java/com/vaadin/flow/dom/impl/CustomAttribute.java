@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,6 +28,8 @@ import com.vaadin.flow.dom.Element;
  * Callback for handling attributes with special semantics. This is used for
  * e.g. <code>class</code> which is assembled from a separate list of tokens
  * instead of being stored as a regular attribute string.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */

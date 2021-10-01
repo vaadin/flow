@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -48,7 +48,7 @@ public class IndexHtmlResponse {
      *            the UI for the bootstrap
      */
     public IndexHtmlResponse(VaadinRequest vaadinRequest,
-                             VaadinResponse vaadinResponse, Document document, UI ui) {
+            VaadinResponse vaadinResponse, Document document, UI ui) {
         this.vaadinRequest = vaadinRequest;
         this.vaadinResponse = vaadinResponse;
         this.document = document;
@@ -65,7 +65,7 @@ public class IndexHtmlResponse {
      *            the {@link Document} object of the response page
      */
     public IndexHtmlResponse(VaadinRequest vaadinRequest,
-                             VaadinResponse vaadinResponse, Document document) {
+            VaadinResponse vaadinResponse, Document document) {
         this.vaadinRequest = vaadinRequest;
         this.vaadinResponse = vaadinResponse;
         this.document = document;
@@ -105,8 +105,8 @@ public class IndexHtmlResponse {
      * @return the UI
      */
     public Optional<UI> getUI() {
-        if(!this.vaadinRequest.getService()
-                .getDeploymentConfiguration().isEagerServerLoad()) {
+        if (!this.vaadinRequest.getService().getDeploymentConfiguration()
+                .isEagerServerLoad()) {
             return Optional.empty();
         } else {
             return Optional.ofNullable(UI.getCurrent());

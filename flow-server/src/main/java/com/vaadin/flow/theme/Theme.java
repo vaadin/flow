@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,17 +30,15 @@ import java.lang.annotation.Target;
  * the theme is present inside the project, it maps to the {@code
  * frontend/theme/<application-theme-name>}/ folder or alternatively to a folder
  * inside the static resources of a jar file, like {@code
- * src/main/resources/META-INF/resources/theme/<application-theme-name>/}.
- * The application theme is always based on Lumo theme and this is the
- * recommended way to theme applications starting from Flow 6.0 and Vaadin 19.
+ * src/main/resources/META-INF/resources/theme/<application-theme-name>/}. The
+ * application theme is always based on Lumo theme and this is the recommended
+ * way to theme applications starting from Flow 6.0 and Vaadin 19.
  * <p>
  * Alternatively , if instead of Lumo theme the Material theme or another "old
  * style custom theme" is to be used, that can be specified with the {@code
- * themeClass} property.
- * This allows defining a way to translate base component url to the
- * themed component url (@see {@link AbstractTheme}), which specifies
- * components
- * styles.
+ * themeClass} property. This allows defining a way to translate base component
+ * url to the themed component url (@see {@link AbstractTheme}), which specifies
+ * components styles.
  * <p>
  * By default {@code com.vaadin.flow.theme.lumo.Lumo} theme is used if it's in
  * the classpath. You may disable theming with {@link NoTheme} annotation.

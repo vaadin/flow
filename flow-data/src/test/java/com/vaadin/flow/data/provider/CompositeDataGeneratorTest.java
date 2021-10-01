@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,7 +29,6 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static org.junit.Assert.assertEquals;
-
 
 /**
  * 
@@ -203,11 +202,13 @@ public class CompositeDataGeneratorTest {
     @Test
     public void addDataGenerator_orderIsPreserved() {
         CompositeDataGenerator<String> cdg = new CompositeDataGenerator<>();
-        DataGenerator<String> dg1 = (String, JsonObject) -> {};
-        DataGenerator<String> dg2 = (String, JsonObject) -> {};
+        DataGenerator<String> dg1 = (String, JsonObject) -> {
+        };
+        DataGenerator<String> dg2 = (String, JsonObject) -> {
+        };
         List<DataGenerator<String>> expected = Arrays.asList(dg1, dg2);
         cdg.addDataGenerator(dg1);
         cdg.addDataGenerator(dg2);
-        assertEquals(expected,new ArrayList<>(cdg.dataGenerators));
-    }    
+        assertEquals(expected, new ArrayList<>(cdg.dataGenerators));
+    }
 }

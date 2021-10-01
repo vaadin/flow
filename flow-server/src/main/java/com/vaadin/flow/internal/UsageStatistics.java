@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,6 +29,8 @@ import com.vaadin.flow.server.Version;
  * <p>
  * For details and to opt-out, see
  * https://github.com/vaadin/vaadin-usage-statistics.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -68,7 +70,7 @@ public class UsageStatistics {
         }
     }
 
-    private static ConcurrentHashMap<String, UsageEntry> entires = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, UsageEntry> entries = new ConcurrentHashMap<>();
     static {
         String version = System.getProperty("java.version");
 
@@ -95,7 +97,7 @@ public class UsageStatistics {
     public static void markAsUsed(String name, String version) {
         assert name != null;
 
-        entires.computeIfAbsent(name, ignore -> new UsageEntry(name, version));
+        entries.computeIfAbsent(name, ignore -> new UsageEntry(name, version));
     }
 
     /**
@@ -104,17 +106,23 @@ public class UsageStatistics {
      * @return a stream of entries, not <code>null</code>
      */
     public static Stream<UsageEntry> getEntries() {
-        return entires.values().stream();
+        return entries.values().stream();
     }
 
     /**
      * Remove a entry of the current usage entries.
      *
      * @param name
-     *            the feature name
-     *            want to be removed, not <code>null</code>
+     *            the feature name want to be removed, not <code>null</code>
      */
     public static void removeEntry(String name) {
-        entires.remove(name);
+        entries.remove(name);
+    }
+
+    /**
+     * Clear the usage entries.
+     */
+    public static void clearEntries() {
+        entries.clear();
     }
 }

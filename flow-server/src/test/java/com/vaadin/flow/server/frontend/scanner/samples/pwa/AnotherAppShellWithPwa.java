@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,11 +19,7 @@ package com.vaadin.flow.server.frontend.scanner.samples.pwa;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.PWA;
 
-@PWA(name = "Another PWA Application", shortName = "Another PWA",
-        description = "Testing another PWA", display = "minimal-ui",
-        backgroundColor = "#eee", themeColor = "#369",
-        iconPath = "another_pwa.png", manifestPath = "appmanifest.json",
-        offlinePath = "another_pwa.html",
-        offlineResources = { "another_pwa.js", "another_pwa.css" })
+@PWA(name = "Another PWA Application", shortName = "Another PWA", description = "Testing another PWA", display = "minimal-ui", backgroundColor = "#eee", themeColor = "#369", iconPath = "another_pwa.png", manifestPath = "appmanifest.json", offlinePath = "another_pwa.html", offlineResources = {
+        "another_pwa.js", "another_pwa.css" })
 public class AnotherAppShellWithPwa implements AppShellConfigurator {
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,8 +37,7 @@ public abstract class AbstractListDataViewListenerTest {
     @Test
     public void addItemCountChangeListener_itemsCountChanged_listenersAreNotified() {
         String[] items = new String[] { "item1", "item2", "item3", "item4" };
-        HasListDataView<String, ? extends AbstractListDataView<String>> component =
-                getVerifiedComponent();
+        HasListDataView<String, ? extends AbstractListDataView<String>> component = getVerifiedComponent();
         AbstractListDataView<String> dataView = component
                 .setItems(new ArrayList<>(Arrays.asList(items)));
 
@@ -60,17 +59,16 @@ public abstract class AbstractListDataViewListenerTest {
         fakeClientCall(ui);
 
         Assert.assertEquals(
-                "Unexpected number of item count change listener invocations " +
-                        "occurred", 1, invocationCounter.get());
+                "Unexpected number of item count change listener invocations "
+                        + "occurred",
+                1, invocationCounter.get());
     }
 
     @Test
     public void addItemCountChangeListener_itemsCountNotChanged_listenersAreNotNotified() {
         String[] items = new String[] { "item1", "item2", "item3", "item4" };
-        HasListDataView<String, ? extends AbstractListDataView<String>> component =
-                getVerifiedComponent();
-        AbstractListDataView<String> dataView = component
-                .setItems(items);
+        HasListDataView<String, ? extends AbstractListDataView<String>> component = getVerifiedComponent();
+        AbstractListDataView<String> dataView = component.setItems(items);
 
         AtomicBoolean invocationChecker = new AtomicBoolean(false);
 
@@ -96,10 +94,8 @@ public abstract class AbstractListDataViewListenerTest {
     @Test
     public void addItemCountChangeListener_itemsCountChanged_newItemCountSuppliedInEvent() {
         String[] items = new String[] { "item1", "item2", "item3", "item4" };
-        HasListDataView<String, ? extends AbstractListDataView<String>> component =
-                getVerifiedComponent();
-        AbstractListDataView<String> dataView = component
-                .setItems(items);
+        HasListDataView<String, ? extends AbstractListDataView<String>> component = getVerifiedComponent();
+        AbstractListDataView<String> dataView = component.setItems(items);
 
         AtomicBoolean invocationChecker = new AtomicBoolean(false);
 

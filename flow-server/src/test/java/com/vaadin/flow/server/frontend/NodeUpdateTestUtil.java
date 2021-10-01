@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,13 +32,10 @@ import org.junit.Assert;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
-import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 import static org.junit.Assert.assertNotNull;
 
 public class NodeUpdateTestUtil {
-
-    public static final String WEBPACK_TEST_OUT_FILE = "webpack-out.test";
 
     static ClassFinder getClassFinder() throws MalformedURLException {
         return new DefaultClassFinder(new URLClassLoader(getClassPath()),
@@ -69,67 +66,6 @@ public class NodeUpdateTestUtil {
             classPaths.add(url);
         }
         return classPaths.toArray(new URL[0]);
-    }
-
-    // Creates stub versions of `node` and `npm` in the ./node folder as
-    // frontend-maven-plugin does
-    // Also creates a stub version of webpack-devmode-server
-    public static void createStubNode(boolean stubNode, boolean stubNpm,
-            boolean stubPnpm, String baseDir) throws IOException {
-
-        if (stubNpm) {
-            File npmCli = new File(baseDir,
-                    "node/node_modules/npm/bin/npm-cli.js");
-            FileUtils.forceMkdirParent(npmCli);
-            FileUtils.writeStringToFile(npmCli,
-                    "process.argv.includes('--version') && console.log('5.6.0');",
-                    StandardCharsets.UTF_8);
-        }
-        if (stubPnpm) {
-            File ppmCli = new File(baseDir, "node_modules/pnpm/bin/pnpm.js");
-            FileUtils.forceMkdirParent(ppmCli);
-            FileUtils.writeStringToFile(ppmCli,
-                    "process.argv.includes('--version') && console.log('4.5.0');",
-                    StandardCharsets.UTF_8);
-            new File(baseDir, "node_modules/.modules.yaml").createNewFile();
-        }
-        if (stubNode) {
-            File node = new File(baseDir,
-                    FrontendUtils.isWindows() ? "node/node.exe" : "node/node");
-            node.createNewFile();
-            node.setExecutable(true);
-            if (FrontendUtils.isWindows()) {
-                // Commented out until a node.exe is created that is not flagged
-                // by Windows defender.
-                // FileUtils.copyFile(new File(
-                // getClassFinder().getClass().getClassLoader().getResource("test_node.exe").getFile()
-                // ), node);
-            } else {
-                FileUtils.write(node,
-                        "#!/bin/sh\n[ \"$1\" = -v ] && echo 8.0.0 || sleep 1\n",
-                        "UTF-8");
-            }
-        }
-    }
-
-    // Creates a stub webpack-dev-server able to output a ready string, sleep
-    // for a while and output arguments passed to a file, so as tests can check
-    // it
-    public static void createStubWebpackServer(String readyString,
-            int milliSecondsToRun, String baseDir) throws IOException {
-        File serverFile = new File(baseDir, WEBPACK_SERVER);
-        FileUtils.forceMkdirParent(serverFile);
-
-        serverFile.createNewFile();
-        serverFile.setExecutable(true);
-        FileUtils.write(serverFile,
-                ("#!/usr/bin/env node\n" + "const fs = require('fs');\n"
-                        + "const args = String(process.argv);\n"
-                        + "fs.writeFileSync('" + WEBPACK_TEST_OUT_FILE
-                        + "', args);\n" + "console.log(args + '\\n[wps]: "
-                        + readyString + ".');\n" + "setTimeout(() => {}, "
-                        + milliSecondsToRun + ");\n"),
-                "UTF-8");
     }
 
     static URL getTestResource(String resourceName) {

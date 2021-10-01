@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -45,8 +45,9 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -55,6 +56,7 @@ import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -64,6 +66,8 @@ import static java.lang.String.format;
 /**
  * A class for static methods and definitions that might be used in different
  * locations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
@@ -130,11 +134,6 @@ public class FrontendUtils {
     public static final String SERVICE_WORKER_SRC_JS = "sw.js";
 
     /**
-     * Default target folder for the java project.
-     */
-    public static final String TARGET = "target/";
-
-    /**
      * The NPM package name that will be used for the javascript files present
      * in jar resources that will to be copied to the npm folder so as they are
      * accessible to webpack.
@@ -143,23 +142,15 @@ public class FrontendUtils {
             + "/";
 
     /**
-     * The NPM package name that will be used for the javascript files present
-     * in jar resources that will to be copied to the npm folder so as they are
-     * accessible to webpack.
+     * Default folder where front-end resources present in the classpath jars
+     * are copied to. Relative to the
+     * {@link com.vaadin.flow.server.InitParameters#BUILD_FOLDER}.
      */
-    public static final String FORM_NPM_PACKAGE_NAME = NodeUpdater.DEP_NAME_FORM_JARS
-            + "/";
+    public static final String DEFAULT_FLOW_RESOURCES_FOLDER = "flow-frontend";
 
     /**
-     * Default folder for copying front-end resources present in the classpath
-     * jars.
-     */
-    public static final String DEFAULT_FLOW_RESOURCES_FOLDER = TARGET
-            + "flow-frontend";
-
-    /**
-     * Default folder for copying front-end resources present in the classpath
-     * jars.
+     * Default folder under build folder for copying front-end resources present
+     * in the classpath jars.
      *
      * @deprecated This is deprecated due to a typo. Use
      *             DEFAULT_FLOW_RESOURCES_FOLDER instead.
@@ -170,9 +161,9 @@ public class FrontendUtils {
 
     /**
      * Default folder name for flow generated stuff relative to the
-     * {@link FrontendUtils#TARGET}.
+     * {@link com.vaadin.flow.server.InitParameters#BUILD_FOLDER}.
      */
-    public static final String DEFAULT_GENERATED_DIR = TARGET + FRONTEND;
+    public static final String DEFAULT_GENERATED_DIR = FRONTEND;
 
     /**
      * Name of the file that contains application imports, javascript, theme and
@@ -187,9 +178,13 @@ public class FrontendUtils {
      */
     public static final String IMPORTS_D_TS_NAME = "generated-flow-imports.d.ts";
 
+    public static final String THEME_IMPORTS_D_TS_NAME = "theme.d.ts";
+    public static final String THEME_IMPORTS_NAME = "theme.js";
+
     /**
      * File name of the bootstrap file that is generated in frontend
-     * {@link #GENERATED} folder. The bootstrap file is always executed in a Vaadin app.
+     * {@link #GENERATED} folder. The bootstrap file is always executed in a
+     * Vaadin app.
      */
     public static final String BOOTSTRAP_FILE_NAME = "vaadin.ts";
 
@@ -221,13 +216,12 @@ public class FrontendUtils {
     /**
      * Default generated path for OpenAPI spec file.
      */
-    public static final String DEFAULT_CONNECT_OPENAPI_JSON_FILE = TARGET
-            + "generated-resources/openapi.json";
+    public static final String DEFAULT_CONNECT_OPENAPI_JSON_FILE = "generated-resources/openapi.json";
 
     /**
-     * Default generated path for generated TS files.
+     * Default generated path for generated frontend files.
      */
-    public static final String DEFAULT_CONNECT_GENERATED_TS_DIR = DEFAULT_FRONTEND_DIR
+    public static final String DEFAULT_PROJECT_FRONTEND_GENERATED_DIR = DEFAULT_FRONTEND_DIR
             + GENERATED;
 
     /**
@@ -371,7 +365,8 @@ public class FrontendUtils {
     }
 
     /**
-     * Read a stream and copy the content in a String.
+     * Read a stream and copy the content into a String using system line
+     * separators for all 'carriage return' characters.
      *
      * @param inputStream
      *            the input stream
@@ -441,6 +436,10 @@ public class FrontendUtils {
     /**
      * Gets the content of the <code>stats.json</code> file produced by webpack.
      *
+     * Note: Caches the <code>stats.json</code> when external stats is enabled
+     * or <code>stats.json</code> is provided from the class path. To clear the
+     * cache use {@link #clearCachedStatsContent(VaadinService)}.
+     *
      * @param service
      *            the vaadin service.
      * @return the content of the file as a string, null if not found.
@@ -452,21 +451,43 @@ public class FrontendUtils {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         InputStream content = null;
 
-        if (!config.isProductionMode() && config.enableDevServer()) {
-            content = getStatsFromWebpack();
-        }
+        try {
+            if (!config.isProductionMode() && config.enableDevServer()) {
+                Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
+                        .getDevModeHandler(service);
+                if (!devModeHandler.isPresent()) {
+                    throw new WebpackConnectionException(
+                            "DevModeHandlerManager implementation missing. Include the "
+                                    + "com.vaadin:vaadin-dev-server dependency.");
+                }
+                content = getStatsFromWebpack(devModeHandler.get());
+            }
 
-        if (config.isStatsExternal()) {
-            content = getStatsFromExternalUrl(config.getExternalStatsUrl(),
-                    service.getContext());
-        }
+            if (config.isStatsExternal()) {
+                content = getStatsFromExternalUrl(config.getExternalStatsUrl(),
+                        service.getContext());
+            }
 
-        if (content == null) {
-            content = getStatsFromClassPath(service);
+            if (content == null) {
+                content = getStatsFromClassPath(service);
+            }
+            return content != null
+                    ? IOUtils.toString(content, StandardCharsets.UTF_8)
+                    : null;
+        } finally {
+            IOUtils.closeQuietly(content);
         }
-        return content != null
-                ? IOUtils.toString(content, StandardCharsets.UTF_8)
-                : null;
+    }
+
+    /**
+     * Clears the <code>stats.json</code> cache within this
+     * {@link VaadinContext}.
+     *
+     * @param service
+     *            the vaadin service.
+     */
+    public static void clearCachedStatsContent(VaadinService service) {
+        service.getContext().removeAttribute(Stats.class);
     }
 
     /**
@@ -490,20 +511,26 @@ public class FrontendUtils {
         return getFileContent(service, INDEX_HTML);
     }
 
-    private static String getFileContent(VaadinService service,
-            String path)
+    private static String getFileContent(VaadinService service, String path)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         InputStream content = null;
 
-        if (!config.isProductionMode() && config.enableDevServer()) {
-            content = getFileFromWebpack(path);
-        }
+        try {
+            Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
+                    .getDevModeHandler(service);
+            if (!config.isProductionMode() && config.enableDevServer()
+                    && devModeHandler.isPresent()) {
+                content = getFileFromWebpack(devModeHandler.get(), path);
+            }
 
-        if (content == null) {
-            content = getFileFromClassPath(service, path);
+            if (content == null) {
+                content = getFileFromClassPath(service, path);
+            }
+            return content != null ? streamToString(content) : null;
+        } finally {
+            IOUtils.closeQuietly(content);
         }
-        return content != null ? streamToString(content) : null;
     }
 
     private static InputStream getFileFromClassPath(VaadinService service,
@@ -532,10 +559,10 @@ public class FrontendUtils {
      */
     public static String getStatsHash(VaadinService service)
             throws IOException {
-        DeploymentConfiguration config = service.getDeploymentConfiguration();
-        if (!config.isProductionMode() && config.enableDevServer()) {
-            DevModeHandler handler = DevModeHandler.getDevModeHandler();
-            HttpURLConnection statsConnection = handler
+        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
+                .getDevModeHandler(service);
+        if (devModeHandler.isPresent()) {
+            HttpURLConnection statsConnection = devModeHandler.get()
                     .prepareConnection("/stats.hash", "GET");
             if (statsConnection
                     .getResponseCode() != HttpURLConnection.HTTP_OK) {
@@ -549,15 +576,17 @@ public class FrontendUtils {
         return "";
     }
 
-    private static InputStream getStatsFromWebpack() throws IOException {
-        return getResourceFromWebpack("/stats.json", "downloading stats.json");
+    private static InputStream getStatsFromWebpack(
+            DevModeHandler devModeHandler) throws IOException {
+        return getResourceFromWebpack(devModeHandler, "/stats.json",
+                "downloading stats.json");
     }
 
-    private static InputStream getResourceFromWebpack(String resource,
+    private static InputStream getResourceFromWebpack(
+            DevModeHandler devModeHandler, String resource,
             String exceptionMessage) throws IOException {
-        DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        HttpURLConnection statsConnection = handler.prepareConnection(resource,
-                "GET");
+        HttpURLConnection statsConnection = devModeHandler
+                .prepareConnection(resource, "GET");
         if (statsConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new WebpackConnectionException(
                     String.format(NO_CONNECTION, exceptionMessage));
@@ -591,15 +620,14 @@ public class FrontendUtils {
                                 DateTimeFormatter.RFC_1123_DATE_TIME)
                         .toLocalDateTime();
                 Stats statistics = context.getAttribute(Stats.class);
-                if (statistics == null
-                        || modified.isAfter(statistics.getLastModified())) {
-                    statistics = new Stats(
-                            streamToString(connection.getInputStream()),
-                            lastModified);
+                if (statistics == null || modified.isAfter(statistics
+                        .getLastModified().orElse(LocalDateTime.MIN))) {
+                    byte[] buffer = IOUtils
+                            .toByteArray(connection.getInputStream());
+                    statistics = new Stats(buffer, lastModified);
                     context.setAttribute(statistics);
                 }
-                return new ByteArrayInputStream(
-                        statistics.statsJson.getBytes(StandardCharsets.UTF_8));
+                return new ByteArrayInputStream(statistics.statsJson);
             }
             return connection.getInputStream();
         } catch (IOException e) {
@@ -624,6 +652,12 @@ public class FrontendUtils {
     }
 
     private static InputStream getStatsFromClassPath(VaadinService service) {
+        Stats statistics = service.getContext().getAttribute(Stats.class);
+
+        if (statistics != null) {
+            return new ByteArrayInputStream(statistics.statsJson);
+        }
+
         String stats = service.getDeploymentConfiguration()
                 .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
                         VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
@@ -635,6 +669,12 @@ public class FrontendUtils {
         InputStream stream = null;
         try {
             stream = statsUrl == null ? null : statsUrl.openStream();
+            if (stream != null) {
+                byte[] buffer = IOUtils.toByteArray(stream);
+                statistics = new Stats(buffer, null);
+                service.getContext().setAttribute(statistics);
+                stream = new ByteArrayInputStream(buffer);
+            }
         } catch (IOException exception) {
             getLogger().warn("Couldn't read content of stats file {}", stats,
                     exception);
@@ -648,16 +688,20 @@ public class FrontendUtils {
         return stream;
     }
 
-    private static InputStream getFileFromWebpack(String filePath)
-            throws IOException {
-        DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        return handler.prepareConnection("/" + filePath, "GET").getInputStream();
+    private static InputStream getFileFromWebpack(DevModeHandler devModeHandler,
+            String filePath) throws IOException {
+        return devModeHandler.prepareConnection("/" + filePath, "GET")
+                .getInputStream();
     }
 
     /**
-     * Load the asset chunks from stats.json. We will only read the file until
-     * we have reached the assetsByChunkName json and return that as a json
-     * object string.
+     * Load the asset chunks from <code>stats.json</code>. We will only read the
+     * file until we have reached the assetsByChunkName json and return that as
+     * a json object string.
+     *
+     * Note: The <code>stats.json</code> is cached when external stats is
+     * enabled or <code>stats.json</code> is provided from the class path. To
+     * clear the cache use {@link #clearCachedStatsContent(VaadinService)}.
      *
      * @param service
      *            the Vaadin service.
@@ -669,9 +713,12 @@ public class FrontendUtils {
     public static String getStatsAssetsByChunkName(VaadinService service)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
-        if (!config.isProductionMode() && config.enableDevServer()) {
-            return streamToString(getResourceFromWebpack("/assetsByChunkName",
-                    "getting assets by chunk name."));
+        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
+                .getDevModeHandler(service);
+        if (!config.isProductionMode() && config.enableDevServer()
+                && devModeHandler.isPresent()) {
+            return streamToString(getResourceFromWebpack(devModeHandler.get(),
+                    "/assetsByChunkName", "getting assets by chunk name."));
         }
         InputStream resourceAsStream;
         if (config.isStatsExternal()) {
@@ -915,21 +962,65 @@ public class FrontendUtils {
         }
     }
 
+    /**
+     * Thrown when the command execution fails.
+     */
+    public static class CommandExecutionException extends Exception {
+        /**
+         * Constructs an exception telling what code the command execution
+         * process was exited with.
+         *
+         * @param processExitCode
+         *            process exit code
+         */
+        public CommandExecutionException(int processExitCode) {
+            super("Process execution failed with exit code " + processExitCode);
+        }
+
+        /**
+         * Constructs an exception telling what was the original exception the
+         * command execution process failed with.
+         *
+         * @param cause
+         *            the cause exception of process failure.
+         */
+        public CommandExecutionException(Throwable cause) {
+            super("Process execution failed", cause);
+        }
+    }
+
     protected static FrontendVersion getVersion(String tool,
             List<String> versionCommand) throws UnknownVersionException {
         try {
-            Process process = FrontendUtils.createProcessBuilder(versionCommand)
+            String output = executeCommand(versionCommand);
+            return new FrontendVersion(parseVersionString(output));
+        } catch (IOException | CommandExecutionException e) {
+            throw new UnknownVersionException(tool,
+                    "Using command " + String.join(" ", versionCommand), e);
+        }
+    }
+
+    /**
+     * Executes a given command as a native process.
+     *
+     * @param command
+     *            the command to be executed and it's arguments.
+     * @return process output string.
+     * @throws CommandExecutionException
+     *             if the process completes exceptionally.
+     */
+    public static String executeCommand(List<String> command)
+            throws CommandExecutionException {
+        try {
+            Process process = FrontendUtils.createProcessBuilder(command)
                     .start();
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                throw new UnknownVersionException(tool,
-                        "Using command " + String.join(" ", versionCommand));
+                throw new CommandExecutionException(exitCode);
             }
-            String output = streamToString(process.getInputStream());
-            return new FrontendVersion(parseVersionString(output));
-        } catch (InterruptedException | IOException e) {
-            throw new UnknownVersionException(tool,
-                    "Using command " + String.join(" ", versionCommand), e);
+            return streamToString(process.getInputStream());
+        } catch (IOException | InterruptedException e) {
+            throw new CommandExecutionException(e);
         }
     }
 
@@ -1015,7 +1106,7 @@ public class FrontendUtils {
      */
     private static class Stats implements Serializable {
         private final String lastModified;
-        protected final String statsJson;
+        protected final byte[] statsJson;
 
         /**
          * Create a new container for stats.json caching.
@@ -1026,7 +1117,7 @@ public class FrontendUtils {
          *            last modification timestamp for stats.json in RFC-1123
          *            date-time format, such as 'Tue, 3 Jun 2008 11:05:30 GMT'
          */
-        public Stats(String statsJson, String lastModified) {
+        public Stats(byte[] statsJson, String lastModified) {
             this.statsJson = statsJson;
             this.lastModified = lastModified;
         }
@@ -1036,10 +1127,13 @@ public class FrontendUtils {
          *
          * @return timestamp as LocalDateTime
          */
-        public LocalDateTime getLastModified() {
-            return ZonedDateTime
+        public Optional<LocalDateTime> getLastModified() {
+            if (lastModified == null) {
+                return Optional.empty();
+            }
+            return Optional.of(ZonedDateTime
                     .parse(lastModified, DateTimeFormatter.RFC_1123_DATE_TIME)
-                    .toLocalDateTime();
+                    .toLocalDateTime());
         }
     }
 
@@ -1072,8 +1166,8 @@ public class FrontendUtils {
     }
 
     /**
-     * Parse "manifest.json" file contents obtained from webpack and extract
-     * the list of request paths to handle as static resources.
+     * Parse "manifest.json" file contents obtained from webpack and extract the
+     * list of request paths to handle as static resources.
      *
      * @param manifestJson
      *            "manifest.json" file contents
@@ -1087,6 +1181,40 @@ public class FrontendUtils {
                 .filter(key -> !INDEX_HTML.equals(key))
                 .map(key -> "/" + manifest.getString(key))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Tries to parse the given package's frontend version or if it doesn't
+     * exist, returns {@code null}. In case the value cannot be parsed, logs an
+     * error and returns {@code null}.
+     *
+     * @param sourceJson
+     *            json object that has the package
+     * @param pkg
+     *            the package name
+     * @param versionOrigin
+     *            origin of the version (like a file), used in error message
+     * @return the frontend version the package or {@code null}
+     */
+    public static FrontendVersion getPackageVersionFromJson(
+            JsonObject sourceJson, String pkg, String versionOrigin) {
+        if (!sourceJson.hasKey(pkg)) {
+            return null;
+        }
+        try {
+            final String versionString = sourceJson.getString(pkg);
+            return new FrontendVersion(pkg, versionString);
+        } catch (ClassCastException classCastException) { // NOSONAR
+            LoggerFactory.getLogger(FrontendVersion.class).warn(
+                    "Ignoring error while parsing frontend dependency version for package '{}' in '{}'",
+                    pkg, versionOrigin);
+        } catch (NumberFormatException nfe) {
+            // intentionally not failing the build at this point
+            LoggerFactory.getLogger(FrontendVersion.class).warn(
+                    "Ignoring error while parsing frontend dependency version in {}: {}",
+                    versionOrigin, nfe.getMessage());
+        }
+        return null;
     }
 
     /**

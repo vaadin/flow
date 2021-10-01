@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -190,8 +190,8 @@ public interface Validator<T>
                             errorMessageProvider.apply(context), errorLevel);
                 }
             } catch (Exception e) {
-                LoggerFactory.getLogger(Validator.class.getName()).info(
-                        "An exception is thrown during validation", e);
+                LoggerFactory.getLogger(Validator.class.getName())
+                        .info("An exception is thrown during validation", e);
                 return ValidationResult.create(
                         errorMessageProvider.apply(context), errorLevel);
             }

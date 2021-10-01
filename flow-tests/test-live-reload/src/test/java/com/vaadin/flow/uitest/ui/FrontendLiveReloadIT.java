@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,13 +37,14 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
         // when: the frontend code is updated
         WebElement codeField = findElement(
                 By.id(FrontendLiveReloadView.FRONTEND_CODE_TEXT));
-        String oldCode = codeField.getAttribute("value");
-        String newCode = oldCode.replace(
-                "Custom component contents", "Updated component contents");
+        String oldCode = getValue(codeField);
+        String newCode = oldCode.replace("Custom component contents",
+                "Updated component contents");
         codeField.clear();
         codeField.sendKeys(newCode);
 
-        waitForElementPresent(By.id(FrontendLiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
+        waitForElementPresent(
+                By.id(FrontendLiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
         WebElement liveReloadTrigger = findElement(
                 By.id(FrontendLiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
         liveReloadTrigger.click();
@@ -67,7 +68,7 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
         // when: a webpack error occurs during frontend file edit
         WebElement codeField = findElement(
                 By.id(FrontendLiveReloadView.FRONTEND_CODE_TEXT));
-        String oldCode = codeField.getAttribute("value");
+        String oldCode = getValue(codeField);
         String erroneousCode = "{" + oldCode;
         codeField.clear();
         codeField.sendKeys(erroneousCode); // illegal TS
@@ -83,5 +84,11 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
 
         // then: the error box is not shown and the view is reloaded
         waitForElementNotPresent(By.className("v-system-error"));
+    }
+
+    private String getValue(WebElement element) {
+        Object result = getCommandExecutor()
+                .executeScript("return arguments[0].value;", element);
+        return result == null ? "" : result.toString();
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,7 +32,9 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
+import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler.JavaScriptBootstrapContext;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
@@ -76,10 +78,12 @@ public class BootstrapContextTest {
     public void getPushAnnotation_routeTargetPresents_pushFromTheClassDefinitionIsUsed() {
         ui.getInternals().getRouter().getRegistry().setRoute("foo",
                 MainView.class, Collections.emptyList());
-        Mockito.when(request.getPathInfo()).thenReturn("/foo");
+        Mockito.when(request
+                .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER))
+                .thenReturn("foo");
 
-        BootstrapContext context = new BootstrapContext(request,
-                Mockito.mock(VaadinResponse.class), session, ui, callback);
+        BootstrapContext context = new JavaScriptBootstrapContext(request,
+                Mockito.mock(VaadinResponse.class), ui, callback);
 
         Optional<Push> push = context
                 .getPageConfigurationAnnotation(Push.class);
@@ -93,10 +97,12 @@ public class BootstrapContextTest {
     public void getPushAnnotation_routeTargetPresents_pushDefinedOnParentLayout_pushFromTheClassDefinitionIsUsed() {
         ui.getInternals().getRouter().getRegistry().setRoute("foo",
                 OtherView.class, Collections.singletonList(MainView.class));
-        Mockito.when(request.getPathInfo()).thenReturn("/foo");
+        Mockito.when(request
+                .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER))
+                .thenReturn("foo");
 
-        BootstrapContext context = new BootstrapContext(request,
-                Mockito.mock(VaadinResponse.class), session, ui, callback);
+        BootstrapContext context = new JavaScriptBootstrapContext(request,
+                Mockito.mock(VaadinResponse.class), ui, callback);
 
         Optional<Push> push = context
                 .getPageConfigurationAnnotation(Push.class);
@@ -108,7 +114,9 @@ public class BootstrapContextTest {
 
     @Test
     public void getPushAnnotation_routeTargetIsAbsent_pushFromTheErrorNavigationTargetIsUsed() {
-        Mockito.when(request.getPathInfo()).thenReturn("/bar");
+        Mockito.when(request
+                .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER))
+                .thenReturn("bar");
 
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(ui.getSession().getService().getContext());
@@ -128,7 +136,9 @@ public class BootstrapContextTest {
 
     @Test
     public void getPushAnnotation_routeTargetIsAbsent_pushIsDefinedOnParentLayout_pushFromTheErrorNavigationTargetParentLayoutIsUsed() {
-        Mockito.when(request.getPathInfo()).thenReturn("/bar");
+        Mockito.when(request
+                .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER))
+                .thenReturn("bar");
 
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(ui.getSession().getService().getContext());

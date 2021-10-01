@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,17 +32,21 @@ public class RequestParametersIT extends ChromeBrowserTest {
     @Test
     public void noParameters() {
         open();
-        WebElement label = findElement(By.id(RequestParametersView.REQUEST_PARAM_ID));
+        WebElement label = findElement(
+                By.id(RequestParametersView.REQUEST_PARAM_ID));
 
-        Assert.assertEquals(RequestParametersView.NO_INPUT_TEXT, label.getText());
+        Assert.assertEquals(RequestParametersView.NO_INPUT_TEXT,
+                label.getText());
     }
 
     @Test
     public void parameterProvided() {
         String paramValue = "Super-intelligent shade of the colour blue";
-        open(String.format("%s=%s", RequestParametersView.REQUEST_PARAM_NAME, paramValue));
+        open(String.format("%s=%s", RequestParametersView.REQUEST_PARAM_NAME,
+                paramValue));
 
-        WebElement label = findElement(By.id(RequestParametersView.REQUEST_PARAM_ID));
+        WebElement label = findElement(
+                By.id(RequestParametersView.REQUEST_PARAM_ID));
 
         Assert.assertEquals(paramValue, label.getText());
     }

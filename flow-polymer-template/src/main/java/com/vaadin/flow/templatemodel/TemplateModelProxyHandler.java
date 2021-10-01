@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,15 +17,11 @@ package com.vaadin.flow.templatemodel;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.internal.ReflectionCache;
-import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.method.MethodDescription;
@@ -33,6 +29,7 @@ import net.bytebuddy.description.method.ParameterList;
 import net.bytebuddy.description.type.TypeDescription.Generic;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import net.bytebuddy.dynamic.loading.MultipleParentClassLoader;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.implementation.bind.annotation.AllArguments;
@@ -40,8 +37,15 @@ import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import net.bytebuddy.implementation.bind.annotation.This;
 
+import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
+
 /**
  * Invocation handler for {@link TemplateModel} proxy objects.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -252,7 +256,12 @@ public class TemplateModelProxyHandler implements Serializable {
 
                 // Create the class
                 .name(proxyClassName).make()
-                .load(classLoader, ClassLoadingStrategy.Default.WRAPPER)
+                // In an OSGi Context we need two classloaders. The one from the
+                // Bundle that calls this ("classloader") + the Classloader
+                // the TemplateModelProxyHandler
+                .load(new MultipleParentClassLoader(Arrays.asList(classLoader,
+                        TemplateModelProxyHandler.class.getClassLoader())),
+                        ClassLoadingStrategy.Default.WRAPPER)
                 .getLoaded();
 
         return (node, modelType) -> {

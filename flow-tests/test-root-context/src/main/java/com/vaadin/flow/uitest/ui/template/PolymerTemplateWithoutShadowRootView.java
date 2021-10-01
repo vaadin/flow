@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,10 +36,13 @@ public class PolymerTemplateWithoutShadowRootView extends Div {
         private Div div;
         @Id("special!#id")
         private Div specialId;
+        @Id("map")
+        private Div map;
 
         public Template() {
             div.setText("Hello");
             specialId.setText("Special");
+            map.setText("Map");
             div.addClickListener(e -> {
                 div.setText("Goodbye");
             });

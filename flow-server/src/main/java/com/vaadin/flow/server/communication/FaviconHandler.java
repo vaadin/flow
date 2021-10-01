@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.server.communication;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
 
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
@@ -30,6 +30,8 @@ import com.vaadin.flow.server.VaadinSession;
  * <p>
  * It allows to not produce the same content for the favicon as for any other
  * resource if servlet mapping is "/*".
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @author Vaadin Ltd
  * @since 1.0

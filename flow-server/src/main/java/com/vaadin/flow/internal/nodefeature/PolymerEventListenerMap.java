@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,6 +31,8 @@ import elemental.json.Json;
 /**
  * Map of PolymerTemplate events with server-side listeners. The key set of this
  * map describes the event types for which event date is present.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -66,8 +68,7 @@ public class PolymerEventListenerMap extends NodeMap {
      *            the event data expressions
      * @return handler to remove eventType data
      */
-    public Registration add(String methodName,
-            String[] eventDataExpressions) {
+    public Registration add(String methodName, String[] eventDataExpressions) {
         assert methodName != null;
         assert eventDataExpressions != null;
 

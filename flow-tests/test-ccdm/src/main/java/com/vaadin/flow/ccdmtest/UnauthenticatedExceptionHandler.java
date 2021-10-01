@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,19 +23,16 @@ import com.vaadin.flow.router.HasErrorParameter;
 
 import javax.servlet.http.HttpServletResponse;
 
-
 @Tag(Tag.DIV)
-public class UnauthenticatedExceptionHandler
-    extends Component
-    implements HasErrorParameter<UnauthenticatedException>
-{
+public class UnauthenticatedExceptionHandler extends Component
+        implements HasErrorParameter<UnauthenticatedException> {
 
     @Override
     public int setErrorParameter(BeforeEnterEvent event,
-                                 ErrorParameter<UnauthenticatedException>
-                                     parameter) {
+            ErrorParameter<UnauthenticatedException> parameter) {
         setId("errorView");
-        getElement().setText("Tried to navigate to a view without being authenticated");
+        getElement().setText(
+                "Tried to navigate to a view without being authenticated");
         return HttpServletResponse.SC_UNAUTHORIZED;
     }
 }

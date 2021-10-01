@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -63,10 +63,9 @@ public class ServerSidePostponeView extends Div implements BeforeLeaveObserver {
         lastEvent = event;
 
         if (proceedButton == null) {
-            proceedButton = new NativeButton("Proceed",
-                    buttonClickEvent -> {
-                        lastEvent.getContinueNavigationAction().proceed();
-                    });
+            proceedButton = new NativeButton("Proceed", buttonClickEvent -> {
+                lastEvent.getContinueNavigationAction().proceed();
+            });
             proceedButton.setId("proceedAfterPostpone");
             add(proceedButton);
         }

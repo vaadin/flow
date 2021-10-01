@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -58,7 +58,7 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
      *            the bean type to use, not <code>null</code>
      */
     public BeanValidationBinder(Class<BEAN> beanType) {
-        this(beanType,false);
+        this(beanType, false);
     }
 
     /**
@@ -75,14 +75,15 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
      * @param scanNestedDefinitions
      *            if {@code true}, scan for nested property definitions as well
      */
-    public BeanValidationBinder(Class<BEAN> beanType, boolean scanNestedDefinitions) {
+    public BeanValidationBinder(Class<BEAN> beanType,
+            boolean scanNestedDefinitions) {
         super(beanType, scanNestedDefinitions);
         if (!BeanUtil.checkBeanValidationAvailable()) {
-            throw new IllegalStateException(
-                    BeanValidationBinder.class.getSimpleName()
-                            + " cannot be used because a JSR-303 Bean Validation "
-                            + "implementation not found on the classpath or could not be initialized. Use "
-                            + Binder.class.getSimpleName() + " instead");
+            throw new IllegalStateException(BeanValidationBinder.class
+                    .getSimpleName()
+                    + " cannot be used because a JSR-303 Bean Validation "
+                    + "implementation not found on the classpath or could not be initialized. Use "
+                    + Binder.class.getSimpleName() + " instead");
         }
         this.beanType = beanType;
     }

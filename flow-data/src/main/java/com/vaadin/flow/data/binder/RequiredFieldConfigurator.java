@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -56,8 +56,8 @@ public interface RequiredFieldConfigurator
      */
     RequiredFieldConfigurator NOT_EMPTY = (annotation,
             binding) -> (annotation.annotationType().equals(NotEmpty.class)
-                    || annotation.annotationType().getName()
-                            .equals("org.hibernate.validator.constraints.NotEmpty"))
+                    || annotation.annotationType().getName().equals(
+                            "org.hibernate.validator.constraints.NotEmpty"))
                     && RequiredFieldConfiguratorUtil.testConvertedDefaultValue(
                             binding,
                             RequiredFieldConfiguratorUtil::hasZeroSize);

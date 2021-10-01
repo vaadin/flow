@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,10 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Collection;
+import java.util.Optional;
 
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
@@ -30,7 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadAccess;
+import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.HandlerHelper;
@@ -50,7 +53,9 @@ import elemental.json.JsonException;
 
 /**
  * Handles incoming push connections and messages and dispatches them to the
- * correct {@link UI}/ {@link AtmospherePushConnection}
+ * correct {@link UI}/ {@link AtmospherePushConnection}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -314,14 +319,12 @@ public class PushHandler {
         // In development mode we may have a live-reload push channel
         // that should be closed.
 
-        if (isLiveReloadConnection(resource)) {
-            BrowserLiveReloadAccess access = service.getInstantiator()
-                    .getOrCreate(BrowserLiveReloadAccess.class);
-            BrowserLiveReload liveReload = access.getLiveReload(service);
-            if (liveReload.isLiveReload(resource)) {
-                liveReload.onDisconnect(resource);
-                return null;
-            }
+        Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
+                .getLiveReloadFromService(service);
+        if (isLiveReloadConnection(resource) && liveReload.isPresent()
+                && liveReload.get().isLiveReload(resource)) {
+            liveReload.get().onDisconnect(resource);
+            return null;
         }
 
         VaadinServletRequest vaadinRequest = new VaadinServletRequest(
@@ -480,7 +483,9 @@ public class PushHandler {
     }
 
     /**
-     * Checks whether a given push id matches the session's push id.
+     * Checks whether a given push id matches the session's push id. The
+     * comparison is done using a time-constant method since the push id is used
+     * to protect against cross-site attacks.
      *
      * @param session
      *            the vaadin session for which the check should be done
@@ -492,7 +497,9 @@ public class PushHandler {
             String requestPushId) {
 
         String sessionPushId = session.getPushId();
-        if (requestPushId == null || !requestPushId.equals(sessionPushId)) {
+        if (requestPushId == null || !MessageDigest.isEqual(
+                requestPushId.getBytes(StandardCharsets.UTF_8),
+                sessionPushId.getBytes(StandardCharsets.UTF_8))) {
             return false;
         }
         return true;
@@ -506,10 +513,8 @@ public class PushHandler {
      */
     void onConnect(AtmosphereResource resource) {
         if (isLiveReloadConnection(resource)) {
-            BrowserLiveReloadAccess access = service.getInstantiator()
-                    .getOrCreate(BrowserLiveReloadAccess.class);
-            BrowserLiveReload liveReload = access.getLiveReload(service);
-            liveReload.onConnect(resource);
+            BrowserLiveReloadAccessor.getLiveReloadFromService(service)
+                    .ifPresent(liveReload -> liveReload.onConnect(resource));
         } else {
             callWithUi(resource, establishCallback);
         }

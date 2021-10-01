@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
@@ -32,7 +33,9 @@ import org.mockito.Mockito;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.testutil.TestUtils;
 
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 
 public class FrontendResourcesAreCopiedAfterCleaningTest {
@@ -55,20 +58,20 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
     public void frontendResources_should_beCopiedFromJars_when_TaskUpdatePackagesRemovesThem()
             throws IOException, ExecutionFailedException {
         copyResources();
-        assertCopiedFrontendFileAmount(4);
+        assertCopiedFrontendFileAmount(3);
 
         performPackageClean();
         // Should keep the `package.json` file
-        // Should keep the `form/package.json` file
-        assertCopiedFrontendFileAmount(2);
+        assertCopiedFrontendFileAmount(1);
 
         copyResources();
-        assertCopiedFrontendFileAmount(4);
+        assertCopiedFrontendFileAmount(3);
     }
 
     private void assertCopiedFrontendFileAmount(int fileCount)
             throws IOException {
-        File dir = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
+        File dir = new File(npmFolder,
+                Paths.get(TARGET, DEFAULT_FLOW_RESOURCES_FOLDER).toString());
         FileUtils.forceMkdir(dir);
         List<String> files = TestUtils.listFilesRecursively(dir);
 
@@ -81,10 +84,12 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
                 FrontendResourcesAreCopiedAfterCleaningTest.class
                         .getClassLoader());
         Lookup mockLookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(classFinder).when(mockLookup).lookup(ClassFinder.class);
-        NodeTasks.Builder builder = new NodeTasks.Builder(mockLookup,
-                npmFolder);
-        File resourcesFolder = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
+        Mockito.doReturn(classFinder).when(mockLookup)
+                .lookup(ClassFinder.class);
+        NodeTasks.Builder builder = new NodeTasks.Builder(mockLookup, npmFolder,
+                TARGET);
+        File resourcesFolder = new File(npmFolder,
+                Paths.get(TARGET, DEFAULT_FLOW_RESOURCES_FOLDER).toString());
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
                 .runNpmInstall(false).enablePackagesUpdate(true)
@@ -98,10 +103,12 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
                 FrontendResourcesAreCopiedAfterCleaningTest.class
                         .getClassLoader());
         Lookup mockLookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(classFinder).when(mockLookup).lookup(ClassFinder.class);
-        NodeTasks.Builder builder = new NodeTasks.Builder(mockLookup,
-                npmFolder);
-        File resourcesFolder = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
+        Mockito.doReturn(classFinder).when(mockLookup)
+                .lookup(ClassFinder.class);
+        NodeTasks.Builder builder = new NodeTasks.Builder(mockLookup, npmFolder,
+                TARGET);
+        File resourcesFolder = new File(npmFolder,
+                Paths.get(TARGET, DEFAULT_FLOW_RESOURCES_FOLDER).toString());
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
                 .runNpmInstall(false).enableNpmFileCleaning(true)

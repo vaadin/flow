@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -93,7 +93,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @since 1.0
  */
-@JsModule("@vaadin/flow-frontend/ConnectionIndicator.js")
+@JsModule("@vaadin/common-frontend/ConnectionIndicator.js")
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 
@@ -768,8 +768,7 @@ public class UI extends Component
      */
     public void setDirection(Direction direction) {
         Objects.requireNonNull(direction, "Direction cannot be null");
-        getPage().executeJs("document.dir = $0",
-                direction.getClientName());
+        getPage().executeJs("document.dir = $0", direction.getClientName());
     }
 
     /**
@@ -886,9 +885,8 @@ public class UI extends Component
      *            parameters to pass to view.
      * @throws IllegalArgumentException
      *             if navigationTarget is a {@link HasUrlParameter} with a
-     *             mandatory parameter, but parameters argument doesn't
-     *             provide {@link HasUrlParameterFormat#PARAMETER_NAME}
-     *             parameter.
+     *             mandatory parameter, but parameters argument doesn't provide
+     *             {@link HasUrlParameterFormat#PARAMETER_NAME} parameter.
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
@@ -940,7 +938,8 @@ public class UI extends Component
      */
     public void navigate(String location, QueryParameters queryParameters) {
         Objects.requireNonNull(location, "Location must not be null");
-        Objects.requireNonNull(queryParameters, "Query parameters must not be null");
+        Objects.requireNonNull(queryParameters,
+                "Query parameters must not be null");
 
         getInternals().getRouter().navigate(this,
                 new Location(location, queryParameters),
@@ -996,9 +995,12 @@ public class UI extends Component
      *
      * @return a registration that can be used to cancel the execution of the
      *         task
+     * @throws IllegalArgumentException
+     *             if the given component doesn't belong to this UI
      */
     public ExecutionRegistration beforeClientResponse(Component component,
-            SerializableConsumer<ExecutionContext> execution) {
+            SerializableConsumer<ExecutionContext> execution)
+            throws IllegalArgumentException {
 
         if (component == null) {
             throw new IllegalArgumentException(
@@ -1007,6 +1009,11 @@ public class UI extends Component
         if (execution == null) {
             throw new IllegalArgumentException(
                     "The 'execution' parameter may not be null");
+        }
+
+        if (component.getUI().isPresent() && component.getUI().get() != this) {
+            throw new IllegalArgumentException(
+                    "The given component doesn't belong to the UI the task to be executed on");
         }
 
         return internals.getStateTree().beforeClientResponse(
@@ -1185,7 +1192,7 @@ public class UI extends Component
     }
 
     /**
-     * Gets the CSRF token (aka double submit cookie) that is used to protect
+     * Gets the CSRF token (synchronizer token pattern) that is used to protect
      * against Cross Site Request Forgery attacks.
      *
      * @return the csrf token string

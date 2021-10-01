@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -92,7 +92,7 @@ public class FireEventIT extends ChromeBrowserTest implements HasById {
         waitForElementVisible(By.id("contained"));
 
         /*
-            Inner-div listener attempts to cancel all button-events
+         * Inner-div listener attempts to cancel all button-events
          */
         // non-bubbling
         WebElement button1 = byId("contained", "b1");
@@ -103,37 +103,49 @@ public class FireEventIT extends ChromeBrowserTest implements HasById {
 
         button1.click();
 
-        Assert.assertEquals("Non-bubbling event should be visible on the " +
-                "web component", NoBubble_NoCancel.name(), value(CON_RESULT));
-        Assert.assertEquals("Non-bubbling event should not be visible on the " +
-                "inner div", "", value(IN_RESULT));
-        Assert.assertEquals("Non-bubbling event should not be visible on the " +
-                "outer div", "", value(OUT_RESULT));
+        Assert.assertEquals(
+                "Non-bubbling event should be visible on the "
+                        + "web component",
+                NoBubble_NoCancel.name(), value(CON_RESULT));
+        Assert.assertEquals("Non-bubbling event should not be visible on the "
+                + "inner div", "", value(IN_RESULT));
+        Assert.assertEquals("Non-bubbling event should not be visible on the "
+                + "outer div", "", value(OUT_RESULT));
 
         button2.click();
 
-        Assert.assertEquals("Bubbling, non-cancellable event should be " +
-                "visible on the web component", Bubble_NoCancel.name(),
-                value(CON_RESULT));
-        Assert.assertEquals("Bubbling, non-cancelable event should be visible on the " +
-                "inner div", Bubble_NoCancel.name(), value(IN_RESULT));
-        Assert.assertEquals("Bubbling, non-cancelable event should be visible on the " +
-                "outer div", Bubble_NoCancel.name(), value(OUT_RESULT));
+        Assert.assertEquals(
+                "Bubbling, non-cancellable event should be "
+                        + "visible on the web component",
+                Bubble_NoCancel.name(), value(CON_RESULT));
+        Assert.assertEquals(
+                "Bubbling, non-cancelable event should be visible on the "
+                        + "inner div",
+                Bubble_NoCancel.name(), value(IN_RESULT));
+        Assert.assertEquals(
+                "Bubbling, non-cancelable event should be visible on the "
+                        + "outer div",
+                Bubble_NoCancel.name(), value(OUT_RESULT));
 
         button3.click();
 
-        Assert.assertEquals("Bubbling, cancellable event should be " +
-                "visible on the web component", Bubble_Cancel.name(),
-                value(CON_RESULT));
-        Assert.assertEquals("Bubbling, cancelable event should be visible on the " +
-                "inner div", Bubble_Cancel.name(), value(IN_RESULT));
+        Assert.assertEquals(
+                "Bubbling, cancellable event should be "
+                        + "visible on the web component",
+                Bubble_Cancel.name(), value(CON_RESULT));
+        Assert.assertEquals(
+                "Bubbling, cancelable event should be visible on the "
+                        + "inner div",
+                Bubble_Cancel.name(), value(IN_RESULT));
         /*
-            Since we cannot actually stop CustomEvents from being actuated by
-             custom event listeners, we can only track the flag
-             "defaultPrevented" to verify that everything is as it should be.
+         * Since we cannot actually stop CustomEvents from being actuated by
+         * custom event listeners, we can only track the flag "defaultPrevented"
+         * to verify that everything is as it should be.
          */
-        Assert.assertEquals("Bubbling, cancelable event should not be visible on the " +
-                "outer div", "prevented", value(OUT_RESULT));
+        Assert.assertEquals(
+                "Bubbling, cancelable event should not be visible on the "
+                        + "outer div",
+                "prevented", value(OUT_RESULT));
     }
 
     private String value(String id) {

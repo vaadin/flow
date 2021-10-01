@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,6 +25,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * Generate <code>tsconfig.json</code> if it is missing in project folder and
  * <code>index.ts</code> exists in frontend folder.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 3.0
  */

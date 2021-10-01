@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -206,12 +206,13 @@ public class Element extends Node<Element> {
      * Creates a text node with the given text.
      *
      * @param text
-     *            the text in the node, not <code>null</code>
-     * @return an element representing the text node
+     *            the text in the node, <code>null</code> is interpreted as an
+     *            empty string
+     * @return an element representing the text node, never <code>null</code>
      */
     public static Element createText(String text) {
         if (text == null) {
-            throw new IllegalArgumentException("Text cannot be null");
+            text = "";
         }
 
         return new Element(BasicTextElementStateProvider.createStateNode(text),
@@ -678,9 +679,9 @@ public class Element extends Node<Element> {
      * or {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @param name
-     *                  the property name, not <code>null</code>
+     *            the property name, not <code>null</code>
      * @param value
-     *                  the property value, not <code>null</code>
+     *            the property value, not <code>null</code>
      * @return this element
      */
     // Distinct name so setProperty("foo", null) is not ambiguous
@@ -702,11 +703,11 @@ public class Element extends Node<Element> {
      * or {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @param <T>
-     *                  the type of items in the list
+     *            the type of items in the list
      * @param name
-     *                  the property name, not <code>null</code>
+     *            the property name, not <code>null</code>
      * @param value
-     *                  the property value, not <code>null</code>
+     *            the property value, not <code>null</code>
      * @return this element
      */
     public <T> Element setPropertyList(String name, List<T> value) {
@@ -728,9 +729,9 @@ public class Element extends Node<Element> {
      * or {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @param name
-     *                  the property name, not <code>null</code>
+     *            the property name, not <code>null</code>
      * @param value
-     *                  the property value, not <code>null</code>
+     *            the property value, not <code>null</code>
      * @return this element
      */
     public Element setPropertyMap(String name, Map<String, ?> value) {

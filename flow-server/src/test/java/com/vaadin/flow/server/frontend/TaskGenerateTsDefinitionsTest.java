@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+  * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-
 public class TaskGenerateTsDefinitionsTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -43,8 +42,9 @@ public class TaskGenerateTsDefinitionsTest {
     @Test
     public void should_generateTsDefinitions_TsDefinitionsNotExistAndTsConfigExists()
             throws Exception {
-        Files.createFile(new File(outputFolder, TaskGenerateTsConfig.TSCONFIG_JSON)
-                .toPath());
+        Files.createFile(
+                new File(outputFolder, TaskGenerateTsConfig.TSCONFIG_JSON)
+                        .toPath());
         taskGenerateTsDefinitions.execute();
         Assert.assertFalse(
                 "Should generate types.d.ts when tsconfig.json exists and "

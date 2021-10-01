@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -222,8 +222,8 @@ public class HierarchyMapperWithDataTest {
         // Root nodes plus children of expanded nodes 0 and 4 that match the
         // filter
         List<Node> expectedResult = IntStream
-            .of(0, 1, 4, 6, 7, 10, 13, 26, 39, 52).mapToObj(testData::get)
-            .collect(Collectors.toList());
+                .of(0, 1, 4, 6, 7, 10, 13, 26, 39, 52).mapToObj(testData::get)
+                .collect(Collectors.toList());
 
         mapper.setFilter(filter);
 
@@ -241,14 +241,12 @@ public class HierarchyMapperWithDataTest {
         TreeNode third11 = new TreeNode("third-1-1", second1);
         TreeNode third21 = new TreeNode("third-2-1", second2);
 
-        HierarchicalDataProvider<TreeNode, Void> dataProvider =
-                new ThreeLevelStaticHierarchicalDataProvider(root,
-                        new TreeNode[]{second1, second2},
-                        new TreeNode[]{third11, third21});
+        HierarchicalDataProvider<TreeNode, Void> dataProvider = new ThreeLevelStaticHierarchicalDataProvider(
+                root, new TreeNode[] { second1, second2 },
+                new TreeNode[] { third11, third21 });
 
         HierarchyMapper<TreeNode, Void> hierarchyMapper = new HierarchyMapper<>(
-                dataProvider
-        );
+                dataProvider);
 
         Collection<TreeNode> expandedItems = hierarchyMapper.getExpandedItems();
         Assert.assertNotNull(expandedItems);
@@ -260,10 +258,9 @@ public class HierarchyMapperWithDataTest {
         expandedItems = hierarchyMapper.getExpandedItems();
         Assert.assertNotNull(expandedItems);
         Assert.assertEquals(2L, expandedItems.size());
-        Assert.assertArrayEquals(new Object[]{"root", "second-2"},
-                expandedItems.stream()
-                        .map(TreeNode::getName)
-                        .sorted().toArray());
+        Assert.assertArrayEquals(new Object[] { "root", "second-2" },
+                expandedItems.stream().map(TreeNode::getName).sorted()
+                        .toArray());
     }
 
     @Test
@@ -277,14 +274,12 @@ public class HierarchyMapperWithDataTest {
         TreeNode third11 = new TreeNode("third-1-1", second1);
         TreeNode third21 = new TreeNode("third-2-1", second2);
 
-        HierarchicalDataProvider<TreeNode, Void> dataProvider =
-                new ThreeLevelStaticHierarchicalDataProvider(root,
-                        new TreeNode[]{second1, second2},
-                        new TreeNode[]{third11, third21});
+        HierarchicalDataProvider<TreeNode, Void> dataProvider = new ThreeLevelStaticHierarchicalDataProvider(
+                root, new TreeNode[] { second1, second2 },
+                new TreeNode[] { third11, third21 });
 
         HierarchyMapper<TreeNode, Void> hierarchyMapper = new HierarchyMapper<>(
-                dataProvider
-        );
+                dataProvider);
 
         hierarchyMapper.expand(root);
         hierarchyMapper.expand(second1);
@@ -384,10 +379,8 @@ public class HierarchyMapperWithDataTest {
         private TreeNode[] secondLevelNodes;
         private TreeNode[] thirdLevelNodes;
 
-        public ThreeLevelStaticHierarchicalDataProvider(
-                TreeNode root,
-                TreeNode[] secondLevelNodes,
-                TreeNode[] thirdLevelNodes) {
+        public ThreeLevelStaticHierarchicalDataProvider(TreeNode root,
+                TreeNode[] secondLevelNodes, TreeNode[] thirdLevelNodes) {
             this.root = root;
             this.secondLevelNodes = secondLevelNodes;
             this.thirdLevelNodes = thirdLevelNodes;
@@ -413,18 +406,17 @@ public class HierarchyMapperWithDataTest {
 
         @Override
         public boolean hasChildren(TreeNode item) {
-            return item.getParent() == null ||
-                    Arrays.stream(secondLevelNodes)
-                            .anyMatch(node -> node == item);
+            return item.getParent() == null || Arrays.stream(secondLevelNodes)
+                    .anyMatch(node -> node == item);
         }
 
         @Override
         protected Stream<TreeNode> fetchChildrenFromBackEnd(
                 HierarchicalQuery<TreeNode, Void> query) {
             if (query.getParent() == null) {
-                return Arrays.stream(new TreeNode[] {root});
+                return Arrays.stream(new TreeNode[] { root });
             }
-            if(query.getParent() == root) {
+            if (query.getParent() == root) {
                 return Arrays.stream(secondLevelNodes);
             }
             return Arrays.stream(thirdLevelNodes)

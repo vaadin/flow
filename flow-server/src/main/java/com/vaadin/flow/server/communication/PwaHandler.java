@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,9 +18,12 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.server.PwaIcon;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.RequestHandler;
@@ -37,32 +40,32 @@ import com.vaadin.flow.server.VaadinSession;
  * <li>offline fallback page
  * <li>icons
  * </ul>
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.2
  */
 public class PwaHandler implements RequestHandler {
+    public static final String SW_RUNTIME_PRECACHE_PATH = "/sw-runtime-resources-precache.js";
+    public static final String DEFAULT_OFFLINE_STUB_PATH = "offline-stub.html";
+
     private final Map<String, RequestHandler> requestHandlerMap = new HashMap<>();
-    private final PwaRegistry pwaRegistry;
+    private final SerializableSupplier<PwaRegistry> pwaRegistryGetter;
+
+    private boolean isInitialized;
 
     /**
-     * Creates PwaHandler from {@link PwaRegistry}.
+     * Creates PwaHandler from {@link PwaRegistry} getter.
+     * 
+     * @param pwaRegistryGetter
+     *            PWA registry getter
      *
-     * Sets up handling for icons, manifest and offline page.
-     *
-     * @param pwaRegistry
-     *            registry for PWA
      */
-    public PwaHandler(PwaRegistry pwaRegistry) {
-        this.pwaRegistry = pwaRegistry;
-        init();
+    public PwaHandler(SerializableSupplier<PwaRegistry> pwaRegistryGetter) {
+        this.pwaRegistryGetter = pwaRegistryGetter;
     }
 
-    private void init() {
-        // Don't init handlers, if not enabled
-        if (!pwaRegistry.getPwaConfiguration().isEnabled()) {
-            return;
-        }
-
+    private void init(PwaRegistry pwaRegistry) {
         // Icon handling
         for (PwaIcon icon : pwaRegistry.getIcons()) {
             requestHandlerMap.put(icon.getRelHref(),
@@ -81,17 +84,22 @@ public class PwaHandler implements RequestHandler {
                     });
         }
 
+        // Assume that offline page and offline stub (for display within app)
+        // are the same. This may change in the future.
+        List<String> offlinePaths = new ArrayList<>();
         if (pwaRegistry.getPwaConfiguration().isOfflinePathEnabled()) {
-            // Offline page handling
-            requestHandlerMap.put(
-                    pwaRegistry.getPwaConfiguration().relOfflinePath(),
-                    (session, request, response) -> {
-                        response.setContentType("text/html");
-                        try (PrintWriter writer = response.getWriter()) {
-                            writer.write(pwaRegistry.getOfflineHtml());
-                        }
-                        return true;
-                    });
+            offlinePaths
+                    .add(pwaRegistry.getPwaConfiguration().relOfflinePath());
+        }
+        offlinePaths.add("/" + DEFAULT_OFFLINE_STUB_PATH);
+        for (String offlinePath : offlinePaths) {
+            requestHandlerMap.put(offlinePath, (session, request, response) -> {
+                response.setContentType("text/html");
+                try (PrintWriter writer = response.getWriter()) {
+                    writer.write(pwaRegistry.getOfflineHtml());
+                }
+                return true;
+            });
         }
 
         // manifest.webmanifest handling
@@ -105,10 +113,9 @@ public class PwaHandler implements RequestHandler {
                     return true;
                 });
 
-        // sw-runtime.js handling (service worker import for precaching runtime generated assets)
-        requestHandlerMap.put(
-                // pwaRegistry.getPwaConfiguration().relServiceWorkerPath(),
-                "/sw-runtime-resources-precache.js",
+        // sw-runtime.js handling (service worker import for precaching runtime
+        // generated assets)
+        requestHandlerMap.put(SW_RUNTIME_PRECACHE_PATH,
                 (session, request, response) -> {
                     response.setContentType("application/javascript");
                     try (PrintWriter writer = response.getWriter()) {
@@ -121,14 +128,30 @@ public class PwaHandler implements RequestHandler {
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-        String requestUri = request.getPathInfo();
+        PwaRegistry pwaRegistry = pwaRegistryGetter.get();
+        boolean hasPwa = pwaRegistry != null
+                && pwaRegistry.getPwaConfiguration().isEnabled();
+        RequestHandler handler = null;
+        session.lock();
+        try {
+            if (isInitialized && !hasPwa) {
+                requestHandlerMap.clear();
+            } else if (!isInitialized && hasPwa) {
+                init(pwaRegistry);
+            }
 
-        if (pwaRegistry.getPwaConfiguration().isEnabled()
-                && requestHandlerMap.containsKey(requestUri)) {
-            return requestHandlerMap.get(requestUri).handleRequest(session,
-                    request, response);
+            if (hasPwa) {
+                handler = requestHandlerMap.get(request.getPathInfo());
+            }
+        } finally {
+            session.unlock();
         }
-        return false;
+
+        if (handler == null) {
+            return false;
+        } else {
+            return handler.handleRequest(session, request, response);
+        }
     }
 
 }

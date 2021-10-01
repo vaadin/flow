@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,8 @@
  */
 
 package com.vaadin.client;
+
+import java.util.Objects;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -319,4 +321,42 @@ public class WidgetUtil {
                                                               return value;
                                                               });
                                                               }-*/;
+
+    /**
+     * Checks whether the objects are equal either as Java objects (considering
+     * types and Java {@link Object#equals(Object)} method) or as JS values.
+     * 
+     * @param obj1
+     *            an object
+     * 
+     * @param obj2
+     *            an object to be compared with {@code a} for deep equality
+     * @return {@code true} if the arguments are equal to each other and
+     *         {@code false} otherwise
+     * 
+     * @see #equalsInJS(Object, Object)
+     */
+    public static boolean equals(Object obj1, Object obj2) {
+        return Objects.equals(obj1, obj2) || equalsInJS(obj1, obj2);
+    }
+
+    /**
+     * Checks whether the objects are equal as JS values.
+     * <p>
+     * This check ignores object types and checks the values via JS {@code ==}.
+     * E.g. it means that an empty string equals to {@code 0}.
+     * 
+     * @param obj1
+     *            an object
+     * 
+     * @param obj2
+     *            an object to be compared with {@code a} for deep equality
+     * @return {@code true} if the arguments are equal via JS {@code ==} to each
+     *         other and {@code false} otherwise
+     */
+    public static native boolean equalsInJS(Object obj1, Object obj2)
+    /*-{
+      return obj1==obj2;
+    }-*/;
+
 }

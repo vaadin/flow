@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@ package com.vaadin.flow.server;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletContext;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -32,11 +33,15 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.communication.PwaHandler;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import elemental.json.Json;
@@ -91,18 +96,28 @@ public class PwaRegistry implements Serializable {
             System.setProperty(HEADLESS_PROPERTY, Boolean.TRUE.toString());
         }
 
+        boolean useV14Bootstrap = false;
+        ApplicationConfiguration applicationConfiguration = (ApplicationConfiguration) servletContext
+                .getAttribute(ApplicationConfiguration.class.getName());
+        if (applicationConfiguration != null) {
+            useV14Bootstrap = applicationConfiguration.useV14Bootstrap();
+        }
+
         // set basic configuration by given PWA annotation
         // fall back to defaults if unavailable
-        pwaConfiguration = pwa == null ? new PwaConfiguration()
-                : new PwaConfiguration(pwa);
+        pwaConfiguration = pwa == null ? new PwaConfiguration(useV14Bootstrap)
+                : new PwaConfiguration(pwa, useV14Bootstrap);
 
         // Build pwa elements only if they are enabled
         if (pwaConfiguration.isEnabled()) {
             URL logo = getResourceUrl(servletContext,
                     pwaConfiguration.relIconPath());
 
-            URL offlinePage = getResourceUrl(servletContext,
-                    pwaConfiguration.relOfflinePath());
+            URL offlinePage = pwaConfiguration.isOfflinePathEnabled()
+                    ? getResourceUrl(servletContext,
+                            pwaConfiguration.relOfflinePath())
+                    : null;
+
             // Load base logo from servlet context if available
             // fall back to local image if unavailable
             BufferedImage baseImage = getBaseImage(logo);
@@ -227,19 +242,24 @@ public class PwaRegistry implements Serializable {
         return manifestData;
     }
 
-    private String initializeRuntimeServiceWorker(ServletContext servletContext) {
+    private String initializeRuntimeServiceWorker(
+            ServletContext servletContext) {
         StringBuilder stringBuilder = new StringBuilder();
 
-        // List of icons for precache
-        List<String> filesToCache = getIcons().stream()
+        // List of files to precache
+        Collection<String> filesToCache = getIcons().stream()
                 .filter(PwaIcon::shouldBeCached).map(PwaIcon::getCacheFormat)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        // When offlinePath is in use, it is also an offline resource to
+        // When custom offlinePath is in use, it is also an offline resource to
         // precache
         if (pwaConfiguration.isOfflinePathEnabled()) {
-            filesToCache.add(offlinePageCache());
+            filesToCache
+                    .add(offlinePageCache(pwaConfiguration.getOfflinePath()));
         }
+        // Offline stub to be shown within an <iframe> in the app shell
+        filesToCache
+                .add(offlinePageCache(PwaHandler.DEFAULT_OFFLINE_STUB_PATH));
 
         // Add manifest to precache
         filesToCache.add(manifestCache());
@@ -345,9 +365,7 @@ public class PwaRegistry implements Serializable {
         return offlinePage.replace("%%%PROJECT_NAME%%%", config.getAppName())
                 .replace("%%%BACKGROUND_COLOR%%%", config.getBackgroundColor())
                 .replace("%%%LOGO_PATH%%%",
-                        largest != null
-                                ? largest.getHref()
-                                : "")
+                        largest != null ? largest.getHref() : "")
                 .replace("%%%META_ICONS%%%", iconHead);
 
     }
@@ -401,9 +419,8 @@ public class PwaRegistry implements Serializable {
         return runtimeServiceWorkerJs;
     }
 
-    private String offlinePageCache() {
-        return String.format(WORKBOX_CACHE_FORMAT,
-                pwaConfiguration.getOfflinePath(), offlineHash);
+    private String offlinePageCache(String offlinePath) {
+        return String.format(WORKBOX_CACHE_FORMAT, offlinePath, offlineHash);
     }
 
     private String manifestCache() {
@@ -448,7 +465,7 @@ public class PwaRegistry implements Serializable {
         return pwaConfiguration;
     }
 
-    private static List<PwaIcon> getIconTemplates(String baseName) {
+    static List<PwaIcon> getIconTemplates(String baseName) {
         List<PwaIcon> icons = new ArrayList<>();
         // Basic manifest icons for android support
         icons.add(

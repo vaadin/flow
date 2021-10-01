@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -44,6 +45,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -78,7 +80,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
-        generatedPath = new File(tmpRoot, DEFAULT_GENERATED_DIR);
+        generatedPath = new File(tmpRoot,
+                Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
         importsFile = new File(generatedPath, IMPORTS_NAME);
         importsDefinitionFile = new File(generatedPath, IMPORTS_D_TS_NAME);
         fallBackImportsFile = new File(generatedPath,
@@ -115,7 +118,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
                 tmpRoot, generatedPath, frontendDirectory, tokenFile,
-                fallBackData, false) {
+                fallBackData, false, TARGET) {
             @Override
             Logger log() {
                 return logger;
@@ -142,6 +145,11 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 "import $css_0 from '@vaadin/vaadin-mixed-component/bar.css';"));
         Assert.assertThat(mainContent, CoreMatchers.containsString(
                 "addCssBlock(`<custom-style><style>${$css_0}</style></custom-style>`);"));
+
+        Assert.assertThat(mainContent, CoreMatchers
+                .containsString("import $css_5 from 'Frontend/foo.css';"));
+        Assert.assertThat(mainContent, CoreMatchers.containsString(
+                "addCssBlock(`<dom-module id=\"flow_css_mod_5\" theme-for=\"foo-bar\"><template><style>${$css_5}</style></template></dom-module>`);"));
 
         // Contains theme imports
         Assert.assertThat(mainContent, CoreMatchers.containsString(
@@ -197,7 +205,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         Assert.assertThat(fallBackContent, CoreMatchers.containsString(
                 "import $css_0 from 'Frontend/extra-css.css';"));
         Assert.assertThat(fallBackContent, CoreMatchers.containsString(
-                "addCssBlock(`<dom-module id=\"flow_css_mod_0\" theme-for=\"extra-foo\"><template><style include=\"extra-bar\">${$css_0}</style></template></dom-module>`);"));
+                "addCssBlock(`<dom-module id=\"fallback_flow_css_mod_0\" theme-for=\"extra-foo\"><template><style include=\"extra-bar\">${$css_0}</style></template></dom-module>`);"));
 
         // Does not contains JS module imports
         Assert.assertThat(fallBackContent, CoreMatchers.not(CoreMatchers
@@ -228,11 +236,11 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertTrue(importsDefinitionFile.exists());
 
-        String definitionContent = FileUtils.readFileToString(importsDefinitionFile,
-                Charset.defaultCharset());
+        String definitionContent = FileUtils.readFileToString(
+                importsDefinitionFile, Charset.defaultCharset());
 
-        Assert.assertThat(definitionContent, CoreMatchers
-                .containsString("export declare const addCssBlock: (block: string, before?: boolean) => void;"));
+        Assert.assertThat(definitionContent, CoreMatchers.containsString(
+                "export declare const addCssBlock: (block: string, before?: boolean) => void;"));
     }
 
     @Test
@@ -248,7 +256,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
                 tmpRoot, generatedPath, frontendDirectory, tokenFile, null,
-                false) {
+                false, TARGET) {
             @Override
             Logger log() {
                 return logger;
@@ -265,8 +273,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         // ============== check main generated imports file ============
 
         // Contains theme lines
-        Assert.assertThat(mainContent, CoreMatchers
-                .containsString("export const addCssBlock = function(block, before = false) {"));
+        Assert.assertThat(mainContent, CoreMatchers.containsString(
+                "export const addCssBlock = function(block, before = false) {"));
 
         Assert.assertThat(mainContent, CoreMatchers.containsString(
                 "addCssBlock('<custom-style>foo</custom-style>', true);"));
@@ -317,7 +325,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                tokenFile, null, false) {
+                tokenFile, null, false, TARGET) {
             @Override
             Logger log() {
                 return logger;
@@ -362,7 +370,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                tokenFile, null, false) {
+                tokenFile, null, false, TARGET) {
             @Override
             Logger log() {
                 return logger;

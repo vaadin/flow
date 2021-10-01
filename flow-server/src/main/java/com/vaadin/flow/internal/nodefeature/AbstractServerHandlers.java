@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
@@ -38,6 +39,8 @@ import com.vaadin.flow.internal.StateNode;
 /**
  * Abstract class for collecting Methods which are published as
  * <code>serverObject.&lt;name&gt;</code> on the client side.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @param <T>
  *            Component type for setComponent(T component)

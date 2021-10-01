@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -42,6 +43,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
@@ -84,7 +86,8 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
-        generatedPath = new File(tmpRoot, DEFAULT_GENERATED_DIR);
+        generatedPath = new File(tmpRoot,
+                Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
         importsFile = new File(generatedPath, IMPORTS_NAME);
 
         Assert.assertTrue(nodeModulesPath.mkdirs());
@@ -142,7 +145,7 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
             }
         };
         updater = new TaskUpdateImports(finder, deps, cf -> null, tmpRoot,
-                generatedPath, frontendDirectory, null, null, false);
+                generatedPath, frontendDirectory, null, null, false, TARGET);
     }
 
     @Test

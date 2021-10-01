@@ -49,8 +49,8 @@ public class PreserveOnRefreshIT extends AbstractStreamResourceIT {
         final String notificationId = getString(NOTIFICATION_ID);
 
         // navigate to some other page in between
-        getDriver().get(getRootURL() +
-                "/view/com.vaadin.flow.uitest.ui.PageView");
+        getDriver()
+                .get(getRootURL() + "/view/com.vaadin.flow.uitest.ui.PageView");
         WebElement loadingIndicator = findElement(
                 By.className("v-loading-indicator"));
         waitUntil(driver -> loadingIndicator.isDisplayed());

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -44,16 +44,14 @@ public class InternalErrorView extends AbstractDivView {
                 event -> message.setText("Updated"));
 
         NativeButton closeSessionButton = createButton("Close session",
-                "close-session",
-                event -> VaadinSession.getCurrent().close());
+                "close-session", event -> VaadinSession.getCurrent().close());
 
         NativeButton enableNotificationButton = createButton(
                 "Enable session expired notification", "enable-notification",
                 event -> enableSessionExpiredNotification());
 
         NativeButton causeExceptionButton = createButton("Cause exception",
-                "cause-exception",
-                event -> showInternalError());
+                "cause-exception", event -> showInternalError());
 
         NativeButton resetSystemMessagesButton = createButton(
                 "Reset system messages", "reset-system-messages",

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -94,8 +94,9 @@ public class ElementUtilTest {
         final String EXPECTED_TEXT_2 = "Other text";
 
         Element originalElement = ElementFactory.createDiv();
-        originalElement.appendChild(ElementFactory.createParagraph(EXPECTED_TEXT_1)
-                .appendChild(ElementFactory.createDiv(EXPECTED_TEXT_2)));
+        originalElement.appendChild(
+                ElementFactory.createParagraph(EXPECTED_TEXT_1).appendChild(
+                        ElementFactory.createDiv(EXPECTED_TEXT_2)));
 
         Document jDocument = Document.createShell("http://example.com");
 
@@ -122,5 +123,26 @@ public class ElementUtilTest {
         Assert.assertEquals("Grand-child element should have text",
                 EXPECTED_TEXT_2,
                 recreatedElement.getChild(0).getChild(1).getText());
+    }
+
+    @Test
+    public void isValidTagName_validTagNames() {
+        Assert.assertTrue(ElementUtil.isValidTagName("foo"));
+        Assert.assertTrue(ElementUtil.isValidTagName("foo-bar"));
+        Assert.assertTrue(ElementUtil.isValidTagName("foo_bar"));
+        Assert.assertTrue(ElementUtil.isValidTagName("foo_bar-baz"));
+        Assert.assertTrue(ElementUtil.isValidTagName("foo12.bar3"));
+        Assert.assertTrue(ElementUtil.isValidTagName("foo-._"));
+        Assert.assertTrue(ElementUtil.isValidTagName("x"));
+    }
+
+    @Test
+    public void isValidTagName_invalidTagNames() {
+        Assert.assertFalse(ElementUtil.isValidTagName("1foo"));
+        Assert.assertFalse(ElementUtil.isValidTagName("-foo"));
+        Assert.assertFalse(ElementUtil.isValidTagName("_foo"));
+        Assert.assertFalse(ElementUtil.isValidTagName(".foo"));
+        Assert.assertFalse(ElementUtil.isValidTagName("foo>"));
+        Assert.assertFalse(ElementUtil.isValidTagName("foo$bar"));
     }
 }

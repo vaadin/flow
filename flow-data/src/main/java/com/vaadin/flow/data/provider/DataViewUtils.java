@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -85,7 +85,7 @@ public final class DataViewUtils {
      *            items type
      */
     public static <T> void setComponentFilter(Component component,
-                                              SerializablePredicate<T> filter) {
+            SerializablePredicate<T> filter) {
         ComponentUtil.setData(component, COMPONENT_IN_MEMORY_FILTER_KEY,
                 filter);
     }
@@ -104,7 +104,7 @@ public final class DataViewUtils {
      *            items type
      */
     public static <T> void setComponentSortComparator(Component component,
-                                                      SerializableComparator<T> sortComparator) {
+            SerializableComparator<T> sortComparator) {
         ComponentUtil.setData(component, COMPONENT_IN_MEMORY_SORTING_KEY,
                 sortComparator);
     }

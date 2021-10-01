@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,14 +25,14 @@ import com.vaadin.flow.component.dependency.NpmPackage;
  */
 @JsModule("@vaadin/vaadin-text-field/vaadin-text-field.js")
 @Tag("vaadin-text-field")
-@NpmPackage(value="@vaadin/vaadin-text-field", version = "2.7.1")
+@NpmPackage(value = "@vaadin/vaadin-text-field", version = "2.7.1")
 public class MyPolymerField extends Component {
 
     /**
      * Set the component id.
      *
      * @param id
-     *     value to set
+     *            value to set
      * @return this component
      */
     public Component withId(String id) {

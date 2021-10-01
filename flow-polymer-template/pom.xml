@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>6.0-SNAPSHOT</version>
+        <version>9.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-polymer-template</artifactId>
     <name>Flow Polymer Templates Support</name>
@@ -30,36 +30,6 @@
             <artifactId>flow-test-generic</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
-        </dependency>
-
-
-        <!-- API DEPENDENCIES -->
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-
-        <!-- Library dependencies -->
-
-        <!-- Jsoup for BootstrapHandler, Template, ... -->
-        <dependency>
-            <groupId>org.jsoup</groupId>
-            <artifactId>jsoup</artifactId>
-            <version>${jsoup.version}</version>
-        </dependency>
-
-        <!-- Byte code generation -->
-        <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
-        </dependency>
-
-        <!-- Small reflection library -->
-        <dependency>
-            <groupId>com.vaadin.external</groupId>
-            <artifactId>gentyref</artifactId>
-            <version>1.2.0.vaadin1</version>
         </dependency>
 
         <!-- TESTING DEPENDENCIES -->

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,8 +15,6 @@
  */
 
 package com.vaadin.flow.component;
-
-import static org.mockito.Mockito.mock;
 
 import java.util.Set;
 
@@ -35,8 +33,9 @@ import com.vaadin.flow.server.webcomponent.PropertyData;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
 import elemental.json.Json;
-import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+
+import static org.mockito.Mockito.mock;
 
 public class WebComponentExporterTest {
 
@@ -169,8 +168,8 @@ public class WebComponentExporterTest {
                 binding.getComponent());
         Assert.assertTrue("configureInstance() should have set 'flip' to true",
                 binding.getComponent().getFlip());
-        Assert.assertEquals("value should be set to 1 by default",
-                1, binding.getComponent().value);
+        Assert.assertEquals("value should be set to 1 by default", 1,
+                binding.getComponent().value);
     }
 
     @Test
@@ -186,8 +185,8 @@ public class WebComponentExporterTest {
                 .createWebComponentBinding(new MockInstantiator(),
                         mock(Element.class), Json.parse("{\"value\":2}"));
 
-        Assert.assertEquals("attribute should have set default value to two",
-                2, binding.getComponent().value);
+        Assert.assertEquals("attribute should have set default value to two", 2,
+                binding.getComponent().value);
     }
 
     @Test

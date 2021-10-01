@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,7 +26,14 @@ import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.junit.Assert;
@@ -60,14 +67,36 @@ public class HtmlComponentSmokeTest {
         testValues.put(NumberingType.class, NumberingType.LOWERCASE_ROMAN);
         testValues.put(int.class, 42);
         testValues.put(IFrame.ImportanceType.class, IFrame.ImportanceType.HIGH);
-        testValues.put(IFrame.SandboxType[].class, new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS, IFrame.SandboxType.ALLOW_MODALS });
+        testValues.put(IFrame.SandboxType[].class,
+                new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS,
+                        IFrame.SandboxType.ALLOW_MODALS });
+        testValues.put(Component.class, new Paragraph("Component"));
     }
 
-    // For classes registered here testStringConstructor will be ignored. This test checks whether the content of the
-    // element is the constructor argument. However, for some HTMLComponents this test is not valid.
+    private static final Map<Class<?>, Map<Class<?>, Object>> specialTestValues = new HashMap<>();
+    static {
+        specialTestValues.put(NativeDetails.class, new HashMap<>());
+        specialTestValues.computeIfPresent(NativeDetails.class,
+                (key, nestedTestValueMap) -> {
+                    nestedTestValueMap.put(boolean.class, true); // special case
+                                                                 // because
+                                                                 // setOpen
+                                                                 // defaults to
+                                                                 // false
+                    return nestedTestValueMap;
+                });
+    }
+
+    // For classes registered here testStringConstructor will be ignored. This
+    // test checks whether the content of the
+    // element is the constructor argument. However, for some HTMLComponents
+    // this test is not valid.
+    //
+    // - NativeDetails delegates it's string constructor to the nested <summary>
     private static final Set<Class<?>> ignoredStringConstructors = new HashSet<>();
     static {
         ignoredStringConstructors.add(IFrame.class);
+        ignoredStringConstructors.add(NativeDetails.class);
     }
 
     @Test
@@ -169,15 +198,34 @@ public class HtmlComponentSmokeTest {
     }
 
     private static boolean isSpecialSetter(Method method) {
-        // Shorthand for Lablel.setFor(String)
+        // Shorthand for Label.setFor(String)
         if (method.getDeclaringClass() == Label.class
                 && method.getName().equals("setFor")
                 && method.getParameterTypes()[0] == Component.class) {
             return true;
         }
+
+        // Anchor.setTarget(AnchorTargetValue) -
+        // https://github.com/vaadin/flow/issues/8346
+        if (method.getDeclaringClass() == Anchor.class
+                && method.getName().equals("setTarget")
+                && method.getParameterTypes()[0] == AnchorTargetValue.class) {
+            return true;
+        }
+
         // setFoo(AbstractStreamResource) for resource URLs
         if (method.getParameterCount() == 1 && AbstractStreamResource.class
                 .isAssignableFrom(method.getParameters()[0].getType())) {
+            return true;
+        }
+
+        // - NativeDetails delegates it's setSummaryText to the nested <summary>
+        // NativeDetails::setSummaryText(String summary)
+        // - NativeDetails allows to setSummary(Component..) but it returns
+        // Summary getSummary instead of Component[]
+        // NativeDetails::setSummary(Component... components)
+        if (method.getDeclaringClass() == NativeDetails.class
+                && method.getName().startsWith("setSummary")) {
             return true;
         }
 
@@ -199,7 +247,15 @@ public class HtmlComponentSmokeTest {
         Assert.assertEquals(setter + " should have the same type as its getter",
                 propertyType, getterType);
 
-        Object testValue = testValues.get(propertyType);
+        Map<Class<?>, Object> specialValueMap = specialTestValues
+                .get(instance.getClass());
+        Object testValue;
+        if (specialValueMap != null
+                && specialValueMap.containsKey(propertyType)) {
+            testValue = specialValueMap.get(propertyType);
+        } else {
+            testValue = testValues.get(propertyType);
+        }
 
         if (testValue == null) {
             throw new UnsupportedOperationException(

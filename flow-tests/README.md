@@ -21,10 +21,6 @@
       * test module configuration and templates
 * test-frontend-production-custom-context
   * Test running compatibility mode with custom contextPath
-* test-lumo-theme
-  * Lumo theme tests in compatibility mode
-* test-material-theme
-  * Material theme tests in compatibility mode
 * test-memory-leaks
   * Verification test that no memory leaks happen during war redeployment.
 * test-misc

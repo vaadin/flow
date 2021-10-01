@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@ package com.vaadin.flow.testutil;
 
 import java.lang.management.ManagementFactory;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -60,10 +61,21 @@ public class ChromeBrowserTest extends ViewOrUITest {
     @Override
     public void setup() throws Exception {
         if (Browser.CHROME == getRunLocallyBrowser() && !isJavaInDebugMode()) {
-            setDriver(createHeadlessChromeDriver());
+            setDriver(createHeadlessChromeDriver(
+                    this::updateHeadlessChromeOptions));
         } else {
             super.setup();
         }
+    }
+
+    /**
+     * Allows modifying the chrome options to be used when running on a local
+     * Chrome.
+     * 
+     * @param chromeOptions
+     *            chrome options to use when running on a local Chrome
+     */
+    protected void updateHeadlessChromeOptions(ChromeOptions chromeOptions) {
     }
 
     static boolean isJavaInDebugMode() {
@@ -71,9 +83,11 @@ public class ChromeBrowserTest extends ViewOrUITest {
                 .toString().contains("jdwp");
     }
 
-    static WebDriver createHeadlessChromeDriver() {
-        return TestBench
-            .createDriver(new ChromeDriver(createHeadlessChromeOptions()));
+    static WebDriver createHeadlessChromeDriver(
+            Consumer<ChromeOptions> optionsUpdater) {
+        ChromeOptions headlessOptions = createHeadlessChromeOptions();
+        optionsUpdater.accept(headlessOptions);
+        return TestBench.createDriver(new ChromeDriver(headlessOptions));
     }
 
     @Override
@@ -88,17 +102,17 @@ public class ChromeBrowserTest extends ViewOrUITest {
 
     @Override
     protected List<DesiredCapabilities> getBrowserCapabilities(
-        Browser... browsers) {
+            Browser... browsers) {
         return customizeCapabilities(super.getBrowserCapabilities(browsers));
     }
 
     protected List<DesiredCapabilities> customizeCapabilities(
-        List<DesiredCapabilities> capabilities) {
+            List<DesiredCapabilities> capabilities) {
 
         capabilities.stream()
-            .filter(cap -> "chrome".equalsIgnoreCase(cap.getBrowserName()))
-            .forEach(cap -> cap.setCapability(ChromeOptions.CAPABILITY,
-                createHeadlessChromeOptions()));
+                .filter(cap -> "chrome".equalsIgnoreCase(cap.getBrowserName()))
+                .forEach(cap -> cap.setCapability(ChromeOptions.CAPABILITY,
+                        createHeadlessChromeOptions()));
 
         return capabilities;
     }

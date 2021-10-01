@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -48,10 +48,11 @@ public class ScrollView extends AbstractDivView {
                         "Go to different page (router-link)"));
     }
 
-    static Anchor createAnchorUrl(boolean isRouterLink, String id,
-            String url, String text) {
+    static Anchor createAnchorUrl(boolean isRouterLink, String id, String url,
+            String text) {
         Anchor result = new Anchor(url, text);
-        result.getElement().setAttribute(ROUTER_LINK_ATTRIBUTE_NAME, isRouterLink);
+        result.getElement().setAttribute(ROUTER_LINK_ATTRIBUTE_NAME,
+                isRouterLink);
         result.getStyle().set("display", "block");
         result.setId(id);
         return result;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,7 +30,6 @@ import org.junit.rules.TemporaryFolder;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;;
 
-
 public class TaskGenerateServicWorkerTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -43,8 +42,8 @@ public class TaskGenerateServicWorkerTest {
     public void setUp() throws IOException {
         frontendFolder = temporaryFolder.newFolder();
         outputFolder = temporaryFolder.newFolder();
-        taskGenerateServiceWorker = new TaskGenerateServiceWorker(frontendFolder,
-                outputFolder);
+        taskGenerateServiceWorker = new TaskGenerateServiceWorker(
+                frontendFolder, outputFolder);
     }
 
     @Test
@@ -53,13 +52,13 @@ public class TaskGenerateServicWorkerTest {
                 getClass().getResourceAsStream(SERVICE_WORKER_SRC),
                 StandardCharsets.UTF_8);
 
-        Assert.assertEquals(
-                "Should load correct default content from sw.ts",
+        Assert.assertEquals("Should load correct default content from sw.ts",
                 defaultContent, taskGenerateServiceWorker.getFileContent());
     }
 
     @Test
-    public void should_notGenerateServiceWorker_ServiceWorkerExists() throws Exception {
+    public void should_notGenerateServiceWorker_ServiceWorkerExists()
+            throws Exception {
         Files.createFile(new File(frontendFolder, SERVICE_WORKER_SRC).toPath());
         taskGenerateServiceWorker.execute();
         Assert.assertFalse(
@@ -71,8 +70,10 @@ public class TaskGenerateServicWorkerTest {
     }
 
     @Test
-    public void should_notGenerateServiceWorker_ServiceWorkerJsExists() throws Exception {
-        Files.createFile(new File(frontendFolder, SERVICE_WORKER_SRC_JS).toPath());
+    public void should_notGenerateServiceWorker_ServiceWorkerJsExists()
+            throws Exception {
+        Files.createFile(
+                new File(frontendFolder, SERVICE_WORKER_SRC_JS).toPath());
         taskGenerateServiceWorker.execute();
         Assert.assertFalse(
                 "Should not generate sw.ts while sw.js exists in"
@@ -83,7 +84,8 @@ public class TaskGenerateServicWorkerTest {
     }
 
     @Test
-    public void should_generateServiceWorker_ServiceWorkerNotExist() throws Exception {
+    public void should_generateServiceWorker_ServiceWorkerNotExist()
+            throws Exception {
         String defaultContent = IOUtils.toString(
                 getClass().getResourceAsStream(SERVICE_WORKER_SRC),
                 StandardCharsets.UTF_8);

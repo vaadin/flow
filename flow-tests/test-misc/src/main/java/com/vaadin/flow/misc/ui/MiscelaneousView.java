@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -49,8 +49,9 @@ public class MiscelaneousView extends Div {
 
         @Override
         public List<String> getHeaderInlineContents() {
-            return Collections.singletonList("<custom-style>\n <style>\n   html {\n"
-                + "      font-size: 20px;\n  color:red;  }\n <style>\n </custom-style>");
+            return Collections
+                    .singletonList("<custom-style>\n <style>\n   html {\n"
+                            + "      font-size: 20px;\n  color:red;  }\n <style>\n </custom-style>");
         }
     }
 

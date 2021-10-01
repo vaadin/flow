@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-servlet-containers-test</artifactId>
-        <version>6.0-SNAPSHOT</version>
+        <version>9.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-tomcat9-server</artifactId>
     <name>Flow Tomcat 9 Test</name>
@@ -20,13 +20,13 @@
         <!-- UI classes and tests from dependencies -->
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-root-context</artifactId>
+            <artifactId>flow-test-root-context-npm</artifactId>
             <version>${project.version}</version>
             <type>war</type>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-root-context</artifactId>
+            <artifactId>flow-test-root-context-npm</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
@@ -36,7 +36,7 @@
             may construct the URL for the test -->
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-root-context</artifactId>
+            <artifactId>flow-test-root-context-npm</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <classifier>ui</classifier>
@@ -49,7 +49,7 @@
             <!-- Server configuration -->
             <plugin>
                 <groupId>org.codehaus.cargo</groupId>
-                <artifactId>cargo-maven2-plugin</artifactId>
+                <artifactId>cargo-maven3-plugin</artifactId>
                 <configuration>
                     <container>
                         <containerId>tomcat9x</containerId>

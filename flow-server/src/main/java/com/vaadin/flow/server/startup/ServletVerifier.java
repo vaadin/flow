@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,25 +15,33 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import java.lang.reflect.Method;
 import java.util.Set;
 
+import com.vaadin.flow.server.VaadinContext;
+
 /**
  * Verify the servlet version on container initialization.
  * <p>
  * In cases of non compatible servlet version application deployment will fail.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */
-public class ServletVerifier implements ClassLoaderAwareServletContainerInitializer {
+public class ServletVerifier implements VaadinServletContextStartupInitializer {
+
     @Override
-    public void process(Set<Class<?>> c, ServletContext ctx)
-            throws ServletException {
-        verifyServletVersion();
+    public void initialize(Set<Class<?>> classSet, VaadinContext context)
+            throws VaadinInitializerException {
+        try {
+            verifyServletVersion();
+        } catch (ServletException e) {
+            throw new VaadinInitializerException(e.getMessage(), e);
+        }
     }
 
     /**

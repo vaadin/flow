@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,10 @@ package com.vaadin.flow.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
+
+import com.vaadin.flow.router.InvalidLocationException;
 
 /**
  * The default implementation of {@link ErrorHandler}.
@@ -28,10 +32,17 @@ import org.slf4j.LoggerFactory;
 public class DefaultErrorHandler implements ErrorHandler {
     @Override
     public void error(ErrorEvent event) {
-        Throwable t = findRelevantThrowable(event.getThrowable());
+        Throwable throwable = findRelevantThrowable(event.getThrowable());
 
-        // print the error on console
-        getLogger().error("", t);
+        Marker marker = MarkerFactory.getMarker("INVALID_LOCATION");
+        if (throwable instanceof InvalidLocationException) {
+            if (getLogger().isWarnEnabled(marker)) {
+                getLogger().warn(marker, "", throwable);
+            }
+        } else {
+            // print the error on console
+            getLogger().error("", throwable);
+        }
     }
 
     /**

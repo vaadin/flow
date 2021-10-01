@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -113,9 +113,9 @@ public interface DataProvider<T, F> extends Serializable {
      *
      * @see #refreshItem(Object)
      *
-     * By default it just does a standard refreshItem, in a hierarchical DataProvider
-     * it is supposed to refresh all of the children as well in case 'refreshChildren'
-     * is true.
+     *      By default it just does a standard refreshItem, in a hierarchical
+     *      DataProvider it is supposed to refresh all of the children as well
+     *      in case 'refreshChildren' is true.
      *
      * @param item
      *            the item to refresh

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -52,7 +52,7 @@ public class DirectionChangeIT extends ChromeBrowserTest {
 
         // due to #8028 / 8029 need to wait for JS execution to complete
         waitUntil(webDriver -> ((JavascriptExecutor) driver)
-                        .executeScript(RETURN_DIR_SCRIPT), 2);
+                .executeScript(RETURN_DIR_SCRIPT), 2);
 
         verifyDirection(Direction.RIGHT_TO_LEFT);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,6 +43,8 @@ import elemental.json.JsonValue;
 
 /**
  * Helpers for using <code>elemental.json</code>.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -289,7 +291,7 @@ public final class JsonUtils {
      * Converts the given bean to JSON.
      *
      * @param bean
-     *                 the bean to convert, not {@code null}
+     *            the bean to convert, not {@code null}
      * @return a JSON representation of the bean
      */
     public static JsonObject beanToJson(Object bean) {
@@ -306,7 +308,7 @@ public final class JsonUtils {
      * Converts the given list to JSON.
      *
      * @param list
-     *                 the list to convert, not {@code null}
+     *            the list to convert, not {@code null}
      * @return a JSON representation of the bean
      */
     public static JsonArray listToJson(List<?> list) {
@@ -322,7 +324,7 @@ public final class JsonUtils {
      * Converts the given map to JSON.
      *
      * @param map
-     *                the map to convert, not {@code null}
+     *            the map to convert, not {@code null}
      * @return a JSON representation of the bean
      */
     public static JsonObject mapToJson(Map<String, ?> map) {

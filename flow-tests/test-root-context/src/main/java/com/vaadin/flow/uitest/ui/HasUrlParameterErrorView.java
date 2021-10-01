@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,10 +24,12 @@ import com.vaadin.flow.uitest.MyException;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.HasUrlParameterErrorView", layout = ViewTestLayout.class)
-public class HasUrlParameterErrorView extends Div implements HasUrlParameter<String> {
+public class HasUrlParameterErrorView extends Div
+        implements HasUrlParameter<String> {
 
     @Override
-    public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
+    public void setParameter(BeforeEvent event,
+            @OptionalParameter String parameter) {
         throw new MyException();
     }
 }

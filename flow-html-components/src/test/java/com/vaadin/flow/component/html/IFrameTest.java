@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,10 +34,12 @@ public class IFrameTest extends ComponentTest {
         addOptionalStringProperty("allow");
 
         addProperty("importance", IFrame.ImportanceType.class,
-                IFrame.ImportanceType.AUTO, IFrame.ImportanceType.HIGH, true, true);
+                IFrame.ImportanceType.AUTO, IFrame.ImportanceType.HIGH, true,
+                true);
 
-        addProperty("sandbox", IFrame.SandboxType[].class,
-                null, new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS, IFrame.SandboxType.ALLOW_MODALS },
+        addProperty("sandbox", IFrame.SandboxType[].class, null,
+                new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS,
+                        IFrame.SandboxType.ALLOW_MODALS },
                 true, true);
     }
 

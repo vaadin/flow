@@ -4,6 +4,7 @@ import javax.annotation.concurrent.NotThreadSafe;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
 import javax.servlet.http.HttpServletRequest;
+
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,7 +46,6 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.AppShellRegistry;
-import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
 import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitialPageSettings;
@@ -52,7 +53,6 @@ import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -60,11 +60,9 @@ import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 
-import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @NotThreadSafe
@@ -105,15 +103,16 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Theme(themeClass = AbstractTheme.class)
+    @Push(PushMode.AUTOMATIC)
     public static class NonOffendingExporter
-        extends WebComponentExporter<WebHolder> {
+            extends WebComponentExporter<WebHolder> {
         public NonOffendingExporter() {
             super("web-component");
         }
 
         @Override
         public void configureInstance(WebComponent<WebHolder> webComponent,
-            WebHolder component) {
+                WebHolder component) {
         }
     }
 
@@ -159,13 +158,6 @@ public class VaadinAppShellInitializerTest {
 
             settings.addFavIcon("icon", "icons/icon-192.png", "192x192");
             settings.addFavIcon("icon", "icons/icon-200.png", "2");
-
-            settings.getLoadingIndicatorConfiguration().ifPresent(
-                    indicator -> indicator.setApplyDefaultTheme(false));
-            settings.getLoadingIndicatorConfiguration()
-                    .ifPresent(indicator -> indicator.setSecondDelay(700000));
-            settings.getPushConfiguration()
-                    .ifPresent(push -> push.setPushMode(PushMode.AUTOMATIC));
         }
     }
 
@@ -191,6 +183,33 @@ public class VaadinAppShellInitializerTest {
     public static class AppShellWithPWA implements AppShellConfigurator {
     }
 
+    public static class MyAppShellWithLoadingIndicatorConfig
+            implements AppShellConfigurator {
+        @Override
+        public void configurePage(AppShellSettings settings) {
+            settings.getLoadingIndicatorConfiguration().ifPresent(
+                    indicator -> indicator.setApplyDefaultTheme(false));
+        }
+    }
+
+    public static class MyAppShellWithReconnectionDialogConfig
+            implements AppShellConfigurator {
+        @Override
+        public void configurePage(AppShellSettings settings) {
+            settings.getReconnectDialogConfiguration()
+                    .ifPresent(dialog -> dialog.setDialogText("custom text"));
+        }
+    }
+
+    public static class MyAppShellWithPushConfig
+            implements AppShellConfigurator {
+        @Override
+        public void configurePage(AppShellSettings settings) {
+            settings.getPushConfiguration()
+                    .ifPresent(push -> push.setPushMode(PushMode.MANUAL));
+        }
+    }
+
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
@@ -210,13 +229,18 @@ public class VaadinAppShellInitializerTest {
     @Before
     public void setup() throws Exception {
         logger = mockLog(VaadinAppShellInitializer.class);
-        assertNull(getDevModeHandler());
 
         mocks = new MockServletServiceSessionSetup();
 
         servletContext = mocks.getServletContext();
 
         appConfig = mockApplicationConfiguration();
+
+        Lookup lookup = (Lookup) servletContext
+                .getAttribute(Lookup.class.getName());
+
+        Mockito.when(lookup.lookup(AppShellPredicate.class))
+                .thenReturn(AppShellConfigurator.class::isAssignableFrom);
 
         attributeMap.put(Lookup.class.getName(),
                 servletContext.getAttribute(Lookup.class.getName()));
@@ -254,6 +278,7 @@ public class VaadinAppShellInitializerTest {
     public void teardown() throws Exception {
         AppShellRegistry.getInstance(context).reset();
         clearIlogger();
+        mocks.cleanup();
     }
 
     @Test
@@ -375,19 +400,9 @@ public class VaadinAppShellInitializerTest {
     @Test
     public void should_reuseContextAppShell_when_creatingNewInstance()
             throws Exception {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
-        // Set class in context and do not call initializer
-        AppShellRegistry registry = new AppShellRegistry();
-        registry.setShell(MyAppShellWithMultipleAnnotations.class);
-        context.setAttribute(new AppShellRegistryWrapper(registry));
-
-        VaadinRequest request = createVaadinRequest("/");
-        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
-                request);
-
-        List<Element> elements = document.head().children();
-
-        assertEquals(7, elements.size());
+        Assert.assertSame(registry, AppShellRegistry.getInstance(context));
     }
 
     @Test
@@ -523,12 +538,10 @@ public class VaadinAppShellInitializerTest {
 
         Mockito.when(config.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
-                .thenAnswer(invocation -> invocation.getArgumentAt(1,
-                        String.class));
+                .thenAnswer(invocation -> invocation.getArgument(1));
         Mockito.when(config.getBooleanProperty(Mockito.anyString(),
                 Mockito.anyBoolean()))
-                .thenAnswer(invocation -> invocation.getArgumentAt(1,
-                        Boolean.class));
+                .thenAnswer(invocation -> invocation.getArgument(1));
         return config;
     }
 }

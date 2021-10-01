@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,14 +15,27 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystemAlreadyExistsException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -57,23 +70,27 @@ public class StaticFileServer implements StaticFileHandler {
             .compile("^/frontend[-\\w/]*/webjars/");
 
     private final ResponseWriter responseWriter;
-    private final VaadinServletService servletService;
+    private final VaadinService vaadinService;
     private DeploymentConfiguration deploymentConfiguration;
     private final List<String> manifestPaths;
 
     // Matcher to match string starting with '/themes/[theme-name]/'
-    protected static final Pattern APP_THEME_PATTERN = Pattern
-        .compile("^\\/themes\\/[\\s\\S]+?\\/");
+    public static final Pattern APP_THEME_PATTERN = Pattern
+            .compile("^\\/themes\\/[\\s\\S]+?\\/");
+
+    // Mapped uri is for the jar file
+    static final Map<URI, Integer> openFileSystems = new HashMap<>();
+    private static final Object fileSystemLock = new Object();
 
     /**
      * Constructs a file server.
      *
-     * @param servletService
-     *            servlet service for the deployment, not <code>null</code>
+     * @param vaadinService
+     *            vaadin service for the deployment, not <code>null</code>
      */
-    public StaticFileServer(VaadinServletService servletService) {
-        this.servletService = servletService;
-        deploymentConfiguration = servletService.getDeploymentConfiguration();
+    public StaticFileServer(VaadinService vaadinService) {
+        this.vaadinService = vaadinService;
+        deploymentConfiguration = vaadinService.getDeploymentConfiguration();
         responseWriter = new ResponseWriter(deploymentConfiguration);
         manifestPaths = getManifestPathsFromJson();
     }
@@ -90,9 +107,9 @@ public class StaticFileServer implements StaticFileHandler {
             return false;
         }
 
-        if (APP_THEME_PATTERN.matcher(requestFilename).find() || requestFilename
-            .startsWith("/" + VAADIN_STATIC_FILES_PATH) || requestFilename
-            .startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
+        if (APP_THEME_PATTERN.matcher(requestFilename).find()
+                || requestFilename.startsWith("/" + VAADIN_STATIC_FILES_PATH)
+                || requestFilename.startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
             // The path is reserved for internal resources only
             // We rather serve 404 than let it fall through
             return true;
@@ -103,8 +120,11 @@ public class StaticFileServer implements StaticFileHandler {
             // resource as well.
             return true;
         }
+        resource = getStaticResource(requestFilename);
 
-        resource = servletService.getStaticResource(requestFilename);
+        if (resource != null && resourceIsDirectory(resource)) {
+            return false;
+        }
 
         if (resource == null && shouldFixIncorrectWebjarPaths()
                 && isIncorrectWebjarPath(requestFilename)) {
@@ -113,6 +133,132 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         return resource != null;
+    }
+
+    private boolean resourceIsDirectory(URL resource) {
+        if (resource.getPath().endsWith("/")) {
+            return true;
+        }
+        URI resourceURI = null;
+        try {
+            resourceURI = resource.toURI();
+        } catch (URISyntaxException e) {
+            getLogger().debug("Syntax error in uri from getStaticResource", e);
+            // Return false as we couldn't determine if the resource is a
+            // directory.
+            return false;
+        }
+
+        if ("jar".equals(resource.getProtocol())) {
+            // Get the file path in jar
+            final String pathInJar = resource.getPath()
+                    .substring(resource.getPath().indexOf('!') + 1);
+            try {
+                FileSystem fileSystem = getFileSystem(resourceURI);
+                // Get the file path inside the jar.
+                final Path path = fileSystem.getPath(pathInJar);
+
+                return Files.isDirectory(path);
+            } catch (IOException e) {
+                getLogger().debug("failed to read jar file contents", e);
+            } finally {
+                closeFileSystem(resourceURI);
+            }
+        }
+
+        // If not a jar check if a file path directory.
+        return "file".equals(resource.getProtocol())
+                && Files.isDirectory(Paths.get(resourceURI));
+    }
+
+    /**
+     * Get the file URI for the resource jar file. Returns give URI if
+     * URI.scheme is not of type jar.
+     *
+     * The URI for a file inside a jar is composed as
+     * 'jar:file://...pathToJar.../jarFile.jar!/pathToFile'
+     *
+     * the first step strips away the initial scheme 'jar:' leaving us with
+     * 'file://...pathToJar.../jarFile.jar!/pathToFile' from which we remove the
+     * inside jar path giving the end result
+     * 'file://...pathToJar.../jarFile.jar'
+     *
+     * @param resourceURI
+     *            resource URI to get file URI for
+     * @return file URI for resource jar or given resource if not a jar schemed
+     *         URI
+     */
+    private URI getFileURI(URI resourceURI) {
+        if (!"jar".equals(resourceURI.getScheme())) {
+            return resourceURI;
+        }
+        try {
+            String scheme = resourceURI.getRawSchemeSpecificPart();
+            int jarPartIndex = scheme.indexOf("!/");
+            if (jarPartIndex != -1) {
+                scheme = scheme.substring(0, jarPartIndex);
+            }
+            return new URI(scheme);
+        } catch (URISyntaxException syntaxException) {
+            throw new IllegalArgumentException(syntaxException.getMessage(),
+                    syntaxException);
+        }
+    }
+
+    // Package protected for feature verification purpose
+    FileSystem getFileSystem(URI resourceURI) throws IOException {
+        synchronized (fileSystemLock) {
+            URI fileURI = getFileURI(resourceURI);
+            if (!fileURI.getScheme().equals("file")) {
+                throw new IOException("Can not read scheme '"
+                        + fileURI.getScheme() + "' for resource " + resourceURI
+                        + " and will determine this as not a folder");
+            }
+
+            if (openFileSystems.computeIfPresent(fileURI,
+                    (key, value) -> value + 1) != null) {
+                // Get filesystem is for the file to get the correct provider
+                return FileSystems.getFileSystem(resourceURI);
+            }
+            // Opened filesystem is for the file to get the correct provider
+            FileSystem fileSystem = getNewOrExistingFileSystem(resourceURI);
+            openFileSystems.put(fileURI, 1);
+            return fileSystem;
+        }
+    }
+
+    private FileSystem getNewOrExistingFileSystem(URI resourceURI)
+            throws IOException {
+        try {
+            return FileSystems.newFileSystem(resourceURI,
+                    Collections.emptyMap());
+        } catch (FileSystemAlreadyExistsException fsaee) {
+            getLogger().trace(
+                    "Tried to get new filesystem, but it already existed for target uri.",
+                    fsaee);
+            return FileSystems.getFileSystem(resourceURI);
+        }
+    }
+
+    // Package protected for feature verification purpose
+    void closeFileSystem(URI resourceURI) {
+        synchronized (fileSystemLock) {
+            try {
+                URI fileURI = getFileURI(resourceURI);
+                final Integer locks = openFileSystems.computeIfPresent(fileURI,
+                        (key, value) -> value - 1);
+                if (locks != null && locks == 0) {
+                    openFileSystems.remove(fileURI);
+                    // Get filesystem is for the file to get the correct
+                    // provider
+                    FileSystems.getFileSystem(resourceURI).close();
+                }
+            } catch (IOException ioe) {
+                getLogger().error("Failed to close FileSystem for '{}'",
+                        resourceURI);
+                getLogger().debug("Exception closing FileSystem", ioe);
+            }
+        }
     }
 
     @Override
@@ -130,24 +276,24 @@ public class StaticFileServer implements StaticFileHandler {
         URL resourceUrl = null;
         if (isAllowedVAADINBuildOrStaticUrl(filenameWithPath)
                 || manifestPaths.contains(filenameWithPath)) {
-            if(APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
-                resourceUrl = servletService.getClassLoader()
-                    .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/" 
-                            + filenameWithPath.replaceFirst("^/", ""));
-                    
+            if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
+                resourceUrl = vaadinService.getClassLoader()
+                        .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
+                                + filenameWithPath.replaceFirst("^/", ""));
+
             } else {
-                resourceUrl = servletService.getClassLoader()
-                    .getResource(VAADIN_WEBAPP_RESOURCES
-                            + filenameWithPath.replaceFirst("^/", ""));
+                resourceUrl = vaadinService.getClassLoader()
+                        .getResource(VAADIN_WEBAPP_RESOURCES
+                                + filenameWithPath.replaceFirst("^/", ""));
             }
         }
         if (resourceUrl == null) {
-            resourceUrl = servletService.getStaticResource(filenameWithPath);
+            resourceUrl = getStaticResource(filenameWithPath);
         }
         if (resourceUrl == null && shouldFixIncorrectWebjarPaths()
                 && isIncorrectWebjarPath(filenameWithPath)) {
             // Flow issue #4601
-            resourceUrl = servletService.getStaticResource(
+            resourceUrl = getStaticResource(
                     fixIncorrectWebjarPath(filenameWithPath));
         }
 
@@ -173,6 +319,26 @@ public class StaticFileServer implements StaticFileHandler {
         responseWriter.writeResponseContents(filenameWithPath, resourceUrl,
                 request, response);
         return true;
+    }
+
+    /**
+     * Returns a URL to the static Web resource at the given URI or null if no
+     * file found.
+     * <p>
+     * The resource will be exposed via HTTP (available as a static web
+     * resource). The {@code null} return value means that the resource won't be
+     * exposed as a Web resource even if it's a resource available via
+     * {@link ServletContext}.
+     *
+     * @param path
+     *            the path for the resource
+     * @return the resource located at the named path to expose it via Web, or
+     *         {@code null} if there is no resource at that path or it should
+     *         not be exposed
+     * @see VaadinService#getStaticResource(String)
+     */
+    protected URL getStaticResource(String path) {
+        return vaadinService.getStaticResource(path);
     }
 
     // When referring to webjar resources from application stylesheets (loaded
@@ -224,8 +390,8 @@ public class StaticFileServer implements StaticFileHandler {
     private boolean isAllowedVAADINBuildOrStaticUrl(String filenameWithPath) {
         // Check that we target VAADIN/build | VAADIN/static | themes/theme-name
         return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-            || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH)
-            || APP_THEME_PATTERN.matcher(filenameWithPath).find();
+                || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH)
+                || APP_THEME_PATTERN.matcher(filenameWithPath).find();
     }
 
     /**
@@ -317,7 +483,7 @@ public class StaticFileServer implements StaticFileHandler {
         if (request.getPathInfo() == null) {
             return request.getServletPath();
         } else if (request.getPathInfo().startsWith("/" + VAADIN_MAPPING)
-            || APP_THEME_PATTERN.matcher(request.getPathInfo()).find()) {
+                || APP_THEME_PATTERN.matcher(request.getPathInfo()).find()) {
             return request.getPathInfo();
         }
         return request.getServletPath() + request.getPathInfo();
@@ -409,9 +575,8 @@ public class StaticFileServer implements StaticFileHandler {
      * @return list of paths mapped to static webapp resources, or empty list
      */
     private List<String> getManifestPathsFromJson() {
-        InputStream stream = servletService.getClassLoader()
-                .getResourceAsStream(
-                        VAADIN_WEBAPP_RESOURCES + "manifest.json");
+        InputStream stream = vaadinService.getClassLoader()
+                .getResourceAsStream(VAADIN_WEBAPP_RESOURCES + "manifest.json");
         if (stream == null) {
             // manifest.json resource does not exist, probably dev mode
             return new ArrayList<>();

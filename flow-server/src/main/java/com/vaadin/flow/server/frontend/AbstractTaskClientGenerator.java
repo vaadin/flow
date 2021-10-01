@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,6 +28,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Abstract class for generating client files.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 3.0
  */
@@ -56,7 +58,6 @@ public abstract class AbstractTaskClientGenerator implements FallibleCommand {
      */
     protected abstract boolean shouldGenerate();
 
-
     @Override
     public void execute() throws ExecutionFailedException {
         if (!shouldGenerate()) {
@@ -65,12 +66,13 @@ public abstract class AbstractTaskClientGenerator implements FallibleCommand {
         File generatedFile = getGeneratedFile();
         try {
             String fileContent = getFileContent();
-            log().info("writing file '{}'", generatedFile);
+            log().debug("writing file '{}'", generatedFile);
 
             FileUtils.forceMkdirParent(generatedFile);
             FileUtils.writeStringToFile(generatedFile, fileContent, UTF_8);
         } catch (IOException exception) {
-            String errorMessage = String.format("Error writing '%s'", generatedFile);
+            String errorMessage = String.format("Error writing '%s'",
+                    generatedFile);
             throw new ExecutionFailedException(errorMessage, exception);
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,7 +23,7 @@ import com.vaadin.flow.router.Route;
 @Route(value = "com.vaadin.flow.uitest.ui.CallFunctionBeforeRemoveView", layout = ViewTestLayout.class)
 public class CallFunctionBeforeRemoveView extends AbstractDivView {
 
-    public CallFunctionBeforeRemoveView(){
+    public CallFunctionBeforeRemoveView() {
         Input input = new Input();
 
         add(input);

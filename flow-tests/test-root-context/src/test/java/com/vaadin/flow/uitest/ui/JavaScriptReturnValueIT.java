@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,10 +30,6 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
     public void testAllCombinations() {
         open();
 
-        if (hasClientUnknownIssue()) {
-            return;
-        }
-
         /*
          * There are 3 * 4 * 2 * 3 = 72 different combinations in the UI, let's
          * test all of them just because we can
@@ -41,7 +37,7 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
         for (String method : Arrays.asList("execPage", "execElement",
                 "callElement")) {
             for (String value : Arrays.asList("string", "number", "null",
-                    "error")) {
+                    "error-value")) {
                 for (String outcome : Arrays.asList("success", "failure")) {
                     for (String type : Arrays.asList("synchronous",
                             "resolvedpromise", "timeout")) {
@@ -92,7 +88,7 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
                 // Special case since the null is handled differently for errors
                 // and for results
                 return prefix + "null";
-            } else if ("error".equals(value)) {
+            } else if ("error-value".equals(value)) {
                 // Message from inside the Error object should be included
                 return prefix + "Error: message";
             }
@@ -105,7 +101,7 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
             return prefix + "42";
         case "null":
             return prefix;
-        case "error":
+        case "error-value":
             // JreJsonObject.asString()
             return prefix + "[object Object]";
         default:

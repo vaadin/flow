@@ -21,7 +21,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>6.0-SNAPSHOT</version>
+        <version>9.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -42,7 +42,10 @@
         <module>test-embedding-generic</module>
         <module>test-embedding-theme-variant</module>
         <module>test-embedding-production-mode</module>
-        <module>test-embedding-application-theme</module>
 
+        <!-- Custom theme tests -->
+        <module>test-embedding-application-theme</module>
+        <module>embedding-reusable-custom-theme</module>
+        <module>test-embedding-reusable-theme</module>
     </modules>
 </project>

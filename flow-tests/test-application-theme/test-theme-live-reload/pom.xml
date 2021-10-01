@@ -5,7 +5,7 @@
     <parent>
         <artifactId>test-application-theme</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>6.0-SNAPSHOT</version>
+        <version>9.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>flow-test-application-theme-live-reload</artifactId>
@@ -23,15 +23,20 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-lumo</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-dev-server</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>annotations</artifactId>
             <version>3.0.1</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-lumo-theme</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
@@ -49,17 +54,6 @@
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <!-- do not allow faulty app shell annotations for module -->
-                <!-- This should be removed when flow-tests do not break app shell annotation-->
-                <!-- flow-tests should not allow faulty annotations -->
-                <configuration>
-                    <systemProperties>
-                        <systemProperty>
-                            <name>vaadin.allow.appshell.annotations</name>
-                            <value>false</value>
-                        </systemProperty>
-                    </systemProperties>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

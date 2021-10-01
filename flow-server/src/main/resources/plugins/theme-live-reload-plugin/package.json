@@ -7,7 +7,7 @@
   ],
   "repository": "vaadin/flow",
   "name": "@vaadin/theme-live-reload-plugin",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "main": "theme-live-reload-plugin.js",
   "author": "Vaadin Ltd",
   "license": "Apache-2.0",

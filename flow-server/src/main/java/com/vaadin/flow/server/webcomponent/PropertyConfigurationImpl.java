@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,15 +24,18 @@ import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.function.SerializableBiConsumer;
 
 /**
+ * 
+ * For internal use only. May be renamed or removed in a future release.
+ * 
  * @param <C>
- *         type of the exported {@code component}
+ *            type of the exported {@code component}
  * @param <P>
- *         type of the property
+ *            type of the property
  * @author Vaadin Ltd.
  * @since 2.0
  */
-public final class PropertyConfigurationImpl<C extends Component,
-        P extends Serializable> implements PropertyConfiguration<C, P> {
+public final class PropertyConfigurationImpl<C extends Component, P extends Serializable>
+        implements PropertyConfiguration<C, P> {
     private Class<C> componentClass;
     private PropertyData<P> data;
     private SerializableBiConsumer<C, Serializable> onChangeHandler = null;
@@ -42,39 +45,38 @@ public final class PropertyConfigurationImpl<C extends Component,
      * {@link Component} type given by {@code componentType}.
      *
      * @param componentType
-     *         type of the exported {@code component}
+     *            type of the exported {@code component}
      * @param propertyName
-     *         name of the property
+     *            name of the property
      * @param propertyType
-     *         type of the property
+     *            type of the property
      * @param defaultValue
-     *         default value of the property. If the property type has a
-     *         primitive version, this value is used when ever the property is
-     *         being set to a {@code null}.
+     *            default value of the property. If the property type has a
+     *            primitive version, this value is used when ever the property
+     *            is being set to a {@code null}.
      */
-    public PropertyConfigurationImpl(Class<C> componentType, String propertyName,
-                                     Class<P> propertyType, P defaultValue) {
+    public PropertyConfigurationImpl(Class<C> componentType,
+            String propertyName, Class<P> propertyType, P defaultValue) {
 
         data = new PropertyData<>(propertyName, propertyType, false,
                 defaultValue);
         this.componentClass = componentType;
     }
 
-
     @Override
     @SuppressWarnings("unchecked")
-    public PropertyConfiguration<C, P> onChange(SerializableBiConsumer<C, P> onChangeHandler) {
-        Objects.requireNonNull(onChangeHandler, "Parameter 'onChangeHandler' " +
-                "cannot be null!");
+    public PropertyConfiguration<C, P> onChange(
+            SerializableBiConsumer<C, P> onChangeHandler) {
+        Objects.requireNonNull(onChangeHandler,
+                "Parameter 'onChangeHandler' " + "cannot be null!");
         if (this.onChangeHandler != null) {
-            throw new IllegalStateException(String.format("onChangeHandler " +
-                    "for property %s has already been set and cannot be " +
-                    "overwritten!", data.getName()));
+            throw new IllegalStateException(String.format("onChangeHandler "
+                    + "for property %s has already been set and cannot be "
+                    + "overwritten!", data.getName()));
         }
         this.onChangeHandler = (c, o) -> onChangeHandler.accept(c, (P) o);
         return this;
     }
-
 
     @Override
     public PropertyConfiguration<C, P> readOnly() {

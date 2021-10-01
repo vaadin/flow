@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -92,9 +92,8 @@ public interface ClassLoaderAwareServletContainerInitializer
                         .filter(method -> !method.isDefault()
                                 && !method.isSynthetic())
                         .findFirst().get().getName();
-                Method operation = Stream.of(initializer.getDeclaredMethods())
-                        .filter(method -> method.getName()
-                                .equals(processMethodName))
+                Method operation = Stream.of(initializer.getMethods()).filter(
+                        method -> method.getName().equals(processMethodName))
                         .findFirst().get();
                 operation.invoke(initializer.newInstance(),
                         new Object[] { set, ctx });
@@ -136,7 +135,7 @@ public interface ClassLoaderAwareServletContainerInitializer
      * Implement this method instead of {@link #onStartup(Set, ServletContext)}
      * to handle classes accessible by different classloaders.
      *
-     * @param set
+     * @param classSet
      *            the Set of application classes that extend, implement, or have
      *            been annotated with the class types specified by the
      *            {@link javax.servlet.annotation.HandlesTypes HandlesTypes}
@@ -144,15 +143,16 @@ public interface ClassLoaderAwareServletContainerInitializer
      *            <tt>ServletContainerInitializer</tt> has not been annotated
      *            with <tt>HandlesTypes</tt>
      *
-     * @param ctx
+     * @param context
      *            the <tt>ServletContext</tt> of the web application that is
-     *            being started and in which the classes contained in <tt>c</tt>
-     *            were found
+     *            being started and in which the classes contained in
+     *            <tt>classSet</tt> were found
      *
      * @throws ServletException
      *             if an error has occurred
      *
      * @see #onStartup(Set, ServletContext)
      */
-    void process(Set<Class<?>> set, ServletContext ctx) throws ServletException;
+    void process(Set<Class<?>> classSet, ServletContext context)
+            throws ServletException;
 }

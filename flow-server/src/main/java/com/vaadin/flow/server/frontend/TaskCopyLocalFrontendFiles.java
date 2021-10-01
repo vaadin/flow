@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Copies JavaScript files from the given local frontend folder.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
@@ -39,8 +41,10 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
      * (by default 'src/main/resources/META-INF/resources/frontend'). This
      * enables running jar projects locally.
      *
-     * @param npmFolder
+     * @param flowResourcesFolder
      *            target directory for the discovered files
+     * @param localResourcesFolder
+     *            local folder containing resources to copy
      */
     TaskCopyLocalFrontendFiles(File flowResourcesFolder,
             File localResourcesFolder) {

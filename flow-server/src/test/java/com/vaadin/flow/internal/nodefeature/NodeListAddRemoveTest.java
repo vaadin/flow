@@ -317,7 +317,56 @@ public class NodeListAddRemoveTest
 
         changes.clear();
         nodeList.getNode().collectChanges(changes::add);
-        // Now there is not anymore clear change (so the previous one is not
+        // Now there is no anymore clear change (so the previous one is not
+        // preserved)
+        Assert.assertEquals(1, changes.size());
+        Assert.assertTrue(changes.get(0) instanceof ListAddChange<?>);
+    }
+
+    @Test
+    public void clear_collectChanges_resetChangeTracker_reattach_clearEventIsCollected() {
+        resetToRemoveAfterAddCase();
+
+        nodeList.add("foo");
+
+        nodeList.clear();
+
+        StateTree tree = new StateTree(new UI().getInternals(),
+                ElementChildrenList.class);
+        // attach the feature node to the tree
+        tree.getRootNode().getFeature(ElementChildrenList.class)
+                .add(nodeList.getNode());
+
+        nodeList.add("bar");
+
+        // detach the feature node to the tree
+
+        tree.getRootNode().getFeature(ElementChildrenList.class).remove(0);
+        // if there was no changes collection after detach (and node is attached
+        // again) then the node has not been detached de-facto: detach-attach is
+        // no-op in this case, so to avoid no-op the changes should be collected
+        // in between
+        nodeList.getNode().collectChanges(change -> {
+        });
+
+        // reattach it back
+        tree.getRootNode().getFeature(ElementChildrenList.class)
+                .add(nodeList.getNode());
+
+        List<NodeChange> changes = new ArrayList<>();
+        nodeList.getNode().collectChanges(changes::add);
+
+        Assert.assertEquals(3, changes.size());
+        Assert.assertEquals(NodeAttachChange.class, changes.get(0).getClass());
+        Assert.assertEquals(ListClearChange.class, changes.get(1).getClass());
+        Assert.assertEquals(ListAddChange.class, changes.get(2).getClass());
+
+        changes.clear();
+
+        nodeList.add("baz");
+
+        nodeList.getNode().collectChanges(changes::add);
+        // Now there is no anymore clear change (so the previous one is not
         // preserved)
         Assert.assertEquals(1, changes.size());
         Assert.assertTrue(changes.get(0) instanceof ListAddChange<?>);
@@ -331,6 +380,42 @@ public class NodeListAddRemoveTest
         StateTree tree = new StateTree(new UI().getInternals(),
                 ElementChildrenList.class);
         // attach the feature node to the tree
+        tree.getRootNode().getFeature(ElementChildrenList.class)
+                .add(nodeList.getNode());
+
+        List<NodeChange> changes = new ArrayList<>();
+        nodeList.getNode().collectChanges(changes::add);
+
+        Assert.assertEquals(2, changes.size());
+        Assert.assertEquals(NodeAttachChange.class, changes.get(0).getClass());
+        Assert.assertEquals(ListClearChange.class, changes.get(1).getClass());
+    }
+
+    @Test
+    public void clearNodeList_clearChanges_reatach_generateChangesFromEmpty_clearChangeIsCollected() {
+        // removes all children
+        nodeList.clear();
+
+        StateTree tree = new StateTree(new UI().getInternals(),
+                ElementChildrenList.class);
+        // attach the feature node to the tree
+        tree.getRootNode().getFeature(ElementChildrenList.class)
+                .add(nodeList.getNode());
+
+        nodeList.getNode().collectChanges(change -> {
+        });
+
+        // detach the feature node to the tree
+
+        tree.getRootNode().getFeature(ElementChildrenList.class).remove(0);
+        // if there was no changes collection after detach (and node is attached
+        // again) then the node has not been detached de-facto: detach-attach is
+        // no-op in this case, so to avoid no-op the changes should be collected
+        // in between
+        nodeList.getNode().collectChanges(change -> {
+        });
+
+        // reattach it back
         tree.getRootNode().getFeature(ElementChildrenList.class)
                 .add(nodeList.getNode());
 

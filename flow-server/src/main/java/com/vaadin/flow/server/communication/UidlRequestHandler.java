@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,6 +60,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Uses {@link ServerRpcHandler} to execute client-to-server RPC invocations and
  * {@link UidlWriter} to write state changes and client RPC calls back to the
  * client.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -66,15 +69,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class UidlRequestHandler extends SynchronizedRequestHandler
         implements SessionExpiredHandler {
 
+    private AtomicReference<ServerRpcHandler> rpcHandler = new AtomicReference<>();
 
-    private ServerRpcHandler rpcHandler;
-
-    public static final Pattern HASH_PATTERN = Pattern.compile("window.location.hash ?= ?'(.*?)'");
+    public static final Pattern HASH_PATTERN = Pattern
+            .compile("window.location.hash ?= ?'(.*?)'");
     public static final Pattern URL_PATTERN = Pattern.compile("^(.*)#(.+)$");
-    public static final String PUSH_STATE_HASH =
-            "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#%s'));";
-    public static final String PUSH_STATE_LOCATION =
-            "setTimeout(() => history.pushState(null, null, '%s'));";
+    public static final String PUSH_STATE_HASH = "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#%s'));";
+    public static final String PUSH_STATE_LOCATION = "setTimeout(() => history.pushState(null, null, '%s'));";
 
     private static final String SYNC_ID = '"' + SERVER_SYNC_ID + '"';
     private static final String RPC = RPC_INVOCATIONS;
@@ -141,8 +142,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         commitJsonResponse(response, json);
     }
 
-    void writeUidl(UI ui, Writer writer, boolean resync)
-            throws IOException {
+    void writeUidl(UI ui, Writer writer, boolean resync) throws IOException {
         JsonObject uidl = createUidl(ui, resync);
 
         if (ui instanceof JavaScriptBootstrapUI) {
@@ -184,11 +184,12 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     }
 
     private ServerRpcHandler getRpcHandler(VaadinSession session) {
-        session.checkHasLock();
-        if (rpcHandler == null) {
-            rpcHandler = createRpcHandler();
+        ServerRpcHandler handler = rpcHandler.get();
+        if (handler == null) {
+            rpcHandler.compareAndSet(null, createRpcHandler());
+            handler = rpcHandler.get();
         }
-        return rpcHandler;
+        return handler;
     }
 
     /**
@@ -330,4 +331,3 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         return null;
     }
 }
-

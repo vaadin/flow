@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -92,15 +92,14 @@ public class InitParameters implements Serializable {
 
     /**
      * Configuration name for the pattern used to inspect the webpack output to
-     * assure it is up and running. Default value is defined in
-     * {@link DevModeHandler} as the <code>: Compiled</code> expression.
+     * assure it is up and running. Default value is <code>: Compiled</code>.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN = "devmode.webpack.output.success.pattern";
 
     /**
      * Configuration name for the pattern used to inspect the webpack output to
-     * detecting when compilation failed. Default value is defined in
-     * {@link DevModeHandler} as the <code>: Failed</code> expression.
+     * detecting when compilation failed. Default value is
+     * <code>: Failed</code>.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN = "devmode.webpack.output.error.pattern";
 
@@ -124,11 +123,27 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_ENABLE_PNPM = "pnpm.enable";
 
     /**
+     * Configuration parameter name for using globally installed pnpm or default
+     * one.
+     */
+    public static final String SERVLET_PARAMETER_GLOBAL_PNPM = "pnpm.global";
+
+    /**
      * Configuration parameter name for enabling live reload.
      *
      * @since
      */
     public static final String SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD = "devmode.liveReload.enabled";
+
+    /**
+     * Configuration parameter name for enabling session serialization in
+     * development. If enabled, all the session's associated
+     * {@link com.vaadin.flow.component.UI} instances will be serialized.
+     * Otherwise, it won't be serialized.
+     *
+     * @since
+     */
+    public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION = "devmode.sessionSerialization.enabled";
 
     /**
      * I18N provider property.
@@ -150,6 +165,14 @@ public class InitParameters implements Serializable {
     public static final String REQUIRE_HOME_NODE_EXECUTABLE = "require.home.node";
 
     /**
+     * Configuration parameter name for requiring node executable installed in
+     * home directory.
+     *
+     * @since
+     */
+    public static final String NODE_AUTO_UPDATE = "node.auto.update";
+
+    /**
      * Configuration name for the parameter that sets the compiled web
      * components path. The path should be the same as
      * {@code webComponentOutputDirectoryName} in the maven plugin that
@@ -158,4 +181,11 @@ public class InitParameters implements Serializable {
      * component UI imports them as dependencies.
      */
     public static final String COMPILED_WEB_COMPONENTS_PATH = "compiled.web.components.path";
+
+    /**
+     * Configuration name for the build folder.
+     *
+     * @since
+     */
+    public static final String BUILD_FOLDER = "build.folder";
 }

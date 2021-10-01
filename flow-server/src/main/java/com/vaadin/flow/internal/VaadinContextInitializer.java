@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,6 +28,8 @@ import com.vaadin.flow.server.VaadinServlet;
  * this interface may be available as an attribute in a {@link VaadinContext}.
  * In the latter case {@link VaadinServlet#init()} method will run
  * {@link #initialize(VaadinContext)} method.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @author Vaadin Ltd
  * @since

@@ -63,14 +63,13 @@ public class BeanValidatorTest extends ValidatorTestBase {
     public void testInvalidDecimalsFailsInFrench() {
         setLocale(Locale.FRENCH);
         BeanValidator v = validator("decimals");
-        assertFails("1234.567", "valeur numérique hors limite "
+        assertFails("1234.567", "valeur numérique hors limites "
                 + "(<3 chiffres>.<2 chiffres> attendu)", v);
     }
 
     @Test
     public void testAddressNestedPropertyInvalidPostalCodeFails() {
-        assertFails(100_000, "must be less than or equal to 99999",
-                validator("address.postalCode"));
+        assertFails(100_000,"must be less than or equal to 99999",validator("address.postalCode"));
     }
 
     @Test

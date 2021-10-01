@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,6 +33,8 @@ import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 /**
  * Abstract implementation of the {@link ElementStateProvider} related to the
  * composition essence of the provider.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -120,7 +122,8 @@ public abstract class AbstractNodeStateProvider
         ElementChildrenList childrenFeature = getChildrenFeature(node);
         int pos = childrenFeature.indexOf(child.getNode());
         if (pos == -1) {
-            throw new IllegalArgumentException("Trying to detach an element from parent that does not have it.");
+            throw new IllegalArgumentException(
+                    "Trying to detach an element from parent that does not have it.");
         }
         childrenFeature.remove(pos);
     }

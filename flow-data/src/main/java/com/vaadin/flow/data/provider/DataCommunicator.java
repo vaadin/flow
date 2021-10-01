@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -126,18 +126,20 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * In-memory data provider with no items.
      * <p>
-     * Data Communicator is initialised with this data provider by default
-     * until a new data provider is assigned with
+     * Data Communicator is initialised with this data provider by default until
+     * a new data provider is assigned with
      * {@link #setDataProvider(DataProvider, Object)}.
      *
-     * @param <T1> item type
+     * @param <T1>
+     *            item type
      *
      * @see AbstractDataView#AbstractDataView(SerializableSupplier, Component)
      */
-    public static final class EmptyDataProvider<T1> extends ListDataProvider<T1> {
+    public static final class EmptyDataProvider<T1>
+            extends ListDataProvider<T1> {
         /**
-         * Create in-memory data provider instance with no items in the
-         * backed collection.
+         * Create in-memory data provider instance with no items in the backed
+         * collection.
          */
         public EmptyDataProvider() {
             super(new ArrayList<>(0));
@@ -286,9 +288,9 @@ public class DataCommunicator<T> implements Serializable {
      * @param stateNode
      *            the state node used to communicate for
      * @param fetchEnabled
-     *            if {@code fetchEnabled} is {@code true} then the data
-     *            provider will be called to fetch the items and/or to get the
-     *            items count until it's set to {@code false}
+     *            if {@code fetchEnabled} is {@code true} then the data provider
+     *            will be called to fetch the items and/or to get the items
+     *            count until it's set to {@code false}
      */
     public DataCommunicator(DataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater,
@@ -505,8 +507,8 @@ public class DataCommunicator<T> implements Serializable {
      * Gets the item at the given index from the data available to the
      * component. Data is filtered and sorted the same way as in the component.
      * <p>
-     * Call to the backend is triggered if the item for a requested index is
-     * not present in the cached active items.
+     * Call to the backend is triggered if the item for a requested index is not
+     * present in the cached active items.
      *
      * @param index
      *            the index of the item to get
@@ -523,22 +525,21 @@ public class DataCommunicator<T> implements Serializable {
         int activeDataEnd = activeStart + activeKeyOrder.size() - 1;
         /*
          * Check if the item on a requested index is already in the cache of
-         * active items. No matter is this currently a defined or undefined
-         * mode
+         * active items. No matter is this currently a defined or undefined mode
          */
         if (index >= activeStart && index <= activeDataEnd) {
             return getKeyMapper().get(activeKeyOrder.get(index - activeStart));
         } else {
             final int itemCount = getItemCount();
             /*
-             * The exception is thrown if the exact size is used and the data
-             * is empty, or the index is outside of the item count range,
-             * because we definitely know the item count from a backend.
+             * The exception is thrown if the exact size is used and the data is
+             * empty, or the index is outside of the item count range, because
+             * we definitely know the item count from a backend.
              */
             if (isDefinedSize()) {
                 if (itemCount == 0) {
-                    throw new IndexOutOfBoundsException(String
-                            .format("Requested index %d on empty data.", index));
+                    throw new IndexOutOfBoundsException(String.format(
+                            "Requested index %d on empty data.", index));
                 } else if (index >= itemCount) {
                     throw new IndexOutOfBoundsException(String.format(
                             "Given index %d is outside of the accepted range '0 - %d'",
@@ -546,13 +547,12 @@ public class DataCommunicator<T> implements Serializable {
                 }
             }
             /*
-             * In case of undefined size we don't check the empty data or
-             * the item count, because item count = 0 may mean the
-             * flush (fetch) action hasn't been made yet. And even
-             * if the requested index is outside of the item count
-             * estimation, we can make the request, because the backend can
-             * have the item on that index (we simply not yet fetched
-             * this item during the scrolling).
+             * In case of undefined size we don't check the empty data or the
+             * item count, because item count = 0 may mean the flush (fetch)
+             * action hasn't been made yet. And even if the requested index is
+             * outside of the item count estimation, we can make the request,
+             * because the backend can have the item on that index (we simply
+             * not yet fetched this item during the scrolling).
              */
             return (T) getDataProvider().fetch(buildQuery(index, 1)).findFirst()
                     .orElse(null);
@@ -955,7 +955,8 @@ public class DataCommunicator<T> implements Serializable {
                     doFetchFromDataProvider(newOffset, pageSize)
                             .forEach(addItemAndCheckConsumer);
                     page++;
-                } while (page < pages && fetchedPerPage.getAndSet(0) == pageSize);
+                } while (page < pages
+                        && fetchedPerPage.getAndSet(0) == pageSize);
 
                 stream = streamBuilder.build();
             } else {
@@ -1012,6 +1013,10 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void handleAttach() {
+        if (dataProviderUpdateRegistration != null) {
+            dataProviderUpdateRegistration.remove();
+        }
+
         dataProviderUpdateRegistration = getDataProvider()
                 .addDataProviderListener(event -> {
                     if (event instanceof DataRefreshEvent) {
@@ -1104,14 +1109,20 @@ public class DataCommunicator<T> implements Serializable {
                 skipCountIncreaseUntilReset = true;
                 /*
                  * If the fetch query returned 0 items, it means that the user
-                 * has scrolled past the end of the exact item count. Instead of
-                 * returning 0 items to the client and letting it incrementally
-                 * request for the previous pages, we'll cancel this flush and
-                 * tweak the requested range and flush again.
+                 * has scrolled past the end of the exact item count or the
+                 * items have been changed in the backend (for example, applying
+                 * the filter). Instead of returning 0 items to the client and
+                 * letting it incrementally request for the previous pages,
+                 * we'll cancel this flush and tweak the requested range and
+                 * flush again.
                  */
                 if (assumedSize != 0 && activation.getActiveKeys().isEmpty()) {
                     int delta = requestedRange.length();
-                    requestedRange = requestedRange.offsetBy(-delta);
+                    // Request the items from a bit behind the current range
+                    // at the next call to backend, and check that the requested
+                    // range doesn't intersect the 0 point.
+                    requestedRange = requestedRange.offsetBy(-delta)
+                            .restrictTo(Range.withLength(0, assumedSize));
                     requestFlush(true); // to avoid recursiveness
                     return;
                 }
@@ -1282,6 +1293,11 @@ public class DataCommunicator<T> implements Serializable {
 
             // Pick existing items from the current list
             Range overlap = partitionWith[1].offsetBy(-activeStart);
+            if (overlap.getStart() < 0) {
+                // If getStart is negative there is no data and empty Activation
+                // needs to be returned
+                return Activation.empty();
+            }
             newActiveKeyOrder.addAll(activeKeyOrder.subList(overlap.getStart(),
                     overlap.getEnd()));
 
@@ -1300,15 +1316,14 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private static void withMissing(Range expected, Range actual,
-                                    Consumer<Range> action) {
+            Consumer<Range> action) {
         Range[] partition = expected.partitionWith(actual);
 
         applyIfNotEmpty(partition[0], action);
         applyIfNotEmpty(partition[2], action);
     }
 
-    private static void applyIfNotEmpty(Range range,
-                                        Consumer<Range> action) {
+    private static void applyIfNotEmpty(Range range, Consumer<Range> action) {
         if (!range.isEmpty()) {
             action.accept(range);
         }

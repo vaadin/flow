@@ -8,8 +8,8 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class ResynchronizationIT extends ChromeBrowserTest {
 
     /*
-     * If a component is only added in a lost message, it should be present after
-     * resynchronization.
+     * If a component is only added in a lost message, it should be present
+     * after resynchronization.
      */
     @Test
     public void resynchronize_componentAddedInLostMessage_appearAfterResync() {
@@ -36,7 +36,8 @@ public class ResynchronizationIT extends ChromeBrowserTest {
 
         findElement(By.id(ResynchronizationView.CALL_BUTTON)).click();
 
-        waitForElementPresent(By.className(ResynchronizationView.REJECTED_CLASS));
+        waitForElementPresent(
+                By.className(ResynchronizationView.REJECTED_CLASS));
     }
 
 }

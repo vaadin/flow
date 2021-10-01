@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,22 +24,23 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class InfiniteRerouteLoopIT extends ChromeBrowserTest {
 
-    private static final String ISE = "ise";
+    private static final String NAVIGATION_EXCEPTION = "navigation-exception";
 
     @Test
-    public void renderISETarget_locationIsNotChanged() {
+    public void renderNavigationExceptionTarget_locationIsNotChanged() {
         open();
 
         waitUntil(driver -> isElementPresent(By.tagName("body")));
 
-        Assert.assertTrue(driver.getCurrentUrl().endsWith(ISE));
+        Assert.assertTrue(
+                driver.getCurrentUrl().endsWith(NAVIGATION_EXCEPTION));
     }
 
     @Override
     protected String getTestPath() {
         String path = super.getTestPath();
         int index = path.lastIndexOf("/");
-        return path.substring(0, index + 1) + ISE;
+        return path.substring(0, index + 1) + NAVIGATION_EXCEPTION;
     }
 
     @Override

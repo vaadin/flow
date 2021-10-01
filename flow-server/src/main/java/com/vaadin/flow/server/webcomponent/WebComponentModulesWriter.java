@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,6 +43,8 @@ import com.vaadin.flow.theme.Theme;
  * Writes web components generated from
  * {@link com.vaadin.flow.component.WebComponentExporter} implementation classes
  * to a target directory.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 2.0
@@ -68,7 +70,8 @@ public final class WebComponentModulesWriter implements Serializable {
      *            {@code true} to generated html modules, {@code false} to
      *            generate JavaScript modules
      * @param themeName
-     *            the theme defined using {@link Theme} or {@code null} if not defined
+     *            the theme defined using {@link Theme} or {@code null} if not
+     *            defined
      * @return generated files
      * @throws java.lang.NullPointerException
      *             if {@code exportedClasses} or {@code outputDirectory} is null
@@ -105,7 +108,8 @@ public final class WebComponentModulesWriter implements Serializable {
      * @param outputDirectory
      *            folder into which the generate file is written
      * @param themeName
-     *            the theme defined using {@link Theme} or {@code null} if not defined
+     *            the theme defined using {@link Theme} or {@code null} if not
+     *            defined
      * @return the generated module content
      */
     private static File writeWebComponentToDirectory(
@@ -118,8 +122,8 @@ public final class WebComponentModulesWriter implements Serializable {
         try {
             FileUtils.forceMkdir(generatedFile.getParent().toFile());
             Files.write(generatedFile,
-                    Collections.singletonList(
-                            generateModule(factory, compatibilityMode, themeName)),
+                    Collections.singletonList(generateModule(factory,
+                            compatibilityMode, themeName)),
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
@@ -172,7 +176,8 @@ public final class WebComponentModulesWriter implements Serializable {
          *            {@code true} to generated html modules, {@code false} to *
          *            generate JavaScript modules
          * @param themeName
-         *              the theme defined using {@link Theme} or {@code null} if not defined
+         *            the theme defined using {@link Theme} or {@code null} if
+         *            not defined
          * @return generated files
          * @throws java.lang.NullPointerException
          *             if {@code writerClassSupplier},
@@ -195,7 +200,8 @@ public final class WebComponentModulesWriter implements Serializable {
         @SuppressWarnings("unchecked")
         public static Set<File> generateWebComponentsToDirectory(
                 Class<?> writerClass, Set<Class<?>> exporterClasses,
-                File outputDirectory, boolean compatibilityMode, String themeName) {
+                File outputDirectory, boolean compatibilityMode,
+                String themeName) {
             Objects.requireNonNull(writerClass,
                     "Parameter 'writerClassSupplier' must not null");
             Objects.requireNonNull(exporterClasses,
@@ -242,13 +248,20 @@ public final class WebComponentModulesWriter implements Serializable {
                 final boolean accessible = writeMethod.isAccessible();
                 writeMethod.setAccessible(true);
                 Set<File> files = ((Set<File>) writeMethod.invoke(null,
-                        exporterClasses, outputDirectory, compatibilityMode, themeName));
+                        exporterClasses, outputDirectory, compatibilityMode,
+                        themeName));
                 writeMethod.setAccessible(accessible);
                 return files;
-            } catch (IllegalAccessException | InvocationTargetException
-                    | NullPointerException e) {
+            } catch (IllegalAccessException exception) {
+                throw new RuntimeException("Failed to call '"
+                        + WRITE_MODULES_METHOD
+                        + "' via reflection because Java language access control doesn't allow to call it",
+                        exception);
+            } catch (InvocationTargetException exception) {
                 throw new RuntimeException(
-                        "Could not write exported web component module!", e);
+                        "Could not write exported web component module because of exception: "
+                                + exception.getCause().getMessage(),
+                        exception.getCause());
             }
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -80,7 +80,8 @@ public class AttachTemplateChildRpcHandlerTest {
         Mockito.when(node.getOwner()).thenReturn(tree);
         Mockito.when(node.getParent()).thenReturn(parentNode);
         Mockito.when(tree.getNodeById(requestedId)).thenReturn(node);
-        Mockito.when(node.getChangeTracker(Mockito.any(),Mockito.any())).thenReturn(new HashMap<>());
+        Mockito.when(node.getChangeTracker(Mockito.any(), Mockito.any()))
+                .thenReturn(new HashMap<>());
 
         ElementData data = new ElementData(node);
         data.setTag("foo");

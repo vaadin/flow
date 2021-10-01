@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,5 +21,5 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.PreserveOnRefreshLiveReloadView", layout = ViewTestLayout.class)
 @PreserveOnRefresh
-public class PreserveOnRefreshLiveReloadView extends JavaLiveReloadView  {
+public class PreserveOnRefreshLiveReloadView extends JavaLiveReloadView {
 }

@@ -18,14 +18,14 @@ public class InnerTemplateVisibilityView extends AbstractDivView {
     public static final String OUTER_ID = "outer";
 
     @Tag("lit-template-inner")
-    @JsModule("./lit/lit-template-inner.js")
+    @JsModule("./lit-templates/lit-template-inner.js")
     public static class Inner extends LitTemplate {
         public Inner() {
         }
     }
 
     @Tag("lit-template-outer")
-    @JsModule("./lit/lit-template-outer.js")
+    @JsModule("./lit-templates/lit-template-outer.js")
     public static class Outer extends LitTemplate {
         @Id("inner")
         Inner inner;

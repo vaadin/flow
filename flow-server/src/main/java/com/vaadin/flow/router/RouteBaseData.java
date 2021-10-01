@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,7 +32,7 @@ import com.vaadin.flow.router.internal.HasUrlParameterFormat;
  * Only for read as data is immutable.
  *
  * @param <T>
- *         base data implementation
+ *            base data implementation
  * @since 1.3
  */
 public abstract class RouteBaseData<T extends RouteBaseData>
@@ -78,13 +78,13 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      * RouteBaseData constructor.
      *
      * @param parentLayouts
-     *         route parent layout class chain
+     *            route parent layout class chain
      * @param template
-     *         full route url
+     *            full route url
      * @param parameters
-     *         navigation target path parameters
+     *            navigation target path parameters
      * @param navigationTarget
-     *         route navigation target
+     *            route navigation target
      */
     public RouteBaseData(List<Class<? extends RouterLayout>> parentLayouts,
             String template, Map<String, RouteParameterData> parameters,

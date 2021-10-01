@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,9 +22,10 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -212,12 +213,19 @@ public class LookupServletContainerInitializerTest {
         Assert.assertEquals(ArrayList.class, collection.iterator().next());
     }
 
+    @Test(expected = ServletException.class)
+    public void process_classSetIsNull_throws() throws ServletException {
+        initializer.process(null, Mockito.mock(ServletContext.class));
+    }
+
     private Lookup mockLookup(ServletContext context, Class<?>... classes)
             throws ServletException {
         ArgumentCaptor<Lookup> lookupCapture = ArgumentCaptor
                 .forClass(Lookup.class);
 
-        initializer.process(new HashSet<>(Arrays.asList(classes)), context);
+        Stream<Class<? extends Object>> stream = Stream
+                .concat(Stream.of(LookupInitializer.class), Stream.of(classes));
+        initializer.process(stream.collect(Collectors.toSet()), context);
 
         Mockito.verify(context).setAttribute(Mockito.eq(Lookup.class.getName()),
                 lookupCapture.capture());

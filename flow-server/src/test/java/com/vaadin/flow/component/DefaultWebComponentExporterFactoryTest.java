@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.vaadin.flow.component;
 
 import org.hamcrest.CoreMatchers;
@@ -62,12 +63,15 @@ public class DefaultWebComponentExporterFactoryTest {
 
     @Test
     public void createInnerClass_throws() {
-        exception.expect(IllegalArgumentException.class);
+        exception.expect(RuntimeException.class);
+        exception.expectCause(
+                CoreMatchers.instanceOf(IllegalArgumentException.class));
         exception.expectMessage(
                 CoreMatchers.containsString(InnerClass.class.getName()));
         exception.expectMessage(CoreMatchers.containsString("inner"));
         DefaultWebComponentExporterFactory<Component> factory = new DefaultWebComponentExporterFactory<>(
                 InnerClass.class);
+
         factory.create();
     }
 

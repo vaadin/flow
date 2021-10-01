@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,15 +20,15 @@ import com.vaadin.flow.dom.ElementConstants;
 /**
  * A component that supports label definition.
  * <p>
- * The default implementations set the label of the component to the given text for
- * {@link #getElement()}. Override all methods in this interface if the text
+ * The default implementations set the label of the component to the given text
+ * for {@link #getElement()}. Override all methods in this interface if the text
  * should be added to some other element.
  *
  *
  * @author Vaadin Ltd
  * @since
  */
-public interface HasLabel extends HasElement{
+public interface HasLabel extends HasElement {
     /**
      * Set the label of the component to the given text.
      *
@@ -42,10 +42,11 @@ public interface HasLabel extends HasElement{
     /**
      * Gets the label of the component.
      *
-     * @return the label of the component or {@code null} if no label has
-     *         been set
+     * @return the label of the component or {@code null} if no label has been
+     *         set
      */
     default String getLabel() {
-        return getElement().getProperty(ElementConstants.LABEL_PROPERTY_NAME, null);
+        return getElement().getProperty(ElementConstants.LABEL_PROPERTY_NAME,
+                null);
     }
 }

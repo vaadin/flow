@@ -12,18 +12,12 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.littemplate.LitTemplateAttributeView", layout = ViewTestLayout.class)
 @Tag("attribute-lit-template")
-@JsModule("lit/AttributeLitTemplate.js")
+@JsModule("lit-templates/AttributeLitTemplate.js")
 public class LitTemplateAttributeView extends LitTemplate
         implements HasComponents {
 
     @Id("div")
     private Div injectedDiv;
-
-    @Id("hasText")
-    private Div hasText;
-
-    @Id("hasTextAndChild")
-    private Div hasTextAndChild;
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
@@ -33,11 +27,6 @@ public class LitTemplateAttributeView extends LitTemplate
                 + injectedDiv.getElement().getProperty("foo") + " "
                 + injectedDiv.getElement().getProperty("baz"));
         div.setId("info");
-        add(div);
-
-        div = new Div();
-        div.setText(hasText.getText() + " " + hasTextAndChild.getText() + "|");
-        div.setId("text-info");
         add(div);
     }
 }

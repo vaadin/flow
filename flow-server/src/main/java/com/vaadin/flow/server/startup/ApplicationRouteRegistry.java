@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,21 +15,16 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
 
@@ -37,16 +32,12 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.InternalServerError;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteNotFoundError;
-import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
-import com.vaadin.flow.router.internal.NavigationRouteTarget;
-import com.vaadin.flow.router.internal.PathUtil;
-import com.vaadin.flow.router.internal.RouteTarget;
+import com.vaadin.flow.server.ErrorRouteRegistry;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinServletContext;
 
 /**
  * Registry for holding navigation target components found on servlet
@@ -54,12 +45,10 @@ import com.vaadin.flow.server.VaadinServletContext;
  *
  * @since 1.3
  */
-public class ApplicationRouteRegistry extends AbstractRouteRegistry {
+public class ApplicationRouteRegistry extends AbstractRouteRegistry
+        implements ErrorRouteRegistry {
 
     private AtomicReference<Class<?>> pwaConfigurationClass = new AtomicReference<>();
-    private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
-            .of(RouteNotFoundError.class, InternalServerError.class)
-            .collect(Collectors.toSet());
 
     private final ArrayList<NavigationTargetFilter> routeFilters = new ArrayList<>();
 
@@ -107,8 +96,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
      * @param context
      *            the vaadin context for which to get a route registry, not
      *            <code>null</code>
-     * @return a registry instance for the given servlet context, not
-     *         <code>null</code>
+     * @return a registry instance for the given context, not <code>null</code>
      */
     public static ApplicationRouteRegistry getInstance(VaadinContext context) {
         assert context != null;
@@ -158,9 +146,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
         exceptionTargetsMap.putAll(getConfiguration().getExceptionHandlers());
 
-        errorNavigationTargets.stream()
-                .filter(target -> !defaultErrorHandlers.contains(target))
-                .filter(this::allErrorFiltersMatch)
+        errorNavigationTargets.stream().filter(this::allErrorFiltersMatch)
                 .filter(handler -> !Modifier.isAbstract(handler.getModifiers()))
                 .forEach(target -> addErrorTarget(target, exceptionTargetsMap));
 
@@ -172,15 +158,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                 .allMatch(filter -> filter.testErrorNavigationTarget(target));
     }
 
-    /**
-     * Get a registered navigation target for given exception. First we will
-     * search for a matching cause for in the exception chain and if no match
-     * found search by extended type.
-     *
-     * @param exception
-     *            exception to search error view for
-     * @return optional error target entry corresponding to the given exception
-     */
+    @Override
     public Optional<ErrorTargetEntry> getErrorNavigationTarget(
             Exception exception) {
         if (getConfiguration().getExceptionHandlers().isEmpty()) {
@@ -191,30 +169,6 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
             result = searchBySuperType(exception);
         }
         return result;
-    }
-
-    @Override
-    public NavigationRouteTarget getNavigationRouteTarget(String url) {
-        return getConfiguration().getNavigationRouteTarget(url);
-    }
-
-    @Override
-    public RouteTarget getRouteTarget(Class<? extends Component> target,
-            RouteParameters parameters) {
-        return getConfiguration().getRouteTarget(target, parameters);
-    }
-
-    @Override
-    public Optional<Class<? extends Component>> getNavigationTarget(
-            String url) {
-        Objects.requireNonNull(url, "url must not be null.");
-        return getConfiguration().getTarget(url);
-    }
-
-    @Override
-    public Optional<Class<? extends Component>> getNavigationTarget(String url,
-            List<String> segments) {
-        return getNavigationTarget(PathUtil.getPath(url, segments));
     }
 
     /**

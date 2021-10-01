@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -48,6 +48,10 @@ import com.vaadin.flow.component.page.Viewport;
  */
 public class AppShellSettings {
 
+    private static final String MSG_UNSUPPORTED_NO_UI = "It only works when "
+            + "useDeprecatedV14Bootstrapping is enabled. "
+            + "Use a UIInitListener instead if there are server-side views.";
+
     /**
      * A class representing an InlineElement.
      */
@@ -72,9 +76,9 @@ public class AppShellSettings {
                     null);
         }
 
-        private Element element(VaadinRequest request) {
+        private Element element(VaadinService service) {
             if (content == null) {
-                content = BootstrapUtils.getDependencyContents(request, file);
+                content = BootstrapUtils.getDependencyContents(service, file);
             }
 
             if (type == Wrapping.AUTOMATIC && file != null) {
@@ -411,28 +415,70 @@ public class AppShellSettings {
     /**
      * Returns the configuration object for loading indicator.
      *
-     * @return the instance used for configuring the loading indicator
+     * @return An optional instance used for configuring the loading indicator
+     *         or an empty optional if UI is not available.
+     * 
+     * @throws UnsupportedOperationException
+     *             If UI is not avaialble, for example, when using client-side
+     *             bootstrapping
+     * 
+     * @deprecated It only works when useDeprecatedV14Bootstrapping is enabled.
+     *             Use a {@link UIInitListener} instead if there are server-side
+     *             views.
      */
+    @Deprecated
     public Optional<LoadingIndicatorConfiguration> getLoadingIndicatorConfiguration() {
-        return getUi().map(UI::getLoadingIndicatorConfiguration);
+        if (getUi().isPresent()) {
+            return getUi().map(UI::getLoadingIndicatorConfiguration);
+        } else {
+            throw new UnsupportedOperationException(MSG_UNSUPPORTED_NO_UI);
+        }
     }
 
     /**
      * Returns the configuration object for reconnect dialog.
      *
-     * @return The instance used for reconnect dialog configuration
+     * @return An optional instance used for reconnect dialog configuration or
+     *         an empty optional if UI is not available.
+     * 
+     * @throws UnsupportedOperationException
+     *             If UI is not avaialble, for example, when using the
+     *             client-side bootstrapping
+     * 
+     * @deprecated It only works when useDeprecatedV14Bootstrapping is enabled.
+     *             Use a {@link UIInitListener} instead if there are server-side
+     *             views.
      */
+    @Deprecated
     public Optional<ReconnectDialogConfiguration> getReconnectDialogConfiguration() {
-        return getUi().map(UI::getReconnectDialogConfiguration);
+        if (getUi().isPresent()) {
+            return getUi().map(UI::getReconnectDialogConfiguration);
+        } else {
+            throw new UnsupportedOperationException(MSG_UNSUPPORTED_NO_UI);
+        }
     }
 
     /**
      * Returns the object used for configuring the push channel.
      *
-     * @return the instance used for push channel configuration
+     * @return An optional instance used for push channel configuration or an
+     *         empty optional if UI is not available.
+     * 
+     * @throws UnsupportedOperationException
+     *             If UI is not avaialble, for example, when using the
+     *             client-side bootstrapping
+     * 
+     * @deprecated It only works when useDeprecatedV14Bootstrapping is enabled.
+     *             Use a {@link UIInitListener} instead if there are server-side
+     *             views.
      */
+    @Deprecated
     public Optional<PushConfiguration> getPushConfiguration() {
-        return getUi().map(UI::getPushConfiguration);
+        if (getUi().isPresent()) {
+            return getUi().map(UI::getPushConfiguration);
+        } else {
+            throw new UnsupportedOperationException(MSG_UNSUPPORTED_NO_UI);
+        }
     }
 
     /**
@@ -456,12 +502,12 @@ public class AppShellSettings {
      *            position in the target
      * @return the list of dom elements to add.
      */
-    List<Element> getInlineElements(VaadinRequest request, TargetElement target,
+    List<Element> getInlineElements(VaadinService service, TargetElement target,
             Position position) {
         return inlines.stream()
                 .filter(inline -> inline.target == target
                         && inline.position == position)
-                .map(inline -> inline.element(request))
+                .map(inline -> inline.element(service))
                 .collect(Collectors.toList());
     }
 

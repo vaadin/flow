@@ -19,6 +19,7 @@ import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
@@ -53,11 +54,11 @@ public class BootstrapHandlerPushConfigurationTest {
         service.setRouteRegistry(routeRegistry);
         service.setRouter(new Router(routeRegistry) {
             @Override
-            public void initializeUI(UI ui, VaadinRequest initRequest) {
+            public void initializeUI(UI ui, Location location) {
                 // Skip initial navigation during UI.init if no routes have been
                 // injected
                 if (routeRegistry.hasNavigationTargets()) {
-                    super.initializeUI(ui, initRequest);
+                    super.initializeUI(ui, location);
                 }
             }
         });

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,19 +33,18 @@ public class ConnectionIndicatorView extends Div {
 
     public ConnectionIndicatorView() {
         NativeButton ping = new NativeButton("Ping server",
-            e -> add(new Span("Server reached")));
+                e -> add(new Span("Server reached")));
         ping.setId(CONNECT_SERVER);
         add(ping);
 
         NativeButton setCustomReconnecting = new NativeButton(
-            "Set custom reconnecting message",
-            e -> {
-                UI ui = getUI().get();
-                ui.getReconnectDialogConfiguration().setDialogText(
-                    CUSTOM_RECONNECTING_MESSAGE);
-                ui.getReconnectDialogConfiguration().setDialogTextGaveUp(
-                    CUSTOM_OFFLINE_MESSAGE);
-            });
+                "Set custom reconnecting message", e -> {
+                    UI ui = getUI().get();
+                    ui.getReconnectDialogConfiguration()
+                            .setDialogText(CUSTOM_RECONNECTING_MESSAGE);
+                    ui.getReconnectDialogConfiguration()
+                            .setDialogTextGaveUp(CUSTOM_OFFLINE_MESSAGE);
+                });
         setCustomReconnecting.setId(SET_CUSTOM_MESSAGES);
         add(setCustomReconnecting);
     }

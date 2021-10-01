@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,8 @@ package com.vaadin.flow.server.frontend;
  *
  * This exception usually means that webpack-dev-server failed compilation of
  * the frontend bundle and any error in the output should be fixed.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class WebpackConnectionException extends RuntimeException {
 
@@ -28,7 +30,7 @@ public class WebpackConnectionException extends RuntimeException {
      * Constructs a new exception with the specified detail message.
      *
      * @param message
-     *         the detailed message on the problem.
+     *            the detailed message on the problem.
      */
     public WebpackConnectionException(String message) {
         super(message);

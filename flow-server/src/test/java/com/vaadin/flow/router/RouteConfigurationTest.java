@@ -43,8 +43,7 @@ public class RouteConfigurationTest {
     public void init() {
         servletContext = new MockServletContext();
         vaadinContext = new VaadinServletContext(servletContext);
-        registry = ApplicationRouteRegistry
-                .getInstance(vaadinContext);
+        registry = ApplicationRouteRegistry.getInstance(vaadinContext);
 
         vaadinService = Mockito.mock(MockService.class);
         Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
@@ -63,7 +62,8 @@ public class RouteConfigurationTest {
     /**
      * Get registry by handing the session lock correctly.
      *
-     * @param session target vaadin session
+     * @param session
+     *            target vaadin session
      * @return session route registry for session if exists or new.
      */
     private SessionRouteRegistry getRegistry(VaadinSession session) {
@@ -172,7 +172,7 @@ public class RouteConfigurationTest {
                 routeConfiguration.getUrl(MiddleLayout.class));
 
         Optional<String> template;
-        
+
         template = routeConfiguration.getTemplate(MiddleLayout.class);
         Assert.assertTrue("Missing template", template.isPresent());
         Assert.assertEquals("Url should have only been 'parents'", "parents",
@@ -186,7 +186,8 @@ public class RouteConfigurationTest {
                 Secondary.class, pathRoute.get());
 
         template = routeConfiguration.getTemplate(ParameterView.class);
-        Assert.assertTrue("Missing template for ParameterView", template.isPresent());
+        Assert.assertTrue("Missing template for ParameterView",
+                template.isPresent());
         Assert.assertEquals(
                 "ParameterView template is not correctly generated from Route and RoutePrefix",
                 "category/:int(" + RouteParameterRegex.INTEGER + ")/item/:long("
@@ -197,7 +198,7 @@ public class RouteConfigurationTest {
                 routeConfiguration.isPathAvailable("category/:int("
                         + RouteParameterRegex.INTEGER + ")/item/:long("
                         + RouteParameterRegex.LONG + ")"));
-        
+
         Assert.assertEquals(
                 "ParameterView url with RouteParameters not generated correctly.",
                 "category/1234567890/item/12345678900",
@@ -215,9 +216,8 @@ public class RouteConfigurationTest {
                 routeConfiguration.isPathAvailable("path"));
 
         Assert.assertTrue("Expected path 'url' to be registered",
-                routeConfiguration
-                        .isPathAvailable(HasUrlParameterFormat
-                                .getTemplate("url", Url.class)));
+                routeConfiguration.isPathAvailable(
+                        HasUrlParameterFormat.getTemplate("url", Url.class)));
 
         Optional<Class<? extends Component>> urlRoute = routeConfiguration
                 .getRoute("url");
@@ -233,6 +233,7 @@ public class RouteConfigurationTest {
         Assert.assertEquals("'url' registration should be Url", Url.class,
                 urlRoute.get());
     }
+
     @Test
     public void routeConfiguration_routeTemplatesWorkCorrectly() {
         RouteConfiguration routeConfiguration = RouteConfiguration
@@ -264,14 +265,16 @@ public class RouteConfigurationTest {
                                 new RouteParam("path",
                                         "com/vaadin/flow/button"))));
 
-        // url produced by @RouteAlias(value = ":tab(overview|samples|links|reviews|discussions)")
+        // url produced by @RouteAlias(value =
+        // ":tab(overview|samples|links|reviews|discussions)")
         Assert.assertEquals("component/button/reviews",
                 routeConfiguration.getUrl(ComponentView.class,
                         new RouteParameters(
                                 new RouteParam("identifier", "button"),
                                 new RouteParam("tab", "reviews"))));
 
-        // url produced by @RouteAlias(value = ":tab(overview|samples|links|reviews|discussions)")
+        // url produced by @RouteAlias(value =
+        // ":tab(overview|samples|links|reviews|discussions)")
         Assert.assertEquals("component/button/overview",
                 routeConfiguration.getUrl(ComponentView.class,
                         new RouteParameters(

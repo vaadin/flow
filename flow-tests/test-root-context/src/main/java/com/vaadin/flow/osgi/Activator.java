@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,13 +36,15 @@ import org.osgi.service.http.whiteboard.HttpWhiteboardConstants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.uitest.servlet.ProductionModeTimingDataViewTestServlet;
 import com.vaadin.flow.uitest.servlet.ProductionModeViewTestServlet;
+import com.vaadin.flow.uitest.servlet.RouterLayoutCustomScopeServlet;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet;
 import com.vaadin.flow.uitest.servlet.ViewTestServlet;
+import com.vaadin.flow.uitest.ui.LogoutWithNotificationServlet;
 
 @Component(immediate = true)
 public class Activator {
 
-    public static class OsgiResourceRgistration {
+    public static class OsgiResourceRegistration {
 
     }
 
@@ -119,6 +121,30 @@ public class Activator {
         }
     }
 
+    private static class FixedLogoutWithNotificationServlet
+            extends LogoutWithNotificationServlet {
+        @Override
+        public void init(ServletConfig servletConfig) throws ServletException {
+            super.init(servletConfig);
+
+            if (getService() != null) {
+                getService().setClassLoader(getClass().getClassLoader());
+            }
+        }
+    }
+
+    private static class FixedRouterLayoutCustomScopeServlet
+            extends RouterLayoutCustomScopeServlet {
+        @Override
+        public void init(ServletConfig servletConfig) throws ServletException {
+            super.init(servletConfig);
+
+            if (getService() != null) {
+                getService().setClassLoader(getClass().getClassLoader());
+            }
+        }
+    }
+
     @Activate
     void activate() throws NamespaceException {
         BundleContext context = FrameworkUtil.getBundle(Activator.class)
@@ -141,6 +167,14 @@ public class Activator {
                 new FixedProductionModeTimingDataViewServlet(),
                 createProperties("/view-production-timing/*", true));
 
+        context.registerService(Servlet.class,
+                new FixedLogoutWithNotificationServlet(),
+                createProperties("/logout-with-notification/*", false));
+
+        context.registerService(Servlet.class,
+                new FixedRouterLayoutCustomScopeServlet(),
+                createProperties("/router-layout-custom-scope/*", false));
+
         registerPlainJsResource(context);
 
         String contextName = registerCustomContext(context);
@@ -153,8 +187,8 @@ public class Activator {
                 "/plain-script.js");
         properties.put(HttpWhiteboardConstants.HTTP_WHITEBOARD_RESOURCE_PREFIX,
                 "/osgi-web-resources/plain-script.js");
-        context.registerService(OsgiResourceRgistration.class,
-                new OsgiResourceRgistration(), properties);
+        context.registerService(OsgiResourceRegistration.class,
+                new OsgiResourceRegistration(), properties);
     }
 
     private String registerCustomContext(BundleContext context) {

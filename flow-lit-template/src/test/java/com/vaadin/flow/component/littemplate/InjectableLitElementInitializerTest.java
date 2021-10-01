@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,7 +28,6 @@ import org.junit.rules.ExpectedException;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.template.internal.AbstractInjectableElementInitializer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 
@@ -47,6 +46,13 @@ public class InjectableLitElementInitializerTest {
         initializer.accept(Collections.singletonMap("id", "foo"));
 
         Assert.assertEquals("foo", element.getAttribute("id"));
+    }
+
+    @Test
+    public void initializeElement_setHref_hrefIsSetAsAttribute() {
+        initializer.accept(Collections.singletonMap("href", "foo"));
+
+        Assert.assertEquals("foo", element.getAttribute("href"));
     }
 
     @Test
@@ -118,21 +124,14 @@ public class InjectableLitElementInitializerTest {
     public void initializeElement_disabled_exceptionIsThrown() {
 
         expectedEx.expect(IllegalAttributeException.class);
-        expectedEx.expectMessage(Matchers.containsString("element 'div' with id 'labelId'"));
+        expectedEx.expectMessage(
+                Matchers.containsString("element 'div' with id 'labelId'"));
 
         Map<String, String> attributes = new HashMap<>();
         attributes.put("disabled", Boolean.TRUE.toString());
         attributes.put("id", "labelId");
 
         initializer.accept(attributes);
-    }
-
-    @Test
-    public void initializeElement_setText_textIsSet() {
-        initializer.accept(Collections.singletonMap(
-                AbstractInjectableElementInitializer.TEXT_DATA, "foo bar"));
-
-        Assert.assertEquals("foo bar", element.getText());
     }
 
     @Tag(Tag.DIV)

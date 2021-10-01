@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,9 +16,9 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -253,8 +253,8 @@ public class DataCommunicatorTest {
 
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage(CoreMatchers.containsString(
-                "The data provider hasn't ever called getLimit() or " +
-                        "getPageSize()"));
+                "The data provider hasn't ever called getLimit() or "
+                        + "getPageSize()"));
         dataCommunicator.fetchFromProvider(0, 1);
     }
 
@@ -273,7 +273,7 @@ public class DataCommunicatorTest {
 
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage(CoreMatchers.containsString(
-              "The data provider hasn't ever called getOffset() or getPage()"));
+                "The data provider hasn't ever called getOffset() or getPage()"));
         dataCommunicator.fetchFromProvider(1, 1);
     }
 
@@ -551,7 +551,8 @@ public class DataCommunicatorTest {
     @Test
     public void setInitialItemCountEstimateAndIncrease_requestedItemsMuchHigherThanExactCount_exactCountIsResolvedOnServer() {
         final int exactSize = 200;
-        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(exactSize);
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
+                exactSize);
         dataProvider = Mockito.spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
@@ -564,7 +565,8 @@ public class DataCommunicatorTest {
 
         // if the user scrolls far from the exact size of the backend,
         // the exact size is resolved on the server side without causing a new
-        // roundtrip where the client will request items because it received less
+        // roundtrip where the client will request items because it received
+        // less
         // items than expected
         dataCommunicator.setRequestedRange(900, 100);
         fakeClientCommunication();
@@ -583,7 +585,8 @@ public class DataCommunicatorTest {
     @Test
     public void setInitialItemCountEstimateAndIncrease_backendEmpty_noEndlessFlushLoop() {
         final int exactSize = 0;
-        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(exactSize);
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
+                exactSize);
         dataProvider = Mockito.spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
@@ -1004,13 +1007,15 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
         Assert.assertNull(cachedEvent.get());
 
-        // creating a new data provider with same exact size -> no new event fired
+        // creating a new data provider with same exact size -> no new event
+        // fired
         dataCommunicator.setDataProvider(createDataProvider(500), null);
         fakeClientCommunication();
         Assert.assertNull(cachedEvent.get());
 
         // new data provider with different size
-        dataCommunicator.setDataProvider(createDataProvider(exactCount = 1000), null);
+        dataCommunicator.setDataProvider(createDataProvider(exactCount = 1000),
+                null);
         fakeClientCommunication();
         event = cachedEvent.getAndSet(null);
 
@@ -1078,7 +1083,8 @@ public class DataCommunicatorTest {
 
         StateNode stateNode = Mockito.spy(element.getNode());
         DataCommunicator<Item> dataCommunicator = new DataCommunicator<>(
-                dataGenerator, arrayUpdater, data -> {}, stateNode);
+                dataGenerator, arrayUpdater, data -> {
+                }, stateNode);
 
         // the items size returned by this data provider will be 100
         dataCommunicator.setDataProvider(createDataProvider(), null);
@@ -1112,8 +1118,8 @@ public class DataCommunicatorTest {
 
     @Test
     public void fetchFromProvider_pageSizeLessThanLimit_multiplePagedQueries() {
-        AbstractDataProvider<Item, Object> dataProvider =
-                createDataProvider(100);
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
+                100);
         dataProvider = Mockito.spy(dataProvider);
 
         dataCommunicator.setPageSize(10);
@@ -1124,15 +1130,14 @@ public class DataCommunicatorTest {
         ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
                 .forClass(Query.class);
 
-        Mockito.verify(dataProvider, Mockito.times(3)).fetch(
-                queryCaptor.capture());
+        Mockito.verify(dataProvider, Mockito.times(3))
+                .fetch(queryCaptor.capture());
 
         List<Item> items = stream.collect(Collectors.toList());
         Assert.assertEquals(30, items.size());
 
-        Assert.assertEquals(
-                IntStream.range(0, 30).mapToObj(Item::new)
-                        .collect(Collectors.toList()), items);
+        Assert.assertEquals(IntStream.range(0, 30).mapToObj(Item::new)
+                .collect(Collectors.toList()), items);
 
         List<Query> allQueries = queryCaptor.getAllValues();
         Assert.assertEquals(3, allQueries.size());
@@ -1164,8 +1169,8 @@ public class DataCommunicatorTest {
 
     @Test
     public void fetchFromProvider_limitEqualsPageSize_singleQuery() {
-        AbstractDataProvider<Item, Object> dataProvider =
-                createDataProvider(100);
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
+                100);
         dataProvider = Mockito.spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
@@ -1179,9 +1184,8 @@ public class DataCommunicatorTest {
         List<Item> items = stream.collect(Collectors.toList());
         Assert.assertEquals(50, items.size());
 
-        Assert.assertEquals(
-                IntStream.range(0, 50).mapToObj(Item::new)
-                        .collect(Collectors.toList()), items);
+        Assert.assertEquals(IntStream.range(0, 50).mapToObj(Item::new)
+                .collect(Collectors.toList()), items);
 
         Query query = queryCaptor.getValue();
         Assert.assertEquals(0, query.getOffset());
@@ -1192,8 +1196,8 @@ public class DataCommunicatorTest {
 
     @Test
     public void fetchFromProvider_limitLessThanPageSize_singleQuery() {
-        AbstractDataProvider<Item, Object> dataProvider =
-                createDataProvider(100);
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
+                100);
         dataProvider = Mockito.spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
@@ -1207,9 +1211,8 @@ public class DataCommunicatorTest {
         List<Item> items = stream.collect(Collectors.toList());
         Assert.assertEquals(50, items.size());
 
-        Assert.assertEquals(
-                IntStream.range(10, 60).mapToObj(Item::new)
-                        .collect(Collectors.toList()), items);
+        Assert.assertEquals(IntStream.range(10, 60).mapToObj(Item::new)
+                .collect(Collectors.toList()), items);
 
         Query query = queryCaptor.getValue();
         Assert.assertEquals(10, query.getOffset());
@@ -1220,8 +1223,8 @@ public class DataCommunicatorTest {
 
     @Test
     public void fetchFromProvider_disablePaging_singleQueryWithLimit() {
-        AbstractDataProvider<Item, Object> dataProvider =
-                createDataProvider(200);
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
+                200);
         dataProvider = Mockito.spy(dataProvider);
 
         dataCommunicator.setPagingEnabled(false);
@@ -1237,9 +1240,8 @@ public class DataCommunicatorTest {
         List<Item> items = stream.collect(Collectors.toList());
         Assert.assertEquals(123, items.size());
 
-        Assert.assertEquals(
-                IntStream.range(0, 123).mapToObj(Item::new)
-                        .collect(Collectors.toList()), items);
+        Assert.assertEquals(IntStream.range(0, 123).mapToObj(Item::new)
+                .collect(Collectors.toList()), items);
 
         List<Query> allQueries = queryCaptor.getAllValues();
         Assert.assertEquals(1, allQueries.size());
@@ -1253,24 +1255,20 @@ public class DataCommunicatorTest {
 
     @Test
     public void fetchFromProvider_maxLimitValue_pagesCalculatedProperly() {
-        AbstractDataProvider<Item, Object> dataProvider =
-                createDataProvider(42);
-        dataProvider = Mockito.spy(dataProvider);
+        AbstractDataProvider<Item,Object>dataProvider=createDataProvider(42);dataProvider=Mockito.spy(dataProvider);
 
-        dataCommunicator.setDataProvider(dataProvider, null);
-        dataCommunicator.setPageSize(2_000_000_000);
+        dataCommunicator.setDataProvider(dataProvider,null);dataCommunicator.setPageSize(2_000_000_000);
         // We check the page number calculation does not lead to integer
         // overflow, and not throw thus
-        dataCommunicator.fetchFromProvider(0, Integer.MAX_VALUE);
+        dataCommunicator.fetchFromProvider(0,Integer.MAX_VALUE);
 
-        Mockito.verify(dataProvider, Mockito.times(1))
-                .fetch(Mockito.any(Query.class));
+        Mockito.verify(dataProvider,Mockito.times(1)).fetch(Mockito.any(Query.class));
     }
 
     @Test
     public void fetchFromProvider_backendRunsOutOfItems_secondPageRequestSkipped() {
-        AbstractDataProvider<Item, Object> dataProvider =
-                createDataProvider(42);
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
+                42);
         dataProvider = Mockito.spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
@@ -1325,10 +1323,8 @@ public class DataCommunicatorTest {
 
         fakeClientCommunication();
 
-        Mockito.verify(dataProvider)
-                .fetch(Mockito.any(Query.class));
-        Mockito.verify(dataProvider)
-                .size(Mockito.any(Query.class));
+        Mockito.verify(dataProvider).fetch(Mockito.any(Query.class));
+        Mockito.verify(dataProvider).size(Mockito.any(Query.class));
     }
 
     @Test
@@ -1351,8 +1347,7 @@ public class DataCommunicatorTest {
         dataCommunicator.setRequestedRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertNotNull(
-                "Filter should be retained after data request",
+        Assert.assertNotNull("Filter should be retained after data request",
                 dataCommunicator.getFilter());
 
         Assert.assertEquals("Unexpected items count", 2,
@@ -1364,8 +1359,7 @@ public class DataCommunicatorTest {
         dataCommunicator.setRequestedRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertNotNull(
-                "Filter should be retained after data request",
+        Assert.assertNotNull("Filter should be retained after data request",
                 dataCommunicator.getFilter());
 
         Assert.assertEquals("Unexpected items count", 1,
@@ -1399,8 +1393,8 @@ public class DataCommunicatorTest {
     public void filter_skipNotifyOnFilterChange_doesNotFireItemChangeEvent() {
         TestComponent testComponent = new TestComponent(element);
 
-        testComponent.addItemChangeListener(event -> Assert
-                .fail("Event triggering not expected"));
+        testComponent.addItemChangeListener(
+                event -> Assert.fail("Event triggering not expected"));
 
         dataCommunicator.setDataProvider(
                 DataProvider.ofItems(new Item(1), new Item(2), new Item(3)),
@@ -1443,6 +1437,87 @@ public class DataCommunicatorTest {
                 3, listDataView.getItems().count());
         Assert.assertEquals("Unexpected items order after data provider reset",
                 new Item(0), listDataView.getItems().findFirst().orElse(null));
+    }
+
+    @Test // for https://github.com/vaadin/flow/issues/9988
+    public void lazyLoadingFiltering_filterAppliedAfterScrolling_requestedRangeResolvedProperly() {
+        final AtomicReference<Item> filter = new AtomicReference<>(null);
+
+        final DataProvider<Item, ?> dataProvider = DataProvider.fromCallbacks(
+                query -> IntStream.range(0, 1000)
+                        .mapToObj(counter -> new Item(counter,
+                                String.valueOf(counter)))
+                        .filter(item -> filter.get() == null
+                                || filter.get().equals(item))
+                        .limit(query.getLimit()).skip(query.getOffset()),
+                query -> {
+                    Assert.fail("Count query is not expected in this test.");
+                    return 0;
+                });
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setDefinedSize(false);
+
+        // Scroll forward to populate the DC cache (active items)
+        dataCommunicator.setRequestedRange(0, 100);
+        fakeClientCommunication();
+
+        dataCommunicator.setRequestedRange(100, 150);
+        fakeClientCommunication();
+
+        // Apply the filter and force the requested range to be shifted back
+        // towards to zero. This case should be handled properly without any
+        // exception.
+        filter.set(new Item(42, "42"));
+        dataCommunicator.getDataProvider().refreshAll();
+        fakeClientCommunication();
+
+        // Check the filtered item
+        Assert.assertEquals("Expected 1 item after the filtering", 1,
+                dataCommunicator.getItemCount());
+        Assert.assertEquals("Expected the item with value 42", filter.get(),
+                dataCommunicator.getItem(0));
+    }
+
+    @Test
+    public void handleAttach_componentAttached_oldDataProviderListenerRemoved() {
+        // given
+        AtomicInteger listenerInvocationCounter = new AtomicInteger(0);
+
+        TestComponent componentWithDataProvider = new TestComponent(
+                new Element("div"));
+        dataCommunicator = new DataCommunicator<Item>(dataGenerator,
+                arrayUpdater, data -> {
+                }, componentWithDataProvider.getElement().getNode()) {
+            @Override
+            public void reset() {
+                listenerInvocationCounter.incrementAndGet();
+                super.reset();
+            }
+        };
+        dataCommunicator.setRequestedRange(0, 100);
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider();
+        dataCommunicator.setDataProvider(dataProvider, null);
+        // Add the component to a parent to trigger handle the attach event
+        ui.add(componentWithDataProvider);
+        fakeClientCommunication();
+
+        Assert.assertEquals(
+                "Expected two DataCommunicator::reset() invocations: upon "
+                        + "setting the data provider and component attaching",
+                2, listenerInvocationCounter.get());
+
+        // when
+        // the data is being refreshed -> data provider's listeners are being
+        // invoked
+        dataProvider.refreshAll();
+        fakeClientCommunication();
+
+        // then
+        Assert.assertEquals(
+                "Expected only one reset() invocation, because the old "
+                        + "listener was removed and then only one listener is stored",
+                3, listenerInvocationCounter.get());
     }
 
     @Tag("test-component")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -38,6 +38,7 @@ import elemental.json.JsonValue;
 /**
  * Generates a client-side web component from a Java class.
  * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
  * @since 2.0
@@ -92,7 +93,8 @@ public class WebComponentGenerator {
      *            {@code true} to generate Polymer2 template, {@code false} to
      *            generate Polymer3 template
      * @param themeName
-     *            the theme defined using {@link Theme} or {@code null} if not defined
+     *            the theme defined using {@link Theme} or {@code null} if not
+     *            defined
      * @return generated web component html/JS to be served to the client
      */
     public static String generateModule(
@@ -104,7 +106,8 @@ public class WebComponentGenerator {
         WebComponentConfiguration<? extends Component> config = new WebComponentExporter.WebComponentConfigurationFactory()
                 .create(factory.create());
 
-        return generateModule(config, frontendURI, false, compatibilityMode, themeName);
+        return generateModule(config, frontendURI, false, compatibilityMode,
+                themeName);
     }
 
     /**
@@ -118,7 +121,8 @@ public class WebComponentGenerator {
      *            {@code true} to generate Polymer2 template, {@code false} to
      *            generate Polymer3 template
      * @param themeName
-     *            the theme defined using {@link Theme} or {@code null} if not defined
+     *            the theme defined using {@link Theme} or {@code null} if not
+     *            defined
      * @return generated web component html/JS to be served to the client
      */
     public static String generateModule(
@@ -160,7 +164,7 @@ public class WebComponentGenerator {
 
         if (themeName != null && !themeName.isEmpty()) {
             replacements.put("ThemeImport",
-                "import {applyTheme} from 'themes/theme-generated.js';\n\n");
+                    "import {applyTheme} from 'generated/theme';\n\n");
             replacements.put("ApplyTheme", "applyTheme(shadow);\n    ");
         } else {
             replacements.put("ThemeImport", "");

@@ -4,5 +4,6 @@
     "@fortawesome/fontawesome-free": {
       "svgs/regular/**": "fortawesome/icons"
     }
-  }
+  },
+  "lumoImports": ["color","typography","badge"]
 }

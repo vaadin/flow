@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -69,8 +69,7 @@ public class JavaLiveReloadIT extends AbstractLiveReloadIT {
         Assert.assertNotNull(liveReload);
         WebElement gizmo1 = findInShadowRoot(liveReload, By.className("gizmo"))
                 .get(0);
-        Assert.assertTrue(
-                gizmo1.getAttribute("class").contains("active"));
+        Assert.assertTrue(gizmo1.getAttribute("class").contains("active"));
 
         findElement(By.tagName("body")).click();
 
@@ -79,8 +78,7 @@ public class JavaLiveReloadIT extends AbstractLiveReloadIT {
         Assert.assertNotNull(liveReload2);
         WebElement gizmo2 = findInShadowRoot(liveReload2, By.className("gizmo"))
                 .get(0);
-        Assert.assertFalse(
-                gizmo2.getAttribute("class").contains("active"));
+        Assert.assertFalse(gizmo2.getAttribute("class").contains("active"));
         Assert.assertTrue(gizmo2.getAttribute("class").contains("gizmo"));
     }
 
@@ -110,8 +108,7 @@ public class JavaLiveReloadIT extends AbstractLiveReloadIT {
                 By.tagName("vaadin-devmode-gizmo"));
         WebElement gizmo2 = findInShadowRoot(liveReload2, By.className("gizmo"))
                 .get(0);
-        Assert.assertFalse(
-                gizmo2.getAttribute("class").contains("active"));
+        Assert.assertFalse(gizmo2.getAttribute("class").contains("active"));
         Assert.assertTrue(gizmo2.getAttribute("class").contains("gizmo"));
     }
 }

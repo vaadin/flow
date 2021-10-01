@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -265,15 +265,15 @@ public class MessageHandler {
         }
 
         /**
-         * Should only prepare resync after the 
-         * if (locked || !isNextExpectedMessage(serverId)) {...}
-         * since stateTree.repareForResync() will remove the nodes,
-         * and if locked is true, it will return without handling 
-         * the message, thus won't adding nodes back. 
+         * Should only prepare resync after the if (locked ||
+         * !isNextExpectedMessage(serverId)) {...} since
+         * stateTree.repareForResync() will remove the nodes, and if locked is
+         * true, it will return without handling the message, thus won't adding
+         * nodes back.
          * 
-         * This is related to https://github.com/vaadin/flow/issues/8699
-         * It seems that the reason is that `connectClient` is removed 
-         * from the rootNode(<body> element) during a resync and not added back.
+         * This is related to https://github.com/vaadin/flow/issues/8699 It
+         * seems that the reason is that `connectClient` is removed from the
+         * rootNode(<body> element) during a resync and not added back.
          */
         if (isResynchronize(valueMap)) {
             // Unregister all nodes and rebuild the state tree
@@ -415,26 +415,29 @@ public class MessageHandler {
                     + (Duration.currentTimeMillis() - processUidlStart)
                     + " ms");
 
+            Reactive.flush();
+
             ValueMap meta = valueMap.getValueMap("meta");
 
             if (meta != null) {
                 Profiler.enter("Error handling");
+                final UIState uiState = registry.getUILifecycle().getState();
                 if (meta.containsKey(JsonConstants.META_SESSION_EXPIRED)) {
                     if (nextResponseSessionExpiredHandler != null) {
                         nextResponseSessionExpiredHandler.execute();
-                    } else {
+                    } else if (uiState != UIState.TERMINATED) {
                         registry.getSystemErrorHandler()
                                 .handleSessionExpiredError(null);
                         registry.getUILifecycle().setState(UIState.TERMINATED);
                     }
-                } else if (meta.containsKey("appError")) {
+                } else if (meta.containsKey("appError")
+                        && uiState != UIState.TERMINATED) {
                     ValueMap error = meta.getValueMap("appError");
 
                     registry.getSystemErrorHandler().handleUnrecoverableError(
                             error.getString("caption"),
                             error.getString("message"),
-                            error.getString("details"),
-                            error.getString("url"),
+                            error.getString("details"), error.getString("url"),
                             error.getString("querySelector"));
 
                     registry.getUILifecycle().setState(UIState.TERMINATED);
@@ -442,7 +445,6 @@ public class MessageHandler {
                 Profiler.leave("Error handling");
             }
             nextResponseSessionExpiredHandler = null;
-            Reactive.flush();
 
             lastProcessingTime = (int) (Duration.currentTimeMillis() - start);
             totalProcessingTime += lastProcessingTime;
@@ -564,8 +566,10 @@ public class MessageHandler {
     }
 
     private void forceMessageHandling() {
-        // Clear previous request if it exists. Otherwise resyncrhonize can trigger
-        // "Trying to start a new request while another is active" exception and fail.
+        // Clear previous request if it exists. Otherwise resyncrhonize can
+        // trigger
+        // "Trying to start a new request while another is active" exception and
+        // fail.
         if (registry.getRequestResponseTracker().hasActiveRequest()) {
             registry.getRequestResponseTracker().endRequest();
         }
@@ -701,8 +705,8 @@ public class MessageHandler {
     }
 
     /**
-     * Gets the token (aka double submit cookie) that the server uses to protect
-     * against Cross Site Request Forgery attacks.
+     * Gets the token (synchronizer token pattern) that the server uses to
+     * protect against CSRF (Cross Site Request Forgery) attacks.
      *
      * @return the CSRF token string
      */

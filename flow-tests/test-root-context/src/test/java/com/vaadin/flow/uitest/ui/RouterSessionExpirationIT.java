@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -48,12 +49,9 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void should_StayOnSessionExpirationView_when_NavigationAfterSessionExpired(){
+    @Ignore("Ignored because of fusion issue : https://github.com/vaadin/flow/issues/7581")
+    public void should_StayOnSessionExpirationView_when_NavigationAfterSessionExpired() {
         openUrl("/new-router-session/NormalView");
-
-        if (hasClientIssue("7581")) {
-            return;
-        }
 
         navigateToSesssionExpireView();
 

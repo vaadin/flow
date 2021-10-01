@@ -8,22 +8,15 @@ Vaadin Flow
 
 **To contribute, first refer to [Contribution Guide](/CONTRIBUTING.md) for general instructions and requirements for contributing code to Flow.**
 
+**For issues related to [Vaadin Fusion](https://vaadin.com/fusion), please refer to the https://github.com/vaadin/fusion repository.**
+
 Join Vaadin Flow community chat in https://discord.gg/MYFq5RTbBn
 
-The `master` branch is the latest version (6.0) that will at some point be released in the [Vaadin platform 19.0](https://github.com/vaadin/platform). See other branches for other framework versions:
+The `master` branch is the latest version (9.0) that targets the [Vaadin platform 22.0](https://github.com/vaadin/platform). See other branches for other **supported** framework versions:
 
 | Branch | [Platform Version](https://github.com/vaadin/platform/releases) | [Flow Version](https://github.com/vaadin/flow/releases) |
 |--------|-----------------------------------------------------------------|---------------------------------------------------------|
 |  1.0   |  10 (LTS)                                                       |  1.0                                                    |
-|  1.4   |  13.0.x (end of line)                                           |  1.4                                                    |
-|  2.0   |  14.0.x                                                         |  2.0.x                                                  |
-|  2.1   |  14.1.x                                                         |  2.1.x                                                  |
-|  2.2   |  14.2.x                                                         |  2.2.x                                                  |
-|  2.3   |  14.3.x                                                         |  2.3.x                                                  |
-|  2.4   |  14.4.x                                                         |  2.4.x                                                  |
-|  2.5   |  14.5.x (upcoming)                                              |  2.5.x                                                  |
-|  3.0   |  15.0.x                                                         |  3.0.x                                                  |
-|  3.1   |  16.0.x                                                         |  3.1.x                                                  |
-|  4.0   |  17.0.x                                                         |  4.x                                                    |
-|  5.0   |  18.0.x                                                         |  5.x                                                    |
-
+|  2.7   |  14.7.x (LTS)                                                   |  2.7.x                                                  |
+|  8.0   |  21.0.x (LATEST)                                                |  8.x                                                    |
+|  master|  22.0.x (PRERELEASE)                                            |  9.x                                                    |

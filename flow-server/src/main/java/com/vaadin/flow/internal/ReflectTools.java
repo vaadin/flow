@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,15 +37,17 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.LoggerFactory;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * An util class with helpers for reflection operations. Used internally by
  * Vaadin and should not be used by application developers. Subject to change at
  * any time.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */
@@ -788,13 +790,13 @@ public class ReflectTools implements Serializable {
      *            annotated element (field, method, etc.)
      * @param simpleName
      *            annotation simple name
-     * @return {@code true} is {@code element} has annotation whose simple name is
-     *         {@code simpleName}, {@code false} otherwise
+     * @return {@code true} is {@code element} has annotation whose simple name
+     *         is {@code simpleName}, {@code false} otherwise
      */
-    public static boolean hasAnnotationWithSimpleName(AnnotatedElement element, 
+    public static boolean hasAnnotationWithSimpleName(AnnotatedElement element,
             String simpleName) {
-        return Stream.of(element.getAnnotations())
-                .anyMatch(anno -> simpleName.equals(anno.annotationType().getSimpleName()));
+        return Stream.of(element.getAnnotations()).anyMatch(anno -> simpleName
+                .equals(anno.annotationType().getSimpleName()));
     }
 
     /**
@@ -843,8 +845,8 @@ public class ReflectTools implements Serializable {
     }
 
     /**
-     * Check if a class can be instantiated via its default 
-     * constructor via reflection.
+     * Check if a class can be instantiated via its default constructor via
+     * reflection.
      * 
      * @param clazz
      *            the class to check
@@ -852,27 +854,30 @@ public class ReflectTools implements Serializable {
      */
     public static boolean isInstantiableService(Class<?> clazz) {
         if (clazz.isInterface()) {
-          return false;
+            return false;
         }
         if (clazz.isSynthetic()) {
-          return false;
+            return false;
         }
         if (Modifier.isAbstract(clazz.getModifiers())) {
-          return false;
+            return false;
         }
         if (!Modifier.isPublic(clazz.getModifiers())) {
-          return false;
+            return false;
         }
-        Optional<Constructor<?>> constructor = Stream.of(clazz.getConstructors())
-            .filter(ctor -> ctor.getParameterCount() == 0).findFirst();
-        if (!constructor.isPresent() || !Modifier.isPublic(constructor.get().getModifiers())) {
-          return false;
+        Optional<Constructor<?>> constructor = Stream
+                .of(clazz.getConstructors())
+                .filter(ctor -> ctor.getParameterCount() == 0).findFirst();
+        if (!constructor.isPresent()
+                || !Modifier.isPublic(constructor.get().getModifiers())) {
+            return false;
         }
-        if (clazz.getEnclosingClass() != null && !Modifier.isStatic(clazz.getModifiers())) {
-          return false;
+        if (clazz.getEnclosingClass() != null
+                && !Modifier.isStatic(clazz.getModifiers())) {
+            return false;
         }
         return true;
-      }
+    }
 
     private static List<Field> getConstants(Class<?> staticFields) {
         List<Field> staticFinalFields = new ArrayList<>();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -2725,8 +2726,42 @@ public interface Key extends Serializable {
         List<String> keys = new ArrayList<>(additionalKeys.length + 1);
         keys.add(key);
         Collections.addAll(keys, additionalKeys);
-        List<String> unmodifiableKeyList = Collections.unmodifiableList(keys);
-        return () -> unmodifiableKeyList;
+        return new Key() {
+
+            @Override
+            public List<String> getKeys() {
+                return Collections.unmodifiableList(keys);
+            }
+
+            @Override
+            public String toString() {
+                List<String> keys = getKeys();
+                if (keys.size() == 1) {
+                    return keys.get(0);
+                }
+                return keys.get(0) + ",  additional keys : [" + keys.stream()
+                        .skip(1).collect(Collectors.joining(", ")) + "]";
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (obj == this) {
+                    return true;
+                }
+                if (!obj.getClass().equals(getClass())) {
+                    return false;
+                }
+                return getKeys().equals(((Key) obj).getKeys());
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(getKeys());
+            }
+        };
     }
 
     /**

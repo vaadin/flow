@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -313,7 +313,7 @@ public class FullDependenciesScannerTest {
                     }
                     Assert.fail();
                     return null;
-                });
+                }, false);
 
         List<String> modules = scanner.getModules();
         Assert.assertEquals(23, modules.size());
@@ -386,7 +386,8 @@ public class FullDependenciesScannerTest {
                 .thenReturn(getAnnotatedClasses(annotationType));
 
         return new FullDependenciesScanner(finder,
-                (type, annotation) -> findAnnotations(type, annotationType));
+                (type, annotation) -> findAnnotations(type, annotationType),
+                false);
     }
 
     private FullDependenciesScanner setUpThemeScanner(
@@ -406,7 +407,7 @@ public class FullDependenciesScannerTest {
         Mockito.when(finder.getAnnotatedClasses(fakeNoThemeClass))
                 .thenReturn(noThemeClasses);
 
-        return new FullDependenciesScanner(finder, annotationFinder) {
+        return new FullDependenciesScanner(finder, annotationFinder, false) {
             @Override
             protected Class<? extends AbstractTheme> getLumoTheme() {
                 return FakeLumoTheme.class;

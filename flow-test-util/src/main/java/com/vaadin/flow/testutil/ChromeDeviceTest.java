@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -52,8 +52,8 @@ import com.vaadin.testbench.parallel.Browser;
  * It is required to set system property with path to the driver to be able to
  * run the test.
  * <p>
- * The test can be executed locally and on a test Hub. ChromeDriver is used
- * if test is executed locally.
+ * The test can be executed locally and on a test Hub. ChromeDriver is used if
+ * test is executed locally.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -78,8 +78,8 @@ public class ChromeDeviceTest extends ViewOrUITest {
     @Before
     @Override
     public void setup() throws Exception {
-        ChromeOptions chromeOptions =
-                customizeChromeOptions(new ChromeOptions());
+        ChromeOptions chromeOptions = customizeChromeOptions(
+                new ChromeOptions());
 
         WebDriver driver;
         if (Browser.CHROME == getRunLocallyBrowser()) {
@@ -94,15 +94,17 @@ public class ChromeDeviceTest extends ViewOrUITest {
     /**
      * Customizes given Chrome options to enable network connection emulation.
      *
-     * @param chromeOptions Chrome options to customize
+     * @param chromeOptions
+     *            Chrome options to customize
      * @return customized Chrome options instance
      */
-    protected ChromeOptions customizeChromeOptions(ChromeOptions chromeOptions) {
+    protected ChromeOptions customizeChromeOptions(
+            ChromeOptions chromeOptions) {
         // Unfortunately using offline emulation ("setNetworkConnection"
         // session command) in Chrome requires the "networkConnectionEnabled"
         // capability, which is:
-        //   - Not W3C WebDriver API compliant, so we disable W3C protocol
-        //   - device mode: mobileEmulation option with some device settings
+        // - Not W3C WebDriver API compliant, so we disable W3C protocol
+        // - device mode: mobileEmulation option with some device settings
 
         final Map<String, Object> mobileEmulationParams = new HashMap<>();
         mobileEmulationParams.put("deviceName", "Laptop with touch");
@@ -142,7 +144,8 @@ public class ChromeDeviceTest extends ViewOrUITest {
     /**
      * Change network connection type in the browser.
      *
-     * @param connectionType the new connection type
+     * @param connectionType
+     *            the new connection type
      * @throws IOException
      */
     protected void setConnectionType(
@@ -172,8 +175,7 @@ public class ChromeDeviceTest extends ViewOrUITest {
                         "const done = arguments[arguments.length - 1];"
                                 + "const timeout = new Promise("
                                 + "  resolve => setTimeout(resolve, 100000)"
-                                + ");"
-                                + "Promise.race(["
+                                + ");" + "Promise.race(["
                                 + "  navigator.serviceWorker.ready,"
                                 + "  timeout])"
                                 + ".then(result => done(!!result));"));

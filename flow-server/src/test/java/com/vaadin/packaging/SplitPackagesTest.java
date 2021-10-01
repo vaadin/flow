@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,8 +34,8 @@ public class SplitPackagesTest {
     /*
      * Modules that contain known split packages that we don't care about
      */
-    private static final Set<String> ignoredModules = new HashSet<>(
-            Arrays.asList("demo-flow-components", "flow-tests", "flow-test-generic",
+    private static final Set<String> ignoredModules = new HashSet<>(Arrays
+            .asList("demo-flow-components", "flow-tests", "flow-test-generic",
                     "flow-code-generator", "flow-generated-components"));
 
     /*

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,14 +31,13 @@ public abstract class AbstractLiveReloadIT extends ChromeDeviceTest {
     protected void open() {
         open((String[]) null);
         waitForServiceWorkerReady();
-        waitForElementPresent(
-                By.id(AbstractLiveReloadView.ATTACH_IDENTIFIER));
+        waitForElementPresent(By.id(AbstractLiveReloadView.ATTACH_IDENTIFIER));
         initialAttachId = findElement(
                 By.id(AbstractLiveReloadView.ATTACH_IDENTIFIER)).getText();
     }
 
     protected void waitForLiveReload() {
-        waitUntil( d -> {
+        waitUntil(d -> {
             final String newViewId = findElement(
                     By.id(AbstractLiveReloadView.ATTACH_IDENTIFIER)).getText();
             return !initialAttachId.equals(newViewId);

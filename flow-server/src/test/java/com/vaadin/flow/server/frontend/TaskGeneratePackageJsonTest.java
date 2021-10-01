@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.TARGET;
 import static org.mockito.Mockito.verify;
 
 import java.io.File;
@@ -42,13 +43,15 @@ public class TaskGeneratePackageJsonTest {
         npmFolder = temporaryFolder.newFolder();
         flowResourcesFolder = temporaryFolder.newFolder();
 
-        task = Mockito.spy(new TaskGeneratePackageJson(npmFolder, null, flowResourcesFolder));
+        task = Mockito.spy(new TaskGeneratePackageJson(npmFolder, null,
+                flowResourcesFolder, TARGET));
 
         Mockito.doReturn(null).when(task).getPackageJson();
-        Mockito.doReturn(false).when(task).updateDefaultDependencies(Mockito.any());
+        Mockito.doReturn(false).when(task)
+                .updateDefaultDependencies(Mockito.any());
         Mockito.doReturn(null).when(task).writePackageFile(Mockito.any());
-        Mockito.doReturn(null).when(task).writeFormResourcesPackageFile(Mockito.any());
-        Mockito.doReturn(null).when(task).writeResourcesPackageFile(Mockito.any());
+        Mockito.doReturn(null).when(task)
+                .writeResourcesPackageFile(Mockito.any());
     }
 
     @After
@@ -58,15 +61,14 @@ public class TaskGeneratePackageJsonTest {
     }
 
     @Test
-    public void should_witeFlowAndFormResourcesPackageFiles() throws IOException {
+    public void should_witeFlowAndFormResourcesPackageFiles()
+            throws IOException {
         JsonObject resourcePackageJson = Mockito.mock(JsonObject.class);
-        JsonObject formReSourcePackageJson = Mockito.mock(JsonObject.class);
-        Mockito.doReturn(resourcePackageJson).when(task).getResourcesPackageJson();
-        Mockito.doReturn(formReSourcePackageJson).when(task).getFormResourcesPackageJson();
+        Mockito.doReturn(resourcePackageJson).when(task)
+                .getResourcesPackageJson();
 
         task.execute();
 
         verify(task).writeResourcesPackageFile(resourcePackageJson);
-        verify(task).writeFormResourcesPackageFile(formReSourcePackageJson);
     }
 }

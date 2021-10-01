@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -54,6 +54,8 @@ import elemental.json.JsonObject;
  * <p>
  * The class is Singleton. Use {@link NpmTemplateParser#getInstance()} to get
  * its instance.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  *
  * @author Vaadin Ltd
@@ -223,14 +225,14 @@ public class NpmTemplateParser implements TemplateParser {
                     resetCache(content);
                 }
             }
+            if (!cache.containsKey(url) && jsonStats != null) {
+                cache.put(url, BundleParser.getSourceFromStatistics(url,
+                        jsonStats, service));
+            }
+            return cache.get(url);
         } finally {
             lock.unlock();
         }
-        if (!cache.containsKey(url) && jsonStats != null) {
-            cache.put(url,
-                    BundleParser.getSourceFromStatistics(url, jsonStats));
-        }
-        return cache.get(url);
     }
 
     /**
@@ -247,6 +249,7 @@ public class NpmTemplateParser implements TemplateParser {
      */
     protected boolean isStatsFileReadNeeded(VaadinService service)
             throws IOException {
+        assert lock.isHeldByCurrentThread();
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         if (jsonStats == null) {
             return true;
@@ -270,6 +273,7 @@ public class NpmTemplateParser implements TemplateParser {
     }
 
     private void resetCache(String fileContents) {
+        assert lock.isHeldByCurrentThread();
         cache.clear();
         jsonStats = BundleParser.parseJsonStatistics(fileContents);
     }

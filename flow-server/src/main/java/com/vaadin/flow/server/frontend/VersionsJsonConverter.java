@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.util.Objects;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
@@ -25,11 +27,14 @@ import elemental.json.JsonValue;
  * <p>
  * The result contains all framework dependencies as keys and their versions as
  * value.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  */
 class VersionsJsonConverter {
 
+    static final String VAADIN_CORE_NPM_PACKAGE = "@vaadin/vaadin-core";
     private static final String JS_VERSION = "jsVersion";
     private static final String NPM_NAME = "npmName";
     private static final String NPM_VERSION = "npmVersion";
@@ -69,6 +74,10 @@ class VersionsJsonConverter {
     private void addDependency(JsonObject obj) {
         assert obj.hasKey(NPM_NAME);
         String npmName = obj.getString(NPM_NAME);
+        // #11025
+        if (Objects.equals(npmName, VAADIN_CORE_NPM_PACKAGE)) {
+            return;
+        }
         if (obj.hasKey(NPM_VERSION)) {
             convertedObject.put(npmName, obj.getString(NPM_VERSION));
         } else if (obj.hasKey(JS_VERSION)) {

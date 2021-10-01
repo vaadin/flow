@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -189,8 +189,8 @@ public class HierarchyMapper<T, F> implements Serializable {
      *
      * @param item
      *            the item to collapse
-     * @return {@code true} if item has been collapsed,
-     *         {@code false} if item is empty or already collapsed
+     * @return {@code true} if item has been collapsed, {@code false} if item is
+     *         empty or already collapsed
      */
     public boolean collapse(T item) {
         if (item == null) {
@@ -224,7 +224,6 @@ public class HierarchyMapper<T, F> implements Serializable {
         }
         return removedRows;
     }
-
 
     /**
      * Gets the current in-memory sorting.
@@ -374,10 +373,10 @@ public class HierarchyMapper<T, F> implements Serializable {
         Range actualRange = (range == null)
                 ? Range.withLength(0, Integer.MAX_VALUE)
                 : range;
-        return getDataProvider().fetchChildren(new HierarchicalQuery(
-                actualRange.getStart(), actualRange.length(),
-                getBackEndSorting(),
-                getInMemorySorting(), getFilter(), parent));
+        return getDataProvider()
+                .fetchChildren(new HierarchicalQuery(actualRange.getStart(),
+                        actualRange.length(), getBackEndSorting(),
+                        getInMemorySorting(), getFilter(), parent));
     }
 
     /**
@@ -573,11 +572,9 @@ public class HierarchyMapper<T, F> implements Serializable {
                 registerChildren(parent, childList);
             }
         }
-        return combineParentAndChildStreams(parent,
-                childList.stream(),
+        return combineParentAndChildStreams(parent, childList.stream(),
                 includeParent);
     }
-
 
     /**
      * Register parent and children items into inner structures. May be
@@ -635,7 +632,7 @@ public class HierarchyMapper<T, F> implements Serializable {
      * Returns the expanded items in form of an unmodifiable collection.
      *
      * @return an unmodifiable {@code Collection<T>} containing the expanded
-     * items.
+     *         items.
      */
     public Collection<T> getExpandedItems() {
         return Collections.unmodifiableCollection(expandedItems.values());

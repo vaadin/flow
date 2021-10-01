@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,6 +26,8 @@ import com.vaadin.flow.dom.Element;
 
 /**
  * Generic initializer logic.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @author Vaadin Ltd
  * @since
@@ -33,15 +35,6 @@ import com.vaadin.flow.dom.Element;
  */
 public abstract class AbstractInjectableElementInitializer
         implements Consumer<Map<String, String>> {
-
-    /**
-     * Represents text key which should be set to an {@link Element} via
-     * {@link Element#setText(String)}.
-     * <p>
-     * The real attribute may not contain {@code "="} sign in the name so it's
-     * safe to use this special key for text value in a map.
-     */
-    public static final String TEXT_DATA = "=text";
 
     private final Element element;
 
@@ -127,6 +120,7 @@ public abstract class AbstractInjectableElementInitializer
         result.put("id", attributeStrategy);
         result.put("class", attributeStrategy);
         result.put("style", attributeStrategy);
+        result.put("href", attributeStrategy);
         result.put("theme", attributeStrategy);
         result.put("title", attributeStrategy);
         result.put("hidden", attributeStrategy);
@@ -139,7 +133,6 @@ public abstract class AbstractInjectableElementInitializer
         result.put("tabindex", attributeStrategy);
         result.put("translate", attributeStrategy);
 
-        result.put(TEXT_DATA, new TextInitializationStrategy());
         return result;
     }
 }

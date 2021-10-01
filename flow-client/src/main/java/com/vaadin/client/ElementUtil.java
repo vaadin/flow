@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -56,7 +56,7 @@ public class ElementUtil {
      */
     public static native Element getElementById(Node context, String id)
     /*-{
-       if (document.body.$ && document.body.$[id]) {
+       if (document.body.$ && document.body.$.hasOwnProperty && document.body.$.hasOwnProperty(id)) {
          // Exported WCs add their id to body.$ and cannot be found using a real id attribute
          return document.body.$[id];
        } else if (context.shadowRoot) {

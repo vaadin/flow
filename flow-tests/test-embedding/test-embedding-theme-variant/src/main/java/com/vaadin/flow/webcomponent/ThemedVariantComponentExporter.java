@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,9 +18,8 @@ package com.vaadin.flow.webcomponent;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.lumo.Lumo;
 
-@Theme(themeClass = Lumo.class, variant = Lumo.DARK)
+@Theme(themeClass = VariantTheme.class, variant = VariantTheme.DARK)
 public class ThemedVariantComponentExporter
         extends WebComponentExporter<ThemedVariantComponent> {
     public ThemedVariantComponentExporter() {
@@ -28,7 +27,8 @@ public class ThemedVariantComponentExporter
     }
 
     @Override
-    public void configureInstance(WebComponent<ThemedVariantComponent> webComponent,
+    public void configureInstance(
+            WebComponent<ThemedVariantComponent> webComponent,
             ThemedVariantComponent component) {
     }
 }

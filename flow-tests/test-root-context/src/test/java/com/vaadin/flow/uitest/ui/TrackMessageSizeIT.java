@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,12 +22,12 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
-
 public class TrackMessageSizeIT extends ChromeBrowserTest {
 
     @Test
     public void runTests() {
         open();
-        Assert.assertEquals("All tests run", this.findElement(By.id("logId")).getText());
+        Assert.assertEquals("All tests run",
+                this.findElement(By.id("logId")).getText());
     }
 }

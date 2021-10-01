@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,22 +15,12 @@
  */
 package com.vaadin.flow.data.binder;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.isEmptyString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.vaadin.flow.data.binder.testcomponents.TestLabel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,11 +29,22 @@ import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
+import com.vaadin.flow.data.binder.testcomponents.TestLabel;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.NotEmptyValidator;
 import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.tests.data.bean.Person;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class BinderConverterValidatorTest
         extends BinderTestBase<Binder<Person>, Person> {
@@ -65,6 +66,7 @@ public class BinderConverterValidatorTest
 
     @Before
     public void setUp() {
+        CurrentInstance.clearAll();
         binder = new Binder<Person>() {
             @Override
             protected void handleError(HasValue<?, ?> field,

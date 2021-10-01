@@ -1,26 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>6.0-SNAPSHOT</version>
+        <version>9.0-SNAPSHOT</version>
     </parent>
     <artifactId>fusion-endpoint</artifactId>
     <name>Fusion Endpoint</name>
     <packaging>jar</packaging>
 
     <properties>
-        <validation.api.version>2.0.1.Final</validation.api.version>
-        <jackson.version>2.10.2</jackson.version>
-        <spring.version>5.2.0.RELEASE</spring.version>
+        <spring.version>5.3.10</spring.version>
         <spring.autoconfigure.version>2.2.0.RELEASE</spring.autoconfigure.version>
         <javax.annotation.api.version>1.3.2</javax.annotation.api.version>
-        <javaparser.version>3.15.1</javaparser.version>
-        <swagger.codegen.version>3.0.2</swagger.codegen.version>
-        <swagger.codegen.generators.version>1.0.2</swagger.codegen.generators.version>
+        <javaparser.version>3.23.0</javaparser.version>
+        <swagger.codegen.version>3.0.20</swagger.codegen.version>
+        <swagger.codegen.generators.version>1.0.20</swagger.codegen.generators.version>
     </properties>
 
     <dependencies>
@@ -88,6 +85,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-commons</artifactId>
+            <version>2.5.4</version>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <version>${jackson.version}</version>
@@ -107,6 +109,21 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson.version}</version>
         </dependency>
+
+        <!-- Override snakeyaml via jackson-dataformat-yaml in swagger-codegen -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <!-- Override slf4j-ext in swagger-codegen -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-ext</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        
         <!-- Needed for security annotations -->
         <dependency>
             <groupId>javax.annotation</groupId>
@@ -133,6 +150,12 @@
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-core</artifactId>
+                </exclusion>
+                <!-- Unncessary dependencies that might cause problems 
+                if user has a different version -->
+                <exclusion>
+                    <groupId>javax.mail</groupId>
+                    <artifactId>mailapi</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -163,7 +186,7 @@
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-el</artifactId>
-            <version>9.0.12</version>
+            <version>9.0.52</version>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -1,0 +1,206 @@
+/***********************************************************************************************************************
+ *
+ * Plugins
+ *
+ **********************************************************************************************************************/
+plugins {
+    id 'java-gradle-plugin'
+	id 'maven-publish'
+    id 'idea'
+    id 'com.gradle.plugin-publish' version '0.11.0'
+    id 'org.jetbrains.kotlin.jvm' version '1.4.31'
+    id 'org.jetbrains.dokka' version '1.4.32'
+}
+
+/***********************************************************************************************************************
+ *
+ * Basic properties
+ *
+ **********************************************************************************************************************/
+
+def pom = new XmlSlurper().parse(rootProject.file('pom.xml'))
+defaultTasks 'jar'
+group pom.parent.groupId
+version = project.hasProperty('vaadin.version') ? project.getProperty('vaadin.version') : pom.parent.version
+archivesBaseName = pom.artifactId
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+/***********************************************************************************************************************
+ *
+ * Sources
+ *
+ **********************************************************************************************************************/
+
+sourceSets {
+    functionalTest {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+configurations {
+    functionalTestImplementation.extendsFrom testImplementation
+}
+
+task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+/***********************************************************************************************************************
+ *
+ * Repositories & Dependencies
+ *
+ **********************************************************************************************************************/
+
+repositories {
+    maven { url 'target/dependencies' }
+    mavenCentral()
+    maven { url = 'https://plugins.gradle.org/m2/' }
+    maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+}
+
+dependencies {
+    compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.32")
+
+    compile("com.vaadin:flow-plugin-base:${pom.parent.version}")
+
+    testImplementation("junit:junit:4.12")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.4.32")
+}
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+/***********************************************************************************************************************
+ *
+ * Artifacts
+ *
+ **********************************************************************************************************************/
+
+jar {
+    manifest{
+        attributes(
+                'Vaadin-Package-Version': 1,
+                'Implementation-Title': 'Vaadin Gradle Plugin',
+                'Implementation-Version': archiveVersion,
+                'Implementation-Vendor': 'Vaadin Ltd',
+        )
+    }
+    from 'gradle.properties'
+}
+
+/**
+ * Plugin artifact sources.
+ */
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    archiveClassifier = 'sources'
+    include 'com/**/*.groovy'
+    include 'com/**/*.java'
+    include 'com/**/*.kt'
+}
+
+/**
+ * Artifacts in build
+ */
+artifacts {
+    archives jar
+    archives sourcesJar
+}
+
+/***********************************************************************************************************************
+ *
+ * Testing & Quality
+ *
+ ***********************************************************************************************************************/
+task functionalTest(type: Test) {
+    dependsOn test, jar
+    group = 'Verification'
+
+    testClassesDirs = sourceSets.functionalTest.output.classesDirs
+    classpath = sourceSets.functionalTest.runtimeClasspath
+    maxParallelForks = 1
+    jvmArgs('-Xms512M', '-Xmx1024M')
+    testLogging {
+        exceptionFormat = 'full'
+        showStandardStreams = true
+    }
+}
+check.dependsOn functionalTest
+/***********************************************************************************************************************
+ *
+ * Deployment
+ *
+ ***********************************************************************************************************************/
+gradlePlugin {
+    testSourceSets sourceSets.functionalTest
+    plugins {
+        vaadinPlugin {
+            id = 'com.vaadin'
+            implementationClass = 'com.vaadin.gradle.VaadinPlugin'
+        }
+    }
+}
+
+pluginBundle {
+    website = 'https://vaadin.com/docs/latest/guide/start/gradle'
+    vcsUrl = 'https://github.com/vaadin/flow'
+    description = 'Build Vaadin applications with Gradle. Please follow the link below to learn which Plugin version to use with particular Vaadin version. Vaadin recommends using the latest Vaadin LTS version.'
+    tags = ['vaadin']
+    plugins {
+        vaadinPlugin {
+            id = gradlePlugin.plugins.vaadinPlugin.id
+            displayName = 'Vaadin Gradle Plugin'
+        }
+    }
+    mavenCoordinates {
+        groupId = project.group
+        artifactId = project.archivesBaseName
+    }
+}
+
+publishing {
+	publications {
+		maven(MavenPublication) {
+			groupId = project.group
+			artifactId = project.archivesBaseName
+			version = project.version
+
+			from components.java
+		}
+	}
+}
+
+/***********************************************************************************************************************
+ *
+ * Misc.
+ *
+ **********************************************************************************************************************/
+wrapper {
+    gradleVersion = '5.0'
+    distributionType = Wrapper.DistributionType.ALL
+}
+
+// Travis kills the build if there's no stdout for 10 minutes: https://docs.travis-ci.com/user/common-build-problems/#build-times-out-because-no-output-was-received
+// This will print ongoing tests, taken from https://stackoverflow.com/a/4292739/377320
+functionalTest {
+    testLogging {
+        info.events "passed", "skipped", "failed"
+    }
+}
+
+kotlin {
+    explicitApi()
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}

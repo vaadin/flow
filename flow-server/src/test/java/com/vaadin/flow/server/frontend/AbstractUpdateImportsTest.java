@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,34 +18,31 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.mockito.internal.util.collections.Sets;
 import org.slf4j.Logger;
-import org.slf4j.impl.SimpleLogger;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -59,6 +56,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -80,12 +78,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     private File generatedPath;
     private File frontendDirectory;
     private File nodeModulesPath;
-    private File loggerFile;
     private UpdateImports updater;
 
-    private boolean useMockLog;
-
-    private Logger logger = Mockito.mock(Logger.class);
+    private MockLogger logger;
 
     private static final String ERROR_MSG = "foo-bar-baz";
 
@@ -151,13 +146,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         @Override
         protected Logger getLogger() {
-            if (useMockLog) {
-                return logger;
-            } else {
-                NodeUpdater updater = Mockito.mock(NodeUpdater.class);
-                Mockito.doCallRealMethod().when(updater).log();
-                return updater.log();
-            }
+            return logger;
         }
 
         @Override
@@ -170,19 +159,12 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     public void setup() throws Exception {
         tmpRoot = temporaryFolder.getRoot();
 
-        // Use a file for logs so as tests can assert the warnings shown to the
-        // user.
-        loggerFile = new File(tmpRoot, "test.log");
-        loggerFile.createNewFile();
-        // Setting a system property we make SimpleLogger to output to a file
-        System.setProperty(SimpleLogger.LOG_FILE_KEY,
-                loggerFile.getAbsolutePath());
-        // re-init logger to get new configuration
-        initLogger();
+        logger = new MockLogger();
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
-        generatedPath = new File(tmpRoot, DEFAULT_GENERATED_DIR);
+        generatedPath = new File(tmpRoot,
+                Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
         File tokenFile = new File(tmpRoot, TOKEN_FILE);
 
         ClassFinder classFinder = getClassFinder();
@@ -194,22 +176,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 FLOW_NPM_PACKAGE_NAME + "ExampleConnector.js").exists());
     }
 
-    @After
-    public void tearDown() throws Exception {
-        // re-init logger to reset to default
-        System.clearProperty(SimpleLogger.LOG_FILE_KEY);
-        initLogger();
-    }
-
     protected abstract FrontendDependenciesScanner getScanner(
             ClassFinder finder);
-
-    private void initLogger() throws Exception, SecurityException {
-        // init method is protected
-        Method method = SimpleLogger.class.getDeclaredMethod("init");
-        method.setAccessible(true);
-        method.invoke(null);
-    }
 
     @Test
     public void importsFilesAreNotFound_throws() {
@@ -220,8 +188,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Test
     public void getModuleLines_npmPackagesDontExist_logExplanation() {
-        useMockLog = true;
-        Mockito.when(logger.isInfoEnabled()).thenReturn(true);
         boolean atLeastOneRemoved = false;
         for (String imprt : getExpectedImports()) {
             if (imprt.startsWith("@vaadin") && imprt.endsWith(".js")) {
@@ -233,10 +199,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         assertTrue(atLeastOneRemoved);
         updater.run();
 
-        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(logger).info(captor.capture());
-
-        Assert.assertThat(captor.getValue(),
+        Assert.assertThat(logger.getLogs(),
                 CoreMatchers.allOf(
                         CoreMatchers.containsString(
                                 "@vaadin/vaadin-lumo-styles/spacing.js"),
@@ -245,9 +208,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Test
     public void getModuleLines_oneFrontendDependencyDoesntExist_throwExceptionAndlogExplanation() {
-        useMockLog = true;
-        Mockito.when(logger.isInfoEnabled()).thenReturn(true);
-
         String fooFileName = "./foo.js";
         assertFileRemoved(fooFileName, frontendDirectory);
 
@@ -264,20 +224,19 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void getModuleLines_oneFrontendDependencyAndFrontendDirectoryDontExist_throwExceptionAdvisingUserToRunPrepareFrontend() throws Exception {
+    public void getModuleLines_oneFrontendDependencyAndFrontendDirectoryDontExist_throwExceptionAdvisingUserToRunPrepareFrontend()
+            throws Exception {
         ClassFinder classFinder = getClassFinder();
         updater = new UpdateImports(classFinder, getScanner(classFinder),
                 tmpRoot, null);
-
-        useMockLog = true;
-        Mockito.when(logger.isInfoEnabled()).thenReturn(true);
 
         Files.move(frontendDirectory.toPath(),
                 new File(tmpRoot, "_frontend").toPath());
 
         try {
             updater.run();
-            Assert.fail("Execute should have failed with advice to run `prepare-frontend`");
+            Assert.fail(
+                    "Execute should have failed with advice to run `prepare-frontend`");
         } catch (IllegalStateException e) {
             assertThat(e.getMessage(), CoreMatchers.containsString(
                     "Unable to locate frontend resources and missing token file. "
@@ -287,9 +246,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Test
     public void getModuleLines_multipleFrontendDependencyDoesntExist_throwExceptionAndlogExplanation() {
-        useMockLog = true;
-        Mockito.when(logger.isInfoEnabled()).thenReturn(true);
-
         String localTemplateFileName = "./local-template.js";
         String fooFileName = "./foo.js";
 
@@ -327,7 +283,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 + "(e.g. set '%s' property)", frontendDirectory.getPath(),
                 Constants.RESOURCES_FRONTEND_DEFAULT,
                 FrontendUtils.PARAM_FRONTEND_DIR);
-         
+
         return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix,
                 String.join("\n      - ", resourcesNotFound), suffix);
     }
@@ -382,12 +338,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                     updater.resultingLines.contains(line));
         }
 
-        assertTrue(loggerFile.exists());
-
-        String output = FileUtils
-                .readFileToString(loggerFile, StandardCharsets.UTF_8)
-                // fix for windows
-                .replace("\r", "");
+        String output = logger.getLogs();
 
         Assert.assertThat(output, CoreMatchers.containsString(
                 "Use the './' prefix for files in JAR files: 'ExampleConnector.js'"));
@@ -446,6 +397,23 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 "javascript/c.js");
     }
 
+    @Test
+    public void importingBinaryFile_importVisitorShouldNotFail()
+            throws IOException, URISyntaxException {
+        // Add a binary image import to 'commmon-js-file.js' which should not
+        // fail the import visitor and should be ignored
+        File newFile = resolveImportFile(frontendDirectory, nodeModulesPath,
+                "./common-js-file.js");
+        Files.copy(
+                Paths.get(getClass().getClassLoader().getResource("dice.jpg")
+                        .toURI()),
+                new File(newFile.getParentFile(), "dice.jpg").toPath());
+        Files.write(newFile.toPath(),
+                Collections.singleton("import './dice.jpg'"));
+
+        updater.run();
+    }
+
     @Route(value = "")
     private static class MainView extends Component {
         NodeTestComponents.TranslatedImports translatedImports;
@@ -458,8 +426,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class[] testClasses = { MainView.class,
                 NodeTestComponents.TranslatedImports.class,
                 NodeTestComponents.LocalP3Template.class,
-                NodeTestComponents.JavaScriptOrder.class,
-                UI.class};
+                NodeTestComponents.JavaScriptOrder.class, UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
 
         updater = new UpdateImports(classFinder, getScanner(classFinder),

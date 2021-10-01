@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,7 +30,9 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.router.internal.DefaultErrorHandler;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 /**
  * This is a basic default error view shown on exceptions during navigation.
@@ -38,6 +40,8 @@ import com.vaadin.flow.server.VaadinService;
  * @since 1.0
  */
 @Tag(Tag.DIV)
+@AnonymousAllowed
+@DefaultErrorHandler
 public class InternalServerError extends Component
         implements HasErrorParameter<Exception> {
 

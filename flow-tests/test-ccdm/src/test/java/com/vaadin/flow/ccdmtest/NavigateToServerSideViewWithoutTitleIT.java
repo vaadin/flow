@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -39,16 +39,15 @@ public class NavigateToServerSideViewWithoutTitleIT extends CCDMTest {
 
         // update document.title on the client-side
         findElement(By.id("updatePageTitle")).click();
-        Assert.assertEquals("Client-side should have updated the app shell title", 
-            "client-side-updated-title", getDriver().getTitle());
-        
+        Assert.assertEquals(
+                "Client-side should have updated the app shell title",
+                "client-side-updated-title", getDriver().getTitle());
+
         findAnchor("view-with-server-view-button").click();
 
         // "app-shell-title" is defined in AppShell
         Assert.assertEquals("Shoul use app shell title", "app-shell-title",
                 getDriver().getTitle());
     }
-
-
 
 }

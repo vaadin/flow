@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,9 +17,14 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ThemeLiveReloadView", layout = ViewTestLayout.class)
 public class ThemeLiveReloadView extends Div {
+
+    public ThemeLiveReloadView() {
+        add(new Paragraph("This is a Paragraph to test the applied font"));
+    }
 }

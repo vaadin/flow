@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.internal.DefaultErrorHandler;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 /**
  * This is a basic default error view shown on routing exceptions.
@@ -38,12 +40,18 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.DIV)
+@AnonymousAllowed
+@DefaultErrorHandler
 public class RouteNotFoundError extends Component
         implements HasErrorParameter<NotFoundException> {
 
     @Override
     public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<NotFoundException> parameter) {
+        LoggerFactory.getLogger(RouteNotFoundError.class)
+                .info(parameter.hasCustomMessage()
+                        ? parameter.getCustomMessage()
+                        : "Route is not found", parameter.getCaughtException());
         String path = event.getLocation().getPath();
         String additionalInfo = "";
         if (parameter.hasCustomMessage()) {
@@ -56,11 +64,14 @@ public class RouteNotFoundError extends Component
                 .isProductionMode();
 
         String template = getErrorHtml(productionMode);
-        template = template.replace("{{path}}", path);
-        template = template.replace("{{additionalInfo}}", additionalInfo);
+        // {{routes}} should be replaced first so that it's not possible to
+        // insert {{routes}} snippet via other template values which may result
+        // in the listing of all available routes when this shouldn't not happen
         if (template.contains("{{routes}}")) {
             template = template.replace("{{routes}}", getRoutes(event));
         }
+        template = template.replace("{{additionalInfo}}", additionalInfo);
+        template = template.replace("{{path}}", path);
 
         getElement().appendChild(new Html(template).getElement());
         return HttpServletResponse.SC_NOT_FOUND;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,11 +23,11 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
- * A test class for miscelaneous tests checking features or fixes
- * that do not require their own IT module.
+ * A test class for miscelaneous tests checking features or fixes that do not
+ * require their own IT module.
  *
- * Adding new IT modules penalizes build time, otherwise appending
- * tests to this class run new tests faster.
+ * Adding new IT modules penalizes build time, otherwise appending tests to this
+ * class run new tests faster.
  */
 public class MiscelaneousIT extends ChromeBrowserTest {
     @Override
@@ -41,15 +41,15 @@ public class MiscelaneousIT extends ChromeBrowserTest {
         open();
     }
 
-    @Test //#5964
+    @Test // #5964
     public void should_loadThemedComponent_fromLocal() {
         WebElement body = findElement(By.tagName("body"));
         Assert.assertEquals("2px", body.getCssValue("padding"));
     }
 
     /**
-     * Checks that a missing or incorrect icon is handled properly with an
-     * error log and does not halt the whole application startup.
+     * Checks that a missing or incorrect icon is handled properly with an error
+     * log and does not halt the whole application startup.
      */
     @Test
     public void handlesIncorrectIconProperly() {

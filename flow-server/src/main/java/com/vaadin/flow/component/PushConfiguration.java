@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -158,12 +158,14 @@ public interface PushConfiguration extends Serializable {
      * @return the URL to use for push requests, or null to use to default
      */
     String getPushUrl();
-    
+
     /**
-     * Sets the factory that will be used to create new instances of {@link PushConnection}.
+     * Sets the factory that will be used to create new instances of
+     * {@link PushConnection}.
      *
      * @param factory
-     *            the factory that will be used to create new instances of {@link PushConnection}
+     *            the factory that will be used to create new instances of
+     *            {@link PushConnection}
      */
     void setPushConnectionFactory(PushConnectionFactory factory);
 
@@ -226,7 +228,7 @@ class PushConfigurationImpl implements PushConfiguration {
                 // The push connection is initially in a disconnected state;
                 // the client will establish the connection
                 ui.getInternals()
-                    .setPushConnection(pushConnectionFactory.apply(ui));
+                        .setPushConnection(pushConnectionFactory.apply(ui));
             }
             // Nothing to do here if disabling push;
             // the client will close the connection
@@ -280,9 +282,10 @@ class PushConfigurationImpl implements PushConfiguration {
     }
 
     @Override
-    public void setPushConnectionFactory(PushConnectionFactory pushConnectionFactory) {
+    public void setPushConnectionFactory(
+            PushConnectionFactory pushConnectionFactory) {
         this.pushConnectionFactory = Objects.requireNonNull(
-            pushConnectionFactory, "Push connection factory must not be null"
-        );
+                pushConnectionFactory,
+                "Push connection factory must not be null");
     }
 }

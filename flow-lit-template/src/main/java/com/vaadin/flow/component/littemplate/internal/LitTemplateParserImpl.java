@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -54,6 +54,8 @@ import elemental.json.JsonObject;
  * <p>
  * The class is Singleton. Use {@link LitTemplateParserImpl#getInstance()} to
  * get its instance.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  *
  * @author Vaadin Ltd
@@ -154,17 +156,17 @@ public class LitTemplateParserImpl implements LitTemplateParser {
     }
 
     /**
-     * Dependency should match the tag name  ignoring the extension of the file.
+     * Dependency should match the tag name ignoring the extension of the file.
      *
      * @param dependency
-     *     dependency to check
+     *            dependency to check
      * @param tag
-     *     tag name for element
+     *            tag name for element
      * @return true if dependency file matches the tag name.
      */
     private boolean dependencyHasTagName(Dependency dependency, String tag) {
         String url = FilenameUtils.removeExtension(dependency.getUrl())
-            .toLowerCase(Locale.ENGLISH);
+                .toLowerCase(Locale.ENGLISH);
         return url.endsWith("/" + tag);
     }
 
@@ -206,7 +208,7 @@ public class LitTemplateParserImpl implements LitTemplateParser {
             }
             if (!cache.containsKey(url) && jsonStats != null) {
                 cache.put(url, BundleLitParser.getSourceFromStatistics(url,
-                        jsonStats));
+                        jsonStats, service));
             }
             return cache.get(url);
         } finally {

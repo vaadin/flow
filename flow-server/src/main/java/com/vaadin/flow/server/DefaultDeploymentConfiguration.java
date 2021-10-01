@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@
 package com.vaadin.flow.server;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -34,7 +35,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 
 /**
  * The default implementation of {@link DeploymentConfiguration} based on a base
@@ -73,7 +73,7 @@ public class DefaultDeploymentConfiguration
             + "and \"automatic\". The default of \"disabled\" will be used.";
 
     private static final String INDEX_NOT_FOUND = "'%s' is not found from '%s'.%n"
-            + "Generating a default one in '%s%s'. "
+            + "Generating a default one in '%s'. "
             + "Move it to the '%s' folder if you want to customize it.";
 
     /**
@@ -342,8 +342,9 @@ public class DefaultDeploymentConfiguration
         String entryPointMessage;
         if (!indexEntry.exists() && !indexEntryTs.exists()) {
             entryPointMessage = String.format(INDEX_NOT_FOUND,
-                    indexEntryTs.getName(), indexEntryTs.getPath(), TARGET,
-                    indexEntryTs.getName(),
+                    indexEntryTs.getName(), indexEntryTs.getPath(),
+                    Paths.get(getBuildFolder(), indexEntryTs.getName())
+                            .toString(),
                     indexEntryTs.getParentFile().getPath());
         } else {
             String fileName = indexEntry.exists() ? "index.js" : "index.ts";
@@ -361,8 +362,9 @@ public class DefaultDeploymentConfiguration
         String indexHTMLMessage;
         if (!indexHTML.exists()) {
             indexHTMLMessage = String.format(INDEX_NOT_FOUND,
-                    indexHTML.getName(), indexHTML.getPath(), TARGET,
-                    indexHTML.getName(), indexHTML.getParentFile().getPath());
+                    indexHTML.getName(), indexHTML.getPath(),
+                    Paths.get(getBuildFolder(), indexHTML.getName()).toString(),
+                    indexHTML.getParentFile().getPath());
         } else {
             indexHTMLMessage = String.format("Using 'index.html' from '%s'",
                     indexHTML.getPath());

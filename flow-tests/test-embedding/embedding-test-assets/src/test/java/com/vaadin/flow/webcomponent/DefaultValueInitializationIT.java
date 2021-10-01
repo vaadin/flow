@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,7 +21,8 @@ import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class DefaultValueInitializationIT extends ChromeBrowserTest implements HasById{
+public class DefaultValueInitializationIT extends ChromeBrowserTest
+        implements HasById {
 
     @Override
     protected String getTestPath() {

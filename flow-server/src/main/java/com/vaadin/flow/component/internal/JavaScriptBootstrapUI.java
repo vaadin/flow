@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,6 +26,7 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.router.ErrorNavigationEvent;
@@ -41,11 +42,17 @@ import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.PathUtil;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
+
+import elemental.json.JsonValue;
 
 /**
  * Custom UI for {@link JavaScriptBootstrapHandler}. This class is intended for
  * internal use in client side bootstrapping.
+ *
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class JavaScriptBootstrapUI extends UI {
     public static final String SERVER_ROUTING = "clientRoutingMode";
@@ -102,13 +109,25 @@ public class JavaScriptBootstrapUI extends UI {
      *            client side element id
      * @param flowRoute
      *            flow route that should be attached to the client element
+     * @param appShellTitle
+     *            client side title of the application shell
+     * @param historyState
+     *            client side history state value
      */
     @ClientCallable
     public void connectClient(String clientElementTag, String clientElementId,
-            String flowRoute, String appShellTitle) {
+            String flowRoute, String appShellTitle, JsonValue historyState) {
         if (appShellTitle != null && !appShellTitle.isEmpty()) {
             getInternals().setAppShellTitle(appShellTitle);
         }
+
+        final String trimmedRoute = PathUtil.trimPath(flowRoute);
+        if (!trimmedRoute.equals(flowRoute)) {
+            // See InternalRedirectHandler invoked via Router.
+            getPage().getHistory().replaceState(null, trimmedRoute);
+        }
+        final Location location = new Location(trimmedRoute);
+
         if (wrapperElement == null) {
             // Create flow reference for the client outlet element
             wrapperElement = new Element(clientElementTag);
@@ -117,23 +136,25 @@ public class JavaScriptBootstrapUI extends UI {
             getElement().getStateProvider().appendVirtualChild(
                     getElement().getNode(), wrapperElement,
                     NodeProperties.INJECT_BY_ID, clientElementId);
-        }
 
-        final String trimmedRoute = PathUtil.trimPath(flowRoute);
-        if (!trimmedRoute.equals(flowRoute)) {
-            // See InternalRedirectHandler invoked via Router.
-            getPage().getHistory().replaceState(null, trimmedRoute);
-        }
+            getPage().getHistory().setHistoryStateChangeHandler(
+                    event -> renderViewForRoute(event.getLocation(),
+                            NavigationTrigger.CLIENT_SIDE));
 
-        // Render the flow view that the user wants to navigate to.
-        renderViewForRoute(new Location(trimmedRoute),
-                NavigationTrigger.CLIENT_SIDE);
+            // Render the flow view that the user wants to navigate to.
+            renderViewForRoute(location, NavigationTrigger.CLIENT_SIDE);
+        } else {
+            History.HistoryStateChangeHandler handler = getPage().getHistory()
+                    .getHistoryStateChangeHandler();
+            handler.onHistoryStateChange(new History.HistoryStateChangeEvent(
+                    getPage().getHistory(), historyState, location,
+                    NavigationTrigger.CLIENT_SIDE));
+        }
 
         // true if the target is client-view and the push mode is disable
         if (getForwardToClientUrl() != null) {
             navigateToClient(getForwardToClientUrl());
             acknowledgeClient();
-            
         } else if (isPostponed()) {
             cancelClient();
         } else {
@@ -178,18 +199,21 @@ public class JavaScriptBootstrapUI extends UI {
         if (Boolean.TRUE.equals(getSession().getAttribute(SERVER_ROUTING))) {
             // server-side routing
             renderViewForRoute(location, NavigationTrigger.UI_NAVIGATE);
-        } else {
-            // client-side routing
+            return;
+        }
 
-            // There is an in-progress navigation or there are no changes,
-            // prevent looping
-            if (navigationInProgress || getInternals().hasLastHandledLocation()
-                    && sameLocation(getInternals().getLastHandledLocation(),
-                    location)) {
-                return;
-            }
+        // client-side routing
 
-            navigationInProgress = true;
+        // There is an in-progress navigation or there are no changes,
+        // prevent looping
+        if (navigationInProgress
+                || getInternals().hasLastHandledLocation() && sameLocation(
+                        getInternals().getLastHandledLocation(), location)) {
+            return;
+        }
+
+        navigationInProgress = true;
+        try {
             Optional<NavigationState> navigationState = getInternals()
                     .getRouter().resolveNavigationTarget(location);
 
@@ -199,18 +223,16 @@ public class JavaScriptBootstrapUI extends UI {
                 handleNavigation(location, navigationState.get(),
                         NavigationTrigger.UI_NAVIGATE);
                 if (getForwardToClientUrl() != null) {
-                    navigationInProgress = false;
                     // Server is forwarding to a client route from a
                     // BeforeEnter.
                     navigateToClient(getForwardToClientUrl());
-                    return;
                 }
             } else {
-                // Server cannot resolve navigation, let client-side to handle
-                // it.
+                // Server cannot resolve navigation, let client-side to
+                // handle it.
                 navigateToClient(location.getPathWithQueryParameters());
             }
-
+        } finally {
             navigationInProgress = false;
         }
     }
@@ -243,7 +265,8 @@ public class JavaScriptBootstrapUI extends UI {
                 NavigationTrigger.CLIENT_SIDE);
     }
 
-    private void renderViewForRoute(Location location, NavigationTrigger trigger) {
+    private void renderViewForRoute(Location location,
+            NavigationTrigger trigger) {
         if (!shouldHandleNavigation(location)) {
             return;
         }
@@ -280,7 +303,8 @@ public class JavaScriptBootstrapUI extends UI {
                         .trimPath(oldLocation.getPathWithQueryParameters()));
     }
 
-    private void handleNavigation(Location location, NavigationState navigationState, NavigationTrigger trigger) {
+    private void handleNavigation(Location location,
+            NavigationState navigationState, NavigationTrigger trigger) {
         try {
             NavigationEvent navigationEvent = new NavigationEvent(
                     getInternals().getRouter(), location, this, trigger);
@@ -290,7 +314,8 @@ public class JavaScriptBootstrapUI extends UI {
 
             clientNavigationStateRenderer.handle(navigationEvent);
 
-            forwardToClientUrl = clientNavigationStateRenderer.getClientForwardRoute();
+            forwardToClientUrl = clientNavigationStateRenderer
+                    .getClientForwardRoute();
 
             adjustPageTitle();
 
@@ -337,7 +362,8 @@ public class JavaScriptBootstrapUI extends UI {
         // app shell title is computed from the title tag in index.html
         String appShellTitle = getInternals().getAppShellTitle();
         // restore the app shell title when there is no one for the route
-        if ((newTitle == null || newTitle.isEmpty()) && appShellTitle != null && !appShellTitle.isEmpty()) {
+        if ((newTitle == null || newTitle.isEmpty()) && appShellTitle != null
+                && !appShellTitle.isEmpty()) {
             getInternals().cancelPendingTitleUpdate();
             getInternals().setTitle(appShellTitle);
         }
@@ -354,8 +380,8 @@ public class JavaScriptBootstrapUI extends UI {
         ErrorParameter<NotFoundException> errorParameter = new ErrorParameter<>(
                 NotFoundException.class, notFoundException);
         ErrorNavigationEvent errorNavigationEvent = new ErrorNavigationEvent(
-                getInternals().getRouter(), location, this, NavigationTrigger.CLIENT_SIDE,
-                errorParameter);
+                getInternals().getRouter(), location, this,
+                NavigationTrigger.CLIENT_SIDE, errorParameter);
         errorStateRenderer.handle(errorNavigationEvent);
     }
 
@@ -421,6 +447,7 @@ public class JavaScriptBootstrapUI extends UI {
      * views.
      */
     @Tag(Tag.DIV)
+    @AnonymousAllowed
     public static class ClientViewPlaceholder extends Component {
     }
 }

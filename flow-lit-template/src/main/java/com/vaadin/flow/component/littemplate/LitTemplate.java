@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.littemplate.LitTemplateParser.LitTemplateParserFactory;
@@ -54,7 +55,7 @@ import com.vaadin.flow.server.VaadinService;
  * @author Vaadin Ltd
  * @since
  */
-public abstract class LitTemplate extends Component {
+public abstract class LitTemplate extends Component implements HasStyle {
 
     static {
         UsageStatistics.markAsUsed("flow/LitTemplate", null);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,16 +31,20 @@ public class RequestParametersHistoryIT extends ChromeBrowserTest {
     @Test
     public void noParameters() {
         open();
-        WebElement label = findElement(By.id(RequestParametersHistoryView.REQUEST_PARAM_ID));
+        WebElement label = findElement(
+                By.id(RequestParametersHistoryView.REQUEST_PARAM_ID));
 
-        Assert.assertEquals(RequestParametersHistoryView.NO_INPUT_TEXT, label.getText());
+        Assert.assertEquals(RequestParametersHistoryView.NO_INPUT_TEXT,
+                label.getText());
     }
 
     @Test
     public void parameterProvided() {
         String paramValue = "Super-intelligent shade of the colour blue";
-        open(String.format("%s=%s", RequestParametersHistoryView.REQUEST_PARAM_NAME, paramValue));
-        WebElement label = findElement(By.id(RequestParametersHistoryView.REQUEST_PARAM_ID));
+        open(String.format("%s=%s",
+                RequestParametersHistoryView.REQUEST_PARAM_NAME, paramValue));
+        WebElement label = findElement(
+                By.id(RequestParametersHistoryView.REQUEST_PARAM_ID));
         Assert.assertEquals(paramValue, label.getText());
     }
 
@@ -48,13 +52,19 @@ public class RequestParametersHistoryIT extends ChromeBrowserTest {
     public void goBachToHistoryWithParameters() {
         String oldParamValue = "oldParamValue";
         String newParamValue = "newParamValue";
-        open(String.format("%s=%s", RequestParametersHistoryView.REQUEST_PARAM_NAME, oldParamValue));
-        open(String.format("%s=%s", RequestParametersHistoryView.REQUEST_PARAM_NAME, newParamValue));
+        open(String.format("%s=%s",
+                RequestParametersHistoryView.REQUEST_PARAM_NAME,
+                oldParamValue));
+        open(String.format("%s=%s",
+                RequestParametersHistoryView.REQUEST_PARAM_NAME,
+                newParamValue));
 
         findElement(By.id(RequestParametersHistoryView.BACK_BUTTON_ID)).click();
-        waitForElementPresent(By.id(RequestParametersHistoryView.REQUEST_PARAM_ID));
+        waitForElementPresent(
+                By.id(RequestParametersHistoryView.REQUEST_PARAM_ID));
 
-        WebElement label = findElement(By.id(RequestParametersHistoryView.REQUEST_PARAM_ID));
+        WebElement label = findElement(
+                By.id(RequestParametersHistoryView.REQUEST_PARAM_ID));
 
         Assert.assertEquals(oldParamValue, label.getText());
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,9 +20,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,6 +42,8 @@ import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVA
 /**
  * Request handler that supplies the script/html of the web component matching
  * the given tag.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
  * @since 2.0
@@ -64,10 +65,13 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                     + JS_EXTENSION + "|" + HTML_EXTENSION + ")$");
 
     // tag name -> generated html
-    private Map<String, String> cache = new HashMap<>();
+    private ConcurrentHashMap<String, String> cache = new ConcurrentHashMap<>();
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
+        if (!hasWebComponentConfigurations(request)) {
+            return false;
+        }
         String pathInfo = request.getPathInfo();
 
         if (pathInfo == null || pathInfo.isEmpty()) {
@@ -163,7 +167,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
      */
     public void setCacheEnabled(boolean cacheEnabled) {
         if (cacheEnabled) {
-            cache = new HashMap<>();
+            cache = new ConcurrentHashMap<>();
         } else {
             cache = null;
         }
@@ -208,6 +212,12 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 + "  uiScript.setAttribute('type','text/javascript');"
                 + "  uiScript.setAttribute('src', bootstrapAddress);"
                 + "  document.head.appendChild(uiScript);" + "}";
+    }
+
+    private boolean hasWebComponentConfigurations(VaadinRequest request) {
+        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
+                .getInstance(request.getService().getContext());
+        return registry.hasConfigurations();
     }
 
     private static String getThisScript(String tag) {

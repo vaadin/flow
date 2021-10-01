@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletContext;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-
-import javax.servlet.ServletContext;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.ContentTypeResolver;
-import com.vaadin.flow.server.StreamResource;
 
 public class StreamResourceTest {
 
@@ -60,6 +60,20 @@ public class StreamResourceTest {
         Assert.assertNotNull(resource.getContentTypeResolver());
 
         assertContentType(resource, resource.getContentTypeResolver());
+    }
+
+    @Test
+    public void setHeader_headerIsInHeadersListAndGetterReturnsTheValue() {
+        StreamResource resource = new StreamResource("foo",
+                () -> makeEmptyStream());
+
+        resource.setHeader("foo", "bar");
+
+        Assert.assertEquals("bar", resource.getHeader("foo").get());
+
+        Map<String, String> headers = resource.getHeaders();
+        Assert.assertEquals(1, headers.size());
+        Assert.assertEquals("bar", headers.get("foo"));
     }
 
     private void assertContentType(StreamResource resource,

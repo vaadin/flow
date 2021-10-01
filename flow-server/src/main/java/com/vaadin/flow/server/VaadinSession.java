@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,10 @@
  */
 
 package com.vaadin.flow.server;
+
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionBindingListener;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -36,17 +40,15 @@ import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
 /**
@@ -76,6 +78,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     @Deprecated
     public static final String UI_PARAMETER = InitParameters.UI_PARAMETER;
 
+    static final String CLOSE_SESSION_EXPLICITLY = "vaadin.close-session."
+            + UUID.randomUUID().toString();
+
     /**
      * Configuration for the session.
      */
@@ -94,7 +99,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private LinkedList<RequestHandler> requestHandlers = new LinkedList<>();
 
     private int nextUIId = 0;
-    private Map<Integer, UI> uIs = new HashMap<>();
+    private transient Map<Integer, UI> uIs = new HashMap<>();
 
     protected WebBrowser browser = new WebBrowser();
 
@@ -120,13 +125,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private transient ConcurrentLinkedQueue<FutureAccess> pendingAccessQueue = new ConcurrentLinkedQueue<>();
 
     /*
-     * Despite section 6 of RFC 4122, this particular use of UUID *is* adequate
-     * for security capabilities. Type 4 UUIDs contain 122 bits of random data,
-     * and UUID.randomUUID() is defined to use a cryptographically secure random
-     * generator.
+     * This token should be handled with care since it's used to protect against
+     * cross-site attacks in addition to general identifier duty.
      */
-    private final String csrfToken = UUID.randomUUID().toString();
-
     private final String pushId = UUID.randomUUID().toString();
 
     private final Attributes attributes = new Attributes();
@@ -170,8 +171,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         // closing
         // Notify the service
         if (service == null) {
-            getLogger()
-                    .warn("A VaadinSession instance not associated to any service is getting unbound. "
+            getLogger().warn(
+                    "A VaadinSession instance not associated to any service is getting unbound. "
                             + "Session destroy events will not be fired and UIs in the session will not get detached. "
                             + "This might happen if a session is deserialized but never used before it expires.");
         } else if (VaadinService.getCurrentRequest() != null
@@ -194,7 +195,21 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             // it as soon as we acquire the lock.
             service.fireSessionDestroy(this);
         }
-        session = null;
+        // Vaadin session attribute is removed from HTTP session in two cases:
+        // either Vaadin session is closed explicitly by VaadinService or HTTP
+        // session is invalidated (and all attributes are removed from it). In
+        // the latter case the session field should be set to {@code null}
+        // immediately to avoid using HTTP session object which is invalid (all
+        // methods throw exceptions).
+        lock();
+        try {
+            if (getAttribute(CLOSE_SESSION_EXPLICITLY) == null) {
+                session = null;
+            }
+            setAttribute(CLOSE_SESSION_EXPLICITLY, null);
+        } finally {
+            unlock();
+        }
     }
 
     /**
@@ -210,7 +225,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Set the web browser associated with this session.
      *
-     * @param browser the web browser object
+     * @param browser
+     *            the web browser object
      */
     public void setBrowser(WebBrowser browser) {
         checkHasLock();
@@ -379,7 +395,15 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         checkHasLock();
         this.locale = locale;
 
-        getUIs().forEach(ui -> ui.setLocale(locale));
+        getUIs().forEach(ui -> {
+            Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance
+                    .setCurrent(ui);
+            try {
+                ui.setLocale(locale);
+            } finally {
+                CurrentInstance.restoreInstances(oldInstances);
+            }
+        });
     }
 
     /**
@@ -834,6 +858,18 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * After the session has been discarded, any UIs that have been left open
      * will give a Session Expired error and a new session will be created for
      * serving new UIs.
+     * <p>
+     * Note that this method only closes the {@link VaadinSession} which is not
+     * the same as {@link HttpSession}. To invalidate the underlying HTTP
+     * session {@code getSession().invalidate();} needs to be called.
+     * <p>
+     * The method is usually called to perform logout. If user data is stored
+     * inside HTTP session then {@code getSession().invalidate();} should be
+     * called instead (most common case). It makes sense to call
+     * {@link #close()} only if user data is stored inside a
+     * {@link VaadinSession}. Use the {@link Page#setLocation(String)} method to
+     * navigate to some page after session is closed to avoid session expired
+     * message.
      *
      * @see SystemMessages#getSessionExpiredCaption()
      */
@@ -865,6 +901,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                 + this.state + "->" + state;
 
         this.state = state;
+        if (VaadinSessionState.CLOSED.equals(state)) {
+            session = null;
+        }
     }
 
     private boolean isValidChange(VaadinSessionState newState) {
@@ -998,14 +1037,35 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @throws ClassNotFoundException
      *             if the class of the stream object could not be found
      */
+    @SuppressWarnings("unchecked")
     private void readObject(ObjectInputStream stream)
             throws IOException, ClassNotFoundException {
         Map<Class<?>, CurrentInstance> old = CurrentInstance.setCurrent(this);
         try {
             stream.defaultReadObject();
+            uIs = (Map<Integer, UI>) stream.readObject();
             pendingAccessQueue = new ConcurrentLinkedQueue<>();
         } finally {
             CurrentInstance.restoreInstances(old);
+        }
+    }
+
+    private void writeObject(java.io.ObjectOutputStream stream)
+            throws IOException {
+        boolean serializeUIs = true;
+
+        ApplicationConfiguration appConfiguration = ApplicationConfiguration
+                .get(getService().getContext());
+        if (!appConfiguration.isProductionMode()
+                && !appConfiguration.isDevModeSessionSerializationEnabled()) {
+            serializeUIs = false;
+        }
+
+        stream.defaultWriteObject();
+        if (serializeUIs) {
+            stream.writeObject(uIs);
+        } else {
+            stream.writeObject(new HashMap<>());
         }
     }
 
@@ -1038,14 +1098,4 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         return resourceRegistry;
     }
 
-    /**
-     * Gets the CSRF token (aka double submit cookie) that is used to protect
-     * against Cross Site Request Forgery attacks.
-     *
-     * @return the csrf token string
-     * @since 2.0
-     */
-    public String getCsrfToken() {
-        return csrfToken;
-    }
 }

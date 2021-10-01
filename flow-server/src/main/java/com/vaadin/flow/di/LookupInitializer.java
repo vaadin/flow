@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.di;
 
-import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletException;
 
 import java.io.ByteArrayInputStream;
@@ -39,54 +38,27 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.server.StaticFileHandler;
+import com.vaadin.flow.server.StaticFileHandlerFactory;
+import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.startup.AppShellPredicate;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
-import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
 
 /**
- * SPI for customizing lookup in applications inside Servlet 3.0 containers.
- * <p>
- * There are two ways of customizing Lookup in various servlet containers:
- * <ul>
- * <li>Use {@link LookupInitializer} SPI via providing an implementation for the
- * framework which doesn't prevent {@link LookupServletContainerInitializer}
- * execution.
- * <li>Completely disable {@link LookupServletContainerInitializer} and
- * implement own way to set up {@link Lookup} and make it available via
- * {@link VaadinContext#getAttribute(Class)}.
- * </ul>
- * 
- * The first case allows to customize {@link Lookup} creation and initialization
- * in case when it's not possible to prevent
- * {@link LookupServletContainerInitializer} execution (any container which
- * completely supports Servlet 3.0 specification). In this case it's possible to
- * implement {@link LookupInitializer} for the framework.
- * <p>
- * The second case is only possible when a servlet container doesn't run
- * {@link ServletContainerInitializer}s out of the box (e.g. OSGi or Spring boot
- * executed as a Jar) at all. Otherwise you may not disable an existing
- * {@link ServletContainerInitializer} and it will be executed anyway.
- * <p>
- * This is SPI for {@link Lookup} SPI. The difference is:
- * <ul>
- * <li>{@link Lookup} allows to override services per Web application (by the
- * application developer). For some service interfaces there can be several
- * implementations available in {@link Lookup}.
- * <li>{@link LookupInitializer} allows to override how the {@link Lookup} works
- * per framework. The default implementation available if no framework is used.
- * Only one service implementation (excluding the default one) may be available
- * in the web application classpath and it's provided by the developers for the
- * framework support (the main usecase here is Spring add-on).
- * </ul>
+ * Default implementation of {@link AbstractLookupInitializer}.
  * 
  * @author Vaadin Ltd
  * @since
  *
+ * @see AbstractLookupInitializer
  */
-public class LookupInitializer {
+public class LookupInitializer implements AbstractLookupInitializer {
 
     protected static final String SPI = " SPI: ";
 
@@ -239,6 +211,45 @@ public class LookupInitializer {
 
     }
 
+    private static class RegularOneTimeInitializerPredicate
+            implements OneTimeInitializerPredicate {
+
+        @Override
+        public boolean runOnce() {
+            return true;
+        }
+
+    }
+
+    private static class StaticFileHandlerFactoryImpl
+            implements StaticFileHandlerFactory {
+        @Override
+        public StaticFileHandler createHandler(VaadinService service) {
+            return new StaticFileServer(service);
+        }
+    }
+
+    /**
+     * Default implementation of {@link AppShellPredicate}.
+     * 
+     * @author Vaadin Ltd
+     * @since
+     *
+     */
+    protected static class AppShellPredicateImpl implements AppShellPredicate {
+
+        /**
+         * Creates a new instance.
+         */
+        public AppShellPredicateImpl() {
+        }
+
+        @Override
+        public boolean isShell(Class<?> clz) {
+            return AppShellConfigurator.class.isAssignableFrom(clz);
+        }
+    }
+
     private static class CachedStreamData {
 
         private final byte[] data;
@@ -250,43 +261,21 @@ public class LookupInitializer {
         }
     }
 
-    /**
-     * Creates a new {@link Lookup} instance, initializes it and passes it to
-     * the provided {@code bootstrap}.
-     * <p>
-     * The method should creates a new initialized {@link Lookup} instance. In
-     * some cases it's not possible to create the instance right away when the
-     * method is called. To be able to support this usecase the method contract
-     * doesn't require to return the {@link Lookup} instance. Instead the
-     * created instance should be passed to the provided {@code bootstrap}
-     * consumer once the instance is created and completely initialized. The
-     * {@code bootstrap} will start the application initialization which
-     * otherwise is postponed until a {@link Lookup} becomes available.
-     * <p>
-     * The implementation must use the provided {@code bootstrap} to pass the
-     * {@link Lookup} instance otherwise the web application based on this
-     * {@link LookupInitializer} will never be bootstrapped.
-     * <p>
-     * The provided {@code services} map contains service implementations found
-     * in application classpath using {@code @HandlesTypes} annotation declared
-     * for {@link LookupServletContainerInitializer}.
-     * 
-     * @param context
-     *            a Vaadin context to run initialization for
-     * @param services
-     *            the map of internal services with their implementations found
-     *            in the application classpath
-     * @param bootstrap
-     *            the web application bootstrap
-     * @throws ServletException
-     *             if initialization failed
-     */
+    @Override
     public void initialize(VaadinContext context,
             Map<Class<?>, Collection<Class<?>>> services,
             VaadinApplicationInitializationBootstrap bootstrap)
             throws ServletException {
-        ensureResourceProviders(services);
-        ensureApplicationConfigurationFactories(services);
+        services.put(OneTimeInitializerPredicate.class, Collections
+                .singleton(RegularOneTimeInitializerPredicate.class));
+        ensureService(services, ResourceProvider.class,
+                ResourceProviderImpl.class);
+        ensureService(services, AppShellPredicate.class,
+                AppShellPredicateImpl.class);
+        ensureService(services, ApplicationConfigurationFactory.class,
+                DefaultApplicationConfigurationFactory.class);
+        ensureService(services, StaticFileHandlerFactory.class,
+                StaticFileHandlerFactoryImpl.class);
         bootstrap.bootstrap(createLookup(context, services));
     }
 
@@ -308,80 +297,58 @@ public class LookupInitializer {
 
     /**
      * Ensures that provided {@code services} contain implementation for
-     * {@link ResourceProvider} SPI.
+     * {@code serviceType} SPI.
      * <p>
-     * The default {@link ResourceProviderImpl} implementation will be set as
-     * the service into {@code services} if there is no other services
-     * available.
+     * The default {@code  serviceImpl} implementation will be set as the
+     * service into {@code services} if there is no other services available.
      * 
      * @param services
      *            map of internal services
+     * @param serviceType
+     *            SPI type
+     * @param serviceImpl
+     *            the default SPI implementation
      */
-    protected void ensureResourceProviders(
-            Map<Class<?>, Collection<Class<?>>> services) {
-        Collection<Class<?>> resourceProviders = services
-                .get(ResourceProvider.class);
-        if (resourceProviders == null) {
-            resourceProviders = Collections.emptyList();
+    protected <T> void ensureService(
+            Map<Class<?>, Collection<Class<?>>> services, Class<T> serviceType,
+            Class<? extends T> serviceImpl) {
+        Collection<Class<?>> impls = services.get(serviceType);
+        if (impls == null) {
+            impls = Collections.emptyList();
         }
-        resourceProviders = resourceProviders.stream()
-                .filter(clazz -> !clazz.equals(ResourceProviderImpl.class))
+        impls = impls.stream().filter(clazz -> !clazz.equals(serviceImpl))
                 .collect(Collectors.toList());
-        if (resourceProviders.isEmpty()) {
-            services.put(ResourceProvider.class,
-                    Collections.singletonList(ResourceProviderImpl.class));
-        } else if (resourceProviders.size() > 1) {
+        if (impls.isEmpty()) {
+            services.put(serviceType, Collections.singletonList(serviceImpl));
+        } else if (impls.size() > 1) {
             throw new IllegalStateException(
-                    SEVERAL_IMPLS + ResourceProvider.class.getSimpleName() + SPI
-                            + resourceProviders + ONE_IMPL_REQUIRED);
+                    SEVERAL_IMPLS + serviceType.getSimpleName() + SPI + impls
+                            + ONE_IMPL_REQUIRED);
         } else {
-            services.put(ResourceProvider.class, resourceProviders);
+            services.put(serviceType, impls);
         }
     }
 
     /**
-     * Ensures that provided {@code services} contain implementation for
-     * {@link ApplicationConfigurationFactory} SPI.
-     * <p>
-     * The default {@link DefaultApplicationConfigurationFactory} implementation
-     * will be set as the service into {@code services} if there is no other
-     * services available.
+     * Instantiates service {@code implementation} type with the given
+     * {@code serviceClass} .
      * 
-     * @param services
-     *            map of internal services
+     * @param <T>
+     *            service type
+     * @param serviceClass
+     *            service class
+     * @param implementation
+     *            service implementation class
+     * @return an instantiated service implementation object
      */
-    protected void ensureApplicationConfigurationFactories(
-            Map<Class<?>, Collection<Class<?>>> services) {
-        Collection<Class<?>> factories = services
-                .get(ApplicationConfigurationFactory.class);
-        if (factories == null) {
-            factories = Collections.emptyList();
+    protected <T> T instantiate(Class<T> serviceClass,
+            Class<?> implementation) {
+        if (RegularOneTimeInitializerPredicate.class.equals(implementation)) {
+            return serviceClass.cast(new RegularOneTimeInitializerPredicate());
+        } else if (StaticFileHandlerFactoryImpl.class.equals(implementation)) {
+            return serviceClass.cast(new StaticFileHandlerFactoryImpl());
         }
-        factories = factories.stream()
-                .filter(clazz -> !clazz
-                        .equals(DefaultApplicationConfigurationFactory.class))
-                .collect(Collectors.toList());
-        if (factories.isEmpty()) {
-            services.put(ApplicationConfigurationFactory.class,
-                    Collections.singletonList(
-                            DefaultApplicationConfigurationFactory.class));
-        } else if (factories.size() > 1) {
-            throw new IllegalStateException(SEVERAL_IMPLS
-                    + DefaultApplicationConfigurationFactory.class
-                            .getSimpleName()
-                    + SPI + factories + ONE_IMPL_REQUIRED);
-        } else {
-            services.put(ApplicationConfigurationFactory.class, factories);
-        }
-    }
-
-    private <T> T instantiate(Class<T> serviceClass, Class<?> implementation) {
-        if (ResourceProviderImpl.class.equals(implementation)) {
-            return serviceClass.cast(new ResourceProviderImpl());
-        } else {
-            return serviceClass
-                    .cast(ReflectTools.createInstance(implementation));
-        }
+        return serviceClass.cast(ReflectTools.createInstance(implementation));
     }
 
 }

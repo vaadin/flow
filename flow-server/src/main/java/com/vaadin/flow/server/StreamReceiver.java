@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -40,9 +40,9 @@ public class StreamReceiver extends AbstractStreamResource {
      * Creates {@link StreamReceiver} instance for {@code streamVariable} as a
      * data receiver.
      * <p>
-     * {@code resourceName} parameter value will be used in URI (generated when resource
-     * is registered) in a way that the {@code resourceName} is the last segment of the
-     * path. So this is synthetic file name (not real one).
+     * {@code resourceName} parameter value will be used in URI (generated when
+     * resource is registered) in a way that the {@code resourceName} is the
+     * last segment of the path. So this is synthetic file name (not real one).
      *
      * @param node
      *            receiver node

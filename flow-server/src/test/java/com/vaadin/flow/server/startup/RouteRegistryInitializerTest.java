@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,21 +17,34 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.OneTimeInitializerPredicate;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -46,25 +59,20 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
-import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.RouteParameterRegex;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RouterTest.FileNotFound;
+import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
+import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.VaadinServletContext;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
 
 /**
  * Unit tests for RouteRegistryInitializer and RouteRegistry.
@@ -75,12 +83,16 @@ public class RouteRegistryInitializerTest {
     private ApplicationRouteRegistry registry;
     private ServletContext servletContext;
     private VaadinServletContext vaadinContext;
+    private Lookup lookup;
 
     @Before
     public void init() {
         routeRegistryInitializer = new RouteRegistryInitializer();
         registry = new TestRouteRegistry();
         servletContext = Mockito.mock(ServletContext.class);
+        lookup = Mockito.mock(Lookup.class);
+        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
+                .thenReturn(lookup);
         vaadinContext = new VaadinServletContext(servletContext);
         registry = ApplicationRouteRegistry.getInstance(vaadinContext);
 
@@ -1403,6 +1415,170 @@ public class RouteRegistryInitializerTest {
         routeRegistryInitializer.process(classes, servletContext);
     }
 
+    @Test
+    public void initialize_predicateReturnsTrue_noPrevopusStaticRoutes_cleanIsNotCalled_removeMethodIsNotCalled()
+            throws VaadinInitializerException {
+        Mockito.when(lookup.lookup(OneTimeInitializerPredicate.class))
+                .thenReturn(() -> true);
+        TestApplicationRouteRegistry registry = new TestApplicationRouteRegistry();
+        Mockito.when(servletContext
+                .getAttribute(registry.wrapper.getClass().getName()))
+                .thenReturn(registry.wrapper);
+
+        routeRegistryInitializer.initialize(
+                Collections.singleton(BaseRouteTarget.class), vaadinContext);
+        Assert.assertFalse(registry.cleanCalled);
+        Assert.assertFalse(registry.removeCalled);
+    }
+
+    @Test
+    public void initialize_predicateReturnsTrue_sameRouteIsReadded_eventHasNoReaddedRoute()
+            throws VaadinInitializerException {
+        Mockito.when(lookup.lookup(OneTimeInitializerPredicate.class))
+                .thenReturn(() -> true);
+
+        routeRegistryInitializer.initialize(
+                new HashSet<>(Arrays.asList(OldRouteTarget.class)),
+                vaadinContext);
+
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(vaadinContext);
+        Assert.assertEquals(1, registry.getRegisteredRoutes().size());
+
+        AtomicReference<RoutesChangedEvent> event = new AtomicReference<>();
+        registry.addRoutesChangeListener(event::set);
+
+        routeRegistryInitializer.initialize(new HashSet<>(
+                Arrays.asList(OldRouteTarget.class, BaseRouteTarget.class)),
+                vaadinContext);
+        Assert.assertEquals(2, registry.getRegisteredRoutes().size());
+
+        Assert.assertTrue(event.get().getRemovedRoutes().isEmpty());
+        Assert.assertEquals(1, event.get().getAddedRoutes().size());
+    }
+
+    @Test
+    public void initialize_noPredicate_noPrevopusStaticRoutes_cleanIsNotCalled_removeMethodIsNotCalled()
+            throws VaadinInitializerException {
+        TestApplicationRouteRegistry registry = new TestApplicationRouteRegistry();
+        Mockito.when(servletContext
+                .getAttribute(registry.wrapper.getClass().getName()))
+                .thenReturn(registry.wrapper);
+
+        routeRegistryInitializer.initialize(
+                Collections.singleton(BaseRouteTarget.class), vaadinContext);
+        Assert.assertFalse(registry.cleanCalled);
+        Assert.assertFalse(registry.removeCalled);
+    }
+
+    @Test
+    public void initialize_noPredicate_hasPrevopusStaticRoutes_previousRoutesAreRemoved()
+            throws VaadinInitializerException {
+        ApplicationRouteRegistry registry = firstInitRouteRegistry();
+
+        // second time initialization
+
+        routeRegistryInitializer.initialize(
+                Collections.singleton(BaseRouteTarget.class), vaadinContext);
+        Assert.assertEquals(1, registry.getRegisteredRoutes().size());
+        Assert.assertTrue(
+                registry.getTemplate(BaseRouteTarget.class).isPresent());
+    }
+
+    @Test
+    public void initialize_noPredicate_hasPrevopusStaticRoutes_addRouteManually_previousRoutesAreRemoved_addedRouteIsPreserved()
+            throws VaadinInitializerException {
+        ApplicationRouteRegistry registry = firstInitRouteRegistry();
+
+        // now add a route via registry API without registry initializer
+
+        registry.setRoute("manual-route", Component.class,
+                Collections.emptyList());
+
+        // second time initialization
+
+        routeRegistryInitializer.initialize(
+                Collections.singleton(BaseRouteTarget.class), vaadinContext);
+        // two routes: manually added and set during init phase
+
+        Assert.assertTrue(
+                registry.getTemplate(BaseRouteTarget.class).isPresent());
+        Assert.assertTrue(registry.getNavigationTarget(
+                PathUtil.getPath("manual-route", Collections.emptyList()))
+                .isPresent());
+    }
+
+    private ApplicationRouteRegistry firstInitRouteRegistry()
+            throws VaadinInitializerException {
+        vaadinContext = new VaadinServletContext(servletContext) {
+
+            private Map<Class<?>, Object> map = new HashMap<>();
+
+            @Override
+            public <T> T getAttribute(Class<T> type) {
+                if (Lookup.class.equals(type)) {
+                    return type.cast(lookup);
+                } else {
+                    return type.cast(map.get(type));
+                }
+            }
+
+            @Override
+            public <T> void setAttribute(Class<T> clazz, T value) {
+                map.put(clazz, value);
+            }
+        };
+        // first time initialization
+        routeRegistryInitializer.initialize(
+                Collections.singleton(OldRouteTarget.class), vaadinContext);
+
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(vaadinContext);
+        List<RouteData> routes = registry.getRegisteredRoutes();
+        // self check
+
+        Assert.assertEquals(1, routes.size());
+        RouteData data = routes.get(0);
+        Assert.assertEquals("foo-bar", data.getTemplate());
+        List<RouteAliasData> aliases = data.getRouteAliases();
+        Assert.assertEquals(1, aliases.size());
+        RouteAliasData alias = aliases.get(0);
+        Assert.assertEquals("baz", alias.getTemplate());
+        return registry;
+    }
+
+    private static class TestApplicationRouteRegistry
+            extends ApplicationRouteRegistry {
+
+        ApplicationRouteRegistryWrapper wrapper = new ApplicationRouteRegistryWrapper(
+                this);
+
+        boolean cleanCalled;
+
+        boolean removeCalled;
+
+        @Override
+        public void clean() {
+            cleanCalled = true;
+        }
+
+        @Override
+        public void removeRoute(Class<? extends Component> navigationTarget) {
+            removeCalled = true;
+        }
+
+        @Override
+        public void removeRoute(String path) {
+            removeCalled = true;
+        }
+
+        @Override
+        public void removeRoute(String path,
+                Class<? extends Component> navigationTarget) {
+            removeCalled = true;
+        }
+    }
+
     @Tag(Tag.DIV)
     @Route("foo")
     private abstract static class AbstractRouteTarget extends Component {
@@ -1424,6 +1600,13 @@ public class RouteRegistryInitializerTest {
     @Tag(Tag.DIV)
     @Route("foo")
     private static class OtherRouteTarget extends Component {
+
+    }
+
+    @Tag(Tag.DIV)
+    @Route("foo-bar")
+    @RouteAlias("baz")
+    private static class OldRouteTarget extends AbstractRouteTarget {
 
     }
 }

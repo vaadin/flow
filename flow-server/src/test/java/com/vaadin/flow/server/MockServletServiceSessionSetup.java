@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -33,6 +34,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
@@ -210,6 +212,7 @@ public class MockServletServiceSessionSetup {
     public static class TestVaadinServletResponse
             extends VaadinServletResponse {
         private int errorCode;
+        private String errorMessage;
 
         private CapturingServletOutputStream output = new CapturingServletOutputStream();
 
@@ -224,6 +227,7 @@ public class MockServletServiceSessionSetup {
         public void sendError(int errorCode, String message)
                 throws java.io.IOException {
             this.errorCode = errorCode;
+            errorMessage = message;
         }
 
         @Override
@@ -233,6 +237,10 @@ public class MockServletServiceSessionSetup {
 
         public int getErrorCode() {
             return errorCode;
+        }
+
+        public String getErrorMessage() {
+            return errorMessage;
         }
 
         @Override
@@ -281,6 +289,8 @@ public class MockServletServiceSessionSetup {
     private TestVaadinServlet servlet;
     private TestVaadinServletService service;
     private MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
+    @Mock
+    private StaticFileHandlerFactory staticFileHandlerFactory;
 
     public MockServletServiceSessionSetup() throws Exception {
         this(true);
@@ -303,6 +313,8 @@ public class MockServletServiceSessionSetup {
                 .thenReturn(lookup);
         Mockito.when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
+        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
+                .thenReturn(staticFileHandlerFactory);
 
         Mockito.when(resourceProvider.getClientResourceAsStream(
                 "META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
@@ -313,8 +325,8 @@ public class MockServletServiceSessionSetup {
         Mockito.when(
                 resourceProvider.getApplicationResource(Mockito.anyString()))
                 .thenAnswer(invocation -> {
-                    return MockServletServiceSessionSetup.class.getResource(
-                            "/" + invocation.getArgumentAt(0, String.class));
+                    return MockServletServiceSessionSetup.class
+                            .getResource("/" + invocation.getArgument(0));
                 });
 
         servlet.init(servletConfig);
@@ -413,14 +425,16 @@ public class MockServletServiceSessionSetup {
     }
 
     public VaadinRequest createRequest(MockServletServiceSessionSetup mocks,
-            String path) {
+            String path, String queryString) {
+        QueryParameters queryParams = QueryParameters.fromString(queryString);
+        Map<String, List<String>> params = queryParams.getParameters();
         HttpServletRequest httpServletRequest = Mockito
                 .mock(HttpServletRequest.class);
         return new VaadinServletRequest(httpServletRequest,
                 mocks.getService()) {
             @Override
             public String getPathInfo() {
-                return path.replaceFirst("\\?.*$", "");
+                return path;
             }
 
             @Override
@@ -435,9 +449,10 @@ public class MockServletServiceSessionSetup {
 
             @Override
             public String getParameter(String name) {
-                Pattern p = Pattern.compile("^.*[\\?&]" + name + "=([^&]+).*$");
-                Matcher m = p.matcher(path);
-                return m.find() ? m.group(1) : null;
+                if (!params.containsKey(name)) {
+                    return null;
+                }
+                return params.get(name).get(0);
             }
 
             @Override

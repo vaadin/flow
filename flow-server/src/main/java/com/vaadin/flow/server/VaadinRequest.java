@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,10 @@
 
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletRequest;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,10 +28,6 @@ import java.security.Principal;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.internal.CurrentInstance;
 
@@ -73,6 +73,19 @@ public interface VaadinRequest {
      * @return content length in bytes
      */
     int getContentLength();
+
+    /**
+     * Returns the length of the request content that can be read from the input
+     * stream returned by {@link #getInputStream()}.
+     *
+     * @see javax.servlet.ServletRequest#getContentLengthLong()
+     *
+     * @return a long containing the length of the request body or -1L if the
+     *         length is not known
+     */
+    default long getContentLengthLong() {
+        return getContentLength();
+    }
 
     /**
      * Returns an input stream from which the request content can be read. The
@@ -460,7 +473,6 @@ public interface VaadinRequest {
      * @see HttpServletRequest#getHeaders(String)
      */
     Enumeration<String> getHeaders(String name);
-
 
     /**
      * Gets the currently processed Vaadin request. The current request is

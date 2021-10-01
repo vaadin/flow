@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,19 +15,18 @@
  */
 package com.vaadin.flow.internal;
 
-import org.slf4j.LoggerFactory;
-
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 
 /**
- * Provides API to access to the {@link BrowserLiveReload} instance by a
- * {@link VaadinService}.
+ * Creates a live reload instance by delegating to
+ * {@link BrowserLiveReloadAccessor#getLiveReload(VaadinService)}
+ * <p>
+ * Class exists only for backwards compatibility with JRebel and HotswapAgent
+ * plugins.
  *
- * @author Vaadin Ltd
- * @since
- *
+ * @deprecated Use {@link BrowserLiveReloadAccessor} instead
  */
+@Deprecated
 public class BrowserLiveReloadAccess {
 
     /**
@@ -41,25 +40,7 @@ public class BrowserLiveReloadAccess {
      * @return a BrowserLiveReload instance or null for production mode
      */
     public BrowserLiveReload getLiveReload(VaadinService service) {
-        if (service.getDeploymentConfiguration().isProductionMode()) {
-            LoggerFactory.getLogger(BrowserLiveReloadAccess.class)
-                    .debug("BrowserLiveReloadAccess::getLiveReload is called in production mode.");
-            return null;
-        }
-        if (!service.getDeploymentConfiguration().isDevModeLiveReloadEnabled()) {
-            LoggerFactory.getLogger(BrowserLiveReloadAccess.class)
-                    .debug("BrowserLiveReloadAccess::getLiveReload is called when live reload is disabled.");
-            return null;
-        }
-        VaadinContext context = service.getContext();
-        BrowserLiveReloadImpl liveReload;
-        synchronized (this) {
-            liveReload = context.getAttribute(BrowserLiveReloadImpl.class);
-            if (liveReload == null) {
-                liveReload = new BrowserLiveReloadImpl();
-                context.setAttribute(BrowserLiveReloadImpl.class, liveReload);
-            }
-        }
-        return liveReload;
+        return BrowserLiveReloadAccessor.getLiveReloadFromService(service)
+                .orElse(null);
     }
 }

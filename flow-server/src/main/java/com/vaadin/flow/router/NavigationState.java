@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -64,7 +64,8 @@ public class NavigationState implements Serializable {
      * @param navigationTarget
      *            navigation target
      */
-    public void setNavigationTarget(Class<? extends Component> navigationTarget) {
+    public void setNavigationTarget(
+            Class<? extends Component> navigationTarget) {
         Objects.requireNonNull(navigationTarget,
                 "navigationTarget cannot be null");
         this.navigationTarget = navigationTarget;
@@ -77,8 +78,7 @@ public class NavigationState implements Serializable {
      *            the route target to set, not null.
      */
     void setRouteTarget(RouteTarget routeTarget) {
-        Objects.requireNonNull(routeTarget,
-                "routeTarget cannot be null");
+        Objects.requireNonNull(routeTarget, "routeTarget cannot be null");
         this.routeTarget = routeTarget;
     }
 
@@ -151,12 +151,13 @@ public class NavigationState implements Serializable {
      * @return the url parameters of this navigation state
      */
     public Optional<List<String>> getUrlParameters() {
-        return Optional.of(HasUrlParameterFormat
-                .getParameterValues(getRouteParameters()));
+        return Optional.of(
+                HasUrlParameterFormat.getParameterValues(getRouteParameters()));
     }
 
     /**
-     * Set the list of strings that correspond to the raw string route parameters.
+     * Set the list of strings that correspond to the raw string route
+     * parameters.
      *
      * @param parameters
      *            the url parameters to set

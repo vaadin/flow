@@ -54,7 +54,6 @@ public class DnDDisabledView extends Div {
         return nativeButton;
     }
 
-
     private Component createDraggableBox(EffectAllowed effectAllowed) {
         String identifier = "test";
 

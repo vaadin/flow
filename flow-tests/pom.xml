@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>6.0-SNAPSHOT</version>
+        <version>9.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-tests</artifactId>
     <name>Flow tests</name>
@@ -276,11 +276,6 @@
                                 <value>${vaadin.useDeprecatedV14Bootstrapping}
                                 </value>
                             </systemProperty>
-                            <systemProperty>
-                                <name>vaadin.allow.appshell.annotations
-                                </name>
-                                <value>true</value>
-                            </systemProperty>
                         </systemProperties>
                     </configuration>
                 </plugin>
@@ -297,21 +292,10 @@
     <modules>
         <module>test-resources</module>
         <module>test-common</module>
+        <module>test-lumo</module>
     </modules>
 
     <profiles>
-        <profile>
-            <id>gen-dev-deps</id>
-            <modules>
-                <module>test-mixed/pom-pnpm-production.xml</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>release</id>
-            <modules>
-                <module>test-mixed/pom-pnpm-production.xml</module>
-            </modules>
-        </profile>
         <profile>
             <id>run-tests</id>
             <activation>
@@ -334,10 +318,7 @@
                 <module>test-scalability</module>
                 <module>test-memory-leaks</module>
                 <module>test-servlet</module>
-                <module>test-application-theme</module>
                 <module>test-themes</module>
-                <module>test-lumo-theme</module>
-                <module>test-material-theme</module>
                 <module>servlet-containers</module>
 
                 <!-- web component embedding -->
@@ -354,11 +335,21 @@
                 <module>test-ccdm/pom-production.xml</module>
                 <module>test-ccdm-flow-navigation</module>
                 <module>test-ccdm-flow-navigation/pom-production.xml</module>
+                <module>test-fusion-csrf</module>
+                <module>test-fusion-csrf-context</module>
 
                 <module>test-root-context</module>
-
+				
+                <module>test-v14-bootstrap</module>
+                <module>test-v14-bootstrap/pom-production.xml</module>
+				
+                <module>test-custom-route-registry</module>
                 <!-- tests are disabled in this module, this reference is for maven version plugin -->
                 <module>test-no-theme</module>
+                <!-- move theme tests to the end, because theme switch live reload-->
+                <!-- test impacts startup test-->
+                <module>test-application-theme</module>
+                <module>test-theme-no-polymer</module>
             </modules>
         </profile>
         <profile>

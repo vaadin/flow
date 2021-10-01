@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -82,7 +82,7 @@ public interface Result<R> extends Serializable {
      * @return the result of invoking the supplier
      */
     static <R> Result<R> of(SerializableSupplier<R> supplier,
-                            SerializableFunction<Exception, String> onError) {
+            SerializableFunction<Exception, String> onError) {
         Objects.requireNonNull(supplier, "supplier cannot be null");
         Objects.requireNonNull(onError, "onError cannot be null");
 
@@ -133,7 +133,7 @@ public interface Result<R> extends Serializable {
      *            the function to call if failure
      */
     void handle(SerializableConsumer<R> ifOk,
-                SerializableConsumer<String> ifError);
+            SerializableConsumer<String> ifError);
 
     /**
      * Applies the {@code consumer} if result is not an error.
@@ -187,5 +187,5 @@ public interface Result<R> extends Serializable {
      */
     <X extends Throwable> R getOrThrow(
             SerializableFunction<String, ? extends X> exceptionProvider)
-                    throws X;
+            throws X;
 }

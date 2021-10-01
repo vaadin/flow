@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 package com.vaadin.flow.router;
 
 import javax.servlet.http.HttpServletResponse;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,6 +30,15 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -46,23 +56,16 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Enter;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Leave;
+import com.vaadin.flow.router.internal.DefaultErrorHandler;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
 
 import static com.vaadin.flow.router.internal.RouteModelTest.parameters;
 import static com.vaadin.flow.router.internal.RouteModelTest.varargs;
@@ -1378,8 +1381,7 @@ public class RouterTest extends RoutingTestBase {
     /**
      * Navigating to this target will reroute from
      * <code>ProcessEventsRotten</code> which is a class on the parent layout
-     * chain. So this class shouldn't even be initialized when navigating to
-     * it.
+     * chain. So this class shouldn't even be initialized when navigating to it.
      */
     @Route(value = "event/twig", layout = ProcessEventsStick.class)
     public static class ProcessEventsTwig extends ProcessEventsBase {
@@ -1411,7 +1413,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Route(value = "security/login", layout = SecurityParent.class)
-    public static class SecurityLogin extends ProcessEventsBase  {
+    public static class SecurityLogin extends ProcessEventsBase {
 
     }
 
@@ -1457,7 +1459,8 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Route(value = ":optional?/:anotherOptional?", layout = ChainLinkWithParameter.class)
-    public static class TargetWithOptionalParameters extends RouteParametersBase {
+    public static class TargetWithOptionalParameters
+            extends RouteParametersBase {
     }
 
     @Route(value = ":targetChainLinkID", layout = ParentWithParameter.class)
@@ -1520,7 +1523,8 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Route("show/:filter?")
-    public static class RedirectRouteParametersView extends RouteParametersBase {
+    public static class RedirectRouteParametersView
+            extends RouteParametersBase {
 
         static boolean doForward = false;
 
@@ -1529,7 +1533,7 @@ public class RouterTest extends RoutingTestBase {
             super.beforeEnter(event);
 
             event.getRouteParameters().get("filter").ifPresent(value -> {
-                
+
                 if (!value.equals("original")) {
                     RouteParametersBase.clear();
 
@@ -1577,7 +1581,8 @@ public class RouterTest extends RoutingTestBase {
 
     @Route("forward/setParameter/back")
     @Tag(Tag.DIV)
-    public static class ForwardSetParameterBackView extends Component implements BeforeEnterObserver {
+    public static class ForwardSetParameterBackView extends Component
+            implements BeforeEnterObserver {
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
@@ -1587,7 +1592,8 @@ public class RouterTest extends RoutingTestBase {
 
     @Route("forward/setParameter")
     @Tag(Tag.DIV)
-    public static class ForwardSetParameterView extends Component implements HasUrlParameter<String>, AfterNavigationObserver {
+    public static class ForwardSetParameterView extends Component
+            implements HasUrlParameter<String>, AfterNavigationObserver {
 
         static boolean afterNavigationInvoked = false;
         static boolean backBeforeEnterInvoked = false;
@@ -1660,10 +1666,10 @@ public class RouterTest extends RoutingTestBase {
         // doesn't throw
     }
 
-    @Test
+    @Test(expected = InvalidLocationException.class)
     public void resolveNavigation_pathContainsDots_pathIsRelative_noException() {
         router.resolveNavigationTarget("/../dsfsdfsdf", Collections.emptyMap());
-        // doesn't throw
+        // Location explicitly disallows ".." segments
     }
 
     @Test
@@ -2282,9 +2288,8 @@ public class RouterTest extends RoutingTestBase {
 
         String exceptionText1 = String.format("Could not navigate to '%s'",
                 locationString);
-        String exceptionText2 = String.format(
-                "Reason: Couldn't find route for '%s'",
-                locationString);
+        String exceptionText2 = String
+                .format("Reason: Couldn't find route for '%s'", locationString);
 
         assertExceptionComponent(RouteNotFoundError.class, exceptionText1,
                 exceptionText2);
@@ -2325,24 +2330,65 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void fail_for_multiple_of_the_same_class()
+    public void fail_for_multiple_classes_extending_the_same_exception_class()
             throws InvalidRouteConfigurationException {
-        setErrorNavigationTargets(ErrorTarget.class, RouteNotFoundError.class);
+        expectedEx.expect(InvalidRouteConfigurationException.class);
+        setErrorNavigationTargets(ErrorTarget.class,
+                CustomNotFoundTarget.class);
+    }
 
-        int result = router.navigate(ui, new Location("exception"),
+    @Route("npe")
+    @Tag(Tag.DIV)
+    public static class NpeNavigationTarget extends Component {
+        public NpeNavigationTarget() {
+            throw new NullPointerException("Null was found");
+        }
+    }
+
+    @Tag(Tag.DIV)
+    @DefaultErrorHandler
+    public static class DefaultNullPointerException extends Component
+            implements HasErrorParameter<NullPointerException> {
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<NullPointerException> parameter) {
+            return HttpServletResponse.SC_UNAUTHORIZED;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class NullPointerExceptionHandler extends Component
+            implements HasErrorParameter<NullPointerException> {
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<NullPointerException> parameter) {
+            return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    @Test // spring #661
+    public void pick_custom_from_multiple_error_targets_when_other_is_default_annotated() {
+        setNavigationTargets(NpeNavigationTarget.class);
+        setErrorNavigationTargets(DefaultNullPointerException.class,
+                NullPointerExceptionHandler.class);
+
+        int result = router.navigate(ui, new Location("npe"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Non existent route should have returned.",
-                HttpServletResponse.SC_NOT_FOUND, result);
+        Assert.assertEquals(
+                "Null pointer should return the server error of the custom implementation.",
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
 
         Assert.assertEquals(
                 "Expected the extending class to be used instead of the super class",
-                ErrorTarget.class, getUIComponent());
+                NullPointerExceptionHandler.class, getUIComponent());
     }
 
     @Test
     public void do_not_accept_same_exception_targets() {
 
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expect(InvalidRouteConfigurationException.class);
         expectedEx.expectMessage(startsWith(
                 "Only one target for an exception should be defined. Found "));
 
@@ -3335,11 +3381,11 @@ public class RouterTest extends RoutingTestBase {
         String exceptionText1 = String.format("Could not navigate to '%s'",
                 locationString);
 
-        String exceptionText2 = String
-                .format("Couldn't find route for '%s'", locationString);
+        String exceptionText2 = String.format("Couldn't find route for '%s'",
+                locationString);
 
-        String optionalTemplate = HasUrlParameterFormat
-                .getTemplate("optional", OptionalParameter.class);
+        String optionalTemplate = HasUrlParameterFormat.getTemplate("optional",
+                OptionalParameter.class);
 
         String exceptionText3 = "<li>" + optionalTemplate
                 + " (supports optional parameter)</li>";
@@ -3365,8 +3411,8 @@ public class RouterTest extends RoutingTestBase {
         String exceptionText2 = String
                 .format("Reason: Couldn't find route for '%s'", locationString);
 
-        String template = HasUrlParameterFormat
-                .getTemplate("optional", WithoutOptionalParameter.class);
+        String template = HasUrlParameterFormat.getTemplate("optional",
+                WithoutOptionalParameter.class);
 
         String exceptionText3 = "<li>" + template
                 + " (requires parameter)</li>";
@@ -3392,8 +3438,7 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("security/document"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        assertEventOrder(expectedInitially, null, expectedInitially,
-                expected);
+        assertEventOrder(expectedInitially, null, expectedInitially, expected);
 
         ProcessEventsBase.clear();
 
@@ -3430,7 +3475,8 @@ public class RouterTest extends RoutingTestBase {
                 .getExtendedClientDetails();
 
         // Used with PreserveOnRefresh.
-        ExtendedClientDetails clientDetails = Mockito.mock(ExtendedClientDetails.class);
+        ExtendedClientDetails clientDetails = Mockito
+                .mock(ExtendedClientDetails.class);
         ui.getInternals().setExtendedClientDetails(clientDetails);
 
         Mockito.when(clientDetails.getWindowName()).thenReturn("mock");
@@ -3471,8 +3517,10 @@ public class RouterTest extends RoutingTestBase {
 
         assertEventOrder(Arrays.asList("ProcessEventsLeaf", "leafChild"),
                 getProcessEventsBranchChainNames("ProcessEventsFlower"),
-                getProcessEventsBranchChainNames(parameter, "ProcessEventsLeaf", "leafChild"),
-                getProcessEventsBranchChainNames("ProcessEventsLeaf", "leafChild"));
+                getProcessEventsBranchChainNames(parameter, "ProcessEventsLeaf",
+                        "leafChild"),
+                getProcessEventsBranchChainNames("ProcessEventsLeaf",
+                        "leafChild"));
     }
 
     @Test // #4595
@@ -3490,7 +3538,8 @@ public class RouterTest extends RoutingTestBase {
         final List<String> expectedOnReroute = getProcessEventsBranchChainNames(
                 "ProcessEventsFlower");
 
-        // This is expected on init and BeforeEnter since the ProcessEventsRotten
+        // This is expected on init and BeforeEnter since the
+        // ProcessEventsRotten
         // parent of ProcessEventsTwig will reroute, so ProcessEventsTwig and
         // ProcessEventsStick won't be created.
         final List<String> expected = Stream
@@ -3531,16 +3580,14 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals(
                 "BeforeEnter events aren't triggered in correct order",
-                getProcessEventsBranchChainNames(parameter,
-                        "needleChild"),
+                getProcessEventsBranchChainNames(parameter, "needleChild"),
                 ProcessEventsBase.beforeEnter);
     }
 
     @Test // #2740 #4213
     public void navigate_incorrectParameter_shouldNotBeResolved() {
         setNavigationTargets(ChainLinkWithParameter.class,
-                TargetWithOptionalParameters.class,
-                TargetWithParameter.class,
+                TargetWithOptionalParameters.class, TargetWithParameter.class,
                 AnotherTargetWithParameter.class,
                 ChainLinkWithParameterAndTarget.class);
 
@@ -3563,7 +3610,7 @@ public class RouterTest extends RoutingTestBase {
         assertRouteParameters("qwe/link/123",
                 parameters("parentID", "qwe", "chainLinkID", "123"));
     }
-    
+
     @Test // #2740 #4213
     public void navigateToTargetWithOptionalParameters_routeParametersAreExtractedCorrectly() {
         setNavigationTargets(TargetWithOptionalParameters.class);
@@ -3652,7 +3699,8 @@ public class RouterTest extends RoutingTestBase {
                 parameters("threadID", "123", "messageID", "456"));
         assertRouteParameters("forum/thread/123/last",
                 parameters("threadID", "123"));
-        assertRouteParameters("forum/thread/123", parameters("threadID", "123"));
+        assertRouteParameters("forum/thread/123",
+                parameters("threadID", "123"));
         assertRouteParameters("forum/thread/123/thread-name",
                 parameters("threadID", "123", "something", "thread-name"));
     }
@@ -3670,7 +3718,8 @@ public class RouterTest extends RoutingTestBase {
                         "package-summary.html")));
 
         // alias=framework, version is empty
-        assertRouteParameters("api/framework/com/vaadin/client/package-summary.html",
+        assertRouteParameters(
+                "api/framework/com/vaadin/client/package-summary.html",
                 parameters("alias", "framework", "path", varargs("com",
                         "vaadin", "client", "package-summary.html")));
 
@@ -3725,7 +3774,8 @@ public class RouterTest extends RoutingTestBase {
                 parameters("urlIdentifier", "url-parameter-mapping",
                         "versionIdentifier", "1.0.0-alpha7", "tabIdentifier",
                         "discussions"));
-        assertRouteParameters("directory/component/url-parameter-mapping/1.0.0-alpha7",
+        assertRouteParameters(
+                "directory/component/url-parameter-mapping/1.0.0-alpha7",
                 parameters("urlIdentifier", "url-parameter-mapping",
                         "versionIdentifier", "1.0.0-alpha7"));
 
@@ -3752,14 +3802,16 @@ public class RouterTest extends RoutingTestBase {
     @Test // #2740 #4213
     public void routes_withAlternateOptionalParameter_failToRegister() {
         assertFailingRouteConfiguration(SearchView.class);
-        assertFailingRouteConfiguration(ShowAllView.class, RedirectRouteParametersView.class);
-        assertFailingRouteConfiguration(RedirectRouteParametersView.class, ShowAllView.class);
+        assertFailingRouteConfiguration(ShowAllView.class,
+                RedirectRouteParametersView.class);
+        assertFailingRouteConfiguration(RedirectRouteParametersView.class,
+                ShowAllView.class);
     }
 
     @Test // #2740 #4213
     public void reroute_withRouteParameters_succeed() {
-        setNavigationTargets(RedirectRouteParametersView.class, RedirectToView.class,
-                RedirectWithRouteParametersView.class);
+        setNavigationTargets(RedirectRouteParametersView.class,
+                RedirectToView.class, RedirectWithRouteParametersView.class);
 
         assertRouteParametersRedirect();
     }
@@ -3768,16 +3820,16 @@ public class RouterTest extends RoutingTestBase {
     public void forward_withRouteParameters_succeed() {
         RedirectRouteParametersView.doForward = true;
 
-        setNavigationTargets(RedirectRouteParametersView.class, RedirectToView.class,
-                RedirectWithRouteParametersView.class);
+        setNavigationTargets(RedirectRouteParametersView.class,
+                RedirectToView.class, RedirectWithRouteParametersView.class);
 
         assertRouteParametersRedirect();
     }
 
     @Test // #2740 #4213
     public void reroute_withWrongRouteParameters_fails() {
-        setNavigationTargets(RedirectRouteParametersView.class, RedirectToView.class,
-                RedirectWithRouteParametersView.class);
+        setNavigationTargets(RedirectRouteParametersView.class,
+                RedirectToView.class, RedirectWithRouteParametersView.class);
 
         assertWrongRouteParametersRedirect();
     }
@@ -3786,8 +3838,8 @@ public class RouterTest extends RoutingTestBase {
     public void forward_withWrongRouteParameters_fails() {
         RedirectRouteParametersView.doForward = true;
 
-        setNavigationTargets(RedirectRouteParametersView.class, RedirectToView.class,
-                RedirectWithRouteParametersView.class);
+        setNavigationTargets(RedirectRouteParametersView.class,
+                RedirectToView.class, RedirectWithRouteParametersView.class);
 
         assertWrongRouteParametersRedirect();
     }
@@ -3816,7 +3868,8 @@ public class RouterTest extends RoutingTestBase {
         assertRouteParameters("show/all", parameters(), RedirectToView.class);
         assertRouteParameters("show/some", parameters("text", "some"),
                 RedirectWithRouteParametersView.class);
-        assertRouteParameters("show", parameters(), RedirectRouteParametersView.class);
+        assertRouteParameters("show", parameters(),
+                RedirectRouteParametersView.class);
         assertRouteParameters("show/original", parameters("filter", "original"),
                 RedirectRouteParametersView.class);
     }
@@ -3842,7 +3895,7 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("Incorrect parameters", parameters,
                 RouteParametersBase.parameters);
-        
+
         if (target != null) {
             Assert.assertEquals("Incorrect target", target,
                     RouteParametersBase.target);

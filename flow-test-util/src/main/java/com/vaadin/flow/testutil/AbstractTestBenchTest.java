@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,9 +35,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.remote.DesiredCapabilities;
-import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.testbench.TestBenchTestCase;
 import com.vaadin.testbench.annotations.BrowserConfiguration;
 import com.vaadin.testbench.annotations.BrowserFactory;
@@ -57,44 +55,6 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
 
     public static abstract class ClientChecker {
         private static Boolean hasClientRouter;
-
-        /**
-         * Log an error for a known issue when in client-side.
-         *
-         * @param test
-         * @param issueId
-         * @return true when client-side route
-         */
-        public static boolean hasClientIssue(TestBenchTestCase test,
-                String issueId) {
-            assert issueId != null && !issueId.isEmpty();
-            if (isClientRouter(test)) {
-                String msg = String.format(FrontendUtils.RED, "\n >>> "
-                        + test.getClass().getSimpleName()
-                        + " has ignored tests for client-side mode, please fix it. issue: https://github.com/vaadin/flow/issues/"
-                        + issueId);
-                LoggerFactory.getLogger(test.getClass()).error(msg);
-                return true;
-            }
-            return false;
-        }
-
-        /**
-         * Log an error for a non-investigated issue when in client-side.
-         *
-         * @param test
-         * @return
-         */
-        public static boolean hasClientUnknownIssue(TestBenchTestCase test) {
-            if (isClientRouter(test)) {
-                String msg = String.format(FrontendUtils.RED, "\n >>> "
-                        + test.getClass().getSimpleName()
-                        + " has ignored tests for client-side mode, please investigate and fix them");
-                LoggerFactory.getLogger(test.getClass()).error(msg);
-                return true;
-            }
-            return false;
-        }
 
         /**
          * Returns true when using clientSide routing
@@ -205,14 +165,6 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         url = url.replace("/view/", builder.toString());
         getDriver().get(url);
         waitForDevServer();
-    }
-
-    protected final boolean hasClientIssue(String issueId) {
-        return ClientChecker.hasClientIssue(this, issueId);
-    }
-
-    protected final boolean hasClientUnknownIssue() {
-        return ClientChecker.hasClientUnknownIssue(this);
     }
 
     /**

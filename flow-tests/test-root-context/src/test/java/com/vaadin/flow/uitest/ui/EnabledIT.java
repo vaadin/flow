@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,7 +35,8 @@ public class EnabledIT extends ChromeBrowserTest {
         // check that disabled update property button is present.
         Assert.assertTrue(isElementPresent(By.id("updateProperty")));
         // Validate that button has the default disabled attribute
-        Assert.assertTrue(findElement(By.id("updateProperty")).getAttribute("disabled") != null);
+        Assert.assertTrue(findElement(By.id("updateProperty"))
+                .getAttribute("disabled") != null);
 
         WebElement main = findElement(By.id("main"));
         WebElement div = main.findElement(By.tagName("div"));

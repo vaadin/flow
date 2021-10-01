@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -72,6 +72,45 @@ import com.vaadin.flow.dom.Element;
  * for the injected element from the server side though. E.g. you may add a
  * child or set attribute/property value. Such children will be available in the
  * element's hierarchy in the same way as for a regular element.
+ * <p>
+ * An attribute/property value set using server side API methods overrides the
+ * values used in the template. If the attribute/property value is not
+ * explicitly set on the server side then the template value is used. In this
+ * example:
+ * 
+ * <pre>
+ * <code>
+ * &#64;Tag("my-layout")
+ * public class Layout extends LitTemplate {
+ *
+ *      &#64;Id("container")
+ *      private MyComponent container;
+ * }
+ * 
+ * &#64;Tag("my-component")
+ * public class MyComponent extends LitTemplate {
+ *
+ *      public MyComponent(){
+ *          getElement().setProperty("name","Joe");
+ *      }
+ * }
+ * 
+ * </code>
+ * </pre>
+ * 
+ * the {@code container} field has {@code "name"} property value {@code "Joe"}
+ * (even though it has another value declared in the template) and it has
+ * {@code "version"} value {@code "1.0"} with the following template:
+ *
+ * <pre>
+ * <code>
+ *    render(){
+ *     return html`
+ *      &lt;my-component id='container' name='Doe' version='1.0' &gt;&lt;/my-component&gt;
+ *     `;
+ * </code>
+ * </pre>
+ * 
  *
  * @author Vaadin Ltd
  * @since

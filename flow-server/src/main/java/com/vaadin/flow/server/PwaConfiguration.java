@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,6 +36,7 @@ public class PwaConfiguration implements Serializable {
     public static final String DEFAULT_BACKGROUND_COLOR = "#f2f2f2";
     public static final String DEFAULT_DISPLAY = "standalone";
     public static final String DEFAULT_OFFLINE_PATH = "offline.html";
+    public static final String DEFAULT_START_URL = ".";
 
     private final String appName;
     private final String shortName;
@@ -55,44 +56,121 @@ public class PwaConfiguration implements Serializable {
      * Default constructor, uses default values.
      */
     public PwaConfiguration() {
+        this(false);
+    }
+
+    /**
+     * Creates the configuration using default PWA parameters.
+     *
+     * @param useV14Bootstrap
+     *            true iff using legacy bootstrap mode
+     */
+    public PwaConfiguration(boolean useV14Bootstrap) {
         this(false, DEFAULT_NAME, "Flow PWA", "", DEFAULT_BACKGROUND_COLOR,
                 DEFAULT_THEME_COLOR, DEFAULT_ICON, DEFAULT_PATH,
-                DEFAULT_OFFLINE_PATH, DEFAULT_DISPLAY, "", new String[] {});
+                DEFAULT_OFFLINE_PATH, DEFAULT_DISPLAY, DEFAULT_START_URL,
+                new String[] {}, useV14Bootstrap);
     }
 
     /**
      * Constructs the configuration using the {@link PWA} annotation.
      *
-     * @param pwa the annotation to use for configuration
+     * @param pwa
+     *            the annotation to use for configuration
      */
     public PwaConfiguration(PWA pwa) {
+        this(pwa, false);
+    }
+
+    /**
+     * Constructs the configuration using the {@link PWA} annotation.
+     *
+     * @param pwa
+     *            the annotation to use for configuration
+     * @param useV14Bootstrap
+     *            true iff using legacy bootstrap mode
+     */
+    public PwaConfiguration(PWA pwa, boolean useV14Bootstrap) {
         this(true, pwa.name(), pwa.shortName(), pwa.description(),
                 pwa.backgroundColor(), pwa.themeColor(), pwa.iconPath(),
                 pwa.manifestPath(), pwa.offlinePath(), pwa.display(),
-                pwa.startPath(), pwa.offlineResources());
+                pwa.startPath(), pwa.offlineResources(), useV14Bootstrap);
     }
 
     /**
      * Constructs a configuration from individual values.
      *
-     * @param enabled is PWA enabled
-     * @param name the application name
-     * @param shortName the application short name
-     * @param description the description of the application
-     * @param backgroundColor the background color
-     * @param themeColor the theme color
-     * @param iconPath the icon file path
-     * @param manifestPath the `manifest.webmanifest` file path
-     * @param offlinePath the static offline HTML file path
-     * @param display the display mode
-     * @param startPath the start path
-     * @param offlineResources the list of files to add for pre-caching
+     * @param enabled
+     *            is PWA enabled
+     * @param name
+     *            the application name
+     * @param shortName
+     *            the application short name
+     * @param description
+     *            the description of the application
+     * @param backgroundColor
+     *            the background color
+     * @param themeColor
+     *            the theme color
+     * @param iconPath
+     *            the icon file path
+     * @param manifestPath
+     *            the `manifest.webmanifest` file path
+     * @param offlinePath
+     *            the static offline HTML file path
+     * @param display
+     *            the display mode
+     * @param startPath
+     *            the start path
+     * @param offlineResources
+     *            the list of files to add for pre-caching
      */
     @SuppressWarnings("squid:S00107")
     public PwaConfiguration(boolean enabled, String name, String shortName,
             String description, String backgroundColor, String themeColor,
             String iconPath, String manifestPath, String offlinePath,
             String display, String startPath, String[] offlineResources) {
+        this(enabled, name, shortName, description, backgroundColor, themeColor,
+                iconPath, manifestPath, offlinePath, display, startPath,
+                offlineResources, false);
+    }
+
+    /**
+     * Constructs a configuration from individual values.
+     *
+     * @param enabled
+     *            is PWA enabled
+     * @param name
+     *            the application name
+     * @param shortName
+     *            the application short name
+     * @param description
+     *            the description of the application
+     * @param backgroundColor
+     *            the background color
+     * @param themeColor
+     *            the theme color
+     * @param iconPath
+     *            the icon file path
+     * @param manifestPath
+     *            the `manifest.webmanifest` file path
+     * @param offlinePath
+     *            the static offline HTML file path
+     * @param display
+     *            the display mode
+     * @param startPath
+     *            the start path
+     * @param offlineResources
+     *            the list of files to add for pre-caching
+     * @param useV14Bootstrap
+     *            true iff using legacy bootstrap mode
+     */
+    @SuppressWarnings("squid:S00107")
+    public PwaConfiguration(boolean enabled, String name, String shortName,
+            String description, String backgroundColor, String themeColor,
+            String iconPath, String manifestPath, String offlinePath,
+            String display, String startPath, String[] offlineResources,
+            boolean useV14Bootstrap) {
         this.appName = name;
         this.shortName = shortName.substring(0,
                 Math.min(shortName.length(), 12));
@@ -101,7 +179,9 @@ public class PwaConfiguration implements Serializable {
         this.themeColor = themeColor;
         this.iconPath = iconPath;
         this.manifestPath = manifestPath;
-        this.offlinePath = offlinePath;
+        this.offlinePath = offlinePath.isEmpty() && useV14Bootstrap
+                ? DEFAULT_OFFLINE_PATH
+                : offlinePath;
         this.display = display;
         this.startPath = startPath;
         this.enabled = enabled;
@@ -279,8 +359,8 @@ public class PwaConfiguration implements Serializable {
     /**
      * Is static offline HTML used for offline mode.
      *
-     * Disabled by default, meaning that application shell (`index.html`)
-     * and client-side views are served offline.
+     * Disabled by default, meaning that application shell (`index.html`) and
+     * client-side views are served offline.
      *
      * Set {@link PWA#offlinePath()} value in PWA annotation to enable.
      *

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,32 +17,36 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.URLDecoder;
+import java.util.Optional;
 import java.util.function.Function;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.router.InvalidLocationException;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.LocationUtil;
+import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
-import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 
 /**
@@ -54,6 +58,8 @@ import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_RO
  * bootstrap data. Bootstraping is the responsability of the `@vaadin/flow`
  * client that is able to ask the server side to create the vaadin session and
  * do the boostrapping lazily.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  */
 public class JavaScriptBootstrapHandler extends BootstrapHandler {
@@ -61,13 +67,34 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     /**
      * Custom BootstrapContext for {@link JavaScriptBootstrapHandler}.
      */
-    private static class JavaScriptBootstrapContext extends BootstrapContext {
-        private JavaScriptBootstrapContext(VaadinRequest request,
+    public static class JavaScriptBootstrapContext extends BootstrapContext {
+
+        /**
+         * Creates a new context instance using the given parameters.
+         *
+         * @param request
+         *            the request object
+         * @param response
+         *            the response object
+         * @param ui
+         *            the UI object
+         * @param callback
+         *            a callback that is invoked to resolve the context root
+         *            from the request
+         */
+        public JavaScriptBootstrapContext(VaadinRequest request,
                 VaadinResponse response, UI ui,
                 Function<VaadinRequest, String> callback) {
             super(request, response, ui.getInternals().getSession(), ui,
-                    callback);
+                    callback, JavaScriptBootstrapContext::initRoute);
         }
+
+        private static Location initRoute(VaadinRequest request) {
+            String pathAndParams = request.getParameter(
+                    ApplicationConstants.REQUEST_LOCATION_PARAMETER);
+            return new Location(pathAndParams);
+        }
+
     }
 
     /**
@@ -79,7 +106,13 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return HandlerHelper.isRequestType(request, RequestType.INIT);
+        return HandlerHelper.isRequestType(request, RequestType.INIT)
+                && isServletRootRequest(request);
+    }
+
+    private boolean isServletRootRequest(VaadinRequest request) {
+        String pathInfo = request.getPathInfo();
+        return pathInfo == null || "".equals(pathInfo) || "/".equals(pathInfo);
     }
 
     protected String getRequestUrl(VaadinRequest request) {
@@ -116,23 +149,12 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     }
 
     @Override
-    protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
-        String route = request
-                .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER);
-        if (route != null) {
-            try {
-                route = URLDecoder.decode(route, "UTF-8").replaceFirst("^/+",
-                        "");
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalArgumentException(e);
-            }
-            Location location = new Location(route);
-
+    protected void initializeUIWithRouter(BootstrapContext context, UI ui) {
+        if (context.getRequest().getParameter("serverSideRouting") != null) {
             // App is using classic server-routing, set a session attribute
             // to know that in future navigation calls
             ui.getSession().setAttribute(SERVER_ROUTING, Boolean.TRUE);
-
-            ui.getInternals().getRouter().initializeUI(ui, location);
+            ui.getInternals().getRouter().initializeUI(ui, context.getRoute());
         }
     }
 
@@ -146,6 +168,22 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
+        try {
+            // #9443 Use error code 400 for bad location and don't create UI
+            // Normally caught by IndexHtmlRequestHandler, but checking here too
+            // for handcrafted requests
+            String pathAndParams = request.getParameter(
+                    ApplicationConstants.REQUEST_LOCATION_PARAMETER);
+            if (pathAndParams == null) {
+                throw new InvalidLocationException(
+                        "Location parameter missing from bootstrap request to server.");
+            }
+            LocationUtil.parsePathToSegments(pathAndParams);
+        } catch (InvalidLocationException invalidLocationException) {
+            response.sendError(400, "Invalid location: "
+                    + invalidLocationException.getMessage());
+            return true;
+        }
 
         HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
                 response::setDateHeader);
@@ -181,11 +219,12 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         return stats;
     }
 
-    private JsonValue getErrors() {
+    private JsonValue getErrors(VaadinService service) {
         JsonObject errors = Json.createObject();
-        DevModeHandler devMode = DevModeHandler.getDevModeHandler();
-        if (devMode != null) {
-            String errorMsg = devMode.getFailedOutput();
+        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
+                .getDevModeHandler(service);
+        if (devModeHandler.isPresent()) {
+            String errorMsg = devModeHandler.get().getFailedOutput();
             if (errorMsg != null) {
                 errors.put("webpack-dev-server", errorMsg);
             }
@@ -237,7 +276,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         if (!session.getConfiguration().isProductionMode()) {
             initial.put("stats", getStats());
         }
-        initial.put("errors", getErrors());
+        initial.put("errors", getErrors(request.getService()));
 
         return initial;
     }

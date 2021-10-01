@@ -1,6 +1,7 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.ServletContext;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -21,7 +22,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -41,9 +41,13 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteBaseData;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 
@@ -60,6 +64,14 @@ public class SessionRouteRegistryTest {
 
         vaadinService = Mockito.mock(MockService.class);
         Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        ApplicationConfiguration applicationConfiguration = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(vaadinService.getContext()).thenReturn(context);
+        Mockito.when(context.getAttribute(Mockito.any(), Mockito.any()))
+                .thenReturn(applicationConfiguration);
+        Mockito.when(applicationConfiguration.isProductionMode())
+                .thenReturn(true);
 
         VaadinService.setCurrent(vaadinService);
 
@@ -988,6 +1000,36 @@ public class SessionRouteRegistryTest {
 
     }
 
+    @Test
+    public void getTargetUrl_annotatedRoute_rootIsAlias_mainRouteIsNotRoot_mainRouteIsReturned() {
+        SessionRouteRegistry registry = getRegistry(session);
+        RouteConfiguration configuration = RouteConfiguration
+                .forRegistry(registry);
+
+        configuration.setAnnotatedRoute(RouteWithRootAlias.class);
+
+        Optional<String> url = registry.getTargetUrl(RouteWithRootAlias.class,
+                RouteParameters.empty());
+
+        Assert.assertTrue(url.isPresent());
+        Assert.assertEquals("foo", url.get());
+    }
+
+    @Test
+    public void getTargetUrl_annotatedRoute_rootIsAlias_mainRouteIsParamerterized_routeAliasIsReturned() {
+        SessionRouteRegistry registry = getRegistry(session);
+        RouteConfiguration configuration = RouteConfiguration
+                .forRegistry(registry);
+
+        configuration.setAnnotatedRoute(ParameterizedRouteWithRootAlias.class);
+
+        Optional<String> url = registry.getTargetUrl(
+                ParameterizedRouteWithRootAlias.class, RouteParameters.empty());
+
+        Assert.assertTrue(url.isPresent());
+        Assert.assertEquals("", url.get());
+    }
+
     private <T> T serializeAndDeserialize(T instance) throws Throwable {
         ByteArrayOutputStream bs = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(bs);
@@ -1051,6 +1093,20 @@ public class SessionRouteRegistryTest {
                 ErrorParameter<NotFoundException> parameter) {
             return 404;
         }
+    }
+
+    @Tag("div")
+    @Route("foo")
+    @RouteAlias("")
+    private static class RouteWithRootAlias extends Component {
+
+    }
+
+    @Tag("div")
+    @Route(":foo")
+    @RouteAlias("")
+    private static class ParameterizedRouteWithRootAlias extends Component {
+
     }
 
     /**

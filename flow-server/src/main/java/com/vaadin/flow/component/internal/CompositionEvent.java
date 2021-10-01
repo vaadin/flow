@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -47,8 +47,8 @@ public abstract class CompositionEvent extends ComponentEvent<Component> {
      *            language code for the composition event, if available;
      *            otherwise, the empty string
      */
-    public CompositionEvent(Component source, boolean fromClient,
-            String data, String locale) {
+    public CompositionEvent(Component source, boolean fromClient, String data,
+            String locale) {
         super(source, fromClient);
         this.data = data;
         this.locale = locale == null ? null : Locale.forLanguageTag(locale);

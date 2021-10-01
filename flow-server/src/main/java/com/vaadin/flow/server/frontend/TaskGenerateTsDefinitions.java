@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,15 +15,18 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.File;
 import java.io.IOException;
+
+import org.apache.commons.io.IOUtils;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Generate <code>types.d.ts</code> if it is missing in project folder and
  * <code>tsconfig.json</code> exists in project folder.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 3.0
  */
@@ -57,6 +60,7 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
     protected boolean shouldGenerate() {
         File tsDefinitionsFile = new File(npmFolder, TS_DEFINITIONS);
         return !tsDefinitionsFile.exists()
-                && new File(npmFolder, TaskGenerateTsConfig.TSCONFIG_JSON).exists();
+                && new File(npmFolder, TaskGenerateTsConfig.TSCONFIG_JSON)
+                        .exists();
     }
 }

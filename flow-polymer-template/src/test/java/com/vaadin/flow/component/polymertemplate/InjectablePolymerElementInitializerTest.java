@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,7 +23,6 @@ import org.junit.Test;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.template.internal.AbstractInjectableElementInitializer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 
@@ -46,6 +45,13 @@ public class InjectablePolymerElementInitializerTest {
         initializer.accept(Collections.singletonMap("theme", "foo"));
 
         Assert.assertEquals("foo", element.getAttribute("theme"));
+    }
+
+    @Test
+    public void initializeElement_setHref_hrefIsSetAsAttribute() {
+        initializer.accept(Collections.singletonMap("href", "foo"));
+
+        Assert.assertEquals("foo", element.getAttribute("href"));
     }
 
     @Test
@@ -120,14 +126,8 @@ public class InjectablePolymerElementInitializerTest {
                 Collections.singletonMap("disabled", Boolean.TRUE.toString()));
 
         Assert.assertTrue("Element should stay enabled", element.isEnabled());
-        Assert.assertTrue("Disabled should show as a property", element.hasProperty("disabled"));
-    }
-
-    public void initializeElement_setText_textIsSet() {
-        initializer.accept(Collections.singletonMap(
-                AbstractInjectableElementInitializer.TEXT_DATA, "foo bar"));
-
-        Assert.assertEquals("foo bar", element.getText());
+        Assert.assertTrue("Disabled should show as a property",
+                element.hasProperty("disabled"));
     }
 
     @Tag(Tag.DIV)

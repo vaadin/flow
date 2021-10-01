@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -134,7 +134,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         int statusCode = xhr.getStatus();
         Console.warn("Heartbeat request returned " + statusCode);
 
-        if (statusCode == Response.SC_GONE) {
+        if (statusCode == Response.SC_FORBIDDEN) {
             // Session expired
             registry.getSystemErrorHandler().handleSessionExpiredError(null);
             stopApplication();
@@ -178,8 +178,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
             return;
         }
 
-        ConnectionIndicator.setState(
-                ConnectionIndicator.RECONNECTING);
+        ConnectionIndicator.setState(ConnectionIndicator.RECONNECTING);
 
         if (!isReconnecting()) {
             // First problem encounter
@@ -317,8 +316,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
                     getConfiguration().getDialogText());
         }
         if (getConfiguration().getDialogTextGaveUp() != null) {
-        ConnectionIndicator.setProperty("offlineText",
-                getConfiguration().getDialogTextGaveUp());
+            ConnectionIndicator.setProperty("offlineText",
+                    getConfiguration().getDialogTextGaveUp());
         }
     }
 
@@ -540,8 +539,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     private void registerConnectionStateEventHandlers() {
         Browser.getWindow().addEventListener("offline", event ->
-                // Browser goes offline: CONNECTION_LOST and stop heartbeats
-                giveUp());
+        // Browser goes offline: CONNECTION_LOST and stop heartbeats
+        giveUp());
 
         Browser.getWindow().addEventListener("online", event -> {
             // Browser goes back online: RECONNECTING while verifying

@@ -18,6 +18,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.FrontendVersion;
+
 public class NodeInstallerTest {
 
     @Rule
@@ -35,14 +38,17 @@ public class NodeInstallerTest {
             throws IOException {
         Platform platform = Platform.guess();
         String nodeExec = platform.isWindows() ? "node.exe" : "node";
-        String prefix = "node-v12.18.3-" + platform.getNodeClassifier();
+        String prefix = String.format("node-%s-%s",
+                FrontendTools.DEFAULT_NODE_VERSION,
+                platform.getNodeClassifier(new FrontendVersion(
+                        FrontendTools.DEFAULT_NODE_VERSION)));
 
         File targetDir = new File(baseDir + "/installation");
 
         Assert.assertFalse(
                 "Clean test should not contain a installation folder",
                 targetDir.exists());
-        File downloadDir = tmpDir.newFolder("v12.18.3");
+        File downloadDir = tmpDir.newFolder(FrontendTools.DEFAULT_NODE_VERSION);
         File archiveFile = new File(downloadDir,
                 prefix + "." + platform.getArchiveExtension());
         archiveFile.createNewFile();
@@ -62,17 +68,15 @@ public class NodeInstallerTest {
                 zipOutputStream.closeEntry();
             }
         } else {
-            try (OutputStream fo = Files.newOutputStream(
-                    tempArchive); OutputStream gzo = new GzipCompressorOutputStream(
-                    fo); ArchiveOutputStream o = new TarArchiveOutputStream(
-                    gzo)) {
+            try (OutputStream fo = Files.newOutputStream(tempArchive);
+                    OutputStream gzo = new GzipCompressorOutputStream(fo);
+                    ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
                 o.putArchiveEntry(o.createArchiveEntry(
                         new File(prefix + "/bin/" + nodeExec),
                         prefix + "/bin/" + nodeExec));
                 o.closeArchiveEntry();
-                o.putArchiveEntry(
-                        o.createArchiveEntry(new File(prefix + "/bin/npm"),
-                                prefix + "/bin/npm"));
+                o.putArchiveEntry(o.createArchiveEntry(
+                        new File(prefix + "/bin/npm"), prefix + "/bin/npm"));
                 o.closeArchiveEntry();
                 o.putArchiveEntry(o.createArchiveEntry(
                         new File(prefix + "/lib/node_modules/npm/bin/npm"),
@@ -86,8 +90,10 @@ public class NodeInstallerTest {
         }
 
         NodeInstaller nodeInstaller = new NodeInstaller(targetDir,
-                Collections.emptyList()).setNodeVersion("v12.18.3")
-                .setNodeDownloadRoot(new File(baseDir).toPath().toUri());
+                Collections.emptyList())
+                        .setNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                        .setNodeDownloadRoot(
+                                new File(baseDir).toPath().toUri());
 
         try {
             nodeInstaller.install();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,7 +36,7 @@ public class EventOptions implements Serializable {
      *
      * @see #EventOptions(boolean, boolean, boolean) for all properties
      * @see com.vaadin.flow.component.WebComponentExporter for exporting web
-     *         components
+     *      components
      */
     public EventOptions() {
     }
@@ -46,11 +46,11 @@ public class EventOptions implements Serializable {
      * by an exported web component.
      *
      * @param bubbles
-     *         A Boolean indicating whether the event bubbles up through the DOM
-     *         or not.
+     *            A Boolean indicating whether the event bubbles up through the
+     *            DOM or not.
      * @see #EventOptions(boolean, boolean, boolean) for all properties
      * @see com.vaadin.flow.component.WebComponentExporter for exporting web
-     *         components
+     *      components
      */
     public EventOptions(boolean bubbles) {
         this.bubbles = bubbles;
@@ -61,17 +61,16 @@ public class EventOptions implements Serializable {
      * by an exported web component.
      *
      * @param bubbles
-     *         indicates whether the event bubbles up through the DOM or not.
+     *            indicates whether the event bubbles up through the DOM or not.
      * @param cancelable
-     *         indicates whether the event is cancelable.
+     *            indicates whether the event is cancelable.
      * @param composed
-     *         indicates whether or not the event can bubble across the boundary
-     *         between the shadow DOM and the regular DOM.
+     *            indicates whether or not the event can bubble across the
+     *            boundary between the shadow DOM and the regular DOM.
      * @see com.vaadin.flow.component.WebComponentExporter for exporting web
-     *         components
+     *      components
      */
-    public EventOptions(boolean bubbles, boolean cancelable,
-                        boolean composed) {
+    public EventOptions(boolean bubbles, boolean cancelable, boolean composed) {
         this.bubbles = bubbles;
         this.cancelable = cancelable;
         this.composed = composed;

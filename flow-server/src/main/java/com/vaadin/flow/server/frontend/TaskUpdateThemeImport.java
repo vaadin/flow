@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,11 +15,10 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,38 +29,50 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_D_TS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
+
 /**
- * Task for generating the theme-generated.js file for importing application
- * theme.
+ * Task generating the theme definition file 'theme.js' for importing
+ * application theme into the generated frontend directory.
+ * 
+ * Default directory is ' ./frontend/generated'
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since
  */
 public class TaskUpdateThemeImport implements FallibleCommand {
-    
+
     public static final String APPLICATION_META_INF_RESOURCES = "src/main/resources/META-INF/resources";
     public static final String APPLICATION_STATIC_RESOURCES = "src/main/resources/static";
+    private static final String EXPORT_MODULES_DEF = "export declare const applyTheme: (target: Node) => void;";
 
     private final File themeImportFile;
+    private final File themeImportFileDefinition;
     private final ThemeDefinition theme;
     private final File frontendDirectory;
     private final File npmFolder;
 
     TaskUpdateThemeImport(File npmFolder, ThemeDefinition theme,
-            File frontendDirectory) {
-        File nodeModules = new File(npmFolder, FrontendUtils.NODE_MODULES);
-        File flowFrontend = new File(nodeModules,
-                FrontendUtils.FLOW_NPM_PACKAGE_NAME);
-        this.themeImportFile = new File(
-                new File(flowFrontend, APPLICATION_THEME_ROOT),
-                "theme-generated.js");
+            File frontendDirectory, File frontendGeneratedFolder) {
         this.theme = theme;
         this.frontendDirectory = frontendDirectory;
         this.npmFolder = npmFolder;
+        themeImportFile = new File(frontendGeneratedFolder, THEME_IMPORTS_NAME);
+        themeImportFileDefinition = new File(frontendGeneratedFolder,
+                THEME_IMPORTS_D_TS_NAME);
     }
 
     @Override
     public void execute() throws ExecutionFailedException {
         if (theme == null || theme.getName().isEmpty()) {
+            if (themeImportFile.exists()) {
+                themeImportFile.delete();
+                themeImportFileDefinition.delete();
+            }
             return;
         }
 
@@ -69,19 +80,21 @@ public class TaskUpdateThemeImport implements FallibleCommand {
 
         if (!themeImportFile.getParentFile().mkdirs()) {
             LoggerFactory.getLogger(getClass()).debug(
-                "Didn't create folders as they probably already exist. "
-                    + "If there is a problem check access rights for folder {}",
-                themeImportFile.getParentFile().getAbsolutePath());
+                    "Didn't create folders as they probably already exist. "
+                            + "If there is a problem check access rights for folder {}",
+                    themeImportFile.getParentFile().getAbsolutePath());
         }
 
         try {
             FileUtils.write(themeImportFile, String.format(
-                "import {applyTheme as _applyTheme} from 'themes/%s/%s.generated.js';%n"
-                    + "export const applyTheme = _applyTheme;%n",
-                theme.getName(), theme.getName()), StandardCharsets.UTF_8);
+                    "import {applyTheme as _applyTheme} from './theme-%s.generated.js';%n"
+                            + "export const applyTheme = _applyTheme;%n",
+                    theme.getName()), StandardCharsets.UTF_8);
+            FileUtils.write(themeImportFileDefinition, EXPORT_MODULES_DEF,
+                    StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new ExecutionFailedException(
-                "Unable to write theme import file", e);
+                    "Unable to write theme import file", e);
         }
     }
 
@@ -94,8 +107,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         List<String> appThemePossiblePaths = getAppThemePossiblePaths(
                 themePath);
         List<File> existingAppThemeDirectories = appThemePossiblePaths.stream()
-                .map(path -> new File(npmFolder, path))
-                .filter(File::exists)
+                .map(path -> new File(npmFolder, path)).filter(File::exists)
                 .collect(Collectors.toList());
 
         if (existingAppThemeDirectories.isEmpty()) {
@@ -107,14 +119,16 @@ public class TaskUpdateThemeImport implements FallibleCommand {
             throw new ExecutionFailedException(
                     String.format(errorMessage, themeName,
                             new File(frontendDirectory, APPLICATION_THEME_ROOT)
-                                    .getPath(), themeName));
+                                    .getPath(),
+                            themeName));
         }
         if (existingAppThemeDirectories.size() >= 2) {
 
-            boolean themeFoundInJar = existingAppThemeDirectories
-                    .stream().map(File::getPath)
-                    .anyMatch(path -> path
-                            .contains(FrontendUtils.FLOW_NPM_PACKAGE_NAME));
+            boolean themeFoundInJar = existingAppThemeDirectories.stream()
+                    .map(File::getPath)
+                    .anyMatch(path -> path.contains(
+                            Paths.get(FrontendUtils.FLOW_NPM_PACKAGE_NAME)
+                                    .toString()));
 
             if (themeFoundInJar) {
                 String errorMessage = "Theme '%s' should not exist inside a "
@@ -140,8 +154,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
     }
 
     private List<String> getAppThemePossiblePaths(String themePath) {
-        String frontendTheme = String.join("/",
-                npmFolder.toPath()
+        String frontendTheme = String.join("/", npmFolder.toPath()
                 .relativize(frontendDirectory.toPath()).toString(), themePath);
 
         String themePathInMetaInfResources = String.join("/",

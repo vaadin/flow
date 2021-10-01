@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>6.0-SNAPSHOT</version>
+        <version>9.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-client</artifactId>
     <name>Flow Client</name>
@@ -17,6 +17,8 @@
         <gwt.module.output>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/</gwt.module.output>
         <gwt.module.style>OBF</gwt.module.style>
         <gwt.sdm.bindAddress>0.0.0.0</gwt.sdm.bindAddress>
+        <org.eclipse.equinox.common.version>3.14.100</org.eclipse.equinox.common.version>
+        <org.eclipse.core.runtime.version>3.20.100</org.eclipse.core.runtime.version>
     </properties>
 
     <dependencyManagement>
@@ -27,6 +29,18 @@
                 <version>${gwt.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.platform</groupId>
+                <artifactId>org.eclipse.equinox.common</artifactId>
+                <version>${org.eclipse.equinox.common.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.platform</groupId>
+                <artifactId>org.eclipse.core.runtime</artifactId>
+                <version>${org.eclipse.core.runtime.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -63,6 +77,19 @@
             <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.core.resources</artifactId>
             <version>3.12.0</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Force Java8 compatible package -->
+        <dependency>
+            <groupId>org.eclipse.platform</groupId>
+            <artifactId>org.eclipse.core.jobs</artifactId>
+            <version>3.11.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.platform</groupId>
+            <artifactId>org.eclipse.core.contenttype</artifactId>
+            <version>3.7.1000</version>
             <scope>test</scope>
         </dependency>
 
@@ -113,7 +140,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.0.2</version>
+                <version>3.2.0</version>
                 <configuration>
                     <!-- Exclude all source files and classes so only the
                         compile result ends up in the JAR -->
@@ -199,28 +226,11 @@
                 </configuration>
             </plugin>
 
-            <plugin>
-                <groupId>com.github.ryanholdren</groupId>
-                <artifactId>resourcecompressor</artifactId>
-                <version>2017-06-24</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compress</goal>
-                        </goals>
-                        <phase>prepare-package</phase>
-                        <configuration>
-                            <directory>${gwt.module.output}/client/</directory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- Include separate source dir for GWT tests -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>1.10</version>
+                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <id>add-gwt-test-sources-as-test-sources</id>
@@ -240,7 +250,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.6.0</version>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>npm-install</id>

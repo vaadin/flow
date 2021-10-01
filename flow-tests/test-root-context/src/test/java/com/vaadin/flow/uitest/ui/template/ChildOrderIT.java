@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -163,28 +163,29 @@ public class ChildOrderIT extends ChromeBrowserTest {
         assertNodeOrder(container, "Client text");
 
         clickAndWaitForContainerToChange(container, "prependChildToContainer2");
-        assertNodeOrder(container, "Server text 1Client text");
+        assertNodeOrder(container, "Client text", "Server text 1");
 
         clickAndWaitForContainerToChange(container, "prependChildToContainer2");
-        assertNodeOrder(container, "Server text 2", "Server text 1Client text");
+        assertNodeOrder(container, "Client text", "Server text 2",
+                "Server text 1");
 
         clickAndWaitForContainerToChange(container,
                 "addClientSideChildToContainer2");
-        assertNodeOrder(container, "Server text 2", "Server text 1Client text",
-                "Client text");
-
-        clickAndWaitForContainerToChange(container, "prependChildToContainer2");
-        assertNodeOrder(container, "Server text 3", "Server text 2",
-                "Server text 1Client text", "Client text");
-
-        clickAndWaitForContainerToChange(container,
-                "removeChildFromContainer2");
-        assertNodeOrder(container, "Server text 3", "Server text 2",
+        assertNodeOrder(container, "Client text", "Server text 2",
                 "Server text 1", "Client text");
 
+        clickAndWaitForContainerToChange(container, "prependChildToContainer2");
+        assertNodeOrder(container, "Client text", "Server text 3",
+                "Server text 2", "Server text 1", "Client text");
+
         clickAndWaitForContainerToChange(container,
                 "removeChildFromContainer2");
-        assertNodeOrder(container, "Server text 3", "Server text 2",
+        assertNodeOrder(container, "Client text", "Server text 3",
+                "Server text 2", "Client text");
+
+        clickAndWaitForContainerToChange(container,
+                "removeChildFromContainer2");
+        assertNodeOrder(container, "Client text", "Server text 3",
                 "Client text");
     }
 

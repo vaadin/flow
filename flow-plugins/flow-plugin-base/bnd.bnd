@@ -1,0 +1,9 @@
+Bundle-SymbolicName: ${project.groupId}.flow.plugin.base
+Bundle-Name: Vaadin Flow Plugin Base
+Bundle-Version: ${osgi.bundle.version}
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
+-privatepackage: \
+	com.vaadin.flow.server.scanner,\
+	com.vaadin.flow.utils
+Export-Package: com.vaadin.flow.plugin.base

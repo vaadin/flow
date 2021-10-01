@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -35,7 +36,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.BOOTSTRAP_FILE_NAME;
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
@@ -60,14 +61,14 @@ public class TaskGenerateBootstrapTest {
         frontendFolder = temporaryFolder.newFolder(FRONTEND);
         generatedFolder = temporaryFolder.newFolder(FRONTEND, GENERATED);
         taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps,
-                frontendFolder);
+                frontendFolder, TARGET);
     }
 
     @Test
     public void should_importTargetIndexTS() throws ExecutionFailedException {
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertTrue(content.contains("import '../../target/index';\n"));
+        Assert.assertTrue(content.contains("import '../../target/index';"));
     }
 
     @Test
@@ -76,19 +77,29 @@ public class TaskGenerateBootstrapTest {
         new File(frontendFolder, INDEX_TS).createNewFile();
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertTrue(content.contains("import '../index';\n"));
+        Assert.assertTrue(content.contains("import '../index';"));
     }
 
     @Test
-    public void should_load_AppTheme() throws MalformedURLException, ExecutionFailedException {
-        taskGenerateBootstrap = new TaskGenerateBootstrap(getThemedDependency(), frontendFolder);
+    public void should_load_AppTheme()
+            throws MalformedURLException, ExecutionFailedException {
+        taskGenerateBootstrap = new TaskGenerateBootstrap(getThemedDependency(),
+                frontendFolder, TARGET);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertTrue(content.contains("import '../../target/index';\n" +
-            "\n" +
-            "//@ts-ignore\n" +
-            "import {applyTheme} from '../../target/flow-frontend/themes/theme-generated.js';\n" +
-            "applyTheme(document);\n"));
+
+        final List<String> expectedContent = Arrays.asList(
+                "import '../../target/index';",
+                "import { applyTheme } from './theme';",
+                "applyTheme(document);");
+
+        expectedContent.forEach(expectedLine -> Assert.assertTrue(
+                String.format(
+                        "Bootstrap 'vaadin.ts' file is supposed to contain "
+                                + "the line: [%s],\nbut actually contains the "
+                                + "following: [%s]",
+                        expectedLine, content),
+                content.contains(expectedLine)));
     }
 
     private FrontendDependencies getThemedDependency()

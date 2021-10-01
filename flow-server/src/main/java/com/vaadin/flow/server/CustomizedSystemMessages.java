@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -149,8 +149,8 @@ public class CustomizedSystemMessages extends SystemMessages {
     }
 
     /**
-     * Sets the URL the user will be redirected to after dismissing a
-     * "cookies disabled" message.
+     * Sets the URL the user will be redirected to after dismissing a "cookies
+     * disabled" message.
      *
      * @param cookiesDisabledURL
      *            the URL to redirect to, or null to refresh the page

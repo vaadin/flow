@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -66,6 +66,8 @@ import elemental.json.JsonValue;
 
 /**
  * Base class for navigation handlers that target a navigation state.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -143,7 +145,8 @@ public abstract class AbstractNavigationStateRenderer
         final RouteTarget routeTarget = navigationState.getRouteTarget();
 
         routeLayoutTypes = routeTarget != null ? routeTarget.getParentLayouts()
-                : getRouterLayoutTypes(routeTargetType, ui.getInternals().getRouter());
+                : getRouterLayoutTypes(routeTargetType,
+                        ui.getInternals().getRouter());
 
         assert routeTargetType != null;
         assert routeLayoutTypes != null;
@@ -250,7 +253,7 @@ public abstract class AbstractNavigationStateRenderer
                 event.getState().ifPresent(s -> ui.getPage().executeJs(
                         "this.scrollPositionHandlerAfterServerNavigation($0);",
                         s));
-            } 
+            }
         } else if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
             /*
              * When the event trigger is a RouterLink, pushing history state
@@ -671,7 +674,7 @@ public abstract class AbstractNavigationStateRenderer
                         beforeEvent.getRerouteTargetRouteParameters())) {
             return Optional.of(reroute(event, beforeEvent));
         }
-        
+
         return Optional.empty();
     }
 
@@ -963,7 +966,7 @@ public abstract class AbstractNavigationStateRenderer
         if (!configuration.isProductionMode()
                 && configuration.isDevModeLiveReloadEnabled()) {
             ui.getPage().executeJs(
-                    "Vaadin.Flow.devModeGizmo.showNotification('warning', '@PreserveOnRefresh enabled', 'When refreshing the page in the browser, the server-side Java view instance is reused rather than being recreated.', null, 'preserveOnRefreshWarning')");
+                    "Vaadin.devModeGizmo.showNotification('warning', '@PreserveOnRefresh enabled', 'When refreshing the page in the browser, the server-side Java view instance is reused rather than being recreated.', null, 'preserveOnRefreshWarning')");
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,8 +26,7 @@ import com.vaadin.flow.component.Tag;
  * @author Vaadin Ltd
  */
 @Tag(Tag.PRE)
-public class Pre extends HtmlContainer
-        implements ClickNotifier<Pre> {
+public class Pre extends HtmlContainer implements ClickNotifier<Pre> {
 
     /**
      * Creates a new empty preformatted text block.

@@ -11,4 +11,3 @@ public class CustomFrontendMainView extends Div {
     public CustomFrontendMainView() {
     }
 }
-

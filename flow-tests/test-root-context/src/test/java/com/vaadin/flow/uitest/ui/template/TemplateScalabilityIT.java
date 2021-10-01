@@ -27,7 +27,7 @@ public class TemplateScalabilityIT extends ChromeBrowserTest {
                 By.tagName("template-scalability-panel")).size();
 
         Assert.assertEquals("Template should have created "
-                        + TemplateScalabilityView.NUM_ITEMS + " panels with buttons.",
+                + TemplateScalabilityView.NUM_ITEMS + " panels with buttons.",
                 TemplateScalabilityView.NUM_ITEMS, buttons);
 
         checkLogsForErrors();

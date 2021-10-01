@@ -1,7 +1,8 @@
 import { Flow } from '@vaadin/flow-frontend';
 
 document.getElementById("button1").addEventListener('click', async e => {
-    await import('./another-bundle.js');
+    // Uses the 'Frontend' path alias defined in generated webpack config
+    await import('Frontend/another-bundle.js');
     const div = document.createElement('div');
     div.id = 'div1';
     div.textContent = window.anotherBundle;

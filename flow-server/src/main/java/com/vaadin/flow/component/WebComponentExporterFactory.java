@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -106,10 +106,10 @@ public interface WebComponentExporterFactory<C extends Component>
         public WebComponentExporter<C> create() {
             try {
                 return ReflectTools.createInstance(exporterClass);
-            } catch (IllegalArgumentException e) {
-                if (e.getCause() != null && e.getCause().getClass()
+            } catch (Throwable t) {
+                if (t.getCause() != null && t.getCause().getClass()
                         .equals(InvocationTargetException.class)) {
-                    Throwable cause2 = e.getCause().getCause();
+                    Throwable cause2 = t.getCause().getCause();
                     if (cause2 != null && cause2.getClass()
                             .equals(NullTagException.class)) {
                         throw new IllegalArgumentException(String.format(
@@ -117,11 +117,16 @@ public interface WebComponentExporterFactory<C extends Component>
                                         + "'%s' give null value to "
                                         + "super(String) constructor?",
                                 WebComponentConfiguration.class.getSimpleName(),
-                                exporterClass.getCanonicalName()), e);
+                                exporterClass.getCanonicalName()), t);
                     }
                 }
                 // unknown reason, cannot add information
-                throw e;
+                throw new RuntimeException(
+                        "Couldn't create a new instance of class "
+                                + exporterClass + " because of "
+                                + t.getClass().getSimpleName() + ": "
+                                + t.getMessage(),
+                        t);
             }
         }
 

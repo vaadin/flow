@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.page;
 
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -167,6 +168,72 @@ public class PageTest {
     }
 
     @Test
+    public void retrieveExtendedClientDetails_twice_theSecondResultComesDifferentBeforeCachedValueIsSet() {
+        // given
+        final UI mockUI = new MockUI();
+        List<Runnable> invocations = new ArrayList<>();
+        final Page page = new Page(mockUI) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Serializable... params) {
+                super.executeJs(expression, params);
+
+                return new PendingJavaScriptResult() {
+
+                    @Override
+                    public boolean cancelExecution() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean isSentToBrowser() {
+                        return false;
+                    }
+
+                    @Override
+                    public void then(
+                            SerializableConsumer<JsonValue> resultHandler,
+                            SerializableConsumer<String> errorHandler) {
+                        final HashMap<String, String> params = new HashMap<>();
+                        params.put("v-sw", "2560");
+                        params.put("v-sh", "1450");
+                        params.put("v-tzo", "-270");
+                        params.put("v-rtzo", "-210");
+                        params.put("v-dstd", "60");
+                        params.put("v-dston", "true");
+                        params.put("v-tzid", "Asia/Tehran");
+                        params.put("v-curdate", "1555000000000");
+                        params.put("v-td", "false");
+                        if (invocations.isEmpty()) {
+                            params.put("v-wn", "ROOT-1234567-0.1234567");
+                        } else {
+                            params.put("v-wn", "foo");
+                        }
+                        invocations.add(() -> resultHandler.accept(
+                                JsonUtils.createObject(params, Json::create)));
+                    }
+                };
+            }
+        };
+        final AtomicInteger callbackInvocations = new AtomicInteger();
+        final Page.ExtendedClientDetailsReceiver receiver = details -> {
+            callbackInvocations.incrementAndGet();
+        };
+
+        // when
+        page.retrieveExtendedClientDetails(receiver);
+        page.retrieveExtendedClientDetails(receiver);
+
+        // then : before cached value is set the second retrieve is requested
+        invocations.forEach(Runnable::run);
+
+        Assert.assertEquals(2, callbackInvocations.get());
+
+        Assert.assertEquals("ROOT-1234567-0.1234567", mockUI.getInternals()
+                .getExtendedClientDetails().getWindowName());
+    }
+
+    @Test
     public void retrieveExtendedClientDetails_twice_jsOnceAndCallbackTwice() {
         // given
         final UI mockUI = new MockUI();
@@ -223,6 +290,64 @@ public class PageTest {
                 .dumpPendingJavaScriptInvocations().size();
         Assert.assertEquals(1, jsInvocations);
         Assert.assertEquals(2, callbackInvocations.get());
+    }
+
+    @Test
+    public void fetchCurrentUrl_consumerReceivesCorrectURL() {
+        // given
+        final UI mockUI = new MockUI();
+        final Page page = new Page(mockUI) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Serializable... params) {
+                super.executeJs(expression, params);
+                Assert.assertEquals(
+                        "Expected javascript for fetching location is wrong.",
+                        "return window.location.href", expression);
+
+                return new PendingJavaScriptResult() {
+
+                    @Override
+                    public boolean cancelExecution() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean isSentToBrowser() {
+                        return false;
+                    }
+
+                    @Override
+                    public void then(
+                            SerializableConsumer<JsonValue> resultHandler,
+                            SerializableConsumer<String> errorHandler) {
+                        resultHandler.accept(
+                                Json.create("http://localhost:8080/home"));
+                    }
+                };
+            }
+        };
+        final AtomicReference<URL> callbackInvocations = new AtomicReference<>();
+        final SerializableConsumer<URL> receiver = details -> {
+            callbackInvocations.compareAndSet(null, details);
+        };
+
+        // when
+        page.fetchCurrentURL(receiver);
+
+        // then
+        Assert.assertEquals("Returned URL was wrong",
+                "http://localhost:8080/home",
+                callbackInvocations.get().toString());
+    }
+
+    @Test
+    public void fetchCurrentUrl_passNullCallback_throwsNullPointerException() {
+        Assert.assertThrows(NullPointerException.class, () -> {
+            final UI mockUI = new MockUI();
+            Page page = new Page(mockUI);
+            page.fetchCurrentURL(null);
+        });
     }
 
     @Test

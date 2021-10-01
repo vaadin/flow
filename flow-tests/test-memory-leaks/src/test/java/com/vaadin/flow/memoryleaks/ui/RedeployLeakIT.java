@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -89,9 +89,10 @@ public class RedeployLeakIT extends AbstractTestBenchTest {
         // DO NOT RUN FROM ECLIPSE
         // The test uses files from the target folder
         setup(7778);
-        RemoteWebDriver driver = new RemoteWebDriver(Browser.CHROME.getDesiredCapabilities());
+        RemoteWebDriver driver = new RemoteWebDriver(
+                Browser.CHROME.getDesiredCapabilities());
         try {
-            driver.get("http://"+ getCurrentHostAddress() + ":7778/");
+            driver.get("http://" + getCurrentHostAddress() + ":7778/");
             Assert.assertNotNull(driver.findElement(By.id("hello")));
         } finally {
             driver.close();

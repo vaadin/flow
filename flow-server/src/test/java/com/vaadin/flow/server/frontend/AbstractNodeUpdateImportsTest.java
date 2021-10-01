@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,7 +19,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -30,27 +29,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
-import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.impl.SimpleLogger;
 
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
-import com.vaadin.flow.server.startup.VaadinAppShellInitializer;
 
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -71,43 +64,29 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
     private File generatedPath;
     private File frontendDirectory;
     private File nodeModulesPath;
-    private File loggerFile;
     private TaskUpdateImports updater;
 
-    private boolean useMockLog;
-
-    private Logger logger = Mockito.mock(Logger.class);
+    private MockLogger logger;
 
     @Before
     public void setup() throws Exception {
         File tmpRoot = temporaryFolder.getRoot();
 
-        // Use a file for logs so as tests can assert the warnings shown to the
-        // user.
-        loggerFile = new File(tmpRoot, "test.log");
-        loggerFile.createNewFile();
-        // Setting a system property we make SimpleLogger to output to a file
-        System.setProperty(SimpleLogger.LOG_FILE_KEY,
-                loggerFile.getAbsolutePath());
-        // re-init logger to get new configuration
-        initLogger();
+        logger = new MockLogger();
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
-        generatedPath = new File(tmpRoot, DEFAULT_GENERATED_DIR);
+        generatedPath = new File(tmpRoot,
+                Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
         importsFile = new File(generatedPath, IMPORTS_NAME);
 
         ClassFinder classFinder = getClassFinder();
         updater = new TaskUpdateImports(classFinder, getScanner(classFinder),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory, null,
-                null, false) {
+                null, false, TARGET) {
             @Override
             Logger log() {
-                if (useMockLog) {
-                    return logger;
-                } else {
-                    return super.log();
-                }
+                return logger;
             }
         };
 
@@ -117,22 +96,8 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
                 FLOW_NPM_PACKAGE_NAME + "ExampleConnector.js").exists());
     }
 
-    @After
-    public void tearDown() throws Exception {
-        // re-init logger to reset to default
-        System.clearProperty(SimpleLogger.LOG_FILE_KEY);
-        initLogger();
-    }
-
     protected abstract FrontendDependenciesScanner getScanner(
             ClassFinder finder);
-
-    private void initLogger() throws Exception, SecurityException {
-        // init method is protected
-        Method method = SimpleLogger.class.getDeclaredMethod("init");
-        method.setAccessible(true);
-        method.invoke(null);
-    }
 
     @Test
     public void generateImportsFile_fileContainsThemeLinesAndExpectedImportsAndCssImportLinesAndLogReports()
@@ -183,12 +148,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
-        assertTrue(loggerFile.exists());
-
-        String output = FileUtils
-                .readFileToString(loggerFile, StandardCharsets.UTF_8)
-                // fix for windows
-                .replace("\r", "");
+        String output = logger.getLogs();
         assertContains(output, true,
                 "Use the './' prefix for files in JAR files: 'ExampleConnector.js'",
                 "Use the './' prefix for files in the '"

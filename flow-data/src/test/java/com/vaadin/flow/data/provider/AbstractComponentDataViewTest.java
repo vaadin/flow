@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,11 +30,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Abstract test class that contains the common tests for all generic
- * data view component's implementations, i.e. which extends
- * {@link AbstractDataView} and doesn't contain an in-memory or lazy
- * specific API. Concrete implementations of this class should provide a
- * particular component to be tested as a {@link HasDataView} implementation.
+ * Abstract test class that contains the common tests for all generic data view
+ * component's implementations, i.e. which extends {@link AbstractDataView} and
+ * doesn't contain an in-memory or lazy specific API. Concrete implementations
+ * of this class should provide a particular component to be tested as a
+ * {@link HasDataView} implementation.
  */
 public abstract class AbstractComponentDataViewTest {
 
@@ -62,15 +62,14 @@ public abstract class AbstractComponentDataViewTest {
     public void getItems_filtersSet_filteredItemsObtained() {
         dataProvider.setFilter(item -> item.equals("first"));
         Assert.assertArrayEquals("Unexpected data set after filtering",
-                new String[]{"first"},
-                dataView.getItems().toArray());
+                new String[] { "first" }, dataView.getItems().toArray());
     }
 
     @Test
     public void getItems_sortingSet_sortedItemsObtained() {
         dataProvider.setSortComparator(String::compareToIgnoreCase);
         Assert.assertArrayEquals("Unexpected items sorting",
-                new String[]{"first", "last", "middle"},
+                new String[] { "first", "last", "middle" },
                 dataView.getItems().toArray());
     }
 
@@ -89,8 +88,7 @@ public abstract class AbstractComponentDataViewTest {
     protected abstract HasDataView<String, ?, ? extends DataView<String>> getComponent();
 
     private HasDataView<String, ?, ? extends DataView<String>> getVerifiedComponent() {
-        HasDataView<String, ?, ? extends DataView<String>> component =
-                getComponent();
+        HasDataView<String, ?, ? extends DataView<String>> component = getComponent();
         if (component instanceof Component) {
             return component;
         }
@@ -130,11 +128,12 @@ public abstract class AbstractComponentDataViewTest {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
             Item item = (Item) o;
-            return id == item.id &&
-                    Objects.equals(value, item.value);
+            return id == item.id && Objects.equals(value, item.value);
         }
 
         @Override

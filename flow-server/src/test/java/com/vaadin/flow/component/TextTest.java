@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,14 +33,28 @@ public class TextTest {
         new Text("Foo").getParent();
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void nullText() {
-        new Text(null);
+    @Test
+    public void nullText_transformsToEmptyAndDoesNotThrowException() {
+        Assert.assertEquals("", new Text(null).getText());
     }
 
     @Test
     public void emptyText() {
         Assert.assertEquals("", new Text("").getText());
+    }
+
+    @Test
+    public void setText_emptyTextCanBeChangedLater() {
+        Text text = new Text(null);
+        text.setText("Non Empty");
+        Assert.assertEquals("Non Empty", text.getText());
+    }
+
+    @Test
+    public void setText_nullIsChangedToEmptyAndDoesNotThrowException() {
+        Text text = new Text("Default");
+        text.setText(null);
+        Assert.assertEquals("", text.getText());
     }
 
     @Test

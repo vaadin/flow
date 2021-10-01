@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,8 +28,9 @@ import com.vaadin.flow.router.internal.BeforeEnterHandler;
  * During this phase there is the possibility to reroute to another navigation
  * target.
  *
- * All BeforeEnterListeners will be executed before the BeforeEnterObservers.
- * To control the order of execution of BeforeEnterListeners, see {@link ListenerPriority}
+ * All BeforeEnterListeners will be executed before the BeforeEnterObservers. To
+ * control the order of execution of BeforeEnterListeners, see
+ * {@link ListenerPriority}
  *
  * @since 1.0
  */

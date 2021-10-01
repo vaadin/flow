@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@
 
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.page.Push;
@@ -30,9 +31,7 @@ public class SessionCloseLogoutView extends Div {
     public SessionCloseLogoutView() {
         NativeButton btn = new NativeButton("Logout!");
         btn.addClickListener(evt -> getUI().ifPresent(ui -> {
-
-            ui.getPage().executeJs(String.format("window.location.href='%s'",
-                    BaseHrefView.class.getName()));
+            UI.getCurrent().getPage().setLocation(BaseHrefView.class.getName());
             ui.getSession().close();
         }));
         add(btn);

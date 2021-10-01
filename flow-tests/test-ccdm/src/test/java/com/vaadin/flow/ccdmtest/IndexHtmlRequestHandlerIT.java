@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,10 +35,10 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
     }
 
     @Test
-    public void indexHtmlRequestListener_openRootURL_shouldHaveModifiedLabel() {
+    public void indexHtmlRequestListener_openRootURL_shouldHaveModifiedOutput() {
         openTestUrl("/");
-        waitForElementPresent(By.tagName("label"));
-        String content = findElement(By.tagName("label")).getText();
+        waitForElementPresent(By.tagName("output"));
+        String content = findElement(By.tagName("output")).getText();
         Assert.assertEquals(
                 "The page should have label element which is added by a listener",
                 "Modified page", content);
@@ -595,7 +595,8 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         waitForElementPresent(By.id("pushedContent"));
 
         String content = findElement(By.id("pushedContent")).getText();
-        Assert.assertEquals("Should have content sent from server using push mechanism",
+        Assert.assertEquals(
+                "Should have content sent from server using push mechanism",
                 "Message pushed from server", content);
     }
 }

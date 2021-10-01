@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -79,6 +80,9 @@ import com.vaadin.flow.shared.communication.PushMode;
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
  * framework.
+ * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -616,7 +620,7 @@ public class UIInternals implements Serializable {
      * @param appShellTitle
      *            the appShellTitle to set
      */
-    public void setAppShellTitle(String appShellTitle){
+    public void setAppShellTitle(String appShellTitle) {
         this.appShellTitle = appShellTitle;
     }
 
@@ -674,8 +678,8 @@ public class UIInternals implements Serializable {
      * @param layouts
      *            the parent layouts
      */
-    public void showRouteTarget(Location viewLocation,
-            Component target, List<RouterLayout> layouts) {
+    public void showRouteTarget(Location viewLocation, Component target,
+            List<RouterLayout> layouts) {
         assert target != null;
         assert viewLocation != null;
 
@@ -688,7 +692,7 @@ public class UIInternals implements Serializable {
 
         // Assemble previous parent-child relationships to enable detecting
         // changes
-        Map<RouterLayout, HasElement> oldChildren = new HashMap<>();
+        Map<RouterLayout, HasElement> oldChildren = new IdentityHashMap<>();
         for (int i = 0; i < routerTargetChain.size() - 1; i++) {
             HasElement child = routerTargetChain.get(i);
             RouterLayout parent = (RouterLayout) routerTargetChain.get(i + 1);
@@ -701,6 +705,17 @@ public class UIInternals implements Serializable {
 
         if (layouts != null) {
             routerTargetChain.addAll(layouts);
+        }
+
+        // If the old and the new router target chains are not intersect,
+        // meaning that the new chain doesn't contain the root router
+        // layout node of the old chain, this aims to recursively remove
+        // content of the all nested router layouts of the given old content
+        // to be detached. This is needed to let Dependency Injection
+        // frameworks to re-create managed components with no
+        // duplicates/leftovers.
+        if (oldRoot != null && !routerTargetChain.contains(oldRoot)) {
+            oldChildren.forEach(RouterLayout::removeRouterLayoutContent);
         }
 
         // Ensure the entire chain is connected
@@ -722,9 +737,7 @@ public class UIInternals implements Serializable {
 
                 if (oldContent != newContent) {
                     RouterLayout layout = (RouterLayout) current;
-                    if (oldContent != null) {
-                        layout.removeRouterLayoutContent(oldContent);
-                    }
+                    removeChildrenContentFromRouterLayout(layout, oldChildren);
                     layout.showRouterLayoutContent(newContent);
                 }
             }
@@ -1091,6 +1104,25 @@ public class UIInternals implements Serializable {
         pushConfiguration.setPushMode(pushMode);
         if (push.isPresent()) {
             pushConfiguration.setTransport(push.get().transport());
+        }
+    }
+
+    private void removeChildrenContentFromRouterLayout(
+            final RouterLayout targetRouterLayout,
+            final Map<RouterLayout, HasElement> oldChildren) {
+        HasElement oldContent = oldChildren.get(targetRouterLayout);
+        RouterLayout removeFrom = targetRouterLayout;
+        // Recursively remove content of the all nested router
+        // layouts of the given old content to be detached. This
+        // is needed to let Dependency Injection frameworks to
+        // re-create managed components with no
+        // duplicates/leftovers.
+        while (oldContent != null) {
+            removeFrom.removeRouterLayoutContent(oldContent);
+            if (oldContent instanceof RouterLayout) {
+                removeFrom = (RouterLayout) oldContent;
+            }
+            oldContent = oldChildren.get(oldContent);
         }
     }
 }

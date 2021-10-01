@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -404,14 +404,16 @@ public class ReflectToolsTest {
 
     @Test
     public void hasAnnotationWithSimpleName_annotationPresents_returnsTrue() {
-        Assert.assertTrue(ReflectTools.hasAnnotationWithSimpleName(ClassWithAnnotation.class,
+        Assert.assertTrue(ReflectTools.hasAnnotationWithSimpleName(
+                ClassWithAnnotation.class,
                 TestAnnotation.class.getSimpleName()));
     }
 
     @Test
     public void hasAnnotationWithSimpleName_annotationIsAbsent_returnsFalse() {
         Assert.assertFalse(ReflectTools.hasAnnotationWithSimpleName(
-                ClassWithoutAnnotation.class, TestAnnotation.class.getSimpleName()));
+                ClassWithoutAnnotation.class,
+                TestAnnotation.class.getSimpleName()));
     }
 
     @Test
@@ -452,29 +454,35 @@ public class ReflectToolsTest {
 
     @Test
     public void abstractClassShouldNotBeInstantiableService() {
-        assertFalse(ReflectTools.isInstantiableService(TestAbstractClass.class));
+        assertFalse(
+                ReflectTools.isInstantiableService(TestAbstractClass.class));
     }
 
     @Test
     public void nonPublicClassShouldNotBeInstantiableService() {
-        assertFalse(ReflectTools.isInstantiableService(TestProtectedClass.class));
-        assertFalse(ReflectTools.isInstantiableService(TestPackageProtectedClass.class));
+        assertFalse(
+                ReflectTools.isInstantiableService(TestProtectedClass.class));
+        assertFalse(ReflectTools
+                .isInstantiableService(TestPackageProtectedClass.class));
         assertFalse(ReflectTools.isInstantiableService(TestPrivateClass.class));
     }
 
     @Test
     public void ClassWithoutNonArgConstructorShouldNotBeInstantiableService() {
-        assertFalse(ReflectTools.isInstantiableService(TestNoNonArgConstructorClass.class));
+        assertFalse(ReflectTools
+                .isInstantiableService(TestNoNonArgConstructorClass.class));
     }
 
     @Test
     public void nonStaticInnerClassShouldNotBeInstantiableService() {
-        assertFalse(ReflectTools.isInstantiableService(NonStaticInnerClass.class));
+        assertFalse(
+                ReflectTools.isInstantiableService(NonStaticInnerClass.class));
     }
 
     @Test
     public void privateInnerClassShouldNotBeInstantiableService() {
-        assertFalse(ReflectTools.isInstantiableService(PrivateInnerClass.class));
+        assertFalse(
+                ReflectTools.isInstantiableService(PrivateInnerClass.class));
     }
 
     @Test

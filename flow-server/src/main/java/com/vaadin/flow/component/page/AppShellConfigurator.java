@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,9 +22,11 @@ import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.AppShellSettings;
 
 /**
- * A marker interface to configure the index.hml page when using client-side
- * bootstrapping. This class supports the following annotations that affect the
- * generated index.html page (also known as 'application shell'):
+ * An interface to configure application features and the host page where the
+ * Vaadin application is running. It automatically configures the index.html
+ * page. Configuration can be done using a class implementing this interface
+ * with following annotations that affect the generated index.html page (also
+ * known as 'application shell'):
  *
  * <ul>
  * <li>{@link Meta}: appends an HTML {@code <meta>} tag to the bottom of the
@@ -40,7 +42,8 @@ import com.vaadin.flow.server.AppShellSettings;
  *
  * <p>
  * There is a single application shell for the entire Vaadin application, and
- * therefore there can be at max one class implementing {@link AppShellConfigurator}.
+ * there can only be one class implementing {@link AppShellConfigurator} per
+ * Application.
  * </p>
  *
  * <p>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,8 @@ import org.atmosphere.cpr.AtmosphereResource;
 /**
  * Provides a way to reload browser tabs via web socket connection passed as a
  * {@link AtmosphereResource}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  *
@@ -44,7 +46,7 @@ public interface BrowserLiveReload {
      * Sets the live reload backend technology explicitly.
      *
      * @param backend
-     *      enabling technology, not <code>null</code>.
+     *            enabling technology, not <code>null</code>.
      */
     void setBackend(Backend backend);
 
@@ -69,7 +71,7 @@ public interface BrowserLiveReload {
      * connection.
      * 
      * @param resource
-     *            a web socket connection resource,  not <code>null</code>.
+     *            a web socket connection resource, not <code>null</code>.
      * @return whether the web socket connection is for live reload
      */
     boolean isLiveReload(AtmosphereResource resource);

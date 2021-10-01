@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -232,8 +232,7 @@ public interface InMemoryDataProvider<T> extends
      * @param comparator
      *            a comparator to add, not <code>null</code>
      */
-    default void addSortComparator(
-            SerializableComparator<T> comparator) {
+    default void addSortComparator(SerializableComparator<T> comparator) {
         Objects.requireNonNull(comparator, "Comparator to add cannot be null");
         SerializableComparator<T> originalComparator = getSortComparator();
         if (originalComparator == null) {
@@ -402,8 +401,7 @@ public interface InMemoryDataProvider<T> extends
             ValueProvider<T, String> valueProvider, Locale locale) {
         Objects.requireNonNull(locale, "Locale cannot be null");
         return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(
-                this, valueProvider,
-                String::contains, () -> locale);
+                this, valueProvider, String::contains, () -> locale);
     }
 
     /**
@@ -444,8 +442,8 @@ public interface InMemoryDataProvider<T> extends
      */
     default DataProvider<T, String> filteringByPrefix(
             ValueProvider<T, String> valueProvider, Locale locale) {
-        return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(this, valueProvider,
-                String::startsWith, () -> locale);
+        return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(
+                this, valueProvider, String::startsWith, () -> locale);
     }
 
     /**
@@ -464,7 +462,8 @@ public interface InMemoryDataProvider<T> extends
      */
     default DataProvider<T, String> filteringByPrefix(
             ValueProvider<T, String> valueProvider) {
-        return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(this, valueProvider,
-                String::startsWith, InMemoryDataProviderHelpers.CURRENT_LOCALE_SUPPLIER);
+        return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(
+                this, valueProvider, String::startsWith,
+                InMemoryDataProviderHelpers.CURRENT_LOCALE_SUPPLIER);
     }
 }

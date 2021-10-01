@@ -5,7 +5,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>6.0-SNAPSHOT</version>
+        <version>9.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -18,6 +18,8 @@
         <module>test-theme-reusable</module>
         <module>test-reusable-as-parent</module>
         <module>test-theme-live-reload</module>
+        <module>test-theme-component-live-reload</module>
+        <module>test-theme-switch-live-reload</module>
     </modules>
 
 </project>

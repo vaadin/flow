@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -44,17 +44,13 @@ public class UpdatePropertyIT extends ChromeBrowserTest implements HasById {
 
         button.click();
 
-        Assert.assertEquals("Count (id:count) should be 1", 1,
-                getInt("count"));
-        Assert.assertEquals("Count (id:json) should be 1", 1,
-                getInt("json"));
+        Assert.assertEquals("Count (id:count) should be 1", 1, getInt("count"));
+        Assert.assertEquals("Count (id:json) should be 1", 1, getInt("json"));
 
         button.click();
 
-        Assert.assertEquals("Count (id:count) should be 2", 2,
-                getInt("count"));
-        Assert.assertEquals("Count (id:json) should be 2", 2,
-                getInt("json"));
+        Assert.assertEquals("Count (id:count) should be 2", 2, getInt("count"));
+        Assert.assertEquals("Count (id:json) should be 2", 2, getInt("json"));
     }
 
     private int getInt(String id) {

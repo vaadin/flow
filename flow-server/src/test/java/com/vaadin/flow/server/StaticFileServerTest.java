@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,37 +20,64 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.WarURLStreamHandlerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.CurrentInstance;
 
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 
+@NotThreadSafe
 public class StaticFileServerTest implements Serializable {
 
     private OverrideableStaticFileServer fileServer;
@@ -89,6 +116,12 @@ public class StaticFileServerTest implements Serializable {
             }
         });
 
+    }
+
+    @BeforeClass
+    public static void beforeClass() {
+        // must be cleared before running this class
+        CurrentInstance.clearAll();
     }
 
     @Before
@@ -219,8 +252,7 @@ public class StaticFileServerTest implements Serializable {
 
     private void mockWebappResource(ClassLoader mockLoader, String pathInfo,
             URL resourceUrl) {
-        Mockito.when(
-                mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
+        Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
                 .thenReturn(resourceUrl);
     }
 
@@ -245,6 +277,363 @@ public class StaticFileServerTest implements Serializable {
         setupRequestURI("", "", null);
         Mockito.when(servletContext.getResource("/")).thenReturn(null);
         Assert.assertFalse(fileServer.isStaticResourceRequest(request));
+    }
+
+    @Test
+    public void directoryIsNotResourceRequest() throws Exception {
+        final TemporaryFolder folder = TemporaryFolder.builder().build();
+        folder.create();
+
+        setupRequestURI("", "", "/frontend");
+        // generate URL so it is not ending with / so that we test the correct
+        // method
+        String rootAbsolutePath = folder.getRoot().getAbsolutePath()
+                .replaceAll("\\\\", "/");
+        if (rootAbsolutePath.endsWith("/")) {
+            rootAbsolutePath = rootAbsolutePath.substring(0,
+                    rootAbsolutePath.length() - 1);
+        }
+        final URL folderPath = new URL("file:///" + rootAbsolutePath);
+
+        Mockito.when(servletService.getStaticResource("/frontend"))
+                .thenReturn(folderPath);
+        Assert.assertFalse("Folder on disk should not be a static resource.",
+                fileServer.isStaticResourceRequest(request));
+
+        // Test any path ending with / to be seen as a directory
+        setupRequestURI("", "", "/fake");
+        Mockito.when(servletService.getStaticResource("/fake"))
+                .thenReturn(new URL("file:///fake/"));
+        Assert.assertFalse(
+                "Fake should not check the file system nor be a static resource.",
+                fileServer.isStaticResourceRequest(request));
+
+        Path tempArchive = generateZipArchive(folder);
+
+        setupRequestURI("", "", "/frontend/.");
+        Mockito.when(servletService.getStaticResource("/frontend/."))
+                .thenReturn(new URL("jar:file:///"
+                        + tempArchive.toString().replaceAll("\\\\", "/")
+                        + "!/frontend"));
+        Assert.assertFalse(
+                "Folder 'frontend' in jar should not be a static resource.",
+                fileServer.isStaticResourceRequest(request));
+        setupRequestURI("", "", "/file.txt");
+        Mockito.when(servletService.getStaticResource("/file.txt"))
+                .thenReturn(new URL("jar:file:///"
+                        + tempArchive.toString().replaceAll("\\\\", "/")
+                        + "!/file.txt"));
+        Assert.assertTrue(
+                "File 'file.txt' inside jar should be a static resource.",
+                fileServer.isStaticResourceRequest(request));
+
+        folder.delete();
+    }
+
+    @Test
+    public void isStaticResource_jarWarFileScheme_detectsAsStaticResources()
+            throws IOException {
+        Assert.assertTrue("Can not run concurrently with other test",
+                StaticFileServer.openFileSystems.isEmpty());
+
+        final TemporaryFolder folder = TemporaryFolder.builder().build();
+        folder.create();
+
+        File archiveFile = new File(folder.getRoot(), "fake.jar");
+        archiveFile.createNewFile();
+        Path tempArchive = archiveFile.toPath();
+        File warFile = new File(folder.getRoot(), "war.jar");
+        warFile.createNewFile();
+        Path warArchive = warFile.toPath();
+
+        generateJarInJar(archiveFile, tempArchive, warArchive);
+
+        // Instantiate URL stream handler factory to be able to handle war:
+        WarURLStreamHandlerFactory.getInstance();
+
+        final URL folderResourceURL = new URL(
+                "jar:war:" + warFile.toURI().toURL() + "!/"
+                        + archiveFile.getName() + "!/frontend");
+
+        setupRequestURI("", "", "/frontend/.");
+        Mockito.when(servletService.getStaticResource("/frontend/."))
+                .thenReturn(folderResourceURL);
+
+        Assert.assertTrue(
+                "Request should return as static request as we can not determine non file resources in jar files.",
+                fileServer.isStaticResourceRequest(request));
+
+        folder.delete();
+    }
+
+    @Test
+    public void isStaticResource_jarInAJar_detectsAsStaticResources()
+            throws IOException {
+        Assert.assertTrue("Can not run concurrently with other test",
+                StaticFileServer.openFileSystems.isEmpty());
+
+        final TemporaryFolder folder = TemporaryFolder.builder().build();
+        folder.create();
+
+        File archiveFile = new File(folder.getRoot(), "fake.jar");
+        archiveFile.createNewFile();
+        Path tempArchive = archiveFile.toPath();
+
+        File warFile = new File(folder.getRoot(), "war.jar");
+        warFile.createNewFile();
+        Path warArchive = warFile.toPath();
+
+        generateJarInJar(archiveFile, tempArchive, warArchive);
+
+        setupRequestURI("", "", "/frontend/.");
+        Mockito.when(servletService.getStaticResource("/frontend/."))
+                .thenReturn(new URL("jar:" + warFile.toURI().toURL() + "!/"
+                        + archiveFile.getName() + "!/frontend"));
+        Assert.assertTrue(
+                "Request should return as static request as we can not determine non file resources in jar files.",
+                fileServer.isStaticResourceRequest(request));
+        setupRequestURI("", "", "/file.txt");
+        Mockito.when(servletService.getStaticResource("/file.txt"))
+                .thenReturn(new URL("jar:" + warFile.toURI().toURL() + "!/"
+                        + archiveFile.getName() + "!/file.txt"));
+        Assert.assertTrue(
+                "Request should return as static request as we can not determine non file resources in jar files.",
+                fileServer.isStaticResourceRequest(request));
+
+        folder.delete();
+    }
+
+    private Path generateZipArchive(TemporaryFolder folder) throws IOException {
+        File archiveFile = new File(folder.getRoot(), "fake.jar");
+        archiveFile.createNewFile();
+        Path tempArchive = archiveFile.toPath();
+
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+                Files.newOutputStream(tempArchive))) {
+            // Create a file to the zip
+            zipOutputStream.putNextEntry(new ZipEntry("/file"));
+            zipOutputStream.closeEntry();
+            // Create a directory to the zip
+            zipOutputStream.putNextEntry(new ZipEntry("frontend/"));
+            zipOutputStream.closeEntry();
+        }
+        return tempArchive;
+    }
+
+    private void generateJarInJar(File archiveFile, Path tempArchive,
+            Path warArchive) throws IOException {
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+                Files.newOutputStream(tempArchive))) {
+            // Create a file to the zip
+            zipOutputStream.putNextEntry(new ZipEntry("/file"));
+            zipOutputStream.closeEntry();
+            // Create a directory to the zip
+            zipOutputStream.putNextEntry(new ZipEntry("frontend/"));
+            zipOutputStream.closeEntry();
+        }
+
+        try (ZipOutputStream warOutputStream = new ZipOutputStream(
+                Files.newOutputStream(warArchive))) {
+            // Create a file to the zip
+            warOutputStream.putNextEntry(new ZipEntry(archiveFile.getName()));
+            warOutputStream.write(Files.readAllBytes(tempArchive));
+
+            warOutputStream.closeEntry();
+        }
+    }
+
+    @Test
+    public void openFileServerExistsForZip_openingNewDoesNotFail()
+            throws IOException, URISyntaxException {
+        Assert.assertTrue("Can not run concurrently with other test",
+                StaticFileServer.openFileSystems.isEmpty());
+
+        final TemporaryFolder folder = TemporaryFolder.builder().build();
+        folder.create();
+
+        Path tempArchive = generateZipArchive(folder);
+
+        final FileSystem fileSystem = FileSystems
+                .newFileSystem(new URL("jar:file:///"
+                        + tempArchive.toString().replaceAll("\\\\", "/") + "!/")
+                                .toURI(),
+                        Collections.emptyMap());
+
+        final URL folderResourceURL = new URL(
+                "jar:file:///" + tempArchive.toString().replaceAll("\\\\", "/")
+                        + "!/frontend");
+
+        try {
+            fileServer.getFileSystem(folderResourceURL.toURI());
+        } finally {
+            fileServer.closeFileSystem(folderResourceURL.toURI());
+            fileSystem.close();
+        }
+
+    }
+
+    @Test
+    public void openingJarFileSystemForDifferentFilesInSameJar_existingFileSystemIsUsed()
+            throws IOException, URISyntaxException {
+        Assert.assertTrue("Can not run concurrently with other test",
+                StaticFileServer.openFileSystems.isEmpty());
+
+        final TemporaryFolder folder = TemporaryFolder.builder().build();
+        folder.create();
+
+        Path tempArchive = generateZipArchive(folder);
+
+        final URL folderResourceURL = new URL(
+                "jar:file:///" + tempArchive.toString().replaceAll("\\\\", "/")
+                        + "!/frontend");
+
+        final URL fileResourceURL = new URL(
+                "jar:file:///" + tempArchive.toString().replaceAll("\\\\", "/")
+                        + "!/file.txt");
+
+        fileServer.getFileSystem(folderResourceURL.toURI());
+        fileServer.getFileSystem(fileResourceURL.toURI());
+
+        Assert.assertEquals("Same file should be marked for both resources",
+                (Integer) 2, StaticFileServer.openFileSystems.entrySet()
+                        .iterator().next().getValue());
+        fileServer.closeFileSystem(folderResourceURL.toURI());
+        Assert.assertEquals("Closing resource should be removed from jar uri",
+                (Integer) 1, StaticFileServer.openFileSystems.entrySet()
+                        .iterator().next().getValue());
+        fileServer.closeFileSystem(fileResourceURL.toURI());
+        Assert.assertTrue("Closing last resource should clear marking",
+                StaticFileServer.openFileSystems.isEmpty());
+
+        try {
+            FileSystems.getFileSystem(folderResourceURL.toURI());
+            Assert.fail("Jar FileSystem should have been closed");
+        } catch (FileSystemNotFoundException fsnfe) {
+            // This should happen as we should not have an open FileSystem here.
+        }
+    }
+
+    @Test
+    public void concurrentRequestsToJarResources_checksAreCorrect()
+            throws IOException, InterruptedException, ExecutionException,
+            URISyntaxException {
+        Assert.assertTrue("Can not run concurrently with other test",
+                StaticFileServer.openFileSystems.isEmpty());
+
+        final TemporaryFolder folder = TemporaryFolder.builder().build();
+        folder.create();
+
+        Path tempArchive = generateZipArchive(folder);
+
+        setupRequestURI("", "", "/frontend/.");
+        final URL folderResourceURL = new URL(
+                "jar:file:///" + tempArchive.toString().replaceAll("\\\\", "/")
+                        + "!/frontend");
+        Mockito.when(servletService.getStaticResource("/frontend/."))
+                .thenReturn(folderResourceURL);
+
+        int THREADS = 5;
+
+        List<Callable<Result>> folderNotResource = IntStream.range(0, THREADS)
+                .mapToObj(i -> {
+                    Callable<Result> callable = () -> {
+                        try {
+                            if (fileServer.isStaticResourceRequest(request)) {
+                                throw new IllegalArgumentException(
+                                        "Folder 'frontend' in jar should not be a static resource.");
+                            }
+                        } catch (Exception e) {
+                            return new Result(e);
+                        }
+                        return new Result(null);
+                    };
+                    return callable;
+                }).collect(Collectors.toList());
+
+        ExecutorService executor = Executors.newFixedThreadPool(THREADS);
+        List<Future<Result>> futures = executor.invokeAll(folderNotResource);
+        List<String> exceptions = new ArrayList<>();
+
+        executor.shutdown();
+
+        for (Future<Result> resultFuture : futures) {
+            Result result = resultFuture.get();
+            if (result.exception != null) {
+                exceptions.add(result.exception.getMessage());
+            }
+        }
+
+        Assert.assertTrue("There were exceptions in concurrent requests {"
+                + exceptions + "}", exceptions.isEmpty());
+
+        Assert.assertFalse("Folder URI should have been cleared",
+                StaticFileServer.openFileSystems
+                        .containsKey(folderResourceURL.toURI()));
+        try {
+            FileSystems.getFileSystem(folderResourceURL.toURI());
+            Assert.fail("FileSystem for folder resource should be closed");
+        } catch (FileSystemNotFoundException fsnfe) {
+            // This should happen as we should not have an open FileSystem here.
+        }
+
+        setupRequestURI("", "", "/file.txt");
+        final URL fileResourceURL = new URL(
+                "jar:file:///" + tempArchive.toString().replaceAll("\\\\", "/")
+                        + "!/file.txt");
+        Mockito.when(servletService.getStaticResource("/file.txt"))
+                .thenReturn(fileResourceURL);
+
+        List<Callable<Result>> fileIsResource = IntStream.range(0, THREADS)
+                .mapToObj(i -> {
+                    Callable<Result> callable = () -> {
+                        try {
+                            if (!fileServer.isStaticResourceRequest(request)) {
+                                throw new IllegalArgumentException(
+                                        "File 'file.txt' inside jar should be a static resource.");
+                            }
+                        } catch (Exception e) {
+                            return new Result(e);
+                        }
+                        return new Result(null);
+                    };
+                    return callable;
+                }).collect(Collectors.toList());
+
+        executor = Executors.newFixedThreadPool(THREADS);
+        futures = executor.invokeAll(fileIsResource);
+        exceptions = new ArrayList<>();
+
+        executor.shutdown();
+
+        for (Future<Result> resultFuture : futures) {
+            Result result = resultFuture.get();
+            if (result.exception != null) {
+                exceptions.add(result.exception.getMessage());
+            }
+        }
+
+        Assert.assertTrue("There were exceptions in concurrent requests {"
+                + exceptions + "}", exceptions.isEmpty());
+
+        Assert.assertFalse("URI should have been cleared",
+                fileServer.openFileSystems
+                        .containsKey(fileResourceURL.toURI()));
+        try {
+            FileSystems.getFileSystem(fileResourceURL.toURI());
+            Assert.fail("FileSystem for file resource should be closed");
+        } catch (FileSystemNotFoundException fsnfe) {
+            // This should happen as we should not have an open FileSystem here.
+        }
+
+        folder.delete();
+    }
+
+    private static class Result {
+        final Exception exception;
+
+        Result(Exception exception) {
+            this.exception = exception;
+        }
     }
 
     @Test
@@ -491,16 +880,14 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void ServletPath_serveStaticFileResource()
-            throws IOException {
+    public void ServletPath_serveStaticFileResource() throws IOException {
         String pathInfo = "/VAADIN/static/img/bg.jpg";
         setupRequestURI("", "/servlet", pathInfo);
         assertBundleBuildResource(pathInfo);
     }
 
     @Test
-    public void contextPath_serveStaticFileResource()
-            throws IOException {
+    public void contextPath_serveStaticFileResource() throws IOException {
         String pathInfo = "/VAADIN/static/img/bg.jpg";
         setupRequestURI("/context", "", pathInfo);
         assertBundleBuildResource(pathInfo);
@@ -519,9 +906,9 @@ public class StaticFileServerTest implements Serializable {
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
 
-        Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo)).thenReturn(
-                createFileURLWithDataAndLength(WEBAPP_RESOURCE_PREFIX + pathInfo,
-                        fileData));
+        Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
+                .thenReturn(createFileURLWithDataAndLength(
+                        WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
 
         mockStatsBundles(mockLoader);
         mockConfigurationPolyfills();
@@ -542,16 +929,18 @@ public class StaticFileServerTest implements Serializable {
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
 
-        Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo)).thenReturn(
-                createFileURLWithDataAndLength(WEBAPP_RESOURCE_PREFIX + pathInfo,
-                        fileData));
+        Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
+                .thenReturn(createFileURLWithDataAndLength(
+                        WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
 
         // have data available for /VAADIN/vaadin-bundle-1234.cache.js
-        Mockito.when(mockLoader
-                .getResource(WEBAPP_RESOURCE_PREFIX + pathInfo.replace("build/../", "")))
-                .thenReturn(createFileURLWithDataAndLength(
-                        WEBAPP_RESOURCE_PREFIX + pathInfo.replace("build/../", ""),
-                        fileData));
+        Mockito.when(mockLoader.getResource(
+                WEBAPP_RESOURCE_PREFIX + pathInfo.replace("build/../", "")))
+                .thenReturn(
+                        createFileURLWithDataAndLength(
+                                WEBAPP_RESOURCE_PREFIX
+                                        + pathInfo.replace("build/../", ""),
+                                fileData));
 
         mockStatsBundles(mockLoader);
         mockConfigurationPolyfills();
@@ -670,7 +1059,7 @@ public class StaticFileServerTest implements Serializable {
 
     @Test
     public void staticManifestPathResource_isServed() throws IOException {
-        String pathInfo ="/sw.js";
+        String pathInfo = "/sw.js";
         setupRequestURI("", "", pathInfo);
         byte[] fileData = "function() {eval('foo');};"
                 .getBytes(StandardCharsets.UTF_8);
@@ -690,8 +1079,9 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void staticManifestPathIndexHtmlResource_returnsNotFound() throws IOException {
-        String pathInfo ="/index.html";
+    public void staticManifestPathIndexHtmlResource_returnsNotFound()
+            throws IOException {
+        String pathInfo = "/index.html";
         setupRequestURI("", "", pathInfo);
         byte[] fileData = "function() {eval('foo');};"
                 .getBytes(StandardCharsets.UTF_8);
@@ -825,6 +1215,17 @@ public class StaticFileServerTest implements Serializable {
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
         Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND,
                 responseCode.get());
+    }
+
+    @Test
+    public void getStaticResource_delegateToVaadinService()
+            throws MalformedURLException {
+        URL url = new URL("http://bar");
+        Mockito.when(servletService.getStaticResource("foo")).thenReturn(url);
+        URL result = fileServer.getStaticResource("foo");
+
+        Mockito.verify(servletService).getStaticResource("foo");
+        Assert.assertSame(url, result);
     }
 
     private static class CapturingServletOutputStream

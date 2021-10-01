@@ -5,12 +5,12 @@ const { assert } = intern.getPlugin("chai");
 const { sinon } = intern.getPlugin("sinon") as { sinon: SinonStatic };
 
 // API to test
-import {Flow, NavigationParameters} from "../../main/resources/META-INF/resources/frontend/Flow";
-import {ConnectionState, ConnectionStateStore} from "../../main/resources/META-INF/resources/frontend/ConnectionState";
+import {Flow, NavigationParameters} from "../../main/frontend/Flow";
+import {ConnectionState, ConnectionStateStore} from "@vaadin/common-frontend";
 // Intern does not serve webpack chunks, adding deps here in order to
 // produce one chunk, because dynamic imports in Flow.ts  will not work.
-import "../../main/resources/META-INF/resources/frontend/FlowBootstrap";
-import "../../main/resources/META-INF/resources/frontend/FlowClient";
+import "../../main/frontend/FlowBootstrap";
+import "../../main/frontend/FlowClient";
 // Mock XMLHttpRequest so as we don't need flow-server running for tests.
 import mock from 'xhr-mock';
 
@@ -18,8 +18,6 @@ const $wnd = window as any;
 const flowRoot = window.document.body as any;
 
 const stubVaadinPushSrc = '/src/test/frontend/stubVaadinPush.js';
-
-const OFFLINE_STUB_NAME = 'vaadin-offline-stub';
 
 // A `changes` array that adds a div with 'Foo' text to body
 const changesResponse = `[
@@ -323,23 +321,10 @@ suite("Flow", () => {
     assert.isDefined($wnd.Vaadin.Flow.clients.TypeScript.isActive);
     assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
 
-    // Check that loadingStarted and loadingFinished are exposed
-    assert.isDefined($wnd.Vaadin.Flow.clients.TypeScript.loadingStarted);
-    assert.isDefined($wnd.Vaadin.Flow.clients.TypeScript.loadingFinished);
-
     const route = flow.serverSideRoutes[0];
 
-    $wnd.Vaadin.connectionIndicator.firstDelay = 0;
-    await $wnd.Vaadin.connectionIndicator.updateComplete;
-    const indicator = $wnd.document.querySelector('.v-loading-indicator');
-
-    let wasActive = false;
-    let wasVisible = false;
-    setTimeout(() => {
-      // Check the `isActive` flag and indicator.style at the time the action is being executed
-      wasActive = wasActive || $wnd.Vaadin.Flow.clients.TypeScript.isActive();
-      wasVisible = wasVisible || indicator.getAttribute('style') === 'display: block';
-    }, 5);
+    sinon.spy(flow, 'loadingStarted');
+    sinon.spy(flow, 'loadingFinished');
 
     return route
       .action({pathname: "Foo/Bar.baz"})
@@ -353,7 +338,6 @@ suite("Flow", () => {
         // Check that flowClient was initialized
         assert.isDefined($wnd.Vaadin.Flow.clients.foobar.resolveUri);
         assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
-        assert.equal('display: none', indicator.getAttribute('style'));
 
         // Check that pushScript is not initialized
         assert.isUndefined($wnd.vaadinPush);
@@ -362,13 +346,29 @@ suite("Flow", () => {
         assert.isDefined(flowRoot.$);
         assert.isDefined(flowRoot.$['foobar-1111111']);
 
-        // Check that `isActive` flag was active during the action
-        assert.isTrue(wasActive);
-        // Check that indicator was visible during the action
-        assert.isTrue(wasVisible);
+        // Check that `loadingStarted` and `loadingFinished` pair was called
+        sinon.assert.calledOnce(flow.loadingStarted);
+        sinon.assert.calledOnce(flow.loadingFinished);
+
         // Check that `isActive` flag is set to false after the action
         assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
       });
+  });
+
+  test("loadingStarted and loadingFinished should update isActive and connection indicator", async () => {
+    const flow = new Flow();
+    sinon.spy($wnd.Vaadin.connectionState, 'loadingStarted');
+    sinon.spy($wnd.Vaadin.connectionState, 'loadingFinished');
+
+    flow.loadingStarted();
+    assert.isTrue($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+    sinon.assert.calledOnce($wnd.Vaadin.connectionState.loadingStarted);
+    sinon.assert.notCalled($wnd.Vaadin.connectionState.loadingFinished);
+
+    flow.loadingFinished();
+    assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+    sinon.assert.calledOnce($wnd.Vaadin.connectionState.loadingStarted);
+    sinon.assert.calledOnce($wnd.Vaadin.connectionState.loadingFinished);
   });
 
   test("should remove context-path in request", () => {
@@ -653,7 +653,8 @@ suite("Flow", () => {
       search: ''
     };
     const view = await route.action(params);
-    assert.equal(view.localName, OFFLINE_STUB_NAME);
+    assert.equal(view.localName, 'iframe');
+    assert.equal(view.getAttribute('src'), './offline-stub.html');
 
     // @ts-ignore
     let onBeforeEnterReturns = view.onBeforeEnter(params, {});
@@ -680,7 +681,8 @@ suite("Flow", () => {
 
     const view = await route.action(params);
     assert.isNotNull(view);
-    assert.equal(view.localName, OFFLINE_STUB_NAME);
+    assert.equal(view.localName, 'iframe');
+    assert.equal(view.getAttribute('src'), './offline-stub.html');
 
     assert.equal(indicator.getAttribute('style'), 'display: none');
 

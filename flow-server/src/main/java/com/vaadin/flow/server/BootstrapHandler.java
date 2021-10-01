@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.server;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -63,9 +64,15 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadAccess;
+import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
+import com.vaadin.flow.router.InvalidLocationException;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.LocationUtil;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
@@ -95,6 +102,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @since 1.0
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
+
+    public static final String SERVICE_WORKER_HEADER = "Service-Worker";
 
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "window.Vaadin.Flow.gwtStatsEvents = [];"
@@ -163,6 +172,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private final UI ui;
         private final Class<?> pageConfigurationHolder;
         private final ApplicationParameterBuilder parameterBuilder;
+        private final Location route;
 
         private String appId;
         private PushMode pushMode;
@@ -180,19 +190,49 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *            the current session
          * @param ui
          *            the UI object
+         * @param contextCallback
+         *            a callback that is invoked to resolve the context root
+         *            from the request
          */
         protected BootstrapContext(VaadinRequest request,
                 VaadinResponse response, VaadinSession session, UI ui,
                 Function<VaadinRequest, String> contextCallback) {
+            this(request, response, session, ui, contextCallback,
+                    req -> new Location(req.getPathInfo(),
+                            QueryParameters.full(req.getParameterMap())));
+        }
+
+        /**
+         * Creates a new context instance using the given parameters.
+         *
+         * @param request
+         *            the request object
+         * @param response
+         *            the response object
+         * @param session
+         *            the current session
+         * @param ui
+         *            the UI object
+         * @param contextCallback
+         *            a callback that is invoked to resolve the context root
+         *            from the request
+         * @param routeCallback
+         *            a callback that is invoked to resolve the route from the
+         *            request
+         */
+        protected BootstrapContext(VaadinRequest request,
+                VaadinResponse response, VaadinSession session, UI ui,
+                Function<VaadinRequest, String> contextCallback,
+                Function<VaadinRequest, Location> routeCallback) {
             this.request = request;
             this.response = response;
             this.session = session;
             this.ui = ui;
+            this.route = routeCallback.apply(request);
             parameterBuilder = new ApplicationParameterBuilder(contextCallback);
 
             pageConfigurationHolder = BootstrapUtils
-                    .resolvePageConfigurationHolder(ui, request).orElse(null);
-
+                    .resolvePageConfigurationHolder(ui, route).orElse(null);
         }
 
         /**
@@ -211,6 +251,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          */
         public VaadinRequest getRequest() {
             return request;
+        }
+
+        /**
+         * Gets the Vaadin service.
+         *
+         * @return the Vaadin/HTTP service
+         */
+        public VaadinService getService() {
+            return request.getService();
         }
 
         /**
@@ -241,12 +290,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
                 pushMode = getUI().getPushConfiguration().getPushMode();
                 if (pushMode == null) {
-                    pushMode = getRequest().getService()
-                            .getDeploymentConfiguration().getPushMode();
+                    pushMode = getService().getDeploymentConfiguration()
+                            .getPushMode();
                 }
 
                 if (pushMode.isEnabled()
-                        && !getRequest().getService().ensurePushAvailable()) {
+                        && !getService().ensurePushAvailable()) {
                     /*
                      * Fall back if not supported (ensurePushAvailable will log
                      * information to the developer the first time this happens)
@@ -267,8 +316,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          */
         public String getAppId() {
             if (appId == null) {
-                appId = getRequest().getService().getMainDivId(getSession(),
-                        getRequest());
+                appId = getService().getMainDivId(getSession(), getRequest());
             }
             return appId;
         }
@@ -307,8 +355,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *         otherwise.
          */
         public boolean isProductionMode() {
-            return request.getService().getDeploymentConfiguration()
-                    .isProductionMode();
+            return getService().getDeploymentConfiguration().isProductionMode();
         }
 
         /**
@@ -366,6 +413,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
             return Optional.ofNullable(vaadinService.getPwaRegistry());
         }
+
+        /**
+         * Gets the location of the route that should be activated for this
+         * bootstrap request.
+         *
+         * @return the route to activate
+         */
+        public Location getRoute() {
+            return route;
+        }
+
     }
 
     /**
@@ -423,8 +481,54 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     @Override
+    protected boolean canHandleRequest(VaadinRequest request) {
+        if (isFrameworkInternalRequest(request)) {
+            // Never accidentally send a bootstrap page for what is considered
+            // an internal request
+            return false;
+        }
+        if (request.getHeader(SERVICE_WORKER_HEADER) != null) {
+            return false;
+        }
+        return super.canHandleRequest(request);
+    }
+
+    /**
+     * Checks whether the request is an internal request.
+     * <p>
+     * Warning: This assumes that the VaadinRequest is targeted for a
+     * VaadinServlet and does no further checks to validate this. You want to
+     * use
+     * {@link HandlerHelper#isFrameworkInternalRequest(String, HttpServletRequest)}
+     * instead.
+     * <p>
+     * This is public only so that
+     * {@link com.vaadin.flow.server.communication.IndexHtmlRequestHandler} can
+     * access it. If you are not IndexHtmlRequestHandler, go away.
+     *
+     * @param request
+     *            the request
+     * @return {@code true} if the request is Vaadin internal, {@code false}
+     *         otherwise
+     */
+    public static boolean isFrameworkInternalRequest(VaadinRequest request) {
+        if (request instanceof VaadinServletRequest) {
+            // We can ignore the servlet path in this case as we know that
+            // this is targeting a Vaadin servlet and not some other servlet
+            return HandlerHelper.isInternalRequestInsideServlet(
+                    request.getPathInfo(), request.getParameter(
+                            ApplicationConstants.REQUEST_TYPE_PARAMETER));
+        }
+        return false;
+    }
+
+    @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
+        if (writeErrorCodeIfRequestLocationIsInvalid(request, response)) {
+            return true;
+        }
+
         // Find UI class
         Class<? extends UI> uiClass = getUIClass(request);
 
@@ -439,6 +543,33 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         writeBootstrapPage(response, document.outerHtml());
 
         return true;
+    }
+
+    /**
+     * Checks whether the request is for a valid location, and if not, writes
+     * the error code for the response.
+     * 
+     * @param request
+     *            the request to check
+     * @param response
+     *            the response to write
+     * @return {@code true} if location was invalid and error code was written,
+     *         {@code false} if not (location was valid)
+     * @throws IOException
+     *             in case writing to response fails
+     */
+    protected boolean writeErrorCodeIfRequestLocationIsInvalid(
+            VaadinRequest request, VaadinResponse response) throws IOException {
+        try {
+            // #9443 Use error code 400 for bad location and don't create UI
+            LocationUtil.verifyRelativePath(
+                    LocationUtil.ensureRelativeNonNull(request.getPathInfo()));
+        } catch (InvalidLocationException invalidLocationException) {
+            response.sendError(400, "Invalid location: "
+                    + invalidLocationException.getMessage());
+            return true;
+        }
+        return false;
     }
 
     private void writeBootstrapPage(VaadinResponse response, String html)
@@ -518,7 +649,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             setupPwa(document, context);
 
             if (!config.isProductionMode()) {
-                showWebpackErrors(document);
+                showWebpackErrors(context.getService(), document);
             }
 
             BootstrapPageResponse response = new BootstrapPageResponse(
@@ -780,8 +911,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 } else {
                     chunkName = chunks.getString(key);
                 }
-                Element script = createJavaScriptElement(
-                        "./" + chunkName, false);
+                Element script = createJavaScriptElement("./" + chunkName,
+                        false);
                 head.appendChild(script.attr("type", "module")
                         .attr("data-app-id",
                                 context.getUI().getInternals().getAppId())
@@ -1104,21 +1235,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         deploymentConfiguration.isDevModeLiveReloadEnabled());
 
                 VaadinService service = session.getService();
-                BrowserLiveReloadAccess liveReloadAccess = service
-                        .getInstantiator()
-                        .getOrCreate(BrowserLiveReloadAccess.class);
-                BrowserLiveReload liveReload = liveReloadAccess != null
-                        ? liveReloadAccess.getLiveReload(service)
-                        : null;
+                Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
+                        .getLiveReloadFromService(service);
 
                 // With V15+ bootstrap, gizmo is added to generated index.html
-                if (liveReload != null
+                if (liveReload.isPresent()
                         && deploymentConfiguration.useV14Bootstrap()) {
                     appConfig.put("liveReloadUrl", BootstrapHandlerHelper
                             .getPushURL(session, request));
-                    if (liveReload.getBackend() != null) {
-                        appConfig.put("liveReloadBackend",
-                                liveReload.getBackend().toString());
+                    BrowserLiveReload.Backend backend = liveReload.get()
+                            .getBackend();
+                    if (backend != null) {
+                        appConfig.put("liveReloadBackend", backend.toString());
                     }
                     appConfig.put("springBootLiveReloadPort",
                             Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT);
@@ -1239,14 +1367,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // After init and adding UI to session fire init listeners.
         session.getService().fireUIInitListeners(ui);
 
-        initializeUIWithRouter(request, ui);
+        initializeUIWithRouter(context, ui);
 
         return context;
     }
 
-    protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
+    protected void initializeUIWithRouter(BootstrapContext context, UI ui) {
         if (ui.getInternals().getRouter() != null) {
-            ui.getInternals().getRouter().initializeUI(ui, request);
+            ui.getInternals().getRouter().initializeUI(ui, context.getRoute());
         }
     }
 
@@ -1386,7 +1514,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getFullVersion();
         // Load client-side dependencies for push support
-        String pushJSPath = context.getRequest().getService()
+        String pushJSPath = context.getService()
                 .getContextRootRelativePath(request);
 
         if (request.getService().getDeploymentConfiguration()
@@ -1400,10 +1528,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return pushJSPath;
     }
 
-    protected static void showWebpackErrors(Document document) {
-        DevModeHandler devMode = DevModeHandler.getDevModeHandler();
-        if (devMode != null) {
-            String errorMsg = devMode.getFailedOutput();
+    protected static void showWebpackErrors(VaadinService service,
+            Document document) {
+        Optional<DevModeHandler> devServer = DevModeHandlerManager
+                .getDevModeHandler(service);
+        if (devServer.isPresent()) {
+            String errorMsg = devServer.get().getFailedOutput();
             if (errorMsg != null) {
                 // Make error lines more prominent
                 errorMsg = errorMsg.replaceAll("(ERROR.+?\n)", "<b>$1</b>");

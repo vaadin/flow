@@ -66,6 +66,7 @@ public class CustomUIClassLoaderTest extends TestCase {
                 .mock(ApplicationConfiguration.class);
         Mockito.when(config.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
+        Mockito.when(config.getBuildFolder()).thenReturn(".");
         return new DefaultDeploymentConfiguration(config,
                 CustomUIClassLoaderTest.class, properties);
     }

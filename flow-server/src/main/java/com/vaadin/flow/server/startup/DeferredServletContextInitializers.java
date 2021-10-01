@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,7 +29,9 @@ import com.vaadin.flow.server.VaadinContext;
  * Internal collection of initializers which may not be executed immediately but
  * requires a {@link Lookup} instance which will be set in the
  * {@link VaadinContext} ({@link ServletContext}) only when
- * {@link LookupInitializer} completed.
+ * {@link LookupServletContainerInitializer} completed.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @author Vaadin Ltd
  * @since

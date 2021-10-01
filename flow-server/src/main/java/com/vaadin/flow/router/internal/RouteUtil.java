@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -40,6 +40,8 @@ import com.vaadin.flow.server.RouteRegistry;
 
 /**
  * Utility class with methods for route handling.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.3
  */
@@ -162,8 +164,8 @@ public class RouteUtil {
         return list;
     }
 
-    static Optional<RouteAlias> getMatchingRouteAlias(
-            Class<?> component, String path, List<RouteAlias> routeAliases) {
+    static Optional<RouteAlias> getMatchingRouteAlias(Class<?> component,
+            String path, List<RouteAlias> routeAliases) {
         return routeAliases.stream().filter(
                 alias -> path.equals(getRouteAliasPath(component, alias))
                         && !alias.layout().equals(UI.class))
@@ -307,7 +309,8 @@ public class RouteUtil {
         Logger logger = LoggerFactory.getLogger(RouteUtil.class);
 
         registry.update(() -> {
-            // remove deleted classes and classes that lost the annotation from registry
+            // remove deleted classes and classes that lost the annotation from
+            // registry
             Stream.concat(deletedClasses.stream(),
                     modifiedClasses.stream().filter(
                             clazz -> !clazz.isAnnotationPresent(Route.class)))
@@ -319,8 +322,7 @@ public class RouteUtil {
                     });
             // add new routes to registry
             Stream.concat(addedClasses.stream(), modifiedClasses.stream())
-                    .distinct()
-                    .filter(Component.class::isAssignableFrom)
+                    .distinct().filter(Component.class::isAssignableFrom)
                     .filter(clazz -> clazz.isAnnotationPresent(Route.class))
                     .forEach(clazz -> {
                         Class<? extends Component> componentClass = (Class<? extends Component>) clazz;

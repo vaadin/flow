@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,19 +27,21 @@ import com.vaadin.flow.router.RouteParameters;
  * The result of the search contains the target itself if found, and the url
  * parameter values extracted from the input path according with the route
  * configuration.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class NavigationRouteTarget implements Serializable {
 
     // Processed path.
-    private String path;
+    private final String path;
 
     // Target found for the specified path.
-    private RouteTarget routeTarget;
+    private final RouteTarget routeTarget;
 
     // Parameters found in the path.
-    private RouteParameters parameters;
+    private final RouteParameters parameters;
 
-    NavigationRouteTarget(String path, RouteTarget routeTarget,
+    public NavigationRouteTarget(String path, RouteTarget routeTarget,
             Map<String, String> parameters) {
         this.path = path;
         this.routeTarget = routeTarget;

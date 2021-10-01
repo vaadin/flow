@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -158,7 +158,7 @@ public class ClientEngineLinker extends SingleScriptLinker {
     @Override
     protected EmittedArtifact emitSelectionScript(TreeLogger logger,
             LinkerContext context, ArtifactSet artifacts)
-                    throws UnableToCompleteException {
+            throws UnableToCompleteException {
 
         // Find the single Script result
         Script result = getScript(logger, artifacts);
@@ -298,7 +298,7 @@ public class ClientEngineLinker extends SingleScriptLinker {
     @Override
     public ArtifactSet link(TreeLogger logger, LinkerContext context,
             ArtifactSet artifacts, boolean onePermutation)
-                    throws UnableToCompleteException {
+            throws UnableToCompleteException {
         ArtifactSet result = super.link(logger, context, artifacts,
                 onePermutation);
         if (!onePermutation) {
@@ -312,7 +312,7 @@ public class ClientEngineLinker extends SingleScriptLinker {
      */
     private Artifact<?> emitStrongNamePropertyFile(TreeLogger logger,
             LinkerContext context, ArtifactSet artifacts)
-                    throws UnableToCompleteException {
+            throws UnableToCompleteException {
         Script result = getScript(logger, artifacts);
 
         String contents = "jsFile=" + getJsFilename(context, result);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,13 +42,15 @@ public class WebBrowser implements Serializable {
     private BrowserDetails browserDetails = null;
 
     /**
-     * For internal use only. Configures all properties for the initial empty state.
+     * For internal use only. Configures all properties for the initial empty
+     * state.
      */
-    WebBrowser() {}
+    WebBrowser() {
+    }
 
     /**
-     * For internal use only. Configures all properties in the class according to
-     * the given information.
+     * For internal use only. Configures all properties in the class according
+     * to the given information.
      *
      * @param request
      *            the Vaadin request to read the information from

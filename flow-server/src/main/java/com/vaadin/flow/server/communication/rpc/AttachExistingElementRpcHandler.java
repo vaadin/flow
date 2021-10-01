@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,6 +29,8 @@ import elemental.json.JsonObject;
 
 /**
  * RPC handler for a client-side response on attach existing element request.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @see JsonConstants#RPC_ATTACH_EXISTING_ELEMENT
  * @see JsonConstants#RPC_ATTACH_ASSIGNED_ID
@@ -49,7 +51,8 @@ public class AttachExistingElementRpcHandler
     }
 
     @Override
-    protected Optional<Runnable> handleNode(StateNode node, JsonObject invocationJson) {
+    protected Optional<Runnable> handleNode(StateNode node,
+            JsonObject invocationJson) {
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_REQUESTED_ID);
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_TAG_NAME);

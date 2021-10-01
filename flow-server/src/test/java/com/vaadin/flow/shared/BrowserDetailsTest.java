@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -87,6 +87,7 @@ public class BrowserDetailsTest extends TestCase {
     private static final String EDGE_18 = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; ServiceUI 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763";
     private static final String EDGE_79 = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36 Edg/79.0.309.71";
 
+    private static final String GOOGLE_APP_IPHONE_14_7 = "Mozilla/5.0 (iPhone; CPU iPhone OS 14_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) GSA/117.0.321844219 Mobile/15E148 Safari/604.1";
 
     public void testSafari3() {
         BrowserDetails bd = new BrowserDetails(SAFARI3_WINDOWS);
@@ -607,24 +608,28 @@ public class BrowserDetailsTest extends TestCase {
         assertEngineVersion(bd, 604.3f);
     }
 
+    public void testIphone14_7IsNotOld() {
+        assertNotTooOld(GOOGLE_APP_IPHONE_14_7);
+    }
+
     /*
      * Helper methods below
      */
 
     private void assertEngineVersion(BrowserDetails browserDetails,
-                                     float version) {
+            float version) {
         assertEquals(version, browserDetails.getBrowserEngineVersion());
 
     }
 
     private void assertBrowserMajorVersion(BrowserDetails browserDetails,
-                                           int version) {
+            int version) {
         assertEquals(version, browserDetails.getBrowserMajorVersion());
 
     }
 
     private void assertBrowserMinorVersion(BrowserDetails browserDetails,
-                                           int version) {
+            int version) {
         assertEquals(version, browserDetails.getBrowserMinorVersion());
 
     }
@@ -730,7 +735,7 @@ public class BrowserDetailsTest extends TestCase {
     }
 
     private void assertAndroid(BrowserDetails browserDetails, int majorVersion,
-                               int minorVersion) {
+            int minorVersion) {
         assertFalse(browserDetails.isLinux());
         assertFalse(browserDetails.isWindows());
         assertFalse(browserDetails.isMacOSX());
@@ -750,7 +755,7 @@ public class BrowserDetailsTest extends TestCase {
     }
 
     private void assertWindows(BrowserDetails browserDetails,
-                               boolean isWindowsPhone) {
+            boolean isWindowsPhone) {
         assertFalse(browserDetails.isLinux());
         assertTrue(browserDetails.isWindows());
         assertFalse(browserDetails.isMacOSX());
@@ -768,7 +773,7 @@ public class BrowserDetailsTest extends TestCase {
     }
 
     private void assertChromeOS(BrowserDetails browserDetails, int majorVersion,
-                                int minorVersion) {
+            int minorVersion) {
         assertFalse(browserDetails.isLinux());
         assertFalse(browserDetails.isWindows());
         assertFalse(browserDetails.isMacOSX());
@@ -783,6 +788,7 @@ public class BrowserDetailsTest extends TestCase {
         BrowserDetails bd = new BrowserDetails(userAgent);
         Assert.assertTrue(bd.isTooOldToFunctionProperly());
     }
+
     private void assertNotTooOld(String userAgent) {
         BrowserDetails bd = new BrowserDetails(userAgent);
         Assert.assertFalse(bd.isTooOldToFunctionProperly());

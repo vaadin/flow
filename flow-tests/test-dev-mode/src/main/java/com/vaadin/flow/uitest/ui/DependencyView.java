@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -73,7 +73,8 @@ public class DependencyView extends AbstractDivView {
         UI ui = attachEvent.getUI();
 
         getPage().addStyleSheet("/test-files/css/allred.css");
-        getPage().addJavaScript("/frontend/test-files/js/body-click-listener.js");
+        getPage().addJavaScript(
+                "/frontend/test-files/js/body-click-listener.js");
     }
 
 }

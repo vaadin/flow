@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
@@ -140,7 +141,7 @@ public class VaadinServletTest {
 
             @Override
             protected StaticFileHandler createStaticFileHandler(
-                    VaadinServletService servletService) {
+                    VaadinService servletService) {
                 return Mockito.mock(StaticFileHandler.class);
             }
 
@@ -179,7 +180,7 @@ public class VaadinServletTest {
 
                 @Override
                 protected StaticFileHandler createStaticFileHandler(
-                        VaadinServletService servletService) {
+                        VaadinService servletService) {
                     return Mockito.mock(StaticFileHandler.class);
                 }
 
@@ -265,6 +266,88 @@ public class VaadinServletTest {
 
         Mockito.verify(initializer)
                 .initialize(Mockito.any(VaadinContext.class));
+    }
+
+    @Test
+    public void init_initIsCalledAfterDestroy_passDifferentConfigInstance_servletIsInitialized()
+            throws ServletException {
+        VaadinServlet servlet = new VaadinServlet();
+
+        ServletConfig config = mockConfig();
+
+        servlet.init(config);
+
+        Assert.assertSame(config, servlet.getServletConfig());
+
+        servlet.destroy();
+
+        ServletConfig newConfig = mockConfig();
+        servlet.init(newConfig);
+        Assert.assertSame(newConfig, servlet.getServletConfig());
+    }
+
+    @Test
+    public void destroy_servletIsInitializedBeforeDestroy_servletConfigIsNullAfterDestroy()
+            throws ServletException {
+        VaadinServlet servlet = new VaadinServlet();
+
+        ServletConfig config = mockConfig();
+
+        servlet.init(config);
+
+        servlet.destroy();
+
+        Assert.assertNull(servlet.getServletConfig());
+    }
+
+    @Test
+    public void createStaticFileHandler_delegateToStaticFileHandlerFactory() {
+        VaadinServlet servlet = new VaadinServlet();
+        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        Mockito.when(service.getContext()).thenReturn(context);
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+
+        StaticFileHandlerFactory factory = Mockito
+                .mock(StaticFileHandlerFactory.class);
+
+        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
+                .thenReturn(factory);
+
+        StaticFileHandler handler = Mockito.mock(StaticFileHandler.class);
+        Mockito.when(factory.createHandler(service)).thenReturn(handler);
+
+        StaticFileHandler result = servlet.createStaticFileHandler(service);
+
+        Mockito.verify(factory).createHandler(service);
+        Assert.assertSame(handler, result);
+    }
+
+    @Test
+    public void destroy_servletConfigAvailableInServbiceDestroy()
+            throws ServletException {
+        VaadinServletService service = Mockito.mock(VaadinServletService.class);
+        VaadinServlet servlet = new VaadinServlet() {
+            @Override
+            public VaadinServletService getService() {
+                return service;
+            }
+        };
+
+        AtomicReference<ServletConfig> configDuringDestroy = new AtomicReference<>();
+        Mockito.doAnswer(invocation -> {
+            configDuringDestroy.set(servlet.getServletConfig());
+            return null;
+        }).when(service).destroy();
+
+        ServletConfig config = mockConfig();
+
+        servlet.init(config);
+
+        servlet.destroy();
+
+        Assert.assertSame(config, configDuringDestroy.get());
     }
 
     private ServletConfig mockConfig() {

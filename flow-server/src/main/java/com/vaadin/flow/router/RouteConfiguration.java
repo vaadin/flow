@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -80,7 +80,7 @@ public class RouteConfiguration implements Serializable {
      * {@link CurrentInstance} is not yet populated.
      *
      * @param registry
-     *         registry to edit through the controller
+     *            registry to edit through the controller
      * @return configurator for editing given registry
      */
     public static RouteConfiguration forRegistry(RouteRegistry registry) {
@@ -109,7 +109,7 @@ public class RouteConfiguration implements Serializable {
      * Check if there is a registered target for the given path.
      *
      * @param path
-     *         path to check for route registration
+     *            path to check for route registration
      * @return true if there exists a route for the given path
      * @deprecated Use {@link #isPathAvailable(String)}
      */
@@ -122,7 +122,7 @@ public class RouteConfiguration implements Serializable {
      * Check if the given path is available.
      *
      * @param path
-     *         path to check for availability
+     *            path to check for availability
      * @return true if there exists a route for the given path
      */
     public boolean isPathAvailable(String path) {
@@ -130,18 +130,18 @@ public class RouteConfiguration implements Serializable {
             return ((AbstractRouteRegistry) handledRegistry).getConfiguration()
                     .hasTemplate(path);
         }
-        return getAvailableRoutes().stream().anyMatch(
-                routeData -> routeData.getTemplate().equals(path)
+        return getAvailableRoutes().stream()
+                .anyMatch(routeData -> routeData.getTemplate().equals(path)
                         || routeData.getRouteAliases().stream()
-                        .anyMatch(routeAliasData -> routeAliasData
-                                .getTemplate().equals(path)));
+                                .anyMatch(routeAliasData -> routeAliasData
+                                        .getTemplate().equals(path)));
     }
 
     /**
      * Check if the route is available as a registered target.
      *
      * @param route
-     *         target class to check for registration
+     *            target class to check for registration
      * @return true if class is registered
      */
     public boolean isRouteRegistered(Class<? extends Component> route) {
@@ -153,7 +153,7 @@ public class RouteConfiguration implements Serializable {
      * optional if no navigation target corresponds to the given path.
      *
      * @param path
-     *         path to get route for
+     *            path to get route for
      * @return optional containing the path component or empty if not found
      */
     public Optional<Class<? extends Component>> getRoute(String path) {
@@ -165,11 +165,11 @@ public class RouteConfiguration implements Serializable {
      * with path segments.
      *
      * @param path
-     *         path to get navigation target for, not {@code null}
+     *            path to get navigation target for, not {@code null}
      * @param segments
-     *         segments given for path
+     *            segments given for path
      * @return optional navigation target corresponding to the given path and
-     * segments
+     *         segments
      */
     public Optional<Class<? extends Component>> getRoute(String path,
             List<String> segments) {
@@ -181,7 +181,7 @@ public class RouteConfiguration implements Serializable {
      * Add a listener that is notified when routes change for the registry.
      *
      * @param listener
-     *         listener to add
+     *            listener to add
      * @return registration for removing the listener
      */
     public Registration addRoutesChangeListener(
@@ -206,7 +206,7 @@ public class RouteConfiguration implements Serializable {
      * registry until the update has fully completed.
      *
      * @param command
-     *         command to execute for the update
+     *            command to execute for the update
      */
     public void update(Command command) {
         handledRegistry.update(command);
@@ -218,15 +218,15 @@ public class RouteConfiguration implements Serializable {
      * the class.
      *
      * @param navigationTarget
-     *         navigation target to register
+     *            navigation target to register
      * @throws InvalidRouteConfigurationException
-     *         thrown if exact route already defined in this scope
+     *             thrown if exact route already defined in this scope
      */
     public void setAnnotatedRoute(Class<? extends Component> navigationTarget) {
         if (!navigationTarget.isAnnotationPresent(Route.class)) {
-            String message = String
-                    .format("Given navigationTarget %s is missing the '@Route' annotation.",
-                            navigationTarget.getName());
+            String message = String.format(
+                    "Given navigationTarget %s is missing the '@Route' annotation.",
+                    navigationTarget.getName());
             throw new InvalidRouteConfigurationException(message);
         }
         String route = RouteUtil.getRoutePath(navigationTarget,
@@ -249,11 +249,11 @@ public class RouteConfiguration implements Serializable {
      * consideration.
      *
      * @param path
-     *         path to register navigation target to
+     *            path to register navigation target to
      * @param navigationTarget
-     *         navigation target to register
+     *            navigation target to register
      * @throws InvalidRouteConfigurationException
-     *         thrown if exact route already defined in this scope
+     *             thrown if exact route already defined in this scope
      */
     public void setParentAnnotatedRoute(String path,
             Class<? extends Component> navigationTarget) {
@@ -269,11 +269,11 @@ public class RouteConfiguration implements Serializable {
      * be ignored in route handling.
      *
      * @param path
-     *         path to register navigation target to
+     *            path to register navigation target to
      * @param navigationTarget
-     *         navigation target to register
+     *            navigation target to register
      * @throws InvalidRouteConfigurationException
-     *         thrown if exact route already defined in this scope
+     *             thrown if exact route already defined in this scope
      */
     public void setRoute(String path,
             Class<? extends Component> navigationTarget) {
@@ -288,13 +288,13 @@ public class RouteConfiguration implements Serializable {
      * be ignored in route handling.
      *
      * @param path
-     *         path to register navigation target to
+     *            path to register navigation target to
      * @param navigationTarget
-     *         navigation target to register
+     *            navigation target to register
      * @param parentChain
-     *         chain of parent layouts that should be used with this target
+     *            chain of parent layouts that should be used with this target
      * @throws InvalidRouteConfigurationException
-     *         thrown if exact route already defined in this scope
+     *             thrown if exact route already defined in this scope
      */
     public void setRoute(String path,
             Class<? extends Component> navigationTarget,
@@ -310,20 +310,20 @@ public class RouteConfiguration implements Serializable {
      * be ignored in route handling.
      *
      * @param path
-     *         path to register navigation target to
+     *            path to register navigation target to
      * @param navigationTarget
-     *         navigation target to register
+     *            navigation target to register
      * @param parentChain
-     *         chain of parent layouts that should be used with this target
+     *            chain of parent layouts that should be used with this target
      * @throws InvalidRouteConfigurationException
-     *         thrown if exact route already defined in this scope
+     *             thrown if exact route already defined in this scope
      */
     public void setRoute(String path,
             Class<? extends Component> navigationTarget,
             Class<? extends RouterLayout>... parentChain) {
         // This method is unchecked for the type due to varargs
-        handledRegistry
-                .setRoute(path, navigationTarget, Arrays.asList(parentChain));
+        handledRegistry.setRoute(path, navigationTarget,
+                Arrays.asList(parentChain));
     }
 
     /**
@@ -336,7 +336,7 @@ public class RouteConfiguration implements Serializable {
      * {@link RouteAlias} route that can be found for the class.
      *
      * @param navigationTarget
-     *         navigation target class to remove
+     *            navigation target class to remove
      */
     public void removeRoute(Class<? extends Component> navigationTarget) {
         handledRegistry.removeRoute(navigationTarget);
@@ -401,10 +401,10 @@ public class RouteConfiguration implements Serializable {
      * this method will throw an IllegalArgumentException.
      *
      * @param navigationTarget
-     *         navigation target to get url for
+     *            navigation target to get url for
      * @return url for the navigation target
      * @throws IllegalArgumentException
-     *         if the navigation target requires a parameter
+     *             if the navigation target requires a parameter
      */
     public String getUrl(Class<? extends Component> navigationTarget) {
         return getUrl(navigationTarget, RouteParameters.empty());
@@ -415,8 +415,9 @@ public class RouteConfiguration implements Serializable {
      *
      * @param navigationTarget
      *            navigation target to get url for
-     * @return optional url base without route parameters or empty if there is no
-     *         registered route for {@code navigationTarget}, not {@code null}
+     * @return optional url base without route parameters or empty if there is
+     *         no registered route for {@code navigationTarget}, not
+     *         {@code null}
      */
     public Optional<String> getUrlBase(
             Class<? extends Component> navigationTarget) {
@@ -450,13 +451,13 @@ public class RouteConfiguration implements Serializable {
      * then calling getUrl with a {@code String} will fail.
      *
      * @param navigationTarget
-     *         navigation target to get url for
+     *            navigation target to get url for
      * @param parameter
-     *         parameter to embed into the generated url
+     *            parameter to embed into the generated url
      * @param <T>
-     *         url parameter type
+     *            url parameter type
      * @param <C>
-     *         navigation target type
+     *            navigation target type
      * @return url for the navigation target with parameter
      */
     public <T, C extends Component & HasUrlParameter<T>> String getUrl(
@@ -474,13 +475,13 @@ public class RouteConfiguration implements Serializable {
      * {@code Boolean} then calling getUrl with a {@code String} will fail.
      *
      * @param navigationTarget
-     *         navigation target to get url for
+     *            navigation target to get url for
      * @param parameters
-     *         parameters to embed into the generated url, not null
+     *            parameters to embed into the generated url, not null
      * @param <T>
-     *         url parameter type
+     *            url parameter type
      * @param <C>
-     *         navigation target type
+     *            navigation target type
      * @return url for the navigation target with parameter
      */
     public <T, C extends Component & HasUrlParameter<T>> String getUrl(
@@ -509,8 +510,10 @@ public class RouteConfiguration implements Serializable {
         Optional<String> targetUrl = handledRegistry
                 .getTargetUrl(navigationTarget, parameters);
         if (!targetUrl.isPresent()) {
-            throw new NotFoundException(
-                    "No route found for the given navigation target and parameters!");
+            throw new NotFoundException(String.format(
+                    "No route found for the given navigation target '%s' and parameters '%s'",
+                    navigationTarget.getClass().getName(),
+                    parameters.toString()));
         }
         return targetUrl.get();
     }
@@ -532,8 +535,8 @@ public class RouteConfiguration implements Serializable {
             Class<? extends Component> navigationTarget,
             Class<? extends Annotation>... parameterAnnotations) {
         for (Class<? extends Annotation> annotation : parameterAnnotations) {
-            if (ParameterDeserializer
-                    .isAnnotatedParameter(navigationTarget, annotation)) {
+            if (ParameterDeserializer.isAnnotatedParameter(navigationTarget,
+                    annotation)) {
                 return true;
             }
         }

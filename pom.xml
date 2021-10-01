@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>flow-project</artifactId>
     <name>Flow</name>
     <packaging>pom</packaging>
-    <version>6.0-SNAPSHOT</version>
+    <version>9.0-SNAPSHOT</version>
 
     <parent>
         <groupId>com.vaadin</groupId>
@@ -25,17 +25,18 @@
         <module>flow-client</module>
         <module>flow-html-components</module>
         <module>flow-html-components-testbench</module>
-        <module>flow-theme-integrations</module>
         <module>flow-dnd</module>
         <module>flow-test-util</module>
         <module>flow-tests</module>
         <module>flow-server-production-mode</module>
         <module>flow-component-demo-helpers</module>
-        <module>flow-maven-plugin</module>
+        <module>flow-plugins</module>
         <module>flow-test-generic</module>
         <module>flow-bom</module>
         <module>fusion-endpoint</module>
         <module>build-tools</module>
+		<module>vaadin-dev-server</module>
+        <module>flow-jandex</module>
     </modules>
 
     <organization>
@@ -74,7 +75,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8
         </project.reporting.outputEncoding>
-        <jsinterop.version>1.0.1</jsinterop.version>
+        <jsinterop.version>1.0.2</jsinterop.version>
         <sonar.java.source>8</sonar.java.source>
         <sonar.analysis.mode>preview</sonar.analysis.mode>
         <sonar.issuesReport.console.enable>true
@@ -85,23 +86,25 @@
 
         <!-- Dependencies -->
         <gwt.version>2.8.2</gwt.version>
-        <hibernate.validator.version>6.0.1.Final</hibernate.validator.version>
-        <slf4j.version>1.7.30</slf4j.version>
+        <hibernate.validator.version>6.2.0.Final</hibernate.validator.version>
+        <slf4j.version>1.7.32</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
+        <jackson.version>2.12.5</jackson.version>
+        <validation.api.version>2.0.1.Final</validation.api.version>
+        <javax.annotation.api.version>1.3.2</javax.annotation.api.version>
 
         <!-- Plugins -->
-        <driver.binary.downloader.maven.plugin.version>1.0.17
-        </driver.binary.downloader.maven.plugin.version>
+        <driver.binary.downloader.maven.plugin.version>1.0.18</driver.binary.downloader.maven.plugin.version>
         <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
-        <maven.surefire.plugin.version>2.22.0</maven.surefire.plugin.version>
-        <maven.failsafe.plugin.version>2.22.0</maven.failsafe.plugin.version>
-        <maven.war.plugin.version>3.1.0</maven.war.plugin.version>
+        <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
+        <maven.failsafe.plugin.version>2.22.2</maven.failsafe.plugin.version>
+        <maven.war.plugin.version>3.3.2</maven.war.plugin.version>
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
-        <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
+        <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-        <testbench.version>6.3.0</testbench.version>
-        <jetty.version>9.4.27.v20200227</jetty.version>
+        <testbench.version>7.0.1</testbench.version>
+        <jetty.version>9.4.43.v20210629</jetty.version>
         <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
 
         <!-- Frontend -->
@@ -113,7 +116,7 @@
         <flow.dev.dependencies.file>devDependencies.json</flow.dev.dependencies.file>
 
         <!-- Used in OSGi manifests -->
-        <jsoup.version>1.12.1</jsoup.version>
+        <jsoup.version>1.14.2</jsoup.version>
         <!-- Note that this should be kept in sync with the class Constants -->
         <atmosphere.runtime.version>2.4.30.slf4jvaadin1
         </atmosphere.runtime.version>
@@ -130,12 +133,12 @@
         <maven.test.skip>false</maven.test.skip>
 
         <!-- This property is needed to allow some Win-specific unit tests -->
-        <!-- to be disabled via system property in CI until they got fixed-->
+        <!-- to be disabled via system property in CI until they got fixed -->
         <exclude.windows.failed.tests></exclude.windows.failed.tests>
     </properties>
 
     <repositories>
-        <!-- The order of definitions matters. Explicitly defining central
+        <!-- The order of definitions matters. Explicitly defining central 
             here to make sure it has the highest priority. -->
         <repository>
             <id>central</id>
@@ -161,7 +164,7 @@
     </repositories>
 
     <pluginRepositories>
-        <!-- The order of definitions matters. Explicitly defining central
+        <!-- The order of definitions matters. Explicitly defining central 
             here to make sure it has the highest priority. -->
         <pluginRepository>
             <id>central</id>
@@ -198,12 +201,12 @@
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>2.5</version>
+                <version>2.11.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.9</version>
+                <version>3.12.0</version>
             </dependency>
 
             <dependency>
@@ -226,7 +229,7 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.10.9</version>
+                <version>1.11.15</version>
             </dependency>
 
 
@@ -239,12 +242,12 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.13.1</version>
+                <version>4.13.2</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
-                <artifactId>mockito-all</artifactId>
-                <version>1.10.19</version>
+                <artifactId>mockito-core</artifactId>
+                <version>3.12.4</version>
             </dependency>
             <dependency>
                 <groupId>org.hamcrest</groupId>
@@ -254,7 +257,7 @@
             <dependency>
                 <groupId>org.easymock</groupId>
                 <artifactId>easymock</artifactId>
-                <version>3.4</version>
+                <version>4.3</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -272,10 +275,9 @@
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-all</artifactId>
@@ -289,7 +291,7 @@
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-ssh-external</artifactId>
-                <version>2.9</version>
+                <version>3.4.3</version>
             </extension>
         </extensions>
 
@@ -304,6 +306,7 @@
                     <!-- Provide a dummy JS config file to avoid errors -->
                     <configJsFile>eclipse/VaadinJavaConventions.xml
                     </configJsFile>
+                    <lineEnding>LF</lineEnding>
                 </configuration>
                 <dependencies>
                     <dependency>
@@ -317,13 +320,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
+                <version>3.8.1</version>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.0.1</version>
+                <version>3.2.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -338,7 +341,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.0.1</version>
+                <version>3.3.1</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -361,7 +364,7 @@
             <plugin>
                 <groupId>org.commonjava.maven.plugins</groupId>
                 <artifactId>directory-maven-plugin</artifactId>
-                <version>0.1</version>
+                <version>0.3.1</version>
                 <executions>
                     <execution>
                         <id>set-root-dir-for-common-lifecycle</id>
@@ -408,7 +411,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <id>parse-version</id>
@@ -434,15 +437,30 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.karaf.tooling</groupId>
+                    <artifactId>karaf-maven-plugin</artifactId>
+                    <version>4.3.2</version>
+                    <extensions>true</extensions>
+                    <executions>
+                        <execution>
+                            <id>generate-features-file</id>
+                            <phase>generate-resources</phase>
+                            <goals>
+                                <goal>features-generate-descriptor</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>1.4.1</version>
+                    <version>3.0.0</version>
                     <dependencies>
                         <dependency>
                             <groupId>de.skuzzle.enforcer</groupId>
                             <artifactId>restrict-imports-enforcer-rule
                             </artifactId>
-                            <version>0.8.0</version>
+                            <version>1.3.0</version>
                         </dependency>
                     </dependencies>
                     <executions>
@@ -455,7 +473,7 @@
                             <configuration>
                                 <rules>
                                     <restrictImports
-                                            implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
+                                        implementation="de.skuzzle.enforcer.restrictimports.rule.RestrictImports">
                                         <reason>Use SLF4j for logging</reason>
                                         <bannedImport>java.util.logging.**
                                         </bannedImport>
@@ -468,7 +486,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.0.2</version>
+                    <version>3.2.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -491,10 +509,10 @@
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
                         <trimStackTrace>false</trimStackTrace>
-                        <reuseForks>false</reuseForks>
                         <excludes>
                             <exclude>${exclude.windows.failed.tests}</exclude>
                         </excludes>
+                        <argLine>${surefire.argLine}</argLine>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -508,7 +526,7 @@
                         <threadCount>2</threadCount>
                     </configuration>
                 </plugin>
-                <!--This plugin's configuration is used to store Eclipse
+                <!--This plugin's configuration is used to store Eclipse 
                     m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
@@ -581,7 +599,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>license-maven-plugin</artifactId>
-                    <version>1.13</version>
+                    <version>2.0.0</version>
                     <configuration>
                         <!-- Default is system -->
                         <excludedScopes>system,test</excludedScopes>
@@ -600,10 +618,12 @@
         <profile>
             <id>java11</id>
             <activation>
-                <jdk>11</jdk>
+                <jdk>[9,)</jdk>
             </activation>
             <properties>
                 <maven.compiler.release>8</maven.compiler.release>
+                <!-- needed for running easymock in JDK11+ (easymock#235) -->
+                <surefire.argLine>--add-opens java.base/java.lang=ALL-UNNAMED</surefire.argLine>
             </properties>
             <build>
                 <pluginManagement>
@@ -670,28 +690,6 @@
                 </pluginManagement>
 
             </build>
-        </profile>
-        <profile>
-            <id>release</id>
-            <modules>
-                <module>flow</module>
-                <module>flow-server</module>
-                <module>flow-push</module>
-                <module>flow-data</module>
-                <module>flow-client</module>
-                <module>flow-html-components</module>
-                <module>flow-test-util</module>
-                <module>flow-tests</module>
-                <module>flow-dev-deps</module>
-                <module>flow-server-production-mode</module>
-                <module>build-tools</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>gen-dev-deps</id>
-            <modules>
-                <module>flow-dev-deps</module>
-            </modules>
         </profile>
     </profiles>
 </project>

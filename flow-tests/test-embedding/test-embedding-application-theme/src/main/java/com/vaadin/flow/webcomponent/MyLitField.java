@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,7 +23,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 /**
  * LIT version of vaadin radio button for testing component theming.
  */
-@JsModule("@vaadin/vaadin-radio-button/vaadin-radio-button.ts")
+@JsModule("@vaadin/vaadin-radio-button/vaadin-radio-button.js")
 @Tag("vaadin-radio-button")
 @NpmPackage(value = "@vaadin/vaadin-radio-button", version = "2.0.0-alpha1")
 public class MyLitField extends Component {
@@ -32,7 +32,7 @@ public class MyLitField extends Component {
      * Set the component id.
      *
      * @param id
-     *     value to set
+     *            value to set
      * @return this component
      */
     public Component withId(String id) {

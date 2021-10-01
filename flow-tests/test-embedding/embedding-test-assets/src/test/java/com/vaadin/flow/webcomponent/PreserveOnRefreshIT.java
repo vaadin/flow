@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -122,29 +122,25 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest implements HasById {
     @Test
     public void openingToAnotherPageWithSameComponents_should_preserveComponentWithoutChangedIdAttribute() {
         /*
-            Currently, when preserving exported components, they are
-            identified by window name, component's tag, and generated id of
-            the embedded web component or id of the wrapping element (if
-            available).
-            Since windows name does not necessarily change when page changes,
-            and generated id is only defined by type of the web component and
-            its order on the page, the component cannot be reliably
-            identified uniquely.
-            In order to assure uniqueness, the user must provide id for the
-            component. If if is provided, the uniqueness can be assured
-            between pages.
-            Contents are synchronized between locations in two cases:
-            - embedded element has the same id as its counter-part in the
-              different location.
-            - component does not have user-assigned id and has the same
-              generated id on both locations (this happens, if the component
-              has the same counted index within the component type between
-              pages)
+         * Currently, when preserving exported components, they are identified
+         * by window name, component's tag, and generated id of the embedded web
+         * component or id of the wrapping element (if available). Since windows
+         * name does not necessarily change when page changes, and generated id
+         * is only defined by type of the web component and its order on the
+         * page, the component cannot be reliably identified uniquely. In order
+         * to assure uniqueness, the user must provide id for the component. If
+         * if is provided, the uniqueness can be assured between pages. Contents
+         * are synchronized between locations in two cases: - embedded element
+         * has the same id as its counter-part in the different location. -
+         * component does not have user-assigned id and has the same generated
+         * id on both locations (this happens, if the component has the same
+         * counted index within the component type between pages)
          */
 
         final String TEXT_CONTENTS = "black cat";
 
-        TestBenchElement noIdElement = findTagWithoutId(PRESERVE_ON_REFRESH_TAG);
+        TestBenchElement noIdElement = findTagWithoutId(
+                PRESERVE_ON_REFRESH_TAG);
 
         Assert.assertEquals(MODIFIED + " input should be empty", "",
                 getValue(MODIFIED));
@@ -168,7 +164,8 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest implements HasById {
                 getValue(NEW_ID));
 
         // same place, no assigned id
-        TestBenchElement noIdElement2 = findTagWithoutId(PRESERVE_ON_REFRESH_TAG);
+        TestBenchElement noIdElement2 = findTagWithoutId(
+                PRESERVE_ON_REFRESH_TAG);
         Assert.assertEquals("Input without id should have preserved state",
                 TEXT_CONTENTS, getValue(noIdElement2));
     }
@@ -201,7 +198,7 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest implements HasById {
                 + Constants.PAGE_CONTEXT + "/" + page + "')");
         waitForElementVisible(By.id(MODIFIED));
     }
-    
+
     private TestBenchElement findTagWithoutId(String tag) {
         return $(tag).all().stream()
                 .filter(webElement -> webElement.getAttribute("id").isEmpty())

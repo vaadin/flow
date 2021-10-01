@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,15 +15,18 @@
  */
 package com.vaadin.flow.router.internal;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteResolver;
 import com.vaadin.flow.server.RouteRegistry;
-import org.slf4j.LoggerFactory;
 
 /**
  * Default implementation of the {@link RouteResolver} interface.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -41,7 +44,7 @@ public class DefaultRouteResolver implements RouteResolver {
         if (!navigationResult.hasTarget()) {
             return null;
         }
-        
+
         NavigationStateBuilder builder = new NavigationStateBuilder(
                 request.getRouter());
         try {

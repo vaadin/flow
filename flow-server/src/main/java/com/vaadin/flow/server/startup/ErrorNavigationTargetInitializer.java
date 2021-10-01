@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
 import java.util.HashSet;
@@ -25,22 +23,23 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.VaadinContext;
 
 /**
  * Servlet initializer for collecting all available error handler navigation
  * targets implementing {@link HasErrorParameter} on startup.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */
 @HandlesTypes(HasErrorParameter.class)
 public class ErrorNavigationTargetInitializer
-        implements ClassLoaderAwareServletContainerInitializer {
+        implements VaadinServletContextStartupInitializer {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void process(Set<Class<?>> classSet, ServletContext servletContext)
-            throws ServletException {
+    public void initialize(Set<Class<?>> classSet, VaadinContext context) {
         if (classSet == null) {
             classSet = new HashSet<>();
         }
@@ -50,8 +49,7 @@ public class ErrorNavigationTargetInitializer
                 .map(clazz -> (Class<? extends Component>) clazz)
                 .collect(Collectors.toSet());
 
-        ApplicationRouteRegistry
-                .getInstance(new VaadinServletContext(servletContext))
+        ApplicationRouteRegistry.getInstance(context)
                 .setErrorNavigationTargets(routes);
     }
 

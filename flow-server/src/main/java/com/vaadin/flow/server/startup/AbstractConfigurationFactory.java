@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,7 +32,6 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_FILE;
@@ -41,7 +40,9 @@ import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL;
 import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
+import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
+import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -148,9 +149,12 @@ public class AbstractConfigurationFactory implements Serializable {
             params.put(CONNECT_APPLICATION_PROPERTIES_TOKEN,
                     buildInfo.getString(CONNECT_APPLICATION_PROPERTIES_TOKEN));
         }
-        if (buildInfo.hasKey(CONNECT_GENERATED_TS_DIR_TOKEN)) {
-            params.put(CONNECT_GENERATED_TS_DIR_TOKEN,
-                    buildInfo.getString(CONNECT_GENERATED_TS_DIR_TOKEN));
+        if (buildInfo.hasKey(PROJECT_FRONTEND_GENERATED_DIR_TOKEN)) {
+            params.put(PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
+                    buildInfo.getString(PROJECT_FRONTEND_GENERATED_DIR_TOKEN));
+        }
+        if (buildInfo.hasKey(BUILD_FOLDER)) {
+            params.put(BUILD_FOLDER, buildInfo.getString(BUILD_FOLDER));
         }
 
         setDevModePropertiesUsingTokenData(params, buildInfo);

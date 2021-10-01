@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,10 @@
  */
 package com.vaadin.flow.pwatest.ui;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -26,8 +29,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
@@ -38,11 +39,17 @@ import org.openqa.selenium.mobile.NetworkConnection;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 public class PwaTestIT extends ChromeDeviceTest {
 
     @Test
     public void testPwaResources() throws IOException {
         open();
+
+        checkLogsForErrors(
+                msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
         WebElement head = findElement(By.tagName("head"));
 
         // test mobile capable
@@ -82,6 +89,9 @@ public class PwaTestIT extends ChromeDeviceTest {
         String href = elements.get(0).getAttribute("href");
         Assert.assertTrue(href + " didn't respond with resource", exists(href));
         // Verify user values in manifest.webmanifest
+        if (!href.startsWith(getRootURL())) {
+            href = getRootURL() + '/' + href;
+        }
         JsonObject manifest = readJsonFromUrl(href);
         Assert.assertEquals(ParentLayout.PWA_NAME, manifest.getString("name"));
         Assert.assertEquals(ParentLayout.PWA_SHORT_NAME,
@@ -93,12 +103,12 @@ public class PwaTestIT extends ChromeDeviceTest {
 
         // test service worker initialization
         elements = head.findElements(By.tagName("script")).stream()
-                .filter(webElement -> webElement.getAttribute("innerHTML")
+                .filter(webElement -> getInnerHtml(webElement)
                         .startsWith("if ('serviceWorker' in navigator)"))
                 .collect(Collectors.toList());
         Assert.assertEquals(1, elements.size());
 
-        String serviceWorkerInit = elements.get(0).getAttribute("innerHTML");
+        String serviceWorkerInit = getInnerHtml(elements.get(0));
         Pattern pattern = Pattern
                 .compile("navigator.serviceWorker.register\\('([^']+)'\\)");
         Matcher matcher = pattern.matcher(serviceWorkerInit);
@@ -114,7 +124,8 @@ public class PwaTestIT extends ChromeDeviceTest {
 
         String serviceWorkerJS = readStringFromUrl(serviceWorkerUrl);
         // parse the precache resources (the app bundles) from service worker JS
-        pattern = Pattern.compile("\\{'revision':('[^']+'|null),'url':'([^']+)'}");
+        pattern = Pattern
+                .compile("\\{'revision':('[^']+'|null),'url':'([^']+)'}");
         matcher = pattern.matcher(serviceWorkerJS);
         ArrayList<String> precacheUrls = new ArrayList<>();
         while (matcher.find()) {
@@ -198,7 +209,11 @@ public class PwaTestIT extends ChromeDeviceTest {
     }
 
     @Test
-    public void compareUncompressedAndCompressedServiceWorkerJS() throws IOException {
+    public void compareUncompressedAndCompressedServiceWorkerJS()
+            throws IOException {
+        open();
+        waitForServiceWorkerReady();
+
         // test only in production mode
         Assume.assumeTrue(isProductionMode());
 
@@ -233,11 +248,10 @@ public class PwaTestIT extends ChromeDeviceTest {
     private boolean exists(String url) {
         // If the mimetype can be guessed from the file name, check consistency
         // with the actual served file
-        String expectedMimeType = URLConnection
-                .guessContentTypeFromName(url);
+        String expectedMimeType = URLConnection.guessContentTypeFromName(url);
         String script = "const mimeType = arguments[0];"
-                + "const resolve = arguments[1];"
-                + "fetch('" + url + "', {method: 'HEAD'})"
+                + "const resolve = arguments[1];" + "fetch('" + url
+                + "', {method: 'GET'})"
                 + ".then(response => resolve(response.status===200"
                 + "      && !response.redirected"
                 + "      && (mimeType===null || response.headers.get('Content-Type')===mimeType)))"
@@ -247,11 +261,11 @@ public class PwaTestIT extends ChromeDeviceTest {
     }
 
     private static String readStringFromUrl(String url) throws IOException {
-        return new String(readAllBytes(new URL(url).openStream()), StandardCharsets.UTF_8);
+        return new String(readAllBytes(new URL(url).openStream()),
+                StandardCharsets.UTF_8);
     }
 
-    private static JsonObject readJsonFromUrl(String url)
-            throws IOException {
+    private static JsonObject readJsonFromUrl(String url) throws IOException {
         return Json.parse(readStringFromUrl(url));
     }
 
@@ -261,7 +275,8 @@ public class PwaTestIT extends ChromeDeviceTest {
         }
     }
 
-    private static byte[] readAllBytes(InputStream inputStream) throws IOException {
+    private static byte[] readAllBytes(InputStream inputStream)
+            throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         int count;
         byte[] data = new byte[1024];
@@ -273,7 +288,14 @@ public class PwaTestIT extends ChromeDeviceTest {
     }
 
     private boolean isProductionMode() throws IOException {
-        JsonObject stats = readJsonFromUrl(getRootURL() + "/VAADIN/stats.json?v-r=init");
+        JsonObject stats = readJsonFromUrl(
+                getRootURL() + "?v-r=init&location=");
         return stats.getObject("appConfig").getBoolean("productionMode");
+    }
+
+    private String getInnerHtml(WebElement element) {
+        Object result = getCommandExecutor()
+                .executeScript("return arguments[0].innerHTML;", element);
+        return result == null ? "" : result.toString();
     }
 }

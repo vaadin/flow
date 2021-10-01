@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,10 +24,12 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import junit.framework.AssertionFailedError;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -40,8 +42,6 @@ import com.vaadin.flow.tests.server.ClassesSerializableUtils;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
-
-import junit.framework.AssertionFailedError;
 
 public class BeanPropertySetTest {
 
@@ -70,6 +70,16 @@ public class BeanPropertySetTest {
         public String toString() {
             return name + "(" + born + ")";
         }
+    }
+
+    interface Iface3 extends Iface2, Iface {
+    }
+
+    interface Iface2 extends Iface {
+    }
+
+    interface Iface {
+        String getName();
     }
 
     @Test
@@ -162,7 +172,8 @@ public class BeanPropertySetTest {
         PropertyDefinition<com.vaadin.flow.tests.data.bean.Person, ?> definition = BeanPropertySet
                 .get(com.vaadin.flow.tests.data.bean.Person.class, true,
                         PropertyFilterDefinition.getDefaultFilter())
-                .getProperty("address.postalCode").orElseThrow(AssertionFailedError::new);
+                .getProperty("address.postalCode")
+                .orElseThrow(AssertionFailedError::new);
 
         PropertyDefinition<com.vaadin.flow.tests.data.bean.Person, ?> deserializedDefinition = ClassesSerializableUtils
                 .serializeAndDeserialize(definition);
@@ -282,5 +293,17 @@ public class BeanPropertySetTest {
                 "Parent property of \"father.son.father\" should be \"father.son\"",
                 "father.son", propertySet.getProperty("father.son.father").get()
                         .getParent().getName());
+    }
+
+    @Test
+    public void get_beanImplementsSameInterfaceSeveralTimes_interfacePropertyIsNotDuplicated() {
+        PropertySet<Iface3> set = BeanPropertySet.get(Iface3.class, false,
+                PropertyFilterDefinition.getDefaultFilter());
+
+        List<PropertyDefinition<Iface3, ?>> defs = set.getProperties()
+                .collect(Collectors.toList());
+
+        Assert.assertEquals(1, defs.size());
+        Assert.assertEquals("name", defs.get(0).getName());
     }
 }

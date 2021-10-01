@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,7 @@ package com.vaadin.flow.component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -55,9 +56,7 @@ import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
-import net.jcip.annotations.NotThreadSafe;
 
-@NotThreadSafe
 public class ComponentTest {
 
     private UI ui;
@@ -1651,6 +1650,17 @@ public class ComponentTest {
 
         // then
         ui2.add(child);
+    }
+
+    @Test
+    public void getTranslation_delegateToDeprecated() {
+        Component component = Mockito.mock(Component.class);
+        Mockito.doCallRealMethod().when(component).getTranslation(
+                Mockito.any(Locale.class), Mockito.anyString(), Mockito.any());
+
+        component.getTranslation(Locale.GERMAN, "foo");
+
+        Mockito.verify(component).getTranslation("foo", Locale.GERMAN);
     }
 
     private void enabledStateChangeOnAttachCalledForParentState(

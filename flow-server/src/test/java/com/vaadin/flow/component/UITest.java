@@ -1,3 +1,19 @@
+/*
+ * Copyright 2000-2021 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.vaadin.flow.component;
 
 import java.util.ArrayList;
@@ -53,6 +69,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
+import com.vaadin.flow.server.BootstrapHandlerTest;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -219,7 +236,8 @@ public class UITest {
         });
 
         ui.doInit(request, 0);
-        ui.getInternals().getRouter().initializeUI(ui, request);
+        ui.getInternals().getRouter().initializeUI(ui,
+                BootstrapHandlerTest.requestToLocation(request));
 
         session.unlock();
 
@@ -614,6 +632,31 @@ public class UITest {
 
         Assert.assertEquals("There should be 4 invocations", 4,
                 callCounter.get());
+    }
+
+    @Test
+    public void beforeClientResponse_componentNotAttachedToUi_noException() {
+        UI ui = createTestUI();
+        Component component = new AttachableComponent();
+        ui.beforeClientResponse(component, context -> {
+        });
+    }
+
+    @Test()
+    public void beforeClientResponse_componentBelongsToAnotherUI_throws() {
+        UI firstUI = createTestUI();
+        UI anotherUI = createTestUI();
+        Component component = new AttachableComponent();
+        anotherUI.add(component);
+
+        IllegalArgumentException exception = Assert.assertThrows(
+                IllegalArgumentException.class,
+                () -> firstUI.beforeClientResponse(component, context -> {
+                }));
+
+        Assert.assertEquals(
+                "The given component doesn't belong to the UI the task to be executed on",
+                exception.getMessage());
     }
 
     @ListenerPriority(5)

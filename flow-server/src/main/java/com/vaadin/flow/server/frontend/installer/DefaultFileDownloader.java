@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -46,6 +46,8 @@ import org.slf4j.LoggerFactory;
  * Default file downloader implementation.
  * <p>
  * Derived from eirslett/frontend-maven-plugin
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since
  */
@@ -61,7 +63,7 @@ public final class DefaultFileDownloader implements FileDownloader {
      * Construct file downloader with given proxy configuration.
      *
      * @param proxyConfig
-     *         proxy configuration to use for file download
+     *            proxy configuration to use for file download
      */
     public DefaultFileDownloader(ProxyConfig proxyConfig) {
         this.proxyConfig = proxyConfig;
@@ -104,11 +106,11 @@ public final class DefaultFileDownloader implements FileDownloader {
         }
         new File(
                 FilenameUtils.getFullPathNoEndSeparator(destination.toString()))
-                .mkdirs();
+                        .mkdirs();
 
-        try (ReadableByteChannel rbc = Channels.newChannel(response.getEntity()
-                .getContent()); FileOutputStream fos = new FileOutputStream(
-                destination)) {
+        try (ReadableByteChannel rbc = Channels
+                .newChannel(response.getEntity().getContent());
+                FileOutputStream fos = new FileOutputStream(destination)) {
             fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
         }
     }
@@ -144,9 +146,8 @@ public final class DefaultFileDownloader implements FileDownloader {
             URI requestUri) throws IOException {
         final CloseableHttpClient proxyClient;
         if (proxy.useAuthentication()) {
-            proxyClient = buildHttpClient(
-                    makeCredentialsProvider(proxy.host, proxy.port,
-                            proxy.username, proxy.password));
+            proxyClient = buildHttpClient(makeCredentialsProvider(proxy.host,
+                    proxy.port, proxy.username, proxy.password));
         } else {
             proxyClient = buildHttpClient(null);
         }

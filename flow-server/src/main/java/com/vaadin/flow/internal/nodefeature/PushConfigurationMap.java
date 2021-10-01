@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,6 +25,8 @@ import com.vaadin.flow.shared.ui.Transport;
 
 /**
  * Map for storing the push configuration for a UI.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -36,7 +38,7 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
      * Map for storing push parameters.
      *
      * @author Vaadin Ltd
- * @since 1.0
+     * @since 1.0
      */
     public static class PushConfigurationParametersMap extends NodeMap {
 
@@ -122,7 +124,8 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
             return null;
         }
 
-        return Transport.getByIdentifier(getParameters().get(FALLBACK_TRANSPORT_KEY).toString());
+        return Transport.getByIdentifier(
+                getParameters().get(FALLBACK_TRANSPORT_KEY).toString());
     }
 
     @Override
@@ -162,6 +165,7 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
 
     @Override
     public void setPushConnectionFactory(PushConnectionFactory factory) {
-        throw new UnsupportedOperationException("Setting push connection factory is not supported");
+        throw new UnsupportedOperationException(
+                "Setting push connection factory is not supported");
     }
 }

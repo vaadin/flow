@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -53,7 +53,7 @@ public class InternalErrorIT extends ChromeBrowserTest {
     public void sessionExpired_refreshByDefault() {
         // Put a flag in the current window
         executeScript("window.foo = true");
-        assertTrue((boolean)executeScript("return !!window.foo;"));
+        assertTrue((boolean) executeScript("return !!window.foo;"));
 
         // Click on a button that should update the UI
         clickButton(UPDATE);
@@ -67,7 +67,7 @@ public class InternalErrorIT extends ChromeBrowserTest {
 
         // window has been reloaded, thus, the flag must not be
         // in the new window
-        assertFalse((boolean)executeScript("return !!window.foo;"));
+        assertFalse((boolean) executeScript("return !!window.foo;"));
 
         // Check that there is no notification about session expired
         assertFalse(

@@ -19,6 +19,7 @@ class PolymerTemplateWithoutShadowRootView extends PolymerElement {
     return html`
       <div real="deal" id="content"></div>
       <div id="special!#id"></div>
+      <div id="map"></div>
     `;
   }
 }

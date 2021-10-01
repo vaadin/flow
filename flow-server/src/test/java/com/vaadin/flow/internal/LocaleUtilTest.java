@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -53,8 +53,8 @@ public class LocaleUtilTest {
 
     @Test
     public void exact_match_provided_matches() {
-        Optional<Locale> exactLocaleMatch = LocaleUtil.getExactLocaleMatch(request,
-                Arrays.asList(Locale.ENGLISH, LOCALE_EN));
+        Optional<Locale> exactLocaleMatch = LocaleUtil.getExactLocaleMatch(
+                request, Arrays.asList(Locale.ENGLISH, LOCALE_EN));
 
         Assert.assertEquals(
                 "Found wrong locale event though an exact match should have been available.",
@@ -63,18 +63,18 @@ public class LocaleUtilTest {
 
     @Test
     public void no_exact_match_returns_null() {
-        Optional<Locale> exactLocaleMatch = LocaleUtil.getExactLocaleMatch(request,
-                Arrays.asList(Locale.ENGLISH));
+        Optional<Locale> exactLocaleMatch = LocaleUtil
+                .getExactLocaleMatch(request, Arrays.asList(Locale.ENGLISH));
 
         Assert.assertFalse(
-                "Found locale event though none should have been available.", exactLocaleMatch.isPresent());
+                "Found locale event though none should have been available.",
+                exactLocaleMatch.isPresent());
     }
 
     @Test
     public void language_match_gets_correct_target_by_request_priority() {
-        Optional<Locale> exactLocaleMatch = LocaleUtil.getLocaleMatchByLanguage(request,
-                Arrays.asList(Locale.US, LOCALE_FI));
-
+        Optional<Locale> exactLocaleMatch = LocaleUtil.getLocaleMatchByLanguage(
+                request, Arrays.asList(Locale.US, LOCALE_FI));
 
         Assert.assertEquals(
                 "Found wrong locale event though an language match should have been available.",
@@ -83,11 +83,12 @@ public class LocaleUtilTest {
 
     @Test
     public void language_match_returns_null_when_no_match() {
-        Optional<Locale> exactLocaleMatch = LocaleUtil.getLocaleMatchByLanguage(request,
-                Arrays.asList(Locale.FRENCH, Locale.KOREA));
+        Optional<Locale> exactLocaleMatch = LocaleUtil.getLocaleMatchByLanguage(
+                request, Arrays.asList(Locale.FRENCH, Locale.KOREA));
 
         Assert.assertFalse(
-                "Found locale event though none should have been available.", exactLocaleMatch.isPresent());
+                "Found locale event though none should have been available.",
+                exactLocaleMatch.isPresent());
     }
 
 }

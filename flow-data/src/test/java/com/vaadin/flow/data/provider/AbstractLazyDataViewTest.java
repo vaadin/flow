@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -145,7 +145,8 @@ public class AbstractLazyDataViewTest {
 
         // Check that we can add a listener even if no data provider set by
         // user
-        dataView.addItemCountChangeListener(event -> {});
+        dataView.addItemCountChangeListener(event -> {
+        });
     }
 
     @Test(expected = IllegalStateException.class)
@@ -369,53 +370,53 @@ public class AbstractLazyDataViewTest {
         Mockito.verify(dataCommunicator).refresh(updatedItem2);
     }
 
-     @Test
-     public void refreshItem_itemNotPresent_itemNotRefreshed() {
-         Item item1 = new Item(0L, "value1");
+    @Test
+    public void refreshItem_itemNotPresent_itemNotRefreshed() {
+        Item item1 = new Item(0L, "value1");
 
-         DataProvider<Item, Void> dataProvider = Mockito
-                 .spy(DataProvider.fromCallbacks(query -> {
-                     query.getOffset();
-                     query.getLimit();
-                     return Stream.of(item1);
-                 }, query -> 1));
+        DataProvider<Item, Void> dataProvider = Mockito
+                .spy(DataProvider.fromCallbacks(query -> {
+                    query.getOffset();
+                    query.getLimit();
+                    return Stream.of(item1);
+                }, query -> 1));
 
-         DataCommunicator<Item> dataCommunicator = Mockito
-                 .spy(new DataCommunicator<>((item, jsonObject) -> {
-                 }, arrayUpdater, null, component.getElement().getNode()));
+        DataCommunicator<Item> dataCommunicator = Mockito
+                .spy(new DataCommunicator<>((item, jsonObject) -> {
+                }, arrayUpdater, null, component.getElement().getNode()));
 
-         dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setDataProvider(dataProvider, null);
 
-         AbstractLazyDataView<Item> dataView = new AbstractLazyDataView<Item>(
-                 dataCommunicator, component) {
-         };
+        AbstractLazyDataView<Item> dataView = new AbstractLazyDataView<Item>(
+                dataCommunicator, component) {
+        };
 
-         Item item2 = new Item(1L, "value1");
-         dataView.refreshItem(item1);
+        Item item2 = new Item(1L, "value1");
+        dataView.refreshItem(item1);
 
-         // Verify that the refresh request is not promoted to data provider and
-         // data communicator, because item with id=1 is not found.
-         Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(item2);
-         Mockito.verify(dataCommunicator, Mockito.times(0)).refresh(item2);
-     }
+        // Verify that the refresh request is not promoted to data provider and
+        // data communicator, because item with id=1 is not found.
+        Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(item2);
+        Mockito.verify(dataCommunicator, Mockito.times(0)).refresh(item2);
+    }
 
-     @Test
-     public void paged_access_methods_in_query_object() {
-    	 Query<Item, Void> query;
+    @Test
+    public void paged_access_methods_in_query_object() {
+        Query<Item, Void> query;
 
-    	 query = new Query<>(0, 20, null, null, null);
-    	 Assert.assertEquals(0L, query.getPage());
-    	 Assert.assertEquals(20, query.getPageSize());
+        query = new Query<>(0, 20, null, null, null);
+        Assert.assertEquals(0L, query.getPage());
+        Assert.assertEquals(20, query.getPageSize());
 
-    	 query = new Query<>(20, 20, null, null, null);
-    	 Assert.assertEquals(1L, query.getPage());
-    	 Assert.assertEquals(20, query.getPageSize());
+        query = new Query<>(20, 20, null, null, null);
+        Assert.assertEquals(1L, query.getPage());
+        Assert.assertEquals(20, query.getPageSize());
 
-    	 query = new Query<>(200, 40, null, null, null);
-    	 Assert.assertEquals(5L, query.getPage());
-    	 Assert.assertEquals(40, query.getPageSize());
+        query = new Query<>(200, 40, null, null, null);
+        Assert.assertEquals(5L, query.getPage());
+        Assert.assertEquals(40, query.getPageSize());
 
-     }
+    }
 
     private void fakeClientCommunication() {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,6 +24,7 @@ import com.helger.css.decl.CSSDeclarationList;
 import com.helger.css.reader.CSSReaderDeclarationList;
 import com.helger.css.reader.errorhandler.CollectingCSSParseErrorHandler;
 import com.helger.css.writer.CSSWriterSettings;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.dom.StyleUtil;
@@ -31,6 +32,8 @@ import com.vaadin.flow.dom.StyleUtil;
 /**
  * Emulates the <code>style</code> attribute by delegating to
  * {@link Element#getStyle()}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */

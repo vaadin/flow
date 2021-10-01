@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,7 +43,8 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
                         FrontendLiveReloadView
                                 .resetFrontendFile(session.getService());
                         return true;
-                    } else if ("/update_frontend".equals(request.getPathInfo())) {
+                    } else if ("/update_frontend"
+                            .equals(request.getPathInfo())) {
                         String code = IOUtils.toString(request.getInputStream(),
                                 StandardCharsets.UTF_8.name());
                         FrontendLiveReloadView.replaceFrontendFile(

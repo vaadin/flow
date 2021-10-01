@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,7 +17,9 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URL;
+import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -51,6 +54,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS
 
 /**
  * Common logic for generate import file JS content.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  *
@@ -73,7 +78,7 @@ abstract class AbstractUpdateImports implements Runnable {
             + "<dom-module id=\"%s\"><template><style%s>${$css_%d}</style></template></dom-module>"
             + CSS_POST;
     private static final String CSS_THEME_FOR_TPL = CSS_PRE
-            + "<dom-module id=\"flow_css_mod_%d\" theme-for=\"%s\"><template><style%s>${$css_%d}</style></template></dom-module>"
+            + "<dom-module id=\"%s_%d\" theme-for=\"%s\"><template><style%s>${$css_%d}</style></template></dom-module>"
             + CSS_POST;
 
     private static final String IMPORT_TEMPLATE = "import '%s';";
@@ -192,10 +197,11 @@ abstract class AbstractUpdateImports implements Runnable {
     protected abstract Logger getLogger();
 
     List<String> resolveModules(Collection<String> modules) {
-        return modules.stream().filter(module ->
-                !module.startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
-                        && !module
-                        .startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX))
+        return modules.stream()
+                .filter(module -> !module.startsWith(
+                        ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
+                        && !module.startsWith(
+                                ApplicationConstants.BASE_PROTOCOL_PREFIX))
                 .map(module -> resolveResource(module)).sorted()
                 .collect(Collectors.toList());
     }
@@ -246,16 +252,16 @@ abstract class AbstractUpdateImports implements Runnable {
                 : null;
 
         if (newContent.equals(oldContent)) {
-            if (getLogger().isInfoEnabled()) {
-                getLogger().info("No js modules to update '{}' file",
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug("No js modules to update '{}' file",
                         importsFile);
             }
         } else {
             FileUtils.forceMkdir(importsFile.getParentFile());
             FileUtils.writeStringToFile(importsFile,
                     String.join("\n", newContent), StandardCharsets.UTF_8);
-            if (getLogger().isInfoEnabled()) {
-                getLogger().info("Updated {}", importsFile);
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug("Updated {}", importsFile);
             }
         }
     }
@@ -282,6 +288,10 @@ abstract class AbstractUpdateImports implements Runnable {
 
     protected void addLines(Collection<String> lines, String content) {
         lines.addAll(Arrays.asList(content.split("\\R")));
+    }
+
+    protected String getThemeIdPrefix() {
+        return "flow_css_mod";
     }
 
     protected abstract String getImportsNotFoundMessage();
@@ -467,8 +477,8 @@ abstract class AbstractUpdateImports implements Runnable {
                 : "";
 
         if (cssData.getThemefor() != null) {
-            addLines(lines, String.format(CSS_THEME_FOR_TPL, i, cssImport, i,
-                    cssData.getThemefor(), include, i));
+            addLines(lines, String.format(CSS_THEME_FOR_TPL, i, cssImport,
+                    getThemeIdPrefix(), i, cssData.getThemefor(), include, i));
         } else if (cssData.getId() != null) {
             addLines(lines, String.format(CSS_MODULE_TPL, i, cssImport,
                     cssData.getId(), include, i));
@@ -508,8 +518,22 @@ abstract class AbstractUpdateImports implements Runnable {
     private void visitImportsRecursively(Path filePath, String path,
             AbstractTheme theme, Collection<String> imports,
             Set<String> visitedImports) throws IOException {
-        String content = Files.readAllLines(filePath, StandardCharsets.UTF_8)
-                .stream().collect(Collectors.joining("\n"));
+
+        String content = null;
+        try (final Stream<String> contentStream = Files.lines(filePath,
+                StandardCharsets.UTF_8)) {
+            content = contentStream.collect(Collectors.joining("\n"));
+        } catch (UncheckedIOException ioe) {
+            if (ioe.getCause() instanceof MalformedInputException) {
+                getLogger().trace(
+                        "Failed to read file '{}' found from Es6 import statements. "
+                                + "This is probably due to it being a binary file, "
+                                + "in which case it doesn't matter as imports are only in js/ts files.",
+                        filePath.toString(), ioe);
+                return;
+            }
+            throw ioe;
+        }
         ImportExtractor extractor = new ImportExtractor(content);
         List<String> importedPaths = extractor.getImportedPaths();
         for (String importedPath : importedPaths) {
@@ -527,7 +551,7 @@ abstract class AbstractUpdateImports implements Runnable {
                 // don't do anything if such file doesn't exist at all
                 continue;
             }
-            resolvedPath  = normalizePath(resolvedPath);
+            resolvedPath = normalizePath(resolvedPath);
             if (resolvedPath.contains(theme.getBaseUrl())) {
                 String translatedPath = theme.translateUrl(resolvedPath);
                 if (!visitedImports.contains(translatedPath)

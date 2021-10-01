@@ -52,7 +52,9 @@ flow-tests/**/tsconfig.json
 flow-tests/**/pnpm-lock.yaml
 yarn.lock
 
-flow-client/src/main/resources/META-INF/resources/frontend/FlowClient.js
+flow-client/src/main/frontend/FlowClient.js
 flow-tests/**/types.d.ts
 /flow-tests/**/*.generated.js
-/flow-tests/**/generated/vaadin.ts
+/flow-tests/**/generated/**
+flow-tests/**/pnpmfile.js
+flow-tests/**/*.npmrc

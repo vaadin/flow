@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,7 +30,8 @@ public class BrokenRouterLinkIT extends ChromeBrowserTest {
     public void testRouterLink_linkIsBroken_urlIsUpdated() {
         open();
 
-        // enable after https://github.com/vaadin/vaadin-router/issues/43 is fixed
+        // enable after https://github.com/vaadin/vaadin-router/issues/43 is
+        // fixed
         Assume.assumeFalse(isClientRouter());
 
         WebElement link = findElement(By.id(BrokenRouterLinkView.LINK_ID));
@@ -47,7 +48,8 @@ public class BrokenRouterLinkIT extends ChromeBrowserTest {
     public void testRouterLink_visitBrokenLinkAndBack_scrollPositionIsRetained() {
         open();
 
-        // enable after https://github.com/vaadin/vaadin-router/issues/43 is fixed
+        // enable after https://github.com/vaadin/vaadin-router/issues/43 is
+        // fixed
         Assume.assumeFalse(isClientRouter());
 
         executeScript("window.scrollTo(0,100)");
@@ -59,6 +61,8 @@ public class BrokenRouterLinkIT extends ChromeBrowserTest {
         Assert.assertEquals(0L, y0);
 
         getDriver().navigate().back();
+
+        waitForElementPresent(By.id(BrokenRouterLinkView.LINK_ID));
 
         long y1 = (Long) executeScript("return window.scrollY");
         Assert.assertEquals(100L, y1);

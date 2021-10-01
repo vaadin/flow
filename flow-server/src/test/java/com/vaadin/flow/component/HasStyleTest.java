@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -152,6 +152,13 @@ public class HasStyleTest {
         assertClasses(component);
         component.addClassNames("foo", "bar");
         assertClasses(component, "foo", "bar");
+
+        component.removeClassNames("foo bar");
+        assertClasses(component);
+
+        component.addClassNames("foo bar");
+        assertClasses(component, "foo", "bar");
+
         component.addClassNames("baz1", "baz2");
         assertClasses(component, "foo", "bar", "baz1", "baz2");
     }
@@ -171,10 +178,58 @@ public class HasStyleTest {
         assertClasses(component, "baz1", "bar1");
     }
 
+    @Test
+    public void addClassNames_extraSpacesBetweenAndAroundClassNames_validationPasses() {
+        HasStyleComponent component = new HasStyleComponent();
+        component.addClassNames("   foo  bar    baz");
+
+        Assert.assertEquals(
+                "Unexpected component's class names count after adding 3 class names",
+                3, component.getClassNames().size());
+
+        Assert.assertTrue(component.getClassNames().contains("foo"));
+        Assert.assertTrue(component.getClassNames().contains("bar"));
+        Assert.assertTrue(component.getClassNames().contains("baz"));
+    }
+
+    @Test
+    public void removeClassNames_extraSpacesBetweenAndAroundClassNames_validationPasses() {
+        HasStyleComponent component = new HasStyleComponent();
+        component.addClassNames("foo", "bar", "baz");
+        component.removeClassNames("   foo  bar    baz");
+
+        Assert.assertEquals(
+                "Unexpected component's class names count after removing all class names",
+                0, component.getClassNames().size());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void addClassNames_addEmptyClassName_throws() {
+        HasStyleComponent component = new HasStyleComponent();
+        component.addClassNames(" ");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void addClassNames_addNullClassName_throws() {
+        HasStyleComponent component = new HasStyleComponent();
+        component.addClassNames(null, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeClassNames_removeEmptyClassName_throws() {
+        HasStyleComponent component = new HasStyleComponent();
+        component.addClassNames(" ");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeClassNames_removeNullClassName_throws() {
+        HasStyleComponent component = new HasStyleComponent();
+        component.addClassNames(null, null);
+    }
+
     private void assertClasses(HasStyleComponent c, String... expectedClasses) {
         Set<String> actual = c.getClassNames();
-        Set<String> expected = new HashSet<>(
-                Arrays.asList(expectedClasses));
+        Set<String> expected = new HashSet<>(Arrays.asList(expectedClasses));
         Assert.assertEquals(expected, actual);
     }
 }

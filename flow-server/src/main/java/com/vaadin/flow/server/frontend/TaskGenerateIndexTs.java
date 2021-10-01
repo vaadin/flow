@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,10 +18,11 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.io.IOUtils;
+
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Version;
-import org.apache.commons.io.IOUtils;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
@@ -29,6 +30,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Generate <code>index.js</code> if it is missing in frontend folder.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 3.0
  */
@@ -104,8 +107,9 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
         return relativePath;
     }
 
-    private void compareActualIndexTsOrJsWithIndexTempalate(File indexTs, File indexJs) {
-        if(indexTs.exists() || indexJs.exists()) {
+    private void compareActualIndexTsOrJsWithIndexTempalate(File indexTs,
+            File indexJs) {
+        if (indexTs.exists() || indexJs.exists()) {
             File indexFileExist = indexTs.exists() ? indexTs : indexJs;
             String indexContent = null;
             String indexTemplate = null;
@@ -115,8 +119,9 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
             } catch (IOException e) {
                 log().warn("Failed to read file content", e);
             }
-            if(indexContent != null && !indexContent.equals(indexTemplate)) {
-                UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_CLIENT, Version.getFullVersion());
+            if (indexContent != null && !indexContent.equals(indexTemplate)) {
+                UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_CLIENT,
+                        Version.getFullVersion());
             }
         }
     }

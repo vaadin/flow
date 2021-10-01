@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -48,8 +48,23 @@ public class InlineTargets {
      *            inline dependency to add to bootstrap page
      * @param request
      *            the request that is handled
+     * @deprecated use {@link #addInlineDependency(Inline, VaadinService)}
+     *             instead
      */
+    @Deprecated
     public void addInlineDependency(Inline inline, VaadinRequest request) {
+        addInlineDependency(inline, request.getService());
+    }
+
+    /**
+     * Inline contents from classpath file to head of initial page.
+     *
+     * @param inline
+     *            inline dependency to add to bootstrap page
+     * @param service
+     *            the service that can find the dependency
+     */
+    public void addInlineDependency(Inline inline, VaadinService service) {
         Inline.Wrapping type;
         // Determine the type as given or try to automatically decide
         if (inline.wrapping().equals(Inline.Wrapping.AUTOMATIC)) {
@@ -63,7 +78,7 @@ public class InlineTargets {
         dependency.put("LoadMode", LoadMode.INLINE.toString());
 
         dependency.put(Dependency.KEY_CONTENTS,
-                BootstrapUtils.getDependencyContents(request, inline.value()));
+                BootstrapUtils.getDependencyContents(service, inline.value()));
 
         // Add to correct element target
         if (inline.target() == TargetElement.BODY) {

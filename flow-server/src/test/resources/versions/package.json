@@ -5,6 +5,7 @@
     "dependencies": {
       "@vaadin/vaadin-upload": "4.2.2",
       "@vaadin/vaadin-progress-bar": "1.1.2",
+      "enforced": "1.2.0",
       "@polymer/iron-list": "3.0.2"
     },
     "devDependencies": {
@@ -17,6 +18,7 @@
   "dependencies": {
     "@polymer/iron-list": "3.0.2",
     "@vaadin/vaadin-progress-bar": "1.1.2",
+    "enforced": "1.2.0",
     "@vaadin/vaadin-upload": "4.2.2"
   },
   "devDependencies": {

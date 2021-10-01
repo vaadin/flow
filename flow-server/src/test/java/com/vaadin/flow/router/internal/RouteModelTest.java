@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -207,9 +207,8 @@ public class RouteModelTest {
                         EnumSet.of(RouteParameterFormatOption.NAME,
                                 RouteParameterFormatOption.MODIFIER)));
 
-        Assert.assertEquals("trunk/branch/:integer/:long",
-                root.formatTemplate(template,
-                        EnumSet.of(RouteParameterFormatOption.REGEX_NAME)));
+        Assert.assertEquals("trunk/branch/:integer/:long", root.formatTemplate(
+                template, EnumSet.of(RouteParameterFormatOption.REGEX_NAME)));
     }
 
     @Test
@@ -275,8 +274,8 @@ public class RouteModelTest {
         }
     }
 
-    private void assertUrl(RouteModel root, String expectedUrl,
-            String template, RouteParameters parameters) {
+    private void assertUrl(RouteModel root, String expectedUrl, String template,
+            RouteParameters parameters) {
         final String modelUrl = root.getUrl(template, parameters);
         Assert.assertEquals(expectedUrl, modelUrl);
     }

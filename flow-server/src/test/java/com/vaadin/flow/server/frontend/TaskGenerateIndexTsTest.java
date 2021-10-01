@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,10 +29,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 
 public class TaskGenerateIndexTsTest {
     @Rule
@@ -48,14 +48,16 @@ public class TaskGenerateIndexTsTest {
         frontendFolder = temporaryFolder.newFolder(FRONTEND);
         outputFolder = temporaryFolder.newFolder(TARGET);
         File generatedFolder = temporaryFolder.newFolder(TARGET, FRONTEND);
-        generatedImports = new File(generatedFolder, "flow-generated-imports.js");
+        generatedImports = new File(generatedFolder,
+                "flow-generated-imports.js");
         generatedImports.createNewFile();
         taskGenerateIndexTs = new TaskGenerateIndexTs(frontendFolder,
                 generatedImports, outputFolder);
     }
 
     @Test
-    public void should_reported_routing_client_when_IndexJsExists() throws Exception {
+    public void should_reported_routing_client_when_IndexJsExists()
+            throws Exception {
         Files.createFile(new File(frontendFolder, INDEX_JS).toPath());
         taskGenerateIndexTs.execute();
         Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
@@ -63,7 +65,8 @@ public class TaskGenerateIndexTsTest {
     }
 
     @Test
-    public void should_reported_routing_client_when_IndexTsExists() throws Exception {
+    public void should_reported_routing_client_when_IndexTsExists()
+            throws Exception {
         Files.createFile(new File(frontendFolder, INDEX_TS).toPath());
         taskGenerateIndexTs.execute();
         Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
@@ -119,9 +122,11 @@ public class TaskGenerateIndexTsTest {
     }
 
     @Test
-    public void replacedImport_should_beRelativeTo_targetAndFrontend() throws Exception {
+    public void replacedImport_should_beRelativeTo_targetAndFrontend()
+            throws Exception {
         String content = taskGenerateIndexTs.getFileContent();
-        Assert.assertTrue(content.contains("import('../target/frontend/flow-generated-imports'"));
+        Assert.assertTrue(content.contains(
+                "import('../target/frontend/flow-generated-imports'"));
     }
 
     @Test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -71,8 +71,7 @@ class RouteModel implements Serializable {
     }
 
     /**
-     * Collects all routes mapping the template with the
-     * {@link RouteTarget}.
+     * Collects all routes mapping the template with the {@link RouteTarget}.
      *
      * @return a {@link Map} containing all templates and their specific
      *         targets.
@@ -119,12 +118,12 @@ class RouteModel implements Serializable {
      * @param target
      *            target to set for the given template.
      * @throws InvalidRouteConfigurationException
-     *             if the combination of template and target doesn't make
-     *             sense within the current state of the model.
+     *             if the combination of template and target doesn't make sense
+     *             within the current state of the model.
      * @throws IllegalArgumentException
      *             in case the varargs are specified in the middle of the
-     *             template. Varargs can be specified only as the last
-     *             segment definition.
+     *             template. Varargs can be specified only as the last segment
+     *             definition.
      */
     void addRoute(String template, RouteTarget target) {
         throwIfImmutable();
@@ -138,8 +137,9 @@ class RouteModel implements Serializable {
      * @param url
      *            the navigation url used to search a route target.
      * @return a {@link NavigationRouteTarget} instance containing the
-     *         {@link RouteTarget} and {@link RouteParameters} extracted from the
-     *         <code>url</code> argument according with the route configuration.
+     *         {@link RouteTarget} and {@link RouteParameters} extracted from
+     *         the <code>url</code> argument according with the route
+     *         configuration.
      */
     NavigationRouteTarget getNavigationRouteTarget(String url) {
         return root.getNavigationRouteTarget(url);
@@ -155,8 +155,8 @@ class RouteModel implements Serializable {
      * @return a route result containing the target and parameter values mapped
      *         by their ids.
      * @throws IllegalArgumentException
-     *             in case template is not registered or the parameters do
-     *             not match with the template.
+     *             in case template is not registered or the parameters do not
+     *             match with the template.
      */
     RouteTarget getRouteTarget(String template, RouteParameters parameters) {
         AtomicReference<RouteTarget> target = new AtomicReference<>();
@@ -168,9 +168,9 @@ class RouteModel implements Serializable {
     /**
      * Gets a url path by replacing into the template the route parameters.
      * <p>
-     * In case all parameters defined in the template are optional or
-     * varargs, parameter arguments can be null and the path will be provided
-     * without any parameters.
+     * In case all parameters defined in the template are optional or varargs,
+     * parameter arguments can be null and the path will be provided without any
+     * parameters.
      * <p>
      * In case not all values found in <code>parameters</code> are used to
      * generate the final url, an <code>IllegalArgumentException</code>
@@ -184,8 +184,8 @@ class RouteModel implements Serializable {
      *            the parameters to use.
      * @return the generated url.
      * @throws IllegalArgumentException
-     *             in case template is not registered or the parameters do
-     *             not match exactly with the template.
+     *             in case template is not registered or the parameters do not
+     *             match exactly with the template.
      */
     String getUrl(String template, RouteParameters parameters) {
         final List<String> result = new ArrayList<>();
@@ -211,8 +211,8 @@ class RouteModel implements Serializable {
      *            the new format to use.
      * @return a String representing the template in the given format.
      * @throws IllegalArgumentException
-     *             in case template is not registered or the parameters do
-     *             not match with the template.
+     *             in case template is not registered or the parameters do not
+     *             match with the template.
      */
     String formatTemplate(String template,
             Set<RouteParameterFormatOption> format) {
@@ -237,8 +237,8 @@ class RouteModel implements Serializable {
      * @return a {@link Map} containing the names of the parameters mapped by
      *         their formatted template using the given format.
      * @throws IllegalArgumentException
-     *             in case template is not registered or the parameters do
-     *             not match with the template.
+     *             in case template is not registered or the parameters do not
+     *             match with the template.
      */
     Map<String, RouteParameterData> getParameters(String template) {
         Map<String, RouteParameterData> result = new HashMap<>();
@@ -255,8 +255,7 @@ class RouteModel implements Serializable {
 
     private void throwIfImmutable() {
         if (!mutable) {
-            throw new IllegalStateException(
-                    "Tried to mutate immutable model.");
+            throw new IllegalStateException("Tried to mutate immutable model.");
         }
     }
 

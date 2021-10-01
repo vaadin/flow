@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,6 +30,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -40,6 +41,8 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
@@ -58,11 +61,11 @@ public class TaskRunNpmInstallTest {
 
     private File npmFolder;
 
-    private ClassFinder finder = Mockito.mock(ClassFinder.class);
+    private ClassFinder finder;
 
-    private Logger logger = Mockito.mock(Logger.class);
-
-    private File generatedFolder;
+    private Logger logger = Mockito
+            .spy(LoggerFactory.getLogger(NodeUpdater.class));
+    protected File generatedPath;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -70,9 +73,12 @@ public class TaskRunNpmInstallTest {
     @Before
     public void setUp() throws IOException {
         npmFolder = temporaryFolder.newFolder();
-        nodeUpdater = new NodeUpdater(Mockito.mock(ClassFinder.class),
+        generatedPath = new File(npmFolder, "generated");
+        generatedPath.mkdir();
+        finder = Mockito.mock(ClassFinder.class);
+        nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                getGeneratedFolder(), null) {
+                generatedPath, null, TARGET) {
 
             @Override
             public void execute() {
@@ -88,17 +94,20 @@ public class TaskRunNpmInstallTest {
     }
 
     protected TaskRunNpmInstall createTask() {
-        return new TaskRunNpmInstall(getClassFinder(), nodeUpdater, false,
+        return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), false,
                 false, FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
+                false);
     }
 
     @Test
     public void runNpmInstall_emptyDir_npmInstallIsExecuted()
-            throws ExecutionFailedException {
+            throws ExecutionFailedException, IOException {
         File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
-        nodeUpdater.modified = false;
+        getNodeUpdater().modified = false;
+
+        ensurePackageJson();
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
@@ -106,12 +115,13 @@ public class TaskRunNpmInstallTest {
 
     @Test
     public void runNpmInstall_nodeModulesContainsStaging_npmInstallIsExecuted()
-            throws ExecutionFailedException {
+            throws ExecutionFailedException, IOException {
         File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
         File staging = new File(nodeModules, ".staging");
         staging.mkdir();
-        nodeUpdater.modified = false;
+        getNodeUpdater().modified = false;
+        ensurePackageJson();
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
@@ -123,7 +133,9 @@ public class TaskRunNpmInstallTest {
         File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
 
-        nodeUpdater.modified = true;
+        ensurePackageJson();
+
+        getNodeUpdater().modified = true;
         File yaml = new File(nodeModules, ".modules.yaml");
         yaml.createNewFile();
         task.execute();
@@ -137,9 +149,10 @@ public class TaskRunNpmInstallTest {
         File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
 
-        nodeUpdater.modified = true;
+        getNodeUpdater().modified = true;
         File fakeFile = new File(nodeModules, ".fake.file");
         fakeFile.createNewFile();
+        ensurePackageJson();
         task.execute();
 
         Assert.assertTrue(fakeFile.exists());
@@ -151,7 +164,8 @@ public class TaskRunNpmInstallTest {
         File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
         new File(nodeModules, "foo").createNewFile();
-        nodeUpdater.modified = false;
+        getNodeUpdater().modified = false;
+        ensurePackageJson();
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
@@ -164,7 +178,9 @@ public class TaskRunNpmInstallTest {
         nodeModules.mkdir();
         new File(nodeModules, "foo").createNewFile();
         writeLocalHash("faulty");
-        nodeUpdater.modified = false;
+        getNodeUpdater().modified = false;
+
+        ensurePackageJson();
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
@@ -179,14 +195,15 @@ public class TaskRunNpmInstallTest {
         new File(nodeModules, "foo").createNewFile();
 
         writeLocalHash("");
-        nodeUpdater.modified = false;
+        getNodeUpdater().modified = false;
         task.execute();
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         Mockito.verify(logger).info(captor.capture(),
                 Mockito.matches(getToolName()),
-                Mockito.matches(nodeModules.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\")), Mockito.any(),
-                Mockito.matches(Constants.PACKAGE_JSON));
+                Mockito.matches(nodeModules.getAbsolutePath().replaceAll("\\\\",
+                        "\\\\\\\\")),
+                Mockito.any(), Mockito.matches(Constants.PACKAGE_JSON));
         Assert.assertEquals(
                 "Skipping `{} install` because the frontend packages are already installed in the folder '{}' and the hash in the file '{}' is the same as in '{}'",
                 captor.getValue());
@@ -199,7 +216,8 @@ public class TaskRunNpmInstallTest {
         nodeModules.mkdir();
 
         writeLocalHash("");
-        nodeUpdater.modified = false;
+        getNodeUpdater().modified = false;
+        ensurePackageJson();
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
@@ -217,11 +235,12 @@ public class TaskRunNpmInstallTest {
 
     @Test
     public void runNpmInstall_dirContainsOnlyFlowNpmPackage_npmInstallIsExecuted()
-            throws ExecutionFailedException {
+            throws ExecutionFailedException, IOException {
         File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
         new File(nodeModules, "@vaadin/flow-frontend/").mkdirs();
-        nodeUpdater.modified = false;
+        getNodeUpdater().modified = false;
+        ensurePackageJson();
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
@@ -229,8 +248,9 @@ public class TaskRunNpmInstallTest {
 
     @Test
     public void runNpmInstall_modified_npmInstallIsExecuted()
-            throws ExecutionFailedException {
-        nodeUpdater.modified = true;
+            throws ExecutionFailedException, IOException {
+        getNodeUpdater().modified = true;
+        ensurePackageJson();
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
@@ -241,16 +261,17 @@ public class TaskRunNpmInstallTest {
             throws IOException, ExecutionFailedException {
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
-        assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(new TaskRunNpmInstall(
-                getClassFinder(), nodeUpdater, false, true,
-                FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)));
+        assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
+                new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), false,
+                        true, FrontendTools.DEFAULT_NODE_VERSION,
+                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
+                        false, false));
     }
 
     @Test
     public void runNpmInstall_externalUpdateOfPackages_npmInstallIsRerun()
             throws ExecutionFailedException, IOException {
-        nodeUpdater.modified = true;
+        getNodeUpdater().modified = true;
 
         // manually fake TaskUpdatePackages.
         JsonObject packageJson = getNodeUpdater().getPackageJson();
@@ -357,7 +378,12 @@ public class TaskRunNpmInstallTest {
         return "npm";
     }
 
-    protected File getGeneratedFolder() {
-        return generatedFolder;
+    private void ensurePackageJson() throws IOException {
+        File file = new File(npmFolder, PACKAGE_JSON);
+        if (!file.exists()) {
+            JsonObject packageJson = getNodeUpdater().getPackageJson();
+            getNodeUpdater().writePackageFile(packageJson);
+        }
     }
+
 }

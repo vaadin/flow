@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,13 +18,15 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import org.apache.commons.io.IOUtils;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Generate <code>index.html</code> if it is missing in frontend folder.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @since 3.0
  */
@@ -49,8 +51,8 @@ public class TaskGenerateIndexHtml extends AbstractTaskClientGenerator {
 
     @Override
     protected String getFileContent() throws IOException {
-        return IOUtils
-                .toString(getClass().getResourceAsStream(INDEX_HTML), UTF_8);
+        return IOUtils.toString(getClass().getResourceAsStream(INDEX_HTML),
+                UTF_8);
     }
 
     @Override

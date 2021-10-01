@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>6.0-SNAPSHOT</version>
+        <version>9.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-servlet-containers-test</artifactId>
     <name>flow-servlet-containers-test</name>
@@ -26,7 +26,8 @@
               <!-- Generic cargo plugin configuration. Define container to use in submodule. -->
                 <plugin>
                     <groupId>org.codehaus.cargo</groupId>
-                    <artifactId>cargo-maven2-plugin</artifactId>
+                    <artifactId>cargo-maven3-plugin</artifactId>
+                    <version>1.9.0</version>
                     <configuration>
                         <configuration>
                             <type>standalone</type>
@@ -40,7 +41,7 @@
                         <deployables>
                             <deployable>
                                 <groupId>${project.groupId}</groupId>
-                                <artifactId>flow-test-root-context</artifactId>
+                                <artifactId>flow-test-root-context-npm</artifactId>
                                 <type>war</type>
                                 <properties>
                                     <context>/</context>
@@ -82,7 +83,7 @@
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <configuration>
                         <dependenciesToScan>
-                            <dependency>${project.groupId}:flow-test-root-context</dependency>
+                            <dependency>${project.groupId}:flow-test-root-context-npm</dependency>
                         </dependenciesToScan>
                     </configuration>
                 </plugin>

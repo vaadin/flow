@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -46,9 +46,9 @@ import com.vaadin.flow.shared.Registration;
 public interface RouteRegistry extends Serializable {
 
     /**
-     * Register a navigation target with specified path and given parent
-     * layout chain. Any {@link ParentLayout}, {@link Route} or
-     * {@link RouteAlias} will be ignored in route handling.
+     * Register a navigation target with specified path and given parent layout
+     * chain. Any {@link ParentLayout}, {@link Route} or {@link RouteAlias} will
+     * be ignored in route handling.
      *
      * @param path
      *            path to register navigation target to
@@ -120,8 +120,9 @@ public interface RouteRegistry extends Serializable {
      * @param url
      *            the navigation url used to search a route target.
      * @return a {@link NavigationRouteTarget} instance containing the
-     *         {@link RouteTarget} and {@link RouteParameters} extracted from the
-     *         <code>url</code> argument according with the route configuration.
+     *         {@link RouteTarget} and {@link RouteParameters} extracted from
+     *         the <code>url</code> argument according with the route
+     *         configuration.
      */
     NavigationRouteTarget getNavigationRouteTarget(String url);
 
@@ -202,8 +203,7 @@ public interface RouteRegistry extends Serializable {
      * @return {@link Optional} navigation target template string or
      *         {@link Optional#empty()} if navigation target was not found
      */
-    Optional<String> getTemplate(
-            Class<? extends Component> navigationTarget);
+    Optional<String> getTemplate(Class<? extends Component> navigationTarget);
 
     /**
      * Get the layout chain for given navigation target on the targeted path.

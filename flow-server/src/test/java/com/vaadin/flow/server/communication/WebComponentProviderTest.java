@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -47,6 +47,8 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.MockInstantiator;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
@@ -125,15 +127,15 @@ public class WebComponentProviderTest {
     public void nonHandledPaths_handlerInformsNotHandled() throws IOException {
         Mockito.when(request.getPathInfo()).thenReturn(null);
         Assert.assertFalse("Provider shouldn't handle null path",
-                provider.handleRequest(session, request, response));
+                provider.canHandleRequest(request));
 
         Mockito.when(request.getPathInfo()).thenReturn("");
         Assert.assertFalse("Provider shouldn't handle empty path",
-                provider.handleRequest(session, request, response));
+                provider.canHandleRequest(request));
 
         Mockito.when(request.getPathInfo()).thenReturn("/home");
         Assert.assertFalse("Provider shouldn't handle non web-component path",
-                provider.handleRequest(session, request, response));
+                provider.canHandleRequest(request));
     }
 
     @Test
@@ -142,21 +144,21 @@ public class WebComponentProviderTest {
                 .thenReturn("/web-component" + "/extensionless-component");
 
         Assert.assertFalse("Provider shouldn't handle path without extension",
-                provider.handleRequest(session, request, response));
+                provider.synchronizedHandleRequest(session, request, response));
 
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/component.js");
 
         Assert.assertFalse(
                 "Provider shouldn't handle request for non-custom element name",
-                provider.handleRequest(session, request, response));
+                provider.synchronizedHandleRequest(session, request, response));
 
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.html");
 
         Assert.assertFalse(
                 "Provider shouldn't handle html extensions in npm mode",
-                provider.handleRequest(session, request, response));
+                provider.synchronizedHandleRequest(session, request, response));
     }
 
     @Test
@@ -168,7 +170,7 @@ public class WebComponentProviderTest {
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");
         Assert.assertTrue("Provider should handle web-component request",
-                provider.handleRequest(session, request, response));
+                provider.synchronizedHandleRequest(session, request, response));
         Mockito.verify(response).sendError(HttpServletResponse.SC_NOT_FOUND,
                 "No web component for my-component");
     }
@@ -188,7 +190,7 @@ public class WebComponentProviderTest {
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");
         Assert.assertTrue("Provider should handle web-component request",
-                provider.handleRequest(session, request, response));
+                provider.synchronizedHandleRequest(session, request, response));
 
         Mockito.verify(response).getOutputStream();
         Mockito.verify(out).write(Mockito.any());
@@ -214,12 +216,12 @@ public class WebComponentProviderTest {
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");
         Assert.assertTrue("Provider should handle first web-component request",
-                provider.handleRequest(session, request, response));
+                provider.synchronizedHandleRequest(session, request, response));
 
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/other-component.js");
         Assert.assertTrue("Provider should handle second web-component request",
-                provider.handleRequest(session, request, response));
+                provider.synchronizedHandleRequest(session, request, response));
 
         Mockito.verify(response, times(2)).getOutputStream();
         Mockito.verify(out, times(2)).write(captor.capture());
@@ -252,6 +254,41 @@ public class WebComponentProviderTest {
                 SameThemedComponentExporter.class);
         Assert.assertEquals(PushMode.AUTOMATIC, registry
                 .getEmbeddedApplicationAnnotation(Push.class).get().value());
+    }
+
+    @Test
+    public void canHandleRequest_hasNoWebComponentConfigPathIsWebComponentUI_returnsFalse() {
+        WebComponentProvider handler = new WebComponentProvider();
+
+        VaadinRequest request = mockRequest(false);
+        Assert.assertFalse(handler.canHandleRequest(request));
+    }
+
+    @Test
+    public void canHandleRequest_hasWebComponentConfigPathIsWebComponentUI_returnsTrue() {
+        WebComponentProvider handler = new WebComponentProvider();
+
+        VaadinRequest request = mockRequest(true);
+        Assert.assertTrue(handler.canHandleRequest(request));
+    }
+
+    private VaadinRequest mockRequest(boolean hasConfig) {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        Mockito.when(request.getService()).thenReturn(service);
+        Mockito.when(service.getContext()).thenReturn(context);
+
+        WebComponentConfigurationRegistry registry = Mockito
+                .mock(WebComponentConfigurationRegistry.class);
+        Mockito.when(context.getAttribute(
+                Mockito.eq(WebComponentConfigurationRegistry.class),
+                Mockito.any())).thenReturn(registry);
+        Mockito.when(registry.hasConfigurations()).thenReturn(hasConfig);
+
+        Mockito.when(request.getPathInfo()).thenReturn("/web-component/a-b.js");
+
+        return request;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

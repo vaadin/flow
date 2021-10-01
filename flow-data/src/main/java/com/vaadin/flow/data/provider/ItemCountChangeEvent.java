@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -53,7 +53,8 @@ public class ItemCountChangeEvent<T extends Component>
      * @param itemCountEstimated
      *            whether item count is an estimate
      */
-    public ItemCountChangeEvent(T source, int itemCount, boolean itemCountEstimated) {
+    public ItemCountChangeEvent(T source, int itemCount,
+            boolean itemCountEstimated) {
         super(source, false);
         this.itemCount = itemCount;
         this.itemCountEstimated = itemCountEstimated;

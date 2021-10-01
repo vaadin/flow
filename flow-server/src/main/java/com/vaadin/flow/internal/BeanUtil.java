@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,10 +24,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for Java Beans information access.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  *
  * @author Vaadin Ltd
@@ -174,8 +177,7 @@ public final class BeanUtil implements Serializable {
                         exception);
                 // handle next descriptor
             } catch (IntrospectionException e) {
-                LoggerFactory.getLogger(BeanUtil.class.getName()).info(null,
-                        e);
+                LoggerFactory.getLogger(BeanUtil.class.getName()).info(null, e);
                 result.add(descriptor);
             }
         }
@@ -243,9 +245,9 @@ public final class BeanUtil implements Serializable {
                 return true;
             } catch (ClassNotFoundException | NoSuchMethodException
                     | InvocationTargetException e) {
-                LoggerFactory.getLogger("com.vaadin.validator.BeanValidator").info(
-                        "A JSR-303 bean validation implementation not found on the classpath or could not be initialized. BeanValidator cannot be used.",
-                        e);
+                LoggerFactory.getLogger("com.vaadin.validator.BeanValidator")
+                        .info("A JSR-303 bean validation implementation not found on the classpath or could not be initialized. BeanValidator cannot be used.",
+                                e);
                 return false;
             } catch (IllegalAccessException | IllegalArgumentException e) {
                 throw new RuntimeException(

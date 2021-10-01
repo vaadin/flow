@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -168,4 +168,29 @@ public class HasSizeTest {
         Assert.assertNull(component.getHeight());
     }
 
+    @Test
+    public void getWidthUnit() {
+        HasSizeComponent component = new HasSizeComponent();
+        Assert.assertFalse(component.getWidthUnit().isPresent());
+
+        component.setWidth("10px");
+        Assert.assertTrue(component.getWidthUnit().isPresent());
+        Assert.assertEquals(Unit.PIXELS, component.getWidthUnit().get());
+
+        component.setSizeUndefined();
+        Assert.assertFalse(component.getWidthUnit().isPresent());
+    }
+
+    @Test
+    public void getHeightUnit() {
+        HasSizeComponent component = new HasSizeComponent();
+        Assert.assertFalse(component.getHeightUnit().isPresent());
+
+        component.setHeight("10%");
+        Assert.assertTrue(component.getHeightUnit().isPresent());
+        Assert.assertEquals(Unit.PERCENTAGE, component.getHeightUnit().get());
+
+        component.setSizeUndefined();
+        Assert.assertFalse(component.getHeightUnit().isPresent());
+    }
 }

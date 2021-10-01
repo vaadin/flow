@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -45,8 +45,9 @@ public final class HighlightConditions {
      * @return the highlight condition
      */
     public static HighlightCondition<RouterLink> locationPrefix() {
-        return (link, event) -> event.getLocation().getPath()
-                .startsWith(link.getHref());
+        return (link, event) -> link.getHref().isEmpty()
+                ? event.getLocation().getPath().isEmpty()
+                : event.getLocation().getPath().startsWith(link.getHref());
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -87,10 +87,10 @@ public class FrontendLiveReloadView extends AbstractLiveReloadView
     }
 
     public static void replaceFrontendFile(VaadinService vaadinService,
-                                           String code) {
+            String code) {
         File frontendFile = getFrontendFile(vaadinService);
         try {
-            if (frontendFileBackup==null) {
+            if (frontendFileBackup == null) {
                 // make a backup so it can be restored at teardown
                 frontendFileBackup = File.createTempFile("frontend", "ts");
                 FileUtils.copyFile(frontendFile, frontendFileBackup);

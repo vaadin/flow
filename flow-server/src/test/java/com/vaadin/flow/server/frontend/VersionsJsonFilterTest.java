@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -56,7 +56,7 @@ public class VersionsJsonFilterTest {
     }
 
     @Test
-    public void missingVaadinDependencies_allDependenciesSholdBeUserHandled()
+    public void missingVaadinDependencies_allDependenciesShouldBeUserHandled()
             throws IOException {
         assertMissingVaadinDependencies_allDependenciesSholdBeUserHandled(
                 NodeUpdater.DEPENDENCIES);
@@ -162,11 +162,15 @@ public class VersionsJsonFilterTest {
         Assert.assertTrue(filteredJson.hasKey("@vaadin/vaadin-upload"));
         Assert.assertTrue(filteredJson.hasKey("@polymer/iron-list"));
 
-        Assert.assertEquals("1.1.2",
-                filteredJson.getString("@vaadin/vaadin-progress-bar"));
-        Assert.assertEquals("4.2.2",
+        Assert.assertEquals(
+                "'progress-bar' should be the same in package and versions",
+                "1.1.2", filteredJson.getString("@vaadin/vaadin-progress-bar"));
+        Assert.assertEquals(
+                "'upload' should be the same in package and versions", "4.2.2",
                 filteredJson.getString("@vaadin/vaadin-upload"));
-        Assert.assertEquals("2.0.19",
-                filteredJson.getString("@polymer/iron-list"));
+        Assert.assertEquals("'enforced' version should come from platform",
+                "1.5.0", filteredJson.getString("enforced"));
+        Assert.assertEquals("'iron-list' should be framework defined version",
+                "3.0.2", filteredJson.getString("@polymer/iron-list"));
     }
 }

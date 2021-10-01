@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Helps to locate the tools in the system by their names.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.2
  */
@@ -119,7 +121,13 @@ public class FrontendToolsLocator implements Serializable {
             process = FrontendUtils
                     .createProcessBuilder(Arrays.asList(commandParts)).start();
         } catch (IOException e) {
-            log().error("Failed to execute the command '{}'", commandString, e);
+            if (logErrorOnFail) {
+                log().error("Failed to execute the command '{}'", commandString,
+                        e);
+            } else if (log().isDebugEnabled()) {
+                log().debug("Failed to execute the command '{}'", commandString,
+                        e);
+            }
             return Optional.empty();
         }
 
@@ -154,10 +162,11 @@ public class FrontendToolsLocator implements Serializable {
         }
         List<String> stdout = new ArrayList<>();
         try {
-        String stream = IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
-        if(!stream.isEmpty()) {
-            Stream.of(stream.split("\\R")).forEach(stdout::add);
-        }
+            String stream = IOUtils.toString(process.getInputStream(),
+                    StandardCharsets.UTF_8);
+            if (!stream.isEmpty()) {
+                Stream.of(stream.split("\\R")).forEach(stdout::add);
+            }
         } catch (IOException e) {
             log().error("Failed to read the command '{}' stdout", commandString,
                     e);
@@ -166,8 +175,9 @@ public class FrontendToolsLocator implements Serializable {
 
         List<String> stderr = new ArrayList<>();
         try {
-            String stream = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
-            if(!stream.isEmpty()) {
+            String stream = IOUtils.toString(process.getErrorStream(),
+                    StandardCharsets.UTF_8);
+            if (!stream.isEmpty()) {
                 Stream.of(stream.split("\\R")).forEach(stderr::add);
             }
         } catch (IOException e) {

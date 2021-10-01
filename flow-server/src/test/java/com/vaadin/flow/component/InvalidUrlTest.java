@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,17 +15,14 @@
  */
 package com.vaadin.flow.component;
 
-import java.util.Arrays;
+import static org.junit.Assert.assertEquals;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
+import java.util.Arrays;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.server.BootstrapHandlerTest;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -35,19 +32,23 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 public class InvalidUrlTest {
 
     @Test
-    public void invalidUrlAtInitialization_uiInitialiazesAsExpected()
+    public void invalidUrlAtInitialization_uiInitialiazesWith404ReturnCode()
             throws InvalidRouteConfigurationException, ServiceException {
         UI ui = new UI();
 
         ArgumentCaptor<Integer> statusCodeCaptor = ArgumentCaptor
                 .forClass(Integer.class);
 
-        initUI(ui, "?aaa", statusCodeCaptor);
+        initUI(ui, "%3faaa", statusCodeCaptor);
 
         assertEquals("Return message should have been 404 not found.",
                 Integer.valueOf(404), statusCodeCaptor.getValue());
@@ -97,7 +98,8 @@ public class InvalidUrlTest {
         });
 
         ui.doInit(request, 0);
-        ui.getRouter().initializeUI(ui, request);
+        ui.getRouter().initializeUI(ui,
+                BootstrapHandlerTest.requestToLocation(request));
 
         session.unlock();
 

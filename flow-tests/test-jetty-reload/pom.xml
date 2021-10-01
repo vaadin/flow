@@ -6,7 +6,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>6.0-SNAPSHOT</version>
+        <version>9.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-jetty-reload</artifactId>
     <name>Flow tests for Jetty reload in dev mode</name>
@@ -25,6 +25,11 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-dev-server</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -56,6 +61,7 @@
                 <artifactId>jetty-maven-plugin</artifactId>
                 <configuration>
                     <!-- Scan target/scantrigger in 1 second intervals -->
+                    <contextXml>${project.basedir}/context.xml</contextXml>
                     <scanIntervalSeconds>1</scanIntervalSeconds>
                     <scanTargetPatterns>
                         <scanTargetPattern>

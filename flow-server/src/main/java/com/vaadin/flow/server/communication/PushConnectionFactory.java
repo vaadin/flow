@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,10 +29,13 @@ import com.vaadin.flow.function.SerializableFunction;
  * {@link ServiceLoader}. This means that all implementations must have a
  * zero-argument constructor and the fully qualified name of the implementation
  * class must be listed on a separate line in a
- * META-INF/services/com.vaadin.flow.server.communication.PushConnectionFactory file
- * present in the jar file containing the implementation class.
+ * META-INF/services/com.vaadin.flow.server.communication.PushConnectionFactory
+ * file present in the jar file containing the implementation class.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */
-public interface PushConnectionFactory extends SerializableFunction<UI, PushConnection> {
+public interface PushConnectionFactory
+        extends SerializableFunction<UI, PushConnection> {
 }

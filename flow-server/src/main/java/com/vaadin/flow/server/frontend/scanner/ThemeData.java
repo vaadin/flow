@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,6 +23,8 @@ import com.vaadin.flow.theme.AbstractTheme;
 /**
  * A container for Theme information when scanning the class path. It overrides
  * equals and hashCode in order to use HashSet to eliminate duplicates.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
@@ -73,9 +75,9 @@ final class ThemeData implements Serializable {
             return false;
         }
         ThemeData that = (ThemeData) other;
-        return notheme == that.notheme && Objects
-            .equals(themeClass, that.themeClass) && Objects
-            .equals(themeName, that.themeName);
+        return notheme == that.notheme
+                && Objects.equals(themeClass, that.themeClass)
+                && Objects.equals(themeName, that.themeName);
     }
 
     @Override
@@ -89,6 +91,6 @@ final class ThemeData implements Serializable {
     @Override
     public String toString() {
         return " notheme: " + notheme + "\n themeClass:" + themeClass
-            + "\n variant: " + variant + "\n themeName: " + themeName;
+                + "\n variant: " + variant + "\n themeName: " + themeName;
     }
 }

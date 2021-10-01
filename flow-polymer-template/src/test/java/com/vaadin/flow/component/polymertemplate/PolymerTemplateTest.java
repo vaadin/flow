@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -848,18 +848,19 @@ public class PolymerTemplateTest extends HasCurrentService {
         DisabledElementTemplate template = new DisabledElementTemplate();
 
         Assert.assertTrue("Element is missing id",
-            template.label.hasAttribute("id"));
+                template.label.hasAttribute("id"));
         Assert.assertTrue("Server side element should be enabled",
-            template.label.isEnabled());
+                template.label.isEnabled());
         Assert.assertTrue("Element should contain 'disabled' property",
-            template.label.hasProperty("disabled"));
+                template.label.hasProperty("disabled"));
     }
 
     @Test
-    public void attachExistingElementWithoutChidlrenWithText_elementHasText() {
+    public void attachExistingElementWithoutChidlrenWithText_elementHasNoText() {
         ElementWithTextTemplate template = new ElementWithTextTemplate();
 
-        Assert.assertEquals("foo bar", template.label.getText());
+        // see #10106
+        Assert.assertEquals("", template.label.getText());
     }
 
     @Test

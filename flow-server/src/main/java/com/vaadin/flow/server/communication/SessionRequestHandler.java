@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -40,6 +40,8 @@ import com.vaadin.flow.server.VaadinSession;
  * The session is not locked during execution of the request handlers. The
  * request handler can itself decide if it needs to lock the session or not.
  * </p>
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @see VaadinSession#addRequestHandler(RequestHandler)
  * @see RequestHandler

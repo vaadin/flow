@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -159,18 +159,15 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                     .startUpdate(getHierarchyMapper().getRootSize());
             update.enqueue("$connector.ensureHierarchy");
 
-            Collection<T> expandedItems = getHierarchyMapper().getExpandedItems();
+            Collection<T> expandedItems = getHierarchyMapper()
+                    .getExpandedItems();
             if (!expandedItems.isEmpty()) {
-                update.enqueue("$connector.expandItems",
-                        expandedItems
-                                .stream()
-                                .map(getKeyMapper()::key)
-                                .map(key -> {
-                                    JsonObject json = Json.createObject();
-                                    json.put("key", key);
-                                    return json;
-                                }).collect(
-                                JsonUtils.asArray()));
+                update.enqueue("$connector.expandItems", expandedItems.stream()
+                        .map(getKeyMapper()::key).map(key -> {
+                            JsonObject json = Json.createObject();
+                            json.put("key", key);
+                            return json;
+                        }).collect(JsonUtils.asArray()));
             }
 
             requestFlush(update);
@@ -178,16 +175,19 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     @Override
-    protected void handleDataRefreshEvent(DataChangeEvent.DataRefreshEvent<T> event) {
+    protected void handleDataRefreshEvent(
+            DataChangeEvent.DataRefreshEvent<T> event) {
         if (event.isRefreshChildren()) {
             T item = event.getItem();
             if (isExpanded(item)) {
                 String parentKey = uniqueKeyProviderSupplier.get().apply(item);
 
                 if (!dataControllers.containsKey(parentKey)) {
-                    setParentRequestedRange(0, mapper.countChildItems(item), item);
+                    setParentRequestedRange(0, mapper.countChildItems(item),
+                            item);
                 }
-                HierarchicalCommunicationController<T> dataController = dataControllers.get(parentKey);
+                HierarchicalCommunicationController<T> dataController = dataControllers
+                        .get(parentKey);
                 if (dataController != null) {
                     dataController.setResendEntireRange(true);
                     requestFlush(dataController);

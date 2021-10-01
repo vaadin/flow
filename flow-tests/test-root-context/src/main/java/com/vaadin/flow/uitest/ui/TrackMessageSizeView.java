@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,7 +34,7 @@ import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
 
 @Route("com.vaadin.flow.uitest.ui.TrackMessageSizeView")
-@Push(transport= Transport.LONG_POLLING)
+@Push(transport = Transport.LONG_POLLING)
 public class TrackMessageSizeView extends Div {
 
     public static final String LOG_ELEMENT_ID = "logId";
@@ -56,7 +56,6 @@ public class TrackMessageSizeView extends Div {
             + "        $0.innerHTML = 'Test failed, see javascript console for details.';\n"
             + "    }" + "}\n";
 
-
     public TrackMessageSizeView() {
 
         logElement = ElementFactory.createDiv().setAttribute("id",
@@ -67,7 +66,8 @@ public class TrackMessageSizeView extends Div {
 
         logElement.getNode()
                 .runWhenAttached(ui -> ui.getPage().executeJs(
-                        methodImplementation + testMethod + buildTestCase(), logElement));
+                        methodImplementation + testMethod + buildTestCase(),
+                        logElement));
 
     }
 
@@ -87,8 +87,7 @@ public class TrackMessageSizeView extends Div {
                 + "testSequence([' ', 'b'], ['1| ','1|b']);\n"
                 + "testSequence([' ', 'b'], ['1|',' 1|b']);\n"
                 + "if($0.innerHTML === '') { \n"
-                + "    $0.innerHTML = 'All tests run'; "
-                + "}\n";
+                + "    $0.innerHTML = 'All tests run'; " + "}\n";
     }
 
     private String findMethodImplementation() {
@@ -96,10 +95,11 @@ public class TrackMessageSizeView extends Div {
 
         VaadinRequest request = VaadinRequest.getCurrent();
 
-        HttpServletRequest httpServletRequest = ((VaadinServletRequest) request).getHttpServletRequest();
+        HttpServletRequest httpServletRequest = ((VaadinServletRequest) request)
+                .getHttpServletRequest();
 
-        String jsPath = httpServletRequest.getRequestURL().toString().replace(httpServletRequest.getRequestURI(), filename);
-
+        String jsPath = httpServletRequest.getRequestURL().toString()
+                .replace(httpServletRequest.getRequestURI(), filename);
 
         String content = getFileContent(jsPath);
 
@@ -131,18 +131,20 @@ public class TrackMessageSizeView extends Div {
     private String getFileContent(String filename) {
         URL url = null;
         try {
-             url = new URL(filename);
+            url = new URL(filename);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
         try {
-            return url != null ? IOUtils.toString(url, StandardCharsets.UTF_8.name()) : null;
-        } catch ( IOException e) {
+            return url != null
+                    ? IOUtils.toString(url, StandardCharsets.UTF_8.name())
+                    : null;
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void log(String log){
+    public void log(String log) {
         logElement.setText(log);
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,6 +26,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
+import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
@@ -168,6 +169,14 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
+    public boolean isGlobalPnpm() {
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM)) {
+            return super.isGlobalPnpm();
+        }
+        return parentConfig.isGlobalPnpm();
+    }
+
+    @Override
     public boolean reuseDevServer() {
         if (isOwnProperty(InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
             return super.reuseDevServer();
@@ -187,6 +196,19 @@ public class PropertyDeploymentConfiguration
             return super.isXsrfProtectionEnabled();
         }
         return parentConfig.isXsrfProtectionEnabled();
+    }
+
+    @Override
+    public String getBuildFolder() {
+        if (isOwnProperty(BUILD_FOLDER)) {
+            return super.getBuildFolder();
+        }
+        return parentConfig.getBuildFolder();
+    }
+
+    @Override
+    public String getFlowResourcesFolder() {
+        return super.getFlowResourcesFolder();
     }
 
     @Override

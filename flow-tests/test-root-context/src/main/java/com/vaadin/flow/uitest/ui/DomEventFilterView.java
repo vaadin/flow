@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -105,30 +105,31 @@ public class DomEventFilterView extends AbstractDivView {
         final Paragraph resultParagraph = new Paragraph();
         resultParagraph.setId("result-paragraph");
 
-        NativeButton removalButton = new NativeButton("Remove DOM listener", event -> {
-            resultParagraph.setText("REMOVED");
-            atomicReference.get().remove();
-        });
+        NativeButton removalButton = new NativeButton("Remove DOM listener",
+                event -> {
+                    resultParagraph.setText("REMOVED");
+                    atomicReference.get().remove();
+                });
         removalButton.setId("listener-removal-button");
 
         Input listenerInput = new Input(ValueChangeMode.ON_CHANGE);
         listenerInput.setId("listener-input");
 
         /*
-        The event.preventDefault() is here to make sure that the listener
-         has been cleaned on the client-side as well. The server-side
-         cleaning is not really in question.
+         * The event.preventDefault() is here to make sure that the listener has
+         * been cleaned on the client-side as well. The server-side cleaning is
+         * not really in question.
          */
         ComponentUtil.addListener(listenerInput, KeyDownEvent.class,
                 event -> resultParagraph.setText("A"), registration -> {
                     atomicReference.set(registration);
-                    registration.setFilter("event.key === 'a' && " +
-                            "(event.preventDefault() || true)");
+                    registration.setFilter("event.key === 'a' && "
+                            + "(event.preventDefault() || true)");
                 });
         ComponentUtil.addListener(listenerInput, KeyDownEvent.class,
                 event -> resultParagraph.setText("B"),
-                registration -> registration.setFilter("event.key === 'b' && " +
-                        "(event.preventDefault() || true)"));
+                registration -> registration.setFilter("event.key === 'b' && "
+                        + "(event.preventDefault() || true)"));
 
         add(listenerInput, removalButton, resultParagraph);
     }

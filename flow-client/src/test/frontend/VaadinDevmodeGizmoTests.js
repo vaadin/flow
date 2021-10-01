@@ -1,7 +1,7 @@
 const { describe, it } = intern.getPlugin('interface.bdd');
 const { assert } = intern.getPlugin("chai");
 
-import { VaadinDevmodeGizmo } from "../../main/resources/META-INF/resources/frontend/VaadinDevmodeGizmo";
+import { VaadinDevmodeGizmo } from "../../main/frontend/VaadinDevmodeGizmo";
 
 describe('VaadinDevmodeGizmo', () => {
 

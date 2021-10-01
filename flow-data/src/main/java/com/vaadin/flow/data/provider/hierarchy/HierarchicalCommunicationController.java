@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -261,8 +261,7 @@ public class HierarchicalCommunicationController<T> implements Serializable {
             if (mapperHasKey) {
                 // Ensure latest instance from provider is used
                 keyMapper.refresh(bean);
-                passivatedByUpdate.values()
-                        .forEach(set -> set.remove(key));
+                passivatedByUpdate.values().forEach(set -> set.remove(key));
             }
             activeKeys.add(key);
         });

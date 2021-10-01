@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,10 +15,14 @@
  */
 package com.vaadin.flow.server.frontend.installer;
 
+import com.vaadin.flow.server.frontend.FrontendVersion;
+
 /**
  * Platform contains information about system architecture and OS.
  * <p>
  * Derived from eirslett/frontend-maven-plugin
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since
  */
@@ -69,11 +73,9 @@ public class Platform {
          */
         public static OS guess() {
             final String osName = System.getProperty("os.name");
-            return osName.contains("Windows") ?
-                    OS.WINDOWS :
-                    osName.contains("Mac") ?
-                            OS.MAC :
-                            osName.contains("SunOS") ? OS.SUN_OS : OS.LINUX;
+            return osName.contains("Windows") ? OS.WINDOWS
+                    : osName.contains("Mac") ? OS.MAC
+                            : osName.contains("SunOS") ? OS.SUN_OS : OS.LINUX;
         }
 
         /**
@@ -110,13 +112,16 @@ public class Platform {
     private final OS os;
     private final Architecture architecture;
 
+    // Node.js supports Apple silicon from v16.0.0
+    private static final int NODE_VERSION_THRESHOLD_MAC_ARM64 = 16;
+
     /**
      * Construct a new Platform.
      *
      * @param os
-     *         platform OS
+     *            platform OS
      * @param architecture
-     *         platform Architecture
+     *            platform Architecture
      */
     public Platform(OS os, Architecture architecture) {
         this.os = os;
@@ -191,9 +196,23 @@ public class Platform {
     /**
      * Get the node classifier for current platform.
      *
+     * @param nodeVersion
+     *            node version to get classifier for
      * @return platform node classifier
      */
-    public String getNodeClassifier() {
-        return getCodename() + "-" + getArchitecture().getName();
+    public String getNodeClassifier(FrontendVersion nodeVersion) {
+        return getCodename() + "-" + resolveArchitecture(nodeVersion).getName();
+    }
+
+    private Architecture resolveArchitecture(FrontendVersion nodeVersion) {
+        if (isMac() && architecture == Architecture.ARM64) {
+            Integer nodeMajorVersion = nodeVersion.getMajorVersion();
+            if (nodeMajorVersion == null
+                    || nodeMajorVersion < NODE_VERSION_THRESHOLD_MAC_ARM64) {
+                return Architecture.X64;
+            }
+        }
+
+        return architecture;
     }
 }

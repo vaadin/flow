@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,8 +29,10 @@ public class ServerSideNavigationExceptionHandlingIT extends CCDMTest {
 
         // Navigate to a server-side view that throws exception.
         findElement(By.id("serverViewThrowsExcpetionButton")).click();
-        
-        assertView("errorView", "Tried to navigate to a view without being authenticated", "view-throws-exception");
+
+        assertView("errorView",
+                "Tried to navigate to a view without being authenticated",
+                "view-throws-exception");
     }
 
 }

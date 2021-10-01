@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -41,7 +41,8 @@ final class ChromeDriverLocator {
     // examples: driver\windows\googlechrome\64bit\chromedriver.exe
     private static final int MAX_DRIVER_SEARCH_DEPTH = 4;
 
-    private ChromeDriverLocator() {}
+    private ChromeDriverLocator() {
+    }
 
     /**
      * Fills {@link ChromeDriverLocator#WEBDRIVER_CHROME_DRIVER} system property

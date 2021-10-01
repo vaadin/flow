@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -74,8 +74,7 @@ public class EventHandlerIT extends ChromeBrowserTest {
                 template.$("span").id("status").getText());
 
         template.$("button").id("clientError").click();
-        Assert.assertEquals(
-                "Message from awaiting exception should be present",
+        Assert.assertEquals("Message from awaiting exception should be present",
                 "Error: Something went wrong. Check server-side logs for more information.",
                 template.$("span").id("status").getText());
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,8 @@ package com.vaadin.flow.server.frontend.installer;
  * Exception indicating a failure during file download.
  * <p>
  * Derived from eirslett/frontend-maven-plugin
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since
  */
@@ -28,7 +30,7 @@ final class DownloadException extends Exception {
      * Exceptioon with message.
      *
      * @param message
-     *         exception message
+     *            exception message
      */
     public DownloadException(String message) {
         super(message);
@@ -38,9 +40,9 @@ final class DownloadException extends Exception {
      * Exceptioon with message and cause.
      *
      * @param message
-     *         exception message
+     *            exception message
      * @param cause
-     *         cause for exception
+     *            cause for exception
      */
     DownloadException(String message, Throwable cause) {
         super(message, cause);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.AbstractListChange;
@@ -43,6 +42,8 @@ import com.vaadin.flow.internal.change.NodeChange;
  * <p>
  * Should not be used directly, use one of the extending classes instead, which
  * provide a type safe API while ensuring the list is {@link Serializable}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -288,8 +289,6 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     @Override
     public void collectChanges(Consumer<NodeChange> collector) {
-        boolean hasRemoveAll = false;
-
         // This map contains items wrapped by AbstractListChanges as keys and
         // index in the following allChanges list as a value (it allows to get
         // AbstractListChange by the index)
@@ -316,7 +315,6 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
                 ((ListAddChange<T>) change).getNewItems()
                         .forEach(item -> indices.put(item, i));
             } else if (change instanceof ListClearChange<?>) {
-                hasRemoveAll = true;
                 allChanges.clear();
                 indices.clear();
                 index = 0;
@@ -329,17 +327,8 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
         List<AbstractListChange<T>> changes;
 
-        if (isRemoveAllCalled && !hasRemoveAll) {
-            changes = Stream
-                    .concat(Stream.of(new ListClearChange<>(this)),
-                            allChanges.stream())
-                    .filter(this::acceptChange).collect(Collectors.toList());
-        } else {
-            changes = allChanges.stream().filter(this::acceptChange)
-                    .collect(Collectors.toList());
-        }
-
-        isRemoveAllCalled = false;
+        changes = allChanges.stream().filter(this::acceptChange)
+                .collect(Collectors.toList());
 
         if (isPopulated) {
             changes.forEach(collector);
@@ -369,16 +358,15 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     @Override
     public void generateChangesFromEmpty() {
+        if (isRemoveAllCalled) {
+            // if list ever had "clear" change then it
+            // should be stored in the tracker
+            addChange(new ListClearChange<>(this));
+        }
         if (values != null) {
             assert !values.isEmpty();
             getChangeTracker().add(new ListAddChange<>(this, isNodeValues(), 0,
                     new ArrayList<>(values)));
-        } else if (isRemoveAllCalled) {
-            // if list has "clear" change and has no any other changes then
-            // this change should be stored in the tracker otherwise it will be
-            // incorrectly postponed
-            isRemoveAllCalled = false;
-            addChange(new ListClearChange<>(this));
         } else if (!isPopulated) {
             // make change tracker available so that an empty change can be
             // reported

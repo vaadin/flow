@@ -21,10 +21,13 @@
 const fs = require('fs');
 const path = require('path');
 const generateThemeFile = require('./theme-generator');
-const {copyStaticAssets} = require('./theme-copy');
+const {copyStaticAssets, copyThemeResources} = require('./theme-copy');
 
-// matches theme folder name in 'themes/my-theme/my-theme.generated.js'
-const nameRegex = /themes\/(.*)\/\1.generated.js/;
+// matches theme name in './theme-my-theme.generated.js'
+const nameRegex = /theme-(.*)\.generated\.js/;
+
+let prevThemeName = undefined;
+let firstThemeName = undefined;
 
 /**
  * Looks up for a theme resources in a current project and in jar dependencies,
@@ -37,10 +40,38 @@ const nameRegex = /themes\/(.*)\/\1.generated.js/;
  * @param logger application theme plugin logger
  */
 function processThemeResources(options, logger) {
-  const themeName = extractThemeName(options.themeResourceFolder);
+  const themeName = extractThemeName(options.frontendGeneratedFolder);
   if (themeName) {
+    if (!prevThemeName && !firstThemeName) {
+      firstThemeName = themeName;
+    } else if ((prevThemeName && prevThemeName !== themeName && firstThemeName !== themeName)
+        || (!prevThemeName && firstThemeName !== themeName)) {
+      // Warning message is shown to the developer when:
+      // 1. He is switching to any theme, which is differ from one being set up
+      // on application startup, by changing theme name in `@Theme()`
+      // 2. He removes or comments out `@Theme()` to see how the app
+      // looks like without theming, and then again brings `@Theme()` back
+      // with a themeName which is differ from one being set up on application
+      // startup.
+      const warning = `Attention: Active theme is switched to '${themeName}'.`
+      const description = `
+      Note that adding new style sheet files to '/themes/${themeName}/components', 
+      may not be taken into effect until the next application restart.
+      Changes to already existing style sheet files are being reloaded as before.`;
+      logger.warn("*******************************************************************");
+      logger.warn(warning);
+      logger.warn(description);
+      logger.warn("*******************************************************************");
+    }
+    prevThemeName = themeName;
+
     findThemeFolderAndHandleTheme(themeName, options, logger);
   } else {
+    // This is needed in the situation that the user decides to comment or
+    // remove the @Theme(...) completely to see how the application looks
+    // without any theme. Then when the user brings back one of the themes,
+    // the previous theme should be undefined to enable us to detect the change.
+    prevThemeName = undefined;
     logger.debug("Skipping Vaadin application theme handling.");
     logger.trace("Most likely no @Theme annotation for application or only themeClass used.");
   }
@@ -60,14 +91,14 @@ function findThemeFolderAndHandleTheme(themeName, options, logger) {
   for (let i = 0; i < options.themeProjectFolders.length; i++) {
     const themeProjectFolder = options.themeProjectFolders[i];
     if (fs.existsSync(themeProjectFolder)) {
-      logger.info("Searching themes folder", themeProjectFolder, "for theme", themeName);
+      logger.log("Searching themes folder '" + themeProjectFolder + "' for theme '" + themeName + "'");
       const handled = handleThemes(themeName, themeProjectFolder, options, logger);
       if (handled) {
         if (themeFound) {
           throw new Error("Found theme files in '" + themeProjectFolder + "' and '"
             + themeFound + "'. Theme should only be available in one folder");
         }
-        logger.info("Found theme files from '" + themeProjectFolder + "'");
+        logger.log("Found theme files from '" + themeProjectFolder + "'");
         themeFound = themeProjectFolder;
       }
     }
@@ -78,7 +109,7 @@ function findThemeFolderAndHandleTheme(themeName, options, logger) {
       throw new Error("Theme '" + themeName + "'should not exist inside a jar and in the project at the same time\n" +
         "Extending another theme is possible by adding { \"parent\": \"my-parent-theme\" } entry to the theme.json file inside your theme folder.");
     }
-    logger.debug("Searching theme jar resource folder ", options.themeResourceFolder, " for theme ", themeName);
+    logger.debug("Searching theme jar resource folder '" + options.themeResourceFolder + "' for theme '" + themeName + "'");
     handleThemes(themeName, options.themeResourceFolder, options, logger);
     themeFound = true;
   }
@@ -117,12 +148,11 @@ function handleThemes(themeName, themesFolder, options, logger) {
           "Please verify that dependency is added or theme folder exists.")
       }
     }
-
     copyStaticAssets(themeName, themeProperties, options.projectStaticAssetsOutputFolder, logger);
-
+    copyThemeResources(themeFolder, options.projectStaticAssetsOutputFolder, logger);
     const themeFile = generateThemeFile(themeFolder, themeName, themeProperties, !options.devMode);
 
-    fs.writeFileSync(path.resolve(themeFolder, themeName + '.generated.js'), themeFile);
+    fs.writeFileSync(path.resolve(options.frontendGeneratedFolder, 'theme-' + themeName + '.generated.js'), themeFile);
     return true;
   }
   return false;
@@ -141,22 +171,22 @@ function getThemeProperties(themeFolder) {
 }
 
 /**
- * Extracts current theme name from 'theme-generated.js' file located on a
+ * Extracts current theme name from auto-generated 'theme.js' file located on a
  * given folder.
- * @param themeFolder theme folder where flow generates 'theme-generated.js'
- * file and copies local and jar resource frontend files
+ * @param frontendGeneratedFolder folder in project containing 'theme.js' file
  * @returns {string} current theme name
  */
-function extractThemeName(themeFolder) {
-  if (!themeFolder) {
-    throw new Error("Couldn't extract theme name from 'theme-generated.js'," +
+function extractThemeName(frontendGeneratedFolder) {
+  if (!frontendGeneratedFolder) {
+    throw new Error("Couldn't extract theme name from 'theme.js'," +
       " because the path to folder containing this file is empty. Please set" +
       " the a correct folder path in ApplicationThemePlugin constructor" +
       " parameters.");
   }
-  const generatedThemeFile = path.resolve(themeFolder, "theme-generated.js");
+  const generatedThemeFile = path.resolve(frontendGeneratedFolder, "theme.js");
   if (fs.existsSync(generatedThemeFile)) {
-    // read theme name from the theme-generated.js as there we always mark the used theme for webpack to handle.
+    // read theme name from the 'generated/theme.js' as there we always
+    // mark the used theme for webpack to handle.
     const themeName = nameRegex.exec(fs.readFileSync(generatedThemeFile, {encoding: 'utf8'}))[1];
     if (!themeName) {
       throw new Error("Couldn't parse theme name from '" + generatedThemeFile + "'.");
@@ -167,4 +197,44 @@ function extractThemeName(themeFolder) {
   }
 }
 
-module.exports = { processThemeResources, extractThemeName };
+/**
+ * Finds all the parent themes located in the project themes folders and in
+ * the JAR dependencies with respect to the given custom theme with
+ * {@code themeName}.
+ * @param {string} themeName given custom theme name to look parents for
+ * @param {object} options application theme plugin mandatory options,
+ * @see {@link ApplicationThemePlugin}
+ * @returns {string[]} array of paths to found parent themes with respect to the
+ * given custom theme
+ */
+function findParentThemes(themeName, options) {
+  const existingThemeFolders = [options.themeResourceFolder, ...options.themeProjectFolders].filter(
+    (folder) => fs.existsSync(folder));
+  return collectParentThemes(themeName, existingThemeFolders, false);
+}
+
+function collectParentThemes(themeName, themeFolders, isParent) {
+  let foundParentThemes = [];
+  themeFolders.forEach(folder => {
+    const themeFolder = path.resolve(folder, themeName);
+    if (fs.existsSync(themeFolder)) {
+      const themeProperties = getThemeProperties(themeFolder);
+
+      if (themeProperties.parent) {
+        foundParentThemes.push(...collectParentThemes(themeProperties.parent, themeFolders, true));
+        if (!foundParentThemes.length) {
+          throw new Error("Could not locate files for defined parent theme '" + themeProperties.parent + "'.\n" +
+            "Please verify that dependency is added or theme folder exists.")
+        }
+      }
+      // Add a theme path to result collection only if a given themeName
+      // is supposed to be a parent theme
+      if (isParent) {
+        foundParentThemes.push(themeFolder);
+      }
+    }
+  });
+  return foundParentThemes;
+}
+
+module.exports = { processThemeResources, extractThemeName, findParentThemes };

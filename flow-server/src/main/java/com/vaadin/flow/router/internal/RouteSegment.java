@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -31,6 +32,8 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 
@@ -101,11 +104,18 @@ final class RouteSegment implements Serializable {
      */
     private Map<String, RouteSegment> allSegments;
 
-    private RouteSegment() {
-    }
+    private final boolean isRoot;
 
-    private RouteSegment(String segmentTemplate) {
+    /**
+     * Main route segment should be returned first in the {@link #getRoutes()}
+     * method to support {@link Route}/{@link RouteAlias} annotation semantic :
+     * {@link Route} should take precedence over {@link RouteAlias}.
+     */
+    private boolean isMainRouteSegment;
+
+    private RouteSegment(String segmentTemplate, boolean isRoot) {
         this.template = segmentTemplate;
+        this.isRoot = isRoot;
 
         if (RouteFormat.isParameter(segmentTemplate)) {
             info = new RouteFormat.ParameterInfo(segmentTemplate);
@@ -124,6 +134,8 @@ final class RouteSegment implements Serializable {
         this.info = original.info;
         this.pattern = original.pattern;
         this.target = original.target;
+        this.isRoot = original.isRoot;
+        this.isMainRouteSegment = original.isMainRouteSegment;
 
         original.getStaticSegments().entrySet()
                 .forEach(e -> this.addSegment(new RouteSegment(e.getValue()),
@@ -146,7 +158,7 @@ final class RouteSegment implements Serializable {
      * Create a new root segment instance.
      */
     static RouteSegment createRoot() {
-        return new RouteSegment("");
+        return new RouteSegment("", true);
     }
 
     String getName() {
@@ -203,24 +215,38 @@ final class RouteSegment implements Serializable {
      * @return a {@link Map} containing all templates and their specific
      *         targets.
      */
-    Map<String, RouteTarget> getRoutes() {
+    LinkedHashMap<String, RouteTarget> getRoutes() {
 
-        Map<String, RouteTarget> result = new LinkedHashMap<>();
+        Map<String, RouteSegment> leafSegments = getLeafStaticSegments();
 
-        if (target != null) {
-            result.put("", target);
+        String mainRoutePath = null;
+        RouteTarget mainRouteTarget = null;
+
+        /*
+         * Find the first main route segment in the static segments which should
+         * go first to be able to support Route/RouteAlias semantic. Main route
+         * doesn't have to exist though: it may be removed at any point. In this
+         * case the order doesn't matter since the RouteAlias ordering is not
+         * defined.
+         */
+        for (Entry<String, RouteSegment> entry : leafSegments.entrySet()) {
+            if (entry.getValue().isMainRouteSegment) {
+                mainRoutePath = entry.getKey();
+                mainRouteTarget = entry.getValue().target;
+                break;
+            }
         }
 
-        collectRoutes(result, getStaticSegments());
-        collectRoutes(result, getParameterSegments());
-        collectRoutes(result, getOptionalSegments());
-        collectRoutes(result, getVarargsSegments());
-
-        if (getTemplate().isEmpty()) {
-            return Collections.unmodifiableMap(result);
-        } else {
-            return result;
+        // If there is the main route : add it as first
+        LinkedHashMap<String, RouteTarget> result = new LinkedHashMap<>();
+        if (mainRoutePath != null) {
+            result.put(mainRoutePath, mainRouteTarget);
         }
+
+        getLeafSegments()
+                .forEach((path, segment) -> result.put(path, segment.target));
+
+        return result;
     }
 
     void removeSubRoute(String template) {
@@ -292,13 +318,34 @@ final class RouteSegment implements Serializable {
         }
     }
 
-    private void collectRoutes(Map<String, RouteTarget> result,
-            Map<String, RouteSegment> children) {
-        for (Map.Entry<String, RouteSegment> segmentEntry : children
-                .entrySet()) {
+    private LinkedHashMap<String, RouteSegment> getLeafSegments() {
+        LinkedHashMap<String, RouteSegment> result = new LinkedHashMap<>();
 
-            for (Map.Entry<String, RouteTarget> targetEntry : segmentEntry
-                    .getValue().getRoutes().entrySet()) {
+        if (target != null) {
+            result.put("", this);
+        }
+
+        collectLeafSegments(result, getStaticSegments());
+        collectLeafSegments(result, getParameterSegments());
+        collectLeafSegments(result, getOptionalSegments());
+        collectLeafSegments(result, getVarargsSegments());
+
+        return result;
+    }
+
+    private Map<String, RouteSegment> getLeafStaticSegments() {
+        Map<String, RouteSegment> result = new HashMap<>();
+
+        if (target != null) {
+            result.put("", this);
+        }
+
+        for (Map.Entry<String, RouteSegment> segmentEntry : getStaticSegments()
+                .entrySet()) {
+            RouteSegment segment = segmentEntry.getValue();
+
+            for (Map.Entry<String, RouteSegment> targetEntry : segment
+                    .getLeafStaticSegments().entrySet()) {
 
                 final String key = targetEntry.getKey();
                 result.put(
@@ -307,6 +354,35 @@ final class RouteSegment implements Serializable {
                         targetEntry.getValue());
             }
         }
+        return result;
+    }
+
+    private void collectLeafSegments(Map<String, RouteSegment> result,
+            Map<String, RouteSegment> children) {
+        for (Map.Entry<String, RouteSegment> segmentEntry : children
+                .entrySet()) {
+            RouteSegment segment = segmentEntry.getValue();
+
+            for (Map.Entry<String, RouteSegment> targetEntry : segment
+                    .getLeafSegments().entrySet()) {
+
+                final String key = targetEntry.getKey();
+                result.put(
+                        segmentEntry.getKey()
+                                + (key.isEmpty() ? "" : ("/" + key)),
+                        targetEntry.getValue());
+            }
+        }
+    }
+
+    private RouteSegment getFirstLeafSegment() {
+        if (target != null) {
+            return this;
+        }
+        Map<String, RouteSegment> segments = getAllSegments();
+        assert !segments.isEmpty();
+        RouteSegment first = segments.values().iterator().next();
+        return first.getFirstLeafSegment();
     }
 
     private void removeSubRoute(List<String> segmentPatterns) {
@@ -341,6 +417,7 @@ final class RouteSegment implements Serializable {
     }
 
     private void addSubRoute(List<String> segmentPatterns, RouteTarget target) {
+        boolean isMainRoute = isEmpty() && isRoot;
 
         RouteSegment routeSegment;
         String segmentPattern = null;
@@ -379,6 +456,11 @@ final class RouteSegment implements Serializable {
         }
 
         routeSegment.setRouteTarget(segmentPatterns, target);
+
+        if (isMainRoute) {
+            RouteSegment firstSegment = getFirstLeafSegment();
+            firstSegment.isMainRouteSegment = true;
+        }
     }
 
     private void setRouteTarget(List<String> segmentPatterns,
@@ -730,7 +812,7 @@ final class RouteSegment implements Serializable {
 
     private RouteSegment addSegment(String segmentTemplate,
             Map<String, RouteSegment> children) {
-        RouteSegment routeSegment = new RouteSegment(segmentTemplate);
+        RouteSegment routeSegment = new RouteSegment(segmentTemplate, false);
         addSegment(routeSegment, children);
         return routeSegment;
     }

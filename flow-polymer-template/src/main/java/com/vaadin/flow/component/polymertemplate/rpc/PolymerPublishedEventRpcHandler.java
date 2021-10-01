@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,7 +33,9 @@ import elemental.json.JsonValue;
  * Polymer utilitiy class for handling polymer rpc events for @EventHandler.
  *
  * Registers {@link PolymerPublishedEventRpcHandler} as a service to make it
- * available in {@link Lookup} in an OSGi container. *
+ * available in {@link Lookup} in an OSGi container.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  * 
  * @since
  */

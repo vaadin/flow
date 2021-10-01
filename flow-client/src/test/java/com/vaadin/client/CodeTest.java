@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -82,6 +82,7 @@ public class CodeTest {
                 packageName = node.getName().toString();
                 return false;
             }
+
             @Override
             public boolean visit(ImportDeclaration node) {
                 imports.add(node.getName().toString());
@@ -93,7 +94,8 @@ public class CodeTest {
                 for (Object frament : node.fragments()) {
                     if (frament instanceof VariableDeclarationFragment) {
                         VariableDeclarationFragment variableDeclaration = (VariableDeclarationFragment) frament;
-                        Expression expression = variableDeclaration.getInitializer();
+                        Expression expression = variableDeclaration
+                                .getInitializer();
                         if (expression instanceof ClassInstanceCreation) {
                             ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) expression;
                             Class<?> typeClass = getClass(node.getType());

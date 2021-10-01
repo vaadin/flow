@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -62,8 +62,8 @@ public class ValidationException extends Exception {
     public List<ValidationResult> getValidationErrors() {
         List<ValidationResult> errors = new ArrayList<>(
                 getFieldValidationErrors().stream()
-                .map(s -> s.getResult().get())
-                .collect(Collectors.toList()));
+                        .map(s -> s.getResult().get())
+                        .collect(Collectors.toList()));
         errors.addAll(getBeanValidationErrors());
         return errors;
     }

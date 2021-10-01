@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -53,7 +53,9 @@ import com.vaadin.flow.shared.communication.PushConstants;
  * Handles requests to open a push (bidirectional) communication channel between
  * the client and the server. After the initial request, communication through
  * the push channel is managed by {@link PushAtmosphereHandler} and
- * {@link PushHandler}
+ * {@link PushHandler}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0

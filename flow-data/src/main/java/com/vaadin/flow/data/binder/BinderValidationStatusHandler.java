@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,8 +27,7 @@ import com.vaadin.flow.function.SerializableEventListener;
  * <p>
  * error message} for failed field validations. For bean level validation errors
  * the default handler will display the first error message in
- * {@link Binder#setStatusLabel(HasText) status label}, if one has
- * been set.
+ * {@link Binder#setStatusLabel(HasText) status label}, if one has been set.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -43,7 +42,7 @@ import com.vaadin.flow.function.SerializableEventListener;
  */
 @FunctionalInterface
 public interface BinderValidationStatusHandler<BEAN>
-extends SerializableEventListener {
+        extends SerializableEventListener {
 
     /**
      * Invoked when the validation status has changed in binder.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,10 +24,21 @@ import com.vaadin.flow.server.communication.IndexHtmlResponse;
 
 public class TestApplicationServiceInitListener
         implements VaadinServiceInitListener {
+    private static String getBaseUrl(IndexHtmlResponse indexHtmlResponse) {
+        VaadinServletRequest request = (VaadinServletRequest) indexHtmlResponse
+                .getVaadinRequest();
+        String scheme = request.getScheme() + "://";
+        String serverName = request.getServerName();
+        String serverPort = (request.getServerPort() == 80) ? ""
+                : ":" + request.getServerPort();
+        String contextPath = request.getContextPath();
+        return scheme + serverName + serverPort + contextPath;
+    }
+
     @Override
     public void serviceInit(ServiceInitEvent event) {
         event.addIndexHtmlRequestListener(response -> {
-            Element el = new Element("label");
+            Element el = new Element("output");
             el.text("Modified page");
             response.getDocument().body().appendChild(el);
         });
@@ -45,16 +56,23 @@ public class TestApplicationServiceInitListener
             styleElem.text("body,#outlet{height:50vh;width:50vw;}");
             response.getDocument().head().appendChild(styleElem);
         });
-    }
 
-    private static String getBaseUrl(IndexHtmlResponse indexHtmlResponse) {
-        VaadinServletRequest request = (VaadinServletRequest) indexHtmlResponse
-                .getVaadinRequest();
-        String scheme = request.getScheme() + "://";
-        String serverName = request.getServerName();
-        String serverPort = (request.getServerPort() == 80) ? ""
-                : ":" + request.getServerPort();
-        String contextPath = request.getContextPath();
-        return scheme + serverName + serverPort + contextPath;
+        // Stub logout request handler for CsrfCookieIT
+        event.addRequestHandler((session, request, response) -> {
+            if (!request.getMethod().equals("POST")) {
+                return false;
+            }
+
+            if (!request.getPathInfo().equals("/logout")) {
+                return false;
+            }
+
+            request.getWrappedSession().invalidate();
+
+            response.setStatus(200);
+            response.setContentLength(0);
+
+            return true;
+        });
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -40,6 +40,6 @@ public class AppThemeTestIT extends CCDMTest {
     public void should_apply_AppTheme_on_serverSideView() {
         findAnchor("serverview").click();
         Assert.assertEquals(BLUE_RGBA,
-            findElement(By.id("serverView")).getCssValue("color"));
+                findElement(By.id("serverView")).getCssValue("color"));
     }
 }

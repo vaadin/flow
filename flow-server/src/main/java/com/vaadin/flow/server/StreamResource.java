@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,9 @@ import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import com.vaadin.flow.dom.Element;
@@ -49,6 +52,8 @@ public class StreamResource extends AbstractStreamResource {
     private final StreamResourceWriter writer;
 
     private ContentTypeResolver resolver = DEFAULT_RESOLVER;
+
+    private Map<String, String> headers;
 
     private static class DefaultResolver implements ContentTypeResolver {
 
@@ -215,6 +220,54 @@ public class StreamResource extends AbstractStreamResource {
      */
     public ContentTypeResolver getContentTypeResolver() {
         return resolver;
+    }
+
+    /**
+     * Sets the value of a generic response header. If the header had already
+     * been set, the new value overwrites the previous one.
+     * 
+     * @param name
+     *            a header name
+     * @param value
+     *            value of the header
+     * @return this resource
+     */
+    public StreamResource setHeader(String name, String value) {
+        if (headers == null) {
+            headers = new HashMap<>();
+        }
+        headers.put(name, value);
+        return this;
+    }
+
+    /**
+     * Gets the value for header {@code name} set for the resource.
+     * 
+     * @param name
+     *            name of header to get value for
+     * @return an optional with header value, or an empty optional if it has not
+     *         been set
+     */
+    public Optional<String> getHeader(String name) {
+        if (headers != null) {
+            return Optional.ofNullable(headers.get(name));
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Gets the additionally configured headers for the resource.
+     * <p>
+     * This method doesn't return headers which are set via explicit setters
+     * like {@link #setContentType(String)} and {@link #setCacheTime(long)}.
+     * 
+     * @return a map of headers and their values
+     */
+    public Map<String, String> getHeaders() {
+        if (headers == null) {
+            return Collections.emptyMap();
+        }
+        return Collections.unmodifiableMap(headers);
     }
 
     @Override

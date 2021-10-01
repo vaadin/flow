@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css?family=Itim');
 @import 'sub-css/sub.css';
 
 @font-face {
@@ -16,6 +17,18 @@
 html, :host {
     --lumo-primary-text-color: #008000;
     color: rgba(0, 0, 0, 1); /* black */
+}
+
+
+
+/* Lumo has
+html {
+    background-color: var(--lumo-base-color);
+}
+This extact same rule with a different value should override that
+*/
+html {
+    background-color: blue;
 }
 
 body {
@@ -41,6 +54,18 @@ body {
 #font-awesome {
     margin: 5px;
     padding: 5px;
+}
+
+#dice {
+    width: 300px;
+    height: 300px;
+    display: block;
+}
+
+#icon-snowflake {
+    background-image: url('./fortawesome/icons/snowflake.svg');
+    height: 1em;
+    width: 1em;
 }
 
 p.global {

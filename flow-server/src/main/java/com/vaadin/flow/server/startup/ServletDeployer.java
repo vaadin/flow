@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -44,7 +44,6 @@ import com.vaadin.flow.server.VaadinServletConfig;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 /**
  * Context listener that automatically registers Vaadin servlets.
@@ -67,6 +66,8 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
  * had been mapped to the same path already or if
  * {@link InitParameters#DISABLE_AUTOMATIC_SERVLET_REGISTRATION} system property
  * is set to {@code true}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -185,21 +186,6 @@ public class ServletDeployer implements ServletContextListener {
                             new VaadinServletConfig(servletConfig));
         }
 
-        /**
-         * Creates a DeploymentConfiguration.
-         *
-         * @param context
-         *            the ServletContext
-         * @param servletClass
-         *            the class to look for properties defined with annotations
-         * @return a DeploymentConfiguration instance
-         */
-        public static DeploymentConfiguration createDeploymentConfiguration(
-                ServletContext context, Class<?> servletClass) {
-            return new DeploymentConfigurationFactory()
-                    .createPropertyDeploymentConfiguration(servletClass,
-                            new VaadinServletContextConfig(context));
-        }
     }
 
     @Override
@@ -208,11 +194,12 @@ public class ServletDeployer implements ServletContextListener {
         Collection<DeploymentConfiguration> servletConfigurations = getServletConfigurations(
                 context);
 
-        boolean enableServlets = true;
+        VaadinServletContext vaadinContext = new VaadinServletContext(context);
+        ApplicationConfiguration config = ApplicationConfiguration
+                .get(vaadinContext);
+        boolean enableServlets = !config.disableAutomaticServletRegistration();
         boolean productionMode = false;
         for (DeploymentConfiguration configuration : servletConfigurations) {
-            enableServlets = enableServlets
-                    && !configuration.disableAutomaticServletRegistration();
             productionMode = productionMode || configuration.isProductionMode();
         }
 
@@ -296,21 +283,6 @@ public class ServletDeployer implements ServletContextListener {
 
     private VaadinServletCreation createAppServlet(
             ServletContext servletContext) {
-        VaadinServletContext context = new VaadinServletContext(servletContext);
-        boolean createServlet = ApplicationRouteRegistry.getInstance(context)
-                .hasNavigationTargets();
-
-        createServlet = createServlet || WebComponentConfigurationRegistry
-                .getInstance(context).hasConfigurations();
-
-        if (!createServlet) {
-            servletCreationMessage = String.format(
-                    "%s there are no navigation targets registered to the "
-                            + "route registry and there are no web component exporters.",
-                    SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE);
-            return VaadinServletCreation.NO_CREATION;
-        }
-
         ServletRegistration vaadinServlet = findVaadinServlet(servletContext);
         if (vaadinServlet != null) {
             servletCreationMessage = String.format(

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,6 @@ package com.vaadin.flow.server.communication;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.net.URI;
@@ -60,6 +59,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Bootstrap handler for WebComponent requests.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
  * @since 2.0
@@ -83,7 +84,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         public <T extends Annotation> Optional<T> getPageConfigurationAnnotation(
                 Class<T> annotationType) {
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                    .getInstance(getRequest().getService().getContext());
+                    .getInstance(getService().getContext());
             return registry.getEmbeddedApplicationAnnotation(annotationType);
         }
 
@@ -97,7 +98,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             extends BootstrapPageBuilder {
         @Override
         protected List<String> getChunkKeys(JsonObject chunks) {
-            return Collections.singletonList(EXPORT_CHUNK);
+            if (chunks.hasKey(EXPORT_CHUNK)) {
+                return Collections.singletonList(EXPORT_CHUNK);
+            } else {
+                return super.getChunkKeys(chunks);
+            }
         }
     }
 
@@ -120,6 +125,9 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
+        if (!hasWebComponentConfigurations(request)) {
+            return false;
+        }
         String pathInfo = request.getPathInfo();
         if (pathInfo == null || pathInfo.isEmpty()) {
             return false;
@@ -277,6 +285,12 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         ArrayList<com.vaadin.flow.dom.Element> elementsForShadows = new ArrayList<>();
         try (BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
+            writer.write("(function () {\n"
+                    + "var hasScript = function(src) {\n"
+                    + "  var scriptTags = Array.from(document.head.querySelectorAll('script'));\n"
+                    + "  return scriptTags.some(script => script.src.endsWith(src))\n"
+                    + "};\n");
+
             String varName = "headElem"; // generated head element
             writer.append("var ").append(varName).append("=null;");
             for (Element element : head.children()) {
@@ -284,6 +298,12 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     getElementForShadowDom(element)
                             .ifPresent(elementsForShadows::add);
                     continue;
+                }
+                String conditionalFilename = getVaadinFilenameIfVaadinScript(
+                        element);
+                if (conditionalFilename != null) {
+                    writer.append("if (!hasScript(\"" + conditionalFilename
+                            + "\")) {\n");
                 }
                 writer.append(varName).append("=");
                 writer.append("document.createElement('")
@@ -297,12 +317,33 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 }
                 writer.append("document.head.appendChild(").append(varName)
                         .append(");");
+                if (conditionalFilename != null) {
+                    writer.append("}\n");
+                }
             }
+            writer.append("})();");
         }
 
         WebComponentConfigurationRegistry
                 .getInstance(response.getService().getContext())
                 .setShadowDomElements(elementsForShadows);
+    }
+
+    private static String getVaadinFilenameIfVaadinScript(Element element) {
+        if (!"script".equalsIgnoreCase(element.tagName())) {
+            return null;
+        }
+        // Injecting a webpack bundle twice can never work.
+        // The bundle contains web components that register
+        // themselves and loading twice will always cause
+        // custom element conflicts
+        String src = element.attr("src");
+        int index = src.indexOf("/VAADIN/");
+        if (index != -1) {
+            return src.substring(index);
+        }
+
+        return null;
     }
 
     private static boolean elementShouldNotBeTransferred(Element element) {
@@ -379,10 +420,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * @param path
      *            original resource path
      * @return new resource path, relative to basePath
-     * @throws UnsupportedEncodingException
      */
-    protected String modifyPath(String basePath, String path)
-            throws UnsupportedEncodingException {
+    protected String modifyPath(String basePath, String path) {
         int vaadinIndex = path.indexOf(Constants.VAADIN_MAPPING);
         String suffix = path;
         if (vaadinIndex > 0) {
@@ -400,6 +439,12 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     "URL '" + url + "' may not contain double quotes");
         }
         return url;
+    }
+
+    private boolean hasWebComponentConfigurations(VaadinRequest request) {
+        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
+                .getInstance(request.getService().getContext());
+        return registry.hasConfigurations();
     }
 
     private static String inlineHTML(String html) {
@@ -434,7 +479,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         String url = request.getParameter(REQ_PARAM_URL);
         // if 'url' parameter was not available, use request url
         if (url == null) {
-            url = ((VaadinServletRequest) request).getRequestURL().toString();
+            url = getRequestUrl(request);
         }
         return url
                 // +1 is to keep the trailing slash

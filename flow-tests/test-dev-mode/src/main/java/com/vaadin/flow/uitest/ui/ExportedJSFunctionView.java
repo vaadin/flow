@@ -38,8 +38,8 @@ public class ExportedJSFunctionView extends AbstractDivView {
         Div div = new Div();
         div.setId("poll");
         div.setText("Click to poll using JS API");
-        getPage().executeJs("$0.addEventListener('click', function() {"
-                + client + ".poll();" //
+        getPage().executeJs("$0.addEventListener('click', function() {" + client
+                + ".poll();" //
                 + "});", div);
         add(div);
 

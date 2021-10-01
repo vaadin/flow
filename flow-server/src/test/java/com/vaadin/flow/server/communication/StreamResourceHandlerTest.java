@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -105,5 +105,18 @@ public class StreamResourceHandlerTest {
         }
         Mockito.verify(response)
                 .setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
+
+    @Test
+    public void inputStreamResourceHasHeader_headerIsWritten()
+            throws IOException {
+        StreamResource res = new StreamResource("readme.md",
+                () -> new ByteArrayInputStream(new byte[0]));
+
+        res.setHeader("foo", "bar");
+
+        handler.handleRequest(session, request, response, res);
+
+        Mockito.verify(response).setHeader("foo", "bar");
     }
 }

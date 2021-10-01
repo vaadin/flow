@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -49,7 +49,7 @@ public final class Constants implements Serializable {
     public static final String CONNECT_JAVA_SOURCE_FOLDER_TOKEN = "connect.javaSourceFolder";
     public static final String CONNECT_APPLICATION_PROPERTIES_TOKEN = "connect.applicationProperties";
     public static final String CONNECT_OPEN_API_FILE_TOKEN = "connect.openApiFile";
-    public static final String CONNECT_GENERATED_TS_DIR_TOKEN = "connect.generated";
+    public static final String PROJECT_FRONTEND_GENERATED_DIR_TOKEN = "project.frontend.generated";
     public static final String EXTERNAL_STATS_FILE_TOKEN = "externalStatsFile";
     public static final String EXTERNAL_STATS_URL_TOKEN = "externalStatsUrl";
 
@@ -230,6 +230,11 @@ public final class Constants implements Serializable {
     public static final String PACKAGE_JSON = "package.json";
 
     /**
+     * Target folder constant.
+     */
+    public static final String TARGET = "target";
+
+    /**
      * Location for the frontend resources in jar files for compatibility mode
      * (also obsolete but supported for NPM mode).
      */
@@ -249,6 +254,12 @@ public final class Constants implements Serializable {
      * Location for the resources in jar files.
      */
     public static final String RESOURCES_JAR_DEFAULT = "META-INF/resources/";
+
+    /**
+     * Location for the theme resources in jar files.
+     */
+    public static final String RESOURCES_THEME_JAR_DEFAULT = RESOURCES_JAR_DEFAULT
+            + APPLICATION_THEME_ROOT + "/";
 
     /**
      * @deprecated Use
@@ -302,6 +313,25 @@ public final class Constants implements Serializable {
      * string and constant, so need to use string instead of boolean.
      */
     public static final String ENABLE_PNPM_DEFAULT_STRING = "true";
+
+    /**
+     * Constant for setting the pinned supported version of pnpm to be used by
+     * default (see
+     * {@link com.vaadin.flow.server.frontend.FrontendTools#DEFAULT_PNPM_VERSION}).
+     * Mojos need the value as string and constant, so need to use string
+     * instead of boolean.
+     */
+    public static final String GLOBAL_PNPM_DEFAULT_STRING = "false";
+
+    /**
+     * The default value for {@link InitParameters#NODE_AUTO_UPDATE}.
+     */
+    public static final String DEFAULT_NODE_AUTO_UPDATE = "false";
+
+    /**
+     * The default value for {@link #REQUIRE_HOME_NODE_EXECUTABLE}.
+     */
+    public static final String DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE = "false";
 
     /**
      * @deprecated Use {@link InitParameters#REQUIRE_HOME_NODE_EXECUTABLE}

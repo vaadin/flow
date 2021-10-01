@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,9 +34,9 @@ import com.vaadin.flow.data.binder.Binder.BindingBuilder;
  * with {@link HasValue#setRequiredIndicatorVisible(boolean)}.
  * <p>
  * Note that
- * {@link BindingBuilder#asRequired(com.vaadin.flow.data.ErrorMessageProvider)} does
- * almost the same thing, but verifies against the value NOT being equal to what
- * {@link HasValue#getEmptyValue()} returns and sets the required indicator
+ * {@link BindingBuilder#asRequired(com.vaadin.flow.data.ErrorMessageProvider)}
+ * does almost the same thing, but verifies against the value NOT being equal to
+ * what {@link HasValue#getEmptyValue()} returns and sets the required indicator
  * visible with {@link HasValue#setRequiredIndicatorVisible(boolean)}.
  *
  * @see HasValue#setRequiredIndicatorVisible(boolean)

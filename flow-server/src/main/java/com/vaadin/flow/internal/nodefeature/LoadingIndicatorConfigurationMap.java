@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,8 @@ import com.vaadin.flow.internal.StateNode;
 
 /**
  * Map for storing configuration for the loading indicator.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -39,7 +41,7 @@ public class LoadingIndicatorConfigurationMap extends NodeMap
      * Creates a new map for the given node.
      *
      * @param node
-     *         the node that the map belongs to
+     *            the node that the map belongs to
      */
     public LoadingIndicatorConfigurationMap(StateNode node) {
         super(node);
@@ -77,7 +79,8 @@ public class LoadingIndicatorConfigurationMap extends NodeMap
 
     @Override
     public boolean isApplyDefaultTheme() {
-        return getOrDefault(DEFAULT_THEME_APPLIED_KEY, DEFAULT_THEME_APPLIED_DEFAULT);
+        return getOrDefault(DEFAULT_THEME_APPLIED_KEY,
+                DEFAULT_THEME_APPLIED_DEFAULT);
     }
 
     @Override

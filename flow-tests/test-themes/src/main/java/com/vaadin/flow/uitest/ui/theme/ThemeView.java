@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,6 +32,8 @@ public class ThemeView extends Div {
     public static final String OCTOPUSS_ID = "octopuss";
     public static final String FONTAWESOME_ID = "font-awesome";
     public static final String SUB_COMPONENT_ID = "sub-component";
+    public static final String DICE_ID = "dice";
+    public static final String CSS_SNOWFLAKE = "icon-snowflake";
 
     public ThemeView() {
         final Span textSpan = new Span("This is the theme test view");
@@ -46,16 +48,26 @@ public class ThemeView extends Div {
         Span octopuss = new Span();
         octopuss.setId(OCTOPUSS_ID);
 
+        Span cssSnowflake = new Span();
+        cssSnowflake.setId(CSS_SNOWFLAKE);
+
         Span faText = new Span("This test is FontAwesome.");
         faText.setClassName("fas fa-coffee");
         faText.setId(FONTAWESOME_ID);
 
         Image snowFlake = new Image(
-            "themes/app-theme/fortawesome/icons/snowflake.svg", "snowflake");
+                "themes/app-theme/fortawesome/icons/snowflake.svg",
+                "snowflake");
         snowFlake.setHeight("1em");
         snowFlake.setId(SNOWFLAKE_ID);
 
-        add(textSpan, snowFlake, subCss, butterfly, octopuss, faText);
+        Span diceImageSpan = new Span();
+        diceImageSpan.getStyle().set("background-image",
+                "url('themes/app-theme/img/dice.jpg')");
+        diceImageSpan.setId(DICE_ID);
+
+        add(textSpan, snowFlake, subCss, butterfly, octopuss, cssSnowflake,
+                faText, diceImageSpan);
 
         add(new Div());
         add(new MyPolymerField().withId(MY_POLYMER_ID));

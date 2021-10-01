@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,7 @@ package com.vaadin.flow.server.communication;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +26,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -57,6 +60,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Handles {@link StreamReceiver} instances registered in {@link VaadinSession}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -119,7 +124,9 @@ public class StreamReceiverHandler implements Serializable {
         session.lock();
         try {
             String secKey = streamReceiver.getId();
-            if (secKey == null || !secKey.equals(securityKey)) {
+            if (secKey == null || !MessageDigest.isEqual(
+                    secKey.getBytes(StandardCharsets.UTF_8),
+                    securityKey.getBytes(StandardCharsets.UTF_8))) {
                 getLogger().warn(
                         "Received incoming stream with faulty security key.");
                 return;
@@ -182,9 +189,16 @@ public class StreamReceiverHandler implements Serializable {
                 success = handleMultipartFileUploadFromInputStream(session,
                         request, streamReceiver, owner);
             }
+        } catch (IOException exception) {
+            // do not report IO exceptions via ErrorHandler
+            getLogger().warn(
+                    "IO Exception during file upload, fired as StreamingErrorEvent",
+                    exception);
         } catch (Exception exception) {
             session.lock();
             try {
+                // Report other than IO exceptions, which are mistakes, via
+                // ErrorHandler
                 session.getErrorHandler().error(new ErrorEvent(exception));
             } finally {
                 session.unlock();
@@ -229,11 +243,11 @@ public class StreamReceiverHandler implements Serializable {
         return success;
     }
 
-    private boolean handleMultipartFileUploadFromInputStream(VaadinSession session,
-            VaadinRequest request, StreamReceiver streamReceiver,
-            StateNode owner) throws IOException {
+    private boolean handleMultipartFileUploadFromInputStream(
+            VaadinSession session, VaadinRequest request,
+            StreamReceiver streamReceiver, StateNode owner) throws IOException {
         boolean success = true;
-        long contentLength = request.getContentLength();
+        long contentLength = getContentLength(request);
         // Parse the request
         FileItemIterator iter;
         try {
@@ -327,26 +341,26 @@ public class StreamReceiverHandler implements Serializable {
     }
 
     /**
-     * Validate that stream target is in a valid state for receiving data
-     * and send stream to receiver. Handles cleanup and error in reading stream
+     * Validate that stream target is in a valid state for receiving data and
+     * send stream to receiver. Handles cleanup and error in reading stream
      *
      * @param session
-     *         The session containing the stream variable
+     *            The session containing the stream variable
      * @param inputStream
-     *         the request content input stream
+     *            the request content input stream
      * @param streamReceiver
-     *         the receiver containing the destination stream variable
+     *            the receiver containing the destination stream variable
      * @param filename
-     *         name of the streamed file
+     *            name of the streamed file
      * @param mimeType
-     *         file mime type
+     *            file mime type
      * @param contentLength
-     *         The length of the request content
+     *            The length of the request content
      * @param node
-     *         The owner of the stream
+     *            The owner of the stream
      * @return true if upload successful, else false
      * @throws UploadException
-     *         Thrown for illegal target node state
+     *             Thrown for illegal target node state
      */
     protected boolean handleFileUploadValidationAndData(VaadinSession session,
             InputStream inputStream, StreamReceiver streamReceiver,
@@ -517,35 +531,37 @@ public class StreamReceiverHandler implements Serializable {
                 session.unlock();
             }
             success = true;
-        } catch (UploadInterruptedException e) {
-            // Download interrupted by application code
-            tryToCloseStream(out);
-            StreamVariable.StreamingErrorEvent event = new StreamingErrorEventImpl(
-                    filename, type, contentLength, totalBytes, e);
-            session.lock();
-            try {
-                streamVariable.streamingFailed(event);
-            } finally {
-                session.unlock();
-            }
-            // Note, we are not throwing interrupted exception forward as it is
-            // not a terminal level error like all other exception.
+        } catch (UploadInterruptedException | IOException e) {
+            // Download is either interrupted by application code or some
+            // IOException happens
+            onStreamingFailed(session, filename, type, contentLength,
+                    streamVariable, out, totalBytes, e);
+            // Interrupted exception and IOEXception are not thrown forward:
+            // it's enough to fire them via streamVariable
         } catch (final Exception e) {
-            tryToCloseStream(out);
-            session.lock();
-            try {
-                StreamVariable.StreamingErrorEvent event = new StreamingErrorEventImpl(
-                        filename, type, contentLength, totalBytes, e);
-                streamVariable.streamingFailed(event);
-                // throw exception for terminal to be handled (to be passed to
-                // terminalErrorHandler)
-                throw new UploadException(e);
-            } finally {
-                session.unlock();
-            }
+            onStreamingFailed(session, filename, type, contentLength,
+                    streamVariable, out, totalBytes, e);
+            // Throw not IOException and interrupted exception for terminal to
+            // be handled (to be passed to terminalErrorHandler): such
+            // exceptions mean mistakes in the implementation logic (not upload
+            // I/O operations).
+            throw new UploadException(e);
         }
         return new Pair<>(startedEvent.isDisposed(),
                 success ? UploadStatus.OK : UploadStatus.ERROR);
+    }
+
+    private void onStreamingFailed(VaadinSession session, String filename,
+            String type, long contentLength, StreamVariable streamVariable,
+            OutputStream out, long totalBytes, final Exception exception) {
+        tryToCloseStream(out);
+        session.lock();
+        try {
+            streamVariable.streamingFailed(new StreamingErrorEventImpl(filename,
+                    type, contentLength, totalBytes, exception));
+        } finally {
+            session.unlock();
+        }
     }
 
     private long updateProgress(VaadinSession session,
@@ -572,13 +588,12 @@ public class StreamReceiverHandler implements Serializable {
      * The request.getContentLength() is limited to "int" by the Servlet
      * specification. To support larger file uploads manually evaluate the
      * Content-Length header which can contain long values.
+     * 
+     * @deprecated use {@link VaadinRequest#getContentLengthLong()} instead
      */
+    @Deprecated
     protected long getContentLength(VaadinRequest request) {
-        try {
-            return Long.parseLong(request.getHeader("Content-Length"));
-        } catch (NumberFormatException e) {
-            return -1l;
-        }
+        return request.getContentLengthLong();
     }
 
     protected boolean isMultipartUpload(VaadinRequest request) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.util.Optional;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
@@ -32,9 +33,11 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadAccess;
+import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.server.AppShellRegistry;
+import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -49,19 +52,35 @@ import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
-import static com.vaadin.flow.shared.ApplicationConstants.CSRF_TOKEN;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * This class is responsible for serving the <code>index.html</code> according
- * to the template provided in the frontend folder. The handler will calculate and
- * inject baseHref as well as the bundle scripts into the template.
+ * to the template provided in the frontend folder. The handler will calculate
+ * and inject baseHref as well as the bundle scripts into the template.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
+
+    private static final String CONTENT_ATTRIBUTE = "content";
+    private static final String NAME_ATTRIBUTE = "name";
+    private static final String SPRING_CSRF_TOKEN_ATTRIBUTE_IN_SESSION = "org.springframework.security.web.csrf.CsrfToken";
+    private static final String SPRING_CSRF_HEADER_PROPERTY = "headerName";
+    private static final String SPRING_CSRF_PARAMETER_PROPERTY = "parameterName";
+    private static final String SPRING_CSRF_TOKEN_PROPERTY = "token";
+    private static final String SPRING_CSRF_PARAMETER_NAME_ATTRIBUTE = "_csrf_parameter";
+    private static final String SPRING_CSRF_HEADER_NAME_ATTRIBUTE = "_csrf_header";
+    private static final String SPRING_CSRF_TOKEN_ATTRIBUTE = "_csrf";
+    private static final String META_TAG = "meta";
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
+        if (writeErrorCodeIfRequestLocationIsInvalid(request, response)) {
+            return true;
+        }
+
         DeploymentConfiguration config = session.getConfiguration();
         IndexHtmlResponse indexHtmlResponse;
 
@@ -77,20 +96,22 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 .includeInitialUidl(request)) {
             includeInitialUidl(initialJson, session, request, response);
 
-            indexHtmlResponse = new IndexHtmlResponse(request, response, indexDocument, UI.getCurrent());
+            indexHtmlResponse = new IndexHtmlResponse(request, response,
+                    indexDocument, UI.getCurrent());
 
             // App might be using classic server-routing, which is true
             // unless we detect a call to JavaScriptBootstrapUI.connectClient
             session.setAttribute(SERVER_ROUTING, Boolean.TRUE);
         } else {
-            indexHtmlResponse = new IndexHtmlResponse(request, response, indexDocument);
+            indexHtmlResponse = new IndexHtmlResponse(request, response,
+                    indexDocument);
         }
 
-        addInitialFlow(initialJson, indexDocument, session, request);
+        addInitialFlow(initialJson, indexDocument, request);
 
         configureErrorDialogStyles(indexDocument);
 
-        showWebpackErrors(indexDocument);
+        showWebpackErrors(session.getService(), indexDocument);
 
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
@@ -98,13 +119,15 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
         if (!config.isProductionMode()) {
-            UsageStatisticsExporter.exportUsageStatisticsToDocument(indexDocument);
+            UsageStatisticsExporter
+                    .exportUsageStatisticsToDocument(indexDocument);
         }
 
         // modify the page based on the @PWA annotation
         setupPwa(indexDocument, session.getService());
 
-        // modify the page based on the @Meta, @ViewPort, @BodySize and @Inline annotations
+        // modify the page based on the @Meta, @ViewPort, @BodySize and @Inline
+        // annotations
         // and on the AppShellConfigurator
         registry.modifyIndexHtml(indexDocument, request);
 
@@ -132,7 +155,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         if (UI.getCurrent() != null) {
             Element elm = indexDocument.head().selectFirst("title");
             if (elm != null) {
-                String appShellTitle = elm.text().isEmpty() ? elm.data() : elm.text();
+                String appShellTitle = elm.text().isEmpty() ? elm.data()
+                        : elm.text();
                 UI.getCurrent().getInternals().setAppShellTitle(appShellTitle);
             }
         }
@@ -141,64 +165,84 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private void addDevmodeGizmo(Document indexDocument, VaadinSession session,
             VaadinRequest request) {
         VaadinService service = session.getService();
-        BrowserLiveReloadAccess liveReloadAccess = service
-                .getInstantiator()
-                .getOrCreate(BrowserLiveReloadAccess.class);
-        BrowserLiveReload liveReload = liveReloadAccess != null
-                ? liveReloadAccess.getLiveReload(service)
-                : null;
+        Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
+                .getLiveReloadFromService(service);
 
-        if (liveReload != null) {
+        if (liveReload.isPresent()) {
             Element devmodeGizmo = new Element("vaadin-devmode-gizmo");
             devmodeGizmo.attr("url",
                     BootstrapHandlerHelper.getPushURL(session, request));
-            if (liveReload.getBackend() != null) {
-                devmodeGizmo.attr("backend", liveReload.getBackend().toString());
+            BrowserLiveReload.Backend backend = liveReload.get().getBackend();
+            if (backend != null) {
+                devmodeGizmo.attr("backend", backend.toString());
             }
-            devmodeGizmo.attr("springbootlivereloadport", Integer.toString(
-                    Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT));
+            devmodeGizmo.attr("springbootlivereloadport", Integer
+                    .toString(Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT));
             indexDocument.body().appendChild(devmodeGizmo);
         }
     }
 
     private void addInitialFlow(JsonObject initialJson, Document indexDocument,
-                                VaadinSession session, VaadinRequest request) {
-        // Do not add the CSRF token if the request comes from the service
-        // worker, to not have the token cached locally (#9537)
-        String referer = request.getHeader("referer");
-        if (referer == null || !referer.endsWith("/sw.js")) {
-            String csrfToken = session.getCsrfToken();
-            if (csrfToken != null) {
-                initialJson.put(CSRF_TOKEN, csrfToken);
+            VaadinRequest request) {
+        Object springCsrfToken = request
+                .getAttribute(SPRING_CSRF_TOKEN_ATTRIBUTE_IN_SESSION);
+        if (springCsrfToken != null) {
+            JsonObject springCsrfTokenJson = JsonUtils
+                    .beanToJson(springCsrfToken);
+            if (springCsrfTokenJson != null
+                    && springCsrfTokenJson.hasKey(SPRING_CSRF_TOKEN_PROPERTY)
+                    && springCsrfTokenJson
+                            .hasKey(SPRING_CSRF_HEADER_PROPERTY)) {
+                String springCsrfTokenString = springCsrfTokenJson
+                        .getString(SPRING_CSRF_TOKEN_PROPERTY);
+                String springCsrfTokenHeaderName = springCsrfTokenJson
+                        .getString(SPRING_CSRF_HEADER_PROPERTY);
+                String springCsrfTokenParameterName = springCsrfTokenJson
+                        .getString(SPRING_CSRF_PARAMETER_PROPERTY);
+
+                addMetaTagToHead(indexDocument.head(),
+                        SPRING_CSRF_TOKEN_ATTRIBUTE, springCsrfTokenString);
+                addMetaTagToHead(indexDocument.head(),
+                        SPRING_CSRF_HEADER_NAME_ATTRIBUTE,
+                        springCsrfTokenHeaderName);
+                addMetaTagToHead(indexDocument.head(),
+                        SPRING_CSRF_PARAMETER_NAME_ATTRIBUTE,
+                        springCsrfTokenParameterName);
             }
         }
 
         Element elm = new Element("script");
         elm.attr("initial", "");
-        elm.appendChild(new DataNode(
-                "window.Vaadin = {TypeScript: " + JsonUtil.stringify(initialJson) + "};"
-        ));
+        elm.appendChild(new DataNode("window.Vaadin = {TypeScript: "
+                + JsonUtil.stringify(initialJson) + "};"));
         indexDocument.head().insertChildren(0, elm);
     }
 
-    private void includeInitialUidl(
-            JsonObject initialJson, VaadinSession session,
-            VaadinRequest request, VaadinResponse response) {
+    private void addMetaTagToHead(Element head, String name, String value) {
+        Element meta = new Element(META_TAG);
+        meta.attr(NAME_ATTRIBUTE, name);
+        meta.attr(CONTENT_ATTRIBUTE, value);
+        head.insertChildren(0, meta);
+    }
+
+    private void includeInitialUidl(JsonObject initialJson,
+            VaadinSession session, VaadinRequest request,
+            VaadinResponse response) {
         JsonObject initial = getInitialJson(request, response, session);
         initialJson.put("initial", initial);
     }
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return request.getService().getBootstrapUrlPredicate()
-                .isValidUrl(request);
+        return !BootstrapHandler.isFrameworkInternalRequest(request) && request
+                .getService().getBootstrapUrlPredicate().isValidUrl(request);
     }
 
     @Override
-    protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
-        if (request.getService().getBootstrapInitialPredicate()
-                .includeInitialUidl(request)) {
-            ui.getInternals().getRouter().initializeUI(ui, request);
+    protected void initializeUIWithRouter(BootstrapContext context, UI ui) {
+        if (context.getService().getBootstrapInitialPredicate()
+                .includeInitialUidl(context.getRequest())) {
+            ui.getInternals().getRouter().initializeUI(ui, context.getRoute());
         }
     }
 
@@ -220,9 +264,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private static Document getCachedIndexHtmlDocument(VaadinService service) {
-        return service.getContext()
-                .getAttribute(IndexHtmlHolder.class, () -> new IndexHtmlHolder(service))
-                .getDocument();
+        return service.getContext().getAttribute(IndexHtmlHolder.class,
+                () -> new IndexHtmlHolder(service)).getDocument();
     }
 
     private static Document getIndexHtmlDocument(VaadinService service)
@@ -231,30 +274,33 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         if (index != null) {
             return Jsoup.parse(index);
         }
-        String frontendDir = FrontendUtils.getProjectFrontendDir(
-                service.getDeploymentConfiguration());
+        String frontendDir = FrontendUtils
+                .getProjectFrontendDir(service.getDeploymentConfiguration());
         String indexHtmlFilePath;
-        if(frontendDir.endsWith("/") || frontendDir.endsWith(File.separator)) {
+        if (frontendDir.endsWith("/") || frontendDir.endsWith(File.separator)) {
             indexHtmlFilePath = frontendDir + "index.html";
-        } else if(frontendDir.contains(File.separator)){
+        } else if (frontendDir.contains(File.separator)) {
             indexHtmlFilePath = frontendDir + File.separatorChar + "index.html";
         } else {
             indexHtmlFilePath = frontendDir + "/index.html";
         }
-        String message = String
-                .format("Failed to load content of '%1$s'. "
+        String message = String.format(
+                "Failed to load content of '%1$s'. "
                         + "It is required to have '%1$s' file when "
-                        + "using client side bootstrapping.", indexHtmlFilePath);
+                        + "using client side bootstrapping.",
+                indexHtmlFilePath);
         throw new IOException(message);
     }
 
-
-    // Holds parsed index.html to avoid re-parsing on every request in production mode
+    // Holds parsed index.html to avoid re-parsing on every request in
+    // production mode
     //
     // This holder is supposed to be stored as a VaadinContext attribute
     //
-    // Note: IndexHtmlHolder is not really serializable, but I can't come up with
-    // circumstances under which it'll break. It seems unlikely that VaadinContext
+    // Note: IndexHtmlHolder is not really serializable, but I can't come up
+    // with
+    // circumstances under which it'll break. It seems unlikely that
+    // VaadinContext
     // will be serialized/deserialized.
     private static final class IndexHtmlHolder implements Serializable {
         private final transient Document indexHtmlDocument;

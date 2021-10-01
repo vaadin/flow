@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -55,6 +55,8 @@ import elemental.json.impl.JsonUtil;
 
 /**
  * Handles a client-to-server message containing serialized RPC invocations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -126,7 +128,8 @@ public class ServerRpcHandler implements Serializable {
         }
 
         /**
-         * Gets the CSRF security token (double submit cookie) for this request.
+         * Gets the CSRF security token (synchronizer token pattern) for this
+         * request.
          *
          * @return the CSRF security token for this current change request
          */

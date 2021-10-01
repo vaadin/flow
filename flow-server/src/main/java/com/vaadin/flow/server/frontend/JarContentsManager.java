@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -35,6 +36,8 @@ import org.apache.commons.io.IOUtils;
 
 /**
  * Shared code for managing contents of jar files.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -306,24 +309,26 @@ public class JarContentsManager {
                         + basePath.length());
         File target = new File(outputDirectory, relativePath);
         try {
-            if (target.exists()) {
-                File tempFile = File.createTempFile(fullPath, null);
-                FileUtils.copyInputStreamToFile(
-                        jarFile.getInputStream(jarEntry), tempFile);
-                if (!FileUtils.contentEquals(tempFile, target)) {
-                    FileUtils.forceDelete(target);
-                    FileUtils.moveFile(tempFile, target);
-                } else {
-                    tempFile.delete();
-                }
-            } else {
+            if (!target.exists()
+                    || !hasSameContent(jarFile.getInputStream(jarEntry),
+                            target)) {
                 FileUtils.copyInputStreamToFile(
                         jarFile.getInputStream(jarEntry), target);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
-                    "Failed to extract jar entry '%s' from jarFile '%s'",
-                    jarEntry, outputDirectory), e);
+                    "Failed to extract jar entry '%s' from jarFile", jarEntry),
+                    e);
+        }
+    }
+
+    private boolean hasSameContent(InputStream jarContent, File existingContent)
+            throws IOException {
+        try (InputStream existingContentStream = new FileInputStream(
+                existingContent)) {
+            return IOUtils.contentEquals(jarContent, existingContentStream);
+        } finally {
+            IOUtils.closeQuietly(jarContent);
         }
     }
 

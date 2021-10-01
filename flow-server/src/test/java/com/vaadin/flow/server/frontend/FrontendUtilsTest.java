@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,11 +15,9 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -31,7 +29,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
@@ -46,18 +43,31 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
+import elemental.json.Json;
+import elemental.json.JsonException;
+
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class FrontendUtilsTest {
 
     private static final String USER_HOME = "user.home";
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+    private static Class<?> CACHE_KEY;
+
+    static {
+        try {
+            CACHE_KEY = Class.forName(
+                    "com.vaadin.flow.server.frontend.FrontendUtils$Stats");
+        } catch (ClassNotFoundException e) {
+            Assert.fail("Could not access cache key for stats.json!");
+        }
+    }
 
     @Rule
     public final TemporaryFolder tmpDir = new TemporaryFolder();
@@ -90,23 +100,10 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void validateLargerThan_logsForSlightlyOldVersion()
+    public void validateLargerThan_passesForSlightlyOldVersion()
             throws UnsupportedEncodingException {
-        PrintStream orgErr = System.err;
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        System.setErr(new PrintStream(out));
-        try {
-            FrontendUtils.validateToolVersion("test",
-                    new FrontendVersion(9, 0, 0), new FrontendVersion(10, 0),
-                    new FrontendVersion(8, 0));
-            String logged = out.toString("utf-8")
-                    // fix for windows
-                    .replace("\r", "");
-            Assert.assertTrue(logged.contains(
-                    "Your installed 'test' version (9.0.0) is not supported but should still work. Supported versions are 10.0+\n"));
-        } finally {
-            System.setErr(orgErr);
-        }
+        FrontendUtils.validateToolVersion("test", new FrontendVersion(9, 0, 0),
+                new FrontendVersion(10, 0), new FrontendVersion(8, 0));
     }
 
     @Test
@@ -255,12 +252,12 @@ public class FrontendUtilsTest {
         List<String> command = Arrays.asList("./node/node",
                 "./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
                 "--config", "./webpack.config.js", "--port 57799",
-                "--watchDogPort=57798", "-d", "--inline=false");
+                "--env watchDogPort=57798", "-d", "--inline=false");
         String wrappedCommand = FrontendUtils.commandToString(".", command);
         Assert.assertEquals("\n" + "./node/node \\ \n"
                 + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \\ \n"
                 + "    --config ./webpack.config.js --port 57799 \\ \n"
-                + "    --watchDogPort=57798 -d --inline=false \n",
+                + "    --env watchDogPort=57798 -d --inline=false \n",
                 wrappedCommand);
     }
 
@@ -277,11 +274,11 @@ public class FrontendUtilsTest {
 
     @Test
     public void parseManifestJson_returnsValidPaths() {
-        String manifestJson = "{\"index.html\": \"index.html\", \"sw.js\": " +
-                "\"sw.js\", \"favicon.ico\": \"favicon.ico\", \"index.ts\": " +
-                "\"VAADIN/build/vaadin-bundle-index.js\"}";
-        List<String> manifestPaths =
-                FrontendUtils.parseManifestPaths(manifestJson);
+        String manifestJson = "{\"index.html\": \"index.html\", \"sw.js\": "
+                + "\"sw.js\", \"favicon.ico\": \"favicon.ico\", \"index.ts\": "
+                + "\"VAADIN/build/vaadin-bundle-index.js\"}";
+        List<String> manifestPaths = FrontendUtils
+                .parseManifestPaths(manifestJson);
         Assert.assertTrue("Should list bundle path",
                 manifestPaths.contains("/VAADIN/build/vaadin-bundle-index.js"));
         Assert.assertTrue("Should list /sw.js",
@@ -292,6 +289,7 @@ public class FrontendUtilsTest {
                 manifestPaths.contains("/index.html"));
     }
 
+    @Test
     public void getStatsContent_getStatsFromClassPath_delegateToGetApplicationResource()
             throws IOException {
         VaadinServletService service = mockServletService();
@@ -306,6 +304,28 @@ public class FrontendUtilsTest {
     }
 
     @Test
+    public void getStatsContent_getStatsFromDevServerWithNoImplementation_throwsException() {
+        VaadinServletService service = mockServletService();
+
+        DeploymentConfiguration config = Mockito
+                .mock(DeploymentConfiguration.class);
+
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
+
+        Mockito.when(config.isProductionMode()).thenReturn(false);
+        Mockito.when(config.enableDevServer()).thenReturn(true);
+
+        WebpackConnectionException exception = Assert.assertThrows(
+                WebpackConnectionException.class,
+                () -> FrontendUtils.getStatsContent(service));
+
+        Assert.assertEquals(
+                "DevModeHandlerManager implementation missing. Include "
+                        + "the com.vaadin:vaadin-dev-server dependency.",
+                exception.getMessage());
+    }
+
+    @Test
     public void getStatsAssetsByChunkName_getStatsFromClassPath_delegateToGetApplicationResource()
             throws IOException {
         VaadinServletService service = mockServletService();
@@ -317,6 +337,89 @@ public class FrontendUtilsTest {
         VaadinServlet servlet = service.getServlet();
 
         Mockito.verify(provider).getApplicationResource("foo");
+    }
+
+    @Test
+    public void getStatsContent_getStatsFromClassPath_populatesStatsCache()
+            throws IOException, ServiceException {
+        VaadinService service = setupStatsAssetMocks("ValidStats.json");
+
+        assertNull("Stats cache should not be present",
+                service.getContext().getAttribute(CACHE_KEY));
+
+        // Populates cache
+        FrontendUtils.getStatsContent(service);
+
+        assertNotNull("Stats cache should be created",
+                service.getContext().getAttribute(CACHE_KEY));
+    }
+
+    @Test // #10893
+    public void newLineCharacterInJsonStats_readStreamIsJsonParsable()
+            throws IOException, ServiceException {
+        VaadinService service = setupStatsAssetMocks(
+                "specialCharacterValue.json");
+
+        assertNull("Stats cache should not be present",
+                service.getContext().getAttribute(CACHE_KEY));
+
+        // Load file from classpath and populate cache
+        String statsContent = FrontendUtils.getStatsContent(service);
+
+        try {
+            // Json parsing should not throw for loaded stats.
+            Json.parse(statsContent);
+        } catch (JsonException jsonException) {
+            Assert.fail("Json loaded from class path was not parsable json");
+        }
+
+        assertNotNull("Stats cache should be created",
+                service.getContext().getAttribute(CACHE_KEY));
+
+        // Load cached stats.
+        statsContent = FrontendUtils.getStatsContent(service);
+
+        try {
+            // Json parsing should not throw for cached stats.
+            Json.parse(statsContent);
+        } catch (JsonException jsonException) {
+            Assert.fail("Json loaded from cache was not parsable json");
+        }
+    }
+
+    @Test
+    public void getStatsAssetsByChunkName_getStatsFromClassPath_populatesStatsCache()
+            throws IOException, ServiceException {
+        VaadinService service = setupStatsAssetMocks("ValidStats.json");
+
+        assertNull("Stats cache should not be present",
+                service.getContext().getAttribute(CACHE_KEY));
+
+        // Populates cache
+        FrontendUtils.getStatsAssetsByChunkName(service);
+
+        assertNotNull("Stats cache should be created",
+                service.getContext().getAttribute(CACHE_KEY));
+    }
+
+    @Test
+    public void clearCachedStatsContent_clearsCache()
+            throws IOException, ServiceException {
+        VaadinService service = setupStatsAssetMocks("ValidStats.json");
+
+        assertNull("Stats cache should not be present",
+                service.getContext().getAttribute(CACHE_KEY));
+        // Can be invoked without cache - throws no exception
+        FrontendUtils.clearCachedStatsContent(service);
+
+        // Populates cache
+        FrontendUtils.getStatsContent(service);
+
+        // Clears cache
+        FrontendUtils.clearCachedStatsContent(service);
+
+        assertNull("Stats cache should not be present",
+                service.getContext().getAttribute(CACHE_KEY));
     }
 
     private ResourceProvider mockResourceProvider(VaadinService service) {

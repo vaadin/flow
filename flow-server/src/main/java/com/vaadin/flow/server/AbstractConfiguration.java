@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,9 @@
 package com.vaadin.flow.server;
 
 import java.io.Serializable;
+import java.nio.file.Paths;
+
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
@@ -108,6 +111,18 @@ public interface AbstractConfiguration extends Serializable {
     }
 
     /**
+     * Returns whether globally installed pnpm is used or the default one (see
+     * {@link com.vaadin.flow.server.frontend.FrontendTools#DEFAULT_PNPM_VERSION}).
+     *
+     * @return {@code true} if globally installed pnpm is used, {@code false} if
+     *         the default one is used.
+     */
+    default boolean isGlobalPnpm() {
+        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM,
+                Boolean.valueOf(Constants.GLOBAL_PNPM_DEFAULT_STRING));
+    }
+
+    /**
      * Returns whether cross-site request forgery protection is enabled.
      *
      * @return true if XSRF protection is enabled, false otherwise.
@@ -117,4 +132,31 @@ public interface AbstractConfiguration extends Serializable {
                 false);
     }
 
+    /**
+     * Return the defined build folder for the used build system.
+     * <p>
+     * Default value is <code>target</code> used by maven and the gradle plugin
+     * will set it to <code>build</code>.
+     *
+     * @return build folder name, default {@code target}
+     */
+    default String getBuildFolder() {
+        return getStringProperty(InitParameters.BUILD_FOLDER, Constants.TARGET);
+    }
+
+    /**
+     * Get the location for flow resources inside the build folder.
+     * <p>
+     * Default will be <code>target/flow-frontend</code> where target is the
+     * defined buildFolder see {@link #getBuildFolder()}.
+     * <p>
+     * Note! The path is made using Paths.get which will use File.separator that
+     * is OS dependent.
+     *
+     * @return flow resources folder, default {@code target/flow-frontend}
+     */
+    default String getFlowResourcesFolder() {
+        return Paths.get(getBuildFolder(),
+                FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER).toString();
+    }
 }

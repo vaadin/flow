@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,9 +18,11 @@ package com.vaadin.flow.uitest.ui;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -54,10 +56,6 @@ public class NavigationTriggerIT extends ChromeBrowserTest {
         assertLastMessage("/navigate", NavigationTrigger.UI_NAVIGATE,
                 "navigate");
 
-        if (hasClientIssue("7572")) {
-            return;
-        }
-
         getDriver().navigate().back();
         assertMessageCount(4);
         assertLastMessage("/routerlink",
@@ -79,7 +77,8 @@ public class NavigationTriggerIT extends ChromeBrowserTest {
 
         findElement(By.id("rerouteButton")).click();
         assertMessageCount(7);
-        assertLastMessage("/", NavigationTrigger.PROGRAMMATIC, "rerouted");
+        assertLastMessage("/rerouted", NavigationTrigger.PROGRAMMATIC,
+                "rerouted");
     }
 
     private void assertLastMessage(String path, NavigationTrigger trigger,

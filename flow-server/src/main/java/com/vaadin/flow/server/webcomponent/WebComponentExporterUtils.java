@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,6 +33,8 @@ import com.vaadin.flow.internal.ReflectTools;
 /**
  * Internal utility methods for {@link WebComponentExporter} and
  * {@link WebComponentExporterFactory} classes.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  *
@@ -91,7 +93,7 @@ public final class WebComponentExporterUtils {
                 .filter(ctor -> ctor.getParameterCount() == 0).findFirst();
         if (!constructor.isPresent()
                 || !Modifier.isPublic(constructor.get().getModifiers())) {
-            getLogger().trace(
+            getLogger().warn(
                     "Class {} has no public no-argument constructor, and won't be instantiated as a '{}' by default",
                     clazz.getName(),
                     WebComponentExporter.class.getSimpleName());
@@ -99,7 +101,7 @@ public final class WebComponentExporterUtils {
         }
         if (clazz.getEnclosingClass() != null
                 && !Modifier.isStatic(clazz.getModifiers())) {
-            getLogger().trace(
+            getLogger().warn(
                     "Class {} is inner (nested non static) class, and won't be instantiated as a '{}' by default",
                     clazz.getName(),
                     WebComponentExporter.class.getSimpleName());

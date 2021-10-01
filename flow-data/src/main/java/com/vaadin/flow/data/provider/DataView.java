@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -59,9 +59,9 @@ public interface DataView<T> extends Serializable {
      * <p>
      * For this to work properly, the item must either implement
      * {@link Object#equals(Object)} and {@link Object#hashCode()} to consider
-     * both the old and the new item instances to be equal, or alternatively
-     * use the {@link #setIdentifierProvider(IdentifierProvider)} to set
-     * an appropriate item's identifier.
+     * both the old and the new item instances to be equal, or alternatively use
+     * the {@link #setIdentifierProvider(IdentifierProvider)} to set an
+     * appropriate item's identifier.
      * <p>
      * This method delegates the update to
      * {@link DataProvider#refreshItem(Object)}.

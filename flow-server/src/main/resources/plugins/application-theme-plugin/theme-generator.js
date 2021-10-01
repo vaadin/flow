@@ -32,14 +32,89 @@ const documentCssFile = 'document.css';
 const stylesCssFile = 'styles.css';
 
 const headerImport = `import 'construct-style-sheets-polyfill';
+import { DomModule } from "@polymer/polymer/lib/elements/dom-module";
+import { stylesFromTemplate } from "@polymer/polymer/lib/utils/style-gather";
+import "@polymer/polymer/lib/elements/custom-style.js";
+`;
+
+const getStyleModule = `
+const getStyleModule = (id) => {
+  const template = DomModule.import(id, "template");
+  const cssText =
+    template &&
+    stylesFromTemplate(template, "")
+      .map((style) => style.textContent)
+      .join(" ");
+  return cssText;
+};
+`;
+
+const createLinkReferences = `
+const createLinkReferences = (css, target) => {
+  // Unresolved urls are written as '@import url(text);' to the css
+  // [0] is the full match
+  // [1] matches the media query
+  // [2] matches the url
+  const importMatcher = /(?:@media\\s(.+?))?(?:\\s{)?\\@import\\surl\\((.+?)\\);(?:})?/g;
+  
+  var match;
+  var styleCss = css;
+  
+  // For each external url import add a link reference
+  while((match = importMatcher.exec(css)) !== null) {
+    styleCss = styleCss.replace(match[0], "");
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = match[2];
+    if (match[1]) {
+      link.media = match[1];
+    }
+    // For target document append to head else append to target
+    if (target === document) {
+      document.head.appendChild(link);
+    } else {
+      target.appendChild(link);
+    }
+  };
+  return styleCss;
+};
 `;
 
 const injectGlobalCssMethod = `
 // target: Document | ShadowRoot
-export const injectGlobalCss = (css, target) => {
+export const injectGlobalCss = (css, target, first) => {
+  if(target === document) {
+    const hash = getHash(css);
+    if (window.Vaadin.theme.injectedGlobalCss.indexOf(hash) !== -1) {
+      return;
+    }
+    window.Vaadin.theme.injectedGlobalCss.push(hash);
+  }
   const sheet = new CSSStyleSheet();
-  sheet.replaceSync(css);
-  target.adoptedStyleSheets = [...target.adoptedStyleSheets, sheet];
+  sheet.replaceSync(createLinkReferences(css,target));
+  if (first) {
+    target.adoptedStyleSheets = [sheet, ...target.adoptedStyleSheets];
+  } else {
+    target.adoptedStyleSheets = [...target.adoptedStyleSheets, sheet];
+  }
+};
+`;
+
+// This is copied from flow-generated-import
+const addCssBlockMethod = `
+const addCssBlock = function (block, before = false) {
+  const tpl = document.createElement("template");
+  tpl.innerHTML = block;
+  document.head[before ? "insertBefore" : "appendChild"](
+    tpl.content,
+    document.head.firstChild
+  );
+};
+`;
+
+const addStyleIncludeMethod = `
+const addStyleInclude = (module, target) => {
+  addCssBlock(\`<custom-style><style include="\${module}"></style></custom-style>\`, true);
 };
 `;
 
@@ -67,15 +142,26 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   }
 
   if (themeProperties.parent) {
-    themeFile += `import {applyTheme as applyBaseTheme} from 'themes/${themeProperties.parent}/${themeProperties.parent}.generated.js';`;
+    themeFile += `import {applyTheme as applyBaseTheme} from './theme-${themeProperties.parent}.generated.js';`;
   }
 
+  themeFile += createLinkReferences;
   themeFile += injectGlobalCssMethod;
+  themeFile += addCssBlockMethod;
+  themeFile += addStyleIncludeMethod;
+  themeFile += getStyleModule;
 
   const imports = [];
   const globalCssCode = [];
+  const lumoCssCode = [];
   const componentCssCode = [];
   const parentTheme = themeProperties.parent ? 'applyBaseTheme(target);\n' : '';
+
+  const themeIdentifier = '_vaadintheme_' + themeName + '_';
+  const lumoCssFlag = '_vaadinthemelumoimports_';
+  const globalCssFlag = themeIdentifier + 'globalCss';
+  const componentCssFlag = themeIdentifier + 'componentCss';
+
   if (!fs.existsSync(styles)) {
     if (productionMode) {
       throw new Error(`styles.css file is missing and is needed for '${themeName}' in folder '${themeFolder}'`);
@@ -86,13 +172,36 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   // styles.css will always be available as we write one if it doesn't exist.
   let filename = path.basename(styles);
   let variable = camelCase(filename);
-  imports.push(`import ${variable} from './${filename}';\n`);
-  globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n    `);
+  imports.push(`import ${variable} from 'themes/${themeName}/${filename}';\n`);
+  /* Lumo must be first so that custom styles override Lumo styles */
+  const lumoImports = themeProperties.lumoImports || ["color", "typography"];
+  if (lumoImports && lumoImports.length > 0) {
+    lumoImports.forEach((lumoImport) => {
+      imports.push(`import '@vaadin/vaadin-lumo-styles/${lumoImport}.js';\n`);
+    });
 
+    lumoCssCode.push(`// Lumo styles are injected into shadow roots.\n`)
+    lumoCssCode.push(`// For the document, we need to be compatible with flow-generated-imports and add missing <style> tags.\n`)
+    lumoCssCode.push(`const shadowRoot = (target instanceof ShadowRoot);\n`)
+    lumoCssCode.push(`if (shadowRoot) {\n`);
+    lumoImports.forEach((lumoImport) => {
+      lumoCssCode.push(`injectGlobalCss(getStyleModule("lumo-${lumoImport}"), target, true);\n`);
+    });
+
+    lumoCssCode.push(`} else if (!document['${lumoCssFlag}']) {\n`);
+    lumoImports.forEach((lumoImport) => {
+      lumoCssCode.push(`addStyleInclude("lumo-${lumoImport}", target);\n`);
+    });
+    lumoCssCode.push('if(window.ShadyCSS) { window.ShadyCSS.CustomStyleInterface.processStyles(); }');
+    lumoCssCode.push(`document['${lumoCssFlag}'] = true;\n`);
+    lumoCssCode.push(`}\n`);
+  }
+
+  globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n    `);
   if (fs.existsSync(document)) {
     filename = path.basename(document);
     variable = camelCase(filename);
-    imports.push(`import ${variable} from './${filename}';\n`);
+    imports.push(`import ${variable} from 'themes/${themeName}/${filename}';\n`);
     globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n    `);
   }
 
@@ -136,7 +245,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
     const tag = filename.replace('.css', '');
     const variable = camelCase(filename);
     imports.push(
-      `import ${variable} from './${themeComponentsFolder}/${filename}';\n`
+      `import ${variable} from 'themes/${themeName}/${themeComponentsFolder}/${filename}';\n`
     );
 // Don't format as the generated file formatting will get wonky!
     const componentString = `registerStyles(
@@ -149,30 +258,57 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
     componentCssCode.push(componentString);
   });
 
-  const themeIdentifier = '_vaadinds_' + themeName + '_';
-  const globalCssFlag = themeIdentifier + 'globalCss';
-  const componentCssFlag = themeIdentifier + 'componentCss';
-
   themeFile += imports.join('');
   themeFile += `
 window.Vaadin = window.Vaadin || {};
-window.Vaadin.Flow = window.Vaadin.Flow || {};
-window.Vaadin.Flow['${globalCssFlag}'] = window.Vaadin.Flow['${globalCssFlag}'] || [];
+window.Vaadin.theme = window.Vaadin.theme || {};
+window.Vaadin.theme.injectedGlobalCss = [];
+
+/**
+ * Calculate a 32 bit FNV-1a hash
+ * Found here: https://gist.github.com/vaiorabbit/5657561
+ * Ref.: http://isthe.com/chongo/tech/comp/fnv/
+ *
+ * @param {string} str the input value
+ * @returns {string} 32 bit (as 8 byte hex string)
+ */
+function hashFnv32a(str) {
+  /*jshint bitwise:false */
+  let i, l, hval = 0x811c9dc5;
+
+  for (i = 0, l = str.length; i < l; i++) {
+    hval ^= str.charCodeAt(i);
+    hval += (hval << 1) + (hval << 4) + (hval << 7) + (hval << 8) + (hval << 24);
+  }
+
+  // Convert to 8 digit hex string
+  return ("0000000" + (hval >>> 0).toString(16)).substr(-8);
+}
+
+/**
+ * Calculate a 64 bit hash for the given input.
+ * Double hash is used to significantly lower the collision probability.
+ *
+ * @param {string} input value to get hash for
+ * @returns {string} 64 bit (as 16 byte hex string)
+ */
+function getHash(input) {
+  let h1 = hashFnv32a(input); // returns 32 bit (as 8 byte hex string)
+  return h1 + hashFnv32a(h1 + input); 
+}
 `;
 
 // Don't format as the generated file formatting will get wonky!
 // If targets check that we only register the style parts once, checks exist for global css and component css
   const themeFileApply = `export const applyTheme = (target) => {
   ${parentTheme}
-  const injectGlobal = (window.Vaadin.Flow['${globalCssFlag}'].length === 0) || (!window.Vaadin.Flow['${globalCssFlag}'].includes(target) && target !== document);
-  if (injectGlobal) {
-    ${globalCssCode.join('')}
-    window.Vaadin.Flow['${globalCssFlag}'].push(target);
-  }
+  ${globalCssCode.join('')}
+  
   if (!document['${componentCssFlag}']) {
     ${componentCssCode.join('')}
     document['${componentCssFlag}'] = true;
   }
+  ${lumoCssCode.join('')}
 }
 `;
 

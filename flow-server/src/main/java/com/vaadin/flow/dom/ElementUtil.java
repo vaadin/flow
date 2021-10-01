@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -41,7 +41,8 @@ public class ElementUtil {
      * https://www.w3.org/TR/html-markup/syntax.html#tag-name "HTML elements all
      * have names that only use characters in the range 0–9, a–z, and A–Z."
      */
-    private static Pattern tagNamePattern = Pattern.compile("^[a-zA-Z0-9-]+$");
+    private static Pattern tagNamePattern = Pattern
+            .compile("^[a-zA-Z][a-zA-Z0-9-_\\.]*$");
 
     private ElementUtil() {
         // Util methods only
@@ -212,7 +213,7 @@ public class ElementUtil {
      */
     public static Node toJsoup(Document document, Element element) {
         if (element.isTextNode()) {
-            return new TextNode(element.getText(), document.baseUri());
+            return new TextNode(element.getText());
         }
 
         org.jsoup.nodes.Element target = document
@@ -253,7 +254,7 @@ public class ElementUtil {
         if (node instanceof TextNode) {
             return Optional.of(Element.createText(((TextNode) node).text()));
         } else if (node instanceof org.jsoup.nodes.Element) {
-            ret = new Element(((org.jsoup.nodes.Element)node).tagName());
+            ret = new Element(((org.jsoup.nodes.Element) node).tagName());
         } else {
             LoggerFactory.getLogger(ElementUtil.class).error(
                     "Could not convert a {}, '{}' into {}!",

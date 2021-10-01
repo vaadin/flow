@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,8 @@ import java.net.URI;
  * Handle file download from given url to target destination.
  * <p>
  * Derived from eirslett/frontend-maven-plugin
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since
  */
@@ -31,17 +33,16 @@ interface FileDownloader {
      * Download to destination from url using username and password.
      *
      * @param downloadTarget
-     *         uri string from where to download
+     *            uri string from where to download
      * @param destination
-     *         file target directory
+     *            file target directory
      * @param userName
-     *         user name, {@code null} accepted
+     *            user name, {@code null} accepted
      * @param password
-     *         password, {@code null} accepted
+     *            password, {@code null} accepted
      * @throws DownloadException
-     *         exception thrown when download fails
+     *             exception thrown when download fails
      */
     void download(URI downloadTarget, File destination, String userName,
             String password) throws DownloadException;
 }
-

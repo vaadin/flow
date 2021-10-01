@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -50,7 +50,7 @@ public class Reactive {
 
     private static Computation currentComputation = null;
 
-    private static boolean flushing =false;
+    private static boolean flushing = false;
 
     private Reactive() {
         // Only static stuff in this class
@@ -97,7 +97,7 @@ public class Reactive {
      * @see #addPostFlushListener(FlushListener)
      */
     public static void flush() {
-        if(flushing) {
+        if (flushing) {
             return;
         }
         try {
@@ -109,14 +109,15 @@ public class Reactive {
                     oldestListener.flush();
                 }
 
-                // Purge one post flush listener, then look if there are new flush
+                // Purge one post flush listener, then look if there are new
+                // flush
                 // listeners to purge
                 if (hasPostFlushListeners()) {
                     FlushListener oldestListener = postFlushListeners.remove(0);
                     oldestListener.flush();
                 }
             }
-        }finally {
+        } finally {
             flushing = false;
         }
     }

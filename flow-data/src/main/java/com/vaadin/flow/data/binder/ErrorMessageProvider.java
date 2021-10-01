@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,7 +26,7 @@ import com.vaadin.flow.function.SerializableFunction;
  */
 @FunctionalInterface
 public interface ErrorMessageProvider
-extends SerializableFunction<ValueContext, String> {
+        extends SerializableFunction<ValueContext, String> {
 
     /**
      * Returns a generated error message for given {@code ValueContext}.

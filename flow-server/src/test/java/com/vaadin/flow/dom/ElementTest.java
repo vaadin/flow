@@ -783,7 +783,7 @@ public class ElementTest extends AbstractNodeTest {
         // Get instance right away to see that changes are live
         Set<String> classList = element.getClassList();
 
-        element.setAttribute("class", "foo bar");
+        element.setAttribute("class", "       foo bar ");
 
         Assert.assertEquals(2, classList.size());
         Assert.assertTrue(classList.contains("foo"));
@@ -1394,13 +1394,14 @@ public class ElementTest extends AbstractNodeTest {
     public void setResourceAttribute_classAttribute() {
         Element element = ElementFactory.createDiv();
         element.setAttribute("class",
-                EasyMock.createMock(StreamResource.class));
+                (StreamResource) EasyMock.createMock(StreamResource.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void setResourceAttribute_nullAttribute() {
         Element element = ElementFactory.createDiv();
-        element.setAttribute(null, EasyMock.createMock(StreamResource.class));
+        element.setAttribute(null,
+                (StreamResource) EasyMock.createMock(StreamResource.class));
     }
 
     @Test
@@ -1781,7 +1782,7 @@ public class ElementTest extends AbstractNodeTest {
     @Test(expected = UnsupportedOperationException.class)
     public void setResourceAttribute_elementIsText_operationIsNotSupported() {
         Element.createText("").setAttribute("foo",
-                EasyMock.createMock(StreamResource.class));
+                (StreamResource) EasyMock.createMock(StreamResource.class));
     }
 
     @Test
@@ -2053,6 +2054,12 @@ public class ElementTest extends AbstractNodeTest {
         child.addDetachListener(
                 e -> Assert.fail("Child should not be detached"));
         parent.insertChild(0, child);
+    }
+
+    @Test
+    public void textNodeTransformsNullToEmptyAndDoesNotThrowException() {
+        Element e = Element.createText(null);
+        Assert.assertEquals("", e.getText());
     }
 
     @Test

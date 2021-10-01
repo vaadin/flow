@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,7 +28,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.DebounceSynchronizePropertyView", layout = ViewTestLayout.class)
-public class DebounceSynchronizePropertyView extends AbstractDebounceSynchronizeView {
+public class DebounceSynchronizePropertyView
+        extends AbstractDebounceSynchronizeView {
     private final HtmlComponent input = new HtmlComponent("input");
     private final Element inputElement = input.getElement();
 
@@ -43,7 +44,8 @@ public class DebounceSynchronizePropertyView extends AbstractDebounceSynchronize
         Component debounceToggle = createModeToggle(
                 "Debounce (when typing pauses)", "debounce",
                 registration -> registration.debounce(CHANGE_TIMEOUT));
-        Component throttleToggle = createModeToggle("Throttle (while typing)", "throttle",
+        Component throttleToggle = createModeToggle("Throttle (while typing)",
+                "throttle",
                 registration -> registration.throttle(CHANGE_TIMEOUT));
 
         add(eagerToggle, filteredToggle, debounceToggle, throttleToggle, input);
@@ -66,7 +68,8 @@ public class DebounceSynchronizePropertyView extends AbstractDebounceSynchronize
 
                     registration = inputElement.addPropertyChangeListener(
                             "value", "input",
-                            propertyChange -> addChangeMessage(propertyChange.getValue()));
+                            propertyChange -> addChangeMessage(
+                                    propertyChange.getValue()));
 
                     configurator.accept(registration);
                 } else {

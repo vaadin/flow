@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.littemplate.internal;
 
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.stream.Stream;
 
@@ -36,6 +37,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -52,11 +54,13 @@ public class LitTemplateParserImplTest {
 
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
-                .thenAnswer(invocation -> invocation.getArgumentAt(1,
-                        String.class));
+                .thenAnswer(invocation -> invocation.getArgument(1));
 
         Properties properties = new Properties();
         Mockito.when(configuration.getInitParameters()).thenReturn(properties);
+        Mockito.when(configuration.getFlowResourcesFolder()).thenReturn(
+                Paths.get("target", FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER)
+                        .toString());
 
         Instantiator instantiator = Mockito.mock(Instantiator.class);
         Mockito.when(instantiator.getServiceInitListeners())
@@ -218,6 +222,23 @@ public class LitTemplateParserImplTest {
     }
 
     @Test
+    public void getTemplateContent_nonLocalTemplateInTargetFolder_rootElementParsed() {
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
+                .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
+        LitTemplateParser.TemplateData templateContent = LitTemplateParserImpl
+                .getInstance().getTemplateContent(HelloWorld2.class,
+                        HelloWorld2.class.getAnnotation(Tag.class).value(),
+                        service);
+
+        Assert.assertEquals("Template should contain one child", 2,
+                templateContent.getTemplateElement().childNodeSize());
+
+        Assert.assertEquals("Template should have 3 divs", 3, templateContent
+                .getTemplateElement().getElementsByTag("div").size());
+    }
+
+    @Test
     public void severalJsModuleAnnotations_theFirstFileDoesNotExist_fileWithContentIsChosen() {
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
@@ -291,6 +312,11 @@ public class LitTemplateParserImplTest {
     @Tag("hello-world")
     @JsModule("./src/hello-world-lit.js")
     public class HelloWorld extends LitTemplate {
+    }
+
+    @Tag("hello-world")
+    @JsModule("./src/hello-world2.js")
+    public class HelloWorld2 extends LitTemplate {
     }
 
     @Tag("my-lit-element-view")

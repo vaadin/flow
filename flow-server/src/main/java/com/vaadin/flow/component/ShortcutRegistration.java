@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -46,6 +46,20 @@ import com.vaadin.flow.shared.Registration;
 public class ShortcutRegistration implements Registration, Serializable {
     static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_CONTAIN_NULL = "listenOnComponents should not contain null!";
     static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_HAVE_DUPLICATE_ENTRIES = "listenOnComponents should not have duplicate entries!";
+    static final String ELEMENT_LOCATOR_JS = //@formatter:off
+            "const listenOn=this;" // this is the listenOn component's element
+            + "const delegate=%1$s;" // the output of the JsLocator
+            + "if (delegate) {"
+            + "delegate.addEventListener('keydown', function(event) {"
+            + "if (%2$s) {" // the filter text to match the key
+            + "const new_event = new event.constructor(event.type, event);"
+            + "listenOn.dispatchEvent(new_event);"
+            + "%3$s" // the new event allows default if desired
+            + "event.stopPropagation();}" // the new event bubbles if desired
+            + "});" // end matches filter
+            + "} else {"
+            + "throw \"Shortcut listenOn element not found with JS locator string '%1$s'\""
+            + "}";//@formatter:on
     private boolean allowDefaultBehavior = false;
     private boolean allowEventPropagation = false;
 
@@ -522,24 +536,39 @@ public class ShortcutRegistration implements Registration, Serializable {
         if (shortcutListenerRegistrations[listenOnIndex] == null) {
             if (component.getUI().isPresent()) {
                 shortcutListenerRegistrations[listenOnIndex] = new CompoundRegistration();
-
-                Registration keyDownRegistration = ComponentUtil
-                        .addListener(component, KeyDownEvent.class, e -> {
-                            if (lifecycleOwner.isVisible() && lifecycleOwner
-                                    .getElement().isEnabled()) {
-                                invokeShortcutEventListener(component);
-                            }
-                        }, domRegistration -> {
+                Registration keyDownRegistration = ComponentUtil.addListener(
+                        component, KeyDownEvent.class,
+                        event -> fireShortcutEvent(component),
+                        domRegistration -> {
                             shortcutListenerRegistrations[listenOnIndex]
                                     .addRegistration(domRegistration);
                             configureHandlerListenerRegistration(listenOnIndex);
                         });
                 shortcutListenerRegistrations[listenOnIndex]
                         .addRegistration(keyDownRegistration);
+                setupKeydownEventDelegateIfNeeded(component);
             }
         } else {
             configureHandlerListenerRegistration(listenOnIndex);
         }
+    }
+
+    private void fireShortcutEvent(Component component) {
+        if (ancestorsOrSelfAreVisible(lifecycleOwner)
+                && lifecycleOwner.getElement().isEnabled()) {
+            invokeShortcutEventListener(component);
+        }
+    }
+
+    private boolean ancestorsOrSelfAreVisible(Component component) {
+        if (!component.isVisible()) {
+            return false;
+        }
+        Optional<Component> parent = component.getParent();
+        if (parent.isPresent()) {
+            return ancestorsOrSelfAreVisible(parent.get());
+        }
+        return true;
     }
 
     private void configureHandlerListenerRegistration(int listenOnIndex) {
@@ -705,6 +734,27 @@ public class ShortcutRegistration implements Registration, Serializable {
                 .collect(Collectors.joining(",")) + "]";
         return "(" + keyList + ".indexOf(event.code) !== -1 || " + keyList
                 + ".indexOf(event.key) !== -1)";
+    }
+
+    /*
+     * #7799, vaadin/vaadin-dialog#229 This could be changed to use a generic
+     * feature for DOM events by either using existing DOM event handling or by
+     * using the JS execution return channel feature.
+     */
+    private void setupKeydownEventDelegateIfNeeded(Component listenOn) {
+        final String elementLocatorJs = (String) ComponentUtil.getData(listenOn,
+                Shortcuts.ELEMENT_LOCATOR_JS_KEY);
+        if (elementLocatorJs != null) {
+            // #10362 only prevent default when key filter matches to not block
+            // typing or existing shortcuts
+            final String filterText = filterText();
+            // enable default actions if desired
+            final String preventDefault = allowDefaultBehavior ? ""
+                    : "event.preventDefault();";
+            final String jsExpression = String.format(ELEMENT_LOCATOR_JS,
+                    elementLocatorJs, filterText, preventDefault);
+            listenOn.getElement().executeJs(jsExpression);
+        }
     }
 
     /**

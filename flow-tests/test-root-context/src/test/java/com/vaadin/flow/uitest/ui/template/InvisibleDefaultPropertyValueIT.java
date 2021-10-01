@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,10 +25,10 @@ import com.vaadin.testbench.TestBenchElement;
 
 public class InvisibleDefaultPropertyValueIT extends ChromeBrowserTest {
 
-    @Ignore("https://github.com/vaadin/flow/issues/7356 "+
-            "Worked due to a side effect that was removed in 3.0 due to not all synchronized " +
-            "properties being updated for all sync-events. Also related (but not same): " +
-            "https://github.com/vaadin/flow/issues/3556")
+    @Ignore("https://github.com/vaadin/flow/issues/7356 "
+            + "Worked due to a side effect that was removed in 3.0 due to not all synchronized "
+            + "properties being updated for all sync-events. Also related (but not same): "
+            + "https://github.com/vaadin/flow/issues/3556")
     @Test
     public void clientDefaultPropertyValues_invisibleElement_propertiesAreNotSent() {
         open();

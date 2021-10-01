@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,6 +24,8 @@ import org.junit.rules.TemporaryFolder;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
+import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
 
 public class VersionsJsonConverterTest {
 
@@ -52,7 +54,11 @@ public class VersionsJsonConverterTest {
                     "            \"javaVersion\": \"3.0.0.beta1\",\n" +
                     "            \"jsVersion\": \"2.0.19\"\n" +
                     "        },"
-                    +"\"platform\": \"foo\""
+                  + "\"vaadin-core\": {\n" +
+                    "    \"jsVersion\": \"21.0.0.alpha1\",\n" + // broken for npm
+                    "    \"npmName\": \""+VAADIN_CORE_NPM_PACKAGE+"\"\n" +
+                    "},\n"
+                  +"\"platform\": \"foo\""
                 + "}";
         // @formatter:on
 
@@ -65,6 +71,7 @@ public class VersionsJsonConverterTest {
 
         Assert.assertFalse(convertedJson.hasKey("flow"));
         Assert.assertFalse(convertedJson.hasKey("core"));
+        Assert.assertFalse(convertedJson.hasKey(VAADIN_CORE_NPM_PACKAGE));
         Assert.assertFalse(convertedJson.hasKey("platform"));
 
         Assert.assertEquals("1.1.2",

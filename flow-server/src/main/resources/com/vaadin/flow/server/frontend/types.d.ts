@@ -4,7 +4,7 @@
 // It is recommended to commit this file to the VCS.
 // You might want to change the configurations to fit your preferences
 declare module '*.css' {
-    import {CSSResult} from "lit-element";
-    const content: CSSResult;
+    import { CSSResultGroup } from 'lit';
+    const content: CSSResultGroup;
     export default content;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,14 +17,25 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Version object for frontend versions comparison and handling.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since
  */
 public class FrontendVersion
         implements Serializable, Comparable<FrontendVersion> {
+
+    /**
+     * Parses the buildIdentifier to String + Integer. For instance beta1
+     * returns 'beta' and '1'
+     */
+    private final Pattern buildIdentifierParser = Pattern
+            .compile("(\\D*)(\\d*)");
 
     /**
      * The version number of this release. For example "6.2.0". Always in the
@@ -114,9 +125,26 @@ public class FrontendVersion
      *            version string as "major.minor.revision[.build]"
      */
     public FrontendVersion(String version) {
+        this(null, version);
+    }
+
+    /**
+     * Parse version numbers from version string with the format
+     * "major.minor.revision[.build]". The build part is optional.
+     * <p>
+     * Versions are normalized and any caret or tildes will not be considered.
+     *
+     * @param name
+     *            the name of the artifact which version is to be parsed, used
+     *            in error message to help discover the issue
+     * @param version
+     *            version string as "major.minor.revision[.build]"
+     */
+    public FrontendVersion(String name, String version) {
         Objects.requireNonNull(version);
         if (version.isEmpty()) {
-            throw new NumberFormatException(getInvalidVersionMessage(version));
+            throw new NumberFormatException(
+                    getInvalidVersionMessage(name, version));
         }
         if (!Character.isDigit(version.charAt(0))) {
             this.version = version.substring(1).trim();
@@ -128,14 +156,15 @@ public class FrontendVersion
         try {
             majorVersion = Integer.parseInt(digits[0]);
         } catch (NumberFormatException nfe) {
-            throw new NumberFormatException(getInvalidVersionMessage(version));
+            throw new NumberFormatException(
+                    getInvalidVersionMessage(name, version));
         }
         if (digits.length >= 2) {
             try {
                 minorVersion = Integer.parseInt(digits[1]);
             } catch (NumberFormatException nfe) {
                 throw new NumberFormatException(
-                        getInvalidVersionMessage(version));
+                        getInvalidVersionMessage(name, version));
             }
         } else {
             minorVersion = 0;
@@ -286,13 +315,42 @@ public class FrontendVersion
                     && other.buildIdentifier.isEmpty()) {
                 return -1;
             }
-            return buildIdentifier.compareToIgnoreCase(other.buildIdentifier);
+            return compareBuildIdentifier(other);
         }
         return 0;
     }
 
-    private String getInvalidVersionMessage(String version) {
-        return String.format("'%s' is not a valid version!", version);
+    private int compareBuildIdentifier(FrontendVersion other) {
+        final Matcher thisMatcher = buildIdentifierParser
+                .matcher(buildIdentifier);
+        final Matcher otherMatcher = buildIdentifierParser
+                .matcher(other.buildIdentifier);
+        if (thisMatcher.find() && otherMatcher.find()) {
+            if (thisMatcher.group(1)
+                    .compareToIgnoreCase(otherMatcher.group(1)) != 0) {
+                // If we do not have a text identifier assume newer
+                // If other doesn't have text identifier assume older
+                if (thisMatcher.group(1).isEmpty()) {
+                    return 1;
+                } else if (otherMatcher.group(1).isEmpty()) {
+                    return -1;
+                }
+                return thisMatcher.group(1)
+                        .compareToIgnoreCase(otherMatcher.group(1));
+            }
+            return Integer.parseInt(thisMatcher.group(2))
+                    - Integer.parseInt(otherMatcher.group(2));
+        }
+        return buildIdentifier.compareToIgnoreCase(other.buildIdentifier);
+    }
+
+    private String getInvalidVersionMessage(String name, String version) {
+        if (name != null) {
+            return String.format("'%s' is not a valid version for '%s'!",
+                    version, name);
+        } else {
+            return String.format("'%s' is not a valid version!", version);
+        }
     }
 
 }

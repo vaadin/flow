@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -44,7 +44,9 @@ public class PolymerModelPropertiesView extends PolymerTemplate<Message> {
         setId("template");
         getModel().setText("foo");
 
-        getElement().addPropertyChangeListener("text", "text-changed",event -> {});
+        getElement().addPropertyChangeListener("text", "text-changed",
+                event -> {
+                });
 
         addListener(ValueChangeEvent.class, event -> {
             getUI().get().add(addUpdateElement("property-update-event"));

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -156,8 +156,7 @@ public final class EventUtil {
     }
 
     private static Stream<? extends BeforeEnterObserver> collectBeforeEnterObserversStream(
-            Element element,
-            Collection<Element> childrenExclusions) {
+            Element element, Collection<Element> childrenExclusions) {
 
         Predicate<Element> currentRootAndNonRoots = input -> input
                 .equals(element) || !childrenExclusions.contains(input);
@@ -166,7 +165,7 @@ public final class EventUtil {
                 flattenDescendants(element, currentRootAndNonRoots),
                 BeforeEnterObserver.class);
     }
-    
+
     private static Collection<Element> getElements(
             Collection<? extends HasElement> components) {
         return components.stream().map(HasElement::getElement)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -77,7 +77,6 @@ public class LitTemplateTest {
         }
     }
 
-
     @Tag("foo-bar")
     private static class ElementWithTextLitTemplate extends LitTemplate {
 
@@ -100,6 +99,15 @@ public class LitTemplateTest {
             super(parser, service);
         }
 
+    }
+
+    // This is for checking LitTemplate implements HasStyle
+    @Tag("custom-element-with-class")
+    private static class ElementWithStyleClass extends LitTemplate {
+        ElementWithStyleClass() {
+            // Should be possible to modify the class name
+            addClassName("custom-element-class-name");
+        }
     }
 
     @Before
@@ -146,17 +154,18 @@ public class LitTemplateTest {
     public void attachExistingElementWithDisabledAttributeValue_exceptionIsThrown() {
         expectedEx.expect(IllegalAttributeException.class);
         expectedEx.expectMessage(
-            Matchers.containsString("element 'label' with id 'labelId'"));
+                Matchers.containsString("element 'label' with id 'labelId'"));
 
         DisabledElementTemplate template = new DisabledElementTemplate(service);
     }
 
     @Test
-    public void attachExistingElementWithoutChildrenWithText_elementHasText() {
+    public void attachExistingElementWithoutChildrenWithText_elementHasNoText() {
         ElementWithTextLitTemplate template = new ElementWithTextLitTemplate(
                 service);
 
-        Assert.assertEquals("foo bar", template.label.getText());
+        // see #10106
+        Assert.assertEquals("", template.label.getText());
     }
 
     @Test

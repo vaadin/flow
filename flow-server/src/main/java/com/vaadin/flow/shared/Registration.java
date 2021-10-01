@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,6 +33,10 @@ import com.vaadin.flow.server.Command;
 public interface Registration extends Serializable {
     /**
      * Removes the associated listener from the event source.
+     * <p>
+     * The {@code remove} method called after removal does nothing.
+     * 
+     * @see #once(Command)
      */
     void remove();
 
@@ -97,8 +101,7 @@ public interface Registration extends Serializable {
      *         <code>null</code>
      * @since
      */
-    static <T> Registration addAndRemove(Collection<T> collection,
-            T item) {
+    static <T> Registration addAndRemove(Collection<T> collection, T item) {
         collection.add(item);
         return () -> collection.remove(item);
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,7 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -35,15 +36,19 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
+import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations
  * found in the classpath. It also visits classes annotated with
- * {@link NpmPackage}
+ * {@link NpmPackage}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
@@ -68,19 +73,22 @@ public class TaskUpdatePackages extends NodeUpdater {
      *            folder where flow generated files will be placed.
      * @param flowResourcesPath
      *            folder where flow dependencies taken from resources files will
-     *            be placed.
-     *         folder where flow generated files will be placed.
+     *            be placed. folder where flow generated files will be placed.
      * @param forceCleanUp
      *            forces the clean up process to be run. If {@code false}, clean
      *            up will be performed when platform version update is detected.
      * @param enablePnpm
      *            if {@code true} then pnpm is used instead of npm, otherwise
      *            npm is used
+     * @param buildDir
+     *            the used build directory
      */
     TaskUpdatePackages(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, File flowResourcesPath, boolean forceCleanUp, boolean enablePnpm) {
-        super(finder, frontendDependencies, npmFolder, generatedPath, flowResourcesPath);
+            File generatedPath, File flowResourcesPath, boolean forceCleanUp,
+            boolean enablePnpm, String buildDir) {
+        super(finder, frontendDependencies, npmFolder, generatedPath,
+                flowResourcesPath, buildDir);
         this.forceCleanUp = forceCleanUp;
         this.enablePnpm = enablePnpm;
     }
@@ -88,21 +96,72 @@ public class TaskUpdatePackages extends NodeUpdater {
     @Override
     public void execute() {
         try {
-            Map<String, String> deps = frontDeps.getPackages();
+            Map<String, String> scannedApplicationDependencies = frontDeps
+                    .getPackages();
             JsonObject packageJson = getPackageJson();
-            modified = updatePackageJsonDependencies(packageJson, deps);
-
+            modified = updatePackageJsonDependencies(packageJson,
+                    scannedApplicationDependencies);
 
             if (modified) {
                 writePackageFile(packageJson);
+
+                if (enablePnpm) {
+                    // With pnpm dependency versions are pinned via pnpmfile.js
+                    // (instead of @vaadin/vaadin-shrinkwrap). When updating
+                    // a dependency in package.json, the old version may be
+                    // left in the pnpm-lock.yaml file, causing duplicate
+                    // dependencies. Work around this issue by deleting
+                    // pnpm-lock.yaml ("pnpm install" will re-generate).
+                    // For details, see:
+                    // https://github.com/pnpm/pnpm/issues/2587
+                    // https://github.com/vaadin/flow/issues/9719
+                    deletePnpmLockFile();
+                }
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
+    @Override
+    String writePackageFile(JsonObject json) throws IOException {
+        sortObject(json, DEPENDENCIES);
+        sortObject(json, DEV_DEPENDENCIES);
+        sortObject(json, VAADIN_DEP_KEY);
+        return super.writePackageFile(json);
+    }
+
+    private void sortObject(JsonObject json, String key) {
+        if (!json.hasKey(key)) {
+            return;
+        }
+        JsonObject object = json.get(key);
+        JsonObject ordered = orderKeys(object);
+        Stream.of(object.keys()).forEach(object::remove);
+        // add ordered keys back
+        Stream.of(ordered.keys()).forEach(prop -> {
+            JsonValue value = ordered.get(prop);
+            object.put(prop, value);
+        });
+    }
+
+    private JsonObject orderKeys(JsonObject object) {
+        String[] keys = object.keys();
+        Arrays.sort(keys);
+        JsonObject result = Json.createObject();
+        for (String key : keys) {
+            JsonValue value = object.get(key);
+            if (value instanceof JsonObject) {
+                value = orderKeys((JsonObject) value);
+            }
+            result.put(key, value);
+        }
+        return result;
+    }
+
+    @SuppressWarnings("squid:S134")
     private boolean updatePackageJsonDependencies(JsonObject packageJson,
-            Map<String, String> deps) throws IOException {
+            Map<String, String> applicationDependencies) throws IOException {
         int added = 0;
 
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
@@ -110,40 +169,68 @@ public class TaskUpdatePackages extends NodeUpdater {
         updateFlowFrontendDependencies(dependencies);
 
         // Add application dependencies
-        for (Entry<String, String> dep : deps.entrySet()) {
+        for (Entry<String, String> dep : applicationDependencies.entrySet()) {
             added += addDependency(packageJson, DEPENDENCIES, dep.getKey(),
                     dep.getValue());
         }
 
+        /*
+         * #10572 lock all platform internal versions for npm
+         */
+        List<String> pinnedPlatformDependencies = new ArrayList<>();
+        if (!enablePnpm) {
+            final JsonObject platformPinnedDependencies = getPlatformPinnedDependencies();
+            if (platformPinnedDependencies != null) {
+                for (String key : platformPinnedDependencies.keys()) {
+                    // need to double check that not overriding a scanned
+                    // dependency since add-ons should be able to downgrade
+                    // version through exclusion
+                    if (!applicationDependencies.containsKey(key)
+                            && pinPlatformDependency(packageJson,
+                                    platformPinnedDependencies, key)) {
+                        added++;
+                    }
+                    // make sure platform pinned dependency is not cleared
+                    pinnedPlatformDependencies.add(key);
+                }
+            }
+        }
+
         if (added > 0) {
-            log().info("Added {} dependencies to main package.json", added);
+            log().debug("Added {} dependencies to main package.json", added);
         }
 
         // Remove obsolete dependencies
         List<String> dependencyCollection = Stream
-                .concat(deps.entrySet().stream(),
+                .concat(applicationDependencies.entrySet().stream(),
                         getDefaultDependencies().entrySet().stream())
                 .map(Entry::getKey).collect(Collectors.toList());
+        dependencyCollection.addAll(pinnedPlatformDependencies);
 
-        JsonObject vaadinDependencies = packageJson.getObject(VAADIN_DEP_KEY)
-                .getObject(DEPENDENCIES);
-        boolean doCleanUp = forceCleanUp;
+        boolean doCleanUp = forceCleanUp; // forced only in tests
         int removed = removeLegacyProperties(packageJson);
+        removed += cleanDependencies(dependencyCollection, packageJson,
+                DEPENDENCIES);
         if (dependencies != null) {
-            for (String key : dependencies.keys()) {
-                if (!dependencyCollection.contains(key)
-                        && vaadinDependencies.hasKey(key)) {
-                    dependencies.remove(key);
-                    log().debug("Removed \"{}\".", key);
-                    removed++;
-                }
-            }
+            // FIXME do not do cleanup of node_modules every time platform is
+            // updated ?
             doCleanUp = doCleanUp
-                    || !enablePnpm && !ensureReleaseVersion(dependencies);
+                    || !enablePnpm && isPlatformVersionUpdated(dependencies);
         }
 
+        // Remove obsolete devDependencies
+        dependencyCollection = new ArrayList<>(
+                getDefaultDevDependencies().keySet());
+
+        int removedDev = 0;
+        removedDev = cleanDependencies(dependencyCollection, packageJson,
+                DEV_DEPENDENCIES);
+
         if (removed > 0) {
-            log().info("Removed {} dependencies", removed);
+            log().debug("Removed {} dependencies", removed);
+        }
+        if (removedDev > 0) {
+            log().debug("Removed {} devDependencies", removedDev);
         }
 
         if (doCleanUp) {
@@ -156,26 +243,78 @@ public class TaskUpdatePackages extends NodeUpdater {
         // update packageJson hash value, if no changes it will not be written
         packageJson.getObject(VAADIN_DEP_KEY).put(HASH_KEY, newHash);
 
-        return added > 0 || removed > 0 || !oldHash.equals(newHash);
+        return added > 0 || removed > 0 || removedDev > 0
+                || !oldHash.equals(newHash);
     }
 
-    private int updateFlowFrontendDependencies(JsonObject json) {
-        return updateNpmLocalDependency(json, DEP_NAME_FLOW_JARS, flowResourcesFolder)
-                + updateNpmLocalDependency(json, DEP_NAME_FORM_JARS, formResourcesFolder) ;
+    private int cleanDependencies(List<String> dependencyCollection,
+            JsonObject packageJson, String dependencyKey) {
+        int removed = 0;
+
+        JsonObject dependencyObject = packageJson.getObject(dependencyKey);
+        JsonObject vaadinDependencyObject = packageJson
+                .getObject(VAADIN_DEP_KEY).getObject(dependencyKey);
+        if (dependencyObject != null) {
+            for (String key : dependencyObject.keys()) {
+                if (!dependencyCollection.contains(key)
+                        && vaadinDependencyObject.hasKey(key)) {
+                    dependencyObject.remove(key);
+                    vaadinDependencyObject.remove(key);
+                    log().debug("Removed \"{}\".", key);
+                    removed++;
+                }
+            }
+        }
+        return removed;
     }
 
-    private int updateNpmLocalDependency(JsonObject json, String packageName, File folder) {
+    private boolean pinPlatformDependency(JsonObject packageJson,
+            JsonObject platformPinnedVersions, String pkg) {
+        final FrontendVersion platformPinnedVersion = FrontendUtils
+                .getPackageVersionFromJson(platformPinnedVersions, pkg,
+                        "vaadin_dependencies.json");
+        if (platformPinnedVersion == null) {
+            return false;
+        }
+
+        final JsonObject vaadinDeps = packageJson.getObject(VAADIN_DEP_KEY)
+                .getObject(DEPENDENCIES);
+        final JsonObject packageJsonDeps = packageJson.getObject(DEPENDENCIES);
+        // packages exist at this point
+        assert vaadinDeps != null : "vaadin{ dependencies { } } should exist";
+        assert packageJsonDeps != null : "dependencies { } should exist";
+        if (!packageJsonDeps.hasKey(pkg) || !vaadinDeps.hasKey(pkg)
+                || !platformPinnedVersion.equals(
+                        new FrontendVersion(packageJsonDeps.getString(pkg)))
+                || !platformPinnedVersion.equals(
+                        new FrontendVersion(vaadinDeps.getString(pkg)))) {
+            packageJsonDeps.put(pkg, platformPinnedVersion.getFullVersion());
+            vaadinDeps.put(pkg, platformPinnedVersion.getFullVersion());
+            return true;
+        }
+        return false;
+    }
+
+    private int updateFlowFrontendDependencies(JsonObject dependenciesObject) {
+        return updateNpmLocalDependency(dependenciesObject, DEP_NAME_FLOW_JARS,
+                flowResourcesFolder);
+    }
+
+    private int updateNpmLocalDependency(JsonObject dependenciesObject,
+            String packageName, File folder) {
+        assert dependenciesObject != null : "dependency object should not be null in package.json";
         if (folder != null) {
             String depsPkg = "./" + FrontendUtils.getUnixRelativePath(
                     npmFolder.getAbsoluteFile().toPath(),
                     folder.getAbsoluteFile().toPath());
-            if (!json.hasKey(packageName) || !depsPkg.equals(json.getString(packageName))) {
-                json.put(packageName, depsPkg);
+            if (!dependenciesObject.hasKey(packageName) || !depsPkg
+                    .equals(dependenciesObject.getString(packageName))) {
+                dependenciesObject.put(packageName, depsPkg);
                 return 1;
             }
         } else {
-            if (json.hasKey(packageName)) {
-                json.remove(packageName);
+            if (dependenciesObject.hasKey(packageName)) {
+                dependenciesObject.remove(packageName);
                 return 1;
             }
         }
@@ -183,24 +322,29 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Compares vaadin-shrinkwrap dependency version from the
-     * {@code dependencies} object with the current vaadin-shrinkwrap version
-     * (retrieved from various sources like package.json, package-lock.json).
-     * Removes package-lock.json file and node_modules,
-     * target/frontend/node_modules folders in case the versions are different.
+     * Compares vaadin-shrinkwrap dependency version (which is the same as
+     * platform version) from the {@code dependencies} object with the current
+     * vaadin-shrinkwrap version (retrieved from file system: package.json,
+     * package-lock.json). In case there was no existing shrinkwrap version,
+     * then version is considered updated.
      *
      * @param dependencies
      *            dependencies object with the vaadin-shrinkwrap version
+     * @return {@code true} if the version has changed, {@code false} if not
      * @throws IOException
+     *             when file reading fails
      */
-    private boolean ensureReleaseVersion(JsonObject dependencies)
+    private boolean isPlatformVersionUpdated(JsonObject dependencies)
             throws IOException {
         String shrinkWrapVersion = null;
         if (dependencies.hasKey(SHRINK_WRAP)) {
             shrinkWrapVersion = dependencies.getString(SHRINK_WRAP);
         }
 
-        return Objects.equals(shrinkWrapVersion, getCurrentShrinkWrapVersion());
+        final String existingShrinkWrapVersion = getExistingShrinkWrapVersion();
+        // if no existing shrinkwrap version is present, version is not
+        // "updated"
+        return !Objects.equals(shrinkWrapVersion, existingShrinkWrapVersion);
     }
 
     /**
@@ -208,10 +352,10 @@ public class TaskUpdatePackages extends NodeUpdater {
      * present.
      *
      * @param packageJson
-     *         JsonObject of current package.json contents
+     *            JsonObject of current package.json contents
      * @return amount of removed properties
      * @throws IOException
-     *         thrown if removal of package-lock.json fails
+     *             thrown if removal of package-lock.json fails
      */
     private int removeLegacyProperties(JsonObject packageJson)
             throws IOException {
@@ -261,7 +405,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         if (flowResourcesFolder != null && flowResourcesFolder.exists()) {
             // Clean all files but `package.json`
-            for (File file: flowResourcesFolder.listFiles()) {
+            for (File file : flowResourcesFolder.listFiles()) {
                 if (!file.getName().equals(PACKAGE_JSON)) {
                     file.delete();
                 }
@@ -278,7 +422,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         FileUtils.deleteDirectory(folder);
     }
 
-    private String getCurrentShrinkWrapVersion() throws IOException {
+    private String getExistingShrinkWrapVersion() throws IOException {
         String shrinkWrapVersion = getShrinkWrapVersion(getPackageJson());
         if (shrinkWrapVersion != null) {
             return shrinkWrapVersion;
@@ -336,6 +480,13 @@ public class TaskUpdatePackages extends NodeUpdater {
             }
         }
         return null;
+    }
+
+    private void deletePnpmLockFile() throws IOException {
+        File lockFile = new File(npmFolder, "pnpm-lock.yaml");
+        if (lockFile.exists()) {
+            FileUtils.forceDelete(lockFile);
+        }
     }
 
     /**

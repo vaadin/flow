@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -38,7 +38,8 @@ public class Text extends Component implements HasText {
      * Creates an instance using the given text.
      *
      * @param text
-     *            the text to show, not <code>null</code>
+     *            the text to show, <code>null</code> is interpreted as an empty
+     *            string
      */
     public Text(String text) {
         super(Element.createText(text));
@@ -48,12 +49,13 @@ public class Text extends Component implements HasText {
      * Sets the text of the component.
      *
      * @param text
-     *            the text of the component, not <code>null</code>
+     *            the text of the component, <code>null</code> is interpreted as
+     *            an empty string
      */
     @Override
     public void setText(String text) {
         if (text == null) {
-            throw new IllegalArgumentException("The text must not be null");
+            text = "";
         }
         getElement().setText(text);
     }

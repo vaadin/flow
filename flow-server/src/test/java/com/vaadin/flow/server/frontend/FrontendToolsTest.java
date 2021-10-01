@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,11 +20,13 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -32,11 +34,12 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.FileUtils;
-import org.hamcrest.CoreMatchers;
+import org.apache.commons.io.FilenameUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -47,13 +50,15 @@ import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
+import com.vaadin.flow.testutil.FrontendStubs;
 
-import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+@NotThreadSafe
 public class FrontendToolsTest {
 
     public static final String DEFAULT_NODE = FrontendUtils.isWindows()
@@ -63,6 +68,10 @@ public class FrontendToolsTest {
     public static final String NPM_CLI_STRING = Stream
             .of("node", "node_modules", "npm", "bin", "npm-cli.js")
             .collect(Collectors.joining(File.separator));
+
+    private static final String OLD_PNPM_VERSION = "4.5.0";
+
+    private static final String SUPPORTED_PNPM_VERSION = "5.15.0";
 
     private String baseDir;
 
@@ -74,20 +83,24 @@ public class FrontendToolsTest {
     @Rule
     public final TemporaryFolder tmpDirWithNpmrc = new TemporaryFolder();
 
+    private final FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
+
     private FrontendTools tools;
+    private FrontendToolsSettings settings;
 
     @Before
     public void setup() throws IOException {
         baseDir = tmpDir.newFolder().getAbsolutePath();
         vaadinHomeDir = tmpDir.newFolder().getAbsolutePath();
-        tools = new FrontendTools(baseDir, () -> vaadinHomeDir);
+        settings = new FrontendToolsSettings(baseDir, () -> vaadinHomeDir);
+        tools = new FrontendTools(settings);
     }
 
     @Test
-    @Ignore("Ignored to lessen PRs hitting the server too often")
     public void installNode_NodeIsInstalledToTargetDirectory()
             throws FrontendUtils.UnknownVersionException {
-        String nodeExecutable = tools.installNode("v12.18.3", null);
+        String nodeExecutable = tools
+                .installNode(FrontendTools.DEFAULT_NODE_VERSION, null);
         Assert.assertNotNull(nodeExecutable);
 
         List<String> nodeVersionCommand = new ArrayList<>();
@@ -95,22 +108,111 @@ public class FrontendToolsTest {
         nodeVersionCommand.add("--version");
         FrontendVersion node = FrontendUtils.getVersion("node",
                 nodeVersionCommand);
-        Assert.assertEquals("12.18.3", node.getFullVersion());
+        Assert.assertEquals(
+                new FrontendVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                        .getFullVersion(),
+                node.getFullVersion());
 
-        FrontendTools newTools = new FrontendTools(vaadinHomeDir, null);
+        settings.setBaseDir(vaadinHomeDir);
+        settings.setAlternativeDirGetter(null);
+
+        FrontendTools newTools = new FrontendTools(settings);
         List<String> npmVersionCommand = new ArrayList<>(
                 newTools.getNpmExecutable());
         npmVersionCommand.add("--version");
         FrontendVersion npm = FrontendUtils.getVersion("npm",
                 npmVersionCommand);
-        Assert.assertEquals("6.14.6", npm.getFullVersion());
-
+        Assert.assertEquals("7.20.3", npm.getFullVersion());
     }
 
-    private void prepareNodeDownloadableZipAt(String baseDir, String version) throws IOException {
+    @Test
+    public void updateTooOldNode_NodeInstalledToTargetDirectoryIsUpdated()
+            throws FrontendUtils.UnknownVersionException {
+        settings.setForceAlternativeNode(true);
+        tools = new FrontendTools(settings);
+
+        String nodeExecutable = tools.installNode("v7.7.3", null);
+        Assert.assertNotNull(nodeExecutable);
+
+        List<String> nodeVersionCommand = new ArrayList<>();
+        nodeVersionCommand.add(nodeExecutable);
+        nodeVersionCommand.add("--version");
+        FrontendVersion node = FrontendUtils.getVersion("node",
+                nodeVersionCommand);
+        Assert.assertEquals("Wrong node version installed", "7.7.3",
+                node.getFullVersion());
+
+        nodeExecutable = tools.getNodeExecutable();
+        nodeVersionCommand = new ArrayList<>();
+        nodeVersionCommand.add(nodeExecutable);
+        nodeVersionCommand.add("--version");
+        node = FrontendUtils.getVersion("node", nodeVersionCommand);
+        Assert.assertEquals("Node version update failed.",
+                new FrontendVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                        .getFullVersion(),
+                node.getFullVersion());
+    }
+
+    @Test
+    public void supportedNodeInstalled_autoUpdateFalse_NodeNotUpdated()
+            throws FrontendUtils.UnknownVersionException {
+        settings.setForceAlternativeNode(true);
+        tools = new FrontendTools(settings);
+        String nodeExecutable = tools.installNode("v10.14.2", null);
+        Assert.assertNotNull(nodeExecutable);
+
+        List<String> nodeVersionCommand = new ArrayList<>();
+        nodeVersionCommand.add(nodeExecutable);
+        nodeVersionCommand.add("--version");
+        FrontendVersion node = FrontendUtils.getVersion("node",
+                nodeVersionCommand);
+        Assert.assertEquals("Wrong node version installed", "10.14.2",
+                node.getFullVersion());
+
+        nodeExecutable = tools.getNodeExecutable();
+        nodeVersionCommand = new ArrayList<>();
+        nodeVersionCommand.add(nodeExecutable);
+        nodeVersionCommand.add("--version");
+        node = FrontendUtils.getVersion("node", nodeVersionCommand);
+        Assert.assertEquals(
+                "Node version updated even if it should not have been touched.",
+                "10.14.2", node.getFullVersion());
+    }
+
+    @Test
+    public void supportedNodeInstalled_autoUpdateTrue_NodeUpdated()
+            throws FrontendUtils.UnknownVersionException {
+        settings.setForceAlternativeNode(true);
+        settings.setAutoUpdate(true);
+        tools = new FrontendTools(settings);
+        String nodeExecutable = tools.installNode("v10.14.2", null);
+        Assert.assertNotNull(nodeExecutable);
+
+        List<String> nodeVersionCommand = new ArrayList<>();
+        nodeVersionCommand.add(nodeExecutable);
+        nodeVersionCommand.add("--version");
+        FrontendVersion node = FrontendUtils.getVersion("node",
+                nodeVersionCommand);
+        Assert.assertEquals("Wrong node version installed", "10.14.2",
+                node.getFullVersion());
+
+        nodeExecutable = tools.getNodeExecutable();
+        nodeVersionCommand = new ArrayList<>();
+        nodeVersionCommand.add(nodeExecutable);
+        nodeVersionCommand.add("--version");
+        node = FrontendUtils.getVersion("node", nodeVersionCommand);
+        Assert.assertEquals("Node version was not auto updated.",
+                new FrontendVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                        .getFullVersion(),
+                node.getFullVersion());
+    }
+
+    private void prepareNodeDownloadableZipAt(String baseDir, String version)
+            throws IOException {
         Platform platform = Platform.guess();
         String nodeExec = platform.isWindows() ? "node.exe" : "node";
-        String prefix = "node-" + version + "-" + platform.getNodeClassifier();
+        String prefix = "node-" + version + "-"
+                + platform.getNodeClassifier(new FrontendVersion(version));
 
         File downloadDir = new File(baseDir, version);
         FileUtils.forceMkdir(downloadDir);
@@ -158,10 +260,10 @@ public class FrontendToolsTest {
     @Test
     public void installNodeFromFileSystem_NodeIsInstalledToTargetDirectory()
             throws IOException {
-        prepareNodeDownloadableZipAt(baseDir, "v12.18.3");
+        prepareNodeDownloadableZipAt(baseDir,
+                FrontendTools.DEFAULT_NODE_VERSION);
 
-        String nodeExecutable = tools.installNode("v12.18.3",
-                new File(baseDir).toPath().toUri());
+        String nodeExecutable = installNodeToTempFolder();
         Assert.assertNotNull(nodeExecutable);
 
         Assert.assertTrue("npm should have been copied to node_modules",
@@ -171,13 +273,14 @@ public class FrontendToolsTest {
 
     @Test
     public void installNodeFromFileSystem_ForceAlternativeNodeExecutableInstallsToTargetDirectory()
-            throws Exception{
+            throws Exception {
         Assert.assertFalse("npm should not yet be present",
                 new File(vaadinHomeDir, "node/node_modules/npm/bin/npm")
                         .exists());
 
-        tools = new FrontendTools(baseDir, () -> vaadinHomeDir,
-                "v12.10.0", new File(baseDir).toURI());
+        settings.setNodeDownloadRoot(new File(baseDir).toURI());
+        settings.setNodeVersion("v12.10.0");
+        tools = new FrontendTools(settings);
         prepareNodeDownloadableZipAt(baseDir, "v12.10.0");
         tools.forceAlternativeNodeExecutable();
 
@@ -187,12 +290,17 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void should_useSystemNode() {
+    public void homeNodeIsNotForced_useGlobalNode() throws IOException {
+        createStubNode(true, true, vaadinHomeDir);
+
         assertThat(tools.getNodeExecutable(), containsString("node"));
         assertThat(tools.getNodeExecutable(),
                 not(containsString(DEFAULT_NODE)));
         assertThat(tools.getNodeExecutable(),
                 not(containsString(NPM_CLI_STRING)));
+        assertThat(tools.getNodeExecutable(),
+                not(containsString(vaadinHomeDir)));
+        assertThat(tools.getNodeExecutable(), not(containsString(baseDir)));
 
         assertEquals(4, tools.getNpmExecutable().size());
         assertThat(tools.getNpmExecutable().get(0), containsString("npm"));
@@ -221,31 +329,6 @@ public class FrontendToolsTest {
         assertFaultyNpmVersion(new FrontendVersion(6, 11, 2));
     }
 
-    /**
-     * This test doesn't do anything if pnpm is already installed (globally)
-     * which is true e.g. for or CI servers (TC/bender).
-     */
-    @Test
-    public void ensurePnpm_requestInstall_keepPackageJson_removePackageLock_ignoredPnpmExists_localPnpmIsRemoved()
-            throws IOException {
-        Assume.assumeTrue(
-                tools.getPnpmExecutable(vaadinHomeDir, false).isEmpty());
-        File packageJson = new File(vaadinHomeDir, "package.json");
-        FileUtils.writeStringToFile(packageJson, "{}", StandardCharsets.UTF_8);
-
-        File packageLockJson = new File(vaadinHomeDir, "package-lock.json");
-        FileUtils.writeStringToFile(packageLockJson, "{}",
-                StandardCharsets.UTF_8);
-
-        tools.ensurePnpm();
-        Assert.assertFalse(
-                tools.getPnpmExecutable(vaadinHomeDir, false).isEmpty());
-
-        Assert.assertEquals("{}", FileUtils.readFileToString(packageJson,
-                StandardCharsets.UTF_8));
-        Assert.assertFalse(packageLockJson.exists());
-    }
-
     @Test
     public void getPnpmExecutable_executableIsAvailable() {
         List<String> executable = tools.getPnpmExecutable();
@@ -253,16 +336,6 @@ public class FrontendToolsTest {
         Assert.assertTrue(executable.contains("--shamefully-hoist=true"));
         Assert.assertTrue(
                 executable.stream().anyMatch(cmd -> cmd.contains("pnpm")));
-    }
-
-    @Test
-    public void getPnpmExecutable_pnpmIsNotInstalledGlobally_pnpmIsInstalledInHome() {
-        List<String> executable = tools.getPnpmExecutable(baseDir, false);
-        Assume.assumeTrue(executable.isEmpty());
-
-        executable = tools.getPnpmExecutable();
-        Assert.assertThat(executable.get(1),
-                CoreMatchers.startsWith(vaadinHomeDir));
     }
 
     @Test
@@ -301,7 +374,10 @@ public class FrontendToolsTest {
             throws IOException {
         File npmrc = new File(tmpDirWithNpmrc.newFolder("test2"), ".npmrc");
 
-        FrontendTools tools = new FrontendTools(npmrc.getParent(), null);
+        settings.setBaseDir(npmrc.getParent());
+        settings.setAlternativeDirGetter(null);
+
+        FrontendTools tools = new FrontendTools(settings);
 
         Properties properties = new Properties();
         properties.put(FrontendTools.NPMRC_PROXY_PROPERTY_KEY,
@@ -390,7 +466,10 @@ public class FrontendToolsTest {
             properties.store(fileOutputStream, null);
         }
 
-        FrontendTools tools = new FrontendTools(npmrc.getParent(), null);
+        settings.setBaseDir(npmrc.getParent());
+        settings.setAlternativeDirGetter(null);
+
+        FrontendTools tools = new FrontendTools(settings);
 
         List<ProxyConfig.Proxy> proxyList = tools.getProxies();
         Assert.assertEquals(2, proxyList.size());
@@ -429,7 +508,10 @@ public class FrontendToolsTest {
             properties.store(fileOutputStream, null);
         }
 
-        FrontendTools tools = new FrontendTools(npmrc.getParent(), null);
+        settings.setBaseDir(npmrc.getParent());
+        settings.setAlternativeDirGetter(null);
+
+        FrontendTools tools = new FrontendTools(settings);
 
         List<ProxyConfig.Proxy> proxyList = tools.getProxies();
         Assert.assertEquals(2, proxyList.size());
@@ -460,17 +542,9 @@ public class FrontendToolsTest {
         Assume.assumeFalse(
                 "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
                 FrontendUtils.isWindows());
-        createStubNode(true, true, false, baseDir);
+        createStubNode(true, true, baseDir);
 
         assertNodeCommand(() -> baseDir);
-    }
-
-    @Test
-    public void should_useHomeFirst() throws Exception {
-        Assume.assumeFalse(
-                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
-                FrontendUtils.isWindows());
-        assertNodeCommand(() -> vaadinHomeDir);
     }
 
     @Test
@@ -478,58 +552,229 @@ public class FrontendToolsTest {
         Assume.assumeFalse(
                 "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
                 FrontendUtils.isWindows());
-        createStubNode(false, true, false, baseDir);
+        createStubNode(false, true, baseDir);
 
         assertNpmCommand(() -> baseDir);
     }
 
     @Test
-    public void should_useHomeNpmFirst() throws Exception {
+    public void forceHomeNode_useHomeNpmFirst() throws Exception {
         Assume.assumeFalse(
                 "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
                 FrontendUtils.isWindows());
+        settings.setForceAlternativeNode(true);
+        tools = new FrontendTools(settings);
+
+        createStubNode(true, true, vaadinHomeDir);
         assertNpmCommand(() -> vaadinHomeDir);
     }
 
     @Test
-    public void getSuitablePnpm_compatibleVersionInstalled_accepted() throws Exception {
-        Assume.assumeFalse(
-                tools.getNodeExecutable().isEmpty());
-        createFakePnpm("4.5.0");
-        List<String> pnpmCommand = tools.getSuitablePnpm(baseDir);
-        Assert.assertNotEquals("expected pnpm version 4.5.0 accepted", 0,
-                pnpmCommand.size());
-    }
-    @Test
-    public void getSuitablePnpm_tooNewVersionInstalled_rejected() throws Exception {
-        Assume.assumeFalse(
-                tools.getNodeExecutable().isEmpty());
-        createFakePnpm("5.5.0");
-        List<String> pnpmCommand = tools.getSuitablePnpm(baseDir);
-        Assert.assertEquals("expected pnpm version 5.5.0 rejected", 0,
-                pnpmCommand.size());
-    }
-
-    @Test
-    public void getSuitablePnpm_tooNewVersionInstalledAndSkipVersionCheck_accepted()
+    public void getSuitablePnpm_useDefaultSupportedPnpmVersion_oldGlobalPnpmIgnored()
             throws Exception {
-        tools = new FrontendTools(baseDir, () -> vaadinHomeDir,
-                "v12.10.0", new File(baseDir).toURI(), true);
-        Assume.assumeFalse(
-                tools.getNodeExecutable().isEmpty());
+        createStubNode(false, true, baseDir);
+        createFakePnpm(OLD_PNPM_VERSION);
+        List<String> pnpmCommand = tools.getSuitablePnpm();
+        Assert.assertTrue(
+                "expected the default pnpm command to include '--ignore-existing' flag",
+                pnpmCommand.contains("--ignore-existing"));
+        Assert.assertEquals(
+                "expected old global pnpm version to be ignored and the default supported one is used",
+                "pnpm@" + FrontendTools.DEFAULT_PNPM_VERSION,
+                pnpmCommand.get(pnpmCommand.size() - 1));
+    }
 
-        createFakePnpm("5.5.0");
-        List<String> pnpmCommand = tools.getSuitablePnpm(baseDir);
-        Assert.assertNotEquals("expected pnpm version 5.5.0 accepted", 0,
-                pnpmCommand.size());
+    @Test
+    public void getSuitablePnpm_tooOldGlobalVersionInstalled_throws() {
+        settings.setUseGlobalPnpm(true);
+        tools = new FrontendTools(settings);
+        try {
+            installGlobalPnpm(OLD_PNPM_VERSION);
+            IllegalStateException exception = Assert.assertThrows(
+                    IllegalStateException.class, () -> tools.getSuitablePnpm());
+            Assert.assertTrue(
+                    "Unexpected exception message content '"
+                            + exception.getMessage() + "'",
+                    exception.getMessage().contains(
+                            "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least 5.0.0"));
+        } finally {
+            uninstallGlobalPnpm(OLD_PNPM_VERSION);
+        }
+    }
+
+    @Test
+    public void getSuitablePnpm_tooOldGlobalVersionInstalledAndSkipVersionCheck_accepted() {
+        settings.setUseGlobalPnpm(true);
+        settings.setIgnoreVersionChecks(true);
+        tools = new FrontendTools(settings);
+        try {
+            installGlobalPnpm(OLD_PNPM_VERSION);
+            List<String> pnpmCommand = tools.getSuitablePnpm();
+            Assert.assertTrue(
+                    "expected old global pnpm version accepted when skip version flag is set",
+                    pnpmCommand.get(pnpmCommand.size() - 1).contains("pnpm"));
+        } finally {
+            uninstallGlobalPnpm(OLD_PNPM_VERSION);
+        }
+    }
+
+    @Test
+    public void getSuitablePnpm_supportedGlobalVersionInstalled_accepted() {
+        settings.setUseGlobalPnpm(true);
+        tools = new FrontendTools(settings);
+        try {
+            installGlobalPnpm(SUPPORTED_PNPM_VERSION);
+            List<String> pnpmCommand = tools.getSuitablePnpm();
+            Assert.assertTrue("expected supported global pnpm version accepted",
+                    pnpmCommand.get(pnpmCommand.size() - 1).contains("pnpm"));
+        } finally {
+            uninstallGlobalPnpm(SUPPORTED_PNPM_VERSION);
+        }
+    }
+
+    @Test
+    public void getSuitablePnpm_useGlobalPnpm_noPnpmInstalled_throws() {
+        Optional<File> pnpm = frontendToolsLocator.tryLocateTool("pnpm");
+        Assume.assumeFalse("Skip this test once globally installed pnpm is "
+                + "discovered", pnpm.isPresent());
+
+        settings.setNodeDownloadRoot(URI.create(baseDir));
+        settings.setUseGlobalPnpm(true);
+        tools = new FrontendTools(settings);
+
+        IllegalStateException exception = Assert.assertThrows(
+                IllegalStateException.class, () -> tools.getSuitablePnpm());
+        Assert.assertTrue(
+                "Unexpected exception message content '"
+                        + exception.getMessage() + "'",
+                exception.getMessage().contains(
+                        "Vaadin application is configured to use globally installed "
+                                + "pnpm ('pnpm.global=true'), but no pnpm tool has been found "
+                                + "on your system."));
+    }
+
+    @Test
+    public void folderIsAcceptableByNpm_npmCacheDirWithWhitespaces_falseForWindows()
+            throws IOException {
+        Assume.assumeTrue("This test is only for Windows, since the issue with "
+                + "whitespaces in npm processed directories reproduces only on "
+                + "Windows", FrontendUtils.isWindows());
+        // given
+        // dir with whitespaces
+        File npmCacheDir = tmpDir.newFolder("Foo Bar");
+
+        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
+        // Old npm version
+        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
+                .builder(FrontendStubs.Tool.NPM).withVersion("6.0.0").build();
+        createStubNode(nodeStub, npmStub, baseDir);
+
+        // when
+        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
+
+        // then
+        Assert.assertFalse(accepted);
+    }
+
+    @Test
+    public void folderIsAcceptableByNpm_npmCacheDirWithWhitespaces_trueForNonWindows()
+            throws IOException {
+        Assume.assumeFalse(
+                "This test is for the rest of OS rather than Windows, since "
+                        + "the issue with whitespaces in directories processed by npm, "
+                        + "is not reproduced on them",
+                FrontendUtils.isWindows());
+
+        // given
+        // dir with whitespaces
+        File npmCacheDir = tmpDir.newFolder("Foo Bar");
+
+        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
+        // Old npm version
+        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
+                .builder(FrontendStubs.Tool.NPM).withVersion("6.0.0").build();
+        createStubNode(nodeStub, npmStub, baseDir);
+
+        // when
+        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
+
+        // then
+        Assert.assertTrue(accepted);
+    }
+
+    @Test
+    public void folderIsAcceptableByNpm_npmCacheNoWhitespaces_trueForWindows()
+            throws IOException {
+        Assume.assumeTrue("This test is only for Windows, since the issue with "
+                + "whitespaces in npm processed directories reproduces only on "
+                + "Windows", FrontendUtils.isWindows());
+
+        // given
+        // dir with no whitespaces
+        File npmCacheDir = tmpDir.newFolder("FooBar");
+
+        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
+        // Old npm version
+        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
+                .builder(FrontendStubs.Tool.NPM).withVersion("6.0.0").build();
+        createStubNode(nodeStub, npmStub, baseDir);
+
+        // when
+        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
+
+        // then
+        Assert.assertTrue(accepted);
+    }
+
+    @Test
+    public void folderIsAcceptableByNpm_npm7_trueForWindows()
+            throws IOException {
+        Assume.assumeTrue("This test is only for Windows, since the issue with "
+                + "whitespaces in npm processed directories reproduces only on "
+                + "Windows", FrontendUtils.isWindows());
+
+        // given
+        // dir with whitespaces
+        File npmCacheDir = tmpDir.newFolder("Foo  Bar");
+
+        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
+        // Acceptable npm version
+        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
+                .builder(FrontendStubs.Tool.NPM).withVersion("7.0.0").build();
+        createStubNode(nodeStub, npmStub, baseDir);
+
+        // when
+        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
+
+        // then
+        Assert.assertTrue(accepted);
+    }
+
+    @Test
+    public void getNpmCacheDir_returnsCorrectPath() throws IOException,
+            InterruptedException, FrontendUtils.CommandExecutionException {
+        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
+        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
+                .builder(FrontendStubs.Tool.NPM).withCacheDir("/foo/bar")
+                .build();
+        createStubNode(nodeStub, npmStub, baseDir);
+
+        File npmCacheDir = tools.getNpmCacheDir();
+
+        Assert.assertNotNull(npmCacheDir);
+        String npmCachePath = npmCacheDir.getPath();
+
+        Assert.assertEquals("foo/bar",
+                npmCachePath
+                        .substring(FilenameUtils.getPrefixLength(npmCachePath))
+                        .replace("\\", "/"));
     }
 
     private void assertNpmCommand(Supplier<String> path) throws IOException {
-        createStubNode(false, true, false, vaadinHomeDir);
+        createStubNode(false, true, vaadinHomeDir);
 
         assertThat(tools.getNodeExecutable(), containsString("node"));
-        assertThat(tools.getNodeExecutable(),
-                not(containsString(DEFAULT_NODE)));
+
         List<String> npmExecutable = tools.getNpmExecutable();
         assertThat(npmExecutable.get(0), containsString("node"));
         assertThat(npmExecutable.get(1), containsString(NPM_CLI_STRING));
@@ -537,7 +782,7 @@ public class FrontendToolsTest {
     }
 
     private void assertNodeCommand(Supplier<String> path) throws IOException {
-        createStubNode(true, true, false, vaadinHomeDir);
+        createStubNode(true, true, vaadinHomeDir);
 
         assertThat(tools.getNodeExecutable(), containsString(DEFAULT_NODE));
         assertThat(tools.getNodeExecutable(), containsString(path.get()));
@@ -562,17 +807,55 @@ public class FrontendToolsTest {
         }
     }
 
-    private void createFakePnpm(String version) throws Exception {
-        File pnpmJs = new File(baseDir, FrontendTools.PNPM_INSTALLED_BY_NPM);
-        FileUtils.forceMkdir(pnpmJs.getParentFile());
+    private void createFakePnpm(String defaultPnpmVersion) throws Exception {
+        File npxJs = new File(baseDir, "node/node_modules/npm/bin/npx-cli.js");
+        FileUtils.forceMkdir(npxJs.getParentFile());
 
-        FileWriter fileWriter = new FileWriter(pnpmJs);
+        FileWriter fileWriter = new FileWriter(npxJs);
         try {
             fileWriter.write(
-                    "if (process.argv.includes('--version') || process.argv.includes('-v')) {\n"
-                            + "    console.log('" + version + "');\n" + "}\n");
+                    "pnpmVersion = process.argv.filter(a=>a.startsWith('pnpm')).map(a=>a.substring(5))[0] || '"
+                            + defaultPnpmVersion + "'\n"
+                            + "if (process.argv.includes('--version') || process.argv.includes('-v')) {\n"
+                            + "    console.log(pnpmVersion);\n" + "}\n");
         } finally {
             fileWriter.close();
         }
+    }
+
+    private void installGlobalPnpm(String pnpmVersion) {
+        Optional<File> npmInstalled = frontendToolsLocator
+                .tryLocateTool(getCommand("npm"));
+        if (!npmInstalled.isPresent()) {
+            installNodeToTempFolder();
+        }
+        doInstallPnpmGlobally(pnpmVersion, false);
+    }
+
+    private String installNodeToTempFolder() {
+        return tools.installNode(FrontendTools.DEFAULT_NODE_VERSION,
+                new File(baseDir).toPath().toUri());
+    }
+
+    private void uninstallGlobalPnpm(String pnpmVersion) {
+        doInstallPnpmGlobally(pnpmVersion, true);
+    }
+
+    private void doInstallPnpmGlobally(String pnpmVersion, boolean uninstall) {
+        final String pnpmPackageSpecifier = "pnpm"
+                + (uninstall ? "" : "@" + pnpmVersion);
+        final List<String> installPnpmCommand = Arrays.asList(getCommand("npm"),
+                uninstall ? "rm" : "install", "-g", pnpmPackageSpecifier);
+        try {
+            FrontendUtils.executeCommand(installPnpmCommand);
+        } catch (FrontendUtils.CommandExecutionException e) {
+            throw new RuntimeException(String.format(
+                    "Pnpm installation failed, pnpm version='%s', uninstall='%s'",
+                    pnpmVersion, uninstall), e);
+        }
+    }
+
+    private String getCommand(String name) {
+        return FrontendUtils.isWindows() ? name + ".cmd" : name;
     }
 }

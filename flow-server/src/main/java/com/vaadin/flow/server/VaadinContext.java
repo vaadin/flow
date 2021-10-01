@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,8 +31,12 @@ import java.util.function.Supplier;
 public interface VaadinContext extends Serializable {
 
     /**
-     * Returns value of the specified attribute, creating a default value if not
-     * present.
+     * Returns value of the specified attribute, creating and storing a default
+     * value if attribute not present.
+     * <p>
+     * If attribute is not yet available the {@code defaultValueSupplier} is
+     * used to get the default value which is set as the attribute value and the
+     * value is returned. The operation is executed atomically.
      *
      * @param type
      *            Type of the attribute.

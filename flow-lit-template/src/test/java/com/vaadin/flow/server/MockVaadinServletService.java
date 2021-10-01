@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -108,6 +108,13 @@ public class MockVaadinServletService extends VaadinServletService {
     }
 
     @Override
+    public void setClassLoader(ClassLoader classLoader) {
+        if (classLoader != null) {
+            super.setClassLoader(classLoader);
+        }
+    }
+
+    @Override
     public void init() {
         try {
             MockVaadinServlet servlet = (MockVaadinServlet) getServlet();
@@ -120,6 +127,11 @@ public class MockVaadinServletService extends VaadinServletService {
 
                 Mockito.when(lookup.lookup(ResourceProvider.class))
                         .thenReturn(resourceProvider);
+                StaticFileHandlerFactory factory = Mockito
+                        .mock(StaticFileHandlerFactory.class);
+                Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
+                        .thenReturn(factory);
+
                 Mockito.when(context.getAttribute(Lookup.class.getName()))
                         .thenReturn(lookup);
                 getServlet().init(config);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -608,6 +608,13 @@ public class BrowserDetails implements Serializable {
         }
         // Safari 13+
         if (isSafari() && getBrowserMajorVersion() < 13) {
+            if (getOperatingSystemMajorVersion() > 14) {
+                return false;
+            }
+            if (getOperatingSystemMajorVersion() == 14
+                    && getOperatingSystemMinorVersion() >= 7) {
+                return false;
+            }
             return true;
         }
         // Firefox 43+ for now

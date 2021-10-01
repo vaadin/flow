@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,7 +24,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ServiceInitListenersView", layout = ViewTestLayout.class)
-public class ServiceInitListenersView extends Div implements HasUrlParameter<Integer> {
+public class ServiceInitListenersView extends Div
+        implements HasUrlParameter<Integer> {
     private static final String OPTIONAL_PARAMETER_LABEL_TEXT_PREFIX = "Before init count: ";
     private final Label optionalParameterLabel;
 
@@ -38,7 +39,9 @@ public class ServiceInitListenersView extends Div implements HasUrlParameter<Int
     }
 
     @Override
-    public void setParameter(BeforeEvent event, @OptionalParameter Integer parameter) {
-        optionalParameterLabel.setText(OPTIONAL_PARAMETER_LABEL_TEXT_PREFIX + parameter);
+    public void setParameter(BeforeEvent event,
+            @OptionalParameter Integer parameter) {
+        optionalParameterLabel
+                .setText(OPTIONAL_PARAMETER_LABEL_TEXT_PREFIX + parameter);
     }
 }

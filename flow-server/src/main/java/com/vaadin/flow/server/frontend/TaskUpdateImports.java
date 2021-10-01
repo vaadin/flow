@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -46,6 +46,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 
@@ -54,12 +55,14 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
  * or when flow-maven-plugin goals are run in order to update Flow imports file
  * and <code>node_module/@vaadin/flow-frontend</code> contents by visiting all
  * classes with {@link JsModule} and {@link Theme} annotations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
 public class TaskUpdateImports extends NodeUpdater {
 
-    private static final String THEME_LINE_TPL = "addCssBlock('%s', true);";
+    private static final String THEME_LINE_TPL = "%saddCssBlock('%s', true);";
     private static final String THEME_VARIANT_TPL = "document.documentElement.setAttribute('%s', '%s');";
     // Trim and remove new lines.
     private static final Pattern NEW_LINE_TRIM = Pattern
@@ -133,17 +136,26 @@ public class TaskUpdateImports extends NodeUpdater {
             ThemeDefinition themeDef = getThemeDefinition();
 
             if (theme != null) {
+                boolean hasApplicationTheme = themeDef != null
+                        && !"".equals(themeDef.getName());
+                // There is no application theme in use, write theme includes
+                // here. Otherwise they are written by the theme
                 if (!theme.getHeaderInlineContents().isEmpty()) {
                     lines.add("");
+                    if (hasApplicationTheme) {
+                        lines.add("// Handled in the application theme");
+                    }
                     theme.getHeaderInlineContents()
                             .forEach(html -> addLines(lines,
-                                    String.format(THEME_LINE_TPL, NEW_LINE_TRIM
-                                            .matcher(html).replaceAll(""))));
+                                    String.format(THEME_LINE_TPL,
+                                            hasApplicationTheme ? "// " : "",
+                                            NEW_LINE_TRIM.matcher(html)
+                                                    .replaceAll(""))));
                 }
                 if (themeDef != null) {
-                    theme.getHtmlAttributes(themeDef.getVariant()).forEach(
-                        (key, value) -> addLines(lines,
-                            String.format(THEME_VARIANT_TPL, key, value)));
+                    theme.getHtmlAttributes(themeDef.getVariant())
+                            .forEach((key, value) -> addLines(lines, String
+                                    .format(THEME_VARIANT_TPL, key, value)));
                 }
                 lines.add("");
             }
@@ -289,39 +301,14 @@ public class TaskUpdateImports extends NodeUpdater {
             return getAbsentPackagesMessage();
         }
 
+        @Override
+        protected String getThemeIdPrefix() {
+            return "fallback_" + super.getThemeIdPrefix();
+        }
+
         File getGeneratedFallbackFile() {
             return generatedFallBack;
         }
-    }
-
-    /**
-     * Create an instance of the updater given all configurable parameters.
-     *
-     * @param finder
-     *            a reusable class finder
-     * @param frontendDepScanner
-     *            a reusable frontend dependencies scanner
-     * @param fallBackScannerProvider
-     *            fallback scanner provider, not {@code null}
-     * @param npmFolder
-     *            folder with the `package.json` file
-     * @param generatedPath
-     *            folder where flow generated files will be placed.
-     * @param frontendDirectory
-     *            a directory with project's frontend files
-     * @param tokenFile
-     *            the token (flow-build-info.json) path, may be {@code null}
-     * @param disablePnpm
-     *            if {@code true} then npm is used instead of pnpm, otherwise
-     *            pnpm is used
-     */
-    TaskUpdateImports(ClassFinder finder,
-            FrontendDependenciesScanner frontendDepScanner,
-            SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
-            File npmFolder, File generatedPath, File frontendDirectory,
-            File tokenFile, boolean disablePnpm) {
-        this(finder, frontendDepScanner, fallBackScannerProvider, npmFolder,
-                generatedPath, frontendDirectory, tokenFile, null, disablePnpm);
     }
 
     /**
@@ -346,13 +333,17 @@ public class TaskUpdateImports extends NodeUpdater {
      * @param disablePnpm
      *            if {@code true} then npm is used instead of pnpm, otherwise
      *            pnpm is used
+     * @param buildDir
+     *            the used build directory
      */
     TaskUpdateImports(ClassFinder finder,
             FrontendDependenciesScanner frontendDepScanner,
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
-            File tokenFile, JsonObject tokenFileData, boolean disablePnpm) {
-        super(finder, frontendDepScanner, npmFolder, generatedPath, null);
+            File tokenFile, JsonObject tokenFileData, boolean disablePnpm,
+            String buildDir) {
+        super(finder, frontendDepScanner, npmFolder, generatedPath, null,
+                buildDir);
         this.frontendDirectory = frontendDirectory;
         fallbackScanner = fallBackScannerProvider.apply(finder);
         this.tokenFile = tokenFile;

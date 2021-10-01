@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -35,6 +36,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DI
 import static com.vaadin.flow.server.frontend.FrontendUtils.FALLBACK_IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.Constants.TARGET;
 
 public class StatsContentTest {
 
@@ -44,15 +46,16 @@ public class StatsContentTest {
     public void init() {
 
         final File baseDir = new File(System.getProperty("user.dir", "."));
-        generatedFrontend = new File(baseDir, DEFAULT_GENERATED_DIR);
+        generatedFrontend = new File(baseDir,
+                Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
     }
 
     @Test
     public void generatedStats_containsFlowImportsTemplates()
             throws IOException {
         final File flowImports = new File(generatedFrontend, IMPORTS_NAME);
-        final String flowImportsString = IOUtils
-                .toString(flowImports.toURI(), StandardCharsets.UTF_8);
+        final String flowImportsString = IOUtils.toString(flowImports.toURI(),
+                StandardCharsets.UTF_8);
 
         final String statsJson = loadStatsJson();
 
@@ -66,8 +69,8 @@ public class StatsContentTest {
             throws IOException {
         final File flowImports = new File(generatedFrontend,
                 FALLBACK_IMPORTS_NAME);
-        final String flowImportsString = IOUtils
-                .toString(flowImports.toURI(), StandardCharsets.UTF_8);
+        final String flowImportsString = IOUtils.toString(flowImports.toURI(),
+                StandardCharsets.UTF_8);
 
         final String statsJson = loadStatsJson();
 
@@ -88,25 +91,28 @@ public class StatsContentTest {
      * path.
      *
      * @param flowImportsString
-     *         <@code String> to collect imports from
+     *            <@code String> to collect imports from
      * @return list of cleaned imports from <@code String>
      */
     private List<String> collectImports(String flowImportsString) {
         return Arrays.stream(flowImportsString.split("\n"))
                 .filter(in -> in.startsWith("import"))
                 .map(in -> in.replace("import '", "")
-                        .replace(FLOW_NPM_PACKAGE_NAME, String.format("../%s/",
-                                DEFAULT_FLOW_RESOURCES_FOLDER))
+                        .replace(FLOW_NPM_PACKAGE_NAME,
+                                String.format("../%s/%s/", TARGET,
+                                        DEFAULT_FLOW_RESOURCES_FOLDER))
                         .replace("//", "/").replace("Frontend/", "./")
-                        .replace("';", "")).collect(Collectors.toList());
+                        .replace("';", ""))
+                .collect(Collectors.toList());
     }
 
     private void assertImportInStats(String statsJson, String importString) {
         // If import starts with @ e.g. '@vaadin' or '@polymer' it may be in
-        // a path like '"../node_modules/.pnpm/registry.npmjs.org/@vaadin/vaadin-development-mode-detector/1.1.0/node_modules/@vaadin/vaadin-development-mode-detector/vaadin-development-mode-detector.js"'
+        // a path like
+        // '"../node_modules/.pnpm/registry.npmjs.org/@vaadin/vaadin-development-mode-detector/1.1.0/node_modules/@vaadin/vaadin-development-mode-detector/vaadin-development-mode-detector.js"'
         if (importString.startsWith("@")) {
-            String testId = String
-                    .format("\"name\": \"(.*)%s(.*)\"", importString);
+            String testId = String.format("\"name\": \"(.*)%s(.*)\"",
+                    importString);
             Pattern regex = Pattern.compile(testId);
             Assert.assertTrue(String.format("Couldn't find %s", testId),
                     regex.matcher(statsJson).find());

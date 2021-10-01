@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -58,6 +58,10 @@ public @interface Tag {
      * Tag for an <code>&lt;dd&gt;</code>.
      */
     String DD = "dd";
+    /**
+     * Tag for an <code>&lt;details&gt;</code>.
+     */
+    String DETAILS = "details";
     /**
      * Tag for an <code>&lt;div&gt;</code>.
      */
@@ -138,6 +142,11 @@ public @interface Tag {
      * Tag for an <code>&lt;nav&gt;</code>.
      */
     String NAV = "nav";
+
+    /**
+     * Tag for an <code>&lt;object&gt;</code>.
+     */
+    String OBJECT = "object";
     /**
      * Tag for an <code>&lt;ol&gt;</code>.
      */
@@ -150,6 +159,11 @@ public @interface Tag {
      * Tag for an <code>&lt;p&gt;</code>.
      */
     String P = "p";
+
+    /**
+     * Tag for an <code>&lt;param&gt;</code>.
+     */
+    String PARAM = "param";
     /**
      * Tag for an <code>&lt;pre&gt;</code>.
      */
@@ -170,6 +184,10 @@ public @interface Tag {
      * Tag for an <code>&lt;strong&gt;</code>.
      */
     String STRONG = "strong";
+    /**
+     * Tag for an <code>&lt;summary&gt;</code>.
+     */
+    String SUMMARY = "summary";
     /**
      * Tag for an <code>&lt;textarea&gt;</code>.
      */

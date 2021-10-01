@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -41,6 +41,7 @@ import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
@@ -89,6 +90,13 @@ public class DefaultApplicationConfigurationFactory
         @Override
         public FallbackChunk getFallbackChunk() {
             return fallbackChunk;
+        }
+
+        @Override
+        public boolean isDevModeSessionSerializationEnabled() {
+            return getBooleanProperty(
+                    APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION,
+                    false);
         }
 
     }

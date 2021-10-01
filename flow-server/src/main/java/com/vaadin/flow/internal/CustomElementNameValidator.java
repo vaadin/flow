@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,11 +25,14 @@ import java.util.stream.Stream;
  * Validates custom-element name according to definition in <a href=
  * "https://www.w3.org/TR/custom-elements/#prod-potentialcustomelementname">Custom
  * element name</a>
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */
 public final class CustomElementNameValidator {
-    private static final Pattern STARTS_WITH_A_DIGIT = Pattern.compile("^\\d.*");
+    private static final Pattern STARTS_WITH_A_DIGIT = Pattern
+            .compile("^\\d.*");
 
     private static final Set<String> RESERVED_NAMES = Stream
             .of("annotation-xml", "color-profile", "font-face", "font-face-src",

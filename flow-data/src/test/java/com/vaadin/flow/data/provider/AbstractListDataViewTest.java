@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -67,7 +67,8 @@ public class AbstractListDataViewTest {
         dataView = new ListDataViewImpl(() -> dataProvider, component);
 
         itemListDataProvider = DataProvider.ofCollection(getTestItems());
-        beanDataView = new ItemListDataView(() -> itemListDataProvider, component);
+        beanDataView = new ItemListDataView(() -> itemListDataProvider,
+                component);
     }
 
     @Test
@@ -91,8 +92,8 @@ public class AbstractListDataViewTest {
     @Test
     public void getItemCount_filtersSet_filteredItemsObtained() {
         dataProvider.setFilter(item -> item.equals("first"));
-        Assert.assertEquals("Unexpected item count",
-                1, dataView.getItemCount());
+        Assert.assertEquals("Unexpected item count", 1,
+                dataView.getItemCount());
     }
 
     @Test
@@ -166,13 +167,13 @@ public class AbstractListDataViewTest {
     public void addSortComparator_twoComparatorsAdded_itemsSortedByCompositeComparator() {
         dataProvider = DataProvider.ofItems("b3", "a2", "a1");
         dataView = new ListDataViewImpl(() -> dataProvider, component);
-        dataView.addSortComparator(
-                (s1, s2) -> Character.valueOf(s1.charAt(0)).compareTo(Character.valueOf(s2.charAt(0))));
+        dataView.addSortComparator((s1, s2) -> Character.valueOf(s1.charAt(0))
+                .compareTo(Character.valueOf(s2.charAt(0))));
         Assert.assertEquals("Unexpected data set order (comparator 1)",
                 "a2,a1,b3",
                 dataView.getItems().collect(Collectors.joining(",")));
-        dataView.addSortComparator(
-                (s1, s2) -> Character.valueOf(s1.charAt(1)).compareTo(Character.valueOf(s2.charAt(1))));
+        dataView.addSortComparator((s1, s2) -> Character.valueOf(s1.charAt(1))
+                .compareTo(Character.valueOf(s2.charAt(1))));
         Assert.assertEquals("Unexpected data set order (comparator 2)",
                 "a1,a2,b3",
                 dataView.getItems().collect(Collectors.joining(",")));
@@ -189,7 +190,8 @@ public class AbstractListDataViewTest {
     @Test
     public void addSortOrder_twoOrdersAdded_itemsSortedByCompositeOrders() {
         dataProvider = DataProvider.ofItems("b3", "a1", "a2");
-        dataView = new ListDataViewImpl(() -> dataProvider, new TestComponent());
+        dataView = new ListDataViewImpl(() -> dataProvider,
+                new TestComponent());
         dataView.addSortOrder((item) -> item.charAt(0),
                 SortDirection.DESCENDING);
         Assert.assertEquals("Unexpected data set order (order 1)", "b3,a1,a2",
@@ -225,69 +227,62 @@ public class AbstractListDataViewTest {
 
     @Test
     public void setIdentifierProvider_defaultIdentity_equalsIsUsed() {
-        Assert.assertTrue(beanDataView.contains(
-                new Item(1L, "value1")));
-        Assert.assertFalse(beanDataView.contains(
-                new Item(1L, "non present")));
-        Assert.assertFalse(beanDataView.contains(
-                new Item(4L, "value1")));
+        Assert.assertTrue(beanDataView.contains(new Item(1L, "value1")));
+        Assert.assertFalse(beanDataView.contains(new Item(1L, "non present")));
+        Assert.assertFalse(beanDataView.contains(new Item(4L, "value1")));
     }
 
     @Test
     public void setIdentifierProvider_dataProviderIdentity_getIdIsUsed() {
-        itemListDataProvider = new AbstractDataViewTest.CustomIdentityItemDataProvider(getTestItems());
+        itemListDataProvider = new AbstractDataViewTest.CustomIdentityItemDataProvider(
+                getTestItems());
 
-        Assert.assertTrue(beanDataView.contains(
-                new Item(1L, "value1")));
-        Assert.assertTrue(beanDataView.contains(
-                new Item(1L, "non present")));
-        Assert.assertFalse(beanDataView.contains(
-                new Item(4L, "value1")));
+        Assert.assertTrue(beanDataView.contains(new Item(1L, "value1")));
+        Assert.assertTrue(beanDataView.contains(new Item(1L, "non present")));
+        Assert.assertFalse(beanDataView.contains(new Item(4L, "value1")));
     }
 
     @Test
     public void setIdentifierProvider_customIdentifierProvider_customIdentifierProviderIsUsed() {
         beanDataView.setIdentifierProvider(Item::getValue);
 
-        Assert.assertTrue(beanDataView.contains(
-                new Item(1L, "value1")));
-        Assert.assertFalse(beanDataView.contains(
-                new Item(1L, "non present")));
-        Assert.assertTrue(beanDataView.contains(
-                new Item(4L, "value1")));
+        Assert.assertTrue(beanDataView.contains(new Item(1L, "value1")));
+        Assert.assertFalse(beanDataView.contains(new Item(1L, "non present")));
+        Assert.assertTrue(beanDataView.contains(new Item(4L, "value1")));
     }
 
     @Test
     public void setIdentifierProvider_dataProviderHasChanged_newDataProviderIsUsed() {
-        Assert.assertFalse(beanDataView.contains(
-                new Item(1L, "non present")));
+        Assert.assertFalse(beanDataView.contains(new Item(1L, "non present")));
 
-        itemListDataProvider = new AbstractDataViewTest.CustomIdentityItemDataProvider(getTestItems());
+        itemListDataProvider = new AbstractDataViewTest.CustomIdentityItemDataProvider(
+                getTestItems());
 
-        Assert.assertTrue(beanDataView.contains(
-                new Item(1L, "non present")));
+        Assert.assertTrue(beanDataView.contains(new Item(1L, "non present")));
 
-        itemListDataProvider = DataProvider.ofItems(new Item(10L, "description10"));
+        itemListDataProvider = DataProvider
+                .ofItems(new Item(10L, "description10"));
 
-        Assert.assertFalse(beanDataView.contains(
-                new Item(1L, "non present")));
-        Assert.assertTrue(beanDataView.contains(new Item(10L, "description10")));
+        Assert.assertFalse(beanDataView.contains(new Item(1L, "non present")));
+        Assert.assertTrue(
+                beanDataView.contains(new Item(10L, "description10")));
     }
 
     @Test
     public void setIdentifierProvider_dataProviderHasChanged_identifierProviderRetained() {
-        Assert.assertFalse(beanDataView.contains(
-                new Item(4L, "non present", "descr1")));
+        Assert.assertFalse(
+                beanDataView.contains(new Item(4L, "non present", "descr1")));
 
         beanDataView.setIdentifierProvider(Item::getDescription);
 
-        Assert.assertTrue(beanDataView.contains(
-                new Item(4L, "non present", "descr1")));
+        Assert.assertTrue(
+                beanDataView.contains(new Item(4L, "non present", "descr1")));
 
-        itemListDataProvider = new AbstractDataViewTest.CustomIdentityItemDataProvider(getTestItems());
+        itemListDataProvider = new AbstractDataViewTest.CustomIdentityItemDataProvider(
+                getTestItems());
 
-        Assert.assertTrue(beanDataView.contains(
-                new Item(4L, "non present", "descr1")));
+        Assert.assertTrue(
+                beanDataView.contains(new Item(4L, "non present", "descr1")));
     }
 
     @Test
@@ -389,8 +384,7 @@ public class AbstractListDataViewTest {
         dataView.addFilter(item -> !item.equalsIgnoreCase("first"));
         dataView.addItemBefore("newItem", "last");
 
-        Assert.assertArrayEquals(
-                new String[] { "middle", "newItem", "last"},
+        Assert.assertArrayEquals(new String[] { "middle", "newItem", "last" },
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -449,8 +443,7 @@ public class AbstractListDataViewTest {
         dataView.addFilter(item -> !item.equalsIgnoreCase("first"));
         dataView.addItemAfter("newItem", "last");
 
-        Assert.assertArrayEquals(
-                new String[] { "middle", "last", "newItem"},
+        Assert.assertArrayEquals(new String[] { "middle", "last", "newItem" },
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -556,15 +549,13 @@ public class AbstractListDataViewTest {
                 dataView.getItems().toArray(String[]::new));
     }
 
-
     @Test
     public void addItemsAfter_addItemsInFilteredDataSet_itemsAddedAfterTheTarget() {
         dataView.addFilter(item -> !item.equalsIgnoreCase("first"));
-        dataView.addItemsAfter(Arrays.asList("newItem1", "newItem2"),
-                "last");
+        dataView.addItemsAfter(Arrays.asList("newItem1", "newItem2"), "last");
 
         Assert.assertArrayEquals(
-                new String[] { "middle", "last", "newItem1", "newItem2"},
+                new String[] { "middle", "last", "newItem1", "newItem2" },
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -640,11 +631,10 @@ public class AbstractListDataViewTest {
     @Test
     public void addItemsBefore_addItemsInFilteredDataSet_itemsAddedBeforeTheTarget() {
         dataView.addFilter(item -> !item.equalsIgnoreCase("first"));
-        dataView.addItemsBefore(Arrays.asList("newItem1", "newItem2"),
-                "last");
+        dataView.addItemsBefore(Arrays.asList("newItem1", "newItem2"), "last");
 
         Assert.assertArrayEquals(
-                new String[] { "middle", "newItem1", "newItem2", "last"},
+                new String[] { "middle", "newItem1", "newItem2", "last" },
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -690,7 +680,7 @@ public class AbstractListDataViewTest {
         dataView.addItemsAfter(Arrays.asList("one", "two"), "newOne");
 
         Assert.assertArrayEquals(new String[] { "newOne", "one", "two",
-                        "newTwo", "newThree", "last" },
+                "newTwo", "newThree", "last" },
                 dataView.getItems().toArray(String[]::new));
 
     }
@@ -907,9 +897,9 @@ public class AbstractListDataViewTest {
         // hasn't setup any data provider to a component. In the example
         // below, we just create a data communicator instance but don't call
         // 'setDataProvider' method.
-        DataCommunicator<String> dataCommunicator =
-                new DataCommunicator<>((item, jsonObject) -> {
-        }, null, null, component.getElement().getNode());
+        DataCommunicator<String> dataCommunicator = new DataCommunicator<>(
+                (item, jsonObject) -> {
+                }, null, null, component.getElement().getNode());
 
         AbstractListDataView<String> dataView = new AbstractListDataView<String>(
                 dataCommunicator::getDataProvider, component,
@@ -919,7 +909,8 @@ public class AbstractListDataViewTest {
 
         // Check that we can add a listener even if not data provider set by
         // user
-        dataView.addItemCountChangeListener(event -> {});
+        dataView.addItemCountChangeListener(event -> {
+        });
 
         // Check that the verification is still passed during data view API
         // usage, because the default data provider is an in-memory one
@@ -928,12 +919,11 @@ public class AbstractListDataViewTest {
 
     @Test
     public void createListDataProviderFromArrayOfItems_addingOneItem_itemCountShouldBeIncreasedByOne() {
-        ListDataProvider<Item> localListDataProvider = DataProvider.ofItems(
-                new Item(1L, "First"), new Item(2L, "Second")
-        );
+        ListDataProvider<Item> localListDataProvider = DataProvider
+                .ofItems(new Item(1L, "First"), new Item(2L, "Second"));
 
-        ListDataView<Item, AbstractListDataView<Item>> listDataView =
-                new ItemListDataView(() -> localListDataProvider, component);
+        ListDataView<Item, AbstractListDataView<Item>> listDataView = new ItemListDataView(
+                () -> localListDataProvider, component);
 
         long itemCount = listDataView.getItemCount();
 
@@ -945,11 +935,11 @@ public class AbstractListDataViewTest {
     public void createListDataProviderFromArrayOfItems_removingOneItem_itemCountShouldBeDecreasedByOne() {
         Item first = new Item(1L, "First");
         Item second = new Item(2L, "Second");
-        ListDataProvider<Item> localListDataProvider = DataProvider.ofItems(
-                first, second);
+        ListDataProvider<Item> localListDataProvider = DataProvider
+                .ofItems(first, second);
 
-        ListDataView<Item, AbstractListDataView<Item>> listDataView =
-                new ItemListDataView(() -> localListDataProvider, component);
+        ListDataView<Item, AbstractListDataView<Item>> listDataView = new ItemListDataView(
+                () -> localListDataProvider, component);
 
         long itemCount = listDataView.getItemCount();
 
@@ -1163,8 +1153,8 @@ public class AbstractListDataViewTest {
         ListDataProvider<Item> dataProvider = DataProvider.ofItems(
                 new Item(2L, "bar"), new Item(3L, "foo"), new Item(1L, "bar"));
 
-        ItemListDataView listDataView = new ItemListDataView(
-                () -> dataProvider, component);
+        ItemListDataView listDataView = new ItemListDataView(() -> dataProvider,
+                component);
 
         listDataView.setSortOrder(Item::getValue, SortDirection.ASCENDING);
 
@@ -1198,13 +1188,11 @@ public class AbstractListDataViewTest {
     public void setFilterOrSorting_filterOrSortingUpdated_filterOrSortingChangedCallbackInvoked() {
         Collection<String> items = Arrays.asList("foo", "bar", "baz");
 
-        AtomicReference<SerializablePredicate<String>> filtering =
-                new AtomicReference<>();
-        AtomicReference<SerializableComparator<String>> sorting =
-                new AtomicReference<>();
+        AtomicReference<SerializablePredicate<String>> filtering = new AtomicReference<>();
+        AtomicReference<SerializableComparator<String>> sorting = new AtomicReference<>();
 
-        ListDataViewImpl listDataView = new ListDataViewImpl(() -> dataProvider, component,
-                (filter, sort) -> {
+        ListDataViewImpl listDataView = new ListDataViewImpl(() -> dataProvider,
+                component, (filter, sort) -> {
                     filtering.set(filter);
                     sorting.set(sort);
                 });
@@ -1212,7 +1200,7 @@ public class AbstractListDataViewTest {
         listDataView.setFilter("bar"::equals);
 
         Assert.assertNotNull(filtering.get());
-        Assert.assertArrayEquals(new String [] {"bar"},
+        Assert.assertArrayEquals(new String[] { "bar" },
                 items.stream().filter(filtering.get()).toArray());
         Assert.assertNull(sorting.get());
 
@@ -1220,7 +1208,7 @@ public class AbstractListDataViewTest {
         listDataView.setSortOrder(String::toLowerCase, SortDirection.ASCENDING);
         Assert.assertNotNull(sorting.get());
         Assert.assertNull(filtering.get());
-        Assert.assertArrayEquals(new String [] {"bar", "baz", "foo"},
+        Assert.assertArrayEquals(new String[] { "bar", "baz", "foo" },
                 items.stream().sorted(sorting.get()).toArray());
 
         listDataView.setSortComparator(null);
@@ -1230,7 +1218,8 @@ public class AbstractListDataViewTest {
     @Test
     public void filterOrSortingChangedCallback_emptyCallbackProvided_throws() {
         exceptionRule.expect(NullPointerException.class);
-        exceptionRule.expectMessage("Filter or Sorting Change Callback cannot be empty");
+        exceptionRule.expectMessage(
+                "Filter or Sorting Change Callback cannot be empty");
         new ListDataViewImpl(() -> dataProvider, component, null);
     }
 
@@ -1247,9 +1236,9 @@ public class AbstractListDataViewTest {
         public ListDataViewImpl(
                 SerializableSupplier<? extends DataProvider<String, ?>> dataProviderSupplier,
                 Component component,
-                SerializableBiConsumer<SerializablePredicate<String>,
-                        SerializableComparator<String>> filterOrSortingChangedCallback) {
-            super(dataProviderSupplier, component, filterOrSortingChangedCallback);
+                SerializableBiConsumer<SerializablePredicate<String>, SerializableComparator<String>> filterOrSortingChangedCallback) {
+            super(dataProviderSupplier, component,
+                    filterOrSortingChangedCallback);
         }
     }
 
@@ -1267,7 +1256,8 @@ public class AbstractListDataViewTest {
                 SerializableSupplier<? extends DataProvider<Item, ?>> dataProviderSupplier,
                 Component component,
                 SerializableBiConsumer<SerializablePredicate<Item>, SerializableComparator<Item>> filterOrSortingChangedCallback) {
-            super(dataProviderSupplier, component, filterOrSortingChangedCallback);
+            super(dataProviderSupplier, component,
+                    filterOrSortingChangedCallback);
         }
     }
 

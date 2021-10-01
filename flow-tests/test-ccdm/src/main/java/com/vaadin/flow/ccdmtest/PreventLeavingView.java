@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,16 +33,14 @@ public class PreventLeavingView extends Div implements BeforeLeaveObserver {
         add(input);
         NativeButton submitPreventRoute = new NativeButton(
                 "Submit prevent route");
-        submitPreventRoute
-                .addClickListener(event -> {
-                    preventRoute = input.getValue();
-                    String preventedMessage = String
-                            .format("preventing navigation to '%s'",
-                                    preventRoute);
-                    Paragraph paragraph = new Paragraph(preventedMessage);
-                    paragraph.setClassName("prevented-route");
-                    add(paragraph);
-                });
+        submitPreventRoute.addClickListener(event -> {
+            preventRoute = input.getValue();
+            String preventedMessage = String
+                    .format("preventing navigation to '%s'", preventRoute);
+            Paragraph paragraph = new Paragraph(preventedMessage);
+            paragraph.setClassName("prevented-route");
+            add(paragraph);
+        });
         submitPreventRoute.setId("preventRouteButton");
         add(submitPreventRoute);
     }

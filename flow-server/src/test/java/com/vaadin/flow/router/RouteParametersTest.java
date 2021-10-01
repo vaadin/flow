@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,9 +18,14 @@ package com.vaadin.flow.router;
 import java.util.Arrays;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class RouteParametersTest {
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void getters_provide_correct_values() {
@@ -78,48 +83,58 @@ public class RouteParametersTest {
     }
 
     @Test
-    public void integer_getter_throws_exception() {
+    public void integer_getter_stringParameter_throws() {
         RouteParameters parameters = getParameters();
 
-        try {
-            parameters.getInteger("string");
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(
+                "Couldn't parse 'string' parameter value 'foo' as integer");
 
-            Assert.fail("getInteger should not be able to format a string.");
-        } catch (NumberFormatException e) {
-        }
-
-        try {
-            parameters.getInteger("long");
-
-            Assert.fail("getInteger should not be able to format a long.");
-        } catch (NumberFormatException e) {
-        }
-
-        try {
-            parameters.getInteger("varargs");
-
-            Assert.fail("getInteger should not be able to format a varargs.");
-        } catch (NumberFormatException e) {
-        }
+        parameters.getInteger("string");
     }
 
     @Test
-    public void long_getter_throws_exception() {
+    public void integer_getter_longParameter_throws() {
         RouteParameters parameters = getParameters();
 
-        try {
-            parameters.getLong("string");
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(
+                "Couldn't parse 'long' parameter value '12345678900' as integer");
 
-            Assert.fail("getInteger should not be able to format a string.");
-        } catch (NumberFormatException e) {
-        }
+        parameters.getInteger("long");
+    }
 
-        try {
-            parameters.getLong("varargs");
+    @Test
+    public void integer_getter_varaargsParameter_throws() {
+        RouteParameters parameters = getParameters();
 
-            Assert.fail("getInteger should not be able to format a varargs.");
-        } catch (NumberFormatException e) {
-        }
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(
+                "Couldn't parse 'varargs' parameter value 'path/to/foo/bar' as integer");
+
+        parameters.getInteger("varargs");
+    }
+
+    @Test
+    public void long_getter_varaargsParameter_throws() {
+        RouteParameters parameters = getParameters();
+
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(
+                "Couldn't parse 'varargs' parameter value 'path/to/foo/bar' as long");
+
+        parameters.getLong("varargs");
+    }
+
+    @Test
+    public void long_getter_stringParameter_throws() {
+        RouteParameters parameters = getParameters();
+
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(
+                "Couldn't parse 'string' parameter value 'foo' as long");
+
+        parameters.getLong("string");
     }
 
     @Test

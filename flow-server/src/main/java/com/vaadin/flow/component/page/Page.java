@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,7 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.function.Function;
@@ -579,6 +581,11 @@ public class Page implements Serializable {
     }
 
     private void handleExtendedClientDetailsResponse(JsonValue json) {
+        ExtendedClientDetails cachedDetails = ui.getInternals()
+                .getExtendedClientDetails();
+        if (cachedDetails != null) {
+            return;
+        }
         if (!(json instanceof JsonObject)) {
             throw new RuntimeException("Expected a JSON object");
         }
@@ -615,4 +622,34 @@ public class Page implements Serializable {
                         getStringElseNull.apply("v-np")));
     }
 
+    /**
+     * Retrieves the current url from the browser. The URL is fetched from the
+     * browser in another request asynchronously and passed to the callback. The
+     * URL is the full URL that the user sees in the browser (including hash #)
+     * and works even when client side routing is used or there is a reverse
+     * proxy between the client and the server.
+     * <p>
+     * In case you need more control over the execution you can use
+     * {@link #executeJs(String, Serializable...)} by passing
+     * {@code return window.location.href}.
+     * <p>
+     * <em>NOTE: </em> the URL is not escaped, use {@link URL#toURI()} to escape
+     * it.
+     * 
+     * @param callback
+     *            to be notified when the url is resolved.
+     */
+    public void fetchCurrentURL(SerializableConsumer<URL> callback) {
+        Objects.requireNonNull(callback,
+                "Url consumer callback should not be null.");
+        final String js = "return window.location.href";
+        executeJs(js).then(String.class, urlString -> {
+            try {
+                callback.accept(new URL(urlString));
+            } catch (MalformedURLException e) {
+                throw new IllegalStateException(
+                        "Error while encoding the URL from client", e);
+            }
+        });
+    }
 }

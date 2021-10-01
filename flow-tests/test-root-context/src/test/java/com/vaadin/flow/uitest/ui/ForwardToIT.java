@@ -16,8 +16,8 @@ public class ForwardToIT extends ChromeBrowserTest {
         Assert.assertTrue("should forward to specified view",
                 findElement(By.id("root")).isDisplayed());
         Assert.assertTrue("should update update the URL",
-                getDriver().getCurrentUrl()
-                        .endsWith("com.vaadin.flow.uitest.ui.BasicComponentView"));
+                getDriver().getCurrentUrl().endsWith(
+                        "com.vaadin.flow.uitest.ui.BasicComponentView"));
 
         getDriver().navigate().back();
         Assert.assertEquals("should replace history state",
