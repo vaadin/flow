@@ -700,7 +700,7 @@ public class ShortcutRegistration implements Registration, Serializable {
             shortcutListenerRegistrations = null;
         }
         shortcutActive = false;
-        removeListenOnDetachLsiteners();
+        removeListenOnDetachListeners();
     }
 
     private void queueBeforeExecutionCallback() {
