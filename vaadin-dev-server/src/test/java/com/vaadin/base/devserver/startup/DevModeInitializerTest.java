@@ -30,7 +30,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import com.vaadin.base.devserver.DevModeHandlerImpl;
+import com.vaadin.base.devserver.WebpackHandler;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
@@ -216,7 +216,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     public void should_Run_Updaters() throws Exception {
         process();
-        assertNotNull(DevModeHandlerImpl.getDevModeHandler());
+        assertNotNull(WebpackHandler.getDevModeHandler());
     }
 
     @Test
@@ -224,28 +224,28 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         webpackFile.delete();
         mainPackageFile.delete();
         process();
-        assertNotNull(DevModeHandlerImpl.getDevModeHandler());
+        assertNotNull(WebpackHandler.getDevModeHandler());
     }
 
     @Test
     public void should_Not_Run_Updaters_when_NoMainPackageFile()
             throws Exception {
-        assertNull(DevModeHandlerImpl.getDevModeHandler());
+        assertNull(WebpackHandler.getDevModeHandler());
         mainPackageFile.delete();
-        assertNull(DevModeHandlerImpl.getDevModeHandler());
+        assertNull(WebpackHandler.getDevModeHandler());
     }
 
     @Test
     public void should_Run_Updaters_when_NoAppPackageFile() throws Exception {
         process();
-        assertNotNull(DevModeHandlerImpl.getDevModeHandler());
+        assertNotNull(WebpackHandler.getDevModeHandler());
     }
 
     @Test
     public void should_Run_Updaters_when_NoWebpackFile() throws Exception {
         webpackFile.delete();
         process();
-        assertNotNull(DevModeHandlerImpl.getDevModeHandler());
+        assertNotNull(WebpackHandler.getDevModeHandler());
     }
 
     @Test
@@ -253,7 +253,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Mockito.when(appConfig.isProductionMode()).thenReturn(true);
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
-        assertNull(DevModeHandlerImpl.getDevModeHandler());
+        assertNull(WebpackHandler.getDevModeHandler());
     }
 
     @Test
@@ -272,11 +272,11 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
         process();
 
-        assertNotNull(DevModeHandlerImpl.getDevModeHandler());
+        assertNotNull(WebpackHandler.getDevModeHandler());
 
         runDestroy();
 
-        assertNull(DevModeHandlerImpl.getDevModeHandler());
+        assertNull(WebpackHandler.getDevModeHandler());
     }
 
     @Test
@@ -417,7 +417,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
-        assertNotNull(DevModeHandlerImpl.getDevModeHandler());
+        assertNotNull(WebpackHandler.getDevModeHandler());
     }
 
     @Test

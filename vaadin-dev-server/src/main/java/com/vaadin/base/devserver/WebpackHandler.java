@@ -52,7 +52,6 @@ import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -92,12 +91,11 @@ import static java.net.HttpURLConnection.HTTP_OK;
  *
  * @since 2.0
  */
-public final class DevModeHandlerImpl
-        implements RequestHandler, DevModeHandler {
+public final class WebpackHandler implements DevModeHandler {
 
     private static final String START_FAILURE = "Couldn't start dev server because";
 
-    private static final AtomicReference<DevModeHandlerImpl> atomicHandler = new AtomicReference<>();
+    private static final AtomicReference<WebpackHandler> atomicHandler = new AtomicReference<>();
 
     // webpack dev-server allows " character if passed through, need to
     // explicitly check requests for it
@@ -159,7 +157,7 @@ public final class DevModeHandlerImpl
 
     private final File npmFolder;
 
-    private DevModeHandlerImpl(Lookup lookup, int runningPort, File npmFolder,
+    private WebpackHandler(Lookup lookup, int runningPort, File npmFolder,
             CompletableFuture<Void> waitFor) {
 
         this.npmFolder = npmFolder;
@@ -198,7 +196,7 @@ public final class DevModeHandlerImpl
      *
      * @return the instance in case everything is alright, null otherwise
      */
-    public static DevModeHandlerImpl start(Lookup lookup, File npmFolder,
+    public static WebpackHandler start(Lookup lookup, File npmFolder,
             CompletableFuture<Void> waitFor) {
         return start(0, lookup, npmFolder, waitFor);
     }
@@ -218,7 +216,7 @@ public final class DevModeHandlerImpl
      *
      * @return the instance in case everything is alright, null otherwise
      */
-    public static DevModeHandlerImpl start(int runningPort, Lookup lookup,
+    public static WebpackHandler start(int runningPort, Lookup lookup,
             File npmFolder, CompletableFuture<Void> waitFor) {
         ApplicationConfiguration configuration = lookup
                 .lookup(ApplicationConfiguration.class);
@@ -238,7 +236,7 @@ public final class DevModeHandlerImpl
      *
      * @return devModeHandler or {@code null} if not started
      */
-    public static DevModeHandlerImpl getDevModeHandler() {
+    public static WebpackHandler getDevModeHandler() {
         return atomicHandler.get();
     }
 
@@ -254,7 +252,7 @@ public final class DevModeHandlerImpl
             }
             return false;
         } else {
-            InputStream inputStream = DevModeHandlerImpl.class
+            InputStream inputStream = WebpackHandler.class
                     .getResourceAsStream("dev-mode-not-ready.html");
             IOUtils.copy(inputStream, response.getOutputStream());
             response.setContentType("text/html;charset=utf-8");
@@ -272,9 +270,9 @@ public final class DevModeHandlerImpl
         }
     }
 
-    private static DevModeHandlerImpl createInstance(int runningPort,
-            Lookup lookup, File npmFolder, CompletableFuture<Void> waitFor) {
-        return new DevModeHandlerImpl(lookup, runningPort, npmFolder, waitFor);
+    private static WebpackHandler createInstance(int runningPort, Lookup lookup,
+            File npmFolder, CompletableFuture<Void> waitFor) {
+        return new WebpackHandler(lookup, runningPort, npmFolder, waitFor);
     }
 
     @Override
@@ -521,7 +519,7 @@ public final class DevModeHandlerImpl
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(DevModeHandlerImpl.class);
+        return LoggerFactory.getLogger(WebpackHandler.class);
     }
 
     @Override

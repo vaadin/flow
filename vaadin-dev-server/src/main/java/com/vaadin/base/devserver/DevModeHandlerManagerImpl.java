@@ -50,7 +50,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
     @Override
     public DevModeHandler getDevModeHandler() {
-        return DevModeHandlerImpl.getDevModeHandler();
+        return WebpackHandler.getDevModeHandler();
     }
 
     @Override

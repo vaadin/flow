@@ -43,7 +43,7 @@ import static org.junit.Assert.assertNull;
 @SuppressWarnings("restriction")
 @Ignore("This test may cause freeze of a build. "
         + "It happens all the time for Java 11 validation and it happens sometimes on PR validation")
-public class DevModeHandlerImplStopTest {
+public class WebpackHandlerStopTest {
 
     private MockDeploymentConfiguration configuration;
 
@@ -65,7 +65,7 @@ public class DevModeHandlerImplStopTest {
         if (httpServer != null) {
             httpServer.stop(0);
         }
-        DevModeHandlerImpl handler = DevModeHandlerImpl.getDevModeHandler();
+        WebpackHandler handler = WebpackHandler.getDevModeHandler();
         if (handler != null) {
             handler.stop();
         }
@@ -73,7 +73,7 @@ public class DevModeHandlerImplStopTest {
 
     @Test
     public void testServer_should_HandleStopRequest() throws Exception {
-        int port = DevModeHandlerImpl.getFreePort();
+        int port = WebpackHandler.getFreePort();
 
         // Server is not started
         assertNull(requestWebpackServer(port, "/foo"));
@@ -91,41 +91,41 @@ public class DevModeHandlerImplStopTest {
     @Test
     public void devModeHandler_should_StopWebPack() throws Exception {
 
-        int port = DevModeHandlerImpl.getFreePort();
+        int port = WebpackHandler.getFreePort();
 
         startTestServer(port, HTTP_OK, "OK");
 
-        DevModeHandlerImpl.start(port, createDevModeLookup(), npmFolder,
+        WebpackHandler.start(port, createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null)).join();
-        assertEquals(port, DevModeHandlerImpl.getDevModeHandler().getPort());
+        assertEquals(port, WebpackHandler.getDevModeHandler().getPort());
         assertNotNull(requestWebpackServer(port, "/bar"));
 
-        DevModeHandlerImpl.getDevModeHandler().stop();
-        assertNull(DevModeHandlerImpl.getDevModeHandler());
+        WebpackHandler.getDevModeHandler().stop();
+        assertNull(WebpackHandler.getDevModeHandler());
         assertNull(requestWebpackServer(port, "/bar"));
     }
 
     @Test
     public void devModeHandler_should_Keep_WebPackOnRestart() throws Exception {
-        int port = DevModeHandlerImpl.getFreePort();
+        int port = WebpackHandler.getFreePort();
 
         startTestServer(port, HTTP_OK, "OK");
 
-        DevModeHandlerImpl.start(port, createDevModeLookup(), npmFolder,
+        WebpackHandler.start(port, createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null)).join();
 
         // Simulate a server restart by removing the handler, and starting a new
         // one
-        DevModeHandlerImplTest.removeDevModeHandlerInstance();
-        assertNull(DevModeHandlerImpl.getDevModeHandler());
-        DevModeHandlerImpl.start(createDevModeLookup(), npmFolder,
+        WebpackHandlerTest.removeDevModeHandlerInstance();
+        assertNull(WebpackHandler.getDevModeHandler());
+        WebpackHandler.start(createDevModeLookup(), npmFolder,
                 CompletableFuture.completedFuture(null)).join();
 
         // Webpack server should continue working
         assertNotNull(requestWebpackServer(port, "/bar"));
 
-        DevModeHandlerImpl.getDevModeHandler().stop();
-        assertNull(DevModeHandlerImpl.getDevModeHandler());
+        WebpackHandler.getDevModeHandler().stop();
+        assertNull(WebpackHandler.getDevModeHandler());
         assertNull(requestWebpackServer(port, "/bar"));
     }
 
@@ -141,7 +141,7 @@ public class DevModeHandlerImplStopTest {
     private int startTestServer(int port, int status, String response)
             throws Exception {
         if (port == 0) {
-            port = DevModeHandlerImpl.getFreePort();
+            port = WebpackHandler.getFreePort();
         }
         httpServer = HttpServer.create(new InetSocketAddress(port), 0);
         httpServer.createContext("/", exchange -> {
