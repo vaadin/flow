@@ -63,6 +63,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private File applicationProperties;
 
     /**
+     * Feature flag properties file.
+     */
+    @Parameter(defaultValue = "${project.basedir}/src/main/resources/featureflags.properties")
+    protected File featureflagsProperties;
+
+    /**
      * Whether or not insert the initial Uidl object in the bootstrap index.html
      */
     @Parameter(defaultValue = "${vaadin."

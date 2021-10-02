@@ -1,6 +1,7 @@
 package com.vaadin.experimental;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,37 +21,52 @@ import org.slf4j.LoggerFactory;
 
 public class FeatureFlags implements Serializable {
 
+    /**
+     * Set by the Maven / Gradle plugin when running through that so the feature
+     * flags will be correctly detected.
+     */
+    public static void setPropertiesLocation(File featureProperties) {
+        if (featureProperties != null && featureProperties.exists()) {
+            try (FileInputStream stream = new FileInputStream(featureProperties)) {
+                loadProperties(stream);
+            } catch (IOException e) {
+                getLogger().error("Unable to read properties from file " + featureProperties.getAbsolutePath(), e);
+            }
+        }
+    }
+
     private static final String PROPERTIES_FILENAME = "featureflags.properties";
-    public static final Feature VITE = new Feature(
-            "Use Vite for frontend build", "viteForFrontendBuild", 0, true);
+    public static final Feature VITE = new Feature("Use Vite for frontend build", "viteForFrontendBuild", 0, true);
     private static List<Feature> features = new ArrayList<>();
     static {
         features.add(VITE);
-
-        try {
-            Properties properties = loadProperties();
-            for (Feature f : features) {
-                if ("true".equals(properties
-                        .getProperty(getPropertyName(f.getId()), "false"))) {
-                    f.setEnabled(true);
-                }
-            }
-        } catch (IOException e) {
-            getLogger().error("Unable to read feature flags", e);
-        }
-
+        loadProperties();
     }
 
-    private static Properties loadProperties() throws IOException {
+    private static void loadProperties() {
         try (InputStream propertiesStream = FeatureFlags.class.getClassLoader()
                 .getResourceAsStream(PROPERTIES_FILENAME)) {
+            loadProperties(propertiesStream);
+        } catch (IOException e) {
+            getLogger().error("Unable to read properties using classloader", e);
+        }
+    }
 
+    private static void loadProperties(InputStream propertiesStream) {
+        try {
             Properties props = new Properties();
 
             if (propertiesStream != null) {
                 props.load(propertiesStream);
             }
-            return props;
+            for (Feature f : features) {
+                if ("true".equals(props.getProperty(getPropertyName(f.getId()), "false"))) {
+                    f.setEnabled(true);
+                }
+            }
+
+        } catch (IOException e) {
+            getLogger().error("Unable to read feature flags", e);
         }
     }
 
@@ -84,9 +100,7 @@ public class FeatureFlags implements Serializable {
     }
 
     private static Optional<Feature> getFeature(String featureId) {
-        return features.stream()
-                .filter(feature -> feature.getId().equals(featureId))
-                .findFirst();
+        return features.stream().filter(feature -> feature.getId().equals(featureId)).findFirst();
     }
 
     private static String getPropertyName(String featureId) {
@@ -110,10 +124,8 @@ public class FeatureFlags implements Serializable {
     }
 
     private static File getFeatureFlagFile() {
-        ApplicationConfiguration config = ApplicationConfiguration
-                .get(VaadinService.getCurrent().getContext());
-        String javaFolder = config.getStringProperty(
-                Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN, "src/main/java");
+        ApplicationConfiguration config = ApplicationConfiguration.get(VaadinService.getCurrent().getContext());
+        String javaFolder = config.getStringProperty(Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN, "src/main/java");
         String resourceFolder = javaFolder.replace("/java", "/resources");
         return new File(resourceFolder, PROPERTIES_FILENAME);
     }
