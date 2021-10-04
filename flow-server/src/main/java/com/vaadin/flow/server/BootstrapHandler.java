@@ -657,11 +657,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     Element errorElement = document.createElement("div");
                     errorElement.setBaseUri("");
                     errorElement.attr("class", "v-system-error");
-                    errorElement.attr("onclick",
-                            "this.parentElement.removeChild(this)");
                     errorElement.html(
                             "<h3 style=\"display:inline;\">Webpack Error</h3>"
-                                    + "<h6 style=\"display:inline; padding-left:10px;\">Click to close</h6>"
+                                    + "<h6 style=\"display:inline; padding-left:10px;\""
+                                    + "onclick=\"this.parentElement.parentElement.removeChild(this.parentElement)\">Close</h6>"
                                     + "<pre>" + errorMsg + "</pre>");
                     document.body().appendChild(errorElement);
                 }
