@@ -619,7 +619,7 @@ export class VaadinDevmodeGizmo extends LitElement {
     this.frontendStatus = ConnectionStatus.UNAVAILABLE;
     this.javaStatus = ConnectionStatus.UNAVAILABLE;
 
-    const onConnectionError = (msg: string) => this.showMessage(MessageType.ERROR, msg);
+    const onConnectionError = (msg: string) => this.log(MessageType.ERROR, msg);
     const onReload = () => {
       this.showSplashMessage('Reloading…');
       const lastReload = window.sessionStorage.getItem(VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
@@ -631,7 +631,7 @@ export class VaadinDevmodeGizmo extends LitElement {
 
     const frontendConnection = new Connection(this.getDedicatedWebSocketUrl());
     frontendConnection.onHandshake = () => {
-      this.showMessage(MessageType.LOG, 'Vaadin development mode initialized');
+      this.log(MessageType.LOG, 'Vaadin development mode initialized');
       if (!VaadinDevmodeGizmo.isActive) {
         frontendConnection.setActive(false);
       }
@@ -667,7 +667,7 @@ export class VaadinDevmodeGizmo extends LitElement {
     javaConnection.onHandshake = () => {
       prevOnHandshake();
       if (this.backend) {
-        this.showMessage(
+        this.log(
           MessageType.INFORMATION,
           `Java live reload available: ${VaadinDevmodeGizmo.BACKEND_DISPLAY_NAME[this.backend]}`
         );
@@ -720,6 +720,7 @@ export class VaadinDevmodeGizmo extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    this.catchErrors();
 
     // when focus or clicking anywhere, move the splash message to the message tray
     this.disableEventListener = (_: any) => this.demoteSplashMessage();
@@ -746,6 +747,24 @@ export class VaadinDevmodeGizmo extends LitElement {
     if ((window as any).Vaadin) {
       (window as any).Vaadin.devModeGizmo = this;
     }
+  }
+  format(o: any): string {
+    return o.toString();
+  }
+  catchErrors() {
+    // Process stored messages
+    const queue = (window as any).Vaadin.ConsoleErrors as any[];
+    if (queue) {
+      queue.forEach((args: any[]) => {
+        this.log(MessageType.ERROR, args.map((o) => this.format(o)).join(' '));
+      });
+    }
+    // Install new handler that immediately processes messages
+    (window as any).Vaadin.ConsoleErrors = {
+      push: (args: any[]) => {
+        this.log(MessageType.ERROR, args.map((o) => this.format(o)).join(' '));
+      }
+    };
   }
 
   disconnectedCallback() {
@@ -777,12 +796,12 @@ export class VaadinDevmodeGizmo extends LitElement {
 
   demoteSplashMessage() {
     if (this.splashMessage) {
-      this.showMessage(MessageType.LOG, this.splashMessage);
+      this.log(MessageType.LOG, this.splashMessage);
     }
     this.showSplashMessage(undefined);
   }
 
-  showMessage(type: MessageType, message: string, details?: string, link?: string) {
+  log(type: MessageType, message: string, details?: string, link?: string) {
     const id = this.nextMessageId;
     this.nextMessageId += 1;
     this.messages.push({
@@ -798,7 +817,13 @@ export class VaadinDevmodeGizmo extends LitElement {
     this.updateComplete.then(() => {
       // Scroll into view
       setTimeout(() => {
-        this.shadowRoot!.querySelector('.message-tray .message:last-child')!.scrollIntoView({ behavior: 'smooth' });
+        const messageTray = this.shadowRoot!.querySelector('.message-tray .message:last-child');
+        if (messageTray) {
+          messageTray.scrollIntoView({ behavior: 'smooth' });
+          if (type === MessageType.ERROR) {
+            this.expanded = true;
+          }
+        }
       }, this.transitionDuration);
     });
   }
@@ -832,7 +857,7 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
       this.requestUpdate();
     } else {
-      this.showMessage(type, message, details, link);
+      this.log(type, message, details, link);
     }
   }
 
@@ -853,7 +878,7 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
 
       notification.deleted = true;
-      this.showMessage(notification.type, notification.message, notification.details, notification.link);
+      this.log(notification.type, notification.message, notification.details, notification.link);
 
       // give some time for the animation
       setTimeout(() => {
@@ -1045,7 +1070,7 @@ class Connection extends Object {
     let json;
     try {
       json = JSON.parse(msg.data);
-    } catch (e) {
+    } catch (e: any) {
       this.handleError(`[${e.name}: ${e.message}`);
       return;
     }

@@ -112,7 +112,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         configureErrorDialogStyles(indexDocument);
 
         showWebpackErrors(session.getService(), indexDocument);
-
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
         VaadinContext context = session.getService().getContext();
@@ -141,6 +140,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         if (config.isDevModeLiveReloadEnabled()) {
             addDevmodeGizmo(indexDocument, session, request);
         }
+
+        if (!config.isProductionMode()) {
+            catchErrorsInDevMode(indexDocument);
+        }
+
         try {
             response.getOutputStream()
                     .write(indexDocument.html().getBytes(UTF_8));
@@ -149,6 +153,24 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return false;
         }
         return true;
+    }
+
+    private void catchErrorsInDevMode(Document indexDocument) {
+        Element elm = new Element("script");
+        elm.attr("initial", "");
+        elm.appendChild(new DataNode("" + //
+                "window.Vaadin = window.Vaadin || {};" + //
+                "window.Vaadin.ConsoleErrors = window.Vaadin.ConsoleErrors || [];"
+                + //
+                "const browserConsoleError = window.console.error.bind(window.console);"
+                + //
+                "console.error = (...args) => {" + //
+                "    browserConsoleError(...args);" + //
+                "    window.Vaadin.ConsoleErrors.push(args);" + //
+                "};" + //
+                "" //
+        ));
+        indexDocument.head().insertChildren(0, elm);
     }
 
     private void storeAppShellTitleToUI(Document indexDocument) {

@@ -8,7 +8,6 @@ import com.google.gwt.junit.tools.GWTTestSuite;
 import com.vaadin.client.communication.GwtAtmoshperePushConnectionTest;
 import com.vaadin.client.communication.GwtDefaultConnectionStateHandlerTest;
 import com.vaadin.client.flow.GwtBasicElementBinderTest;
-import com.vaadin.client.flow.GwtErrotHandlerTest;
 import com.vaadin.client.flow.GwtEventHandlerTest;
 import com.vaadin.client.flow.GwtMultipleBindingTest;
 import com.vaadin.client.flow.GwtPolymerModelTest;
@@ -27,9 +26,9 @@ import com.vaadin.client.flow.util.GwtNativeFunctionTest;
 public class GwtSuite extends GWTTestSuite {
     public static Test suite() {
         /*
-         * List all Gwt unit test classes here so that the test runner can
-         * compile them all into one JS module instead of creating a separate
-         * module for each test class.
+         * List all Gwt unit test classes here so that the test runner can compile them
+         * all into one JS module instead of creating a separate module for each test
+         * class.
          */
         TestSuite suite = new TestSuite("Flow GWT tests");
         suite.addTestSuite(GwtApplicationConnectionTest.class);
@@ -54,7 +53,6 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtMessageHandlerTest.class);
         suite.addTestSuite(GwtMultipleBindingTest.class);
         suite.addTestSuite(GwtDefaultConnectionStateHandlerTest.class);
-        suite.addTestSuite(GwtErrotHandlerTest.class);
         return suite;
     }
 }

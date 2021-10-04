@@ -19,15 +19,9 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.google.web.bindery.event.shared.UmbrellaException;
-
 import com.vaadin.client.bootstrap.ErrorMessage;
 
-import elemental.client.Browser;
-import elemental.dom.Document;
 import elemental.dom.Element;
-import elemental.events.Event;
-import elemental.events.KeyboardEvent;
-import elemental.events.KeyboardEvent.KeyCode;
 
 /**
  * Handles system errors in the application.
@@ -71,7 +65,7 @@ public class SystemErrorHandler {
     protected void handleUnrecoverableError(String details,
             ErrorMessage message) {
         handleUnrecoverableError(message.getCaption(), message.getMessage(),
-                details, message.getUrl(), null);
+                details, message.getUrl());
     }
 
     /**
@@ -90,7 +84,14 @@ public class SystemErrorHandler {
      */
     public void handleUnrecoverableError(String caption, String message,
             String details, String url) {
-        handleUnrecoverableError(caption, message, details, url, null);
+        if (caption == null && message == null && details == null) {
+            if (!isWebComponentMode()) {
+                WidgetUtil.redirect(url);
+            }
+            return;
+        }
+
+        handleError(caption, message, details);
     }
 
     /**
@@ -110,29 +111,15 @@ public class SystemErrorHandler {
      *            query selector to find the element under which the error will
      *            be added . If element is not found or the selector is
      *            {@code null}, body will be used
+     * 
+     * @deprecated the querySelector parameter is no longer used, use
+     *             {@link #handleUnrecoverableError(String, String, String, String)}
+     *             instead
      */
+    @Deprecated
     public void handleUnrecoverableError(String caption, String message,
             String details, String url, String querySelector) {
-        if (caption == null && message == null && details == null) {
-            if (!isWebComponentMode()) {
-                WidgetUtil.redirect(url);
-            }
-            return;
-        }
-
-        Element systemErrorContainer = handleError(caption, message, details,
-                querySelector);
-        if (!isWebComponentMode()) {
-            systemErrorContainer.addEventListener("click",
-                    e -> WidgetUtil.redirect(url), false);
-            Browser.getDocument().addEventListener(Event.KEYDOWN, e -> {
-                int keyCode = ((KeyboardEvent) e).getKeyCode();
-                if (keyCode == KeyCode.ESC) {
-                    e.preventDefault();
-                    WidgetUtil.redirect(url);
-                }
-            }, false);
-        }
+        handleUnrecoverableError(caption, message, details, url);
     }
 
     /**
@@ -143,16 +130,7 @@ public class SystemErrorHandler {
      *            the error message to show
      */
     public void handleError(String errorMessage) {
-        if (registry.getApplicationConfiguration().isProductionMode()) {
-            Console.error(errorMessage);
-            return;
-        }
-
-        Element errorContainer = handleError(null, errorMessage, null, null);
-        errorContainer.addEventListener("click", e -> {
-            // Allow user to dismiss the error by clicking it.
-            errorContainer.getParentNode().removeChild(errorContainer);
-        });
+        Console.error(errorMessage);
     }
 
     /**
@@ -171,48 +149,8 @@ public class SystemErrorHandler {
         }
     }
 
-    private Element handleError(String caption, String message, String details,
-            String querySelector) {
-        Document document = Browser.getDocument();
-        Element systemErrorContainer = document.createDivElement();
-        systemErrorContainer.setClassName("v-system-error");
-
-        if (caption != null) {
-            Element captionDiv = document.createDivElement();
-            captionDiv.setClassName("caption");
-            captionDiv.setTextContent(caption);
-            systemErrorContainer.appendChild(captionDiv);
-            Console.error(caption);
-        }
-        if (message != null) {
-            Element messageDiv = document.createDivElement();
-            messageDiv.setClassName("message");
-            messageDiv.setTextContent(message);
-            systemErrorContainer.appendChild(messageDiv);
-            Console.error(message);
-        }
-        if (details != null) {
-            Element detailsDiv = document.createDivElement();
-            detailsDiv.setClassName("details");
-            detailsDiv.setTextContent(details);
-            systemErrorContainer.appendChild(detailsDiv);
-            Console.error(details);
-        }
-        if (querySelector != null) {
-            Element baseElement = document.querySelector(querySelector);
-            // if querySelector does not match an element on the page, the
-            // error will not be displayed
-            if (baseElement != null) {
-                // if the baseElement has a shadow root, add the warning to
-                // the shadow - otherwise add it to the baseElement
-                findShadowRoot(baseElement).orElse(baseElement)
-                        .appendChild(systemErrorContainer);
-            }
-        } else {
-            document.getBody().appendChild(systemErrorContainer);
-        }
-
-        return systemErrorContainer;
+    private void handleError(String caption, String message, String details) {
+        Console.error(caption + " " + message + " " + details);
     }
 
     private static Throwable unwrapUmbrellaException(Throwable e) {
