@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 import static org.junit.Assert.assertTrue;
@@ -70,9 +71,11 @@ public class DependencyIT extends ChromeBrowserTest {
         open();
         findElement(By.id("loadUnavailableResources")).click();
 
-        List<String> errors = findElements(By.className("v-system-error"))
-                .stream().map(WebElement::getText).collect(Collectors.toList());
-        Assert.assertEquals(2, errors.size());
+        List<String> errors = $("vaadin-devmode-gizmo").first()
+                .$(DivElement.class).attributeContains("class", "message")
+                .attributeContains("class", "error").all().stream()
+                .map(div -> div.getText()).collect(Collectors.toList());
+
         // The order for these can be random
         assertTrue("Couldn't find error for not-found.css",
                 errors.stream()

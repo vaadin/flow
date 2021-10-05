@@ -15,15 +15,16 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.util.List;
 import java.util.regex.Pattern;
+
+import com.vaadin.flow.component.html.testbench.DivElement;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class ClientSideExceptionHandlingIT extends ChromeBrowserTest {
 
@@ -35,11 +36,13 @@ public class ClientSideExceptionHandlingIT extends ChromeBrowserTest {
     public void developmentModeExceptions() {
         open();
         causeException();
+        List<DivElement> messages = $("vaadin-devmode-gizmo").first()
+                .$(DivElement.class).attributeContains("class", "message")
+                .all();
 
-        String errorMessage = findElement(ERROR_LOCATOR).getText();
-
-        Assert.assertTrue("Unexpected error message: " + errorMessage,
-                Pattern.matches(ERROR_PATTERN, errorMessage));
+        Assert.assertTrue("Expected error message not found",
+                messages.stream().anyMatch(
+                        div -> Pattern.matches(ERROR_PATTERN, div.getText())));
     }
 
     @Test
