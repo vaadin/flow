@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.Locale;
+import java.util.Objects;
+import java.util.stream.Stream;
+
 /**
  * A component that supports text content.
  * <p>
@@ -27,6 +31,75 @@ package com.vaadin.flow.component;
  * @since 1.0
  */
 public interface HasText extends HasElement {
+
+    /**
+     * Represents <code>"white-space"</code> style values.
+     * 
+     * @author Vaadin Ltd
+     * @since
+     *
+     */
+    enum WhiteSpace {
+        /**
+         * Sequences of white space are collapsed. Newline characters in the
+         * source are handled the same as other white space. Lines are broken as
+         * necessary to fill line boxes.
+         */
+        NORMAL,
+        /**
+         * Collapses white space as for normal, but suppresses line breaks (text
+         * wrapping) within the source.
+         */
+        NOWRAP,
+        /**
+         * Sequences of white space are preserved. Lines are only broken at
+         * newline characters in the source and at &lt;br&gt; elements.
+         */
+        PRE,
+        /**
+         * Sequences of white space are preserved. Lines are broken at newline
+         * characters, at &lt;br&gt;, and as necessary to fill line boxes.
+         */
+        PRE_WRAP,
+        /**
+         * Sequences of white space are collapsed. Lines are broken at newline
+         * characters, at &lt;br&gt;, and as necessary to fill line boxes.
+         */
+        PRE_LINE,
+        /**
+         * The behavior is identical to that of pre-wrap, except that:
+         * 
+         * <ul>
+         * <li>Any sequence of preserved white space always takes up space,
+         * including at the end of the line.
+         * <li>A line breaking opportunity exists after every preserved white
+         * space character, including between white space characters.
+         * <li>Such preserved spaces take up space and do not hang, and thus
+         * affect the box’s intrinsic sizes (min-content size and max-content
+         * size).
+         * </ul>
+         */
+        BREAK_SPACES,
+        /**
+         * Inherits this property from its parent element.
+         */
+        INHERIT,
+        /**
+         * Sets this property to its default value.
+         */
+        INITIAL;
+
+        @Override
+        public String toString() {
+            return name().toLowerCase(Locale.ENGLISH).replace('_', '-');
+        }
+
+        public static WhiteSpace forString(String value) {
+            return Stream.of(values())
+                    .filter(whiteSpace -> whiteSpace.toString().equals(value))
+                    .findFirst().orElse(null);
+        }
+    }
 
     /**
      * Sets the given string as the content of this component. This removes any
@@ -51,5 +124,33 @@ public interface HasText extends HasElement {
      */
     default String getText() {
         return getElement().getText();
+    }
+
+    /**
+     * Sets the given {@code value} as {@code "white-space"} style value.
+     * 
+     * @param value
+     *            the {@code "white-space"} style value, not {@code null}
+     */
+    default void setWhiteSpace(WhiteSpace value) {
+        getElement().getStyle().set("white-space",
+                Objects.requireNonNull(value).toString());
+    }
+
+    /**
+     * Gets the {@code "white-space"} style value.
+     * <p>
+     * The default value is {@literal WhiteSpace#NORMAL}. If the
+     * {@code "white-space"} style value is non standard then {@code null} is
+     * returned.
+     * 
+     * @return the {@code "white-space"} style value, may be {@code null}
+     */
+    default WhiteSpace getWhiteSpace() {
+        String value = getElement().getStyle().get("white-space");
+        if (value == null) {
+            return WhiteSpace.NORMAL;
+        }
+        return WhiteSpace.forString(value);
     }
 }
