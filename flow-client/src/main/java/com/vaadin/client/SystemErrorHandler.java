@@ -163,17 +163,8 @@ public class SystemErrorHandler {
         return e;
     }
 
-    private Optional<Element> findShadowRoot(Element host) {
-        return Optional.ofNullable(getShadowRootElement(host));
-    }
-
     private boolean isWebComponentMode() {
         return registry.getApplicationConfiguration().isWebComponentMode();
     }
-
-    private native Element getShadowRootElement(Element host)
-    /*-{
-        return host.shadowRoot;
-    }-*/;
 
 }
