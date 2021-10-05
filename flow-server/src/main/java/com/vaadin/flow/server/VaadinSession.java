@@ -1121,7 +1121,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     private boolean isInitialized() {
         boolean isInitialized = service != null;
-        assert isInitialized || session == null;
+        assert isInitialized
+                || session == null : "The wrapped session must be null if the service is null (which happens after deserialization)";
         return isInitialized;
     }
 
