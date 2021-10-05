@@ -463,4 +463,24 @@ public class VaadinSessionTest {
         Assert.assertNull(vaadinSession.getSession());
     }
 
+    @Test
+    public void valueUnbound_sessionIsNotInitialized_noAnyInteractions() {
+        VaadinSession session = Mockito.spy(TestVaadinSession.class);
+
+        HttpSessionBindingEvent event = Mockito
+                .mock(HttpSessionBindingEvent.class);
+        session.valueUnbound(null);
+
+        Mockito.verify(session).valueUnbound(null);
+        Mockito.verifyNoInteractions(event);
+        Mockito.verifyNoMoreInteractions(session);
+    }
+
+    public static class TestVaadinSession extends VaadinSession {
+
+        public TestVaadinSession() {
+            super(null);
+        }
+    }
+
 }

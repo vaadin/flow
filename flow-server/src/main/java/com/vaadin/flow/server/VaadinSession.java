@@ -167,16 +167,25 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     @Override
     public void valueUnbound(HttpSessionBindingEvent event) {
-        // If we are going to be unbound from the session, the session must be
-        // closing
-        // Notify the service
-        if (service == null) {
+        // The Vaadin session instance may be not yet initialized properly via
+        // {@link #refreshTransients(WrappedSession, VaadinService)}. It happens
+        // when the session is deserialized and container decides that it's
+        // expired. Such session is not known to anyone (except deserializer)
+        // and nothins should be done with it: just return immediately.
+        //
+        // Be aware that not initialized session doesn't have the
+        // correct/expected state: it has no lock, service, session, etc.
+        if (!isInitialized()) {
             getLogger().warn(
                     "A VaadinSession instance not associated to any service is getting unbound. "
                             + "Session destroy events will not be fired and UIs in the session will not get detached. "
                             + "This might happen if a session is deserialized but never used before it expires.");
-        } else if (VaadinService.getCurrentRequest() != null
-                && getCurrent() == this) {
+            return;
+        }
+        // If we are going to be unbound from the session, the session must be
+        // closing
+        // Notify the service
+        if (VaadinService.getCurrentRequest() != null && getCurrent() == this) {
             checkHasLock();
             // Ignore if the session is being moved to a different backing
             // session or if GAEVaadinServlet is doing its normal cleanup.
@@ -624,8 +633,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * <code>Lock</code> interface than {@link Lock#lock()} and
      * {@link Lock#unlock()}.
      *
-     * @return the <code>Lock</code> that is used for synchronization, never
-     *         <code>null</code>
+     * @return the <code>Lock</code> that is used for synchronization, it's
+     *         never <code>null</code> for the session which is in use, i.e. if
+     *         {@link #refreshTransients(WrappedSession, VaadinService)} has
+     *         been called for it
      * @see #lock()
      * @see Lock
      */
@@ -1096,6 +1107,23 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public StreamResourceRegistry getResourceRegistry() {
         return resourceRegistry;
+    }
+
+    /**
+     * Checks whether the session is properly initialized/in use.
+     * <p>
+     * The session is initialized if
+     * {@link #refreshTransients(WrappedSession, VaadinService)} has been called
+     * for it. If the session is just created or deserialized but not yet in
+     * real use then it's not initialized and it's state is incomplete.
+     * 
+     * @return whether the session is initialized
+     */
+    private boolean isInitialized() {
+        boolean isInitialized = service != null;
+        assert isInitialized
+                || session == null : "The wrapped session must be null if the service is null (which happens after deserialization)";
+        return isInitialized;
     }
 
 }
