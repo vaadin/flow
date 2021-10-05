@@ -15,13 +15,10 @@
  */
 package com.vaadin.client;
 
-import java.util.Optional;
 import java.util.Set;
 
 import com.google.web.bindery.event.shared.UmbrellaException;
 import com.vaadin.client.bootstrap.ErrorMessage;
-
-import elemental.dom.Element;
 
 /**
  * Handles system errors in the application.

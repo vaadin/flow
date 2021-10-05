@@ -137,11 +137,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // modify the page based on registered IndexHtmlRequestListener:s
         request.getService().modifyIndexHtmlResponse(indexHtmlResponse);
 
-        if (config.isDevModeLiveReloadEnabled()) {
-            addDevmodeGizmo(indexDocument, session, request);
-        }
-
         if (!config.isProductionMode()) {
+            addDevmodeGizmo(indexDocument, config, session, request);
             catchErrorsInDevMode(indexDocument);
         }
 
@@ -184,7 +181,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
     }
 
-    private void addDevmodeGizmo(Document indexDocument, VaadinSession session,
+    private void addDevmodeGizmo(Document indexDocument,
+            DeploymentConfiguration config, VaadinSession session,
             VaadinRequest request) {
         VaadinService service = session.getService();
         Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
@@ -192,6 +190,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         if (liveReload.isPresent()) {
             Element devmodeGizmo = new Element("vaadin-devmode-gizmo");
+            if (!config.isDevModeLiveReloadEnabled()) {
+                devmodeGizmo.attr("liveReloadDisabled", "");
+            }
             devmodeGizmo.attr("url",
                     BootstrapHandlerHelper.getPushURL(session, request));
             BrowserLiveReload.Backend backend = liveReload.get().getBackend();

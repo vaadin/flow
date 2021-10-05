@@ -578,6 +578,9 @@ export class VaadinDevmodeGizmo extends LitElement {
   @property({ type: String })
   url?: string;
 
+  @property({ type: Boolean, attribute: true })
+  liveReloadDisabled?: boolean;
+
   @property({ type: String })
   backend?: string;
 
@@ -590,7 +593,7 @@ export class VaadinDevmodeGizmo extends LitElement {
   @property({ type: Array, attribute: false })
   messages: Message[] = [];
 
-  @property({ type: Object, attribute: false })
+  @property({ type: String, attribute: false })
   splashMessage?: string;
 
   @property({ type: Array, attribute: false })
@@ -621,6 +624,9 @@ export class VaadinDevmodeGizmo extends LitElement {
 
     const onConnectionError = (msg: string) => this.log(MessageType.ERROR, msg);
     const onReload = () => {
+      if (this.liveReloadDisabled) {
+        return;
+      }
       this.showSplashMessage('Reloading…');
       const lastReload = window.sessionStorage.getItem(VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
       const nextReload = lastReload ? parseInt(lastReload, 10) + 1 : 1;
@@ -974,9 +980,10 @@ export class VaadinDevmodeGizmo extends LitElement {
             <input
               id="toggle"
               type="checkbox"
-              ?disabled=${(this.frontendStatus === ConnectionStatus.UNAVAILABLE ||
+              ?disabled=${this.liveReloadDisabled ||
+              ((this.frontendStatus === ConnectionStatus.UNAVAILABLE ||
                 this.frontendStatus === ConnectionStatus.ERROR) &&
-              (this.javaStatus === ConnectionStatus.UNAVAILABLE || this.javaStatus === ConnectionStatus.ERROR)}
+                (this.javaStatus === ConnectionStatus.UNAVAILABLE || this.javaStatus === ConnectionStatus.ERROR))}
               ?checked="${this.frontendStatus === ConnectionStatus.ACTIVE ||
               this.javaStatus === ConnectionStatus.ACTIVE}"
               @change=${(e: any) => this.setActive(e.target.checked)}
