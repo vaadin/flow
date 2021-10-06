@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 import static org.junit.Assert.assertTrue;
 
@@ -67,26 +69,16 @@ public class DependencyIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void loadingUnavailableResources() {
+    public void loadingUnavailableResources() throws IOException {
+
         open();
         findElement(By.id("loadUnavailableResources")).click();
 
-        List<String> errors = $("vaadin-devmode-gizmo").first()
-                .$(DivElement.class).attributeContains("class", "message")
-                .attributeContains("class", "error").all().stream()
-                .map(div -> div.getText()).collect(Collectors.toList());
-
-        // The order for these can be random
-        assertTrue("Couldn't find error for not-found.css",
-                errors.stream()
-                        .filter(s -> s.startsWith("Error loading http://")
-                                && s.endsWith("/not-found.css"))
-                        .findFirst().isPresent());
-        assertTrue("Couldn't find error for not-found.js",
-                errors.stream()
-                        .filter(s -> s.startsWith("Error loading http://")
-                                && s.endsWith("/not-found.js"))
-                        .findFirst().isPresent());
+        DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).first();
+        gizmo.waitForErrorMessage(s -> s.startsWith("Error loading http://")
+                && s.endsWith("/not-found.css"));
+        gizmo.waitForErrorMessage(s -> s.startsWith("Error loading http://")
+                && s.endsWith("/not-found.js"));
     }
 
     @Test

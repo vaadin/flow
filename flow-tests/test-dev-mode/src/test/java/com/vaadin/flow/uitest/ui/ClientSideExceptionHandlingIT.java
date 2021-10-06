@@ -36,13 +36,8 @@ public class ClientSideExceptionHandlingIT extends ChromeBrowserTest {
     public void developmentModeExceptions() {
         open();
         causeException();
-        List<DivElement> messages = $("vaadin-devmode-gizmo").first()
-                .$(DivElement.class).attributeContains("class", "message")
-                .all();
-
-        Assert.assertTrue("Expected error message not found",
-                messages.stream().anyMatch(
-                        div -> Pattern.matches(ERROR_PATTERN, div.getText())));
+        DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).first();
+        gizmo.waitForErrorMessage(text -> Pattern.matches(ERROR_PATTERN, text));
     }
 
     @Test
