@@ -17,19 +17,15 @@ package com.vaadin.flow.uitest.ui;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.DevModeGizmoElement;
 
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.component.html.testbench.DivElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
-
-import static org.junit.Assert.assertTrue;
 
 public class DependencyIT extends ChromeBrowserTest {
 

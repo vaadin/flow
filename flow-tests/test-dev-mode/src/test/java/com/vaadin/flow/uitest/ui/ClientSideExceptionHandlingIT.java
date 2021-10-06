@@ -15,11 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.util.List;
 import java.util.regex.Pattern;
 
-import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.DevModeGizmoElement;
 
 import org.junit.Assert;
 import org.junit.Ignore;
