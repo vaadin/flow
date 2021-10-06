@@ -64,7 +64,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static final String SCRIPT_INITIAL = "initial";
-    
+
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
