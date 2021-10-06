@@ -40,6 +40,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
@@ -71,6 +72,7 @@ public class HtmlComponentSmokeTest {
                 new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS,
                         IFrame.SandboxType.ALLOW_MODALS });
         testValues.put(Component.class, new Paragraph("Component"));
+        testValues.put(HasText.WhiteSpace.class, HasText.WhiteSpace.PRE_LINE);
     }
 
     private static final Map<Class<?>, Map<Class<?>, Object>> specialTestValues = new HashMap<>();
