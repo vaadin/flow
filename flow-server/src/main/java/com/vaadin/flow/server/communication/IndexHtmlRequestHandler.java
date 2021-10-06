@@ -63,6 +63,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
+    private static final String SCRIPT_INITIAL = "initial";
     private static final String CONTENT_ATTRIBUTE = "content";
     private static final String NAME_ATTRIBUTE = "name";
     private static final String SPRING_CSRF_TOKEN_ATTRIBUTE_IN_SESSION = "org.springframework.security.web.csrf.CsrfToken";
@@ -154,7 +155,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private void catchErrorsInDevMode(Document indexDocument) {
         Element elm = new Element("script");
-        elm.attr("initial", "");
+        elm.attr(SCRIPT_INITIAL, "");
         elm.appendChild(new DataNode("" + //
                 "window.Vaadin = window.Vaadin || {};" + //
                 "window.Vaadin.ConsoleErrors = window.Vaadin.ConsoleErrors || [];"
@@ -235,7 +236,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
 
         Element elm = new Element("script");
-        elm.attr("initial", "");
+        elm.attr(SCRIPT_INITIAL, "");
         elm.appendChild(new DataNode("window.Vaadin = {TypeScript: "
                 + JsonUtil.stringify(initialJson) + "};"));
         indexDocument.head().insertChildren(0, elm);
@@ -252,7 +253,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             VaadinSession session, VaadinRequest request,
             VaadinResponse response) {
         JsonObject initial = getInitialJson(request, response, session);
-        initialJson.put("initial", initial);
+        initialJson.put(SCRIPT_INITIAL, initial);
     }
 
     @Override
