@@ -12,6 +12,7 @@ const { DefinePlugin } = require('webpack');
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 // Flow plugins
 const StatsPlugin = require('@vaadin/stats-plugin');
@@ -367,6 +368,10 @@ module.exports = {
       typescript: {
         configFile: tsconfigJsonFile
       }
+    }),
+
+    enableTypeScript && new TsconfigPathsPlugin({
+      configFile: tsconfigJsonFile
     }),
 
     new BuildStatusPlugin()

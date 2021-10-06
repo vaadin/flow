@@ -365,6 +365,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("typescript", "4.4.3");
         defaults.put("esbuild-loader", "2.15.1");
         defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");
+        defaults.put("tsconfig-paths-webpack-plugin", "3.5.1");
 
         defaults.put("webpack", "4.46.0");
         defaults.put("webpack-cli", "4.8.0");
