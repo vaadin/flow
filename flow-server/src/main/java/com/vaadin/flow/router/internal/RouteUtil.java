@@ -68,24 +68,13 @@ public class RouteUtil {
         Optional<Route> route = AnnotationReader.getAnnotationFor(component,
                 Route.class);
 
-        List<RouteAlias> routeAliases = AnnotationReader
-                .getAnnotationsFor(component, RouteAlias.class);
         if (route.isPresent()
                 && path.equals(getRoutePath(component, route.get()))
                 && !route.get().layout().equals(UI.class)) {
             list.addAll(collectRouteParentLayouts(route.get().layout()));
         } else {
-            Stream<RouteAliasObject> aliases = route.isPresent() ? Stream
-                    .of(route.get().value()).skip(1)
-                    .map(routePath -> new RouteAliasObject(routePath,
-                            route.get().layout(), route.get().absolute()))
-                    : Stream.empty();
-
-            aliases = Stream.concat(aliases,
-                    routeAliases.stream().map(RouteAliasObject::new));
-
             Optional<RouteAliasObject> matchingRoute = getMatchingRouteAlias(
-                    component, path, aliases);
+                    component, path, getAliasObjects(component));
             if (matchingRoute.isPresent()) {
                 list.addAll(collectRouteParentLayouts(
                         matchingRoute.get().getLayout()));
@@ -258,24 +247,13 @@ public class RouteUtil {
 
         Optional<Route> route = AnnotationReader.getAnnotationFor(component,
                 Route.class);
-        List<RouteAlias> routeAliases = AnnotationReader
-                .getAnnotationsFor(component, RouteAlias.class);
         if (route.isPresent()
                 && path.equals(getRoutePath(component, route.get()))
                 && !route.get().layout().equals(UI.class)) {
             return recurseToTopLayout(route.get().layout());
         } else {
-            Stream<RouteAliasObject> aliases = route.isPresent() ? Stream
-                    .of(route.get().value()).skip(1)
-                    .map(routePath -> new RouteAliasObject(routePath,
-                            route.get().layout(), route.get().absolute()))
-                    : Stream.empty();
-
-            aliases = Stream.concat(aliases,
-                    routeAliases.stream().map(RouteAliasObject::new));
-
             Optional<RouteAliasObject> matchingRoute = getMatchingRouteAlias(
-                    component, path, aliases);
+                    component, path, getAliasObjects(component));
             if (matchingRoute.isPresent()) {
                 return recurseToTopLayout(matchingRoute.get().getLayout());
             }
@@ -367,5 +345,36 @@ public class RouteUtil {
                         routeConf.setAnnotatedRoute(componentClass);
                     });
         });
+    }
+
+    /**
+     * Gets a stream {@link RouteAliasObject} of for the
+     * {@code navigationTarget}.
+     * <p>
+     * Uses {@link Route} and {@link RouteAlias} annotations of the
+     * {@code navigationTarget} class and returns all alias data collected using
+     * these annotations.
+     * 
+     * @param navigationTarget
+     *            a navigation target class to collect alias data
+     * @return a stream of route alias objects
+     */
+    public static Stream<RouteAliasObject> getAliasObjects(
+            Class<?> navigationTarget) {
+        Route routeAnnotation = navigationTarget.getAnnotation(Route.class);
+        if (routeAnnotation == null) {
+            return Stream
+                    .of(navigationTarget.getAnnotationsByType(RouteAlias.class))
+                    .map(RouteAliasObject::new);
+        } else {
+            Stream<RouteAliasObject> aliases = Stream
+                    .of(routeAnnotation.value()).skip(1)
+                    .map(path -> new RouteAliasObject(path,
+                            routeAnnotation.layout(),
+                            routeAnnotation.absolute()));
+            return Stream.concat(aliases, Stream
+                    .of(navigationTarget.getAnnotationsByType(RouteAlias.class))
+                    .map(RouteAliasObject::new));
+        }
     }
 }

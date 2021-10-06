@@ -118,21 +118,9 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
         /* Validate PageConfigurator usage */
         validateRouteImplementation(route, PageConfigurator.class);
 
-        Stream<RouteAliasObject> aliases = Stream.empty();
-
-        Route routeAnnotation = route.getAnnotation(Route.class);
-        if (routeAnnotation != null) {
-            aliases = Stream.of(routeAnnotation.value()).skip(1)
-                    .map(path -> new RouteAliasObject(path,
-                            routeAnnotation.layout(),
-                            routeAnnotation.absolute()));
-        }
-        aliases = Stream.concat(aliases,
-                Stream.of(route.getAnnotationsByType(RouteAlias.class))
-                        .map(RouteAliasObject::new));
-
-        aliases.forEach(alias -> validateRouteAliasImplementation(route, alias,
-                PageConfigurator.class));
+        RouteUtil.getAliasObjects(route)
+                .forEach(alias -> validateRouteAliasImplementation(route, alias,
+                        PageConfigurator.class));
     }
 
     private Stream<Class<?>> getValidationAnnotations() {
