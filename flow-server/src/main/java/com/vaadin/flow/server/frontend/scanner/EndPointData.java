@@ -52,7 +52,7 @@ public final class EndPointData implements Serializable {
     @Override
     public String toString() {
         return String.format(
-                "%n view: %s%n route: %s%n%s%n layout: %s%n modules: %s%n scripts: %s%n css: %s%n",
+                "%n view: %s%n theme: %s%n layout: %s%n modules: %s%n scripts: %s%n css: %s%n",
                 name, theme, layout, col2Str(modules), col2Str(scripts),
                 col2Str(css));
     }
