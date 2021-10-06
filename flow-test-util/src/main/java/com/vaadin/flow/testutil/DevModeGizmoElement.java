@@ -1,10 +1,9 @@
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.testutil;
 
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.testbench.ElementQuery;
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.elementsbase.Element;
@@ -12,8 +11,8 @@ import com.vaadin.testbench.elementsbase.Element;
 @Element("vaadin-devmode-gizmo")
 public class DevModeGizmoElement extends TestBenchElement {
 
-    private List<DivElement> getLogDivs(boolean onlyError) {
-        ElementQuery<DivElement> divs = $(DivElement.class)
+    private List<TestBenchElement> getLogDivs(boolean onlyError) {
+        ElementQuery<TestBenchElement> divs = $("div")
                 .attributeContains("class", "message");
         if (onlyError) {
             divs = divs.attributeContains("class", "error");
