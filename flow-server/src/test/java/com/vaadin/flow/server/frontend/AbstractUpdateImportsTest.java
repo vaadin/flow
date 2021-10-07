@@ -277,11 +277,13 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         String suffix = String.format("%n  Locations searched were:"
                 + "%n      - `%s` in this project"
                 + "%n      - `%s` in included JARs"
+                + "%n      - `%s` in included JARs"
                 + "%n%n  Please, double check that those files exist. If you use a custom directory "
                 + "for your resource files instead of default "
                 + "`frontend` folder then make sure you it's correctly configured "
                 + "(e.g. set '%s' property)", frontendDirectory.getPath(),
                 Constants.RESOURCES_FRONTEND_DEFAULT,
+                Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
                 FrontendUtils.PARAM_FRONTEND_DIR);
 
         return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix,
