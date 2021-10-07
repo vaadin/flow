@@ -301,7 +301,9 @@ public class IndexHtmlRequestHandlerTest {
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(2, scripts.size());
         Element initialUidlScript = scripts.get(1);
-        Assert.assertEquals("window.Vaadin = {TypeScript: {}};",
+
+        Assert.assertEquals(
+                "window.Vaadin = window.Vaadin || {};window.Vaadin.TypeScript= {};",
                 initialUidlScript.childNode(0).toString());
         Assert.assertEquals("", initialUidlScript.attr("initial"));
 
@@ -354,7 +356,8 @@ public class IndexHtmlRequestHandlerTest {
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(2, scripts.size());
         Element initialUidlScript = scripts.get(1);
-        Assert.assertEquals("window.Vaadin = {TypeScript: {}};",
+        Assert.assertEquals(
+                "window.Vaadin = window.Vaadin || {};window.Vaadin.TypeScript= {};",
                 initialUidlScript.childNode(0).toString());
         Assert.assertEquals("", initialUidlScript.attr("initial"));
         Assert.assertNull(UI.getCurrent());
