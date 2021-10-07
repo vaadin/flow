@@ -16,6 +16,8 @@
 package com.vaadin.flow.dom;
 
 import java.util.EventObject;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -35,6 +37,8 @@ public class DomEvent extends EventObject {
     private final String eventType;
 
     private final DebouncePhase phase;
+
+    private final Element eventTarget;
 
     /**
      * Creates a new DOM event.
@@ -60,6 +64,7 @@ public class DomEvent extends EventObject {
         this.eventData = eventData;
 
         phase = extractPhase(eventData);
+        eventTarget = extractEventTarget(eventData, source);
     }
 
     private static DebouncePhase extractPhase(JsonObject eventData) {
@@ -71,12 +76,33 @@ public class DomEvent extends EventObject {
         }
     }
 
+    private static Element extractEventTarget(JsonObject eventData,
+            Element currentTarget) {
+        JsonValue jsonValue = eventData.get(JsonConstants.MAP_EVENT_TARGET);
+        if (jsonValue == null) {
+            return null;
+        } else {
+            int id = (int) jsonValue.asNumber();
+            if (id == -1) {
+                return null;
+            }
+            AtomicReference<Element> matchingNode = new AtomicReference<>();
+            currentTarget.getNode().visitNodeTree(node -> {
+                if (node.getId() == id) {
+                    matchingNode.set(Element.get(node));
+                }
+            });
+            return matchingNode.get();
+        }
+    }
+
     /**
      * Returns the element on which the listener has been attached.
      *
      * @return The element on which the listener has been attached.
      *
      * @see Element#addEventListener(String, DomEventListener)
+     * @see #getEventTarget() for event target element
      */
     @Override
     public Element getSource() {
@@ -114,5 +140,26 @@ public class DomEvent extends EventObject {
      */
     public DebouncePhase getPhase() {
         return phase;
+    }
+
+    /**
+     * Gets the closest {@link Element} that corresponds to the
+     * {@code event.target} for the DOM event. This is always inside the child
+     * hierarchy of the element returned by {@link #getSource()}.
+     * <p>
+     * To get this reported, you need to call
+     * {@link DomListenerRegistration#mapEventTargetToElement()} or an empty
+     * optional is always returned.
+     * <p>
+     * The returned element is the same as {@link #getSource()} <em>only if</em>
+     * the event originated from that element on the browser (and not from its
+     * child).
+     * 
+     * @return the element that corresponds to {@code event.target} or an empty
+     *         optional
+     * @since 9.0
+     */
+    public Optional<Element> getEventTarget() {
+        return Optional.ofNullable(eventTarget);
     }
 }

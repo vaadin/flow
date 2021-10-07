@@ -260,4 +260,16 @@ public interface DomListenerRegistration extends Registration {
         return addEventData(
                 JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + propertyName);
     }
+
+    /**
+     * Marks that the DOM event should map the {@code event.target} to the
+     * closest corresponding {@link Element} on the server side, to be returned
+     * by {@link DomEvent#getEventTarget()}.
+     *
+     * @return this registration, for chaining
+     * @since 9.0
+     */
+    default DomListenerRegistration mapEventTargetToElement() {
+        return addEventData(JsonConstants.MAP_EVENT_TARGET);
+    }
 }
