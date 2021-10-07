@@ -7,6 +7,7 @@ export class VaadinDevmodeGizmo extends LitElement {
   static GREY_HSL = css`0, 0%, 50%`;
   static YELLOW_HSL = css`38, 98%, 64%`;
   static RED_HSL = css`355, 100%, 68%`;
+  static MAX_LOG_ROWS = 1000;
 
   static get styles() {
     return css`
@@ -819,6 +820,9 @@ export class VaadinDevmodeGizmo extends LitElement {
       dontShowAgain: false,
       deleted: false
     });
+    while (this.messages.length > VaadinDevmodeGizmo.MAX_LOG_ROWS) {
+      this.messages.shift();
+    }
     this.requestUpdate();
     this.updateComplete.then(() => {
       // Scroll into view

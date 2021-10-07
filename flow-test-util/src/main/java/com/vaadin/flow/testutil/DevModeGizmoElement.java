@@ -12,12 +12,17 @@ import com.vaadin.testbench.elementsbase.Element;
 public class DevModeGizmoElement extends TestBenchElement {
 
     private List<TestBenchElement> getLogDivs(boolean onlyError) {
+        ElementQuery<TestBenchElement> divs = getLogDivsQuery(onlyError);
+        return divs.all();
+    }
+
+    private ElementQuery<TestBenchElement> getLogDivsQuery(boolean onlyError) {
         ElementQuery<TestBenchElement> divs = $("div")
                 .attributeContains("class", "message");
         if (onlyError) {
             divs = divs.attributeContains("class", "error");
         }
-        return divs.all();
+        return divs;
     }
 
     public List<String> getLogRows() {
@@ -30,11 +35,37 @@ public class DevModeGizmoElement extends TestBenchElement {
                 .collect(Collectors.toList());
     }
 
+    public String getFirstErrorLogRow() {
+        return getLogDivsQuery(true).first().getText();
+    }
+
+    public String getLastErrorLogRow() {
+        return getLogDivsQuery(true).last().getText();
+    }
+
     public void waitForErrorMessage(Predicate<String> matcher) {
         waitUntil(driver -> {
             return getErrorLogRows().stream().anyMatch(matcher);
         });
+    }
 
+    public void waitForLastErrorMessageToMatch(Predicate<String> matcher) {
+        waitUntil(driver -> {
+            return matcher.test(getLastErrorLogRow());
+        });
+
+    }
+
+    public boolean isExpanded() {
+        return getPropertyBoolean("expanded");
+    }
+
+    public int getNumberOfLogRows() {
+        return getLogDivsQuery(false).all().size();
+    }
+
+    public int getNumberOfErrorLogRows() {
+        return getLogDivsQuery(true).all().size();
     }
 
 }
