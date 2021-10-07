@@ -24,7 +24,7 @@ describe('VaadinDevmodeGizmo', () => {
     gizmo.setAttribute('backend', 'HOTSWAP_AGENT');
 
     assert.equal(gizmo.getDedicatedWebSocketUrl(),
-      'ws://localhost:8080/context/vaadinServlet?v-r=push&refresh_connection');
+      'ws://localhost:8080/context/vaadinServlet?v-r=push&debug_window');
   });
 
   it('should have a new message on tray when error occurs', () => {

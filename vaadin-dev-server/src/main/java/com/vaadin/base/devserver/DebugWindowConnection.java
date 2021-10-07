@@ -23,11 +23,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.internal.BrowserLiveReload;
+
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.vaadin.flow.internal.BrowserLiveReload;
 
 /**
  * {@link BrowserLiveReload} implementation class.
@@ -37,7 +38,7 @@ import com.vaadin.flow.internal.BrowserLiveReload;
  * @author Vaadin Ltd
  *
  */
-public class BrowserLiveReloadImpl implements BrowserLiveReload {
+public class DebugWindowConnection implements BrowserLiveReload {
 
     private final ClassLoader classLoader;
 
@@ -47,6 +48,8 @@ public class BrowserLiveReloadImpl implements BrowserLiveReload {
 
     private static final EnumMap<Backend, List<String>> IDENTIFIER_CLASSES = new EnumMap<>(
             Backend.class);
+
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
@@ -58,11 +61,11 @@ public class BrowserLiveReloadImpl implements BrowserLiveReload {
                 "org.springframework.boot.devtools.livereload.LiveReloadServer"));
     }
 
-    BrowserLiveReloadImpl() {
-        this(BrowserLiveReloadImpl.class.getClassLoader());
+    DebugWindowConnection() {
+        this(DebugWindowConnection.class.getClassLoader());
     }
 
-    BrowserLiveReloadImpl(ClassLoader classLoader) {
+    DebugWindowConnection(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
 
@@ -105,6 +108,18 @@ public class BrowserLiveReloadImpl implements BrowserLiveReload {
         atmosphereResources.add(new WeakReference<>(resource));
         resource.getBroadcaster().broadcast("{\"command\": \"hello\"}",
                 resource);
+
+        send(resource, "serverInfo", new ServerInfo());
+    }
+
+    private void send(AtmosphereResource resource, String command,
+            Object data) {
+        try {
+            resource.getBroadcaster().broadcast(objectMapper.writeValueAsString(
+                    new DebugWindowMessage(command, data)), resource);
+        } catch (Exception e) {
+            getLogger().error("Error sending message", e);
+        }
     }
 
     @Override
@@ -136,6 +151,11 @@ public class BrowserLiveReloadImpl implements BrowserLiveReload {
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(BrowserLiveReloadImpl.class.getName());
+        return LoggerFactory.getLogger(DebugWindowConnection.class.getName());
+    }
+
+    @Override
+    public void onMessage(String message) {
+        // No messages supported yet
     }
 }

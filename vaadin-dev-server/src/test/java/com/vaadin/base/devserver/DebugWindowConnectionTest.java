@@ -25,9 +25,9 @@ import org.mockito.Mockito;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.server.VaadinService;
 
-public class BrowserLiveReloadImplTest {
+public class DebugWindowConnectionTest {
 
-    private BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl();
+    private DebugWindowConnection reload = new DebugWindowConnection();
 
     @Test
     public void onConnect_suspend_sayHello() {
@@ -95,7 +95,7 @@ public class BrowserLiveReloadImplTest {
     public void getBackend_JRebelClassEventListenerClassLoaded_returnsJREBEL() {
         class JRebelInitializer {
         }
-        BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl(
+        DebugWindowConnection reload = new DebugWindowConnection(
                 new ClassLoader(getClass().getClassLoader()) {
                     @Override
                     protected Class<?> findClass(String name)
@@ -116,7 +116,7 @@ public class BrowserLiveReloadImplTest {
     public void getBackend_HotSwapVaadinIntegrationClassLoaded_returnsHOTSWAP_AGENT() {
         class VaadinIntegration {
         }
-        BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl(
+        DebugWindowConnection reload = new DebugWindowConnection(
                 new ClassLoader(getClass().getClassLoader()) {
                     @Override
                     protected Class<?> findClass(String name)
@@ -139,7 +139,7 @@ public class BrowserLiveReloadImplTest {
         }
         class LiveReloadServer {
         }
-        BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl(
+        DebugWindowConnection reload = new DebugWindowConnection(
                 new ClassLoader(getClass().getClassLoader()) {
                     @Override
                     protected Class<?> findClass(String name)

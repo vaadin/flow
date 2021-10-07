@@ -1,5 +1,11 @@
-import { css, html, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { css, html, LitElement, nothing } from 'lit';
+import { property, state } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
+
+interface ServerInfo {
+  vaadinVersion: string;
+  flowVersion: string;
+}
 
 export class VaadinDevmodeGizmo extends LitElement {
   static BLUE_HSL = css`206, 100%, 70%`;
@@ -22,6 +28,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         --gizmo-text-color: rgba(255, 255, 255, 0.85);
         --gizmo-text-color-secondary: rgba(255, 255, 255, 0.65);
         --gizmo-text-color-emphasis: rgba(255, 255, 255, 1);
+        --gizmo-text-color-active: rgba(255, 255, 255, 1);
 
         --gizmo-background-color-inactive: rgba(50, 50, 50, 0.15);
         --gizmo-background-color-active: rgba(50, 50, 50, 0.98);
@@ -238,6 +245,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         overflow: hidden;
         margin: 0.5rem;
         width: 30rem;
+        min-height: 10rem;
         max-width: calc(100% - 1rem);
         max-height: calc(50vh - 1rem);
         flex-shrink: 0;
@@ -262,6 +270,11 @@ export class VaadinDevmodeGizmo extends LitElement {
       .tab {
         color: var(--gizmo-text-color-secondary);
         font-weight: 600;
+        padding-inline-end: 0.5rem;
+      }
+
+      .tab.active {
+        color: var(--gizmo-text-color-active);
       }
 
       .ahreflike {
@@ -512,6 +525,12 @@ export class VaadinDevmodeGizmo extends LitElement {
         display: none;
       }
 
+      .info-message {
+        display: flex;
+        padding: 0.125rem 0.75rem 0.125rem 0.5rem;
+        background-clip: padding-box;
+      }
+
       @keyframes slideIn {
         from {
           transform: translateX(100%);
@@ -606,6 +625,12 @@ export class VaadinDevmodeGizmo extends LitElement {
   @property({ type: String, attribute: false })
   javaStatus: ConnectionStatus = ConnectionStatus.UNAVAILABLE;
 
+  @state()
+  activeTab: string = 'log';
+
+  @state()
+  serverInfo: ServerInfo = { flowVersion: '?', vaadinVersion: '?' };
+
   javaConnection?: Connection;
   frontendConnection?: Connection;
 
@@ -647,6 +672,14 @@ export class VaadinDevmodeGizmo extends LitElement {
     frontendConnection.onReload = onReload;
     frontendConnection.onStatusChange = (status: ConnectionStatus) => {
       this.frontendStatus = status;
+    };
+    frontendConnection.onMessage = (message: any) => {
+      if (message?.command === 'serverInfo') {
+        this.serverInfo = message.data as ServerInfo;
+      } else {
+        // eslint-disable-next-line no-console
+        console.error('Unknown message from frontend connection:', message);
+      }
     };
     this.frontendConnection = frontendConnection;
 
@@ -710,7 +743,7 @@ export class VaadinDevmodeGizmo extends LitElement {
       console.error('The protocol of the url should be http or https for live reload to work.');
       return undefined;
     }
-    return `${connectionBaseUrl.replace(/^http/, 'ws')}?v-r=push&refresh_connection`;
+    return `${connectionBaseUrl.replace(/^http/, 'ws')}?v-r=push&debug_window`;
   }
 
   getSpringBootWebSocketUrl(location: any) {
@@ -979,7 +1012,19 @@ export class VaadinDevmodeGizmo extends LitElement {
   render() {
     return html` <div class="window ${this.expanded ? 'visible' : 'hidden'}">
         <div class="window-toolbar">
-          <span class="tab">Log</span>
+          <span
+            class=${classMap({ tab: true, active: this.activeTab === 'log' })}
+            id="log"
+            @click=${() => (this.activeTab = 'log')}
+            >Log</span
+          >
+          <span
+            class=${classMap({ tab: true, active: this.activeTab === 'info' })}
+            id="info"
+            @click=${() => (this.activeTab = 'info')}
+            >Info</span
+          >
+
           <label class="switch">
             <input
               id="toggle"
@@ -1006,7 +1051,15 @@ export class VaadinDevmodeGizmo extends LitElement {
             </svg>
           </button>
         </div>
-        <div class="message-tray">${this.messages.map((msg) => this.renderMessage(msg))}</div>
+        ${this.activeTab === 'log'
+          ? html`<div class="message-tray">${this.messages.map((msg) => this.renderMessage(msg))}</div>`
+          : nothing}
+        ${this.activeTab === 'info'
+          ? html`<div class="info-tray">
+              <div class="info-message">Vaadin version: ${this.serverInfo.vaadinVersion}</div>
+              <div class="info-message">Flow version: ${this.serverInfo.flowVersion}</div>
+            </div>`
+          : nothing}
       </div>
 
       <div class="notification-tray">${this.notifications.map((msg) => this.renderMessage(msg))}</div>
@@ -1077,6 +1130,11 @@ class Connection extends Object {
 
   onStatusChange(_: ConnectionStatus) {}
 
+  onMessage(message: any) {
+    // eslint-disable-next-line no-console
+    console.error('Unknown message received from the live reload server:', message);
+  }
+
   handleMessage(msg: any) {
     let json;
     try {
@@ -1085,23 +1143,15 @@ class Connection extends Object {
       this.handleError(`[${e.name}: ${e.message}`);
       return;
     }
-    const { command } = json;
-    switch (command) {
-      case 'hello': {
-        this.setStatus(ConnectionStatus.ACTIVE);
-        this.onHandshake();
-        break;
+    if (json.command === 'hello') {
+      this.setStatus(ConnectionStatus.ACTIVE);
+      this.onHandshake();
+    } else if (json.command === 'reload') {
+      if (this.status === ConnectionStatus.ACTIVE) {
+        this.onReload();
       }
-
-      case 'reload':
-        if (this.status === ConnectionStatus.ACTIVE) {
-          this.onReload();
-        }
-        break;
-
-      default:
-        // eslint-disable-next-line no-console
-        console.error('Unknown command received from the live reload server:', command);
+    } else {
+      this.onMessage(json);
     }
   }
 

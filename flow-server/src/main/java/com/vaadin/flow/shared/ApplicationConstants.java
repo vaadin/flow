@@ -196,7 +196,7 @@ public class ApplicationConstants implements Serializable {
      * Web socket parameter which identifies connection as live reload
      * connection.
      */
-    public static final String LIVE_RELOAD_CONNECTION = "refresh_connection";
+    public static final String DEBUG_WINDOW_CONNECTION = "debug_window";
 
     /**
      * Boolean client configuration parameter enabling the development mode
