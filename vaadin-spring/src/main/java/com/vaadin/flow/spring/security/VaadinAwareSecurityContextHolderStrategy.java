@@ -54,7 +54,7 @@ public final class VaadinAwareSecurityContextHolderStrategy
          * the current request.
          */
         SecurityContext context = getFromVaadinSession()
-                .orElseGet(() -> contextHolder.get());
+                .orElseGet(contextHolder::get);
         if (context == null) {
             context = createEmptyContext();
             contextHolder.set(context);
@@ -65,7 +65,7 @@ public final class VaadinAwareSecurityContextHolderStrategy
     @NonNull
     private Optional<SecurityContext> getFromVaadinSession() {
         VaadinSession session = VaadinSession.getCurrent();
-        if (session == null) {
+        if (session == null || session.getSession() == null) {
             return Optional.empty();
         }
         Object securityContext = session.getSession().getAttribute(
