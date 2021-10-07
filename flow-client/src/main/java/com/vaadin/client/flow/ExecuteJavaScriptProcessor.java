@@ -163,7 +163,6 @@ public class ExecuteJavaScriptProcessor {
             Console.reportStacktrace(exception);
             Console.error(
                     "Exception is thrown during JavaScript execution. Stacktrace will be dumped separately.");
-            registry.getSystemErrorHandler().handleError(exception);
             if (!registry.getApplicationConfiguration().isProductionMode()) {
                 StringBuilder codeBuilder = new StringBuilder("[");
                 String delimiter = "";
@@ -180,7 +179,7 @@ public class ExecuteJavaScriptProcessor {
                 if (code.charAt(code.length() - 1) == ']') {
                     code = code.substring(0, code.length() - 1);
                 }
-                Console.warn("The error has occurred in the JS code: '" + code
+                Console.error("The error has occurred in the JS code: '" + code
                         + "'");
             }
         }
