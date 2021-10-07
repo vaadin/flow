@@ -38,7 +38,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -86,8 +85,6 @@ public class IndexHtmlRequestHandlerTest {
     private MockDeploymentConfiguration deploymentConfiguration;
     private VaadinContext context;
 
-    @Rule
-    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
