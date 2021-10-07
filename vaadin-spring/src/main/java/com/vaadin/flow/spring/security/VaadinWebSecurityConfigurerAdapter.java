@@ -301,8 +301,8 @@ public abstract class VaadinWebSecurityConfigurerAdapter
         VaadinSavedRequestAwareAuthenticationSuccessHandler vaadinSavedRequestAwareAuthenticationSuccessHandler = new VaadinSavedRequestAwareAuthenticationSuccessHandler();
         RequestCache requestCache = http.getSharedObject(RequestCache.class);
         if (requestCache != null) {
-            vaadinSavedRequestAwareAuthenticationSuccessHandler.setRequestCache(
-                    requestCache);
+            vaadinSavedRequestAwareAuthenticationSuccessHandler
+                    .setRequestCache(requestCache);
         }
         return vaadinSavedRequestAwareAuthenticationSuccessHandler;
     }

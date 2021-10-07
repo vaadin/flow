@@ -203,7 +203,8 @@ public class VaadinRouteScopeTest extends AbstractUIScopedTest {
         // close the first UI
         ui.getSession().removeUI(ui);
 
-        // the bean is removed since there is no UI with the window name "bar" present.
+        // the bean is removed since there is no UI with the window name "bar"
+        // present.
         Assert.assertEquals(1, count.get());
         count.set(0);
 

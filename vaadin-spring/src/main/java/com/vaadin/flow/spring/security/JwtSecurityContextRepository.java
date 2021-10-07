@@ -76,8 +76,8 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
         grantedAuthoritiesConverter.setAuthoritiesClaimName(ROLES_CLAIM);
 
         jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(
-                grantedAuthoritiesConverter);
+        jwtAuthenticationConverter
+                .setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
     }
 
     void setJwkSource(
@@ -125,8 +125,8 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
 
     private String encodeJwt(Authentication authentication)
             throws JOSEException {
-        if (authentication == null ||
-                trustResolver.isAnonymous(authentication)) {
+        if (authentication == null
+                || trustResolver.isAnonymous(authentication)) {
             return null;
         }
 
@@ -148,8 +148,8 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
 
         JWSSigner signer = new DefaultJWSSignerFactory().createJWSSigner(jwk,
                 jwsAlgorithm);
-        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder().subject(
-                        authentication.getName()).issuer(issuer).issueTime(now)
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                .subject(authentication.getName()).issuer(issuer).issueTime(now)
                 .expirationTime(new Date(now.getTime() + expiresIn * 1000))
                 .claim(ROLES_CLAIM, roles).build();
         signedJWT = new SignedJWT(jwsHeader, claimsSet);
@@ -159,8 +159,8 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
     }
 
     private Jwt decodeJwt(HttpServletRequest request) {
-        String serializedJwt = serializedJwtSplitCookieRepository.loadSerializedJwt(
-                request);
+        String serializedJwt = serializedJwtSplitCookieRepository
+                .loadSerializedJwt(request);
         if (serializedJwt == null) {
             return null;
         }
@@ -176,8 +176,8 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
         HttpServletRequest request = requestResponseHolder.getRequest();
         Jwt jwt = decodeJwt(request);
         if (jwt != null) {
-            Authentication authentication = jwtAuthenticationConverter.convert(
-                    jwt);
+            Authentication authentication = jwtAuthenticationConverter
+                    .convert(jwt);
             context.setAuthentication(authentication);
         }
 
@@ -202,8 +202,8 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
 
     @Override
     public boolean containsContext(HttpServletRequest request) {
-        return serializedJwtSplitCookieRepository.containsSerializedJwt(
-                request);
+        return serializedJwtSplitCookieRepository
+                .containsSerializedJwt(request);
     }
 
     private final class UpdateJwtResponseWrapper

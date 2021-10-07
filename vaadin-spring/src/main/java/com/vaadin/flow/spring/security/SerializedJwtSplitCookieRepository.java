@@ -37,7 +37,8 @@ class SerializedJwtSplitCookieRepository {
     /**
      * Sets max-age limit for cookies.
      *
-     * @param expiresIn max age (seconds), the default is 30 min
+     * @param expiresIn
+     *            max age (seconds), the default is 30 min
      */
     void setExpiresIn(long expiresIn) {
         this.expiresIn = expiresIn;
@@ -46,7 +47,8 @@ class SerializedJwtSplitCookieRepository {
     /**
      * Reads the serialized JWT from the request cookies.
      *
-     * @param request the request to read the token from
+     * @param request
+     *            the request to read the token from
      * @return serialized token
      */
     String loadSerializedJwt(HttpServletRequest request) {
@@ -74,9 +76,12 @@ class SerializedJwtSplitCookieRepository {
      * Saves the serialized JWT string using response cookies. If the serialized
      * JWT is null, the cookies are removed.
      *
-     * @param serializedJwt the serialized JWT
-     * @param request       the request
-     * @param response      the response to send the cookies
+     * @param serializedJwt
+     *            the serialized JWT
+     * @param request
+     *            the request
+     * @param response
+     *            the response to send the cookies
      */
     void saveSerializedJwt(String serializedJwt, HttpServletRequest request,
             HttpServletResponse response) {
@@ -90,7 +95,8 @@ class SerializedJwtSplitCookieRepository {
     /**
      * Checks the presence of JWT cookies in request.
      *
-     * @param request request for checking
+     * @param request
+     *            request for checking
      * @return true when both the JWT cookies are present
      */
     boolean containsSerializedJwt(HttpServletRequest request) {

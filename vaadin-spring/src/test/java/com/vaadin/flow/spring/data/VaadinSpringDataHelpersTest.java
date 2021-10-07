@@ -61,8 +61,8 @@ public class VaadinSpringDataHelpersTest {
                 .build();
         Query<?, ?> query = new Query<>(100, 50, querySortOrders, null, null);
 
-        PageRequest pageRequest =
-                VaadinSpringDataHelpers.toSpringPageRequest(query);
+        PageRequest pageRequest = VaadinSpringDataHelpers
+                .toSpringPageRequest(query);
 
         Assert.assertNotNull(pageRequest);
         Assert.assertEquals(50, pageRequest.getPageSize());
@@ -75,8 +75,8 @@ public class VaadinSpringDataHelpersTest {
 
     @Test
     public void fromPagingRepository_fetchesItemsFromPagingRepoAccordingToVaadinQuery() {
-        PagingAndSortingRepository repo = Mockito.mock(
-                PagingAndSortingRepository.class);
+        PagingAndSortingRepository repo = Mockito
+                .mock(PagingAndSortingRepository.class);
 
         Mockito.doAnswer(mock -> {
             PageRequest pageRequest = mock.getArgument(0);
@@ -90,16 +90,14 @@ public class VaadinSpringDataHelpersTest {
                 itemsStream = itemsStream.sorted(Collections.reverseOrder());
             }
             // given string items 'Item XYZ' ordered according to a given query
-            List<String> items = itemsStream
-                    .skip(from)
-                    .limit(pageRequest.getPageSize())
-                    .map(i -> "Item " + i)
+            List<String> items = itemsStream.skip(from)
+                    .limit(pageRequest.getPageSize()).map(i -> "Item " + i)
                     .collect(Collectors.toList());
             return new PageImpl<>(items);
         }).when(repo).findAll(Mockito.any(PageRequest.class));
 
-        CallbackDataProvider.FetchCallback<String, Void> callback =
-                VaadinSpringDataHelpers.fromPagingRepository(repo);
+        CallbackDataProvider.FetchCallback<String, Void> callback = VaadinSpringDataHelpers
+                .fromPagingRepository(repo);
 
         // when items with indexes 100..149 and descending order are fetched
         Query<String, Void> query = new Query<>(100, 50,
