@@ -1474,7 +1474,8 @@ public class RouterTest extends RoutingTestBase {
     public static class AnotherTargetWithParameter extends RouteParametersBase {
     }
 
-    @Route(":intType(" + RouteParameterRegex.INTEGER + ")")
+    @Route({ ":intType(" + RouteParameterRegex.INTEGER + ")",
+            ":stringType(foo)/:bar?" })
     @RouteAlias(":stringType")
     @RouteAlias(":intType?(" + RouteParameterRegex.INTEGER + ")"
             + "/:stringType?/:varargs*(thinking|of|U|and|I)")
@@ -1483,7 +1484,7 @@ public class RouterTest extends RoutingTestBase {
             implements RouterLayout {
     }
 
-    @Route(":something?")
+    @Route({ ":something?", "routeAlias" })
     @RouteAlias(":messageID(" + RouteParameterRegex.INTEGER + ")")
     @RouteAlias("last")
     @RoutePrefix("forum/thread/:threadID(" + RouteParameterRegex.INTEGER + ")")
@@ -1491,7 +1492,8 @@ public class RouterTest extends RoutingTestBase {
             implements RouterLayout {
     }
 
-    @Route(":alias(framework|platform|vaadin-spring|vaadin-spring-boot)/:version?(v?\\d.*)/:path*")
+    @Route({ ":alias(framework|platform|vaadin-spring|vaadin-spring-boot)/:version?(v?\\d.*)/:path*",
+            ":foo?" })
     @RouteAlias(":groupId(\\w[\\w\\d]+\\.[\\w\\d\\-\\.]+)/:artifactId/:version?(v?\\d.*)/:path*")
     @RouteAlias(":path*")
     @RoutePrefix("api")
@@ -1499,14 +1501,14 @@ public class RouterTest extends RoutingTestBase {
             implements RouterLayout {
     }
 
-    @Route(":tabIdentifier?(api)/:apiPath*")
+    @Route({ ":tabIdentifier?(api)/:apiPath*", ":tabIdentifier?(routeAlias)" })
     @RouteAlias(":tabIdentifier?(overview|samples|links|reviews|discussions)")
     @RoutePrefix("directory/component/:urlIdentifier/:versionIdentifier?(v?\\d.*)")
     public static class DetailsView extends RouteParametersBase
             implements RouterLayout {
     }
 
-    @Route("")
+    @Route({ "", "param/:regex?([0-9]*)/info" })
     @RouteAlias("param/:regex?([0-9]*)")
     @RouteAlias("param/:regex?([0-9]*)/edit")
     public static class ParametersRegexView extends RouteParametersBase {
@@ -3269,7 +3271,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Tag("div")
-    @Route("noParent")
+    @Route({ "noParent", "routeAlias" })
     @RouteAlias(value = "twoParents", layout = BaseLayout.class)
     public static class AliasLayout extends Component {
 
@@ -3291,6 +3293,12 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("Route alias should have two parents", 2,
                 parents.size());
+
+        parents = router.getRegistry().getRouteLayouts("routeAlias",
+                AliasLayout.class);
+
+        Assert.assertTrue("Main route should have no parents.",
+                parents.isEmpty());
     }
 
     @Test
@@ -3670,6 +3678,9 @@ public class RouterTest extends RoutingTestBase {
 
         assertRouteParameters("param/types/123", parameters("intType", "123"));
 
+        assertRouteParameters("param/types/foo/baz",
+                parameters("stringType", "foo", "bar", "baz"));
+
         assertRouteParameters("param/types/thinking",
                 parameters("stringType", "thinking"));
 
@@ -3695,6 +3706,8 @@ public class RouterTest extends RoutingTestBase {
     public void navigateToParametersForumThreadView_routeParametersAreExtractedCorrectly() {
         setNavigationTargets(ParametersForumThreadView.class);
 
+        assertRouteParameters("forum/thread/123/routeAlias",
+                parameters("threadID", "123"));
         assertRouteParameters("forum/thread/123/456",
                 parameters("threadID", "123", "messageID", "456"));
         assertRouteParameters("forum/thread/123/last",
@@ -3711,6 +3724,9 @@ public class RouterTest extends RoutingTestBase {
 
         // path is empty
         assertRouteParameters("api", parameters());
+
+        // with foo
+        assertRouteParameters("api/bar", parameters("foo", "bar"));
 
         // with path
         assertRouteParameters("api/com/vaadin/client/package-summary.html",
@@ -3749,6 +3765,10 @@ public class RouterTest extends RoutingTestBase {
     public void navigateToDetailsView_routeParametersAreExtractedCorrectly() {
         setNavigationTargets(DetailsView.class);
 
+        assertRouteParameters(
+                "directory/component/url-parameter-mapping/routeAlias",
+                parameters("urlIdentifier", "url-parameter-mapping",
+                        "tabIdentifier", "routeAlias"));
         assertRouteParameters("directory/component/url-parameter-mapping",
                 parameters("urlIdentifier", "url-parameter-mapping"));
         assertRouteParameters(
@@ -3786,6 +3806,10 @@ public class RouterTest extends RoutingTestBase {
     @Test // #2740 #4213
     public void navigateToParametersRegexView_routeParametersAreExtractedCorrectly() {
         setNavigationTargets(ParametersRegexView.class);
+
+        assertRouteParameters("param/123/info", parameters("regex", "123"));
+        assertRouteParameters("param/abc/info", null);
+        assertRouteParameters("param/-123/info", null);
 
         assertRouteParameters("param/123", parameters("regex", "123"));
         assertRouteParameters("param/abc", null);

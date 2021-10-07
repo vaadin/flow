@@ -93,7 +93,7 @@ public class RouterIT extends ChromeBrowserTest {
     @Test
     public void routeWithRouteAliasHasNoParents() {
         openRouteUrl(RouterTestServlet.AliasLayout.class
-                .getAnnotation(Route.class).value());
+                .getAnnotation(Route.class).value()[0]);
 
         Assert.assertFalse(
                 "Found parent layouts even though none should be available.",

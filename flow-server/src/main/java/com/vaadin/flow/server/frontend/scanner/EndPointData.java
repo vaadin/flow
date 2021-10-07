@@ -35,7 +35,6 @@ import com.vaadin.flow.router.Route;
  */
 public final class EndPointData implements Serializable {
     final String name;
-    String route = "";
     String layout;
     ThemeData theme = new ThemeData();
     final LinkedHashSet<String> modules = new LinkedHashSet<>();
@@ -53,8 +52,8 @@ public final class EndPointData implements Serializable {
     @Override
     public String toString() {
         return String.format(
-                "%n view: %s%n route: %s%n%s%n layout: %s%n modules: %s%n scripts: %s%n css: %s%n",
-                name, route, theme, layout, col2Str(modules), col2Str(scripts),
+                "%n view: %s%n theme: %s%n layout: %s%n modules: %s%n scripts: %s%n css: %s%n",
+                name, theme, layout, col2Str(modules), col2Str(scripts),
                 col2Str(css));
     }
 
@@ -76,10 +75,6 @@ public final class EndPointData implements Serializable {
 
     ThemeData getTheme() {
         return theme;
-    }
-
-    String getRoute() {
-        return route;
     }
 
     String getLayout() {
