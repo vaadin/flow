@@ -1,6 +1,7 @@
 package com.vaadin.flow.router;
 
 import javax.servlet.ServletContext;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,7 +9,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
-import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,6 +18,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.MockServletContext;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -249,6 +250,13 @@ public class RouteConfigurationTest {
         Assert.assertTrue("Missing template", template.isPresent());
         Assert.assertEquals("component/:identifier/:path*", template.get());
 
+        // url produced by @Route ":tab(routeAlias)")
+        Assert.assertEquals("component/button/routeAlias",
+                routeConfiguration.getUrl(ComponentView.class,
+                        new RouteParameters(
+                                new RouteParam("identifier", "button"),
+                                new RouteParam("tab", "routeAlias"))));
+
         // url produced by @RouteAlias(value = ":tab(api)/:path*")
         Assert.assertEquals("component/button/api/com/vaadin/flow/button",
                 routeConfiguration.getUrl(ComponentView.class,
@@ -472,6 +480,8 @@ public class RouteConfigurationTest {
 
         Mockito.verify(registry).setRoute("withAliases",
                 MyRouteWithAliases.class, Collections.emptyList());
+        Mockito.verify(registry).setRoute("routeAlias",
+                MyRouteWithAliases.class, Collections.emptyList());
         Mockito.verify(registry).setRoute("version", MyRouteWithAliases.class,
                 Collections.emptyList());
         Mockito.verify(registry).setRoute("person", MyRouteWithAliases.class,
@@ -538,7 +548,7 @@ public class RouteConfigurationTest {
     }
 
     @Tag("div")
-    @Route("withAliases")
+    @Route({ "withAliases", "routeAlias" })
     @RouteAlias("version")
     @RouteAlias("person")
     private static class MyRouteWithAliases extends Component {
@@ -587,7 +597,7 @@ public class RouteConfigurationTest {
     private static class ParameterView extends Component {
     }
 
-    @Route(value = ":path*")
+    @Route({ ":path*", ":tab(routeAlias)" })
     @RouteAlias(value = ":tab(api)/:path*")
     @RouteAlias(value = ":tab(overview|samples|links|reviews|discussions)")
     @RoutePrefix("component/:identifier")

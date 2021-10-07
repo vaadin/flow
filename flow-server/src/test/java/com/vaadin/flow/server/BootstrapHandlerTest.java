@@ -1,6 +1,7 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -242,7 +243,7 @@ public class BootstrapHandlerTest {
     public static class MiddleParent extends Component implements RouterLayout {
     }
 
-    @Route(value = "", layout = Parent.class)
+    @Route(value = { "", "routeAlias" }, layout = Parent.class)
     @Tag(Tag.DIV)
     public static class RootWithParent extends Component {
     }
@@ -497,14 +498,30 @@ public class BootstrapHandlerTest {
     @Test // #3008
     public void bootstrap_page_has_viewport_for_route_parent()
             throws InvalidRouteConfigurationException {
+        HttpServletRequest httpRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.doAnswer(invocation -> "").when(httpRequest).getServletPath();
+        VaadinServletRequest vaadinRequest = new VaadinServletRequest(
+                httpRequest, service);
 
-        initUI(testUI, createVaadinRequest(),
+        initUI(testUI, vaadinRequest,
                 Collections.singleton(RootWithParent.class));
 
-        Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
-                request, null, session, testUI, this::contextRootRelativePath));
+        Document page = pageBuilder
+                .getBootstrapPage(new BootstrapContext(vaadinRequest, null,
+                        session, testUI, this::contextRootRelativePath));
 
         Assert.assertTrue("Viewport meta tag was missing",
+                page.toString().contains(
+                        "<meta name=\"viewport\" content=\"width=device-width\">"));
+
+        Mockito.doAnswer(invocation -> "/routeAlias").when(httpRequest)
+                .getPathInfo();
+
+        page = pageBuilder.getBootstrapPage(new BootstrapContext(vaadinRequest,
+                null, session, testUI, this::contextRootRelativePath));
+
+        Assert.assertTrue(
+                "Viewport meta tag was missing even tough alias route parent has annotation",
                 page.toString().contains(
                         "<meta name=\"viewport\" content=\"width=device-width\">"));
     }
