@@ -60,6 +60,7 @@ public class ExternalJSModuleIT extends ChromeBrowserTest {
 
     @Test
     public void jsModuleAnnotation_externalJsInAComponentBeingAdded_shouldBeAddedToPage() {
+        // waitForElementPresent(By.id("addComponentButton"));
         findElement(By.id("addComponentButton")).click();
         waitForElementPresent(By.id("componentWithExternalJsModule"));
 
