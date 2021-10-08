@@ -24,6 +24,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 
 /**
@@ -63,6 +64,23 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
                     .lookup(ApplicationConfigurationFactory.class);
             return factory.create(context);
         });
+    }
+
+    /**
+     * Gets the application configuration for the current service (as defined by
+     * {@link VaadinService#getCurrent()}).
+     */
+    static ApplicationConfiguration getCurrent() {
+        VaadinService service = VaadinService.getCurrent();
+        if (service == null) {
+            return null;
+        }
+
+        VaadinContext context = service.getContext();
+        if (context == null) {
+            return null;
+        }
+        return ApplicationConfiguration.get(context);
     }
 
     /**

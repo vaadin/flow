@@ -17,13 +17,28 @@ package com.vaadin.flow.server.startup;
 
 import java.util.function.Supplier;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.VaadinContext;
-
 public class ApplicationConfigurationTest {
+
+    @Before
+    public void before() {
+        CurrentInstance.clearAll();
+    }
+
+    @After
+    public void after() {
+        CurrentInstance.clearAll();
+    }
 
     @Test(expected = IllegalStateException.class)
     public void get_contextHasNoLookup_iseIsThrown() {
@@ -35,4 +50,29 @@ public class ApplicationConfigurationTest {
         ApplicationConfiguration.get(context);
     }
 
+    @Test
+    public void getCurrentUsesCurrentService() {
+        ApplicationConfiguration applicationConfiguration = Mockito
+                .mock(ApplicationConfiguration.class);
+
+        ApplicationConfigurationFactory applicationConfigurationFactory = Mockito
+                .mock(ApplicationConfigurationFactory.class);
+        Mockito.when(applicationConfigurationFactory.create(Mockito.any()))
+                .thenReturn(applicationConfiguration);
+        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        Mockito.when(service.getContext()).thenReturn(context);
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        Mockito.when(lookup.lookup(ApplicationConfigurationFactory.class))
+                .thenReturn(applicationConfigurationFactory);
+        Mockito.doAnswer(
+                invocation -> invocation.getArgument(1, Supplier.class).get())
+                .when(context).getAttribute(Mockito.any(), Mockito.any());
+
+        VaadinService.setCurrent(service);
+        Assert.assertSame(applicationConfiguration,
+                ApplicationConfiguration.getCurrent());
+
+    }
 }
