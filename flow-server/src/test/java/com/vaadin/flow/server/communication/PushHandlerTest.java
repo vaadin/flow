@@ -142,25 +142,6 @@ public class PushHandlerTest {
     }
 
     @Test
-    public void onConnect_productionMode_websocket_refreshConnection_delegteCallWithUI()
-            throws ServiceException {
-        MockVaadinServletService service = Mockito
-                .spy(MockVaadinServletService.class);
-        MockDeploymentConfiguration deploymentConfiguration = (MockDeploymentConfiguration) service
-                .getDeploymentConfiguration();
-        deploymentConfiguration.setProductionMode(true);
-        runTest(service, (handler, resource) -> {
-            AtmosphereRequest request = resource.getRequest();
-            Mockito.when(request
-                    .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION))
-                    .thenReturn("");
-            Mockito.when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
-            handler.onConnect(resource);
-        });
-        Mockito.verify(service).requestStart(Mockito.any(), Mockito.any());
-    }
-
-    @Test
     public void onConnect_devMode_websocket_noRefreshConnection_delegteCallWithUI()
             throws ServiceException {
         MockVaadinServletService service = Mockito

@@ -42,12 +42,6 @@ public class BrowserLiveReloadAccessorImpl
                     "BrowserLiveReloadAccessImpl::getLiveReload is called in production mode.");
             return null;
         }
-        if (!service.getDeploymentConfiguration()
-                .isDevModeLiveReloadEnabled()) {
-            getLogger().debug(
-                    "BrowserLiveReloadAccessImpl::getLiveReload is called when live reload is disabled.");
-            return null;
-        }
         return getLiveReload(service.getContext());
     }
 
