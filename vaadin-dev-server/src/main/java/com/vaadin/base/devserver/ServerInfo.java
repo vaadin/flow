@@ -19,6 +19,7 @@ import java.io.InputStream;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Version;
 
 import org.slf4j.LoggerFactory;
@@ -28,20 +29,24 @@ import org.slf4j.LoggerFactory;
  */
 public class ServerInfo {
 
-    private String flowVersion;
-    private String vaadinVersion = "unknown";
+    private final String flowVersion;
+    private final String vaadinVersion;
 
     /**
      * Creates a new instance.
      */
     public ServerInfo() {
         this.flowVersion = Version.getFullVersion();
+        this.vaadinVersion = fetchVaadinVersion();
+    }
+
+    private String fetchVaadinVersion() {
         try (InputStream vaadinVersionsStream = getClass().getClassLoader()
-                .getResourceAsStream("vaadin_versions.json")) {
+                .getResourceAsStream(Constants.VAADIN_VERSIONS_JSON)) {
             if (vaadinVersionsStream != null) {
                 ObjectMapper m = new ObjectMapper();
                 JsonNode vaadinVersions = m.readTree(vaadinVersionsStream);
-                this.vaadinVersion = vaadinVersions.get("platform").asText();
+                return vaadinVersions.get("platform").asText();
             } else {
                 LoggerFactory.getLogger(getClass()).info(
                         "Unable to determine version information. No vaadin_versions.json found");
@@ -50,6 +55,8 @@ public class ServerInfo {
             LoggerFactory.getLogger(getClass())
                     .error("Unable to determine version information", e);
         }
+
+        return "?";
     }
 
     public String getFlowVersion() {

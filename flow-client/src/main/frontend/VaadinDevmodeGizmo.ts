@@ -629,7 +629,7 @@ export class VaadinDevmodeGizmo extends LitElement {
   activeTab: string = 'log';
 
   @state()
-  serverInfo: ServerInfo = { flowVersion: '?', vaadinVersion: '?' };
+  serverInfo: ServerInfo = { flowVersion: '', vaadinVersion: '' };
 
   javaConnection?: Connection;
   frontendConnection?: Connection;
@@ -678,7 +678,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         this.serverInfo = message.data as ServerInfo;
       } else {
         // eslint-disable-next-line no-console
-        console.error('Unknown message from frontend connection:', message);
+        console.error('Unknown message from frontend connection:', JSON.stringify(message));
       }
     };
     this.frontendConnection = frontendConnection;

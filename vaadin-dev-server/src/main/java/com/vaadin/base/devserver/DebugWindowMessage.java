@@ -20,8 +20,8 @@ package com.vaadin.base.devserver;
  */
 public class DebugWindowMessage {
 
-    private String command;
-    private Object data;
+    private final String command;
+    private final Object data;
 
     /**
      * Creates a new instance.

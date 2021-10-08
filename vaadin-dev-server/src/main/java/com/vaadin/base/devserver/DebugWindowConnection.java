@@ -49,7 +49,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
     private static final EnumMap<Backend, List<String>> IDENTIFIER_CLASSES = new EnumMap<>(
             Backend.class);
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(

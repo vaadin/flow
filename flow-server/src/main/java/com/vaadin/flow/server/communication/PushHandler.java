@@ -548,7 +548,7 @@ public class PushHandler {
                 liveReload.get().onMessage(msg);
             } else {
                 getLogger().error(
-                        "Recived message for debug window but there is no debug window connection available");
+                        "Received message for debug window but there is no debug window connection available");
             }
         } catch (IOException e) {
             getLogger().error(
