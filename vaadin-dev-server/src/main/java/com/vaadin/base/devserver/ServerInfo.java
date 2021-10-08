@@ -69,11 +69,12 @@ public class ServerInfo {
                 JsonNode vaadinVersions = m.readTree(vaadinVersionsStream);
                 return vaadinVersions.get("platform").asText();
             } else {
-                LoggerFactory.getLogger(getClass())
-                        .info("Unable to determine version information. No vaadin_versions.json found");
+                LoggerFactory.getLogger(getClass()).info(
+                        "Unable to determine version information. No vaadin_versions.json found");
             }
         } catch (Exception e) {
-            LoggerFactory.getLogger(getClass()).error("Unable to determine version information", e);
+            LoggerFactory.getLogger(getClass())
+                    .error("Unable to determine version information", e);
         }
 
         return "?";
