@@ -536,6 +536,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         display: flex;
         padding: 0.125rem 0.75rem 0.125rem 0.5rem;
         background-clip: padding-box;
+        user-select: text;
       }
       .copy {
         position: absolute;
