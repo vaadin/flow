@@ -263,6 +263,5 @@ public interface RouteRegistry extends Serializable {
      *             if given navigation target is not registered
      * @return {@code true} if parameters are required
      */
-    boolean hasMandatoryParameter(Class<? extends Component> navigationTarget)
-            throws NotFoundException;
+    boolean hasMandatoryParameter(Class<? extends Component> navigationTarget);
 }

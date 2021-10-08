@@ -350,8 +350,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
     @Override
     public boolean hasMandatoryParameter(
-            Class<? extends Component> navigationTarget)
-            throws NotFoundException {
+            Class<? extends Component> navigationTarget) {
         String template = getTemplate(navigationTarget)
                 .orElseThrow(() -> new NotFoundException(
                         "Requested navigation target is not registered."));
