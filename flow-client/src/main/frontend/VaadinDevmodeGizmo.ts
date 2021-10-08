@@ -1,10 +1,13 @@
-import { css, html, LitElement, nothing } from 'lit';
+import { css, html, LitElement, nothing, svg } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { copy } from './copy-to-clipboard';
 
 interface ServerInfo {
   vaadinVersion: string;
   flowVersion: string;
+  javaVersion: string;
+  osVersion: string;
 }
 
 export class VaadinDevmodeGizmo extends LitElement {
@@ -14,6 +17,7 @@ export class VaadinDevmodeGizmo extends LitElement {
   static YELLOW_HSL = css`38, 98%, 64%`;
   static RED_HSL = css`355, 100%, 68%`;
   static MAX_LOG_ROWS = 1000;
+  static copyO = svg`<svg style="width: 16px; height: 16px"><g id="copy-o"><path d="M13 3h-3l-3-3h-7v13h6v3h10v-10l-3-3zM7 1l2 2h-2v-2zM1 12v-11h5v3h3v8h-8zM15 15h-8v-2h3v-9h2v3h3v8zM13 6v-2l2 2h-2z"></path></g></svg>`;
 
   static get styles() {
     return css`
@@ -525,12 +529,20 @@ export class VaadinDevmodeGizmo extends LitElement {
         display: none;
       }
 
+      .info-tray {
+        position: relative;
+      }
       .info-message {
         display: flex;
         padding: 0.125rem 0.75rem 0.125rem 0.5rem;
         background-clip: padding-box;
       }
-
+      .copy {
+        position: absolute;
+        fill: white;
+        top: 0.125rem;
+        right: 0.75rem;
+      }
       @keyframes slideIn {
         from {
           transform: translateX(100%);
@@ -629,7 +641,7 @@ export class VaadinDevmodeGizmo extends LitElement {
   activeTab: string = 'log';
 
   @state()
-  serverInfo: ServerInfo = { flowVersion: '', vaadinVersion: '' };
+  serverInfo: ServerInfo = { flowVersion: '', vaadinVersion: '', javaVersion: '', osVersion: '' };
 
   javaConnection?: Connection;
   frontendConnection?: Connection;
@@ -1056,8 +1068,12 @@ export class VaadinDevmodeGizmo extends LitElement {
           : nothing}
         ${this.activeTab === 'info'
           ? html`<div class="info-tray">
+              <span class="copy" @click=${this.copyInfoToClipboard}>${VaadinDevmodeGizmo.copyO}</span>
               <div class="info-message">Vaadin version: ${this.serverInfo.vaadinVersion}</div>
               <div class="info-message">Flow version: ${this.serverInfo.flowVersion}</div>
+              <div class="info-message">Java version: ${this.serverInfo.javaVersion}</div>
+              <div class="info-message">Operating system: ${this.serverInfo.osVersion}</div>
+              <div class="info-message">Browser: ${navigator.userAgent}</div>
             </div>`
           : nothing}
       </div>
@@ -1083,6 +1099,14 @@ export class VaadinDevmodeGizmo extends LitElement {
           ? html`<span class="status-description">${this.splashMessage}</span></div>`
           : html`<span class="status-description">Live reload (JS: ${this.frontendStatus}, Java: ${this.javaStatus}) </span><span class="ahreflike">Details</span></div>`}
       </div>`;
+  }
+  copyInfoToClipboard(): void {
+    const messages = this.renderRoot.querySelectorAll('.info-message');
+    const text = Array.from(messages)
+      .map((message) => message.textContent)
+      .join('\n');
+    copy(text);
+    this.showNotification(MessageType.INFORMATION, 'Version information copied to clipboard');
   }
 }
 

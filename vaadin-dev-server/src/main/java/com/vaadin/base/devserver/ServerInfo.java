@@ -19,6 +19,7 @@ import java.io.InputStream;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Version;
 
@@ -31,6 +32,8 @@ public class ServerInfo {
 
     private final String flowVersion;
     private final String vaadinVersion;
+    private final String javaVersion;
+    private final String osVersion;
 
     /**
      * Creates a new instance.
@@ -38,6 +41,24 @@ public class ServerInfo {
     public ServerInfo() {
         this.flowVersion = Version.getFullVersion();
         this.vaadinVersion = fetchVaadinVersion();
+        this.javaVersion = fetchJavaVersion();
+        this.osVersion = fetchOperatingSystem();
+
+    }
+
+    private String fetchJavaVersion() {
+        String vendor = System.getProperty("java.vendor");
+        String version = System.getProperty("java.version");
+
+        return vendor + " " + version;
+    }
+
+    private String fetchOperatingSystem() {
+        String arch = System.getProperty("os.arch");
+        String name = System.getProperty("os.name");
+        String version = System.getProperty("os.version");
+
+        return arch + " " + name + " " + version;
     }
 
     private String fetchVaadinVersion() {
@@ -48,12 +69,11 @@ public class ServerInfo {
                 JsonNode vaadinVersions = m.readTree(vaadinVersionsStream);
                 return vaadinVersions.get("platform").asText();
             } else {
-                LoggerFactory.getLogger(getClass()).info(
-                        "Unable to determine version information. No vaadin_versions.json found");
+                LoggerFactory.getLogger(getClass())
+                        .info("Unable to determine version information. No vaadin_versions.json found");
             }
         } catch (Exception e) {
-            LoggerFactory.getLogger(getClass())
-                    .error("Unable to determine version information", e);
+            LoggerFactory.getLogger(getClass()).error("Unable to determine version information", e);
         }
 
         return "?";
@@ -65,5 +85,13 @@ public class ServerInfo {
 
     public String getVaadinVersion() {
         return vaadinVersion;
+    }
+
+    public String getJavaVersion() {
+        return javaVersion;
+    }
+
+    public String getOsVersion() {
+        return osVersion;
     }
 }
