@@ -1,7 +1,8 @@
 import { css, html, LitElement, nothing, svg } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { copy } from './copy-to-clipboard';
+// @ts-ignore
+import { copy } from './copy-to-clipboard.js';
 
 interface ServerInfo {
   vaadinVersion: string;
