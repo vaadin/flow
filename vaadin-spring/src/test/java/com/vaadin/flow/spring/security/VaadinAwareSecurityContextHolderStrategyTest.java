@@ -34,14 +34,18 @@ public class VaadinAwareSecurityContextHolderStrategyTest {
     public void currentSessionOverrides() {
         VaadinSession vaadinSession = Mockito.mock(VaadinSession.class);
         HttpSession httpSession = Mockito.mock(HttpSession.class);
-        Mockito.when(vaadinSession.getSession()).thenReturn(new WrappedHttpSession(httpSession));
+        Mockito.when(vaadinSession.getSession())
+                .thenReturn(new WrappedHttpSession(httpSession));
         SecurityContext securityContext = Mockito.mock(SecurityContext.class);
-        Mockito.when(httpSession.getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY))
+        Mockito.when(httpSession.getAttribute(
+                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY))
                 .thenReturn(securityContext);
         VaadinSession.setCurrent(vaadinSession);
 
-        vaadinAwareSecurityContextHolderStrategy.setContext(Mockito.mock(SecurityContext.class));
-        Assert.assertEquals(securityContext, vaadinAwareSecurityContextHolderStrategy.getContext());
+        vaadinAwareSecurityContextHolderStrategy
+                .setContext(Mockito.mock(SecurityContext.class));
+        Assert.assertEquals(securityContext,
+                vaadinAwareSecurityContextHolderStrategy.getContext());
     }
 
     @Test
@@ -52,13 +56,15 @@ public class VaadinAwareSecurityContextHolderStrategyTest {
 
         SecurityContext explicit = Mockito.mock(SecurityContext.class);
         vaadinAwareSecurityContextHolderStrategy.setContext(explicit);
-        Assert.assertEquals(explicit, vaadinAwareSecurityContextHolderStrategy.getContext());
+        Assert.assertEquals(explicit,
+                vaadinAwareSecurityContextHolderStrategy.getContext());
     }
 
     @Test
     public void explicitUsedWhenNoSessionAvailable() {
         SecurityContext explicit = Mockito.mock(SecurityContext.class);
         vaadinAwareSecurityContextHolderStrategy.setContext(explicit);
-        Assert.assertEquals(explicit, vaadinAwareSecurityContextHolderStrategy.getContext());
+        Assert.assertEquals(explicit,
+                vaadinAwareSecurityContextHolderStrategy.getContext());
     }
 }
