@@ -321,9 +321,10 @@ public class DataCommunicator<T> implements Serializable {
         final int maximumAllowedItems = getMaximumAllowedItems();
         if (length > maximumAllowedItems) {
             throw new IllegalStateException(String.format(
-                    "Attempted to fetch more items from server than allowed " +
-                    "in one go: number of items requested '%d', maximum " +
-                    "items allowed '%d'", length, maximumAllowedItems));
+                    "Attempted to fetch more items from server than allowed "
+                            + "in one go: number of items requested '%d', maximum "
+                            + "items allowed '%d'",
+                    length, maximumAllowedItems));
         }
         requestedRange = Range.withLength(start, length);
 

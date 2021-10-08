@@ -1526,9 +1526,10 @@ public class DataCommunicatorTest {
                 "DataCommunicator shouldn't allow too much items requested",
                 IllegalStateException.class,
                 () -> dataCommunicator.setRequestedRange(0, 501));
-        Assert.assertEquals("Attempted to fetch more items from server than " +
-                            "allowed in one go: number of items requested " +
-                            "'501', maximum items allowed '500'",
+        Assert.assertEquals(
+                "Attempted to fetch more items from server than "
+                        + "allowed in one go: number of items requested "
+                        + "'501', maximum items allowed '500'",
                 exception.getMessage());
     }
 
