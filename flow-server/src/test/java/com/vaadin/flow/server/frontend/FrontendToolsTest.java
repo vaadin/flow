@@ -122,7 +122,7 @@ public class FrontendToolsTest {
         npmVersionCommand.add("--version");
         FrontendVersion npm = FrontendUtils.getVersion("npm",
                 npmVersionCommand);
-        Assert.assertEquals("7.20.3", npm.getFullVersion());
+        Assert.assertEquals("7.24.0", npm.getFullVersion());
     }
 
     @Test
