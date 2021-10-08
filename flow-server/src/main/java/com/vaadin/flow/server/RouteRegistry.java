@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -252,4 +253,16 @@ public interface RouteRegistry extends Serializable {
      * Clear all registered routes from the registry.
      */
     void clean();
+
+    /**
+     * Check if the given navigationTarget requires parameters.
+     *
+     * @param navigationTarget
+     *            navigation target to check
+     * @throws NotFoundException
+     *             if given navigation target is not registered
+     * @return {@code true} if parameters are required
+     */
+    boolean hasMandatoryParameter(Class<? extends Component> navigationTarget)
+            throws NotFoundException;
 }
