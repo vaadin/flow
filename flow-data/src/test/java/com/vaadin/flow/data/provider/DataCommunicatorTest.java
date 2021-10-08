@@ -1520,6 +1520,25 @@ public class DataCommunicatorTest {
                 3, listenerInvocationCounter.get());
     }
 
+    @Test
+    public void setRequestedRange_defaultPageSize_tooMuchItemsRequested_throws() {
+        IllegalStateException exception = Assert.assertThrows(
+                "DataCommunicator shouldn't allow too much items requested",
+                IllegalStateException.class,
+                () -> dataCommunicator.setRequestedRange(0, 501));
+        Assert.assertEquals("Attempted to fetch more items from server than " +
+                            "allowed in one go: number of items requested " +
+                            "'501', maximum items allowed '500'",
+                exception.getMessage());
+    }
+
+    @Test
+    public void setRequestedRange_customPageSize_maxAllowedItemsIncreased() {
+        int newPageSize = 300;
+        dataCommunicator.setPageSize(newPageSize);
+        dataCommunicator.setRequestedRange(0, newPageSize * 2);
+    }
+
     @Tag("test-component")
     private static class TestComponent extends Component {
 

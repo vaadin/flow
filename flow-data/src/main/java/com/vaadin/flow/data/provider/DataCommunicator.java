@@ -65,6 +65,7 @@ public class DataCommunicator<T> implements Serializable {
     public static final int DEFAULT_PAGE_INCREASE_COUNT = 4;
 
     private static final int DEFAULT_PAGE_SIZE = 50;
+    private static final int MAXIMUM_ALLOWED_ITEMS_FACTOR = 10;
 
     private final DataGenerator<T> dataGenerator;
     private final ArrayUpdater arrayUpdater;
@@ -317,6 +318,13 @@ public class DataCommunicator<T> implements Serializable {
      *            the end of the requested range
      */
     public void setRequestedRange(int start, int length) {
+        final int maximumAllowedItems = getMaximumAllowedItems();
+        if (length > maximumAllowedItems) {
+            throw new IllegalStateException(String.format(
+                    "Attempted to fetch more items from server than allowed " +
+                    "in one go: number of items requested '%d', maximum " +
+                    "items allowed '%d'", length, maximumAllowedItems));
+        }
         requestedRange = Range.withLength(start, length);
 
         requestFlush();
@@ -1361,6 +1369,10 @@ public class DataCommunicator<T> implements Serializable {
     private void removeFilteringAndSorting() {
         Element.get(stateNode).getComponent().ifPresent(
                 DataViewUtils::removeComponentFilterAndSortComparator);
+    }
+
+    private int getMaximumAllowedItems() {
+        return MAXIMUM_ALLOWED_ITEMS_FACTOR * pageSize;
     }
 
     private static class Activation implements Serializable {
