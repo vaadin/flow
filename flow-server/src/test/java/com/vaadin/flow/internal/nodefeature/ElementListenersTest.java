@@ -364,7 +364,7 @@ public class ElementListenersTest
         Set<String> expressions = getExpressions(listenerMap, "click");
         Assert.assertEquals(0, expressions.size());
 
-        registration.mapEventTargetToElement();
+        registration.mapEventTargetElement();
         expressions = getExpressions(listenerMap, "click");
 
         Assert.assertEquals(1, expressions.size());

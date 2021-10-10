@@ -269,7 +269,7 @@ public interface DomListenerRegistration extends Registration {
      * @return this registration, for chaining
      * @since 9.0
      */
-    default DomListenerRegistration mapEventTargetToElement() {
+    default DomListenerRegistration mapEventTargetElement() {
         return addEventData(JsonConstants.MAP_EVENT_TARGET);
     }
 }

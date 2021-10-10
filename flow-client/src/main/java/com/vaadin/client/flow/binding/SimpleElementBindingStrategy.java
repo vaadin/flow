@@ -43,6 +43,7 @@ import com.vaadin.client.flow.collection.JsWeakMap;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.dom.DomElement;
 import com.vaadin.client.flow.dom.DomElement.DomTokenList;
+import com.vaadin.client.flow.dom.DomNode;
 import com.vaadin.client.flow.model.UpdatableModelProperties;
 import com.vaadin.client.flow.nodefeature.ListSpliceEvent;
 import com.vaadin.client.flow.nodefeature.MapProperty;
@@ -1444,14 +1445,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private int getClosestStateNodeToTarget(StateNode topNode,
             EventTarget target) {
         try {
-            Node targetNode = WidgetUtil.crazyJsCast(target);
+            DomNode targetNode = DomApi.wrap(WidgetUtil.crazyJsCast(target));
 
             // collect children and test eagerly for direct match
             JsArray<StateNode> stack = JsCollections.array();
             stack.push(topNode);
             for (int i = 0; i < stack.length(); i++) {
                 final StateNode stateNode = stack.get(i);
-                if (stateNode.getDomNode().isEqualNode(targetNode)) {
+                if (targetNode.isSameNode(stateNode.getDomNode())) {
                     return stateNode.getId();
                 }
                 stateNode.getList(NodeFeatures.ELEMENT_CHILDREN)
@@ -1459,16 +1460,16 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             }
             // no direct match, all child element state nodes collected.
             // bottom-up search elements until matching state node found
-            targetNode = targetNode.getParentNode();
+            targetNode = DomApi.wrap(targetNode.getParentNode());
             while (targetNode != null
                     && !targetNode.isSameNode(topNode.getDomNode())) {
                 for (int i = stack.length() - 1; i > -1; i--) {
                     final StateNode stateNode = stack.get(i);
-                    if (stateNode.getDomNode().isSameNode(targetNode)) {
+                    if (targetNode.isSameNode(stateNode.getDomNode())) {
                         return stateNode.getId();
                     }
                 }
-                targetNode = targetNode.getParentNode();
+                targetNode = DomApi.wrap(targetNode.getParentNode());
             }
         } catch (Exception e) {
             // not going to let event handling fail; just report nothing found

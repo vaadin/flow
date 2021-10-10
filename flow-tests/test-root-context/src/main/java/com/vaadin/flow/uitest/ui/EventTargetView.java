@@ -45,7 +45,7 @@ public class EventTargetView extends AbstractDivView {
         getElement().addEventListener("click", event -> {
             eventTarget.setText(event.getEventTarget()
                     .map(element -> element.getText()).orElse("No target"));
-        }).mapEventTargetToElement();
+        }).mapEventTargetElement();
     }
 
     private Div createContainer(String identifier) {

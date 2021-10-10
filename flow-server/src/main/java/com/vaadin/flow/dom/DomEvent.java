@@ -148,7 +148,7 @@ public class DomEvent extends EventObject {
      * hierarchy of the element returned by {@link #getSource()}.
      * <p>
      * To get this reported, you need to call
-     * {@link DomListenerRegistration#mapEventTargetToElement()} or an empty
+     * {@link DomListenerRegistration#mapEventTargetElement()} or an empty
      * optional is always returned.
      * <p>
      * The returned element is the same as {@link #getSource()} <em>only if</em>
