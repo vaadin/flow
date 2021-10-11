@@ -74,6 +74,11 @@
             <artifactId>jsoup</artifactId>
             <version>${jsoup.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.databind.version}</version>
+        </dependency>
         <!-- ph-css for parsing style attribute in Element API -->
         <dependency>
             <groupId>com.helger</groupId>
@@ -229,7 +234,7 @@
                     </classpathDependencyExcludes>
                 </configuration>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>

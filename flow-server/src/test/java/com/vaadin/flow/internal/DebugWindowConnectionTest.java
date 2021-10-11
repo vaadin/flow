@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,15 +15,20 @@
  */
 package com.vaadin.flow.internal;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-public class BrowserLiveReloadImplTest {
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
 
-    private BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl();
+public class DebugWindowConnectionTest {
+
+    private DebugWindowConnection reload = new DebugWindowConnection();
 
     @Test
     public void onConnect_suspend_sayHello() {
@@ -88,16 +93,16 @@ public class BrowserLiveReloadImplTest {
     }
 
     @Test
-    public void getBackend_JRebelInitializerClassLoaded_returnsJREBEL() {
+    public void getBackend_JRebelClassEventListenerClassLoaded_returnsJREBEL() {
         class JRebelInitializer {
         }
-        BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl(
+        DebugWindowConnection reload = new DebugWindowConnection(
                 new ClassLoader(getClass().getClassLoader()) {
                     @Override
                     protected Class<?> findClass(String name)
                             throws ClassNotFoundException {
                         switch (name) {
-                        case "com.vaadin.flow.server.jrebel.JRebelInitializer":
+                        case "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener":
                             return JRebelInitializer.class;
                         default:
                             throw new ClassNotFoundException();
@@ -112,7 +117,7 @@ public class BrowserLiveReloadImplTest {
     public void getBackend_HotSwapVaadinIntegrationClassLoaded_returnsHOTSWAP_AGENT() {
         class VaadinIntegration {
         }
-        BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl(
+        DebugWindowConnection reload = new DebugWindowConnection(
                 new ClassLoader(getClass().getClassLoader()) {
                     @Override
                     protected Class<?> findClass(String name)
@@ -135,7 +140,7 @@ public class BrowserLiveReloadImplTest {
         }
         class LiveReloadServer {
         }
-        BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl(
+        DebugWindowConnection reload = new DebugWindowConnection(
                 new ClassLoader(getClass().getClassLoader()) {
                     @Override
                     protected Class<?> findClass(String name)
@@ -152,6 +157,35 @@ public class BrowserLiveReloadImplTest {
                 });
         Assert.assertEquals(BrowserLiveReload.Backend.SPRING_BOOT_DEVTOOLS,
                 reload.getBackend());
+    }
+
+    @Test
+    public void backwardsCompatibilityClassExists() {
+        // JRebel and HotswapAgent live reload triggering only works if
+        // com.vaadin.flow.internal.BrowserLiveReloadAccess exists on classpath.
+        ClassLoader classLoader = getClass().getClassLoader();
+        String className = "com.vaadin.flow.internal.BrowserLiveReloadAccess";
+        String methodName = "getLiveReload";
+        try {
+            Class<?> clazz = classLoader.loadClass(className);
+            clazz.getMethod(methodName, VaadinService.class);
+            clazz.getDeclaredConstructor().newInstance();
+        } catch (ClassNotFoundException | NoSuchMethodException
+                | InstantiationException | IllegalAccessException
+                | InvocationTargetException e) {
+            e.printStackTrace();
+            Assert.fail(className
+                    + " required on classpath for JRebel / HotswapAgent live reload integration, must be instantiable and have method "
+                    + methodName + " accepting a VaadinService");
+        }
+    }
+
+    public static BrowserLiveReload mockBrowserLiveReloadImpl(
+            VaadinContext context) {
+        DebugWindowConnection liveReload = Mockito
+                .mock(DebugWindowConnection.class);
+        context.setAttribute(DebugWindowConnection.class, liveReload);
+        return liveReload;
     }
 
 }
