@@ -316,6 +316,17 @@ public class JsonConstants implements Serializable {
     public static final String SYNCHRONIZE_PROPERTY_TOKEN = "}";
 
     /**
+     * Token used as an event data expression to represent that the state node
+     * ID should be fetched for the element, or its closest parent, that
+     * corresponds to {@code event.target}. The token is chosen to avoid
+     * collisions with regular event data expressions by using a character that
+     * cannot be the start of a valid JS expression.
+     * 
+     * @since 9.0
+     */
+    public static final String MAP_EVENT_TARGET = "]";
+
+    /**
      * RPC type value used for return channel messages.
      */
     public static final String RPC_TYPE_CHANNEL = "channel";
