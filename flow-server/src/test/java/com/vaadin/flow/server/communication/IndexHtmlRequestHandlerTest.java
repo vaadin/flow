@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import org.jsoup.Jsoup;
 import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Assert;
@@ -258,9 +259,9 @@ public class IndexHtmlRequestHandlerTest {
                 .toString(StandardCharsets.UTF_8.name());
         Document document = Jsoup.parse(indexHtml);
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(2, scripts.size());
-        Assert.assertEquals("testing.1", scripts.get(0).attr("src"));
-        Assert.assertEquals("testing.2", scripts.get(1).attr("src"));
+        Assert.assertEquals(3, scripts.size());
+        Assert.assertEquals("testing.1", scripts.get(1).attr("src"));
+        Assert.assertEquals("testing.2", scripts.get(2).attr("src"));
     }
 
     @Test
@@ -275,10 +276,11 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(1, scripts.size());
-        Assert.assertEquals("", scripts.get(0).attr("initial"));
+        Assert.assertEquals(2, scripts.size());
+        Element initialUidlScript = scripts.get(1);
+        Assert.assertEquals("", initialUidlScript.attr("initial"));
         Assert.assertTrue(
-                scripts.get(0).toString().contains("Could not navigate"));
+                initialUidlScript.toString().contains("Could not navigate"));
 
         Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING,
                 Boolean.TRUE);
@@ -294,10 +296,13 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(1, scripts.size());
-        Assert.assertEquals("window.Vaadin = {TypeScript: {}};",
-                scripts.get(0).childNode(0).toString());
-        Assert.assertEquals("", scripts.get(0).attr("initial"));
+        Assert.assertEquals(2, scripts.size());
+        Element initialUidlScript = scripts.get(1);
+
+        Assert.assertEquals(
+                "window.Vaadin = window.Vaadin || {};window.Vaadin.TypeScript= {};",
+                initialUidlScript.childNode(0).toString());
+        Assert.assertEquals("", initialUidlScript.attr("initial"));
 
         Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING,
                 Boolean.TRUE);
@@ -319,9 +324,10 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(1, scripts.size());
-        Assert.assertEquals("", scripts.get(0).attr("initial"));
-        String scriptContent = scripts.get(0).toString();
+        Assert.assertEquals(2, scripts.size());
+        Element initialUidlScript = scripts.get(1);
+        Assert.assertEquals("", initialUidlScript.attr("initial"));
+        String scriptContent = initialUidlScript.toString();
         Assert.assertTrue(scriptContent.contains("Could not navigate"));
         Assert.assertFalse("Initial object content should not be escaped",
                 scriptContent.contains("&lt;")
@@ -345,10 +351,12 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(1, scripts.size());
-        Assert.assertEquals("window.Vaadin = {TypeScript: {}};",
-                scripts.get(0).childNode(0).toString());
-        Assert.assertEquals("", scripts.get(0).attr("initial"));
+        Assert.assertEquals(2, scripts.size());
+        Element initialUidlScript = scripts.get(1);
+        Assert.assertEquals(
+                "window.Vaadin = window.Vaadin || {};window.Vaadin.TypeScript= {};",
+                initialUidlScript.childNode(0).toString());
+        Assert.assertEquals("", initialUidlScript.attr("initial"));
         Assert.assertNull(UI.getCurrent());
     }
 
@@ -407,10 +415,11 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(1, scripts.size());
-        Assert.assertFalse(scripts.get(0).childNode(0).toString()
+        Assert.assertEquals(2, scripts.size());
+        Element initialUidlScript = scripts.get(1);
+        Assert.assertFalse(initialUidlScript.childNode(0).toString()
                 .contains("window.Vaadin = {Flow: {\"csrfToken\":"));
-        Assert.assertEquals("", scripts.get(0).attr("initial"));
+        Assert.assertEquals("", initialUidlScript.attr("initial"));
     }
 
     @Test

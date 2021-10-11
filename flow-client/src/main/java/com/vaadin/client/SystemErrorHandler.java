@@ -143,16 +143,7 @@ public class SystemErrorHandler {
      *            the error message to show
      */
     public void handleError(String errorMessage) {
-        if (registry.getApplicationConfiguration().isProductionMode()) {
-            Console.error(errorMessage);
-            return;
-        }
-
-        Element errorContainer = handleError(null, errorMessage, null, null);
-        errorContainer.addEventListener("click", e -> {
-            // Allow user to dismiss the error by clicking it.
-            errorContainer.getParentNode().removeChild(errorContainer);
-        });
+        Console.error(errorMessage);
     }
 
     /**

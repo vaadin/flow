@@ -321,7 +321,7 @@ public class PushHandler {
 
         Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
                 .getLiveReloadFromService(service);
-        if (isLiveReloadConnection(resource) && liveReload.isPresent()
+        if (isDebugWindowConnection(resource) && liveReload.isPresent()
                 && liveReload.get().isLiveReload(resource)) {
             liveReload.get().onDisconnect(resource);
             return null;
@@ -512,7 +512,7 @@ public class PushHandler {
      *            The related atmosphere resources
      */
     void onConnect(AtmosphereResource resource) {
-        if (isLiveReloadConnection(resource)) {
+        if (isDebugWindowConnection(resource)) {
             BrowserLiveReloadAccessor.getLiveReloadFromService(service)
                     .ifPresent(liveReload -> liveReload.onConnect(resource));
         } else {
@@ -527,18 +527,17 @@ public class PushHandler {
      *            The related atmosphere resources
      */
     void onMessage(AtmosphereResource resource) {
-        if (isLiveReloadConnection(resource)) {
+        if (isDebugWindowConnection(resource)) {
             getLogger().debug("Received live reload heartbeat");
         } else {
             callWithUi(resource, receiveCallback);
         }
     }
 
-    private boolean isLiveReloadConnection(AtmosphereResource resource) {
+    private boolean isDebugWindowConnection(AtmosphereResource resource) {
         String refreshConnection = resource.getRequest()
                 .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION);
-        return service.getDeploymentConfiguration().isDevModeLiveReloadEnabled()
-                && refreshConnection != null
+        return refreshConnection != null
                 && TRANSPORT.WEBSOCKET.equals(resource.transport());
     }
 
