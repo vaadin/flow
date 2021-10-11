@@ -64,13 +64,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private File applicationProperties;
 
     /**
-     * Feature flag properties file.
-     */
-    @Parameter(defaultValue = "${project.basedir}/src/main/resources/"
-            + FeatureFlags.PROPERTIES_FILENAME)
-    protected File featureflagsProperties;
-
-    /**
      * Whether or not insert the initial Uidl object in the bootstrap index.html
      */
     @Parameter(defaultValue = "${vaadin."
@@ -101,6 +94,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      */
     @Parameter(defaultValue = "${project.basedir}/src/main/java")
     private File javaSourceFolder;
+
+    /**
+     * Java resource folder.
+     */
+    @Parameter(defaultValue = "${project.basedir}/src/main/resources")
+    private File javaResourceFolder;
 
     /**
      * Download node.js from this URL. Handy in heavily firewalled corporate
@@ -296,6 +295,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     public File javaSourceFolder() {
 
         return javaSourceFolder;
+    }
+
+    @Override
+    public File javaResourceFolder() {
+
+        return javaResourceFolder;
     }
 
     @Override

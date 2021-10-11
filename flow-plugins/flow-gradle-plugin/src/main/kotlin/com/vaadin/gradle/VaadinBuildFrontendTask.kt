@@ -69,6 +69,7 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
         check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
 
         BuildFrontendUtil.updateBuildFile(adapter)
+        BuildFrontendUtil.updateFeatureFlagsLocation(adapter)
 
         BuildFrontendUtil.runNodeUpdater(adapter)
 

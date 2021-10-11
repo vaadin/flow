@@ -59,7 +59,9 @@ public class FeatureFlags implements Serializable {
      * Set by the Maven / Gradle plugin when running through that so the feature
      * flags will be correctly detected.
      */
-    public static void setPropertiesLocation(File featureProperties) {
+    public static void setPropertiesLocation(File propertiesFolder) {
+        File featureProperties = new File(propertiesFolder,
+                PROPERTIES_FILENAME);
         if (featureProperties != null && featureProperties.exists()) {
             try (FileInputStream stream = new FileInputStream(
                     featureProperties)) {
@@ -184,9 +186,8 @@ public class FeatureFlags implements Serializable {
     private static File getFeatureFlagFile() {
         ApplicationConfiguration config = ApplicationConfiguration
                 .get(VaadinService.getCurrent().getContext());
-        String javaFolder = config.getStringProperty(
-                Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN, "src/main/java");
-        String resourceFolder = javaFolder.replace("/java", "/resources");
+        String resourceFolder = config.getStringProperty(
+                Constants.JAVA_RESOURCE_FOLDER_TOKEN, "src/main/resources");
         return new File(resourceFolder, PROPERTIES_FILENAME);
     }
 

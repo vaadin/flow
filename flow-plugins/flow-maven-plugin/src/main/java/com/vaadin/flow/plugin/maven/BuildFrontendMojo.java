@@ -112,9 +112,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        FeatureFlags.setPropertiesLocation(featureflagsProperties);
-
         BuildFrontendUtil.updateBuildFile(this);
+        BuildFrontendUtil.updateFeatureFlagsLocation(this);
 
         long start = System.nanoTime();
 
