@@ -82,4 +82,9 @@ public interface BrowserLiveReload {
      */
     void reload();
 
+    /**
+     * Called when any message is received through the connection.
+     */
+    void onMessage(String msg);
+
 }

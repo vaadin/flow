@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Collection;
 
+import org.apache.commons.io.IOUtils;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
@@ -286,7 +287,7 @@ public class PushHandler {
          * VaadinService:handleRequest (via several interim calls), another is
          * directly from Atmosphere (PushAtmosphereHandler,
          * AtmosphereResourceListener::onDisconnect).
-         * 
+         *
          * In the first case everything will be cleaned up out of the box. In
          * the second case "clear" should be done here otherwise instances will
          * stay in the threads.
@@ -318,10 +319,8 @@ public class PushHandler {
         // In development mode we may have a live-reload push channel
         // that should be closed.
 
-        if (isLiveReloadConnection(resource)) {
-            BrowserLiveReloadAccess access = service.getInstantiator()
-                    .getOrCreate(BrowserLiveReloadAccess.class);
-            BrowserLiveReload liveReload = access.getLiveReload(service);
+        if (isDebugWindowConnection(resource)) {
+            BrowserLiveReload liveReload = getBrowserLiveReload();
             if (liveReload.isLiveReload(resource)) {
                 liveReload.onDisconnect(resource);
                 return null;
@@ -513,10 +512,8 @@ public class PushHandler {
      *            The related atmosphere resources
      */
     void onConnect(AtmosphereResource resource) {
-        if (isLiveReloadConnection(resource)) {
-            BrowserLiveReloadAccess access = service.getInstantiator()
-                    .getOrCreate(BrowserLiveReloadAccess.class);
-            BrowserLiveReload liveReload = access.getLiveReload(service);
+        if (isDebugWindowConnection(resource)) {
+            BrowserLiveReload liveReload = getBrowserLiveReload();
             liveReload.onConnect(resource);
         } else {
             callWithUi(resource, establishCallback);
@@ -530,18 +527,44 @@ public class PushHandler {
      *            The related atmosphere resources
      */
     void onMessage(AtmosphereResource resource) {
-        if (isLiveReloadConnection(resource)) {
-            getLogger().debug("Received live reload heartbeat");
+        if (isDebugWindowConnection(resource)) {
+            handleDebugWindowMessage(resource);
         } else {
             callWithUi(resource, receiveCallback);
         }
     }
 
-    private boolean isLiveReloadConnection(AtmosphereResource resource) {
+    private void handleDebugWindowMessage(AtmosphereResource resource) {
+        AtmosphereRequest req = resource.getRequest();
+        VaadinServletRequest vaadinRequest = new VaadinServletRequest(req,
+                service);
+        service.setCurrentInstances(vaadinRequest, null);
+        try {
+            String msg = IOUtils.toString(req.getReader());
+            BrowserLiveReload browserLiveReload = getBrowserLiveReload();
+            if (browserLiveReload != null) {
+                browserLiveReload.onMessage(msg);
+            } else {
+                getLogger().error(
+                        "Received message for debug window but there is no debug window connection available");
+            }
+        } catch (IOException e) {
+            getLogger().error(
+                    "Unable to read contents of debug connection message", e);
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    private BrowserLiveReload getBrowserLiveReload() {
+        BrowserLiveReloadAccess access = service.getInstantiator().getOrCreate(BrowserLiveReloadAccess.class);
+        return access.getLiveReload(service);
+    }
+
+    private boolean isDebugWindowConnection(AtmosphereResource resource) {
         String refreshConnection = resource.getRequest()
-                .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION);
-        return service.getDeploymentConfiguration().isDevModeLiveReloadEnabled()
-                && refreshConnection != null
+                .getParameter(ApplicationConstants.DEBUG_WINDOW_CONNECTION);
+        return refreshConnection != null
                 && TRANSPORT.WEBSOCKET.equals(resource.transport());
     }
 

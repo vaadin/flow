@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.server.communication;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -28,14 +31,17 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadAccessTest;
+import com.vaadin.flow.internal.BrowserLiveReloadAccess;
+import com.vaadin.flow.internal.DebugWindowConnectionTest;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.SessionExpiredException;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -96,14 +102,14 @@ public class PushHandlerTest {
         service.init();
 
         VaadinContext context = service.getContext();
-        BrowserLiveReload liveReload = BrowserLiveReloadAccessTest
+        BrowserLiveReload liveReload = DebugWindowConnectionTest
                 .mockBrowserLiveReloadImpl(context);
 
         AtomicReference<AtmosphereResource> res = new AtomicReference<>();
         runTest(service, (handler, resource) -> {
             AtmosphereRequest request = resource.getRequest();
             Mockito.when(request
-                    .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION))
+                    .getParameter(ApplicationConstants.DEBUG_WINDOW_CONNECTION))
                     .thenReturn("");
             Mockito.when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
             handler.onConnect(resource);
@@ -125,16 +131,21 @@ public class PushHandlerTest {
         deploymentConfiguration.setDevModeLiveReloadEnabled(true);
 
         service.init();
-
-        VaadinContext context = service.getContext();
+        mockBrowserLiveReload(service);
 
         AtomicReference<AtmosphereResource> res = new AtomicReference<>();
         runTest(service, (handler, resource) -> {
             AtmosphereRequest request = resource.getRequest();
             Mockito.when(request
-                    .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION))
+                    .getParameter(ApplicationConstants.DEBUG_WINDOW_CONNECTION))
                     .thenReturn("");
             Mockito.when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
+            try {
+                Mockito.when(request.getReader())
+                        .thenReturn(new BufferedReader(new StringReader("{}")));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             handler.onMessage(resource);
             res.set(resource);
         });
@@ -153,7 +164,7 @@ public class PushHandlerTest {
         runTest(service, (handler, resource) -> {
             AtmosphereRequest request = resource.getRequest();
             Mockito.when(request
-                    .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION))
+                    .getParameter(ApplicationConstants.DEBUG_WINDOW_CONNECTION))
                     .thenReturn("");
             Mockito.when(resource.transport()).thenReturn(TRANSPORT.AJAX);
             handler.onConnect(resource);
@@ -246,5 +257,19 @@ public class PushHandlerTest {
         testExec.accept(handler, resource);
 
         return service;
+    }
+
+    private void mockBrowserLiveReload(MockVaadinServletService service) {
+        Instantiator instantiator = Mockito.mock(Instantiator.class);
+        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
+
+        BrowserLiveReloadAccess browserLiveReloadAccess = Mockito
+                .mock(BrowserLiveReloadAccess.class);
+        Mockito.when(instantiator.getOrCreate(BrowserLiveReloadAccess.class))
+                .thenReturn(browserLiveReloadAccess);
+
+        BrowserLiveReload liveReload = Mockito.mock(BrowserLiveReload.class);
+        Mockito.when(browserLiveReloadAccess.getLiveReload(service))
+                .thenReturn(liveReload);
     }
 }

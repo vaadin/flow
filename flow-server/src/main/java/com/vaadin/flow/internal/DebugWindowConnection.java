@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +39,7 @@ import com.vaadin.flow.server.DevModeHandler;
  * @author Vaadin Ltd
  *
  */
-class BrowserLiveReloadImpl implements BrowserLiveReload {
+public class DebugWindowConnection implements BrowserLiveReload {
 
     private final ClassLoader classLoader;
 
@@ -48,9 +50,11 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
     private static final EnumMap<Backend, List<String>> IDENTIFIER_CLASSES = new EnumMap<>(
             Backend.class);
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
-                "com.vaadin.flow.server.jrebel.JRebelInitializer"));
+                "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener"));
         IDENTIFIER_CLASSES.put(Backend.HOTSWAP_AGENT, Collections.singletonList(
                 "org.hotswap.agent.plugin.vaadin.VaadinIntegration"));
         IDENTIFIER_CLASSES.put(Backend.SPRING_BOOT_DEVTOOLS, Arrays.asList(
@@ -58,11 +62,11 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
                 "org.springframework.boot.devtools.livereload.LiveReloadServer"));
     }
 
-    BrowserLiveReloadImpl() {
-        this(BrowserLiveReloadImpl.class.getClassLoader());
+    DebugWindowConnection() {
+        this(DebugWindowConnection.class.getClassLoader());
     }
 
-    BrowserLiveReloadImpl(ClassLoader classLoader) {
+    DebugWindowConnection(ClassLoader classLoader) {
         this.classLoader = classLoader;
 
         DevModeHandler devModeHandler = DevModeHandler.getDevModeHandler();
@@ -110,6 +114,18 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
         atmosphereResources.add(new WeakReference<>(resource));
         resource.getBroadcaster().broadcast("{\"command\": \"hello\"}",
                 resource);
+
+        send(resource, "serverInfo", new ServerInfo());
+    }
+
+    private void send(AtmosphereResource resource, String command,
+            Object data) {
+        try {
+            resource.getBroadcaster().broadcast(objectMapper.writeValueAsString(
+                    new DebugWindowMessage(command, data)), resource);
+        } catch (Exception e) {
+            getLogger().error("Error sending message", e);
+        }
     }
 
     @Override
@@ -141,6 +157,11 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(BrowserLiveReloadImpl.class.getName());
+        return LoggerFactory.getLogger(DebugWindowConnection.class.getName());
+    }
+
+    @Override
+    public void onMessage(String message) {
+        // No messages supported yet
     }
 }
