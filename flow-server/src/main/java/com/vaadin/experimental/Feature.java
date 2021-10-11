@@ -24,7 +24,6 @@ public class Feature implements Serializable {
 
     private String title;
     private String id;
-    private String moreInfoTitle;
     private String moreInfoLink;
     private boolean enabled;
 
@@ -35,14 +34,13 @@ public class Feature implements Serializable {
      *            the title of the feature
      * @param id
      *            the unique id of the feature
-     * @param githubIssue
-     *            the issue describing the feature on a high level
+     * @param moreInfoLink
+     *            a link to an issue describing the feature on a high level
      */
-    public Feature(String title, String id, int githubIssue) {
+    public Feature(String title, String id, String moreInfoLink) {
         this.title = title;
         this.id = id;
-        this.moreInfoTitle = "#" + githubIssue;
-        this.moreInfoLink = "https://github.com/vaadin/flow/" + githubIssue;
+        this.moreInfoLink = moreInfoLink;
     }
 
     public String getTitle() {
@@ -55,10 +53,6 @@ public class Feature implements Serializable {
 
     public String getMoreInfoLink() {
         return moreInfoLink;
-    }
-
-    public String getMoreInfoTitle() {
-        return moreInfoTitle;
     }
 
     public boolean isEnabled() {

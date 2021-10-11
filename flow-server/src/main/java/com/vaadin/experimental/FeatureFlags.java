@@ -47,7 +47,7 @@ public class FeatureFlags implements Serializable {
 
     private static final Feature EXAMPLE = new Feature(
             "Example feature. Will be removed once the first real feature flag is added",
-            "exampleFeatureFlag", 0);
+            "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004");
     private static List<Feature> features = new ArrayList<>();
 
     static {
@@ -74,8 +74,13 @@ public class FeatureFlags implements Serializable {
     }
 
     private static void loadProperties() {
-        try (InputStream propertiesStream = FeatureFlags.class.getClassLoader()
-                .getResourceAsStream(PROPERTIES_FILENAME)) {
+        File featureFlagFile = getFeatureFlagFile();
+        if (!featureFlagFile.exists()) {
+            return;
+        }
+
+        try (FileInputStream propertiesStream = new FileInputStream(
+                featureFlagFile)) {
             loadProperties(propertiesStream);
         } catch (IOException e) {
             getLogger().error("Unable to read properties using classloader", e);
@@ -103,16 +108,20 @@ public class FeatureFlags implements Serializable {
 
     private static void saveProperties() {
         File featureFlagFile = getFeatureFlagFile();
-        String properties = "";
+        StringBuilder properties = new StringBuilder();
         for (Feature feature : features) {
             if (!feature.isEnabled()) {
                 continue;
             }
-            properties += "# " + feature.getTitle() + "\n";
-            properties += getPropertyName(feature.getId()) + "=true\n";
+            properties.append("# ").append(feature.getTitle()).append("\n");
+            properties.append(getPropertyName(feature.getId()))
+                    .append("=true\n");
+        }
+        if (!featureFlagFile.getParentFile().exists()) {
+            featureFlagFile.getParentFile().mkdirs();
         }
         try (FileWriter writer = new FileWriter(featureFlagFile)) {
-            IOUtils.write(properties, writer);
+            IOUtils.write(properties.toString(), writer);
         } catch (IOException e) {
             getLogger().error("Unable to store feature flags", e);
         }
@@ -178,9 +187,9 @@ public class FeatureFlags implements Serializable {
         }
 
         maybeFeature.get().setEnabled(enabled);
-        // Update the feature flag file. This will cause a server restart.
+        // Update the feature flag file
         saveProperties();
-        getLogger().info("Set feature " + featureId + " to " + enabled);
+        getLogger().info("Set feature {} to {}", featureId, enabled);
     }
 
     private static File getFeatureFlagFile() {
