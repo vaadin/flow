@@ -139,7 +139,7 @@ public class FeatureFlags implements Serializable {
     /**
      * Checks if the given feature is enabled.
      * 
-     * @param feature
+     * @param featureId
      *            the feature to check
      * @return <code>true</code> if enabled, <code>false</code> otherwise
      */

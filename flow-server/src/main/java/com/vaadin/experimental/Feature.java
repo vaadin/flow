@@ -31,9 +31,12 @@ public class Feature implements Serializable {
     /**
      * Creates a new feature with the given options.
      * 
-     * @param title       the title of the feature
-     * @param id          the unique id of the feature
-     * @param githubIssue the issue describing the feature on a high level
+     * @param title
+     *            the title of the feature
+     * @param id
+     *            the unique id of the feature
+     * @param githubIssue
+     *            the issue describing the feature on a high level
      */
     public Feature(String title, String id, int githubIssue) {
         this.title = title;
