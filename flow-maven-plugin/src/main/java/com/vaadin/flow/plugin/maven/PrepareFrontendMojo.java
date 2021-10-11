@@ -120,12 +120,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     @Component
     private BuildContext buildContext; // m2eclipse integration
 
-    /**
-     * A directory with project's frontend source files.
-     */
-    @Parameter(defaultValue = "${project.basedir}/frontend")
-    private File frontendDirectory;
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         super.execute();
