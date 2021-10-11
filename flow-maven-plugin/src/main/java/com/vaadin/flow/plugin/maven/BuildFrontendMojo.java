@@ -100,12 +100,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     private File generatedFolder;
 
     /**
-     * A directory with project's frontend source files.
-     */
-    @Parameter(defaultValue = "${project.basedir}/frontend")
-    private File frontendDirectory;
-
-    /**
      * Whether to generate a bundle from the project frontend sources or not.
      */
     @Parameter(defaultValue = "true")

@@ -27,6 +27,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import com.vaadin.flow.server.Constants;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 
 /**
  * The base class of Flow Mojos in order to compute correctly the modes.
@@ -107,4 +108,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      */
     @Parameter(property = "node.download.root", defaultValue = NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
     protected String nodeDownloadRoot;
+
+    /**
+     * A directory with project's frontend source files.
+     */
+    @Parameter(defaultValue = "${project.basedir}/" + FRONTEND)
+    protected File frontendDirectory;
 }
