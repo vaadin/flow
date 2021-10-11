@@ -18,7 +18,6 @@ package com.vaadin.flow.plugin.maven;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
@@ -33,7 +32,6 @@ import org.apache.maven.project.MavenProject;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 
 /**
  * Goal that cleans the frontend files to a clean state.
