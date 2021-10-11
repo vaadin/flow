@@ -45,6 +45,16 @@ public class FeatureFlags implements Serializable {
 
     public static final String PROPERTIES_FILENAME = "vaadin-featureflags.properties";
 
+    private static final Feature EXAMPLE = new Feature(
+            "Example feature. Will be removed once the first real feature flag is added",
+            "exampleFeatureFlag", 0);
+    private static List<Feature> features = new ArrayList<>();
+
+    static {
+        features.add(EXAMPLE);
+        loadProperties();
+    }
+
     /**
      * Set by the Maven / Gradle plugin when running through that so the feature
      * flags will be correctly detected.
@@ -59,16 +69,6 @@ public class FeatureFlags implements Serializable {
                         + featureProperties.getAbsolutePath(), e);
             }
         }
-    }
-
-    private static final Feature EXAMPLE = new Feature(
-            "Example feature. Will be removed once the first real feature flag is added",
-            "exampleFeatureFlag", 0);
-    private static List<Feature> features = new ArrayList<>();
-
-    static {
-        features.add(EXAMPLE);
-        loadProperties();
     }
 
     private static void loadProperties() {

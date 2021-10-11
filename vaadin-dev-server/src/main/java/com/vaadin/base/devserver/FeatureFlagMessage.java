@@ -19,9 +19,18 @@ import java.util.List;
 
 import com.vaadin.experimental.Feature;
 
+/**
+ * Message with feature flags sent to the debug window.
+ */
 public class FeatureFlagMessage {
     private List<Feature> features;
 
+    /**
+     * Creates a new message with the given features.
+     * 
+     * @param features
+     *            the features
+     */
     public FeatureFlagMessage(List<Feature> features) {
         this.features = features;
     }

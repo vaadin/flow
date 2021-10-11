@@ -22,15 +22,9 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.internal.BrowserLiveReload;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.internal.BrowserLiveReload;
 
 import org.atmosphere.cpr.AtmosphereResource;

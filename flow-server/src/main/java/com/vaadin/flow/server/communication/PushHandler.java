@@ -50,7 +50,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.communication.PushMode;
 
-import elemental.json.Json;
 import elemental.json.JsonException;
 
 /**
