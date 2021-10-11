@@ -27,13 +27,11 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
-import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouteAliasObject;
 import com.vaadin.flow.router.internal.RouteUtil;
@@ -147,18 +145,18 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("%s needs to be the top parent layout '%s' not '%s'",
                                 implementation.getSimpleName(),
-                                RouteUtil
-                                        .getTopParentLayout(context, route,
-                                                resolve(context, route))
+                                RouteUtil.getTopParentLayout(context, route,
+                                        RouteUtil.resolve(context, route))
                                         .getName(),
                                 route.getName()));
             }
 
             List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
-                    .getParentLayouts(context, route, resolve(context, route));
+                    .getParentLayouts(context, route,
+                            RouteUtil.resolve(context, route));
             Class<? extends RouterLayout> topParentLayout = RouteUtil
                     .getTopParentLayout(context, route,
-                            resolve(context, route));
+                            RouteUtil.resolve(context, route));
 
             validateParentImplementation(parentLayouts, topParentLayout,
                     implementation);
@@ -237,18 +235,18 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("%s annotation needs to be on the top parent layout '%s' not on '%s'",
                                 annotation.getSimpleName(),
-                                RouteUtil
-                                        .getTopParentLayout(context, route,
-                                                resolve(context, route))
+                                RouteUtil.getTopParentLayout(context, route,
+                                        RouteUtil.resolve(context, route))
                                         .getName(),
                                 route.getName()));
             }
 
             List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
-                    .getParentLayouts(context, route, resolve(context, route));
+                    .getParentLayouts(context, route,
+                            RouteUtil.resolve(context, route));
             Class<? extends RouterLayout> topParentLayout = RouteUtil
                     .getTopParentLayout(context, route,
-                            resolve(context, route));
+                            RouteUtil.resolve(context, route));
 
             validateParentAnnotation(parentLayouts, topParentLayout,
                     annotation);
@@ -326,7 +324,7 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
             if (!UI.class.equals(routeAnnotation.layout())) {
                 Class<? extends RouterLayout> topParentLayout = RouteUtil
                         .getTopParentLayout(context, route,
-                                resolve(context, route));
+                                RouteUtil.resolve(context, route));
                 // check and validate top parent layout pwa annotation
                 validatePwa(topParentLayout);
             }
@@ -346,13 +344,6 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                     PWA.class.getSimpleName(), pwaClass.getSimpleName(),
                     pwaClassCandidate.getSimpleName()));
         }
-    }
-
-    private String resolve(VaadinContext context, Class<?> component) {
-        Lookup lookup = context.getAttribute(Lookup.class);
-        RoutePathProvider provider = lookup.lookup(RoutePathProvider.class);
-        assert provider != null;
-        return provider.getRoutePath(component);
     }
 
 }
