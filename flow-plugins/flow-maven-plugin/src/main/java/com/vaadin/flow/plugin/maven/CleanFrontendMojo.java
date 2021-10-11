@@ -33,7 +33,8 @@ import elemental.json.impl.JsonUtil;
 /**
  * Goal that cleans the frontend files to a clean state.
  * <p>
- * Deletes Vaadin dependencies from package.json, the generated frontend folder and the npm/pnpm-related files and folders:
+ * Deletes Vaadin dependencies from package.json, the generated frontend folder
+ * and the npm/pnpm-related files and folders:
  * <ul>
  * <li>node_modules
  * <li>pnpm-lock.yaml
