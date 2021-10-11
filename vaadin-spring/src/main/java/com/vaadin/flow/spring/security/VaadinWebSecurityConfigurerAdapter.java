@@ -97,8 +97,6 @@ public abstract class VaadinWebSecurityConfigurerAdapter
         // Spring CSRF is not compatible with Vaadin internal requests
         http.csrf().ignoringRequestMatchers(
                 requestUtil::isFrameworkInternalRequest);
-        // nor with endpoints
-        http.csrf().ignoringRequestMatchers(requestUtil::isEndpointRequest);
 
         // Ensure automated requests to e.g. closing push channels, service
         // workers,
