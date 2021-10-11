@@ -254,7 +254,7 @@ public interface RouteRegistry extends Serializable {
     void clean();
 
     /**
-     * Gets the Vaadin context which the refistry belongs to.
+     * Gets the Vaadin context which the registry belongs to.
      * 
      * @return the Vaadin context
      */
