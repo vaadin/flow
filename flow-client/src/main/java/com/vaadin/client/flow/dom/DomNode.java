@@ -15,11 +15,12 @@
  */
 package com.vaadin.client.flow.dom;
 
+import jsinterop.annotations.JsProperty;
+import jsinterop.annotations.JsType;
+
 import com.vaadin.client.flow.collection.JsArray;
 
 import elemental.dom.Node;
-import jsinterop.annotations.JsProperty;
-import jsinterop.annotations.JsType;
 
 /**
  * Node that has all methods from
@@ -161,4 +162,15 @@ public interface DomNode {
      */
     @JsProperty
     Node getParentNode();
+
+    /**
+     * The isSameNode() method for Node objects is a legacy alias the for the
+     * === strict equality operator. That is, it tests whether two nodes are the
+     * same (in other words, whether they reference the same object).
+     * 
+     * @param node
+     *            the node to test
+     * @return whether the nodes are the same
+     */
+    boolean isSameNode(Node node);
 }
