@@ -209,6 +209,11 @@ exports = {
   confFolder: `${confFolder}`
 };
 
+const extensions = [
+  enableTypeScript && '.ts',
+  '.js'
+].filter(Boolean);
+
 module.exports = {
   mode: 'production',
   context: frontendFolder,
@@ -226,13 +231,19 @@ module.exports = {
       flowFrontendFolder,
       ...projectStaticAssetsFolders,
     ],
-    extensions: [
-      enableTypeScript && '.ts',
-      '.js'
-    ].filter(Boolean),
+    extensions,
     alias: {
-      Frontend: frontendFolder
-    }
+      // Alias settings should not interfere with TsconfigPathsPlugin, otherwise the plugin fails.
+      ...enableTypeScript
+        ? null
+        : { Frontend: frontendFolder },
+    },
+    plugins: [
+      enableTypeScript && new TsconfigPathsPlugin({
+        configFile: tsconfigJsonFile,
+        extensions,
+      }),
+    ].filter(Boolean),
   },
 
   stats: devMode && !statsSetViaCLI ? 'errors-warnings' : 'normal', // Unclutter output in dev mode
@@ -368,10 +379,6 @@ module.exports = {
       typescript: {
         configFile: tsconfigJsonFile
       }
-    }),
-
-    enableTypeScript && new TsconfigPathsPlugin({
-      configFile: tsconfigJsonFile
     }),
 
     new BuildStatusPlugin()
