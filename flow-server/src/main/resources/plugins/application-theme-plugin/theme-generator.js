@@ -148,7 +148,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
     lumoCssCode.push(`// For the document, we need to be compatible with flow-generated-imports and add missing <style> tags.\n`)
     lumoCssCode.push(`const shadowRoot = (target instanceof ShadowRoot);\n`)
     lumoImports.forEach((lumoImport) => {
-      lumoCssCode.push(`injectGlobalCss(${lumoImport}, target, true);\n`);
+      lumoCssCode.push(`injectGlobalCss(${lumoImport}.cssText, target, true);\n`);
     });
   }
 
