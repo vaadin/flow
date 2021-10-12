@@ -31,13 +31,14 @@ import com.vaadin.flow.theme.AbstractTheme;
  *
  * @since 1.0
  */
-@NpmPackage(value = "@vaadin/vaadin-lumo-styles", version = "21.0.2")
+@NpmPackage(value = "@vaadin/vaadin-lumo-styles", version = "22.0.0-alpha7")
 @JsModule("@vaadin/vaadin-lumo-styles/color.js")
 @JsModule("@vaadin/vaadin-lumo-styles/typography.js")
 @JsModule("@vaadin/vaadin-lumo-styles/sizing.js")
 @JsModule("@vaadin/vaadin-lumo-styles/spacing.js")
 @JsModule("@vaadin/vaadin-lumo-styles/style.js")
 @JsModule("@vaadin/vaadin-lumo-styles/icons.js")
+@JsModule("./lumo-includes.ts")
 public class Lumo implements AbstractTheme {
 
     public static final String LIGHT = "light";
@@ -55,9 +56,7 @@ public class Lumo implements AbstractTheme {
 
     @Override
     public List<String> getHeaderInlineContents() {
-        return Collections.singletonList("<custom-style>\n"
-                + "    <style include=\"lumo-color lumo-typography\"></style>\n"
-                + "</custom-style>");
+        return Collections.emptyList();
     }
 
     @Override
