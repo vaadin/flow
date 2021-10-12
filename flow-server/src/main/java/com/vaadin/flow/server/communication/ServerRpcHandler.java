@@ -296,11 +296,25 @@ public class ServerRpcHandler implements Serializable {
                  * If the reason for ending up here is intermittent, then we
                  * should just issue a full resync since we cannot know the
                  * state of the client engine.
+                 *
+                 * There are reasons to believe that there are deterministic
+                 * issues that trigger this condition, and we'd like to collect
+                 * more data to uncover anything such before actually
+                 * implementing the resync that would thus hide most symptoms of
+                 * the actual root cause bugs.
                  */
+                String messageStart = changeMessage;
+                if (messageStart.length() > 1000) {
+                    messageStart = messageStart.substring(0, 1000);
+                }
+                getLogger().debug("Unexpected message id from the client."
+                        + " Expected sync id: " + expectedId + ", got "
+                        + requestId + ". Message start: " + messageStart);
                 throw new UnsupportedOperationException(
                         "Unexpected message id from the client."
                                 + " Expected sync id: " + expectedId + ", got "
-                                + requestId);
+                                + requestId
+                                + ". more details logged on DEBUG level.");
             }
         } else {
             // Message id ok, process RPCs
