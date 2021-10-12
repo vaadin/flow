@@ -114,7 +114,7 @@ const addCssBlock = function (block, before = false) {
 
 const addStyleIncludeMethod = `
 const addStyleInclude = (module, target) => {
-  addCssBlock('<style>\${${module}.cssText}</style>');
+  addCssBlock('<style>\${module.cssText}</style>', true);
 };
 `;
 
@@ -190,7 +190,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
 
     lumoCssCode.push(`} else if (!document['${lumoCssFlag}']) {\n`);
     lumoImports.forEach((lumoImport) => {
-      lumoCssCode.push(`addStyleInclude("${lumoImport}", target);\n`);
+      lumoCssCode.push(`addStyleInclude(${lumoImport}, target);\n`);
     });
     lumoCssCode.push('if(window.ShadyCSS) { window.ShadyCSS.CustomStyleInterface.processStyles(); }');
     lumoCssCode.push(`document['${lumoCssFlag}'] = true;\n`);
