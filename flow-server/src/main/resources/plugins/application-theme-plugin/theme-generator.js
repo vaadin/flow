@@ -114,7 +114,7 @@ const addCssBlock = function (block, before = false) {
 
 const addStyleIncludeMethod = `
 const addStyleInclude = (module, target) => {
-  addCssBlock(\`<custom-style><style include="\${module}"></style></custom-style>\`, true);
+  addCssBlock('<style>\${module}.cssText}</style>');
 };
 `;
 
@@ -177,7 +177,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   const lumoImports = themeProperties.lumoImports || ["color", "typography"];
   if (lumoImports && lumoImports.length > 0) {
     lumoImports.forEach((lumoImport) => {
-      imports.push(`import '@vaadin/vaadin-lumo-styles/${lumoImport}.js';\n`);
+      imports.push(`import { ${lumoImport} } from '@vaadin/vaadin-lumo-styles';\n`);
     });
 
     lumoCssCode.push(`// Lumo styles are injected into shadow roots.\n`)
@@ -190,7 +190,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
 
     lumoCssCode.push(`} else if (!document['${lumoCssFlag}']) {\n`);
     lumoImports.forEach((lumoImport) => {
-      lumoCssCode.push(`addStyleInclude("lumo-${lumoImport}", target);\n`);
+      lumoCssCode.push(`addStyleInclude("${lumoImport}", target);\n`);
     });
     lumoCssCode.push('if(window.ShadyCSS) { window.ShadyCSS.CustomStyleInterface.processStyles(); }');
     lumoCssCode.push(`document['${lumoCssFlag}'] = true;\n`);
