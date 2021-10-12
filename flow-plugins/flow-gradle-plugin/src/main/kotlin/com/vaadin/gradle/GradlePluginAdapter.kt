@@ -83,10 +83,7 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
     }
 
     override fun getJarFiles(): MutableSet<File> {
-        val jarFiles = project.configurations
-            .getByName("runtimeClasspath")
-            .resolve()
-            .filter { it.name.endsWith(".jar", true) }
+        val jarFiles: Set<File> = project.configurations.runtimeClasspath.jars.toSet()
         return jarFiles.toMutableSet()
     }
 

@@ -15,6 +15,10 @@
  */
 package com.vaadin.gradle
 
+
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ConfigurationContainer
+import org.gradle.api.file.FileCollection
 import com.vaadin.flow.server.frontend.FrontendTools
 import com.vaadin.flow.server.frontend.FrontendUtils
 import org.gradle.api.Project
@@ -68,3 +72,15 @@ internal fun VaadinFlowPluginExtension.createFrontendTools(): FrontendTools =
         nodeVersion,
         URI(nodeDownloadRoot)
     )
+
+/**
+ * Returns the "runtimeClasspath" file collection.
+ */
+internal val ConfigurationContainer.runtimeClasspath: Configuration
+    get() = getByName("runtimeClasspath")
+
+/**
+ * Returns only jar files from given file collection.
+ */
+internal val Configuration.jars: FileCollection
+    get() = filter { it.name.endsWith(".jar", true) }
