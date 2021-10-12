@@ -114,7 +114,7 @@ const addCssBlock = function (block, before = false) {
 
 const addStyleIncludeMethod = `
 const addStyleInclude = (module, target) => {
-  addCssBlock('<style>\${module}.cssText}</style>');
+  addCssBlock('<style>\${module}.cssText</style>');
 };
 `;
 
