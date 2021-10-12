@@ -25,6 +25,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
  */
 @JsModule("@vaadin/vaadin-radio-button/vaadin-radio-button.ts")
 @Tag("vaadin-radio-button")
+@JsModule("@vaadin/polymer-legacy-adapter/style-modules.js")
 @NpmPackage(value = "@vaadin/vaadin-radio-button", version = "22.0.0-alpha9")
 public class MyLitField extends Component {
 
