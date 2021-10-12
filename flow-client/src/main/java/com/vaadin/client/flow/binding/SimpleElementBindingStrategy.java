@@ -22,6 +22,7 @@ import jsinterop.annotations.JsFunction;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
+
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
@@ -748,7 +749,23 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         String name = mapProperty.getName();
         CSSStyleDeclaration styleElement = element.getStyle();
         if (mapProperty.hasValue()) {
-            styleElement.setProperty(name, (String) mapProperty.getValue());
+            String value = (String) mapProperty.getValue();
+            boolean styleIsSet = false;
+            if (value.contains("!important")) {
+                Element temp = Browser.getDocument()
+                        .createElement(element.getTagName());
+                temp.getStyle().setCssText(value);
+                if ("important"
+                        .equals(temp.getStyle().getPropertyPriority(name))) {
+                    styleElement.setProperty(name,
+                            temp.getStyle().getPropertyValue(name),
+                            temp.getStyle().getPropertyPriority(name));
+                    styleIsSet = true;
+                }
+            }
+            if (!styleIsSet) {
+                styleElement.setProperty(name, value);
+            }
         } else {
             styleElement.removeProperty(name);
         }

@@ -80,11 +80,11 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     public void testBindExistingPropertyWithDifferentType() {
-        //set number as a property value for DOM elememnt
-        double value= setNumberValue(element, "bar");
-        
+        // set number as a property value for DOM elememnt
+        double value = setNumberValue(element, "bar");
+
         // set string as a StateTree property value
-        properties.getProperty("bar").setValue(""+value);
+        properties.getProperty("bar").setValue("" + value);
 
         Binder.bind(node, element);
 
@@ -818,11 +818,25 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES).getProperty("color")
                 .setValue("green");
 
+        node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES)
+                .getProperty("display").setValue("none !important");
+
+        node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES)
+                .getProperty("background-color").setValue("!importantfoo");
+
         Reactive.flush();
         Binder.bind(node, element);
 
         Reactive.flush();
         assertEquals("green", element.getStyle().getColor());
+
+        assertEquals("none", element.getStyle().getDisplay());
+        assertEquals("important",
+                element.getStyle().getPropertyPriority("display"));
+
+        assertEquals("!importantfoo", element.getStyle().getBackgroundColor());
+        assertEquals("",
+                element.getStyle().getPropertyPriority("background-color"));
     }
 
     public void testAddStylesAfterBind() {
@@ -831,8 +845,22 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES).getProperty("color")
                 .setValue("green");
 
+        node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES)
+                .getProperty("display").setValue("none !important");
+
+        node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES)
+                .getProperty("background-color").setValue("!importantfoo");
+
         Reactive.flush();
         assertEquals("green", element.getStyle().getColor());
+
+        assertEquals("none", element.getStyle().getDisplay());
+        assertEquals("important",
+                element.getStyle().getPropertyPriority("display"));
+
+        assertEquals("!importantfoo", element.getStyle().getBackgroundColor());
+        assertEquals("",
+                element.getStyle().getPropertyPriority("background-color"));
     }
 
     public void testRemoveStyles() {
@@ -1975,7 +2003,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     /*-{
        return typeof obj[name];
     }-*/;
-    
+
     private native double setNumberValue(Object obj, String name)
     /*-{
        obj[name] =2;
