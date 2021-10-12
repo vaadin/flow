@@ -32,6 +32,7 @@ import com.vaadin.flow.theme.AbstractTheme;
  * @since 1.0
  */
 @NpmPackage(value = "@vaadin/vaadin-lumo-styles", version = "22.0.0-alpha9")
+@NpmPackage(value = "@vaadin/polymer-legacy-adapter", version = "22.0.0-alpha9")
 @JsModule("@vaadin/polymer-legacy-adapter/style-modules.js")
 @JsModule("@vaadin/vaadin-lumo-styles/color.js")
 @JsModule("@vaadin/vaadin-lumo-styles/typography.js")

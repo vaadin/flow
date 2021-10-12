@@ -95,9 +95,8 @@ public class ReusableThemeIT extends ChromeBrowserTest {
     public void componentThemeIsApplied_forPolymerAndLit() {
         open();
         TestBenchElement myField = $(TestBenchElement.class).id(MY_POLYMER_ID);
-        TestBenchElement input = myField.$(DivElement.class)
-                .attribute("class", "vaadin-text-field-container").first()
-                .$(DivElement.class).attribute("part", "input-field").first();
+        TestBenchElement input = myField.$("vaadin-input-container")
+                .attribute("part", "input-field").first();
         Assert.assertEquals("Polymer text field should have red background",
                 "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
 

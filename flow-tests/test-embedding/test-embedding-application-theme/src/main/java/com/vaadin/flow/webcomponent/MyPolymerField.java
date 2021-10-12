@@ -26,6 +26,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 @JsModule("@vaadin/vaadin-text-field/vaadin-text-field.js")
 @Tag("vaadin-text-field")
 @JsModule("@vaadin/polymer-legacy-adapter/style-modules.js")
+@NpmPackage(value = "@vaadin/polymer-legacy-adapter", version = "22.0.0-alpha9")
 @NpmPackage(value = "@vaadin/vaadin-text-field", version = "22.0.0-alpha9")
 public class MyPolymerField extends Component {
 

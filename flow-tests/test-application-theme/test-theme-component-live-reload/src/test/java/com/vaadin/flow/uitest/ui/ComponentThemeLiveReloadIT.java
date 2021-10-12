@@ -166,10 +166,8 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
             waitForElementPresent(By.id(THEMED_COMPONENT_ID));
             TestBenchElement themedTextField = $(TestBenchElement.class)
                     .id(THEMED_COMPONENT_ID);
-            TestBenchElement input = themedTextField.$(DivElement.class)
-                    .attribute("class", "vaadin-text-field-container").first()
-                    .$(DivElement.class).attribute("part", "input-field")
-                    .first();
+            TestBenchElement input = themedTextField.$("vaadin-input-container")
+                    .attribute("part", "input-field").first();
             return borderRadius.equals(input.getCssValue("border-radius"));
         } catch (StaleElementReferenceException e) {
             return false;
