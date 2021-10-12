@@ -25,7 +25,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
  */
 @JsModule("@vaadin/vaadin-text-field/vaadin-text-field.js")
 @Tag("vaadin-text-field")
-@NpmPackage(value = "@vaadin/vaadin-text-field", version = "2.7.1")
+@NpmPackage(value = "@vaadin/vaadin-text-field", version = "22.0.0-alpha9")
 public class TestThemedTextField extends Component {
 
     /**

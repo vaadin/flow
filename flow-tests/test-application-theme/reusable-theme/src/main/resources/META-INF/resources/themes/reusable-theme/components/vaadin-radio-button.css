@@ -1,3 +1,3 @@
-[part='radio'] {
+::slotted('radio') {
     background-color: red;
 }

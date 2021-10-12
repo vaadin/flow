@@ -181,7 +181,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
         try {
             // @formatter:off
             final String componentStyles =
-                    "[part=\"input-field\"] {\n" +
+                    "::slotted(\"input-field\") {\n" +
                     "    border-radius: " + borderRadius + ";\n" +
                     "}";
             // @formatter:on
