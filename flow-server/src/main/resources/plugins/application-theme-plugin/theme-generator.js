@@ -32,21 +32,6 @@ const documentCssFile = 'document.css';
 const stylesCssFile = 'styles.css';
 
 const headerImport = `import 'construct-style-sheets-polyfill';
-import { DomModule } from "@polymer/polymer/lib/elements/dom-module";
-import { stylesFromTemplate } from "@polymer/polymer/lib/utils/style-gather";
-import "@polymer/polymer/lib/elements/custom-style.js";
-`;
-
-const getStyleModule = `
-const getStyleModule = (id) => {
-  const template = DomModule.import(id, "template");
-  const cssText =
-    template &&
-    stylesFromTemplate(template, "")
-      .map((style) => style.textContent)
-      .join(" ");
-  return cssText;
-};
 `;
 
 const createLinkReferences = `
@@ -100,24 +85,6 @@ export const injectGlobalCss = (css, target, first) => {
 };
 `;
 
-// This is copied from flow-generated-import
-const addCssBlockMethod = `
-const addCssBlock = function (block, before = false) {
-  const tpl = document.createElement("template");
-  tpl.innerHTML = block;
-  document.head[before ? "insertBefore" : "appendChild"](
-    tpl.content,
-    document.head.firstChild
-  );
-};
-`;
-
-const addStyleIncludeMethod = `
-const addStyleInclude = (module, target) => {
-  addCssBlock(\`<style>\${module.cssText}</style>\`, true);
-};
-`;
-
 /**
  * Generate the [themeName].js file for themeFolder which collects all required information from the folder.
  *
@@ -147,9 +114,6 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
 
   themeFile += createLinkReferences;
   themeFile += injectGlobalCssMethod;
-  themeFile += addCssBlockMethod;
-  themeFile += addStyleIncludeMethod;
-  themeFile += getStyleModule;
 
   const imports = [];
   const globalCssCode = [];
@@ -183,18 +147,10 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
     lumoCssCode.push(`// Lumo styles are injected into shadow roots.\n`)
     lumoCssCode.push(`// For the document, we need to be compatible with flow-generated-imports and add missing <style> tags.\n`)
     lumoCssCode.push(`const shadowRoot = (target instanceof ShadowRoot);\n`)
-    lumoCssCode.push(`if (shadowRoot) {\n`);
-    lumoImports.forEach((lumoImport) => {
-      lumoCssCode.push(`injectGlobalCss(getStyleModule("lumo-${lumoImport}"), target, true);\n`);
-    });
 
-    lumoCssCode.push(`} else if (!document['${lumoCssFlag}']) {\n`);
     lumoImports.forEach((lumoImport) => {
-      lumoCssCode.push(`addStyleInclude(${lumoImport}, target);\n`);
+       lumoCssCode.push(`injectGlobalCss(${lumoImport}.cssText, target, true);\n`);
     });
-    lumoCssCode.push('if(window.ShadyCSS) { window.ShadyCSS.CustomStyleInterface.processStyles(); }');
-    lumoCssCode.push(`document['${lumoCssFlag}'] = true;\n`);
-    lumoCssCode.push(`}\n`);
   }
 
   globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n    `);
