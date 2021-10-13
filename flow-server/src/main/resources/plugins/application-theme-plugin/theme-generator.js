@@ -144,9 +144,6 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
       imports.push(`import { ${lumoImport} } from '@vaadin/vaadin-lumo-styles';\n`);
     });
 
-    lumoCssCode.push(`// Lumo styles are injected into shadow roots.\n`)
-    lumoCssCode.push(`// For the document, we need to be compatible with flow-generated-imports and add missing <style> tags.\n`)
-    lumoCssCode.push(`const shadowRoot = (target instanceof ShadowRoot);\n`)
     lumoImports.forEach((lumoImport) => {
       lumoCssCode.push(`injectGlobalCss(${lumoImport}.cssText, target, true);\n`);
     });
