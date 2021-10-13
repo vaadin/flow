@@ -751,15 +751,17 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         if (mapProperty.hasValue()) {
             String value = (String) mapProperty.getValue();
             boolean styleIsSet = false;
+            styleElement.setProperty(name, value);
             if (value.contains("!important")) {
                 Element temp = Browser.getDocument()
                         .createElement(element.getTagName());
-                temp.getStyle().setCssText(value);
-                if ("important"
+                CSSStyleDeclaration tmpStyle = temp.getStyle();
+                tmpStyle.setCssText(name + ": " + value + ";");
+                String priority = "important";
+                if (priority
                         .equals(temp.getStyle().getPropertyPriority(name))) {
                     styleElement.setProperty(name,
-                            temp.getStyle().getPropertyValue(name),
-                            temp.getStyle().getPropertyPriority(name));
+                            temp.getStyle().getPropertyValue(name), priority);
                     styleIsSet = true;
                 }
             }

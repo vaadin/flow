@@ -824,10 +824,9 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES)
                 .getProperty("background-color").setValue("!importantfoo");
 
-        Reactive.flush();
         Binder.bind(node, element);
-
         Reactive.flush();
+
         assertEquals("green", element.getStyle().getColor());
 
         assertEquals("none", element.getStyle().getDisplay());
@@ -872,19 +871,20 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         styleMap.getProperty("color").setValue("white");
 
         Reactive.flush();
-        assertEquals("background: blue;color: white;",
-                element.getAttribute("style"));
+        assertEquals("blue", element.getStyle().getPropertyValue("background"));
+        assertEquals("white", element.getStyle().getColor());
 
         styleMap.getProperty("color").removeValue();
 
         Reactive.flush();
-        assertEquals("background: blue;", element.getAttribute("style"));
+        assertEquals("blue", element.getStyle().getPropertyValue("background"));
+        assertEquals("", element.getStyle().getColor());
     }
 
     private native void polyfillStyleSetProperty(Element element)
     /*-{
          // This polyfills just enough to make the tests pass and nothing else
-         element.style.__proto__.setProperty = function(key,value) {
+         element.style.__proto__.setProperty = function(key,value, priority) {
              var newValue = element.getAttribute("style");
              if (!newValue) {
                  newValue = "";
@@ -892,7 +892,12 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
              else if (!newValue.endsWith(";")) {
                  newValue +=";"
              }
-             element.setAttribute("style", newValue + key+": "+value+";");
+             if ( priority ){
+                 element.setAttribute("style", newValue + key+": "+value+" !"+priority+";");
+             }
+             else {
+                 element.setAttribute("style", newValue + key+": "+value+";");
+             }
          };
      }-*/;
 
@@ -911,7 +916,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         styleMap.getProperty("font-size").setValue("12px");
 
         Reactive.flush();
-        assertEquals("color: red;", element.getAttribute("style"));
+        assertEquals("red", element.getStyle().getColor());
     }
 
     public void testAttachExistingElement() {
