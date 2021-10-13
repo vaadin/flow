@@ -303,13 +303,10 @@ public class ServerRpcHandler implements Serializable {
                  * implementing the resync that would thus hide most symptoms of
                  * the actual root cause bugs.
                  */
-                String messageStart = changeMessage;
-                if (messageStart.length() > 1000) {
-                    messageStart = messageStart.substring(0, 1000);
-                }
+                String messageDetails = getMessageDetails(rpcRequest);
                 getLogger().debug("Unexpected message id from the client."
                         + " Expected sync id: " + expectedId + ", got "
-                        + requestId + ". Message start: " + messageStart);
+                        + requestId + ". Message start: " + messageDetails);
                 throw new UnsupportedOperationException(
                         "Unexpected message id from the client."
                                 + " Expected sync id: " + expectedId + ", got "
@@ -343,6 +340,26 @@ public class ServerRpcHandler implements Serializable {
             // signature for source and binary compatibility
             throw new ResynchronizationRequiredException();
         }
+    }
+
+    private String getMessageDetails(RpcRequest rpcRequest) {
+        String messageDetails = "";
+        JsonObject rpcJson = rpcRequest.getRawJson();
+        JsonArray rpcArray = rpcJson.hasKey("rpc") ? rpcJson.getArray("rpc")
+                : null;
+        if (rpcArray == null) {
+            return messageDetails;
+        }
+        for (int i = 0; i < rpcArray.length(); i++) {
+            JsonObject json = rpcArray.get(i);
+            String type = json.hasKey("type") ? json.getString("type") : "";
+            Double node = json.hasKey("node") ? json.getNumber("node") : null;
+            Double feature = json.hasKey("feature") ? json.getNumber("feature")
+                    : null;
+            messageDetails += "{ type: " + type + " node: " + node
+                    + " feature: " + feature + " } ";
+        }
+        return messageDetails;
     }
 
     /**
