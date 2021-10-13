@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.theme;
+package com.vaadin.flow.webcomponent;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -25,8 +25,8 @@ import com.vaadin.flow.component.dependency.NpmPackage;
  */
 @JsModule("@vaadin/vaadin-text-field/vaadin-text-field.js")
 @Tag("vaadin-text-field")
-@NpmPackage(value = "@vaadin/vaadin-text-field", version = "2.7.1")
-public class MyPolymerField extends Component {
+@NpmPackage(value = "@vaadin/vaadin-text-field", version = "22.0.0-alpha9")
+public class MyComponent extends Component {
 
     /**
      * Set the component id.

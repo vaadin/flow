@@ -27,8 +27,7 @@ import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.webcomponent.ThemedComponent.EMBEDDED_ID;
 import static com.vaadin.flow.webcomponent.ThemedComponent.HAND_ID;
-import static com.vaadin.flow.webcomponent.ThemedComponent.MY_LIT_ID;
-import static com.vaadin.flow.webcomponent.ThemedComponent.MY_POLYMER_ID;
+import static com.vaadin.flow.webcomponent.ThemedComponent.MY_COMPONENT_ID;
 
 public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
@@ -98,7 +97,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void componentThemeIsApplied_forPolymerAndLit() {
+    public void componentThemeIsApplied() {
         open();
 
         final TestBenchElement themedComponent = $("themed-component").first();
@@ -106,20 +105,11 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 .$(DivElement.class).id(EMBEDDED_ID);
 
         TestBenchElement myField = embeddedComponent.$(TestBenchElement.class)
-                .id(MY_POLYMER_ID);
+                .id(MY_COMPONENT_ID);
         TestBenchElement input = myField.$("vaadin-input-container")
                 .attribute("part", "input-field").first();
         Assert.assertEquals("Polymer text field should have red background",
                 "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
-
-        myField = embeddedComponent.$(TestBenchElement.class).id(MY_LIT_ID);
-        final TestBenchElement radio = myField.$("*").attribute("part", "radio")
-                .first();
-
-        Assert.assertNotNull("Element with part='radio' was not found", radio);
-
-        Assert.assertEquals("Lit radiobutton should have red background",
-                "rgba(255, 0, 0, 1)", radio.getCssValue("background-color"));
     }
 
     @Test
