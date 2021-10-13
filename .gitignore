@@ -43,14 +43,10 @@ node
 node_modules
 /frontend
 */flow-*/frontend
-package-lock.json
 **/webpack.generated.js
 
-flow-tests/**/package.json
 flow-tests/**/webpack*.js
 flow-tests/**/tsconfig.json
-flow-tests/**/pnpm-lock.yaml
-yarn.lock
 
 flow-client/src/main/frontend/FlowClient.js
 flow-tests/**/types.d.ts
