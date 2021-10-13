@@ -23,9 +23,9 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 /**
  * LIT version of vaadin radio button for testing component theming.
  */
-@JsModule("@vaadin/vaadin-radio-button/vaadin-radio-button.ts")
+@JsModule("@vaadin/vaadin-radio-button/vaadin-radio-button.js")
 @Tag("vaadin-radio-button")
-@NpmPackage(value = "@vaadin/vaadin-radio-button", version = "2.0.0-alpha1")
+@NpmPackage(value = "@vaadin/vaadin-radio-button", version = "22.0.0-alpha9")
 public class MyLitField extends Component {
 
     /**

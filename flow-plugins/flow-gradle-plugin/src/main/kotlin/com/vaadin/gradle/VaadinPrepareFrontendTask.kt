@@ -43,13 +43,7 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
         // the Vaadin classpath scanning will not work properly. See
         // https://github.com/vaadin/vaadin-gradle-plugin/issues/38
         // for more details.
-        val dependentProjectTasks: List<Task> = project.configurations.getByName("runtimeClasspath")
-                .allDependencies
-                .withType(ProjectDependency::class.java)
-                .toList()
-                .map { it.dependencyProject }
-                .mapNotNull { it.tasks.findByName("assemble") }
-        dependsOn(*dependentProjectTasks.toTypedArray())
+        dependsOn(project.configurations.runtimeClasspath.jars)
     }
 
     @TaskAction

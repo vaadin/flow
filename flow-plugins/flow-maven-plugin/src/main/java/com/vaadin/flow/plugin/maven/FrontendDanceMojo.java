@@ -13,16 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.testonlynpmfeatures.defaulttheme;
+package com.vaadin.flow.plugin.maven;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
 
-@JsModule("./src/template-with-client-side-imports.js")
-@NpmPackage(value = "@vaadin/vaadin-button", version = "2.2.0")
-@Tag("template-with-client-side-imports")
-public class TemplateWithClientSideImports extends Component {
-
+/**
+ * This is the hidden `vaadin:dance` to clean up the frontend files.
+ *
+ * @since
+ */
+@Mojo(name = "dance", defaultPhase = LifecyclePhase.CLEAN)
+public class FrontendDanceMojo extends CleanFrontendMojo {
 }

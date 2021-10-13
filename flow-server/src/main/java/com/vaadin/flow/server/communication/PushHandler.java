@@ -23,6 +23,7 @@ import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.Optional;
 
+import org.apache.commons.io.IOUtils;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
@@ -528,15 +529,38 @@ public class PushHandler {
      */
     void onMessage(AtmosphereResource resource) {
         if (isDebugWindowConnection(resource)) {
-            getLogger().debug("Received live reload heartbeat");
+            handleDebugWindowMessage(resource);
         } else {
             callWithUi(resource, receiveCallback);
         }
     }
 
+    private void handleDebugWindowMessage(AtmosphereResource resource) {
+        AtmosphereRequest req = resource.getRequest();
+        VaadinServletRequest vaadinRequest = new VaadinServletRequest(req,
+                service);
+        service.setCurrentInstances(vaadinRequest, null);
+        try {
+            String msg = IOUtils.toString(req.getReader());
+            Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
+                    .getLiveReloadFromService(service);
+            if (liveReload.isPresent()) {
+                liveReload.get().onMessage(msg);
+            } else {
+                getLogger().error(
+                        "Received message for debug window but there is no debug window connection available");
+            }
+        } catch (IOException e) {
+            getLogger().error(
+                    "Unable to read contents of debug connection message", e);
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
     private boolean isDebugWindowConnection(AtmosphereResource resource) {
         String refreshConnection = resource.getRequest()
-                .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION);
+                .getParameter(ApplicationConstants.DEBUG_WINDOW_CONNECTION);
         return refreshConnection != null
                 && TRANSPORT.WEBSOCKET.equals(resource.transport());
     }
