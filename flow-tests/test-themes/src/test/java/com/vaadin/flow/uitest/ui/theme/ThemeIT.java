@@ -165,9 +165,8 @@ public class ThemeIT extends ChromeBrowserTest {
         TestBenchElement myField = $(TestBenchElement.class)
                 .id(MY_COMPONENT_ID);
 
-        TestBenchElement input = myField.$(DivElement.class)
-                .attribute("class", "vaadin-text-field-container").first()
-                .$(DivElement.class).attribute("part", "input-field").first();
+        TestBenchElement input = myField.$("vaadin-input-container")
+                .attribute("part", "input-field").first();
         Assert.assertEquals(
                 "Polymer text field should get parent border radius", "0px",
                 input.getCssValue("border-radius"));
@@ -182,9 +181,8 @@ public class ThemeIT extends ChromeBrowserTest {
         open();
         TestBenchElement myField = $(TestBenchElement.class)
                 .id(MY_COMPONENT_ID);
-        TestBenchElement input = myField.$(DivElement.class)
-                .attribute("class", "vaadin-text-field-container").first()
-                .$(DivElement.class).attribute("part", "input-field").first();
+        TestBenchElement input = myField.$("vaadin-input-container")
+                .attribute("part", "input-field").first();
         Assert.assertEquals("Polymer text field should have red background",
                 "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
     }
