@@ -30,6 +30,7 @@ public class MockDeploymentConfiguration
     private boolean brotli = false;
     private boolean eagerServerLoad = false;
     private boolean devModeLiveReloadEnabled = false;
+    private boolean devModeGizmoEnabled = true;
 
     public MockDeploymentConfiguration() {
         super(Collections.emptyMap());
@@ -189,11 +190,20 @@ public class MockDeploymentConfiguration
         return devModeLiveReloadEnabled;
     }
 
+    @Override
+    public boolean isDevModeGizmoEnabled() {
+        return devModeGizmoEnabled;
+    }
+
     public void setEagerServerLoad(boolean includeBootsrapInitialUidl) {
         this.eagerServerLoad = includeBootsrapInitialUidl;
     }
 
     public void setDevModeLiveReloadEnabled(boolean devModeLiveReloadEnabled) {
         this.devModeLiveReloadEnabled = devModeLiveReloadEnabled;
+    }
+
+    public void setDevModeGizmoEnabled(boolean devModeGizmoEnabled) {
+        this.devModeGizmoEnabled = devModeGizmoEnabled;
     }
 }

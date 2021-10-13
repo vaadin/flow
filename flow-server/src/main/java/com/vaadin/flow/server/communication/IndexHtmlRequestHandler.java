@@ -128,7 +128,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // modify the page based on registered IndexHtmlRequestListener:s
         request.getService().modifyIndexHtmlResponse(indexHtmlResponse);
 
-        if (!config.isProductionMode()) {
+        if (config.isDevModeGizmoEnabled()) {
             addDevmodeGizmo(indexDocument, config, session, request);
             catchErrorsInDevMode(indexDocument);
         }

@@ -167,24 +167,6 @@ public class WebpackHandlerTest {
     @Test
     public void avoidStoringPortOfFailingWebPackDevServer_failWebpackStart_startWebPackSucessfullyAfter()
             throws Exception {
-        MockDeploymentConfiguration config = new MockDeploymentConfiguration() {
-            @Override
-            public boolean getBooleanProperty(String propertyName,
-                    boolean defaultValue) throws IllegalArgumentException {
-                if (propertyName
-                        .equals(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)) {
-                    try {
-                        // remove npmFolder on the property read which happens
-                        // after folder validation has happened
-                        FileUtils.deleteDirectory(npmFolder);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                return super.getBooleanProperty(propertyName, defaultValue);
-            }
-        };
-
         WebpackHandler handler = WebpackHandler.start(createDevModeLookup(),
                 npmFolder, CompletableFuture.completedFuture(null));
 

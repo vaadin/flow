@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.util.List;
-import java.util.regex.Pattern;
-
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.flow.testutil.DevModeGizmoElement;
