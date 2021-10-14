@@ -33,6 +33,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class FeatureFlagsTest {
 
     @Before
@@ -48,7 +51,8 @@ public class FeatureFlagsTest {
 
     @Test
     public void propertiesLoaded() throws IOException {
-        Assert.assertFalse(FeatureFlags.isEnabled(FeatureFlags.EXAMPLE));
+        Assert.assertFalse("Feature should be initially disabled",
+                FeatureFlags.isEnabled(FeatureFlags.EXAMPLE));
 
         File folder = createTempFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
@@ -59,7 +63,60 @@ public class FeatureFlagsTest {
         // mock
         FeatureFlags.loadProperties();
 
-        Assert.assertTrue(FeatureFlags.isEnabled(FeatureFlags.EXAMPLE));
+        Assert.assertTrue("Feature should have been enabled",
+                FeatureFlags.isEnabled(FeatureFlags.EXAMPLE));
+    }
+
+    @Test
+    public void setPropertiesLocation() throws Exception {
+        // Set location and ensure flags are loaded from there
+        File folder = createTempFeatureFlagsFile(
+                "com.vaadin.experimental.exampleFeatureFlag=true\n");
+        Assert.assertFalse("Feature should be initially disabled",
+                FeatureFlags.isEnabled(FeatureFlags.EXAMPLE));
+        FeatureFlags.setPropertiesLocation(folder);
+        Assert.assertTrue("Feature should have been enabled",
+                FeatureFlags.isEnabled(FeatureFlags.EXAMPLE));
+    }
+
+    @Test
+    public void enableDisableFeature() throws IOException {
+        File folder = createTempFeatureFlagsFile(
+                "com.vaadin.experimental.exampleFeatureFlag=false\n");
+        mockResourcesLocation(folder);
+        FeatureFlags.loadProperties();
+        Assert.assertFalse(
+                "Feature should be disabled after reading the properties",
+                FeatureFlags.isEnabled(FeatureFlags.EXAMPLE));
+        FeatureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), true);
+        Assert.assertTrue("Feature should have been enabled",
+                FeatureFlags.isEnabled(FeatureFlags.EXAMPLE));
+        Assert.assertEquals(
+                "# Example feature. Will be removed once the first real feature flag is added\ncom.vaadin.experimental.exampleFeatureFlag=true\n",
+                FileUtils.readFileToString(
+                        new File(folder, FeatureFlags.PROPERTIES_FILENAME),
+                        StandardCharsets.UTF_8));
+
+        FeatureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), false);
+        Assert.assertFalse("Feature should have been disabled",
+                FeatureFlags.isEnabled(FeatureFlags.EXAMPLE));
+        Assert.assertEquals(
+                "Feature flags file should be empty when no features are enabled",
+                "",
+                FileUtils.readFileToString(
+                        new File(folder, FeatureFlags.PROPERTIES_FILENAME),
+                        StandardCharsets.UTF_8));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setEnabledOnlyInDevelopmentMode() throws IOException {
+        File folder = createTempFeatureFlagsFile(
+                "com.vaadin.experimental.exampleFeatureFlag=true\n");
+        mockResourcesLocation(folder);
+        ApplicationConfiguration conf = ApplicationConfiguration
+                .get(VaadinService.getCurrent().getContext());
+        Mockito.when(conf.isProductionMode()).thenReturn(true);
+        FeatureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), true);
     }
 
     private void mockResourcesLocation(File folder) {
@@ -79,16 +136,6 @@ public class FeatureFlagsTest {
 
     }
 
-    @Test
-    public void setPropertiesLocation() throws Exception {
-        // Set location and ensure flags are loaded from there
-        File folder = createTempFeatureFlagsFile(
-                "com.vaadin.experimental.exampleFeatureFlag=true\n");
-        Assert.assertFalse(FeatureFlags.isEnabled(FeatureFlags.EXAMPLE));
-        FeatureFlags.setPropertiesLocation(folder);
-        Assert.assertTrue(FeatureFlags.isEnabled(FeatureFlags.EXAMPLE));
-    }
-
     private File createTempFeatureFlagsFile(String data) throws IOException {
         File folder = Files.createTempDirectory("featureflags-test-folder")
                 .toFile();
@@ -97,40 +144,6 @@ public class FeatureFlagsTest {
         FileUtils.write(new File(folder, FeatureFlags.PROPERTIES_FILENAME),
                 data, StandardCharsets.UTF_8);
         return folder;
-    }
-
-    @Test
-    public void enableDisableFeature() throws IOException {
-        File folder = createTempFeatureFlagsFile(
-                "com.vaadin.experimental.exampleFeatureFlag=false\n");
-        mockResourcesLocation(folder);
-        FeatureFlags.loadProperties();
-        Assert.assertFalse(FeatureFlags.isEnabled(FeatureFlags.EXAMPLE));
-        FeatureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), true);
-        Assert.assertTrue(FeatureFlags.isEnabled(FeatureFlags.EXAMPLE));
-        Assert.assertEquals(
-                "# Example feature. Will be removed once the first real feature flag is added\ncom.vaadin.experimental.exampleFeatureFlag=true\n",
-                FileUtils.readFileToString(
-                        new File(folder, FeatureFlags.PROPERTIES_FILENAME),
-                        StandardCharsets.UTF_8));
-
-        FeatureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), false);
-        Assert.assertFalse(FeatureFlags.isEnabled(FeatureFlags.EXAMPLE));
-        Assert.assertEquals("",
-                FileUtils.readFileToString(
-                        new File(folder, FeatureFlags.PROPERTIES_FILENAME),
-                        StandardCharsets.UTF_8));
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void setEnabledOnlyInDevelopmentMode() throws IOException {
-        File folder = createTempFeatureFlagsFile(
-                "com.vaadin.experimental.exampleFeatureFlag=true\n");
-        mockResourcesLocation(folder);
-        ApplicationConfiguration conf = ApplicationConfiguration
-                .get(VaadinService.getCurrent().getContext());
-        Mockito.when(conf.isProductionMode()).thenReturn(true);
-        FeatureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), true);
     }
 
 }
