@@ -153,7 +153,7 @@ public class FeatureFlags implements Serializable {
      * @return <code>true</code> if enabled, <code>false</code> otherwise
      */
     public static boolean isEnabled(String featureId) {
-        return getFeature(featureId).map(f -> f.isEnabled()).orElse(false);
+        return getFeature(featureId).map(Feature::isEnabled).orElse(false);
     }
 
     private static Optional<Feature> getFeature(String featureId) {

@@ -536,7 +536,7 @@ public class PushHandler {
      */
     void onConnect(AtmosphereResource resource) {
         if (isDebugWindowConnection(resource)) {
-            callWithService(resource, (request) -> BrowserLiveReloadAccessor
+            callWithService(resource, request -> BrowserLiveReloadAccessor
                     .getLiveReloadFromService(service)
                     .ifPresent(liveReload -> liveReload.onConnect(resource)));
         } else {
