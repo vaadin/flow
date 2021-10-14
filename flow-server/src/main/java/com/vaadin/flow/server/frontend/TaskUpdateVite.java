@@ -22,6 +22,8 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -36,9 +38,14 @@ import org.slf4j.LoggerFactory;
 public class TaskUpdateVite implements FallibleCommand, Serializable {
 
     private File configFolder;
+    private String buildFolder;
 
-    TaskUpdateVite(File configFolder) {
+    Pattern frontendFilePattern = Pattern
+            .compile("import flowSettings from '(.*)';");
+
+    TaskUpdateVite(File configFolder, String buildFolder) {
         this.configFolder = configFolder;
+        this.buildFolder = buildFolder;
     }
 
     @Override
@@ -58,9 +65,36 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                     .getResource(FrontendUtils.VITE_CONFIG);
             String template = IOUtils.toString(resource,
                     StandardCharsets.UTF_8);
+
+            template = updateSettings(template);
             FileUtils.write(configFile, template, StandardCharsets.UTF_8);
             log().debug("Created vite configuration file: '{}'", configFile);
+        } else {
+            String template = IOUtils.toString(configFile.toURI(),
+                    StandardCharsets.UTF_8);
+
+            String updatedTemplate = updateSettings(template);
+
+            if (!template.equals(updatedTemplate)) {
+                FileUtils.write(configFile, updatedTemplate,
+                        StandardCharsets.UTF_8);
+                log().debug("Updated vite configuration settings path: '{}'",
+                        configFile);
+            }
+
         }
+    }
+
+    private String updateSettings(String template) {
+        final Matcher matcher = frontendFilePattern.matcher(template);
+        if (matcher.find() && !matcher.group(1)
+                .equals("./" + buildFolder + "/flow-settings.json")) {
+            template = template.replace(
+                    "import flowSettings from '" + matcher.group(1) + "';",
+                    "import flowSettings from './" + buildFolder
+                            + "/flow-settings.json';");
+        }
+        return template;
     }
 
     private Logger log() {

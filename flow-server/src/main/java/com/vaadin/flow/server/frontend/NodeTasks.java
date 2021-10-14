@@ -574,6 +574,33 @@ public class NodeTasks implements FallibleCommand {
         public File getGeneratedFolder() {
             return generatedFolder;
         }
+
+        /**
+         * Get the output directory for webpack output.
+         * 
+         * @return webpackOutputDirectory
+         */
+        public File getWebpackOutputDirectory() {
+            return webpackOutputDirectory;
+        }
+
+        /**
+         * Get the defined frontend directory.
+         * 
+         * @return frontendDirectory
+         */
+        public File getFrontendDirectory() {
+            return frontendDirectory;
+        }
+
+        /**
+         * Get the build directory name.
+         *
+         * @return buildDirectory
+         */
+        public String getBuildDirectory() {
+            return buildDirectory;
+        }
     }
 
     // @formatter:off
@@ -595,6 +622,7 @@ public class NodeTasks implements FallibleCommand {
             TaskRunNpmInstall.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
+            TaskUpdateSettingsFile.class,
             TaskUpdateWebpack.class,
             TaskUpdateVite.class,
             TaskUpdateImports.class,
@@ -688,7 +716,9 @@ public class NodeTasks implements FallibleCommand {
         }
 
         if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
-            commands.add(new TaskUpdateVite(builder.npmFolder));
+            commands.add(new TaskUpdateSettingsFile(builder));
+            commands.add(new TaskUpdateVite(builder.npmFolder,
+                    builder.buildDirectory));
         } else if (enableWebpackConfigUpdate) {
             PwaConfiguration pwaConfiguration = frontendDependencies
                     .getPwaConfiguration();

@@ -12,5 +12,8 @@
     <name>Frontend build (npm + Webpack + Vite)</name>
     <packaging>pom</packaging>
 
+    <modules>
+        <module>vite-basics</module>
+    </modules>
 
 </project>
