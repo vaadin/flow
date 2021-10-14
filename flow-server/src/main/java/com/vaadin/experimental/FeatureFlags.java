@@ -46,7 +46,7 @@ public class FeatureFlags implements Serializable {
 
     public static final String PROPERTIES_FILENAME = "vaadin-featureflags.properties";
 
-    private static final Feature EXAMPLE = new Feature(
+    public static final Feature EXAMPLE = new Feature(
             "Example feature. Will be removed once the first real feature flag is added",
             "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004");
     private static List<Feature> features = new ArrayList<>();
@@ -67,7 +67,7 @@ public class FeatureFlags implements Serializable {
         loadProperties();
     }
 
-    private static void loadProperties() {
+    static void loadProperties() {
         File featureFlagFile = getFeatureFlagFile();
         if (featureFlagFile == null || !featureFlagFile.exists()) {
             return;
@@ -81,7 +81,7 @@ public class FeatureFlags implements Serializable {
         }
     }
 
-    private static void loadProperties(InputStream propertiesStream) {
+    static void loadProperties(InputStream propertiesStream) {
         try {
             Properties props = new Properties();
 
@@ -89,10 +89,9 @@ public class FeatureFlags implements Serializable {
                 props.load(propertiesStream);
             }
             for (Feature f : features) {
-                if ("true".equals(props.getProperty(getPropertyName(f.getId()),
-                        "false"))) {
-                    f.setEnabled(true);
-                }
+                boolean enabled = "true".equals(
+                        props.getProperty(getPropertyName(f.getId()), "false"));
+                f.setEnabled(enabled);
             }
 
         } catch (IOException e) {
