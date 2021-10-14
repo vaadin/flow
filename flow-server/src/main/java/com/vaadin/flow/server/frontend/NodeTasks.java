@@ -751,7 +751,7 @@ public class NodeTasks implements FallibleCommand {
         settings.put("staticOutput", getRelativePath(builder.npmFolder.toPath(), new File(output).toPath())); // Can be changed?
         settings.put("generatedFolder", "generated");
 
-        File settingsFile = new File(builder.npmFolder, "target/flow-settings.json");
+        File settingsFile = new File(builder.npmFolder, builder.buildDirectory + "/flow-settings.json");
 
         try {
             FileUtils.write(settingsFile, stringify(settings, 2), StandardCharsets.UTF_8);

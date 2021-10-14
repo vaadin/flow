@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import path from 'path';
 
 import { processThemeResources, extractThemeName } from '@vaadin/application-theme-plugin/theme-handle.js';
-import flowSettings from './target/flow-settings.json';
+import flowSettings from './target/flow-settings.json'; // build directory should be set from build system configuration
 
 const frontendFolder = path.resolve(__dirname, flowSettings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, flowSettings.themeFolder);
