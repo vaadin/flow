@@ -428,9 +428,6 @@ public class VaadinServletContextInitializer
                                 + "run the build-frontend maven goal) or "
                                 + "include the vaadin-dev-server dependency");
             }
-            if (isDevModeAlreadyStarted(event.getServletContext())) {
-                return;
-            }
 
             Set<String> basePackages;
             if (isScanOnlySet()) {
@@ -490,21 +487,6 @@ public class VaadinServletContextInitializer
             return customScanOnly != null && !customScanOnly.isEmpty();
         }
 
-        private boolean isDevModeAlreadyStarted(ServletContext servletContext) {
-            if (devModeHandlerManager != null) {
-                VaadinServletContext vaadinContext = new VaadinServletContext(
-                        servletContext);
-                if (devModeHandlerManager
-                        .isDevModeAlreadyStarted(vaadinContext)) {
-                    if (getLogger().isDebugEnabled()) {
-                        getLogger().debug(
-                                "Skipped DevModeHandler initialization as it has been already initialized");
-                    }
-                    return true;
-                }
-            }
-            return false;
-        }
     }
 
     private class WebComponentServletContextListener
