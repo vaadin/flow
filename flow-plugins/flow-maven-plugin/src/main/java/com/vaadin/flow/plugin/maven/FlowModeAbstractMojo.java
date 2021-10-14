@@ -118,7 +118,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * Setting defining if the automatically installed node version may be
      * updated to the default Vaadin node version.
      */
-    @Parameter(property = InitParameters.NODE_AUTO_UPDATE, defaultValue = Constants.DEFAULT_NODE_AUTO_UPDATE)
+    @Parameter(property = InitParameters.NODE_AUTO_UPDATE, defaultValue = ""
+            + Constants.DEFAULT_NODE_AUTO_UPDATE)
     private boolean nodeAutoUpdate;
 
     /**
@@ -137,14 +138,16 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * Instructs to use pnpm for installing npm frontend resources.
      */
-    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = Constants.ENABLE_PNPM_DEFAULT_STRING)
+    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = ""
+            + Constants.ENABLE_PNPM_DEFAULT)
     private boolean pnpmEnable;
 
     /**
      * Instructs to use globally installed pnpm tool or the default supported
      * pnpm version.
      */
-    @Parameter(property = InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, defaultValue = Constants.GLOBAL_PNPM_DEFAULT_STRING)
+    @Parameter(property = InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, defaultValue = ""
+            + Constants.GLOBAL_PNPM_DEFAULT)
     private boolean useGlobalPnpm;
 
     /**
@@ -169,7 +172,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * absent. Then it will be used instead of globally 'node' or locally
      * installed installed 'node'.
      */
-    @Parameter(property = Constants.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE)
+    @Parameter(property = Constants.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = ""
+            + Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE)
     private boolean requireHomeNodeExec;
 
     /**

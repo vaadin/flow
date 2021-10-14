@@ -107,7 +107,7 @@ public interface AbstractConfiguration extends Serializable {
      */
     default boolean isPnpmEnabled() {
         return getBooleanProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
-                Boolean.valueOf(Constants.ENABLE_PNPM_DEFAULT_STRING));
+                Constants.ENABLE_PNPM_DEFAULT);
     }
 
     /**
@@ -119,7 +119,7 @@ public interface AbstractConfiguration extends Serializable {
      */
     default boolean isGlobalPnpm() {
         return getBooleanProperty(InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM,
-                Boolean.valueOf(Constants.GLOBAL_PNPM_DEFAULT_STRING));
+                Constants.GLOBAL_PNPM_DEFAULT);
     }
 
     /**

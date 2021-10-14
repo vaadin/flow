@@ -42,12 +42,9 @@ public class FrontendToolsSettings implements Serializable {
             .create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
 
     private boolean ignoreVersionChecks;
-    private boolean forceAlternativeNode = Boolean
-            .parseBoolean(Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE);
-    private boolean useGlobalPnpm = Boolean
-            .parseBoolean(Constants.GLOBAL_PNPM_DEFAULT_STRING);
-    private boolean autoUpdate = Boolean
-            .parseBoolean(Constants.DEFAULT_NODE_AUTO_UPDATE);
+    private boolean forceAlternativeNode = Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE;
+    private boolean useGlobalPnpm = Constants.GLOBAL_PNPM_DEFAULT;
+    private boolean autoUpdate = Constants.DEFAULT_NODE_AUTO_UPDATE;
 
     /**
      * Create a tools configuration object.

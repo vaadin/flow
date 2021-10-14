@@ -95,7 +95,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
     public var optimizeBundle: Boolean = true
 
     /**
-     * Instructs to use pnpm for installing npm frontend resources. Default is [Constants.ENABLE_PNPM_DEFAULT_STRING]
+     * Instructs to use pnpm for installing npm frontend resources. Default is [Constants.ENABLE_PNPM_DEFAULT]
      * Responds to the `-Pvaadin.useDeprecatedV14Bootstrapping` property.
      *
      * pnpm, a.k.a. performant npm, is a better front-end dependency management option.
@@ -103,15 +103,14 @@ public open class VaadinFlowPluginExtension(project: Project) {
      * downloaded) for every project. This results in reduced disk space usage
      * and faster recurring builds when compared to npm.
      */
-    public var pnpmEnable: Boolean = Constants.ENABLE_PNPM_DEFAULT_STRING.toBoolean()
+    public var pnpmEnable: Boolean = Constants.ENABLE_PNPM_DEFAULT
 
     /**
      * Whether the globally installed pnpm tool is used. By default, the
      * pinned supported version of pnpm is used, see [FrontendTools
      * .DEFAULT_PNPM_VERSION].
      */
-    public var useGlobalPnpm: Boolean = Constants.GLOBAL_PNPM_DEFAULT_STRING
-            .toBoolean()
+    public var useGlobalPnpm: Boolean = Constants.GLOBAL_PNPM_DEFAULT
 
     /**
      * Whether vaadin home node executable usage is forced. If it's set to
