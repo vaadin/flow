@@ -367,6 +367,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
             defaults.put("vite", "2.5.3");
+            defaults.put("mkdirp", "0.5.5");
         } else {
             defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");
             defaults.put("html-webpack-plugin", "4.5.1");

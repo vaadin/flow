@@ -17,8 +17,11 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +30,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
+
+import org.apache.commons.io.FileUtils;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
@@ -37,12 +43,16 @@ import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
+import elemental.json.Json;
 import elemental.json.JsonObject;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
+import static elemental.json.impl.JsonUtil.stringify;
 
 /**
  * An executor that it's run when the servlet context is initialised in dev-mode
@@ -688,6 +698,9 @@ public class NodeTasks implements FallibleCommand {
                     builder.flowResourcesFolder, builder.localResourcesFolder));
         }
 
+        // Create when enable as else we do not have the webpackOutputDirectory
+        createSettings(builder);
+
         if (enableWebpackConfigUpdate
                 && !FeatureFlags.isEnabled(FeatureFlags.VITE)) {
             PwaConfiguration pwaConfiguration = frontendDependencies
@@ -718,6 +731,40 @@ public class NodeTasks implements FallibleCommand {
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),
                     builder.frontendDirectory, builder.fusionClientAPIFolder));
+        }
+    }
+
+
+    private void createSettings(Builder builder) {
+        if(builder.npmFolder == null) return;
+
+        JsonObject settings = Json.createObject();
+        settings.put("frontendFolder", getRelativePath(builder.npmFolder.toPath(), builder.frontendDirectory.toPath())); // Can be changed
+        settings.put("themeFolder", "themes");
+        settings.put("themeResourceFolder",  getRelativePath(builder.npmFolder.toPath(),builder.generatedFolder.toPath())); // Can be changed
+        String output;
+        if(builder.webpackOutputDirectory == null) {
+             output = Paths.get(builder.buildDirectory, VAADIN_WEBAPP_RESOURCES, VAADIN_STATIC_FILES_PATH).toString();
+        } else
+            output = builder.webpackOutputDirectory + VAADIN_STATIC_FILES_PATH;
+
+        settings.put("staticOutput", getRelativePath(builder.npmFolder.toPath(), new File(output).toPath())); // Can be changed?
+        settings.put("generatedFolder", "generated");
+
+        File settingsFile = new File(builder.npmFolder, "target/flow-settings.json");
+
+        try {
+            FileUtils.write(settingsFile, stringify(settings, 2), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            LoggerFactory.getLogger("NodeTask").error("failed to write file: {}", settingsFile);
+            e.printStackTrace();
+        }
+    }
+    private String getRelativePath(Path source, Path path) {
+        if (path.isAbsolute()) {
+            return FrontendUtils.getUnixRelativePath(source, path);
+        } else {
+            return FrontendUtils.getUnixPath(path);
         }
     }
 
