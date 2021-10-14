@@ -66,7 +66,7 @@ public interface DevModeHandlerManager {
     DevModeHandler getDevModeHandler();
 
     /**
-     * Create a {@link DevModeHandler} if factory available.
+     * Gets the {@link DevModeHandler}.
      *
      * @param service
      *            a Vaadin service
@@ -74,7 +74,18 @@ public interface DevModeHandlerManager {
      *         or <code>EMPTY</code> if disabled
      */
     static Optional<DevModeHandler> getDevModeHandler(VaadinService service) {
-        VaadinContext context = service.getContext();
+        return getDevModeHandler(service.getContext());
+    }
+
+    /**
+     * Gets the {@link DevModeHandler}.
+     *
+     * @param context
+     *            the Vaadin context
+     * @return an {@link Optional} containing a {@link DevModeHandler} instance
+     *         or <code>EMPTY</code> if disabled
+     */
+    static Optional<DevModeHandler> getDevModeHandler(VaadinContext context) {
         return Optional.ofNullable(context)
                 .map(ctx -> ctx.getAttribute(Lookup.class))
                 .map(lu -> lu.lookup(DevModeHandlerManager.class))

@@ -240,6 +240,11 @@ public final class WebpackHandler implements DevModeHandler {
         return atomicHandler.get();
     }
 
+    private boolean isRunning() {
+        Process process = webpackProcess.get();
+        return (process != null && process.isAlive());
+    }
+
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
@@ -723,7 +728,7 @@ public final class WebpackHandler implements DevModeHandler {
                         DEFAULT_TIMEOUT_FOR_PATTERN)));
             }
 
-            if (!webpackProcess.get().isAlive()) {
+            if (!isRunning()) {
                 throw new IllegalStateException("Webpack exited prematurely");
             }
 
@@ -876,6 +881,7 @@ public final class WebpackHandler implements DevModeHandler {
             process.destroy();
         }
 
+        webpackProcess.set(null);
         atomicHandler.set(null);
         removeRunningDevServerPort();
     }
