@@ -499,10 +499,6 @@ public class IndexHtmlRequestHandlerTest {
                 return devServer;
             }
 
-            @Override
-            public boolean isDevModeAlreadyStarted(VaadinContext context) {
-                return false;
-            }
         };
         Lookup lookup = Lookup.of(devModeHandlerManager,
                 DevModeHandlerManager.class);
