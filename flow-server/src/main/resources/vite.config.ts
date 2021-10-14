@@ -35,6 +35,7 @@ export default defineConfig({
   resolve: {
     alias: {
       themes: themeFolder,
+      Frontend: frontendFolder,
     },
   },
   build: {
