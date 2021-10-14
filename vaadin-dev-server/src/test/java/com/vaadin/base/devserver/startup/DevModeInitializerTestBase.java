@@ -1,9 +1,11 @@
 package com.vaadin.base.devserver.startup;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletRegistration;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -16,6 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -28,8 +31,12 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.base.devserver.DevModeHandlerManagerImpl;
 import com.vaadin.base.devserver.WebpackHandler;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.TaskGenerateFusion;
@@ -42,7 +49,6 @@ import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.base.devserver.WebpackHandler.getDevModeHandler;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
@@ -71,6 +77,7 @@ public class DevModeInitializerTestBase {
     EndpointGeneratorTaskFactory endpointGeneratorTaskFactory;
     TaskGenerateFusion taskGenerateFusion;
     TaskGenerateOpenAPI taskGenerateOpenAPI;
+    DevModeHandlerManager devModeHandlerManager;
 
     ApplicationConfiguration appConfig;
 
@@ -79,6 +86,8 @@ public class DevModeInitializerTestBase {
     @Rule
     public final TemporaryFolder javaSourceFolder = new TemporaryFolder();
 
+    protected DevModeHandler handler;
+
     public static class VaadinServletSubClass extends VaadinServlet {
 
     }
@@ -86,8 +95,6 @@ public class DevModeInitializerTestBase {
     @Before
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setup() throws Exception {
-        assertNull(getDevModeHandler());
-
         temporaryFolder.create();
         baseDir = temporaryFolder.getRoot().getPath();
         Boolean enablePnpm = Boolean.TRUE;
@@ -127,6 +134,9 @@ public class DevModeInitializerTestBase {
                 .mock(ResourceProvider.class);
         Mockito.when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
+        devModeHandlerManager = new DevModeHandlerManagerImpl();
+        Mockito.when(lookup.lookup(DevModeHandlerManager.class))
+                .thenReturn(devModeHandlerManager);
 
         Mockito.when(vaadinServletRegistration.getClassName())
                 .thenReturn(VaadinServletSubClass.class.getName());
@@ -198,27 +208,52 @@ public class DevModeInitializerTestBase {
         mainPackageFile.delete();
         temporaryFolder.delete();
         javaSourceFolder.delete();
-        if (getDevModeHandler() != null) {
-            getDevModeHandler().stop();
+        if (handler != null) {
+            handler.stop();
+            handler = null;
         }
     }
 
     public void process() throws Exception {
         devModeInitializer.process(classes, servletContext);
+        handler = getDevModeHandler();
         waitForDevModeServer();
+    }
+
+    protected DevModeHandler getDevModeHandler() {
+        return DevModeHandlerManager
+                .getDevModeHandler(new VaadinServletContext(servletContext))
+                .orElse(null);
     }
 
     protected void waitForDevModeServer() throws NoSuchMethodException,
             IllegalAccessException, InvocationTargetException {
-        WebpackHandler handler = WebpackHandler.getDevModeHandler();
         Assert.assertNotNull(handler);
         Method join = WebpackHandler.class.getDeclaredMethod("join");
         join.setAccessible(true);
         join.invoke(handler);
     }
 
+    protected boolean hasWebpackProcess() {
+        Assert.assertNotNull(getDevModeHandler());
+        Field webpackProcessField;
+        try {
+            webpackProcessField = WebpackHandler.class
+                    .getDeclaredField("webpackProcess");
+            webpackProcessField.setAccessible(true);
+            AtomicReference<Process> webpackProcess = (AtomicReference<Process>) webpackProcessField
+                    .get(handler);
+            return webpackProcess.get() != null;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
     public void runDestroy() throws Exception {
-        devModeInitializer.contextDestroyed(null);
+        ServletContextEvent event = Mockito.mock(ServletContextEvent.class);
+        Mockito.when(event.getServletContext()).thenReturn(servletContext);
+        devModeInitializer.contextDestroyed(event);
     }
 
     private void mockApplicationConfiguration(
