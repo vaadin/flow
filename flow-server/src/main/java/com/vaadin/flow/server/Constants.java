@@ -309,29 +309,26 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_ENABLE_PNPM = InitParameters.SERVLET_PARAMETER_ENABLE_PNPM;
 
     /**
-     * Constant for whether pnpm is default or not. Mojos need the value as
-     * string and constant, so need to use string instead of boolean.
+     * Constant for whether pnpm is default or not.
      */
-    public static final String ENABLE_PNPM_DEFAULT_STRING = "true";
+    public static final boolean ENABLE_PNPM_DEFAULT = true;
 
     /**
      * Constant for setting the pinned supported version of pnpm to be used by
      * default (see
      * {@link com.vaadin.flow.server.frontend.FrontendTools#DEFAULT_PNPM_VERSION}).
-     * Mojos need the value as string and constant, so need to use string
-     * instead of boolean.
      */
-    public static final String GLOBAL_PNPM_DEFAULT_STRING = "false";
+    public static final boolean GLOBAL_PNPM_DEFAULT = false;
 
     /**
      * The default value for {@link InitParameters#NODE_AUTO_UPDATE}.
      */
-    public static final String DEFAULT_NODE_AUTO_UPDATE = "false";
+    public static final boolean DEFAULT_NODE_AUTO_UPDATE = false;
 
     /**
      * The default value for {@link #REQUIRE_HOME_NODE_EXECUTABLE}.
      */
-    public static final String DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE = "false";
+    public static final boolean DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE = false;
 
     /**
      * @deprecated Use {@link InitParameters#REQUIRE_HOME_NODE_EXECUTABLE}
