@@ -80,11 +80,6 @@
                             <name>vaadin.reuseDevServer</name>
                             <value>false</value>
                         </systemProperty>
-                        <systemProperty>
-                            <!-- disable dev mode gizmo -->
-                            <name>vaadin.devmode.gizmo.enabled</name>
-                            <value>false</value>
-                        </systemProperty>
                     </systemProperties>
                     <webApp>
                         <!-- We deploy the app with a context in the servlet
