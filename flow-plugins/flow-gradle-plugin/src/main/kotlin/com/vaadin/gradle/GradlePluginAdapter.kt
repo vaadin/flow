@@ -95,6 +95,8 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
 
     override fun javaSourceFolder(): File = extension.javaSourceFolder
 
+    override fun javaResourceFolder(): File = extension.javaResourceFolder
+
     override fun logDebug(debugMessage: CharSequence) {
         project.logger.debug(debugMessage.toString())
     }

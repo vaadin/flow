@@ -95,6 +95,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private File javaSourceFolder;
 
     /**
+     * Java resource folder.
+     */
+    @Parameter(defaultValue = "${project.basedir}/src/main/resources")
+    private File javaResourceFolder;
+
+    /**
      * Download node.js from this URL. Handy in heavily firewalled corporate
      * environments where the node.js download can be provided from an intranet
      * mirror. Defaults to null which will cause the downloader to use
@@ -292,6 +298,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     public File javaSourceFolder() {
 
         return javaSourceFolder;
+    }
+
+    @Override
+    public File javaResourceFolder() {
+
+        return javaResourceFolder;
     }
 
     @Override

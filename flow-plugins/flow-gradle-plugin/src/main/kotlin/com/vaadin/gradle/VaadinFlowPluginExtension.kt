@@ -148,6 +148,11 @@ public open class VaadinFlowPluginExtension(project: Project) {
     public var javaSourceFolder: File = File(project.projectDir, "src/main/java")
 
     /**
+     * Java resource folder.
+     */
+    public var javaResourceFolder: File = File(project.projectDir, "src/main/resources")
+
+    /**
      * The folder where flow will put TS API files for client projects.
      */
     public var generatedTsFolder: File = File(project.projectDir, "frontend/generated")
@@ -251,6 +256,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
             "applicationProperties=$applicationProperties, " +
             "openApiJsonFile=$openApiJsonFile, " +
             "javaSourceFolder=$javaSourceFolder, " +
+            "javaResourceFolder=$javaResourceFolder, " +
             "generatedTsFolder=$generatedTsFolder, " +
             "nodeVersion=$nodeVersion, " +
             "nodeDownloadRoot=$nodeDownloadRoot, " +

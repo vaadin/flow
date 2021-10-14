@@ -71,6 +71,7 @@ public class PrepareFrontendMojoTest {
     private File resourceOutputDirectory;
     private File tokenFile;
     private File defaultJavaSource;
+    private File defaultJavaResource;
     private File generatedTsFolder;
     private MavenProject project;
 
@@ -92,6 +93,7 @@ public class PrepareFrontendMojoTest {
         resourceOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
         defaultJavaSource = new File(".", "src/test/java");
+        defaultJavaResource = new File(".", "src/test/resources");
         generatedTsFolder = new File(projectBase, "frontend/generated");
 
         ReflectionUtils.setVariableValueInObject(mojo, Constants.NPM_TOKEN,
@@ -113,6 +115,8 @@ public class PrepareFrontendMojoTest {
                         "src/main/resources/application.properties"));
         ReflectionUtils.setVariableValueInObject(mojo, "javaSourceFolder",
                 defaultJavaSource);
+        ReflectionUtils.setVariableValueInObject(mojo, "javaResourceFolder",
+                defaultJavaResource);
         ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
                 generatedTsFolder);
 

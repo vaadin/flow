@@ -47,6 +47,7 @@ public final class Constants implements Serializable {
     public static final String FRONTEND_TOKEN = "frontendFolder";
     public static final String GENERATED_TOKEN = "generatedFolder";
     public static final String CONNECT_JAVA_SOURCE_FOLDER_TOKEN = "connect.javaSourceFolder";
+    public static final String JAVA_RESOURCE_FOLDER_TOKEN = "javaResourceFolder";
     public static final String CONNECT_APPLICATION_PROPERTIES_TOKEN = "connect.applicationProperties";
     public static final String CONNECT_OPEN_API_FILE_TOKEN = "connect.openApiFile";
     public static final String PROJECT_FRONTEND_GENERATED_DIR_TOKEN = "project.frontend.generated";
