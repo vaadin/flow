@@ -51,6 +51,8 @@ public class FeatureFlags implements Serializable {
             "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004");
     private static List<Feature> features = new ArrayList<>();
 
+    private static File propertiesFolder = null;
+
     static {
         features.add(EXAMPLE);
         loadProperties();
@@ -61,17 +63,8 @@ public class FeatureFlags implements Serializable {
      * flags will be correctly detected.
      */
     public static void setPropertiesLocation(File propertiesFolder) {
-        File featureProperties = new File(propertiesFolder,
-                PROPERTIES_FILENAME);
-        if (featureProperties != null && featureProperties.exists()) {
-            try (FileInputStream stream = new FileInputStream(
-                    featureProperties)) {
-                loadProperties(stream);
-            } catch (IOException e) {
-                getLogger().error("Unable to read properties from file "
-                        + featureProperties.getAbsolutePath(), e);
-            }
-        }
+        FeatureFlags.propertiesFolder = propertiesFolder;
+        loadProperties();
     }
 
     private static void loadProperties() {
@@ -109,6 +102,10 @@ public class FeatureFlags implements Serializable {
 
     private static void saveProperties() {
         File featureFlagFile = getFeatureFlagFile();
+        if (featureFlagFile == null) {
+            throw new IllegalStateException(
+                    "Unable to determine feature flag file location");
+        }
         StringBuilder properties = new StringBuilder();
         for (Feature feature : features) {
             if (!feature.isEnabled()) {
@@ -195,22 +192,26 @@ public class FeatureFlags implements Serializable {
     }
 
     private static File getFeatureFlagFile() {
-        VaadinService service = VaadinService.getCurrent();
-        if (service == null) {
-            return null;
+        if (propertiesFolder == null) {
+            VaadinService service = VaadinService.getCurrent();
+            if (service == null) {
+                return null;
+            }
+            VaadinContext context = service.getContext();
+            if (context == null) {
+                return null;
+            }
+            ApplicationConfiguration config = ApplicationConfiguration
+                    .get(service.getContext());
+            if (config == null) {
+                return null;
+            }
+            propertiesFolder = new File(config.getStringProperty(
+                    Constants.JAVA_RESOURCE_FOLDER_TOKEN,
+                    "src/main/resources"));
+
         }
-        VaadinContext context = service.getContext();
-        if (context == null) {
-            return null;
-        }
-        ApplicationConfiguration config = ApplicationConfiguration
-                .get(service.getContext());
-        if (config == null) {
-            return null;
-        }
-        String resourceFolder = config.getStringProperty(
-                Constants.JAVA_RESOURCE_FOLDER_TOKEN, "src/main/resources");
-        return new File(resourceFolder, PROPERTIES_FILENAME);
+        return new File(propertiesFolder, PROPERTIES_FILENAME);
     }
 
     private static Logger getLogger() {
