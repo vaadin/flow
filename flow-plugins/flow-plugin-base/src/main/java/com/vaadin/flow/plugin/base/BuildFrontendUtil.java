@@ -161,7 +161,7 @@ public class BuildFrontendUtil {
             builder.build().execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
-        } catch (Throwable throwable) {
+        } catch (Throwable throwable) { // NOSONAR Intentionally throwable
             throw new ExecutionFailedException(
                     "Error occured during goal execution: "
                             + throwable.getMessage()
@@ -318,7 +318,7 @@ public class BuildFrontendUtil {
                             .execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
-        } catch (Throwable throwable) {
+        } catch (Throwable throwable) { // NOSONAR Intentionally throwable
             throw new ExecutionFailedException(
                     "Error occured during goal execution: "
                             + throwable.getMessage()
