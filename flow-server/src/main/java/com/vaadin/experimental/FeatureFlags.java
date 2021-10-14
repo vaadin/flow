@@ -175,6 +175,10 @@ public class FeatureFlags implements Serializable {
      *            <code>true</code> to enable, <code>false</code> to disable
      */
     public static void setEnabled(String featureId, boolean enabled) {
+        if (!isDevelopmentMode()) {
+            throw new IllegalStateException(
+                    "Feature flags can only be toggled when in development mode");
+        }
         Optional<Feature> maybeFeature = getFeature(featureId);
         if (!maybeFeature.isPresent()) {
             throw new IllegalArgumentException("Unknown feature " + featureId);
@@ -192,16 +196,7 @@ public class FeatureFlags implements Serializable {
 
     private static File getFeatureFlagFile() {
         if (propertiesFolder == null) {
-            VaadinService service = VaadinService.getCurrent();
-            if (service == null) {
-                return null;
-            }
-            VaadinContext context = service.getContext();
-            if (context == null) {
-                return null;
-            }
-            ApplicationConfiguration config = ApplicationConfiguration
-                    .get(service.getContext());
+            ApplicationConfiguration config = getApplicationConfiguration();
             if (config == null) {
                 return null;
             }
@@ -211,6 +206,23 @@ public class FeatureFlags implements Serializable {
 
         }
         return new File(propertiesFolder, PROPERTIES_FILENAME);
+    }
+
+    private static boolean isDevelopmentMode() {
+        ApplicationConfiguration config = getApplicationConfiguration();
+        return config != null && !config.isProductionMode();
+    }
+
+    private static ApplicationConfiguration getApplicationConfiguration() {
+        VaadinService service = VaadinService.getCurrent();
+        if (service == null) {
+            return null;
+        }
+        VaadinContext context = service.getContext();
+        if (context == null) {
+            return null;
+        }
+        return ApplicationConfiguration.get(service.getContext());
     }
 
     private static Logger getLogger() {

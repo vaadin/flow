@@ -122,4 +122,15 @@ public class FeatureFlagsTest {
                         StandardCharsets.UTF_8));
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void setEnabledOnlyInDevelopmentMode() throws IOException {
+        File folder = createTempFeatureFlagsFile(
+                "com.vaadin.experimental.exampleFeatureFlag=true\n");
+        mockResourcesLocation(folder);
+        ApplicationConfiguration conf = ApplicationConfiguration
+                .get(VaadinService.getCurrent().getContext());
+        Mockito.when(conf.isProductionMode()).thenReturn(true);
+        FeatureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), true);
+    }
+
 }

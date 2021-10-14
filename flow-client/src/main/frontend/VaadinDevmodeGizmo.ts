@@ -19,7 +19,7 @@ interface Feature {
 }
 
 interface Tab {
-  id: string;
+  id: 'log' | 'info' | 'features';
   title: string;
   render: () => unknown;
 }
@@ -669,28 +669,28 @@ export class VaadinDevmodeGizmo extends LitElement {
   javaStatus: ConnectionStatus = ConnectionStatus.UNAVAILABLE;
 
   @state()
-  tabs: Tab[] = [
+  private tabs: readonly Tab[] = [
     { id: 'log', title: 'Log', render: this.renderLog },
     { id: 'info', title: 'Info', render: this.renderInfo },
     { id: 'features', title: 'Features', render: this.renderFeatures }
   ];
   @state()
-  activeTab: string = 'log';
+  private activeTab: string = 'log';
 
   @state()
-  serverInfo: ServerInfo = { flowVersion: '', vaadinVersion: '', javaVersion: '', osVersion: '' };
+  private serverInfo: ServerInfo = { flowVersion: '', vaadinVersion: '', javaVersion: '', osVersion: '' };
 
   @state()
-  features: Feature[] = [];
+  private features: Feature[] = [];
 
-  javaConnection?: Connection;
-  frontendConnection?: Connection;
+  private javaConnection?: Connection;
+  private frontendConnection?: Connection;
 
-  nextMessageId: number = 1;
+  private nextMessageId: number = 1;
 
-  disableEventListener?: EventListener;
+  private disableEventListener?: EventListener;
 
-  transitionDuration: number = 0;
+  private transitionDuration: number = 0;
 
   constructor() {
     super();
@@ -1181,7 +1181,7 @@ export class VaadinDevmodeGizmo extends LitElement {
   }
 
   toggleFeatureFlag(e: Event, feature: Feature) {
-    const enabled = (e.target! as any).checked;
+    const enabled = (e.target! as HTMLInputElement).checked;
     if (this.frontendConnection) {
       this.frontendConnection.setFeature(feature.id, enabled);
       this.log(MessageType.INFORMATION, `Feature '${feature.title}' ${enabled ? 'enabled' : 'disabled'}`);
