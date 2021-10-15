@@ -11,7 +11,7 @@
     <artifactId>flow-test-root-context-npm</artifactId>
     <name>Flow root context tests in NPM dev mode</name>
     <packaging>war</packaging>
-    
+
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
@@ -28,7 +28,7 @@
             <artifactId>flow-test-common</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-lit-template</artifactId>
@@ -40,7 +40,7 @@
             <artifactId>flow-polymer-template</artifactId>
             <version>${project.version}</version>
         </dependency>
-		
+
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-dev-server</artifactId>
@@ -163,6 +163,26 @@
                         </goals>
                         <configuration>
                             <classifier>ui</classifier>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>set-system-properties</goal>
+                        </goals>
+                        <configuration>
+                            <properties>
+                                <property>
+                                    <!-- disable dev mode gizmo -->
+                                    <name>vaadin.devmode.gizmo.enabled</name>
+                                    <value>false</value>
+                                </property>
+                            </properties>
                         </configuration>
                     </execution>
                 </executions>

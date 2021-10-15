@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.devmode.gizmo;
+package com.vaadin.flow.gizmo;
 
 import org.junit.Assert;
 import org.junit.Test;

@@ -350,7 +350,6 @@
                 <!-- test impacts startup test-->
                 <module>test-application-theme</module>
                 <module>test-theme-no-polymer</module>
-                <module>test-dev-mode-gizmo-disabled</module>
             </modules>
         </profile>
         <profile>
