@@ -112,7 +112,7 @@ public class WebpackHandlerStopTest extends AbstractDevModeTest {
     private void simulateServerRestart() throws Exception {
         // On a server restart/redeploy all reference to the running process are
         // lost so we simulate it by removing the handler reference
-        WebpackHandlerTest.removeDevModeHandlerInstance(lookup);
+        removeDevModeHandlerInstance();
     }
 
     private String requestWebpackServer(int port, String path) {
