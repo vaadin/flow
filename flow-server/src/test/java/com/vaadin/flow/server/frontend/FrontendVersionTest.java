@@ -3,6 +3,7 @@ package com.vaadin.flow.server.frontend;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static com.helger.commons.mock.CommonsAssert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -75,6 +76,18 @@ public class FrontendVersionTest {
         fromConstructor = new FrontendVersion(12, 3, 5, "alpha12");
         assertTrue("Full version with build identifier didn't match",
                 fromString.isEqualTo(fromConstructor));
+    }
+
+    @Test // #12041
+    public void testSimilarBuildIdentifiers() {
+        FrontendVersion version = new FrontendVersion("1.1.1-SNAPSHOT");
+        FrontendVersion equals = new FrontendVersion("1.1.1-SNAPSHOT");
+
+        assertTrue("Versions be the same", version.isEqualTo(equals));
+        assertFalse("Version should not be older", version.isOlderThan(equals));
+        assertEquals("Versions should not have a difference", 0,
+                version.compareTo(equals));
+        assertFalse("Version should not be newer", version.isNewerThan(equals));
     }
 
     @Test(expected = NumberFormatException.class)
