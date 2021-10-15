@@ -338,6 +338,12 @@ public class FrontendVersion
                 return thisMatcher.group(1)
                         .compareToIgnoreCase(otherMatcher.group(1));
             }
+            // if one or both are missing numeric value do not parse int
+            if (thisMatcher.group(2).isEmpty()
+                    || otherMatcher.group(2).isEmpty()) {
+                return buildIdentifier
+                        .compareToIgnoreCase(other.buildIdentifier);
+            }
             return Integer.parseInt(thisMatcher.group(2))
                     - Integer.parseInt(otherMatcher.group(2));
         }
