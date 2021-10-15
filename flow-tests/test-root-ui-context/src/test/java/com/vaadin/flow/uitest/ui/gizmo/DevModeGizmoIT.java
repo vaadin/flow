@@ -37,7 +37,7 @@ public class DevModeGizmoIT extends ChromeBrowserTest {
 
         Assert.assertTrue(
                 "Live reload is expected to be disabled when the gizmo "
-                + "disabled",
+                        + "disabled",
                 findElements(By.id("vaadin-live-reload-indicator")).isEmpty());
     }
 }
