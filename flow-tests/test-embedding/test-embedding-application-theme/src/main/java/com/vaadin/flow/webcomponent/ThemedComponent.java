@@ -24,8 +24,7 @@ public class ThemedComponent extends Div {
 
     public static final String TEST_TEXT_ID = "test-text";
 
-    public static final String MY_POLYMER_ID = "field";
-    public static final String MY_LIT_ID = "button";
+    public static final String MY_COMPONENT_ID = "field";
     public static final String EMBEDDED_ID = "embedded";
 
     public static final String HAND_ID = "sparkle-hand";
@@ -43,9 +42,6 @@ public class ThemedComponent extends Div {
         add(textSpan, hand);
 
         add(new Div());
-        add(new MyPolymerField().withId(MY_POLYMER_ID));
-
-        add(new Div());
-        add(new MyLitField().withId(MY_LIT_ID));
+        add(new MyComponent().withId(MY_COMPONENT_ID));
     }
 }
