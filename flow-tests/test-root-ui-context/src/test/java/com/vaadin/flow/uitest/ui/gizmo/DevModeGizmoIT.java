@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.gizmo;
+package com.vaadin.flow.uitest.ui.gizmo;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,7 +37,7 @@ public class DevModeGizmoIT extends ChromeBrowserTest {
 
         Assert.assertTrue(
                 "Live reload is expected to be disabled when the gizmo "
-                        + "disabled",
+                + "disabled",
                 findElements(By.id("vaadin-live-reload-indicator")).isEmpty());
     }
 }
