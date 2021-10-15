@@ -2,14 +2,14 @@ package com.vaadin.flow.internal;
 
 import java.util.stream.Collectors;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
 import org.jsoup.internal.StringUtil;
-import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.junit.Test;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 import static org.junit.Assert.assertEquals;
 
@@ -40,6 +40,7 @@ public class UsageStatisticsExporterTest {
         Elements bodyInlineElements = document.body()
                 .getElementsByTag("script");
         assertEquals(StringUtil.normaliseWhitespace(expected),
-                bodyInlineElements.get(0).childNode(0).outerHtml());
+                StringUtil.normaliseWhitespace(
+                        bodyInlineElements.get(0).childNode(0).outerHtml()));
     }
 }
