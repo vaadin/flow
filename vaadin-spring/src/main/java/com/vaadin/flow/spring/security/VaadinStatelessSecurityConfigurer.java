@@ -60,6 +60,15 @@ class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuilder<H>>
             http.setSharedObject(SecurityContextRepository.class,
                     jwtSecurityContextRepository);
         }
+
+        CsrfConfigurer<H> csrf = http.getConfigurer(CsrfConfigurer.class);
+        if (csrf != null) {
+            // Use cookie for storing CSRF token, as it does not require a
+            // session (double-submit cookie pattern)
+            CsrfTokenRepository csrfTokenRepository = new LazyCsrfTokenRepository(
+                    CookieCsrfTokenRepository.withHttpOnlyFalse());
+            csrf.csrfTokenRepository(csrfTokenRepository);
+        }
     }
 
     @Override
@@ -90,15 +99,6 @@ class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuilder<H>>
         if (requestCache instanceof VaadinDefaultRequestCache) {
             ((VaadinDefaultRequestCache) requestCache)
                     .setDelegateRequestCache(new CookieRequestCache());
-        }
-
-        CsrfConfigurer<H> csrf = http.getConfigurer(CsrfConfigurer.class);
-        if (csrf != null) {
-            // Use cookie for storing CSRF token, as it does not require a
-            // session (double-submit cookie pattern)
-            CsrfTokenRepository csrfTokenRepository = new LazyCsrfTokenRepository(
-                    CookieCsrfTokenRepository.withHttpOnlyFalse());
-            csrf.csrfTokenRepository(csrfTokenRepository);
         }
     }
 
