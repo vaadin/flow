@@ -23,6 +23,7 @@ import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.reflections.Reflections;
 import org.reflections.util.ConfigurationBuilder;
@@ -46,7 +47,8 @@ public class ReflectionsClassFinder implements ClassFinder {
      *            the list of urls for finding classes.
      */
     public ReflectionsClassFinder(URL... urls) {
-        classLoader = new URLClassLoader(urls, null); // NOSONAR
+        classLoader = new URLClassLoader(urls,
+                ReflectionsClassFinder.class.getClassLoader()); // NOSONAR
         ConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
                 .addClassLoader(classLoader).setExpandSuperTypes(false)
                 .addUrls(urls);
