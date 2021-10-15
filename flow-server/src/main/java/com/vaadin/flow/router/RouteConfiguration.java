@@ -513,8 +513,7 @@ public class RouteConfiguration implements Serializable {
         if (!targetUrl.isPresent()) {
             throw new NotFoundException(String.format(
                     "No route found for the given navigation target '%s' and parameters '%s'",
-                    navigationTarget.getName(),
-                    parameters.toString()));
+                    navigationTarget.getName(), parameters.toString()));
         }
         return targetUrl.get();
     }
