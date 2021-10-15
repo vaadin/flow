@@ -297,8 +297,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         // Constructable style sheets is only implemented for chrome,
         // polyfill needed for FireFox et.al. at the moment
-        defaults.put("construct-style-sheets-polyfill", "2.4.16");
-
+        defaults.put("construct-style-sheets-polyfill", "3.0.4");
         return defaults;
     }
 
