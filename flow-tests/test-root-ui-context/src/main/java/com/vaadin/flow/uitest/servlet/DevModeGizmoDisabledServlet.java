@@ -21,7 +21,8 @@ import javax.servlet.annotation.WebServlet;
 import com.vaadin.flow.server.VaadinServlet;
 
 // Custom servlet for disabled dev gizmo test
-@WebServlet(asyncSupported = true, urlPatterns = { "/view-disabled-gizmo/*" }, initParams = {
-        @WebInitParam(name = "devmode.gizmo.enabled", value = "false")})
+@WebServlet(asyncSupported = true, urlPatterns = {
+        "/view-disabled-gizmo/*" }, initParams = {
+                @WebInitParam(name = "devmode.gizmo.enabled", value = "false") })
 public class DevModeGizmoDisabledServlet extends VaadinServlet {
 }
