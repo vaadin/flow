@@ -548,7 +548,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     /**
      * Checks whether the request is for a valid location, and if not, writes
      * the error code for the response.
-     * 
+     *
      * @param request
      *            the request to check
      * @param response
@@ -1232,7 +1232,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 }
                 appConfig.put("versionInfo", versionInfo);
                 appConfig.put(ApplicationConstants.DEVMODE_GIZMO_ENABLED,
-                        deploymentConfiguration.isDevModeLiveReloadEnabled());
+                        deploymentConfiguration.isDevModeGizmoEnabled());
 
                 VaadinService service = session.getService();
                 Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
