@@ -585,22 +585,6 @@ public final class WebpackHandler implements DevModeHandler {
         }
     }
 
-    private boolean checkPort() {
-        if (checkConnection()) {
-            getLogger().info("Reusing webpack-dev-server running at {}:{}",
-                    WEBPACK_HOST, port);
-
-            // Save running port for next usage
-            saveRunningDevServerPort();
-            watchDog.set(null);
-            return false;
-        }
-        throw new IllegalStateException(format(
-                "%s webpack-dev-server port '%d' is defined but it's not working properly",
-                START_FAILURE, port));
-
-    }
-
     private void doStartDevModeServer(ApplicationConfiguration config)
             throws ExecutionFailedException {
         // If port is defined, means that webpack is already running
