@@ -95,8 +95,6 @@ public final class WebpackHandler implements DevModeHandler {
 
     private static final String START_FAILURE = "Couldn't start dev server because";
 
-    private static final AtomicReference<WebpackHandler> atomicHandler = new AtomicReference<>();
-
     // webpack dev-server allows " character if passed through, need to
     // explicitly check requests for it
     private static final Pattern WEBPACK_ILLEGAL_CHAR_PATTERN = Pattern
@@ -226,20 +224,7 @@ public final class WebpackHandler implements DevModeHandler {
                 || !configuration.enableDevServer()) {
             return null;
         }
-        if (atomicHandler.get() == null) {
-            atomicHandler.compareAndSet(null,
-                    createInstance(runningPort, lookup, npmFolder, waitFor));
-        }
-        return getDevModeHandler();
-    }
-
-    /**
-     * Get the instantiated DevModeHandler.
-     *
-     * @return devModeHandler or {@code null} if not started
-     */
-    public static WebpackHandler getDevModeHandler() {
-        return atomicHandler.get();
+        return createInstance(runningPort, lookup, npmFolder, waitFor);
     }
 
     boolean isRunning() {
@@ -841,9 +826,6 @@ public final class WebpackHandler implements DevModeHandler {
 
     @Override
     public void stop() {
-        if (atomicHandler.get() == null) {
-            return;
-        }
         if (reuseDevServer) {
             return;
         }
@@ -870,7 +852,6 @@ public final class WebpackHandler implements DevModeHandler {
         }
 
         webpackProcess.set(null);
-        atomicHandler.set(null);
         usingAlreadyStartedProcess = false;
         removeRunningDevServerPort();
     }

@@ -57,6 +57,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.sun.net.httpserver.HttpServer;
 import com.vaadin.base.devserver.startup.AbstractDevModeTest;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinRequest;
@@ -116,17 +117,6 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
         }
     }
 
-    public static void removeDevModeHandlerInstance(Lookup lookup)
-            throws Exception {
-        // Reset unique instance of DevModeHandler
-        Field atomicHandler = WebpackHandler.class
-                .getDeclaredField("atomicHandler");
-        atomicHandler.setAccessible(true);
-        AtomicReference<?> reference = (AtomicReference<?>) atomicHandler
-                .get(null);
-        reference.set(null);
-    }
-
     @Test
     public void should_CreateInstanceAndRunWebPack_When_DevModeAndNpmInstalled()
             throws Exception {
@@ -150,7 +140,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
 
         waitForDevServer();
 
-        removeDevModeHandlerInstance(lookup);
+        removeDevModeHandlerInstance();
         // dev mode handler should fail because of non-existent npm
         // folder: it
         // means the port number should not have been written
@@ -420,6 +410,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
         int port = prepareHttpServer(0, HTTP_OK, statsContent);
         handler = WebpackHandler.start(port, lookup, npmFolder,
                 CompletableFuture.completedFuture(null));
+        devModeHandlerManager.initDevModeHandler(handler);
         waitForDevServer();
 
         assertEquals(statsContent,
@@ -433,11 +424,12 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
 
         handler = WebpackHandler.start(port, lookup, npmFolder,
                 CompletableFuture.completedFuture(null));
+        devModeHandlerManager.initDevModeHandler(handler);
         waitForDevServer();
         assertNotNull(handler);
         assertEquals(port, getDevServerPort());
 
-        removeDevModeHandlerInstance(lookup);
+        removeDevModeHandlerInstance();
 
         handler = WebpackHandler.start(lookup, npmFolder,
                 CompletableFuture.completedFuture(null));
@@ -525,11 +517,11 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
     }
 
     @Test
-    public void start_twoTimes_onlyOneHandlerInstanceIsCreated() {
+    public void start_twoTimes_onlyOneWebpackServerRunning() {
         handler = WebpackHandler.start(0, lookup, npmFolder,
                 CompletableFuture.completedFuture(null));
         waitForDevServer();
-
+        Assert.assertTrue(hasWebpackProcess(handler));
         /*
          * "start" one more time: there should not be another instance of dev
          * mode handler created
@@ -539,10 +531,11 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
         waitForDevServer(anotherHandler);
 
         /*
-         * The handler instances are the same but there should be no attempt to
-         * create another instance (which won't be stored anywhere), see below
+         * Two handler instances are created but only one of them starts a
+         * webpack process, the other one uses the running one.
          */
-        Assert.assertSame(handler, anotherHandler);
+        Assert.assertFalse(hasWebpackProcess(anotherHandler));
+        anotherHandler.stop();
     }
 
     @Test
@@ -683,6 +676,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
             throws ServletException, IOException {
         handler = WebpackHandler.start(port, lookup, npmFolder,
                 CompletableFuture.completedFuture(null));
+        devModeHandlerManager.initDevModeHandler(handler);
         waitForDevServer();
         VaadinServlet servlet = new VaadinServlet();
         ServletConfig cfg = mock(ServletConfig.class);
