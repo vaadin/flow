@@ -258,30 +258,12 @@ public class PropertyDeploymentConfiguration
         return allProperties;
     }
 
-    /**
-     * Checks if dev mode live reload is enabled or not.
-     * <p>
-     * Note that if the dev mode gizmo is disabled
-     * ({@link #isDevModeGizmoEnabled()} returns {@code false}), the live reload
-     * will be disabled as well.
-     *
-     * @return {@code true} if dev mode live reload is enabled, {@code false}
-     *         otherwise
-     */
     @Override
     public boolean isDevModeLiveReloadEnabled() {
         return isDevModeGizmoEnabled() && getBooleanProperty(
                 SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD, true);
     }
 
-    /**
-     * Checks if dev mode gizmo (debug window) is enabled or not. It is always
-     * disabled in production mode. In development mode, it is enabled by
-     * default.
-     *
-     * @return {@code true} if dev mode gizmo is enabled, {@code false}
-     *         otherwise
-     */
     @Override
     public boolean isDevModeGizmoEnabled() {
         return !isProductionMode()
