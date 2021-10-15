@@ -25,7 +25,7 @@ public class DevModeGizmoIT extends ChromeBrowserTest {
 
     @Override
     protected String getTestPath() {
-        return "/";
+        return "/view-disabled-gizmo/com.vaadin.flow.uitest.gizmo.DevModeGizmoView";
     }
 
     @Test

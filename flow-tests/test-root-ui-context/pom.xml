@@ -73,11 +73,6 @@
                             <name>vaadin.allow.appshell.annotations</name>
                             <value>true</value>
                         </systemProperty>
-                        <systemProperty>
-                            <!-- disable dev mode gizmo -->
-                            <name>vaadin.devmode.gizmo.enabled</name>
-                            <value>false</value>
-                        </systemProperty>
                     </systemProperties>
                 </configuration>
             </plugin>

@@ -13,15 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.gizmo;
+package com.vaadin.flow.uitest.servlet;
 
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.router.Route;
+import javax.servlet.annotation.WebInitParam;
+import javax.servlet.annotation.WebServlet;
 
-@Route(value = "com.vaadin.flow.uitest.gizmo.DevModeGizmoView")
-public class DevModeGizmoView extends Div {
-    public DevModeGizmoView() {
-        add(new Paragraph("This is a dev mode gizmo test"));
-    }
+import com.vaadin.flow.server.VaadinServlet;
+
+// Custom servlet for disabled dev gizmo test
+@WebServlet(asyncSupported = true, urlPatterns = { "/view-disabled-gizmo/*" }, initParams = {
+        @WebInitParam(name = "devmode.gizmo.enabled", value = "false")})
+public class DevModeGizmoDisabledServlet extends VaadinServlet {
 }
