@@ -75,7 +75,6 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 
 /**
@@ -114,7 +113,7 @@ public class RouteRegistryInitializerTest {
         Mockito.doAnswer(invocation -> {
             Class clazz = invocation.getArgument(0, Class.class);
             Annotation route = clazz.getAnnotation(Route.class);
-            return ((Route) route).value();
+            return ((Route) route).value()[0];
         }).when(pathProvider).getRoutePath(Mockito.any());
     }
 
