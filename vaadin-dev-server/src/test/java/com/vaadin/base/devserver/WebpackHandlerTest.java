@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.BindException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -820,14 +821,21 @@ public class WebpackHandlerTest {
 
     public static HttpServer createStubWebpackTcpListener(int port, int status,
             String response) throws Exception {
-        HttpServer httpServer = HttpServer.create(new InetSocketAddress(port),
-                0);
-        httpServer.createContext("/", exchange -> {
-            exchange.sendResponseHeaders(status, response.length());
-            exchange.getResponseBody().write(response.getBytes());
-            exchange.close();
-        });
-        httpServer.start();
-        return httpServer;
+        try {
+            HttpServer httpServer = HttpServer
+                    .create(new InetSocketAddress(port), 0);
+            httpServer.createContext("/", exchange -> {
+                exchange.sendResponseHeaders(status, response.length());
+                exchange.getResponseBody().write(response.getBytes());
+                exchange.close();
+            });
+            httpServer.start();
+            return httpServer;
+        } catch (BindException e) {
+            throw new IllegalArgumentException(
+                    "Tried to create a server on port " + port
+                            + " but it was already in use",
+                    e);
+        }
     }
 }
