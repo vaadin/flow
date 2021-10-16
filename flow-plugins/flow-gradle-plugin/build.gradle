@@ -8,7 +8,7 @@ plugins {
 	id 'maven-publish'
     id 'idea'
     id 'com.gradle.plugin-publish' version '0.11.0'
-    id 'org.jetbrains.kotlin.jvm' version '1.4.31'
+    id 'org.jetbrains.kotlin.jvm' version '1.5.31'
     id 'org.jetbrains.dokka' version '1.4.32'
 }
 
@@ -62,12 +62,12 @@ repositories {
 }
 
 dependencies {
-    compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.32")
+    implementation('org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.31')
 
-    compile("com.vaadin:flow-plugin-base:${pom.parent.version}")
+    implementation("com.vaadin:flow-plugin-base:${pom.parent.version}")
 
     testImplementation("junit:junit:4.12")
-    testImplementation("org.jetbrains.kotlin:kotlin-test:1.4.32")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.5.31")
 }
 
 idea {
