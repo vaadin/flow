@@ -157,6 +157,8 @@ public final class WebpackHandler implements DevModeHandler {
 
     private final File npmFolder;
 
+    private boolean usingAlreadyStartedProcess = false;
+
     private WebpackHandler(Lookup lookup, int runningPort, File npmFolder,
             CompletableFuture<Void> waitFor) {
 
@@ -240,9 +242,10 @@ public final class WebpackHandler implements DevModeHandler {
         return atomicHandler.get();
     }
 
-    private boolean isRunning() {
+    boolean isRunning() {
         Process process = webpackProcess.get();
-        return (process != null && process.isAlive());
+        return (process != null && process.isAlive())
+                || usingAlreadyStartedProcess;
     }
 
     @Override
@@ -730,6 +733,7 @@ public final class WebpackHandler implements DevModeHandler {
     private void reuseExistingPort(int port) {
         getLogger().info("Reusing webpack-dev-server running at {}:{}",
                 WEBPACK_HOST, port);
+        this.usingAlreadyStartedProcess = true;
 
         // Save running port for next usage
         saveRunningDevServerPort();
@@ -867,6 +871,7 @@ public final class WebpackHandler implements DevModeHandler {
 
         webpackProcess.set(null);
         atomicHandler.set(null);
+        usingAlreadyStartedProcess = false;
         removeRunningDevServerPort();
     }
 
