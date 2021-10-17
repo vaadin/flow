@@ -5,10 +5,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.ServletContext;
 
+import com.github.fge.jsonschema.core.exceptions.ExceptionProvider;
 import com.vaadin.base.devserver.DevModeHandlerManagerImpl;
 import com.vaadin.base.devserver.MockDeploymentConfiguration;
 import com.vaadin.base.devserver.WebpackHandler;
@@ -18,11 +20,16 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.StaticFileHandler;
+import com.vaadin.flow.server.StaticFileHandlerFactory;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
@@ -39,7 +46,10 @@ public abstract class AbstractDevModeTest {
     protected String baseDir;
     protected File npmFolder;
     protected MockDeploymentConfiguration configuration;
+    protected VaadinService vaadinService;
+    protected VaadinServletContext vaadinContext;
 
+    @Before
     public void setup() throws Exception {
         baseDir = temporaryFolder.getRoot().getPath();
         npmFolder = temporaryFolder.getRoot();
@@ -52,6 +62,8 @@ public abstract class AbstractDevModeTest {
         Mockito.when(servletContext
                 .getAttribute(ApplicationConfiguration.class.getName()))
                 .thenReturn(appConfig);
+        Mockito.when(servletContext.getClassLoader())
+                .thenReturn(servletContext.getClass().getClassLoader());
 
         lookup = Mockito.mock(Lookup.class);
         Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
@@ -70,6 +82,25 @@ public abstract class AbstractDevModeTest {
                 .thenReturn(configuration);
         Mockito.when(lookup.lookup(ApplicationConfiguration.class))
                 .thenReturn(appConfig);
+        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
+                .thenReturn(service -> Mockito.mock(StaticFileHandler.class));
+
+        vaadinService = Mockito.mock(VaadinService.class);
+
+        vaadinContext = new VaadinServletContext(servletContext);
+        Mockito.when(vaadinService.getContext()).thenReturn(vaadinContext);
+        Mockito.when(vaadinService.getDeploymentConfiguration())
+                .thenReturn(configuration);
+
+    }
+
+    @After
+    public void teardown() {
+        if (handler != null) {
+            handler.stop();
+            handler = null;
+        }
+
     }
 
     private void mockApplicationConfiguration(
@@ -93,6 +124,9 @@ public abstract class AbstractDevModeTest {
                         .get(Constants.TARGET,
                                 FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER)
                         .toString());
+        Mockito.when(appConfig.getPropertyNames())
+                .thenReturn(Collections.enumeration(Collections.emptyList()));
+
     }
 
     protected DevModeHandler getDevModeHandler() {
@@ -101,12 +135,17 @@ public abstract class AbstractDevModeTest {
                 .orElse(null);
     }
 
-    protected void waitForDevModeServer() throws NoSuchMethodException,
-            IllegalAccessException, InvocationTargetException {
-        Assert.assertNotNull(handler);
-        Method join = WebpackHandler.class.getDeclaredMethod("join");
-        join.setAccessible(true);
-        join.invoke(handler);
+    protected int getDevServerPort() {
+        return ((WebpackHandler) handler).getPort();
+    }
+
+    protected void waitForDevServer() {
+        waitForDevServer(handler);
+    }
+
+    protected static void waitForDevServer(DevModeHandler devModeHandler) {
+        Assert.assertNotNull(devModeHandler);
+        ((WebpackHandler) (devModeHandler)).waitForDevServer();
     }
 
     protected boolean hasWebpackProcess() {
