@@ -53,8 +53,4 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
         return WebpackHandler.getDevModeHandler();
     }
 
-    @Override
-    public boolean isDevModeAlreadyStarted(VaadinContext context) {
-        return false;
-    }
 }

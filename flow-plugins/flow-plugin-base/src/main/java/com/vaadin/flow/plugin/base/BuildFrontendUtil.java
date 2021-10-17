@@ -32,6 +32,7 @@ import org.apache.commons.io.FileUtils;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -50,6 +51,7 @@ import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.JAVA_RESOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
@@ -100,6 +102,16 @@ public class BuildFrontendUtil {
     public static File getTokenFile(PluginAdapterBase adapter) {
 
         return new File(adapter.servletResourceOutputDirectory(), TOKEN_FILE);
+    }
+
+    /**
+     * Forwards the feature files location to the feature flags detector.
+     *
+     * @param adapter
+     *            - the PluginAdapterBase.
+     */
+    public static void updateFeatureFlagsLocation(PluginAdapterBase adapter) {
+        FeatureFlags.setPropertiesLocation(adapter.javaResourceFolder());
     }
 
     /**
@@ -161,7 +173,7 @@ public class BuildFrontendUtil {
             builder.build().execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
-        } catch (Throwable throwable) {
+        } catch (Throwable throwable) { // NOSONAR Intentionally throwable
             throw new ExecutionFailedException(
                     "Error occured during goal execution: "
                             + throwable.getMessage()
@@ -212,6 +224,8 @@ public class BuildFrontendUtil {
                 adapter.frontendDirectory().getAbsolutePath());
         buildInfo.put(CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
                 adapter.javaSourceFolder().getAbsolutePath());
+        buildInfo.put(JAVA_RESOURCE_FOLDER_TOKEN,
+                adapter.javaResourceFolder().getAbsolutePath());
         buildInfo.put(CONNECT_APPLICATION_PROPERTIES_TOKEN,
                 adapter.applicationProperties().getAbsolutePath());
         buildInfo.put(CONNECT_OPEN_API_FILE_TOKEN,
@@ -318,7 +332,7 @@ public class BuildFrontendUtil {
                             .execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
-        } catch (Throwable throwable) {
+        } catch (Throwable throwable) { // NOSONAR Intentionally throwable
             throw new ExecutionFailedException(
                     "Error occured during goal execution: "
                             + throwable.getMessage()
@@ -419,8 +433,8 @@ public class BuildFrontendUtil {
             buildInfo.remove(
                     Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
             buildInfo.remove(Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
+            buildInfo.remove(Constants.JAVA_RESOURCE_FOLDER_TOKEN);
             buildInfo.remove(Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN);
-            buildInfo.remove(Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
             buildInfo.remove(Constants.CONNECT_OPEN_API_FILE_TOKEN);
             buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
             buildInfo.remove(InitParameters.BUILD_FOLDER);

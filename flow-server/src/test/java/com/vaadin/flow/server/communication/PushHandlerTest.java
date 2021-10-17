@@ -98,6 +98,7 @@ public class PushHandlerTest {
                 .getDeploymentConfiguration();
         deploymentConfiguration.setProductionMode(false);
         deploymentConfiguration.setDevModeLiveReloadEnabled(true);
+        deploymentConfiguration.setDevModeGizmoEnabled(true);
 
         VaadinContext context = service.getContext();
         BrowserLiveReload liveReload = mockBrowserLiveReloadImpl(context);
@@ -126,6 +127,7 @@ public class PushHandlerTest {
                 .getDeploymentConfiguration();
         deploymentConfiguration.setProductionMode(false);
         deploymentConfiguration.setDevModeLiveReloadEnabled(true);
+        deploymentConfiguration.setDevModeGizmoEnabled(true);
 
         VaadinContext context = service.getContext();
         BrowserLiveReload liveReload = mockBrowserLiveReloadImpl(context);

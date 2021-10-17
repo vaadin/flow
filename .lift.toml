@@ -1,0 +1,3 @@
+ignoreFiles = """
+flow-client/src/main/frontend/copy-to-clipboard.js
+"""

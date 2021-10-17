@@ -66,16 +66,6 @@ public interface DevModeHandlerManager {
     DevModeHandler getDevModeHandler();
 
     /**
-     * Returns whether {@link DevModeHandler} has been already started or not.
-     *
-     * @param context
-     *            The {@link VaadinContext}, not <code>null</code>
-     * @return <code>true</code> if {@link DevModeHandler} has already been
-     *         started, <code>false</code> - otherwise
-     */
-    boolean isDevModeAlreadyStarted(VaadinContext context);
-
-    /**
      * Create a {@link DevModeHandler} if factory available.
      *
      * @param service

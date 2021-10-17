@@ -147,6 +147,13 @@ public interface PluginAdapterBase {
     File javaSourceFolder();
 
     /**
+     * Java resource folder.
+     *
+     * @return {@link File}
+     */
+    File javaResourceFolder();
+
+    /**
      * Delegates a debug-Message to a logger.
      *
      * @param debugMessage

@@ -21,7 +21,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.theme.Theme;
 
 @Theme(value = "app-theme")
-@NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "1.6.1")
+@NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "22.0.0-alpha9")
 @NpmPackage(value = "@fortawesome/fontawesome-free", version = "5.15.1")
 public class AppShell implements AppShellConfigurator {
 }

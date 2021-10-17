@@ -13,14 +13,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.base.devserver;
 
-package com.vaadin.flow.uitest.ui.theme;
+import java.util.List;
 
-import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.theme.Theme;
+import com.vaadin.experimental.Feature;
 
-@Theme(value = "reusable-theme")
-@NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "22.0.0-alpha9")
-public class AppShell implements AppShellConfigurator {
+/**
+ * Message with feature flags sent to the debug window.
+ */
+public class FeatureFlagMessage {
+    private List<Feature> features;
+
+    /**
+     * Creates a new message with the given features.
+     * 
+     * @param features
+     *            the features
+     */
+    public FeatureFlagMessage(List<Feature> features) {
+        this.features = features;
+    }
+
+    public List<Feature> getFeatures() {
+        return features;
+    }
+
 }

@@ -66,6 +66,8 @@ The following actions are performed when creating a package:
  Default value is: ${project.build.directory}/generated-resources/openapi.json
 * **javaSourceFolder** `File` - .Java source folders for scanning.
  Default value is: ${project.basedir}/src/main/java
+* **javaResourceFolder** `File` - .Java resource folder.
+ Default value is: ${project.basedir}/src/main/resources
 * **generatedTsFolder** `File` - The folder where flow will put TS API files for client projects.
  Default value is: "${project.basedir}/" + FRONTEND + "/generated"
 * **pnpmEnable** `boolean` - Instructs to use pnpm for installing npm frontend resources.

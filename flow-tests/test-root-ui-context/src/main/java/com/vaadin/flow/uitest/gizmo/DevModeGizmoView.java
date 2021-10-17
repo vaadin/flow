@@ -13,14 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.flow.uitest.gizmo;
 
-package com.vaadin.flow.uitest.ui.theme;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.router.Route;
 
-import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.theme.Theme;
-
-@Theme(value = "reusable-theme")
-@NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "22.0.0-alpha9")
-public class AppShell implements AppShellConfigurator {
+@Route(value = "com.vaadin.flow.uitest.gizmo.DevModeGizmoView")
+public class DevModeGizmoView extends Div {
+    public DevModeGizmoView() {
+        add(new Paragraph("This is a dev mode gizmo test"));
+    }
 }
