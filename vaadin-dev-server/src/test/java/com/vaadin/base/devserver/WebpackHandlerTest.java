@@ -520,7 +520,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
         handler = WebpackHandler.start(0, lookup, npmFolder,
                 CompletableFuture.completedFuture(null));
         waitForDevServer();
-        Assert.assertTrue(hasWebpackProcess(handler));
+        Assert.assertTrue(hasDevServerProcess(handler));
         /*
          * "start" one more time: there should not be another instance of dev
          * mode handler created
@@ -533,7 +533,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
          * Two handler instances are created but only one of them starts a
          * webpack process, the other one uses the running one.
          */
-        Assert.assertFalse(hasWebpackProcess(anotherHandler));
+        Assert.assertFalse(hasDevServerProcess(anotherHandler));
         anotherHandler.stop();
     }
 
