@@ -29,9 +29,7 @@ import com.sun.net.httpserver.HttpServer;
 import com.vaadin.base.devserver.startup.AbstractDevModeTest;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -42,18 +40,11 @@ public class WebpackHandlerStopTest extends AbstractDevModeTest {
 
     private HttpServer httpServer;
 
-    @Before
-    public void setup() throws Exception {
-        super.setup();
-    }
-
-    @After
-    public void teardown() throws Exception {
+    @Override
+    public void teardown() {
+        super.teardown();
         if (httpServer != null) {
             httpServer.stop(0);
-        }
-        if (handler != null) {
-            handler.stop();
         }
     }
 
@@ -83,7 +74,7 @@ public class WebpackHandlerStopTest extends AbstractDevModeTest {
 
         handler = WebpackHandler.start(port, lookup, npmFolder,
                 CompletableFuture.completedFuture(null));
-        ((WebpackHandler) handler).join();
+        waitForDevServer();
         assertEquals(port, ((WebpackHandler) handler).getPort());
         assertNotNull(requestWebpackServer(port, "/bar"));
         Assert.assertTrue(((WebpackHandler) handler).isRunning());
@@ -101,12 +92,12 @@ public class WebpackHandlerStopTest extends AbstractDevModeTest {
 
         handler = WebpackHandler.start(port, lookup, npmFolder,
                 CompletableFuture.completedFuture(null));
-        ((WebpackHandler) handler).join();
+        waitForDevServer();
 
         simulateServerRestart();
         handler = WebpackHandler.start(lookup, npmFolder,
                 CompletableFuture.completedFuture(null));
-        ((WebpackHandler) handler).join();
+        waitForDevServer();
 
         Assert.assertTrue(((WebpackHandler) handler).isRunning());
 

@@ -1,46 +1,5 @@
 package com.vaadin.base.devserver.startup;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletRegistration;
-
-import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
-
-import com.vaadin.flow.internal.DevModeHandler;
-import com.vaadin.flow.internal.DevModeHandlerManager;
-import com.vaadin.base.devserver.WebpackHandler;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import com.vaadin.flow.server.frontend.TaskGenerateFusion;
-import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -49,7 +8,35 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubWebpackServer;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletRegistration;
+
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.flow.server.frontend.TaskGenerateFusion;
+import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
  * Base class for DevModeInitializer tests. It is an independent class so as it
@@ -75,8 +62,8 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
 
     }
 
-    @Before
     @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
     public void setup() throws Exception {
         super.setup();
 
@@ -161,24 +148,21 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         return packageJson;
     }
 
-    @After
-    public void teardown() throws Exception, SecurityException {
+    @Override
+    public void teardown() {
+        super.teardown();
         System.clearProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_REUSE_DEV_SERVER);
         System.clearProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
 
         webpackFile.delete();
         mainPackageFile.delete();
-        if (handler != null) {
-            handler.stop();
-            handler = null;
-        }
     }
 
     public void process() throws Exception {
         devModeInitializer.process(classes, servletContext);
         handler = getDevModeHandler();
-        waitForDevModeServer();
+        waitForDevServer();
     }
 
     public void runDestroy() throws Exception {

@@ -880,10 +880,8 @@ public final class WebpackHandler implements DevModeHandler {
      * <p>
      * Suspends the caller's thread until the dev mode server is started (or
      * failed to start).
-     *
-     * @see Thread#join()
      */
-    void join() {
+    public void waitForDevServer() {
         devServerStartFuture.join();
     }
 
