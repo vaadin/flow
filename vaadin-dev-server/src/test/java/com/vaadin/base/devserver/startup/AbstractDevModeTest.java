@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.ServletContext;
 
+import com.vaadin.base.devserver.AbstractDevServerRunner;
 import com.vaadin.base.devserver.DevModeHandlerManagerImpl;
 import com.vaadin.base.devserver.MockDeploymentConfiguration;
 import com.vaadin.base.devserver.WebpackHandler;
@@ -149,7 +150,7 @@ public abstract class AbstractDevModeTest {
         Assert.assertNotNull(devModeHandler);
         Field webpackProcessField;
         try {
-            webpackProcessField = WebpackHandler.class
+            webpackProcessField = AbstractDevServerRunner.class
                     .getDeclaredField("webpackProcess");
             webpackProcessField.setAccessible(true);
             AtomicReference<Process> webpackProcess = (AtomicReference<Process>) webpackProcessField
