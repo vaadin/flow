@@ -32,15 +32,12 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 @SuppressWarnings("restriction")
-@Ignore("This test may cause freeze of a build. "
-        + "It happens all the time for Java 11 validation and it happens sometimes on PR validation")
 public class WebpackHandlerStopTest extends AbstractDevModeTest {
 
     private HttpServer httpServer;
