@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.router;
 
+import org.osgi.framework.Constants;
+import org.osgi.service.component.annotations.Component;
+
 import com.vaadin.flow.router.internal.RouteUtil;
 
 /**
@@ -24,6 +27,8 @@ import com.vaadin.flow.router.internal.RouteUtil;
  * @since
  *
  */
+@Component(service = RoutePathProvider.class, property = Constants.SERVICE_RANKING
+        + ":Integer=" + Integer.MIN_VALUE)
 public class DefaultRoutePathProvider implements RoutePathProvider {
 
     @Override
