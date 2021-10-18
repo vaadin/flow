@@ -345,6 +345,9 @@ public class ServerRpcHandler implements Serializable {
     private String getMessageDetails(RpcRequest rpcRequest) {
         StringBuilder messageDetails = new StringBuilder();
         JsonArray rpcArray = rpcRequest.getRpcInvocationsData();
+        if (rpcArray == null) {
+            return "{ no data }";
+        }
 
         for (int i = 0; i < rpcArray.length(); i++) {
             JsonObject json = rpcArray.get(i);
