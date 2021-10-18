@@ -445,7 +445,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                 .getAttribute(ApplicationConfiguration.class.getName()))
                 .thenReturn(appConfig);
 
-        Lookup lookup = Mockito.mock(Lookup.class);
         ResourceProvider resourceProvider = Mockito
                 .mock(ResourceProvider.class);
         Mockito.when(lookup.lookup(ResourceProvider.class))
