@@ -343,23 +343,26 @@ public class ServerRpcHandler implements Serializable {
     }
 
     private String getMessageDetails(RpcRequest rpcRequest) {
-        String messageDetails = "";
-        JsonObject rpcJson = rpcRequest.getRawJson();
-        JsonArray rpcArray = rpcJson.hasKey("rpc") ? rpcJson.getArray("rpc")
-                : null;
-        if (rpcArray == null) {
-            return messageDetails;
-        }
+        StringBuilder messageDetails = new StringBuilder();
+        JsonArray rpcArray = rpcRequest.getRpcInvocationsData();
+
         for (int i = 0; i < rpcArray.length(); i++) {
             JsonObject json = rpcArray.get(i);
             String type = json.hasKey("type") ? json.getString("type") : "";
             Double node = json.hasKey("node") ? json.getNumber("node") : null;
             Double feature = json.hasKey("feature") ? json.getNumber("feature")
                     : null;
-            messageDetails += "{ type: " + type + " node: " + node
-                    + " feature: " + feature + " } ";
+            appendAll(messageDetails, "{ type: ", type, " node: ",
+                    String.valueOf(node), " feature: ", String.valueOf(feature),
+                    " } ");
         }
-        return messageDetails;
+        return messageDetails.toString();
+    }
+
+    private static void appendAll(StringBuilder builder, String... strings) {
+        for (String string : strings) {
+            builder.append(string);
+        }
     }
 
     /**
