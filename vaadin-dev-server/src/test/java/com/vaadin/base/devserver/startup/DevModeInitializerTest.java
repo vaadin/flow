@@ -269,9 +269,9 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
         process();
 
-        Assert.assertTrue(hasWebpackProcess(handler));
+        Assert.assertTrue(hasDevServerProcess(handler));
         runDestroy();
-        Assert.assertFalse(hasWebpackProcess(handler));
+        Assert.assertFalse(hasDevServerProcess(handler));
     }
 
     @Test
@@ -626,7 +626,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     private void assertDevModeHandlerStarted() {
-        Assert.assertTrue(hasWebpackProcess(handler));
+        Assert.assertTrue(hasDevServerProcess(handler));
     }
 
 }

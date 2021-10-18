@@ -146,16 +146,17 @@ public abstract class AbstractDevModeTest {
         ((WebpackHandler) (devModeHandler)).waitForDevServer();
     }
 
-    protected static boolean hasWebpackProcess(DevModeHandler devModeHandler) {
+    protected static boolean hasDevServerProcess(
+            DevModeHandler devModeHandler) {
         Assert.assertNotNull(devModeHandler);
-        Field webpackProcessField;
+        Field devServerProcessField;
         try {
-            webpackProcessField = AbstractDevServerRunner.class
-                    .getDeclaredField("webpackProcess");
-            webpackProcessField.setAccessible(true);
-            AtomicReference<Process> webpackProcess = (AtomicReference<Process>) webpackProcessField
+            devServerProcessField = AbstractDevServerRunner.class
+                    .getDeclaredField("devServerProcess");
+            devServerProcessField.setAccessible(true);
+            AtomicReference<Process> devServerProcess = (AtomicReference<Process>) devServerProcessField
                     .get(devModeHandler);
-            return webpackProcess.get() != null;
+            return devServerProcess.get() != null;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -310,7 +310,7 @@ public final class WebpackHandler extends AbstractDevServerRunner {
     }
 
     @Override
-    protected Process doStartWebpack() {
+    protected Process doStartDevServer() {
         ApplicationConfiguration config = getApplicationConfiguration();
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(getNpmFolder());
@@ -354,7 +354,8 @@ public final class WebpackHandler extends AbstractDevServerRunner {
             Process process = processBuilder
                     .redirectError(ProcessBuilder.Redirect.PIPE)
                     .redirectErrorStream(true).start();
-            // We only can save the webpackProcess reference the first time that
+            // We only can save the dev server process reference the first time
+            // that
             // the DevModeHandler is created. There is no way to store
             // it in the servlet container, and we do not want to save it in the
             // global JVM.
@@ -411,6 +412,11 @@ public final class WebpackHandler extends AbstractDevServerRunner {
                         "--devtool=eval-source-map --mode=development")
                 .split(" +")));
         return command;
+    }
+
+    @Override
+    protected String getServerName() {
+        return "Webpack";
     }
 
     @Override

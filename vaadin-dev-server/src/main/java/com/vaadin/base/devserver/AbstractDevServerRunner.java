@@ -67,12 +67,12 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     protected static final String START_FAILURE = "Couldn't start dev server because";
 
-    private static final String WEBPACK_HOST = "http://localhost";
+    private static final String DEV_SERVER_HOST = "http://localhost";
 
     /**
      * UUID system property for identifying JVM restart.
      */
-    private static final String WEBPACK_PORTFILE_UUID_PROPERTY = "vaadin.frontend.webpack.portfile.uuid";
+    private static final String DEV_SERVER_PORTFILE_UUID_PROPERTY = "vaadin.frontend.devserver.portfile.uuid";
 
     // webpack dev-server allows " character if passed through, need to
     // explicitly check requests for it
@@ -84,7 +84,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     private final File npmFolder;
     private volatile int port;
-    private final AtomicReference<Process> webpackProcess = new AtomicReference<>();
+    private final AtomicReference<Process> devServerProcess = new AtomicReference<>();
     private final boolean reuseDevServer;
     private final File devServerPortFile;
 
@@ -151,12 +151,12 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     }
 
     private void doStartDevModeServer() throws ExecutionFailedException {
-        // If port is defined, means that webpack is already running
+        // If port is defined, means that the dev server is already running
         if (port > 0) {
             if (!checkConnection()) {
                 throw new IllegalStateException(String.format(
-                        "%s webpack-dev-server port '%d' is defined but it's not working properly",
-                        START_FAILURE, port));
+                        "%s %s port '%d' is defined but it's not working properly",
+                        getServerName(), START_FAILURE, port));
             }
             reuseExistingPort(port);
             return;
@@ -168,8 +168,8 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
                 return;
             } else {
                 getLogger().warn(
-                        "webpack-dev-server port '%d' is defined but it's not working properly. Using a new free port...",
-                        port);
+                        "%s port '%d' is defined but it's not working properly. Using a new free port...",
+                        getServerName(), port);
                 port = 0;
             }
         }
@@ -177,26 +177,27 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         validateFiles();
 
         long start = System.nanoTime();
-        getLogger().info("Starting webpack-dev-server");
+        getLogger().info("Starting " + getServerName());
 
         watchDog.set(new DevServerWatchDog());
 
         // Look for a free port
         port = getFreePort();
-        // save the port immediately before start a webpack server, see #8981
+        // save the port immediately before start a dev server, see #8981
         saveRunningDevServerPort();
 
         try {
-            Process process = doStartWebpack();
-            webpackProcess.set(process);
+            Process process = doStartDevServer();
+            devServerProcess.set(process);
             if (!isRunning()) {
-                throw new IllegalStateException("Webpack exited prematurely");
+                throw new IllegalStateException(
+                        getServerName() + " exited prematurely");
             }
 
             long ms = (System.nanoTime() - start) / 1000000;
-            getLogger().info("Started webpack-dev-server. Time: {}ms", ms);
+            getLogger().info("Started {}. Time: {}ms", getServerName(), ms);
         } finally {
-            if (webpackProcess.get() == null) {
+            if (devServerProcess.get() == null) {
                 removeRunningDevServerPort();
             }
         }
@@ -210,36 +211,36 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      */
     protected void validateFiles() throws ExecutionFailedException {
         assert getPort() == 0;
-        // Skip checks if we have a webpack-dev-server already running
-        File webpack = getServerBinary();
-        File webpackConfig = getServerConfig();
+        // Skip checks if we have a dev server already running
+        File binary = getServerBinary();
+        File config = getServerConfig();
         if (!getNpmFolder().exists()) {
             getLogger().warn("No project folder '{}' exists", getNpmFolder());
             throw new ExecutionFailedException(START_FAILURE
                     + " the target execution folder doesn't exist.");
         }
-        if (!webpack.exists()) {
+        if (!binary.exists()) {
             getLogger().warn("'{}' doesn't exist. Did you run `npm install`?",
-                    webpack);
+                    binary);
             throw new ExecutionFailedException(String.format(
                     "%s '%s' doesn't exist. `npm install` has not run or failed.",
-                    START_FAILURE, webpack));
-        } else if (!webpack.canExecute()) {
+                    START_FAILURE, binary));
+        } else if (!binary.canExecute()) {
             getLogger().warn(
                     " '{}' is not an executable. Did you run `npm install`?",
-                    webpack);
+                    binary);
             throw new ExecutionFailedException(String.format(
                     "%s '%s' is not an executable."
                             + " `npm install` has not run or failed.",
-                    START_FAILURE, webpack));
+                    START_FAILURE, binary));
         }
-        if (!webpackConfig.canRead()) {
+        if (!config.canRead()) {
             getLogger().warn(
-                    "Webpack configuration '{}' is not found or is not readable.",
-                    webpackConfig);
+                    "{} configuration '{}' is not found or is not readable.",
+                    getServerName(), config);
             throw new ExecutionFailedException(
                     String.format("%s '%s' doesn't exist or is not readable.",
-                            START_FAILURE, webpackConfig));
+                            START_FAILURE, config));
         }
     }
 
@@ -254,11 +255,16 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     protected abstract File getServerConfig();
 
     /**
+     * Gets the name of the dev server for outputting to the user.
+     */
+    protected abstract String getServerName();
+
+    /**
      * Starts the dev server and returns the started process.
      * 
      * @return the started process or {@code null} if no process was started
      */
-    protected abstract Process doStartWebpack();
+    protected abstract Process doStartDevServer();
 
     /**
      * Gets the server watch dog.
@@ -338,22 +344,22 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             return s.getLocalPort();
         } catch (IOException e) {
             throw new IllegalStateException(
-                    "Unable to find a free port for running webpack", e);
+                    "Unable to find a free port for running the dev server", e);
         }
     }
 
     /**
-     * Get the listening port of the 'webpack-dev-server'.
+     * Get the listening port of the dev server
      *
-     * @return the listening port of webpack
+     * @return the listening port
      */
     public int getPort() {
         return port;
     }
 
     private void reuseExistingPort(int port) {
-        getLogger().info("Reusing webpack-dev-server running at {}:{}",
-                WEBPACK_HOST, port);
+        getLogger().info("Reusing {} running at {}:{}", getServerName(),
+                DEV_SERVER_HOST, port);
         this.usingAlreadyStartedProcess = true;
 
         // Save running port for next usage
@@ -372,10 +378,10 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     private static File getDevServerPortFile(File npmFolder) {
         // UUID changes between JVM restarts
-        String jvmUuid = System.getProperty(WEBPACK_PORTFILE_UUID_PROPERTY);
+        String jvmUuid = System.getProperty(DEV_SERVER_PORTFILE_UUID_PROPERTY);
         if (jvmUuid == null) {
             jvmUuid = UUID.randomUUID().toString();
-            System.setProperty(WEBPACK_PORTFILE_UUID_PROPERTY, jvmUuid);
+            System.setProperty(DEV_SERVER_PORTFILE_UUID_PROPERTY, jvmUuid);
         }
 
         // Frontend path ensures uniqueness for multiple devmode apps running
@@ -399,7 +405,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     }
 
     boolean isRunning() {
-        Process process = webpackProcess.get();
+        Process process = devServerProcess.get();
         return (process != null && process.isAlive())
                 || usingAlreadyStartedProcess;
     }
@@ -411,13 +417,13 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
 
         try {
-            // The most reliable way to stop the webpack-dev-server is
-            // by informing webpack to exit. We have implemented in webpack a
+            // The most reliable way to stop the dev server is
+            // by informing it to exit. We have implemented
             // a listener that handles the stop command via HTTP and exits.
             prepareConnection("/stop", "GET").getResponseCode();
         } catch (IOException e) {
             getLogger().debug(
-                    "webpack-dev-server does not support the `/stop` command.",
+                    getServerName() + " does not support the `/stop` command.",
                     e);
         }
 
@@ -426,12 +432,12 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             watchDogInstance.stop();
         }
 
-        Process process = webpackProcess.get();
+        Process process = devServerProcess.get();
         if (process != null && process.isAlive()) {
             process.destroy();
         }
 
-        webpackProcess.set(null);
+        devServerProcess.set(null);
         usingAlreadyStartedProcess = false;
         removeRunningDevServerPort();
     }
@@ -440,7 +446,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     public HttpURLConnection prepareConnection(String path, String method)
             throws IOException {
         // path should have been checked at this point for any outside requests
-        URL uri = new URL(WEBPACK_HOST + ":" + getPort() + path);
+        URL uri = new URL(DEV_SERVER_HOST + ":" + getPort() + path);
         HttpURLConnection connection = (HttpURLConnection) uri.openConnection();
         connection.setRequestMethod(method);
         connection.setReadTimeout(DEFAULT_TIMEOUT);
@@ -460,7 +466,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             }
             return false;
         } else {
-            InputStream inputStream = WebpackHandler.class
+            InputStream inputStream = AbstractDevServerRunner.class
                     .getResourceAsStream("dev-mode-not-ready.html");
             IOUtils.copy(inputStream, response.getOutputStream());
             response.setContentType("text/html;charset=utf-8");
@@ -483,11 +489,11 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     }
 
     /**
-     * Serve a file by proxying to webpack.
+     * Serve a file by proxying to the dev server.
      * <p>
      * Note: it considers the {@link HttpServletRequest#getPathInfo} that will
-     * be the path passed to the 'webpack-dev-server' which is running in the
-     * context root folder of the application.
+     * be the path passed to the dev server which is running in the context root
+     * folder of the application.
      * <p>
      * Method returns {@code false} immediately if dev server failed on its
      * startup.
@@ -496,7 +502,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      *            the servlet request
      * @param response
      *            the servlet response
-     * @return false if webpack returned a not found, true otherwise
+     * @return false if the dev server returned a not found, true otherwise
      * @throws IOException
      *             in the case something went wrong like connection refused
      */
@@ -507,8 +513,8 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         if (isDevServerFailedToStart.get() || !devServerStartFuture.isDone()) {
             return false;
         }
-        // Since we have 'publicPath=/VAADIN/' in webpack config,
-        // a valid request for webpack-dev-server should start with '/VAADIN/'
+        // Since we have 'publicPath=/VAADIN/' in the dev server config,
+        // a valid request for the dev server should start with '/VAADIN/'
         String requestFilename = request.getPathInfo();
 
         if (HandlerHelper.isPathUnsafe(requestFilename)
@@ -540,18 +546,19 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
 
         // Send the request
-        getLogger().debug("Requesting resource to webpack {}",
+        getLogger().debug("Requesting resource from {} {}", getServerName(),
                 connection.getURL());
         int responseCode = connection.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
-            getLogger().debug("Resource not served by webpack {}",
+            getLogger().debug("Resource not served by {} {}", getServerName(),
                     requestFilename);
-            // webpack cannot access the resource, return false so as flow can
+            // the dev server cannot access the resource, return false so Flow
+            // can
             // handle it
             return false;
         }
-        getLogger().debug("Served resource by webpack: {} {}", responseCode,
-                requestFilename);
+        getLogger().debug("Served resource by {}: {} {}", getServerName(),
+                responseCode, requestFilename);
 
         // Copies response headers
         connection.getHeaderFields().forEach((header, values) -> {
